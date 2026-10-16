@@ -15,13 +15,14 @@ const reader = read('frontdoor/fd_reader.js');
 const shell = read('frontdoor/fd_shell.js');
 const practice = read('frontdoor/fd_app_practice.js');
 const path = read('frontdoor/fd_path.js');
+const search = read('frontdoor/fd_search.js');
 const wire = read('frontdoor/fd_wire.js');
 const offline = read('frontdoor/fd_offline.js');
 const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const buildMake = (wireSrc) => new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${wireSrc}\nreturn {
+const buildMake = (wireSrc) => new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${search}\n${wireSrc}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -562,7 +563,7 @@ test('role, tab, back, home, search, change-week, progress, theme, tool layout, 
     '?tab=path');
   // Home follows FD_LANDING_VIEW: Today on the Today-first build (Essentials: landing tests below).
   assert.equal(T.fdDispatch({ 'data-fd-home': '' }, {}, roleContext).route, '/');
-  assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true });
+  assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, roleContext).patch, { searchOpen: true, searchExpanded: false });
   assert.deepEqual(F.fdDispatch({ 'data-fd-change-week': '' }, {}, roleContext), {
     patch: { screen: 'setup-week', tab: 'today', openId: null, searchOpen: false, sheet: null, setupFrom: 'app' },
     route: '/', history: 'replace', effect: null,
@@ -813,11 +814,11 @@ test('change-week uses a reader origin only while a reader is open', () => {
 test('Escape close order and explicit close actions are deterministic', () => {
   const both = { ...roleContext, searchOpen: true, sheet: 'kit', query: 'abc' };
   assert.deepEqual(F.fdDispatch({ close: true }, {}, both).patch,
-    { searchOpen: false, query: '' });
+    { searchOpen: false, query: '', searchExpanded: false });
   const sheetOnly = F.fdDispatch({ close: true }, {}, { ...both, searchOpen: false });
   assert.equal(sheetOnly.patch.sheet, null);
   assert.deepEqual(F.fdDispatch({ 'data-fd-close-search': '' }, {}, both).patch,
-    { searchOpen: false, query: '' });
+    { searchOpen: false, query: '', searchExpanded: false });
   assert.equal(F.fdDispatch({ 'data-fd-close-sheet': '' }, {}, both).patch.sheet, null);
   assert.deepEqual(F.fdDispatch({ 'data-fd-close-nudge': '' }, {}, roleContext).patch,
     { nudge: null });
@@ -1448,6 +1449,152 @@ test('live search input rerenders and Enter opens the first ordinary result dire
   assert.equal(h.controller.getState().searchOpen, false);
   assert.equal(prevented, 1);
   assert.ok(renders.length >= 2);
+});
+
+test('search expansion toggles only an open dialog and never emits a route or effect', () => {
+  for (const [searchOpen, searchExpanded, expected] of [
+    [true, false, { searchExpanded: true }],
+    [true, true, { searchExpanded: false }],
+    [false, false, {}],
+    [false, true, {}],
+  ]) {
+    const initial = { ...roleContext, searchOpen, searchExpanded, query: 'treatment' };
+    assert.deepEqual(F.fdDispatch({ 'data-fd-search-expand': '' }, {}, initial),
+      { patch: expected, route: null, effect: null });
+    assert.equal(initial.searchExpanded, searchExpanded, 'the dispatcher leaves its input untouched');
+  }
+});
+
+test('opening or closing search resets a previous expanded view', () => {
+  const initial = { ...roleContext, searchOpen: true, searchExpanded: true, query: 'treatment' };
+  assert.equal(F.fdDispatch({ 'data-fd-search': '' }, {}, initial).patch.searchExpanded, false);
+  const seeded = F.fdDispatch({ 'data-fd-search': '', 'data-fd-search-query': 'sleep' }, {}, initial);
+  assert.equal(seeded.patch.query, 'sleep');
+  assert.equal(seeded.patch.searchExpanded, false);
+  for (const attrs of [{ close: true }, { 'data-fd-close-search': '' }]) {
+    assert.deepEqual(F.fdDispatch(attrs, {}, initial), {
+      patch: { searchOpen: false, query: '', searchExpanded: false }, route: null, effect: null,
+    });
+  }
+});
+
+test('delegated search expansion changes only the overlay while preserving the live reading and storage', () => {
+  const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'library' }) });
+  const storageWrites = [];
+  const setItem = storage.setItem;
+  storage.setItem = (key, value) => { storageWrites.push(key); setItem(key, value); };
+  const fullRenders = [], transientRenders = [], historyCalls = [], opened = [], routes = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'library', fromTab: 'library', openId: 'live.md',
+    searchOpen: true, query: 'treatment', searchExpanded: false,
+  }, {
+    F: make(storage),
+    render: (...args) => fullRenders.push(args),
+    renderTransient: (...args) => transientRenders.push(args),
+    openResource: (...args) => opened.push(args),
+    route: (...args) => routes.push(args),
+    history: {
+      replaceState: (...args) => historyCalls.push(['replace', ...args]),
+      pushState: (...args) => historyCalls.push(['push', ...args]),
+    },
+  });
+  const beforeStorage = storage.dump();
+  const beforeStorageWriteCount = storageWrites.length;
+  const beforeHistoryCount = historyCalls.length;
+  for (const expected of [true, false]) {
+    h.rootHandlers.click({ target: actionTarget({ 'data-fd-search-expand': '' }), preventDefault() {} });
+    const current = h.controller.getState();
+    assert.equal(current.searchExpanded, expected);
+    assert.equal(current.openId, 'live.md');
+    assert.equal(current.query, 'treatment');
+    assert.equal(current.searchOpen, true);
+    const detail = transientRenders.at(-1)?.[1];
+    assert.ok(detail, 'the delegated button must repaint the overlay');
+    assert.equal(detail.preserveResource, true);
+    assert.equal(detail.surfaces.overlay, true);
+    assert.equal(detail.surfaces.base, false);
+    assert.deepEqual(storage.dump(), beforeStorage);
+    assert.equal(storageWrites.length, beforeStorageWriteCount, 'expansion must not write any durable store');
+    assert.equal(historyCalls.length, beforeHistoryCount);
+  }
+  assert.equal(transientRenders.length, 2);
+  assert.deepEqual(fullRenders, []);
+  assert.deepEqual(opened, []);
+  assert.deepEqual(routes, []);
+  h.controller.destroy();
+});
+
+test('editing an expanded query restores the compact view without replacing the live resource', () => {
+  const storage = memStorage();
+  const renders = [], fullRenders = [];
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', openId: 'live.md', tab: 'library', fromTab: 'library',
+    searchOpen: true, searchExpanded: true, query: 'treatment',
+  }, {
+    F: make(storage), render: (...args) => fullRenders.push(args),
+    renderTransient: (...args) => renders.push(args),
+  });
+  const beforeStorage = storage.dump();
+  const input = {
+    tagName: 'INPUT', isContentEditable: false, value: 'sleep',
+    matches: (selector) => selector === '.fd-searchpanel__input',
+  };
+  h.rootHandlers.input({ target: input });
+  assert.equal(h.controller.getState().query, 'sleep');
+  assert.equal(h.controller.getState().searchExpanded, false);
+  assert.equal(renders.length, 1);
+  assert.equal(renders[0][1].preserveResource, true);
+  assert.equal(renders[0][1].surfaces.overlay, true);
+  assert.deepEqual(fullRenders, []);
+  assert.deepEqual(storage.dump(), beforeStorage);
+  h.controller.destroy();
+});
+
+test('history navigation discards expanded search even when an old snapshot tries to restore it', () => {
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'library', searchOpen: true, searchExpanded: true, query: 'sleep',
+  }, { F, location: { href: 'https://example.test/?tab=path', search: '?tab=path', pathname: '/' } });
+  h.windowHandlers.popstate({ state: { fd: true, state: {
+    ...roleContext, screen: 'app', tab: 'path', searchOpen: true, searchExpanded: true, query: 'sleep',
+  } } });
+  const restored = h.controller.getState();
+  assert.equal(restored.tab, 'path');
+  assert.equal(restored.searchOpen, false);
+  assert.equal(restored.searchExpanded, false);
+  assert.equal(restored.query, '');
+  h.controller.destroy();
+});
+
+test('Enter in expanded search still follows real safety priority and the curated alias exception', () => {
+  const protocol = { ref: 'risk.md', title: 'Ward practice safety', summary: '', kind: 'read' };
+  const alias = { ref: 'decision.html', title: 'Decision support', summary: '', kind: 'tool', searchAliases: ['ward practice'] };
+  const byRef = { [protocol.ref]: protocol, [alias.ref]: alias };
+  for (let n = 0; n < 10; n++) {
+    const ref = `ward-${n}.md`;
+    byRef[ref] = { ref, title: 'Ward practice reading', summary: '', kind: 'read' };
+  }
+  const index = { byRef, weeks: [], columns: [], kit: [{ item: protocol, triggers: ['urgent ward'] }] };
+  for (const [query, expectedSheet, expectedPage] of [
+    ['urgent ward', 'risk.md', 'live.md'],
+    ['ward practice', null, 'decision.html'],
+  ]) {
+    const h = fakeHarness({
+      ...roleContext, screen: 'app', tab: 'library', openId: 'live.md', fromTab: 'library',
+      searchOpen: true, searchExpanded: true, query,
+    }, { F, index, openResource: () => Promise.resolve(true) });
+    let prevented = 0;
+    h.windowHandlers.keydown({
+      key: 'Enter', target: { tagName: 'INPUT', isContentEditable: false },
+      preventDefault() { prevented += 1; },
+    });
+    const after = h.controller.getState();
+    assert.equal(after.sheet, expectedSheet, query);
+    assert.equal(after.openId, expectedPage, query);
+    assert.equal(after.searchOpen, false);
+    assert.equal(after.searchExpanded, false, 'selecting a result closes and resets the expanded overlay');
+    assert.equal(prevented, 1);
+    h.controller.destroy();
+  }
 });
 
 test('Enter activates the exact first external care result without routing or forwarding the query', () => {
@@ -4622,9 +4769,9 @@ test('the preview stays transient: in memory for the visit, never on the history
 test('zero results hand the filter query to Search: data-fd-search-query seeds the dialog', () => {
   const s = { ...roleContext, screen: 'app', tab: 'library', libraryFilter: 'milieu rules' };
   const r = F.fdDispatch({ 'data-fd-search': '', 'data-fd-search-query': 'milieu rules' }, {}, s);
-  assert.deepEqual(r.patch, { searchOpen: true, query: 'milieu rules' });
+  assert.deepEqual(r.patch, { searchOpen: true, searchExpanded: false, query: 'milieu rules' });
   assert.equal(r.route, null); assert.deepEqual(r.effect, { type: 'focus-search' });
-  assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, s).patch, { searchOpen: true }, 'a plain opener seeds nothing');
+  assert.deepEqual(F.fdDispatch({ 'data-fd-search': '' }, {}, s).patch, { searchOpen: true, searchExpanded: false }, 'a plain opener seeds nothing');
 });
 
 test('"/" focuses the Library filter instead of opening Search; ⌘K still opens Search; "/" elsewhere is unchanged', () => {

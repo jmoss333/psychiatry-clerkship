@@ -1599,6 +1599,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-searchpanel__esc:hover{background:var(--fd-teal-wash)}
 .fd-searchpanel__browse{padding:var(--fd-space-2) var(--fd-space-5);border-bottom:1px solid var(--fd-line);background:var(--fd-callout)}
 .fd-searchpanel__body{max-height:46vh;overflow-y:auto;padding:var(--fd-space-3) var(--fd-space-4) var(--fd-space-5)}
+.fd-searchpanel__summary{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--fd-space-3);padding:var(--fd-space-3) var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
+.fd-searchpanel__summary p{margin:0}
 .fd-searchpanel__group{margin:var(--fd-space-5) var(--fd-space-4) var(--fd-space-2);font-size:var(--fd-font-xs);font-weight:700;color:var(--fd-text-mid)}
 .fd-searchpanel__group.is-safety{color:var(--fd-danger-dark)}
 .fd-searchpanel__group.is-care{color:var(--fd-olive-deep)}
