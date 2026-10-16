@@ -1,4 +1,4 @@
-// PR B of the Care aftercare packet: state, add buttons, bulk add, tray and review gate, revised for the owner's
+// PR B of the Care aftercare packet: state, add buttons, bulk add and tray, revised for the owner's
 // directions (Revision 2): listing eligibility, unit profiles, a Clear that empties everything, the separate wallet card.
 // Every test names the production change that would make it fail. The module is loaded the way the
 // shell loads it (concatenated source), with `sessionStorage` and the build-injected payload bound as parameters so the
@@ -89,8 +89,6 @@ const feed = records => ({ schemaVersion: 1, generatedAt: '2026-10-12T00:00:00Z'
   regionOptions: ['Statewide', 'Southern Maine', 'NH'], records });
 const dataOf = (count, more = () => ({})) => P.validate(feed(Array.from({ length: count }, (_, i) => row(i, more(i)))));
 const idsOf = n => Array.from({ length: n }, (_, i) => 'a' + i);
-const gateOn = { verification: true, region: true, identifiers: true, supervisor: true };
-const GATE_OFF = { verification: false, region: false, identifiers: false, supervisor: false };
 // One listing for each reason a listing cannot go in the packet, two that can on one contact alone, and two plain ones.
 const MIXED = () => [
   row(0), row(1),
@@ -217,15 +215,11 @@ test('move reorders only within a category and stops at the edges; remove drops 
   assert.deepEqual(P.remove(st, 'a2').ids, ['a1', 'a3', 'a4']);
 });
 
-test('printing is allowed only when all four review checks are ticked AND the packet has a live listing', () => {
+test('printable content requires a live listing, without a manual review checklist', () => {
   const data = dataOf(3);
-  const st = { ...P.blank(), ids: ['a1'] };
-  assert.equal(P.canPrint(st, data, gateOn), true);
-  for (const k of Object.keys(gateOn)) assert.equal(P.canPrint(st, data, { ...gateOn, [k]: false }), false, k);
-  assert.equal(P.canPrint(P.blank(), data, gateOn), false, 'empty packet');
-  assert.equal(P.canPrint({ ...P.blank(), ids: ['gone'] }, data, gateOn), false, 'only stale ids');
-  assert.equal(P.canPrint(st, data, undefined), false);
-  assert.equal(P.canPrint(st, data, { ...gateOn, supervisor: 'yes' }), false, 'strict true, not truthy');
+  assert.equal(P.canPrint({ ...P.blank(), ids: ['a1'] }, data), true);
+  assert.equal(P.canPrint(P.blank(), data), false, 'empty packet');
+  assert.equal(P.canPrint({ ...P.blank(), ids: ['gone'] }, data), false, 'only stale ids');
 });
 
 test('the add button toggles by id, announces state with aria-pressed, and is disabled only when full and not in', () => {
@@ -286,10 +280,10 @@ test('search results expose every matching id so "Add all results" means all pag
 
 test('the tray is empty-state safe, grouped by category, escaped, and nudges at 9 and stops at 12', () => {
   const data = P.validate(feed([row(1), row(2, { category: 'peer_support', name: '<script>alert(1)</script>' }), row(3)]));
-  const empty = P.tray(P.blank(), data, {}, UI);
+  const empty = P.tray(P.blank(), data, UI);
   assert.match(empty, /No listings yet/);
   assert.match(empty, /data-fd-care-packet-clear disabled/, 'nothing saved, Clear is disabled');
-  const html = P.tray({ ...P.blank(), ids: ['a1', 'a2', 'a3'] }, data, {}, UI);
+  const html = P.tray({ ...P.blank(), ids: ['a1', 'a2', 'a3'] }, data, UI);
   assert.doesNotMatch(html, /data-fd-care-packet-ineligible/, 'precondition: every listing here can print');
   assert.match(html, /Aftercare packet[\s\S]*>3</);
   assert.ok(html.indexOf('>aftercare<') < html.indexOf('>Peer support<'), 'groups follow the directory category order');
@@ -301,23 +295,18 @@ test('the tray is empty-state safe, grouped by category, escaped, and nudges at 
   assert.match(html, /data-fd-care-packet-clear/);
   assert.doesNotMatch(html, /full at 12|hard to read/);
   const big = dataOf(14);
-  assert.match(P.tray({ ...P.blank(), ids: idsOf(9) }, big, {}, UI), /Eight or fewer/);
-  assert.match(P.tray({ ...P.blank(), ids: idsOf(12) }, big, {}, UI), /full at 12/);
+  assert.match(P.tray({ ...P.blank(), ids: idsOf(9) }, big, UI), /Eight or fewer/);
+  assert.match(P.tray({ ...P.blank(), ids: idsOf(12) }, big, UI), /full at 12/);
 });
 
-test('the review gate has four unticked-by-default checks and reports readiness; Print and Copy live in the preview, never in the tray', () => {
+test('the tray gives the nonblocking sharing reminder without review checkboxes or a review-complete claim', () => {
   const data = dataOf(3);
-  const st = { ...P.blank(), ids: ['a1'] };
-  const html = P.tray(st, data, {}, UI);
-  for (const k of ['verification', 'region', 'identifiers', 'supervisor']) assert.match(html, new RegExp('data-fd-care-packet-gate="' + k + '"'));
-  assert.equal((html.match(/type="checkbox"/g) || []).length, 4);
-  assert.doesNotMatch(html, /<input[^>]* checked/);
-  assert.match(html, /data-fd-care-packet-ready="false"/);
-  const ready = P.tray(st, data, gateOn, UI);
-  assert.equal((ready.match(/<input[^>]* checked/g) || []).length, 4);
-  assert.match(ready, /data-fd-care-packet-ready="true"/);
-  assert.doesNotMatch(html + ready, /data-fd-care-packet-print|data-fd-care-packet-copy/, 'Print and Copy sit beside the reason they are unavailable, in the preview, not in the tray');
-  assert.match(P.tray(P.blank(), data, gateOn, UI), /data-fd-care-packet-ready="false"/, 'an empty packet is never ready');
+  for (const state of [P.blank(), { ...P.blank(), ids: ['a1'] }]) {
+    const html = P.tray(state, data, UI);
+    assert.match(html, /Check these resources with the patient before sharing\. Do not enter patient-identifying information\./);
+    assert.doesNotMatch(html, /data-fd-care-packet-gate|type="checkbox"|Review complete|data-fd-care-packet-ready/);
+    assert.doesNotMatch(html, /data-fd-care-packet-print|data-fd-care-packet-copy/, 'Print and Copy remain beside their blockers in the preview');
+  }
 });
 
 test('the search panel gets a tray mount only when the packet flag is on', () => {
@@ -359,21 +348,7 @@ test('PRODUCTION default: with no storage or payload argument the controller use
   assert.doesNotThrow(() => load(PACKET, undefined).create().mount(null, null, () => dataOf(3)), 'no sessionStorage at all must degrade, not throw');
 });
 
-test('the gate resets when you leave Care, and changing it never touches storage', () => {
-  const s = store();
-  const data = dataOf(3);
-  const c = P.create({ storage: s, payload: PAYLOAD });
-  c.mount(null, null, () => data);
-  c.toggle('a1');
-  const before = s.m.get('fd_care_packet_v1');
-  c.setGate('verification', true);
-  c.setGate('region', true);
-  assert.equal(s.m.get('fd_care_packet_v1'), before);
-  assert.equal(c.gate().verification, true);
-  assert.equal(c.setGate('nonsense', true), false, 'unknown gate keys are ignored');
-  c.leave();
-  assert.deepEqual(c.gate(), { verification: false, region: false, identifiers: false, supervisor: false });
-});
+
 
 test('the packet module makes no network or persistence call beyond sessionStorage and uses only ES5', () => {
   for (const banned of [/\bfetch\s*\(/, /XMLHttpRequest/, /sendBeacon/, /localStorage/, /document\.cookie/, /\bhistory\./, /location\.(?:href|hash|search)\s*=/, /geolocation/,
@@ -392,45 +367,11 @@ const fakeLive = () => ({ textContent: '' });
 const fakeButton = attrs => ({ hasAttribute: k => Object.prototype.hasOwnProperty.call(attrs, k), getAttribute: k => attrs[k] });
 const settle = () => new Promise(resolve => setTimeout(resolve, 260));
 
-test('the review confirmations are bound to the packet: adding or clearing resets them, an empty packet cannot be confirmed', () => {
-  const data = dataOf(8);
-  const confirm = c => { for (const k of Object.keys(gateOn)) c.setGate(k, true); };
-  const c = P.create({ storage: store(), payload: PAYLOAD });
-  c.mount(null, null, () => data);
-  assert.equal(c.setGate('verification', true), false, 'nothing to confirm while the packet is empty');
-  assert.equal(c.gate().verification, false);
-  c.toggle('a1');
-  confirm(c);
-  assert.deepEqual(c.gate(), gateOn);
-  c.toggle('a2');
-  assert.deepEqual(c.gate(), { verification: false, region: false, identifiers: false, supervisor: false }, 'a new listing was never confirmed');
-  confirm(c);
-  c.addMany(['a3', 'a4']);
-  assert.equal(c.gate().supervisor, false, 'bulk add resets too');
-  confirm(c);
-  c.clear();
-  assert.equal(c.gate().verification, false, 'clear resets');
-  c.addMany(['a5']);
-  assert.equal(c.gate().verification, false, 'and the old confirmations do not come back');
-  confirm(c);
-  c.addMany(['a5']);
-  assert.equal(c.gate().verification, true, 'adding nothing new leaves the confirmations alone');
-  c.move('a5', -1);
-  assert.equal(c.gate().verification, true, 'moving the only listing is a no-op');
-  c.remove('a5');
-  assert.equal(c.gate().verification, false, 'removing a listing changes the reviewed packet');
-});
 
-test('the confirmation boxes are disabled while the packet is empty and there is no live-region on the readiness line', () => {
-  const data = dataOf(3);
-  const empty = P.tray(P.blank(), data, {}, UI);
-  assert.equal((empty.match(/type="checkbox"[^>]*disabled/g) || []).length, 4);
-  const filled = P.tray({ ...P.blank(), ids: ['a1'] }, data, {}, UI);
-  assert.doesNotMatch(filled, /type="checkbox"[^>]*disabled/);
-  assert.doesNotMatch(filled + empty, /role="status"/, 'a status region re-inserted on every repaint is announced unreliably and competes with the shared announcer');
-});
 
-test('announcements wait for focus to settle, carry the packet count, and say when confirmations were cleared', async () => {
+
+
+test('announcements wait for focus to settle and carry the current packet count', async () => {
   const data = dataOf(6);
   const live = fakeLive();
   const c = P.create({ storage: store(), payload: PAYLOAD });
@@ -439,10 +380,9 @@ test('announcements wait for focus to settle, carry the packet count, and say wh
   assert.equal(live.textContent, '', 'not written in the same task as the DOM change');
   await settle();
   assert.match(live.textContent, /Added Support 1 to the packet\. 1 listing in packet\./);
-  for (const k of Object.keys(gateOn)) c.setGate(k, true);
   c.toggle('a2');
   await settle();
-  assert.match(live.textContent, /2 listings in packet\. Review confirmations cleared\./);
+  assert.match(live.textContent, /2 listings in packet\./);
   c.remove('a2');
   await settle();
   assert.match(live.textContent, /Removed Support 2 from the packet\. 1 listing in packet\./);
@@ -456,26 +396,14 @@ test('announcements wait for focus to settle, carry the packet count, and say wh
   c.leave();
 });
 
-test('a message queued before leaving Care never lands afterwards, and readiness changes are announced', async () => {
-  const data = dataOf(3);
+test('a message queued before leaving Care never lands afterwards', async () => {
   const live = fakeLive();
   const c = P.create({ storage: store(), payload: PAYLOAD });
-  c.mount(null, live, () => data);
+  c.mount(null, live, () => dataOf(3));
   c.toggle('a1');
   c.leave();
   await settle();
   assert.equal(live.textContent, '');
-  const again = fakeLive();
-  const d = P.create({ storage: store(), payload: PAYLOAD });
-  d.mount(null, again, () => data);
-  d.toggle('a1');
-  await settle();
-  for (const k of Object.keys(gateOn)) d.setGate(k, true);
-  await settle();
-  assert.equal(again.textContent, 'Review complete.');
-  d.setGate('region', false);
-  await settle();
-  assert.match(again.textContent, /incomplete/i);
 });
 
 test('Remove hands focus to the next item ON SCREEN (category order), not the next in storage order', () => {
@@ -502,8 +430,8 @@ test('a PARTIAL directory never destroys saved listings; a complete one drops li
   assert.deepEqual(P.toggle(st, 'a3', complete, PAYLOAD).state.ids, ['a1', 'a3'], 'a complete feed that lacks a2 means a2 is stale');
   assert.equal(P.held(st, partial), 2, 'hidden listings still hold their slots while the feed is partial');
   assert.equal(P.held(st, complete), 1);
-  assert.match(P.tray(st, partial, {}, UI), /1 saved listing is hidden while the directory is incomplete/);
-  assert.doesNotMatch(P.tray(st, complete, {}, UI), /hidden while/);
+  assert.match(P.tray(st, partial, UI), /1 saved listing is hidden while the directory is incomplete/);
+  assert.doesNotMatch(P.tray(st, complete, UI), /hidden while/);
 });
 
 test('hidden listings count toward the cap so a partial feed cannot push a stored packet past 12', () => {
@@ -538,7 +466,7 @@ test('ids and category labels from the feed are escaped everywhere they are writ
   const data = P.validate({ ...feed([row(1, { id: hostile }), row(2, { category: 'peer_support' })]),
     categories: categoryIds.map(id => ({ id, label: id === 'aftercare' ? '<b onmouseover=1>Aftercare</b>' : id, available: true, count: id === 'aftercare' || id === 'peer_support' ? 1 : 0 })) });
   const st = { ...P.blank(), ids: [hostile, 'a2'] };
-  const html = P.tray(st, data, {}, UI) + P.button(data.records[0], P.context(st, data, PAYLOAD)) +
+  const html = P.tray(st, data, UI) + P.button(data.records[0], P.context(st, data, PAYLOAD)) +
     P.results(data, P.search(data, 'support', '', '', 1), '2026-10-12', P.context(st, data, PAYLOAD));
   assert.doesNotMatch(html, /<img|<b /);
   assert.match(html, /&lt;b onmouseover=1&gt;Aftercare/);
@@ -560,8 +488,8 @@ test('single adds reach the cap at exactly 12, refuse the 13th, and the 12th sti
 
 test('the nudge starts at 9 and not at 8; bulk buttons disable at (0) even when the packet is not full', () => {
   const data = dataOf(20);
-  assert.doesNotMatch(P.tray({ ...P.blank(), ids: idsOf(8) }, data, {}, UI), /Eight or fewer/);
-  assert.match(P.tray({ ...P.blank(), ids: idsOf(9) }, data, {}, UI), /Eight or fewer/);
+  assert.doesNotMatch(P.tray({ ...P.blank(), ids: idsOf(8) }, data, UI), /Eight or fewer/);
+  assert.match(P.tray({ ...P.blank(), ids: idsOf(9) }, data, UI), /Eight or fewer/);
   const result = P.search(data, 'support', '', '', 1);
   const pagePacked = P.bulk(result, P.context({ ...P.blank(), ids: result.rows.map(r => r.id) }, data, PAYLOAD));
   assert.match(pagePacked, /data-fd-care-packet-page[^>]* disabled>Add from this page/);
@@ -570,7 +498,7 @@ test('the nudge starts at 9 and not at 8; bulk buttons disable at (0) even when 
 
 test('up and down are disabled at the edge of each category group, not only at the ends of the whole list', () => {
   const data = P.validate(feed([row(1), row(2), row(3, { category: 'peer_support' }), row(4, { category: 'peer_support' })]));
-  const html = P.tray({ ...P.blank(), ids: ['a1', 'a2', 'a3', 'a4'] }, data, {}, UI);
+  const html = P.tray({ ...P.blank(), ids: ['a1', 'a2', 'a3', 'a4'] }, data, UI);
   assert.match(html, /data-fd-care-packet-up="a1"[^>]*disabled/);
   assert.match(html, /data-fd-care-packet-down="a2"[^>]*disabled/);
   assert.match(html, /data-fd-care-packet-up="a3"[^>]*disabled/);
@@ -600,12 +528,12 @@ test('the bulk bar really is emitted above the list (a missing bar can no longer
   assert.ok(html.indexOf('fd-care-search__bulk') < html.indexOf('<ol'));
 });
 
-test('the gate is never read back from storage when the controller is created', () => {
+test('legacy review confirmations are discarded from storage when the packet is saved', () => {
   const s = store();
-  s.m.set('fd_care_packet_v1', JSON.stringify({ ids: ['a1'], gate: gateOn, verification: true }));
+  s.m.set('fd_care_packet_v1', JSON.stringify({ ids: ['a1'], gate: { verification: true, region: true, identifiers: true, supervisor: true }, verification: true }));
   const c = P.create({ storage: s, payload: PAYLOAD });
   c.mount(null, null, () => dataOf(3));
-  assert.deepEqual(c.gate(), { verification: false, region: false, identifiers: false, supervisor: false });
+  assert.deepEqual(c.ids(), ['a1'], 'the saved listings survive the removed checklist');
   assert.equal(c.toggle('a2'), 'added', 'precondition: the packet really was written');
   const written = JSON.parse(s.m.get('fd_care_packet_v1'));
   assert.equal(Object.keys(written).sort().join(), 'ids,inserts,mode,unit,why', 'only the five documented fields are ever written');
@@ -664,7 +592,7 @@ test('the reason code and the reason text are escaped wherever the chooser and t
   // The reason table is replaced in memory with markup, so the escaping is what keeps it text.
   const H = load(PACKET, undefined, null, ";FD_CARE_PACKET_REASONS.NO_CONTACT='<b onmouseover=1>none</b> & \"q\"';");
   const chooser = H.button(noContact, H.context(H.blank(), data, PAYLOAD));
-  const tray = H.tray({ ...H.blank(), ids: ['a6'] }, data, {}, UI);
+  const tray = H.tray({ ...H.blank(), ids: ['a6'] }, data, UI);
   for (const [label, html] of [['chooser', chooser], ['tray', tray]]) {
     assert.doesNotMatch(html, /<b /, label);
     assert.ok(html.includes('&lt;b onmouseover=1&gt;none&lt;/b&gt; &amp; &quot;q&quot;'), label + ' writes the reason as text');
@@ -779,7 +707,7 @@ test('the controller adds nothing without a usable payload, and says why a listi
 test('a saved listing that BECAME ineligible stays in the tray, says why, keeps a working Remove, and still counts', () => {
   const data = P.validate(feed(MIXED()));
   const st = { ...P.blank(), ids: ['a0', 'a2', 'a6'] };
-  const html = P.tray(st, data, {}, UI);
+  const html = P.tray(st, data, UI);
   assert.match(html, /Aftercare packet <span class="fd-care-packet__count">3<\/span>/, 'counted');
   const item = id => (new RegExp('<li class="fd-care-packet__item" data-fd-care-packet-item="' + id + '">[\\s\\S]*?</li>').exec(html) || [''])[0];
   for (const id of ['a2', 'a6']) {
@@ -793,10 +721,10 @@ test('a saved listing that BECAME ineligible stays in the tray, says why, keeps 
   }
   assert.doesNotMatch(item('a0'), /ineligible/, 'an eligible listing carries no reason');
   // Payload down: one notice in the header and no row repeats it.
-  const down = P.tray(st, data, {}, { payload: null });
+  const down = P.tray(st, data, { payload: null });
   assert.equal((down.match(/data-fd-care-packet-ineligible=/g) || []).length, 1);
   assert.match(down, /<p class="fd-care-packet__hint" data-fd-care-packet-ineligible="PAYLOAD">/);
-  assert.doesNotMatch(P.tray(P.blank(), data, {}, { payload: null }), /data-fd-care-packet-ineligible/, 'and no notice over an empty tray');
+  assert.doesNotMatch(P.tray(P.blank(), data, { payload: null }), /data-fd-care-packet-ineligible/, 'and no notice over an empty tray');
 });
 
 test('the controller never silently drops a listing that became ineligible: it holds its slot until the trainee removes it', () => {
@@ -829,8 +757,8 @@ test('Clear packet is offered whenever anything is saved, not only listings, and
   const CLEAR = /<button type="button" class="fd-care-packet__clear" data-fd-care-packet-clear>Clear packet<\/button>/;
   assert.equal(P.hasState(P.blank()), false);
   assert.equal(P.hasState({ ids: [], inserts: {}, mode: 'review' }), false, 'a state with no unit at all is empty');
-  assert.match(P.tray(P.blank(), data, {}, UI), /data-fd-care-packet-clear disabled/);
-  assert.match(P.tray({ ...P.blank(), unit: unit({}), inserts: {} }, data, {}, UI), /data-fd-care-packet-clear disabled/);
+  assert.match(P.tray(P.blank(), data, UI), /data-fd-care-packet-clear disabled/);
+  assert.match(P.tray({ ...P.blank(), unit: unit({}), inserts: {} }, data, UI), /data-fd-care-packet-clear disabled/);
   const cases = {
     'a typed unit name': { ...P.blank(), unit: unit({ name: '4 East' }) },
     'a typed unit phone': { ...P.blank(), unit: unit({ phone: '(207) 555-0100' }) },
@@ -842,13 +770,13 @@ test('Clear packet is offered whenever anything is saved, not only listings, and
   };
   for (const [label, st] of Object.entries(cases)) {
     assert.equal(P.hasState(st), true, label);
-    const html = P.tray(st, data, {}, UI);
+    const html = P.tray(st, data, UI);
     assert.match(html, CLEAR, label);
     if (!st.ids.length) assert.match(html, /No listings yet/, label + ': with no listings at all');
   }
 });
 
-test('clear() empties everything the packet holds (listings, unit, profile, copy, pages, confirmations) and says what went', async () => {
+test('clear() empties everything the packet holds (listings, unit, profile, copy and pages) and says what went', async () => {
   const data = dataOf(4);
   const s = store();
   const live = fakeLive();
@@ -859,19 +787,16 @@ test('clear() empties everything the packet holds (listings, unit, profile, copy
   c.setMode('final');
   c.setInsert('callback', true);
   assert.equal(c.loadProfile(FIXTURE.profile.id), true);
-  for (const k of Object.keys(gateOn)) c.setGate(k, true);
   assert.deepEqual(JSON.parse(s.m.get(P.KEY)), { ids: ['a1'], why: {}, inserts: { callback: true }, mode: 'final',
     unit: { name: '', phone: '', profile: FIXTURE.profile.id } }, 'precondition: everything is saved');
-  assert.deepEqual(c.gate(), gateOn);
   c.clear();
   assert.equal(s.m.size, 0, 'nothing is left in the tab');
   assert.deepEqual(P.load(s), P.blank(), 'the unit and the profile went too');
   assert.deepEqual(c.ids(), []);
   assert.equal(c.mode, 'review');
-  assert.deepEqual(c.gate(), GATE_OFF);
   assert.match(tray.innerHTML, /data-fd-care-packet-clear disabled/, 'nothing left to clear');
   await settle();
-  assert.equal(live.textContent, 'Packet cleared: 1 listing, unit details, copy and page choices removed. Review confirmations cleared.');
+  assert.equal(live.textContent, 'Packet cleared: 1 listing, unit details, copy and page choices removed.');
   c.setUnit('name', '4 East');
   assert.match(tray.innerHTML, /data-fd-care-packet-clear/, 'a saved unit alone is enough to offer Clear');
   c.clear();
@@ -935,33 +860,32 @@ test('save and copy carry the profile id; an empty state leaves no residue in th
 
 test('the tray offers the wallet card as its own print: present with an empty packet, enabled with a usable payload, disabled with the reason when not', () => {
   const data = dataOf(3);
-  const empty = P.tray(P.blank(), data, {}, UI);
+  const empty = P.tray(P.blank(), data, UI);
   const button = cardButtonOf(empty);
   assert.ok(button, 'offered before any listing is added');
   assert.doesNotMatch(button, /disabled/);
   assert.match(button, /aria-describedby="fd-care-packet-card-note"/, 'the button is described by its note');
   assert.match(empty, /data-fd-care-packet-card-print[^>]*>Print wallet card<\/button>/);
   assert.match(cardNoteOf(empty), /not part of the packet/, 'the note node exists and says what the card is');
-  assert.ok(empty.indexOf('data-fd-care-packet-card-print') < empty.indexOf('<fieldset class="fd-care-packet__gate"'), 'outside the review confirmations (before them)');
   // Added with the review fixes: "Preview and print" stays the LAST tray control, so Tab goes from it straight into the preview it
   // opens (WCAG 2.4.3). Fails if the card control moves back between the toggle and the preview.
-  const withListing = P.tray({ ...P.blank(), ids: ['a1'] }, data, {}, UI);
+  const withListing = P.tray({ ...P.blank(), ids: ['a1'] }, data, UI);
   assert.ok(withListing.indexOf('data-fd-care-packet-card-print') < withListing.indexOf('data-fd-care-packet-preview-toggle'), 'the card control comes before the preview toggle');
   assert.match(cardNoteOf(empty), /scale 100 and margins set to Default/, 'a trainee who prints only the card is told the print settings that keep it card-sized');
-  assert.doesNotMatch(cardButtonOf(P.tray({ ...P.blank(), ids: ['a1'] }, data, {}, UI)), /disabled/, 'an unreviewed packet does not hold the card back');
+  assert.doesNotMatch(cardButtonOf(P.tray({ ...P.blank(), ids: ['a1'] }, data, UI)), /disabled/, 'an unreviewed packet does not hold the card back');
   const noName = clone(PAYLOAD);
   delete noName.contacts[PAYLOAD.required[0]].name;
   for (const [label, payload] of [['none', null], ['missing', undefined], ['no crisis lines', { ...clone(PAYLOAD), crisis: [] }], ['an official name missing', noName]]) {
-    const html = P.tray(P.blank(), data, {}, { payload });
+    const html = P.tray(P.blank(), data, { payload });
     assert.match(cardButtonOf(html), / disabled/, label);
     assert.match(cardNoteOf(html), /crisis lines did not load/, label + ': the note says why');
   }
   const noCard = clone(PAYLOAD);
   delete noCard.card;
-  const missing = P.tray(P.blank(), data, {}, { payload: noCard });
+  const missing = P.tray(P.blank(), data, { payload: noCard });
   assert.match(cardButtonOf(missing), / disabled/);
   assert.match(cardNoteOf(missing), /wallet card did not load/);
-  const refused = P.tray(P.blank(), data, {}, { payload: PAYLOAD, cardMessage: 'Refused <b>now</b>' });
+  const refused = P.tray(P.blank(), data, { payload: PAYLOAD, cardMessage: 'Refused <b>now</b>' });
   assert.equal(cardNoteOf(refused), 'Refused &lt;b&gt;now&lt;/b&gt;', 'a refused print says why in the same note, escaped');
 });
 
@@ -975,7 +899,6 @@ test('the wallet card prints on its own with an empty packet and no review confi
   const c = M.create({ storage: s, payload: PAYLOAD, sheet: FIXED_LAYOUT });
   c.mount(tray, null, () => dataOf(3), null, { hidden: false, innerHTML: '' });
   assert.match(cardButtonOf(tray.innerHTML), /data-fd-care-packet-card-print/);
-  assert.deepEqual(c.gate(), GATE_OFF);
   assert.equal(c.print().code, 'EMPTY', 'the packet itself has nothing to print');
   assert.deepEqual(c.printCard(), { ok: true, code: '' });
   assert.equal(env.win.printed, 1);
@@ -1007,7 +930,7 @@ test('the wallet card prints on its own with an empty packet and no review confi
   assert.deepEqual(c.printCard(), { ok: true, code: '' }, 'nor does it ask for a unit or a copy mode');
   env.handlers.afterprint();
   assert.equal(env.win.printed, 3);
-  assert.deepEqual(c.gate(), GATE_OFF, 'and printing it confirmed nothing');
+  assert.deepEqual(c.ids(), ['a1'], 'printing the card leaves the packet intact');
   c.leave();
 });
 

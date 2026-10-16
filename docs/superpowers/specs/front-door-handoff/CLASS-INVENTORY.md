@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(749 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(747 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -534,8 +534,7 @@ the packet hooks into it, so both are recorded here. Everything marked **(packet
         li.fd-care-packet__item [data-fd-care-packet-item]
           .fd-care-packet__name / [span.fd-care-packet__why [data-fd-care-packet-ineligible]] / .fd-care-packet__btns > up / down / Remove <button>
       button.fd-care-packet__clear                     whenever ANY state is saved (listings, a unit, a profile, Final, a page switch)
-      fieldset.fd-care-packet__gate > legend + label.fd-care-packet__check ×4 (input[type=checkbox])
-      p.fd-care-packet__ready [data-fd-care-packet-ready]      plain text, not a live region
+      p.fd-care-packet__hint [data-fd-care-packet-reminder]    nonblocking sharing/privacy reminder; no confirmation controls
       button.fd-care-packet__preview-toggle            only for a non-empty packet
       .fd-care-packet__card > button.fd-care-packet__cardbtn [data-fd-care-packet-card-print] + p.fd-care-packet__note [data-fd-care-packet-card-note]
                                                        the wallet card is its OWN one-sided print, available with no listings
@@ -546,10 +545,10 @@ the packet hooks into it, so both are recorded here. Everything marked **(packet
 | `.fd-care-search__pack` | The label never changes ("Add to packet"), so the accessible name always contains the visible text (WCAG 2.5.3). State is `aria-pressed`, the `✓` painted by `::before`, and the `In packet` tag on the card, so it is never colour alone. Disabled only when the packet is full and this listing is not in it. |
 | `.fd-care-search__bulk` | Sits in the results bar above the list. "All" means every match across pages, not the visible five. Both buttons disable when the packet is full or nothing new would be added. |
 | `.fd-care-search__result article.is-packed` | 3px olive left rule; `padding-left` compensates so text does not shift on toggle. |
-| `.fd-care-search__tray` | Outside the results mount on purpose: typing repaints only results, so tray focus and the review checkboxes are never lost. |
+| `.fd-care-search__tray` | Outside the results mount on purpose: typing repaints only results, so tray focus is never lost. |
 | `.fd-care-packet__item` | Wraps at phone width; the up/down/Remove buttons keep the 44px target (`.fd-care-search button`). Moving swaps within a category only, because the printed pages group by category. |
-| `.fd-care-packet__check` | The 44px target is the whole `<label>` row, not the small checkbox, which is itself 24px (the WCAG 2.5.8 minimum, so a fixed bar scrolled over it cannot leave an undersized target). Disabled while the packet is empty. The four confirmations describe the packet that was reviewed, so they reset when a listing is added, when a page is switched ON, when the ward's name or phone changes, when the packet is cleared, and when you leave Care; removing, reordering and changing the copy mode add nothing unreviewed and do not reset them. The packet itself survives leaving Care (one `sessionStorage` key, tab-scoped). |
-| `.fd-care-packet__ready` | Plain visible text, deliberately NOT a live region: a change to the listings recreates the tray, which screen readers announce unreliably; every other change (a confirmation, the preview opening, a ward detail, a page switch) patches this line, the four boxes and the preview button's `aria-expanded` in place, so a control the trainee is tabbing to is never replaced. Readiness changes are spoken through the one persistent `#careDirectoryStatus` announcer. Print and Copy are not in the tray: they sit in the preview, beside the line that says what is blocking them. |
+| `.fd-care-packet__check` | Shared by the preview's copy-mode radios, page switches and separate planned-call confirmations. The 44px target is the whole `<label>` row; its input is 24px (the WCAG 2.5.8 minimum, so a fixed bar scrolled over it cannot leave an undersized target). The four general print-review confirmations were retired by the [October 16 decision](../../plans/2026-10-16-care-packet-streamlined-print.md); this shared control style remains. |
+| `.fd-care-packet__hint[data-fd-care-packet-reminder]` | Plain, nonblocking text: “Check these resources with the patient before sharing. Do not enter patient-identifying information.” It stores no confirmation and makes no review-complete claim. Print and Copy remain in the preview beside the reason an actual output requirement is unmet. The preview button's `aria-expanded` is patched in place so an existing control is not replaced while the user is tabbing. |
 | `.fd-care-packet__preview-toggle` | "Preview and print", shown only for a non-empty packet. A disclosure: constant label, `aria-expanded`, `aria-controls="fd-care-packet-preview"` (a region that is always rendered, `hidden` when closed). Never a dialog. |
 
 ---
@@ -579,7 +578,7 @@ Added with the print PR. Everything here renders only while `FD_CARE_PACKET_ENAB
     then EITHER p.__fail (the sheet was refused) OR .fd-packet-sheet.fd-packet-sheet--screen > article.fd-packet-page × N
     (the notices above render together with the sheet, in that order)
 body > #fdPacketPrint.fd-packet-sheet.fd-packet-sheet--paper                       built for one print, removed with it
-                                                   (or a single p.fd-packet-notice: Ctrl+P before review is complete, or with a field still being typed)
+                                                   (or a single p.fd-packet-notice: Ctrl+P without a current authorized print action, or with a field still being typed)
 body > .fd-packet-measurewrap > .fd-packet-sheet--paper > article.fd-packet-page   the hidden measuring box
 article.fd-packet-page [data-fd-packet-page] aria-label="Page n of N"
   .fd-packet-band[.is-empty]  ·  .fd-packet-body > UNITS  ·  footer.fd-packet-foot
@@ -596,7 +595,7 @@ body > #fdPacketPrint (the wallet card, its own print) > article.fd-packet-page.
 | Class | Notes |
 |---|---|
 | `.fd-care-packet-preview__*` | Controls are **never replaced** after the first paint: a `change` event fires when a field loses focus, before focus moves, so replacing the Print button then drops keyboard focus and loses the click. The controller sets `disabled`, text and `aria-invalid` on the existing nodes. Native `disabled` is kept (fails closed). An invalid field is marked by weight, a heavier border and a ⚠ glyph, never red: red means safety. |
-| `.fd-care-search__preview` | Hidden in print **always**, so Ctrl+P can never print a packet the review has not released. |
+| `.fd-care-search__preview` | Hidden in print **always**, so Ctrl+P cannot bypass the current profile-approval, content and layout checks or print a stale preview. Only the separately staged packet is printable. |
 | `.fd-packet-sheet` | Ink only: `Canvas`/`CanvasText`, borders and weight, `color-scheme:light`. No `GrayText` (3.95:1 on Canvas, and "disabled" in forced colours). No hex, rgb or hsl (the stylesheet's zero-literal gate), no tint (it vanishes on a monochrome ward printer or without background graphics). |
 | `.fd-packet-page` | Reflows on screen (`width:100%`, `max-width:8.5in`). On paper (`--paper`) it is `min-height:11in`, **never `height`**: a fixed-height box silently drops overflowing text from the PDF while the page count stays the same, whereas `min-height` spills to an extra sheet that a test can see. Nothing on a page clips (only `overflow-x:clip` as a backstop); every feed field has `overflow-wrap:anywhere`. |
 | `.fd-packet-body > *` | A unit spaces itself with `padding-bottom`, because the measurer reads boxes and margins are not in a box. Anything bordered is an INNER element: `.fd-packet-head__box`, `.fd-packet-crisis__box`, and the plain wrappers `.fd-packet-sechead` and `.fd-packet-tipwrap` around the section rule and the tick-box tip. A unit root carries no outer margin; the reset is `:where()` (specificity 0) so the spacing rules after it win. Three units override the default 16px: the section head and the tip (10px, they sit in a keep-together chain) and the category label (6px). A sibling selector may style the inside of ONE unit; no rule may depend on a neighbouring unit, because the measurer reads each unit alone. |

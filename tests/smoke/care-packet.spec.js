@@ -4,7 +4,7 @@ import { enableCarePacket, disableCarePacket, packetFeed, UNIT_PROFILE_FIXTURE }
 import { isResidentProject } from './audience.js';
 
 const KEY = 'fd_care_packet_v1';
-const GATES = ['verification', 'region', 'identifiers', 'supervisor'];
+const REMINDER = 'Check these resources with the patient before sharing. Do not enter patient-identifying information.';
 async function seed(page, info) {
   await page.clock.setFixedTime(new Date('2026-10-12T12:00:00Z'));
   await page.addInitScript(role => {
@@ -140,51 +140,32 @@ test.describe('flag on', () => {
     await expect(panel.getByRole('button', { name: /^Add from all results/ })).toBeEnabled();
   });
 
-  // ---- AC4 (the review gate; what it does to the Print and Copy buttons is in care-packet-print.spec.js)
-  test('the review confirmations are bound to the packet: disabled when empty, reset by adding or clearing, reset on leaving Care', async ({ page }) => {
+  // ---- Print review is a nonblocking reminder; approval and output behavior are in care-packet-print.spec.js.
+  test('the packet keeps a nonblocking sharing reminder through edits, clearing and navigation, without general review checkboxes', async ({ page }) => {
     await search(page);
-    const ready = tray(page).locator('[data-fd-care-packet-ready]');
-    const gate = key => tray(page).locator('[data-fd-care-packet-gate="' + key + '"]');
-    const tickAll = async () => { for (const key of GATES) await gate(key).check(); };
-    await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'false');
-    await expect(ready).toContainText('Add a listing');
-    for (const key of GATES) await expect(gate(key)).toBeDisabled();
+    await expect(tray(page).getByText(REMINDER, { exact: true })).toBeVisible();
+    await expect(page.locator('[data-fd-care-packet-gate]')).toHaveCount(0);
     await addButtons(page).first().click();
     await tray(page).getByRole('button', { name: /Preview and print/ }).click();
     await page.locator('[data-fd-care-packet-profile-select]').selectOption(UNIT_PROFILE_FIXTURE.profile.id);
     await page.locator('[data-fd-care-packet-profile-load]').click();
     await expect(page.locator('[data-fd-care-packet-profile-status]')).toHaveText(`Loaded: ${UNIT_PROFILE_FIXTURE.profile.label}. Approval checked. Expires on ${UNIT_PROFILE_FIXTURE.profile.expiresOn} (America/New_York).`);
-    for (const key of GATES) await expect(gate(key)).toBeEnabled();
-    await gate('verification').check();
-    await expect(gate('verification')).toBeFocused();
-    await tickAll();
-    await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'true');
-    await expect(page.locator('#careDirectoryStatus')).toContainText('Review complete.');
-    for (const key of GATES) {
-      await gate(key).uncheck();
-      await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'false');
-      await gate(key).check();
-      await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'true');
-    }
-    // A listing added after the review was never confirmed, so the confirmations start over.
+    await expect(page.getByRole('button', { name: 'Print packet' })).toBeEnabled();
     await addButtons(page).nth(1).click();
-    await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'false');
-    for (const key of GATES) await expect(gate(key)).not.toBeChecked();
-    await expect(page.locator('#careDirectoryStatus')).toContainText('Review confirmations cleared.');
-    await tickAll();
-    await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'true');
+    await expect(addButtons(page).nth(1)).toBeFocused();
+    await expect(tray(page).getByText(REMINDER, { exact: true })).toBeVisible();
+    await expect(page.locator('[data-fd-care-packet-gate]')).toHaveCount(0);
+    await expect(page.locator('#careDirectoryStatus')).not.toContainText(/Review complete|Review confirmations cleared/);
     await tray(page).getByRole('button', { name: 'Clear packet' }).click();
     await page.getByRole('dialog').getByRole('button', {name:'Clear packet',exact:true}).click();
-    await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'false');
-    for (const key of GATES) { await expect(gate(key)).not.toBeChecked(); await expect(gate(key)).toBeDisabled(); }
+    await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('0');
+    await expect(tray(page).getByText(REMINDER, { exact: true })).toBeVisible();
     await addButtons(page).first().click();
-    await tickAll();
     await page.locator('[data-fd-tab="library"]:visible').click();
     await page.locator('[data-fd-tab="care"]:visible').click();
-    for (const key of GATES) await expect(gate(key)).not.toBeChecked();
-    // Only the confirmations reset. The packet itself is tab-scoped and survives leaving Care.
     await expect(tray(page).locator('.fd-care-packet__count')).toHaveText('1');
-    await expect(ready).toHaveAttribute('data-fd-care-packet-ready', 'false');
+    await expect(tray(page).getByText(REMINDER, { exact: true })).toBeVisible();
+    await expect(page.locator('[data-fd-care-packet-gate]')).toHaveCount(0);
   });
 
   // ---- AC6
@@ -396,14 +377,12 @@ test.describe('G-B acceptance', () => {
   });
   test('Clear requires a counted confirmation; Keep, Escape and backdrop preserve the packet', async ({ page }) => {
     await addButtons(page).first().click(); await addButtons(page).nth(1).click();
-    for (const key of GATES) await tray(page).locator('[data-fd-care-packet-gate="'+key+'"]').check();
     const saved = (await snapshot(page)).packet;
     const clear = tray(page).getByRole('button', {name:'Clear packet',exact:true});
     await clear.click(); const dialog=page.getByRole('dialog',{name:'Clear all 2 listings?'});
     await expect(dialog).toBeVisible(); await expect(dialog.getByRole('button',{name:'Keep packet'})).toBeFocused();
     await dialog.getByRole('button',{name:'Keep packet'}).click();
     expect((await snapshot(page)).packet).toEqual(saved); await expect(clear).toBeFocused();
-    for (const key of GATES) await expect(tray(page).locator('[data-fd-care-packet-gate="'+key+'"]')).toBeChecked();
     await clear.click(); await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); expect((await snapshot(page)).packet).toEqual(saved);
     await clear.click(); await page.mouse.click(1,1); await expect(dialog).toHaveCount(0); expect((await snapshot(page)).packet).toEqual(saved);
     await clear.click(); await dialog.getByRole('button',{name:'Clear packet',exact:true}).click();
