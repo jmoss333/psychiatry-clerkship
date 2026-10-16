@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(747 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(748 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1090,6 +1090,9 @@ patient information, or an attestation, and it never turns a website action into
     .fd-searchpanel__browse
       .fd-btn[data-fd-tab="library"] <button>Browse the Library</button> (standard mode only)
     .fd-searchpanel__body
+      .fd-searchpanel__summary       (typed queries: visible match count)
+        p                           ("Showing the top 8 of N matches" / "Showing all N matches")
+        .fd-btn[data-fd-search-expand] (only >8 matches: "Show all matches" / "Show top 8")
       .fd-searchpanel__group ×N       + .is-safety | .is-care   ("Safety protocols" / "Pages" / "Tools" / "Patient care resources")
         .fd-result <button|a> ×N      + .is-first (a leading protocol, on --fd-danger-wash) | .is-care
           .fd-result__dot         + .is-tool | .is-safety | .is-care   (default: outlined = a page)
@@ -1114,6 +1117,7 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
 | `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
+| `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
 | `.fd-result` | A `8px | 1fr` grid at every width (title, badge and meta stack in column 2). `.is-first`: `--fd-danger-wash` background, 700 title. |
 | `.fd-result__dot` | Default: outlined 1.5px `--fd-text-dim` ring (a page); `.is-tool` teal fill; `.is-safety` danger fill; `.is-care` olive-deep fill. |

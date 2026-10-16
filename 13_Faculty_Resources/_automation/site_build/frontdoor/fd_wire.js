@@ -28,7 +28,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-close-search','data-fd-search-expand','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool',
   'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
@@ -104,6 +104,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
+  'data-fd-search-expand':'toggle all search matches for this query',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
   'data-fd-try-now':'preview related tool',
@@ -429,13 +430,13 @@ function fdDispatch(attrs, context, state){
 
   if(fdOwn(a,'close')){
     if(s.careShareId) return {patch:{careShareId:''},route:null,effect:null};
-    if(s.searchOpen) return {patch:{searchOpen:false,query:''},route:null,effect:null};
+    if(s.searchOpen) return {patch:{searchOpen:false,query:'',searchExpanded:false},route:null,effect:null};
     if(s.sheet) return fdCloseSheet(s);
     if(s.nudge) return {patch:{nudge:null},route:null,effect:null};
     return {patch:{},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-close-search')){
-    return {patch:{searchOpen:false,query:''},route:null,effect:null};
+    return {patch:{searchOpen:false,query:'',searchExpanded:false},route:null,effect:null};
   }
   /* The settings panel closes through here too -- it has no close action of its own. When that
      panel grows a destructive confirmation, its armed flag has to be reset in fdCloseSheet, or an
@@ -896,11 +897,14 @@ function fdDispatch(attrs, context, state){
     };
   }
   if(fdOwn(a,'data-fd-search')){
-    patch={searchOpen:true};
+    patch={searchOpen:true,searchExpanded:false};
     /* The Library hands its filter query to Search (zero results, filtered footer). The query is
        dialog state only: the search panel re-renders from it and nothing routes or saves it. */
     if(fdOwn(a,'data-fd-search-query')) patch.query=String(a['data-fd-search-query']||'');
     return {patch:patch,route:null,effect:{type:'focus-search'}};
+  }
+  if(fdOwn(a,'data-fd-search-expand')){
+    return {patch:s.searchOpen?{searchExpanded:s.searchExpanded!==true}:{},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-change-week')){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
@@ -1261,7 +1265,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
-  '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
+  '[data-fd-close-search],[data-fd-search-expand],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
 /* The dock stopped forwarding the page's primary action on 2026-10-04 (one-thread redesign,
@@ -1687,7 +1691,7 @@ function fdWire(root, initialState, opts){
     /* settingsConfirmClear belongs here because arming the erase changes the PANEL and nothing
        under it. Left out, it falls to the else branch and is classed as a base change, so every
        arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
-    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
+    var overlayKeys={searchOpen:true,query:true,searchExpanded:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
       nudge:true,settingsConfirmClear:true,treePath:true,escalate:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
@@ -2062,6 +2066,11 @@ function fdWire(root, initialState, opts){
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    /* Every way out of Search ends this query's expansion, including a result or another tab. */
+    if(!state.searchOpen&&state.searchExpanded){
+      state.searchExpanded=false;
+      patch.searchExpanded=false;
+    }
     if(state.screen!=='app'||state.tab!=='today'||state.openId)state.offlineOpen=false;
     if(beforeRefreshScope&&beforeRefreshScope!==offlineRefreshScope(state))cancelOfflineRefresh();
     if(state.tab!=='care'||state.openId){
@@ -2158,13 +2167,13 @@ function fdWire(root, initialState, opts){
     }
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
-    var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryFilter')||
+    var visitOnly=fdOwn(patch,'searchExpanded')||fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryFilter')||
       fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'careShareId')||
       fdOwn(patch,'offlineOpen')||!!(result.effect&&(result.effect.type==='refresh-offline'||
         result.effect.type==='copy-care-links'));
     var careShareTransition=fdOwn(patch,'careShareId');
     for(var saveKey in patch){
-      if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryFilter'&&
+      if(fdOwn(patch,saveKey)&&saveKey!=='searchExpanded'&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryFilter'&&
          saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='careShareId'&&
          saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
         visitOnly=false;
@@ -2353,8 +2362,9 @@ function fdWire(root, initialState, opts){
     var direction=target.selectionDirection;
     var before=fdClone(state);
     state.query=String(target.value||'');
+    state.searchExpanded=false;
     renderTransient(state,transitionDetail(
-      before,{query:state.query},{type:'search-input'},false
+      before,{query:state.query,searchExpanded:false},{type:'search-input'},false
     ));
     var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
     if(fresh&&fresh.focus){
@@ -2510,6 +2520,7 @@ function fdWire(root, initialState, opts){
     merged.feedbackNotice=null;
     merged.offlineOpen=false;
     merged.searchOpen=false;
+    merged.searchExpanded=false;
     merged.query='';
     merged.sheet=null;
     merged.sheetFrom=null;

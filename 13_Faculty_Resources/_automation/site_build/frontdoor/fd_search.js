@@ -15,11 +15,9 @@
    ---- Ranking is a safety contract, not a preference (task-8-brief.md) ----
    Protocols (index.kit) are matched and ranked FIRST, ahead of ordinary items, so a student
    typing "suicide" mid-shift gets the C-SSRS protocol sheet before a topic page that merely
-   mentions suicide. Results are capped at 8 total, protocols included in that cap -- ported
-   from the prototype's own [...protoMatches, ...pool].slice(0, 8), which means an over-full
-   result set silently drops from the END of the list, not evenly. This module preserves that
-   same "drop the tail" behaviour deliberately: what matters is that the protocol never gets
-   pushed out (it is always concatenated first), not that every non-critical extra fits.
+   mentions suicide. The initial view shows the top 8 results. A learner may reveal all
+   matches for a typed query; expansion changes only the visible count, never the ranking.
+   Empty-query suggestions remain capped at 8 and have no expansion control.
 
    ---- Dedup the prototype didn't need (repo-specific) ----
    The prototype's ITEMS and PROTOCOLS/KIT were disjoint id spaces, so a query could never match
@@ -266,7 +264,7 @@ function fdSearchNextUnread(index, state){
   return null;
 }
 
-function fdSearchResults(index, query, synonyms, state){
+function fdSearchMatches(index, query, synonyms, state){
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var kit=idx.kit||[];
   var rawQuery=String(query||'').trim().toLowerCase();
@@ -438,7 +436,14 @@ function fdSearchResults(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(careResults, aliasItems, hayProtocols, rest).slice(0,8);
+  return protoResults.concat(careResults, aliasItems, hayProtocols, rest);
+}
+
+/* Keep one matching/ranking pass for both the honest total and the visible rows. The keyboard
+   shortcut uses this same order, so revealing the tail cannot change what Enter opens. */
+function fdSearchResults(index, query, synonyms, state){
+  var matches=fdSearchMatches(index, query, synonyms, state);
+  return state&&state.searchExpanded===true?matches:matches.slice(0,8);
 }
 
 /* ---- Result rows and groups (one-thread redesign, Phase 2; spec section 6) ----------------
@@ -539,7 +544,13 @@ function fdSearchGroupedRows(results, index){
 function fdSearchOverlay(index, query, synonyms, state){
   var q=String(query||'');
   var trimmed=q.trim();
-  var results=fdSearchResults(index, q, synonyms, state);
+  var matches=fdSearchMatches(index, q, synonyms, state);
+  var expanded=!!(trimmed&&state&&state.searchExpanded===true);
+  var results=expanded?matches:matches.slice(0,8);
+  var overflow=!!trimmed&&matches.length>8;
+  var count=overflow
+    ?(expanded?'Showing all '+matches.length+' matches':'Showing the top 8 of '+matches.length+' matches')
+    :matches.length+' match'+(matches.length===1?'':'es');
 
   var out='<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">';
   out+='<div class="fd-searchpanel">';
@@ -559,8 +570,17 @@ function fdSearchOverlay(index, query, synonyms, state){
      observe, so the region announces its own size. aria-label carries the count rather than a
      visually-hidden node: the panel is rebuilt wholesale on each render, and an attribute cannot
      drift out of sync with the rows the way a separate element can. */
-  out+='<div class="fd-searchpanel__body" role="region" aria-live="polite" '+
-    'aria-label="'+results.length+' result'+(results.length===1?'':'s')+'">';
+  out+='<div class="fd-searchpanel__body" id="fd-search-results" role="region" aria-live="polite" '+
+    'aria-label="'+(overflow?count:results.length+' result'+(results.length===1?'':'s'))+'">';
+  if(trimmed){
+    out+='<div class="fd-searchpanel__summary"><p>'+count+'</p>';
+    if(overflow){
+      out+='<button type="button" class="fd-btn" data-fd-search-expand="" '+
+        'aria-expanded="'+expanded+'" aria-controls="fd-search-results">'+
+        (expanded?'Show top 8':'Show all matches')+'</button>';
+    }
+    out+='</div>';
+  }
   /* Empty-state only replaces the results when the user actually typed something and it matched
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */
