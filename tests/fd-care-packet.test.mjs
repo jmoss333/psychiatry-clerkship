@@ -350,8 +350,8 @@ test('PRODUCTION default: with no storage or payload argument the controller use
 
 
 
-test('the packet module makes no network or persistence call beyond sessionStorage and uses only ES5', () => {
-  for (const banned of [/\bfetch\s*\(/, /XMLHttpRequest/, /sendBeacon/, /localStorage/, /document\.cookie/, /\bhistory\./, /location\.(?:href|hash|search)\s*=/, /geolocation/,
+test('the packet module makes no network call and uses only ES5; storage boundaries are tested separately', () => {
+  for (const banned of [/\bfetch\s*\(/, /XMLHttpRequest/, /sendBeacon/, /document\.cookie/, /\bhistory\./, /location\.(?:href|hash|search)\s*=/, /geolocation/,
     /WebSocket/, /EventSource/, /indexedDB/, /openDatabase/, /\bcaches\./]) {
     assert.doesNotMatch(PACKET, banned, String(banned));
   }

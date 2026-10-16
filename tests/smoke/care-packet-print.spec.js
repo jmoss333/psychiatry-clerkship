@@ -1013,7 +1013,7 @@ test.describe('preview, print and copy', () => {
     for (let i = 1; i < order.length; i++) expect(at(order[i]), `${order[i - 1]} comes before ${order[i]}`).toBeGreaterThan(at(order[i - 1]));
   });
 
-  test('only the exact profile identity leaves the page for approval: no write request, no new storage, one session key', async ({ page }) => {
+  test('only the exact profile identity leaves the page for approval: no write request, only a remembered unit ID, one session key', async ({ page }) => {
     const requests = [];
     page.on('request', r => requests.push({ method: r.method(), url: r.url(), origin: new URL(r.url()).origin }));
     await page.goto('/?tab=care');
@@ -1027,7 +1027,7 @@ test.describe('preview, print and copy', () => {
     const approval = requests.filter(r => r.origin !== origin);
     expect(approval.length, 'Load and Print each check approval').toBeGreaterThanOrEqual(2);
     for (const request of approval) expect([...new URL(request.url).searchParams]).toEqual([['profileId', PROFILE.id], ['revision', PROFILE.revision]]);
-    expect(await page.evaluate(() => ({ ...localStorage })), 'no durable storage').toEqual(baseline);
+    expect(await page.evaluate(() => ({ ...localStorage })), 'only the chosen unit ID is remembered; no contact details or approval receipt').toEqual({ ...baseline, cw_care_unit_profile_v1: PROFILE.id });
     expect(await page.evaluate(() => Object.keys(sessionStorage))).toEqual([KEY]);
     const saved = await snapshot(page);
     expect(Object.keys(saved).sort()).toEqual(['ids', 'inserts', 'mode', 'unit', 'why']);
