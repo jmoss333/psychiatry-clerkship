@@ -732,7 +732,7 @@
 .fd-care-packet{padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-bg)}
 .fd-care-packet__head h3{display:flex;align-items:center;gap:var(--fd-space-3);margin:0;font-size:var(--fd-font-lg);line-height:1.4;scroll-margin-top:var(--fd-space-10)}
 .fd-care-packet__count{display:inline-flex;align-items:center;justify-content:center;min-width:2em;padding:0 var(--fd-space-2);border:1px solid var(--fd-olive);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash);color:var(--fd-olive-deep);font-size:var(--fd-font-sm);font-weight:750}
-.fd-care-packet__hint,.fd-care-packet__empty,.fd-care-packet__ready{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.6}
+.fd-care-packet__hint,.fd-care-packet__empty{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.6}
 .fd-care-packet__group{margin-top:var(--fd-space-5)}
 .fd-care-packet__group h4{margin:0 0 var(--fd-space-2);color:var(--fd-olive-deep);font-size:var(--fd-font-xs);font-weight:750}
 .fd-care-packet__list{list-style:none;padding:0;margin:0;display:grid;gap:var(--fd-space-2)}
@@ -745,11 +745,8 @@
 .fd-care-packet__note{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.6}
 .fd-care-search .fd-care-packet__btns button{min-width:var(--fd-target-touch)}
 .fd-care-search .fd-care-packet__clear{margin-top:var(--fd-space-4)}
-.fd-care-packet__gate{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}
-.fd-care-packet__gate legend{padding:0 var(--fd-space-2);font-size:var(--fd-font-sm);font-weight:750}
 .fd-care-packet__check{display:flex;align-items:center;gap:var(--fd-space-3);min-height:var(--fd-target-touch);font-size:var(--fd-font-sm);line-height:1.5;cursor:pointer}
 .fd-care-packet__check input{flex:none;width:1.5rem;height:1.5rem;margin:0}
-.fd-care-packet__ready[data-fd-care-packet-ready="true"]{color:var(--fd-olive-deep);font-weight:700}
 .fd-care-packet__preview-toggle{margin-top:var(--fd-space-5)}
 /* The preview region: always present while the packet exists, hidden when closed. Controls are patched in place, never replaced. */
 .fd-care-search__preview{margin-top:var(--fd-space-5);padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-bg)}

@@ -1,4 +1,4 @@
-/* Aftercare packet: choose directory listings, order them, complete a review, then preview, print or copy.
+/* Aftercare packet: choose directory listings, order them, then preview, print or copy.
    Pure ES5. One sessionStorage key, tab-scoped, written only when the packet changes (never while typing).
    No network, durable storage, route state or analytics. The only free text is the ward's own name and phone, which
    describe the ward and never a patient, or a confirmed unit profile the build ships; the why-line is held until
@@ -15,11 +15,6 @@ var FD_CARE_PACKET_LIMIT=12,FD_CARE_PACKET_SUGGEST=8,FD_CARE_PACKET_KEY='fd_care
 var FD_CARE_PACKET_STALE_DAYS=7;
 /* The standard inserts (printed in the next release). Stored switches are limited to these names. */
 var FD_CARE_PACKET_INSERTS=['intro','week','callback','warning','safety','family','national','insurance','meds','rights','notes'];
-var FD_CARE_PACKET_GATES=[
-  ['verification','I checked each listing’s contact details and access instructions with the service or on its website.'],
-  ['region','I checked that these options fit the patient’s needs, where they will live, and their practical ability to use the services.'],
-  ['identifiers','I checked that no patient-identifying information was entered into this tool.'],
-  ['supervisor','My supervising clinician reviewed this packet and approved it for this patient.']];
 
 function fdCarePacketBlank(){return {ids:[],why:{},inserts:{},mode:'review',unit:{name:'',phone:'',profile:''}};}
 /* Any saved state at all: Clear is offered whenever there is some, not only when there are listings. */
@@ -28,11 +23,6 @@ function fdCarePacketHasState(state){
   if(state.ids.length||state.mode!=='review'||unit.name||unit.phone||unit.profile)return true;
   for(key in state.inserts)if(Object.prototype.hasOwnProperty.call(state.inserts,key))return true;
   return false;
-}
-function fdCarePacketGateBlank(){
-  var gate={};
-  for(var i=0;i<FD_CARE_PACKET_GATES.length;i++)gate[FD_CARE_PACKET_GATES[i][0]]=false;
-  return gate;
 }
 function fdCarePacketCopy(state){
   var out=fdCarePacketBlank(),key,unit=state.unit||{};
@@ -187,9 +177,8 @@ function fdCarePacketMove(state,id,delta,data){
   }
   return state;
 }
-function fdCarePacketCanPrint(state,data,gate){
-  if(!gate)return false;
-  for(var i=0;i<FD_CARE_PACKET_GATES.length;i++)if(gate[FD_CARE_PACKET_GATES[i][0]]!==true)return false;
+/* A nonempty packet can proceed to preview; output still requires the sheet and profile checks below. */
+function fdCarePacketCanPrint(state,data){
   return fdCarePacketIds(state,data).length>0;
 }
 function fdCarePacketContext(state,data,payload){
@@ -250,8 +239,7 @@ function fdCarePacketCardNote(payload,message){
   return message||fdCarePacketCardReason(payload)||'A separate one-sided page: the crisis lines and space for your own numbers. It is not part of the packet. Print from Chrome or Edge with scale 100 and margins set to Default, so it stays card-sized.';
 }
 
-function fdCarePacketTray(state,data,gate,ui){
-  gate=gate||{};
+function fdCarePacketTray(state,data,ui){
   ui=ui||{};
   var payload=ui.payload,payloadDown=!fdCarePacketPayloadOk(payload);
   var live=fdCarePacketIds(state,data),byId=fdCarePacketRecords(data),n=live.length,held=fdCarePacketHeld(state,data),i,g,why;
@@ -289,22 +277,11 @@ function fdCarePacketTray(state,data,gate,ui){
   /* Offered whenever anything is saved (a unit, a profile, a Final copy, a page switch), not only when there are listings. */
   out+='<button type="button" class="fd-care-packet__clear" data-fd-care-packet-clear'+(!fdCarePacketHasState(state)?' disabled':'')+'>Clear packet</button>';
   /* The wallet card is its own optional print, available with no listings, with its own note and reason line. It needs
-     no review confirmations, mode or unit details: it carries only the governed crisis lines and write-in space. */
+     no mode or unit details: it carries only the governed crisis lines and write-in space. */
   out+='<div class="fd-care-packet__card"><button type="button" class="fd-care-packet__cardbtn" data-fd-care-packet-card-print aria-describedby="fd-care-packet-card-note"'+
     (fdCarePacketCardReason(payload)?' disabled':'')+'>Print wallet card</button><p class="fd-care-packet__note" id="fd-care-packet-card-note" data-fd-care-packet-card-note>'+
     fdEsc(fdCarePacketCardNote(payload,ui.cardMessage))+'</p></div>';
-  out+='<fieldset class="fd-care-packet__gate"><legend>Review before printing</legend>';
-  for(i=0;i<FD_CARE_PACKET_GATES.length;i++){
-    var key=FD_CARE_PACKET_GATES[i][0];
-    /* Nothing to confirm in an empty packet. Confirmations also reset whenever a listing is added (controller). */
-    out+='<label class="fd-care-packet__check"><input type="checkbox" data-fd-care-packet-gate="'+fdEsc(key)+'"'+(gate[key]===true?' checked':'')+(n?'':' disabled')+'> <span>'+
-      fdEsc(FD_CARE_PACKET_GATES[i][1])+'</span></label>';
-  }
-  var ready=fdCarePacketCanPrint(state,data,gate);
-  /* Plain text, not a live region: this node is recreated on every repaint, which screen readers announce
-     unreliably. Readiness changes are announced through the one persistent shell announcer instead. */
-  out+='</fieldset><p class="fd-care-packet__ready" data-fd-care-packet-ready="'+(ready?'true':'false')+'">'+
-    fdCarePacketReadyText(n,ready)+'</p>';
+  out+='<p class="fd-care-packet__hint" data-fd-care-packet-reminder>Check these resources with the patient before sharing. Do not enter patient-identifying information.</p>';
   /* A disclosure, never a dialog: the shared announcer stays silent while a modal exists, and the preview must be able to
      speak. Its label never changes (WCAG 2.5.3); aria-expanded carries the state. */
   if(n)out+='<button type="button" class="fd-care-packet__preview-toggle" data-fd-care-packet-preview-toggle aria-expanded="'+(ui.previewOpen?'true':'false')+
@@ -312,8 +289,7 @@ function fdCarePacketTray(state,data,gate,ui){
   return out+'</section>';
 }
 
-/* Blockers whose fix re-arms the review gate (a unit that is not confirmed, a call-back page nobody can promise, a saved listing
-   that cannot print) come BEFORE the four confirmations: confirming first and then being told to start again is the trap. */
+/* Show actionable setup issues before layout limits: an unapproved unit, an unconfirmed call or an ineligible listing. */
 var FD_CARE_PACKET_SETUP=['INELIGIBLE','LISTING_TEXT','CRISIS_NUMBER','UNIT_UNCONFIRMED','CALLBACK_UNCONFIRMED'];
 function fdCarePacketSetupBlocker(sheet,forCopy){
   var list=sheet&&sheet.ok&&sheet.blockers?sheet.blockers:[],i;
@@ -322,12 +298,11 @@ function fdCarePacketSetupBlocker(sheet,forCopy){
 }
 /* The first thing in the way of printing (or copying), in a fixed order, or null. Pure: the preview shows its message
    beside the buttons, and the controller refuses on the same answer, so a stale button can never print. */
-function fdCarePacketBlocker(state,data,gate,sheet,forCopy){
+function fdCarePacketBlocker(state,data,sheet,forCopy){
   var setup,list,i;
-  if(!fdCarePacketIds(state,data).length)return {code:'EMPTY',message:'Add a listing to the packet to begin.'};
+  if(!fdCarePacketCanPrint(state,data))return {code:'EMPTY',message:'Add a listing to the packet to begin.'};
   setup=fdCarePacketSetupBlocker(sheet,forCopy);
   if(setup)return setup;
-  if(!fdCarePacketCanPrint(state,data,gate))return {code:'REVIEW',message:'Finish the four review confirmations above.'};
   if(!sheet)return {code:'MEASURE_FAILED',message:'The packet could not be laid out, so it cannot print.'};
   if(!sheet.ok)return {code:sheet.code,message:sheet.message};
   list=sheet.blockers||[];
@@ -357,7 +332,7 @@ function fdCarePacketReadback(info,mode){
 /* The preview's controls, as markup. Pure: every value comes in as an argument and every interpolation is escaped. The
    controller renders this once per opening and afterwards patches the nodes in place, because replacing a node that is
    about to receive focus or a click loses both. */
-function fdCarePacketControls(state,data,payload,gate,ui){
+function fdCarePacketControls(state,data,payload,ui){
   ui=ui||{};
   var raw=state.unit||{name:'',phone:'',profile:''},info=ui.info||fdCarePacketUnitOf(state,payload,NaN),errors=ui.unitErrors||{name:'',phone:''};
   var blocker=ui.blocker||null,copyBlocker=ui.copyBlocker||null,profiles=fdCarePacketProfiles(payload);
@@ -434,9 +409,6 @@ function fdCarePacketReason(blocker,copyBlocker){
 function fdCarePacketHint(){
   return 'Print from Chrome or Edge with margins set to Default and scale 100.';
 }
-function fdCarePacketReadyText(n,ready){
-  return ready?'Review complete.':(n?'Finish the four review confirmations to continue.':'Add a listing to begin.');
-}
 /* The days since the directory copy was made, when that is more than a week; otherwise null. The current time is passed in so the
    answer is a pure function of its inputs. */
 function fdCarePacketStale(generatedAt,now){
@@ -457,12 +429,12 @@ function fdCreateCarePacket(options){
   /* The build payload: the injected global unless a test passes its own. Null means it never arrived, and then
      nothing prints (the sheet refuses without its crisis lines). */
   var payload=options&&options.payload!==undefined?options.payload:(typeof FD_CARE_INSERTS!=='undefined'?FD_CARE_INSERTS:null);
-  var state=null,gate=fdCarePacketGateBlank(),root=null,live=null,notify=null,sayTimer=null;
+  var state=null,root=null,live=null,notify=null,sayTimer=null;
   var previewRoot=null,controlsNode=null,pagesNode=null,controlsBuilt=false,previewOpen=false,draft={},pagesTimer=null,deferTimer=null,lastSheet=null;
   var printing=false,printStarted=0,printHost=null,pageStyle=null,savedTitle=null,printTitle='',printKind='',fallbackText='',cardMessage='',listening=false,lastPointer=null;
   var copyEpoch=0,bulkResult=null,clearDialog=null;
   var printPermit=false,printFingerprint='';
-  var authority=null,authorityBusy=false,authoritySerial=0,authorityTimer=null,reviewFingerprint='';
+  var authority=null,authorityBusy=false,authoritySerial=0,authorityTimer=null,contentFingerprint='';
   var callbackGate={arranged:false,plan:false,preferences:false};
   var getData=function(){return null;};
   /* Layout options for every sheet this controller builds. Production passes none; a test may hand in a measurer. */
@@ -501,7 +473,7 @@ function fdCreateCarePacket(options){
     printHost=document.createElement('div');
     printHost.id='fdPacketPrint';
     printHost.className='fd-packet-sheet fd-packet-sheet--paper';
-    printHost.innerHTML=notice?'<p class="fd-packet-notice">This is not the patient packet. Use Print in the packet preview after review.</p>':html;
+    printHost.innerHTML=notice?'<p class="fd-packet-notice">This is not the patient packet. Use Print in the packet preview.</p>':html;
     document.body.appendChild(printHost);
     pageStyle=document.createElement('style');
     pageStyle.id='fdPacketPageRule';
@@ -531,7 +503,7 @@ function fdCreateCarePacket(options){
   }
   function controlUi(){
     var s=current(),data=getData();
-    return {sheet:lastSheet,blocker:fdCarePacketBlocker(s,data,gate,lastSheet,false),copyBlocker:fdCarePacketBlocker(s,data,gate,lastSheet,true),
+    return {sheet:lastSheet,blocker:fdCarePacketBlocker(s,data,lastSheet,false),copyBlocker:fdCarePacketBlocker(s,data,lastSheet,true),
       unitErrors:unitErrors(s),info:unitInfo(viewState()),fallback:fallbackText,callback:callbackGate};
   }
   function paintPages(){
@@ -608,7 +580,7 @@ function fdCreateCarePacket(options){
     if(!controlsNode)return;
     var s=current(),ui=controlUi();
     if(!controlsBuilt||typeof controlsNode.querySelector!=='function'){
-      controlsNode.innerHTML=fdCarePacketControls(s,getData(),payload,gate,ui);
+      controlsNode.innerHTML=fdCarePacketControls(s,getData(),payload,ui);
       controlsBuilt=true;
       return;
     }
@@ -628,24 +600,13 @@ function fdCreateCarePacket(options){
     paintControls();
     paintPages();
   }
-  /* The tray after a change that did not touch the listings: the review boxes, the ready line and the preview button's
-     expanded state, in place. Replacing the tray would drop focus from whichever tray control the trainee tabbed to (a
-     field's change event fires before focus moves). False means the tray has another shape, and it is repainted. */
+  /* Patch controls in place when the listing shape is unchanged, preserving keyboard focus. */
   function patchTray(){
-    var n,ready,boxes,readyNode,toggleNode,i,cardNote,cardButton,cardReason;
-    if(!root||typeof root.querySelector!=='function'||typeof root.querySelectorAll!=='function')return false;
-    readyNode=root.querySelector('[data-fd-care-packet-ready]');
+    var n,toggleNode,cardNote,cardButton,cardReason;
+    if(!root||typeof root.querySelector!=='function')return false;
     toggleNode=root.querySelector('[data-fd-care-packet-preview-toggle]');
-    boxes=root.querySelectorAll('[data-fd-care-packet-gate]');
     n=count();
-    if(!readyNode||boxes.length!==FD_CARE_PACKET_GATES.length||(n>0)!==!!toggleNode)return false;
-    ready=fdCarePacketCanPrint(current(),getData(),gate);
-    for(i=0;i<boxes.length;i++){
-      boxes[i].checked=gate[boxes[i].getAttribute('data-fd-care-packet-gate')]===true;
-      boxes[i].disabled=!n;
-    }
-    readyNode.textContent=fdCarePacketReadyText(n,ready);
-    readyNode.setAttribute('data-fd-care-packet-ready',ready?'true':'false');
+    if(!root.querySelector('[data-fd-care-packet-reminder]')||(n>0)!==!!toggleNode)return false;
     if(toggleNode)toggleNode.setAttribute('aria-expanded',previewOpen?'true':'false');
     cardNote=root.querySelector('[data-fd-care-packet-card-note]');cardButton=root.querySelector('[data-fd-care-packet-card-print]');
     if(!cardNote||!cardButton)return false;
@@ -660,7 +621,7 @@ function fdCreateCarePacket(options){
     var patched=false;
     if(root&&root.isConnected!==false){
       if(opts&&opts.patch)patched=patchTray();
-      if(!patched)root.innerHTML=fdCarePacketTray(current(),getData(),gate,{previewOpen:previewOpen,payload:payload,cardMessage:cardMessage,bulkResult:bulkResult});
+      if(!patched)root.innerHTML=fdCarePacketTray(current(),getData(),{previewOpen:previewOpen,payload:payload,cardMessage:cardMessage,bulkResult:bulkResult});
     }
     clearTimeout(deferTimer);deferTimer=null;
     if(opts&&opts.defer&&previewOpen){
@@ -711,37 +672,30 @@ function fdCreateCarePacket(options){
   function nameOf(id){var record=fdCarePacketRecords(getData())[id];return record?record.name:'listing';}
   /* Anything staged for printing described the packet as it WAS, so every change removes it. */
   function commit(next,opts){
-    resetGate();callbackGate={arranged:false,plan:false,preferences:false};
+    callbackGate={arranged:false,plan:false,preferences:false};
     state=next;fdCarePacketSave(storage,state);
-    reviewFingerprint=packetFingerprint();
+    contentFingerprint=packetFingerprint();
     teardown();
     fallbackText='';
     if(previewOpen&&!fdCarePacketIds(state,getData()).length)previewOpen=false;
     paint(opts);
     if(notify)notify();
   }
-  /* Review belongs to the exact packet: every content, order, mode or contact change clears it.
-     Returns whether anything was cleared so the announcement can say why "ready" went away. */
-  function resetGate(){
-    var any=false,key;
-    for(key in gate)if(gate[key]===true)any=true;
-    gate=fdCarePacketGateBlank();
-    return any;
-  }
   function packetFingerprint(){
     var s=current(),data=getData(),byId=fdCarePacketRecords(data),rows=[],i;
     for(i=0;i<s.ids.length;i++)rows.push(byId[s.ids[i]]||null);
     return JSON.stringify([s,rows,data&&data.categories,data&&data.partial,payload]);
   }
-  function syncReview(){
+  /* External directory or payload changes invalidate transient approval and all staged output. */
+  function syncContent(){
     var fingerprint=packetFingerprint();
-    if(reviewFingerprint&&reviewFingerprint!==fingerprint){
-      resetGate();callbackGate={arranged:false,plan:false,preferences:false};authority=null;fallbackText='';teardown();
+    if(contentFingerprint&&contentFingerprint!==fingerprint){
+      callbackGate={arranged:false,plan:false,preferences:false};authority=null;fallbackText='';teardown();
     }
-    reviewFingerprint=fingerprint;
+    contentFingerprint=fingerprint;
   }
   function checkApproval(action){
-    syncReview();
+    syncContent();
     var profile=fdCarePacketProfileFind(payload,current().unit.profile),serial=++authoritySerial,epoch=copyEpoch,fingerprint=packetFingerprint(),result;
     if(!fdCarePacketPayloadOk(payload)){say('Crisis contacts are unavailable. Reload the page before printing or copying.');return {ok:false,code:'CRISIS_UNAVAILABLE'};}
     if(!count()){say('Add a listing to the packet to begin.');return {ok:false,code:'EMPTY'};}
@@ -755,7 +709,7 @@ function fdCreateCarePacket(options){
       }
       authorityBusy=false;
       authority=fdCareProfileReceipt(profile,value,nowMs())?value:null;
-      if(!authority){resetGate();callbackGate={arranged:false,plan:false,preferences:false};fallbackText='';teardown();}
+      if(!authority){callbackGate={arranged:false,plan:false,preferences:false};fallbackText='';teardown();}
       paint({patch:true});
       if(!authority){say('Unit approval could not be confirmed. Print and Copy are unavailable; draft editing remains available.');return {ok:false,code:'UNIT_UNCONFIRMED'};}
       return action?action():{ok:true,code:''};
@@ -775,16 +729,15 @@ function fdCreateCarePacket(options){
   }
   function setCallback(key,value){
     if(!Object.prototype.hasOwnProperty.call(callbackGate,key))return false;
-    callbackGate[key]=value===true;resetGate();fallbackText='';teardown();paint({patch:true});
+    callbackGate[key]=value===true;fallbackText='';teardown();paint({patch:true});
     return true;
   }
-  function cleared(was){return was?' Review confirmations cleared.':'';}
   function toggle(id){
-    var r=fdCarePacketToggle(current(),id,getData(),payload),was=false;
+    var r=fdCarePacketToggle(current(),id,getData(),payload);
     if(r.result==='added'||r.result==='removed'){
-      was=resetGate();bulkResult=null;
+      bulkResult=null;
       commit(r.state);
-      say((r.result==='added'?'Added ':'Removed ')+nameOf(id)+(r.result==='added'?' to':' from')+' the packet. '+plural(count())+' in packet.'+cleared(was));
+      say((r.result==='added'?'Added ':'Removed ')+nameOf(id)+(r.result==='added'?' to':' from')+' the packet. '+plural(count())+' in packet.');
     }else if(r.result==='full')say('The packet is full at '+FD_CARE_PACKET_LIMIT+'. Remove a listing to add another.');
     else if(r.result==='ineligible'){
       var record=fdCarePacketRecords(getData())[id];
@@ -793,28 +746,28 @@ function fdCreateCarePacket(options){
     return r.result;
   }
   function addMany(ids){
-    var r=fdCarePacketAddMany(current(),ids,getData(),payload),was=false;
+    var r=fdCarePacketAddMany(current(),ids,getData(),payload);
     bulkResult=r;
-    if(r.added){was=resetGate();commit(r.state);}else paint();
-    say(fdCarePacketBulkSummary(r)+' '+plural(count())+' in packet.'+cleared(was));
+    if(r.added){commit(r.state);}else paint();
+    say(fdCarePacketBulkSummary(r)+' '+plural(count())+' in packet.');
     return {added:r.added,already:r.already,skipped:r.skipped,ineligible:r.ineligible};
   }
   function move(id,delta){
     var next=fdCarePacketMove(current(),id,delta,getData());
     if(next!==state){
-      var was=resetGate();bulkResult=null;commit(next);
+      bulkResult=null;commit(next);
       var byId=fdCarePacketRecords(getData()),members=fdCarePacketDisplayOrder(current(),getData()).filter(function(key){return byId[key].category===byId[id].category;});
-      say('Moved '+nameOf(id)+' to position '+(members.indexOf(id)+1)+' of '+members.length+' in its group.'+cleared(was));
+      say('Moved '+nameOf(id)+' to position '+(members.indexOf(id)+1)+' of '+members.length+' in its group.');
     }
   }
   function remove(id){
     if(current().ids.indexOf(id)===-1)return;
-    var was=resetGate();bulkResult=null;commit(fdCarePacketRemove(current(),id));say('Removed '+nameOf(id)+' from the packet. '+plural(count())+' in packet.'+cleared(was));
+    bulkResult=null;commit(fdCarePacketRemove(current(),id));say('Removed '+nameOf(id)+' from the packet. '+plural(count())+' in packet.');
   }
   /* Clear removes everything the packet holds: listings, the unit's details and any loaded profile, the copy and the page
-     switches, and every confirmation. A verified profile can be loaded again, explicitly. */
+     switches, and callback confirmations. A verified profile can be loaded again, explicitly. */
   function clear(){
-    var was=resetGate(),cur=current(),parts=[],n=count(),key,switched=cur.mode!=='review';
+    var cur=current(),parts=[],n=count(),key,switched=cur.mode!=='review';
     for(key in cur.inserts)if(Object.prototype.hasOwnProperty.call(cur.inserts,key))switched=true;
     if(n)parts.push(plural(n));
     if(cur.unit.name||cur.unit.phone||cur.unit.profile)parts.push('unit details');
@@ -822,7 +775,7 @@ function fdCreateCarePacket(options){
     bulkResult=null;draft={};cardMessage='';
     clearTimeout(pagesTimer);pagesTimer=null;
     commit(fdCarePacketBlank());
-    say('Packet cleared'+(parts.length?': '+parts.join(', ')+' removed':'')+'.'+cleared(was));
+    say('Packet cleared'+(parts.length?': '+parts.join(', ')+' removed':'')+'.');
   }
   function dismissClear(restore){
     if(!clearDialog)return;
@@ -836,7 +789,7 @@ function fdCreateCarePacket(options){
     d.className='fd-care-packet__confirm';d.setAttribute('aria-labelledby','fd-care-packet-clear-title');
     d.setAttribute('aria-describedby','fd-care-packet-clear-description');
     d.innerHTML='<h2 id="fd-care-packet-clear-title">'+(held?'Clear all '+held+' listing'+(held===1?'':'s')+'?':'Clear this packet?')+'</h2>'+
-      '<p id="fd-care-packet-clear-description">This removes all selected listings and resets packet choices and review confirmations.</p>'+
+      '<p id="fd-care-packet-clear-description">This removes all selected listings and resets unit details and packet choices.</p>'+
       '<button type="button" autofocus>Keep packet</button> <button type="button">Clear packet</button>';
     if(typeof d.showModal!=='function'){say('Clear confirmation is unavailable in this browser. Your packet was kept.');return;}
     clearDialog=d;document.body.appendChild(d);
@@ -854,22 +807,6 @@ function fdCreateCarePacket(options){
     });
     d.showModal();d.querySelector('button').focus();
   }
-  function readyMessage(){
-    var ui;
-    if(!previewOpen)return 'Review complete.';
-    ui=controlUi();
-    return ui.blocker?'Review complete. '+ui.blocker.message:'Review complete. Print'+(ui.copyBlocker?' is':' and Copy are')+' available.';
-  }
-  function setGate(key,value){
-    if(!Object.prototype.hasOwnProperty.call(gate,key))return false;
-    if(value===true&&!count())return false;
-    var before=fdCarePacketCanPrint(current(),getData(),gate);
-    gate[key]=value===true;teardown();fallbackText='';paint({patch:true});
-    var after=fdCarePacketCanPrint(current(),getData(),gate);
-    if(before!==after)say(after?readyMessage():'Review confirmations incomplete.');
-    return true;
-  }
-
   /* ---- the preview ---- */
   function openPreview(){
     if(!previewRoot||!count())return false;
@@ -898,29 +835,27 @@ function fdCreateCarePacket(options){
     return true;
   }
   function setInsert(id,on){
-    var ins=fdCarePacketInsertOf(payload,id),cur=current(),was=false,wasOn,next,before;
+    var ins=fdCarePacketInsertOf(payload,id),cur=current(),wasOn,next,before;
     if(!ins||ins.core||FD_CARE_PACKET_INSERTS.indexOf(id)===-1)return false;
     on=on===true;
     wasOn=fdCarePacketInsertOn(cur,ins);
     if(wasOn===on&&Object.prototype.hasOwnProperty.call(cur.inserts,id))return true;
     before=availability();
-    if(on&&!wasOn)was=resetGate();
     next=fdCarePacketCopy(cur);next.inserts[id]=on;
     commit(next,{patch:true});
-    sayChanged((pagesLabel()?pagesLabel()+' · '+modeLabel()+'.':'Page list changed.')+cleared(was),before);
+    sayChanged((pagesLabel()?pagesLabel()+' · '+modeLabel()+'.':'Page list changed.'),before);
     return true;
   }
   /* Saved on change, not on input, so a keystroke never writes storage or repaints the field under the caret. A new
-     value changes what prints, so it clears the confirmations exactly as a new listing does. */
+     value changes what prints, so it removes any staged print and copy just as a new listing does. */
   function setUnit(field,value){
     if(field!=='name'&&field!=='phone')return false;
-    var raw=String(value==null?'':value).slice(0,200).replace(/^\s+|\s+$/g,''),cur=current(),was,next,before;
+    var raw=String(value==null?'':value).slice(0,200).replace(/^\s+|\s+$/g,''),cur=current(),next,before;
     /* Typing is refused only while a profile is really LOADED; a saved id the build no longer ships is dropped on the first edit. */
     if(unitInfo(cur).loaded)return false;
     delete draft[field];
     if(cur.unit[field]===raw){schedulePages();return true;}
     before=availability();
-    was=resetGate();
     next=fdCarePacketCopy(cur);next.unit.profile='';next.unit[field]=raw;
     /* Deferred: this runs on the field's change event, which fires BEFORE focus moves. If the trainee is tabbing to
        Print, Print must still be there when focus lands; the controls are brought up to date a task later. */
@@ -929,35 +864,33 @@ function fdCreateCarePacket(options){
        empty on the paper. */
     sayChanged(function(){
       var problem=unitErrors(current())[field],back=field==='phone'?fdCarePacketReadback(unitInfo(current()),current().mode):'';
-      return problem?'Unit '+field+' needs fixing: '+problem+cleared(was):'Unit '+field+' saved.'+(back?' '+back:'')+cleared(was);
+      return problem?'Unit '+field+' needs fixing: '+problem:'Unit '+field+' saved.'+(back?' '+back:'');
     },before);
     return true;
   }
   /* Loading a profile is an explicit act (a button, never the select's change event). It replaces the unit's identity, so the
-     confirmations reset exactly as they do for a typed change. */
+     staged output and callback confirmations reset exactly as they do for a typed change. */
   function loadProfile(id){
-    var found=fdCarePacketProfileFind(payload,id),usable=found?fdCarePacketProfileUsable(found,payload):null,cur=current(),was,next,before;
+    var found=fdCarePacketProfileFind(payload,id),usable=found?fdCarePacketProfileUsable(found,payload):null,cur=current(),next,before;
     if(!usable){say('That unit profile is not available.');return false;}
     before=availability();
-    was=resetGate();
     delete draft.name;delete draft.phone;
     next=fdCarePacketCopy(cur);next.unit={name:'',phone:'',profile:usable.id};
     commit(next,{patch:true});
-    sayChanged(function(){return 'Loaded unit profile '+usable.label+'. '+fdCarePacketReadback(unitInfo(current()),current().mode)+cleared(was);},before);
+    sayChanged(function(){return 'Loaded unit profile '+usable.label+'. '+fdCarePacketReadback(unitInfo(current()),current().mode);},before);
     checkApproval();
     return true;
   }
   /* Typed details start empty: nothing confirmed is carried into values that are not. */
   function unlinkProfile(){
-    var cur=current(),was,next,before,chosenSelect;
+    var cur=current(),next,before,chosenSelect;
     if(!cur.unit.profile)return false;
     before=availability();
-    was=resetGate();
     next=fdCarePacketCopy(cur);next.unit={name:'',phone:'',profile:''};
     commit(next,{patch:true});
     chosenSelect=previewRoot&&typeof previewRoot.querySelector==='function'?previewRoot.querySelector('[data-fd-care-packet-profile-select]'):null;
     if(chosenSelect)chosenSelect.value='';
-    sayChanged('Unit profile removed. Type your own unit details.'+cleared(was),before);
+    sayChanged('Unit profile removed. Type your own unit details.',before);
     return true;
   }
   function commitDrafts(){
@@ -967,10 +900,10 @@ function fdCreateCarePacket(options){
 
   /* ---- print and copy: the same answer the buttons show decides, so a stale button cannot print ---- */
   function prepare(forCopy){
-    syncReview();
+    syncContent();
     commitDrafts();
     var s=current(),data=getData(),sheet=fdCarePacketSheet(s,data,payload,layout({headingBase:forCopy?4:1}));
-    return {sheet:sheet,state:s,data:data,blocker:fdCarePacketBlocker(s,data,gate,sheet,forCopy)};
+    return {sheet:sheet,state:s,data:data,blocker:fdCarePacketBlocker(s,data,sheet,forCopy)};
   }
   function print(){
     if(printing&&printStarted&&Date.now()-printStarted<30000)return {ok:false,code:'BUSY'};
@@ -989,7 +922,7 @@ function fdCreateCarePacket(options){
     return {ok:true,code:''};
   }
   /* The wallet card: its own single-sided page, never part of the packet. Its only gate is the governed crisis lines (the card
-     refuses to build without them); it asks nothing of the review confirmations, the copy mode or the unit's details. */
+     refuses to build without them); it asks nothing of the copy mode or the unit's details. */
   function printCard(){
     var sheet,wasMessage=cardMessage;
     if(printing&&printStarted&&Date.now()-printStarted<30000)return {ok:false,code:'BUSY'};
@@ -1017,9 +950,9 @@ function fdCreateCarePacket(options){
     var request=++copyEpoch,r=prepare(true),t,clip,pending,fingerprint=packetFingerprint();
     function stillCurrent(){
       if(request!==copyEpoch)return false;
-      if(fingerprint!==packetFingerprint()){syncReview();paint({patch:true});return false;}
+      if(fingerprint!==packetFingerprint()){syncContent();paint({patch:true});return false;}
       if(!unitInfo(current()).confirmed){
-        authority=null;resetGate();callbackGate={arranged:false,plan:false,preferences:false};fallbackText='';teardown();paint({patch:true});
+        authority=null;callbackGate={arranged:false,plan:false,preferences:false};fallbackText='';teardown();paint({patch:true});
         say('Unit approval is no longer current. Check the profile before copying again.');
         return false;
       }
@@ -1131,7 +1064,7 @@ function fdCreateCarePacket(options){
     if(button.hasAttribute('data-fd-care-packet-clear')){requestClear();return {};}
     return null;
   }
-  var OWNED=['data-fd-care-packet-gate','data-fd-care-packet-mode','data-fd-care-packet-insert','data-fd-care-packet-unit-field','data-fd-care-packet-callback'];
+  var OWNED=['data-fd-care-packet-mode','data-fd-care-packet-insert','data-fd-care-packet-unit-field','data-fd-care-packet-callback'];
   function owns(input){
     var i;
     if(!input||!input.hasAttribute)return false;
@@ -1144,11 +1077,6 @@ function fdCreateCarePacket(options){
     if(input.hasAttribute('data-fd-care-packet-callback')){
       key=input.getAttribute('data-fd-care-packet-callback');setCallback(key,input.checked===true);
       return {attr:'data-fd-care-packet-callback',id:key,keep:true};
-    }
-    if(input.hasAttribute('data-fd-care-packet-gate')){
-      key=input.getAttribute('data-fd-care-packet-gate');
-      setGate(key,input.checked===true);
-      return {attr:'data-fd-care-packet-gate',id:key};
     }
     /* The rest are patched in place, never replaced, so the control keeps focus and the directory controller must not
        move it (a change event also fires when the trainee tabs AWAY from a field). */
@@ -1207,7 +1135,7 @@ function fdCreateCarePacket(options){
       controlsBuilt=false;controlsNode=null;pagesNode=null;lastSheet=null;fallbackText='';
       root=node||null;live=status||null;notify=onChange||null;previewRoot=previewNode||null;
       getData=typeof dataGetter==='function'?dataGetter:function(){return null;};
-      reviewFingerprint=packetFingerprint();
+      contentFingerprint=packetFingerprint();
       if(previewRoot&&typeof window!=='undefined'&&window.addEventListener){
         window.addEventListener('beforeprint',onBefore);
         window.addEventListener('afterprint',onAfter);
@@ -1219,7 +1147,7 @@ function fdCreateCarePacket(options){
       }
       paint();
     },
-    /* Leaving Care keeps the packet (tab-scoped by design), resets the review confirmations, closes the preview,
+    /* Leaving Care keeps the packet (tab-scoped by design), clears transient approval, closes the preview,
        removes anything staged for printing and drops any announcement still queued, so nothing is spoken or
        printed about a surface the trainee has left. */
     leave:function(){
@@ -1228,17 +1156,16 @@ function fdCreateCarePacket(options){
       unlisten();teardown();
       previewOpen=false;draft={};controlsBuilt=false;controlsNode=null;pagesNode=null;lastSheet=null;fallbackText='';cardMessage='';printKind='';
       if(previewRoot){previewRoot.hidden=true;previewRoot.innerHTML='';}
-      previewRoot=null;root=null;live=null;notify=null;getData=function(){return null;};gate=fdCarePacketGateBlank();
+      previewRoot=null;root=null;live=null;notify=null;getData=function(){return null;};
       authority=null;authoritySerial++;authorityBusy=false;callbackGate={arranged:false,plan:false,preferences:false};
     },
-    refresh:function(){syncReview();paint();},
-    toggle:toggle,addMany:addMany,move:move,remove:remove,clear:clear,setGate:setGate,setCallback:setCallback,
+    refresh:function(){syncContent();paint();},
+    toggle:toggle,addMany:addMany,move:move,remove:remove,clear:clear,setCallback:setCallback,
     openPreview:openPreview,closePreview:closePreview,previewOpen:function(){return previewOpen;},
     setMode:setMode,setInsert:setInsert,setUnit:setUnit,loadProfile:loadProfile,unlinkProfile:unlinkProfile,print:print,printCard:printCard,copy:copy,
     owns:owns,handleClick:handleClick,handleChange:handleChange,handleInput:handleInput,handleKey:handleKey,
     ids:function(){return fdCarePacketIds(current(),getData());},
     context:function(){return fdCarePacketContext(current(),getData(),payload);},
-    gate:function(){var copyOfGate={},key;for(key in gate)copyOfGate[key]=gate[key];return copyOfGate;},
     get mode(){return current().mode;}
   };
 }

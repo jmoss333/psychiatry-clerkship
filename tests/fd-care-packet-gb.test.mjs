@@ -16,7 +16,6 @@ blank:fdCarePacketBlank, normalize:fdCarePacketNormalize, add:fdCarePacketAddMan
 button:fdCarePacketButton, bulk:fdCarePacketBulk, tray:fdCarePacketTray, create:fdCreateCarePacket};`)();
 const data = {categories:[{id:'aftercare',label:'Aftercare'}], records:Array.from({length:16},(_,i)=>({id:'a'+i,category:'aftercare',name:'Support '+i,phone:'207-700-0123',contactHref:'tel:2077000123',website:'https://example.org/'}))};
 const state = n => ({...P.blank(),ids:Array.from({length:n},(_,i)=>'a'+i)});
-const keys = ['verification','region','identifiers','supervisor'];
 const make = () => {const m=new Map(); const c=P.create({payload,storage:{getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k)}}); c.mount(null,null,()=>data);return {c,m};};
 
 test('selected cards describe removal in both the visible label and accessible name',()=>{
@@ -39,12 +38,14 @@ test('bulk result identifies every omitted listing and distinguishes unavailable
   assert.equal(r.skipped,2);assert.equal(r.unavailable,1);
   assert.deepEqual(r.omitted.map(x=>[x.id,x.reason]),[['a12','capacity'],['gone','unavailable'],['a13','capacity']]);
 });
-test('no-op bulk keeps confirmations but removal and reordering clear all four',()=>{
-  const {c}=make();c.addMany(['a0','a1','a2']); keys.forEach(k=>c.setGate(k,true));
-  c.addMany(['a0','a1']); assert.ok(keys.every(k=>c.gate()[k]));
-  c.move('a1',-1);assert.ok(keys.every(k=>!c.gate()[k]));
-  keys.forEach(k=>c.setGate(k,true));c.remove('a2');assert.ok(keys.every(k=>!c.gate()[k]));c.leave();
+test('no-op bulk preserves the packet, while reorder and removal update the saved listing order',()=>{
+  const {c,m}=make();c.addMany(['a0','a1','a2']);
+  const before=m.get('fd_care_packet_v1');
+  c.addMany(['a0','a1']);assert.equal(m.get('fd_care_packet_v1'),before);
+  c.move('a1',-1);assert.deepEqual(c.ids(),['a1','a0','a2']);
+  c.remove('a2');assert.deepEqual(c.ids(),['a1','a0']);c.leave();
 });
+
 test('bulk outcome is visibly retained in the tray, safely escaped, and cleared with the packet',()=>{
   const {c,m}=make();const root={isConnected:true,innerHTML:''};c.mount(root,null,()=>data);
   c.addMany(data.records.map(r=>r.id));assert.match(root.innerHTML,/Added 12 listings/);
@@ -53,8 +54,9 @@ test('bulk outcome is visibly retained in the tray, safely escaped, and cleared 
   c.clear();assert.doesNotMatch(root.innerHTML,/See what wasn’t added/);assert.equal(m.size,0);c.leave();
 });
 test('review wording and category-order guidance are presented, and unexpected rationale is discarded',()=>{
-  const html=P.tray(state(1),data,{}, {payload});
-  for(const copy of ["I checked each listing’s contact details and access instructions with the service or on its website.","I checked that these options fit the patient’s needs, where they will live, and their practical ability to use the services.","I checked that no patient-identifying information was entered into this tool.","My supervising clinician reviewed this packet and approved it for this patient.","Listings are grouped by service type."])assert.ok(html.includes(copy),copy);
+  const html=P.tray(state(1),data,{payload});
+  for(const copy of ["Check these resources with the patient before sharing. Do not enter patient-identifying information.","Listings are grouped by service type."])assert.ok(html.includes(copy),copy);
+  assert.doesNotMatch(html,/data-fd-care-packet-gate|Review complete/);
   assert.deepEqual(P.normalize({...state(1),why:{a0:'private rationale'}}).why,{});
 });
 
