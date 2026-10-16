@@ -818,7 +818,7 @@
     "points": [
       "Get collateral and ask specifically about prior mania/hypomania (MDQ).",
       "Match severity to setting; consider ECT for severe, psychotic, or catatonic depression.",
-      "Lithium carries the strongest maintenance evidence and an anti-suicidal effect."
+      "Lithium carries the strongest maintenance evidence; meta-analysis supports an anti-suicidal effect, but more recent randomized evidence is mixed."
     ],
     "cant": "Acute mania: stop the antidepressant, start a mood stabilizer or second-generation antipsychotic, and protect sleep.",
     "quiz": {
@@ -925,6 +925,8 @@
     "safetyLevel": "high",
     "evidenceIds": [
       "cipriani-2013-lithium-suicide",
+      "katz-2022-lithium-va",
+      "wang-2025-lithium-suicidality",
       "canmat-isbd-bipolar-2018",
       "nolen-2019-lithium-levels"
     ],
@@ -3417,6 +3419,7 @@
       "mcpheeters-2023-aud",
       "lieberman-2005-catie",
       "katz-2022-lithium-va",
+      "cipriani-2013-lithium-suicide",
       "clozapine-rems"
     ],
     "facultyReview": {

@@ -323,6 +323,46 @@
    }
   },
   {
+   "id": "ed_psychopharm_primer_cipriani-2013-lithium-suicide",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "cipriani-2013-lithium-suicide",
+   "claim": "Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides with lithium than placebo, based on few events.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "c": true,
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 23814104 resolved and matches. 48 RCTs, 6674 participants; lithium vs placebo for suicide OR 0.13 (95% CI 0.03-0.66) and all-cause death OR 0.38 (0.15-0.95). Directly supports the anti-suicidal claim on t_mood.md:13.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Lithium in the prevention of suicide in mood disorders: updated systematic review and meta-analysis.",
+    "doi": "10.1136/bmj.f3646",
+    "pmid": "23814104",
+    "url": "https://doi.org/10.1136/bmj.f3646"
+   }
+  },
+  {
    "id": "ed_psychopharm_primer_clozapine-rems",
    "status": "draft",
    "review": null,
@@ -448,7 +488,7 @@
    "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "katz-2022-lithium-va",
-   "claim": "Do not teach suicide prevention as certain: the VA randomized trial found no reduction in repeated suicide-related events with lithium added to usual care.",
+   "claim": "The VA trial adding lithium to usual care found no reduction in repeated suicide-related events.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -528,7 +568,7 @@
    "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "lam-2024-canmat-mdd",
-   "claim": "The depression guideline informs the ECT/TMS comparison.",
+   "claim": "For adults with major depression, CANMAT supports ECT as a first-line option in severe illness — psychotic or catatonic features, severe suicidal ideation, or a deteriorating physical condition — and otherwise generally recommends considering rTMS before ECT because it is less invasive.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -648,7 +688,7 @@
    "review": null,
    "page": "psychopharm_primer.md",
    "sourceId": "wang-2025-lithium-suicidality",
-   "claim": "A newer randomized-trial meta-analysis reported a nonsignificant reduction in suicide attempts.",
+   "claim": "An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -703,13 +743,13 @@
      "key": "B"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "C"
     },
     {
-     "t": "Winkelman et al. · 2025 · J Clin Sleep Med",
-     "sourceId": "winkelman-2025-aasm-rls",
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
      "key": "D"
     }
    ],
@@ -728,7 +768,7 @@
    "review": null,
    "page": "t_mood.md",
    "sourceId": "cipriani-2013-lithium-suicide",
-   "claim": "Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.",
+   "claim": "Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides than with placebo, based on few events.",
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -743,13 +783,13 @@
      "key": "B"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "C"
     },
     {
-     "t": "Nuij et al. · 2021 · The British journal of psychiatry : the journal of mental science",
-     "sourceId": "nuij-2021-safety-planning-meta-analysis",
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
      "key": "D"
     }
    ],
@@ -763,6 +803,46 @@
    }
   },
   {
+   "id": "ed_t_mood_katz-2022-lithium-va",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "katz-2022-lithium-va",
+   "claim": "The VA trial adding it to usual care found no reduction in repeated suicide-related events.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "c": true,
+     "sourceId": "katz-2022-lithium-va",
+     "key": "C"
+    },
+    {
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+   "pearl": "A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+   "citation": {
+    "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder: A Randomized Clinical Trial.",
+    "doi": "10.1001/jamapsychiatry.2021.3170",
+    "pmid": "34787653",
+    "url": "https://doi.org/10.1001/jamapsychiatry.2021.3170"
+   }
+  },
+  {
    "id": "ed_t_mood_nolen-2019-lithium-levels",
    "status": "draft",
    "review": null,
@@ -772,24 +852,24 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Bourque et al. · 2011 · Psychol Med",
-     "sourceId": "bourque-2011-migration-psychosis",
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
      "key": "A"
     },
     {
-     "t": "Yatham et al. · 2018 · Bipolar Disorders",
-     "sourceId": "canmat-isbd-bipolar-2018",
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "B"
-    },
-    {
-     "t": "Cipriani et al. · 2013 · BMJ",
-     "sourceId": "cipriani-2013-lithium-suicide",
-     "key": "C"
     },
     {
      "t": "Nolen et al. · 2019 · Bipolar Disord",
      "c": true,
      "sourceId": "nolen-2019-lithium-levels",
+     "key": "C"
+    },
+    {
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
      "key": "D"
     }
    ],
@@ -800,6 +880,46 @@
     "doi": "10.1111/bdi.12805",
     "pmid": "31112628",
     "url": "https://doi.org/10.1111/bdi.12805"
+   }
+  },
+  {
+   "id": "ed_t_mood_wang-2025-lithium-suicidality",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "wang-2025-lithium-suicidality",
+   "claim": "An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
+     "key": "C"
+    },
+    {
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "c": true,
+     "sourceId": "wang-2025-lithium-suicidality",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.Results excerpt is limited to the suicide-attempt estimate; it is not used to claim a significant benefit or absence of benefit.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The efficacy of lithium in the treatment of suicidal ideation, behavior and suicide: An updated systematic review and meta-analysis of randomized controlled trials.",
+    "doi": "10.1016/j.jad.2025.119487",
+    "pmid": "40441661",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40441661/"
    }
   },
   {
