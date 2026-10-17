@@ -19,6 +19,10 @@ WHAT IT RENDERS, at the `<!-- cotw-archive -->` marker in index_ms3.md / index_r
      summary (`tldr_<level>` / `tldr`, the line cotw_meta.py already renders above the case)
      and "(earlier edition)" on a topic's older editions.
 
+It also hands Today its "new this week" row (newest(): the same newest edition, {slug, title,
+date}), injected by build_deploy.py as FD_COTW_NEWEST and shown by fd_today.js only inside the
+week after the registry date.
+
 WHAT IT DOES NOT DO. It adds no clinical text: titles come from the shipped listing and the
 one-liners are the registry's authored `tldr` fields, rendered a second time. Readers of
 "what ships" go through shipped_pages.load_shipped_pages()
@@ -125,6 +129,19 @@ def model(data, site):
             seen_codes.add(row["topic"])
             seen_stems.add(stem)
     return {"site": site, "newest": rows[0] if rows else None, "groups": ordered, "count": len(rows)}
+
+
+def newest(data, site):
+    """The newest edition for `site`, reduced to what Today's announcement row needs (fd_today.js
+    fdNewCase): {slug, title, date: YYYY-MM-DD}, or None when no edition ships. The registry date
+    is the trigger -- the shell shows the row for its FD_NEWCASE_WINDOW_DAYS from that date and
+    nothing afterwards -- so a late merge shortens the window rather than extending it. Injected
+    by build_deploy.py as FD_COTW_NEWEST; resident_section.py swaps in this site's value."""
+    row = model(data, site)["newest"]
+    if not row:
+        return None
+    d = row["date"]
+    return {"slug": row["slug"], "title": row["title"], "date": "%s-%s-%s" % (d[:4], d[4:6], d[6:8])}
 
 
 # Topic and track tags on every row (C2, 2026-10-17): the topic is the hub label the row is grouped
