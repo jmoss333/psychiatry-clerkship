@@ -646,7 +646,9 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 85)  # +pharmacy.html 2026-09-30
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         # 94 as of 2026-09-30: +pharmacy.html in both sites' "Interactive tools" column.
-        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 94)
+        # 90 as of 2026-10-17 (C2): orientation, osce, shelf, reading_map are MS3-track pages,
+        # curriculum.siteLibrary.resident.exclusions -- reachable by link, out of Library and search.
+        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 90)
         for site, payload, count in (("ms3", ms3, 31), ("resident", resident, 35)):
             selection = payload["curriculum"]["essentials"]
             essential_refs = [ref for section in selection for ref in section["refs"]]

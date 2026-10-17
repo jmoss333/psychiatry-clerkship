@@ -208,6 +208,11 @@ const REGISTRY = Object.freeze({
     why: 'Real topic_meta.json supplies the search content; the governance triplets it attaches are inline '
       + 'fixtures, so no assertion depends on what is signed.',
   },
+  'tests/search-golden.test.mjs': {
+    kind: 'invariant',
+    why: 'Real topic_meta.json supplies the golden-query content; the governance triplets it attaches are '
+      + 'inline fixtures, so no assertion depends on what is signed.',
+  },
   'tests/search-ward-benchmark.test.mjs': {
     kind: 'invariant',
     why: 'Real topic_meta.json supplies the benchmark content; the governance triplets it attaches are inline '
