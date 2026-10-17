@@ -539,7 +539,9 @@ test('real chips follow the item: every tool row wears "tool", a rights referenc
 // makes the partition exact). The Everything view renders them as plain <h3> headings inside the one
 // open group -- never nested disclosure -- so nothing the inventory counts as reachable is hidden.
 
-const unesc = (s) => s.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+// Reverse fdEsc for comparing rendered names with the source names: `&amp;` is undone LAST, so an
+// escaped `&amp;lt;` can never be unescaped twice (CodeQL js/double-escaping).
+const unesc = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
 const subheads = (html) => [...html.matchAll(/<h3 class="fd-kit__subhead">([^<]*)<span class="fd-kit__subcount"> · (\d+)<\/span><\/h3>/g)].map((m) => [unesc(m[1]), Number(m[2])]);
 
 test('every grouped column renders its sub-groups in order, each ref exactly once, no sub-group over 12 rows, totals unchanged', () => {
