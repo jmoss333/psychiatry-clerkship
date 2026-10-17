@@ -104,6 +104,7 @@ SAFETY_KIT_REFS = (
     "exp_consult.md",
     "t_sud.md",
     "delirium.md",
+    "catatonia.md",  # DRAFT 2026-10-17 (C1): pending faculty attestation of catatonia.md
 )
 PATH_CONTRACT = {
     "ms3": ("ms3-six-week", 6),
@@ -570,7 +571,7 @@ def main(argv):
         bad("safetyKit", "must be a list")
         kit = []
     if len(kit) != len(SAFETY_KIT_REFS):
-        bad("safetyKit", "must contain exactly 5 current protocols (got %d)" % len(kit))
+        bad("safetyKit", "must contain exactly %d current protocols (got %d)" % (len(SAFETY_KIT_REFS), len(kit)))
     kit_refs = []
     for ent in kit:
         if not isinstance(ent, dict):
@@ -602,7 +603,7 @@ def main(argv):
     if len(set(kit_refs)) != len(kit_refs):
         bad("safetyKit", "protocol refs must be unique")
     if tuple(kit_refs) != SAFETY_KIT_REFS:
-        bad("safetyKit", "must list the current five protocols in canonical order: %s"
+        bad("safetyKit", "must list the current kit protocols in canonical order: %s"
             % ", ".join(SAFETY_KIT_REFS))
 
     sources = evidence_registry.get("sources", []) if isinstance(evidence_registry, dict) else []
