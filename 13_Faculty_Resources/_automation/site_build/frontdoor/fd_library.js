@@ -19,6 +19,7 @@
      kitSection      the selected section key ('all', 'week', 'tools', or a group index)
      kitToolPreview  the previewed ref (Essentials, desktop only; widened to readings in Phase 2)
      filter          the filter query, matched against titles and hints in the current view
+     libraryTask     'all' | 'interview' | 'rounds', a curated navigation shortlist
      week            the actual rotation week (drives "This week"), never the Path's browsed week
      caseArc         longitudinal_case.json (READ-ONLY) for "Case week N" / "Where it is used"
      pairings        pairings.json (READ-ONLY) for "Practice with"
@@ -169,6 +170,29 @@ function fdLibraryViews(view, counts){
   return out+'</nav>';
 }
 
+function fdLibraryTasks(task){
+  var choices=[{id:'all',label:'All'},{id:'interview',label:'Interview'},{id:'rounds',label:'Rounds'}];
+  var out='<div class="fd-library__tasks" role="group" aria-label="Library tasks"><span>Prepare for</span>';
+  for(var i=0;i<choices.length;i++){
+    var choice=choices[i], active=task===choice.id;
+    out+='<button type="button" class="fd-library__task'+(active?' is-active':'')+'" data-fd-library-task="'+choice.id+'" aria-pressed="'+(active?'true':'false')+'">'+choice.label+'</button>';
+  }
+  return out+'</div>';
+}
+
+function fdLibraryTaskEmpty(query, label){
+  var q=fdLibraryQuery(query);
+  return '<section class="fd-library__empty" aria-labelledby="fd-library-empty-h">'+
+    '<h2 class="fd-library__empty-h" id="fd-library-empty-h">No resources match these filters</h2>'+
+    '<p class="fd-library__empty-p">'+fdEsc(label)+' is a small shortlist. Try another section, clear a filter, or search the whole library.</p>'+
+    '<div class="fd-library__empty-actions">'+
+      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search data-fd-search-query="'+fdEsc(q)+'">Search the library</button>'+
+      '<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-task="all">Clear task</button>'+
+      '<button type="button" class="fd-btn fd-btn--ghost" data-fd-kit-section="all">All sections</button>'+
+      (q?'<button type="button" class="fd-btn fd-btn--ghost" data-fd-library-filter-clear>Clear filter</button>':'')+
+    '</div></section>';
+}
+
 /* The filter field. The "/" chip shows only while there is no query and only on desktop (CSS);
    "Clear" takes its place once there is one. The value is re-rendered from state on every
    keystroke -- fd_wire.js restores the caret after the repaint, as it does for Search. */
@@ -285,6 +309,11 @@ function fdLibraryFooter(query){
      after       markup after the groups (the teaching companion), '' when none */
 function fdLibraryShell(model, opts){
   var m=model, o=opts||{}, query=fdLibraryQuery(o.filter), i, g;
+  var taskRefs=fdLibraryTaskRefs(o.libraryTask,o.audience), task=taskRefs?o.libraryTask:'all';
+  var taskLabel=task==='interview'?'Interview':'Rounds';
+  var taskSet={}, scopedTask={}, taskTotal=0, preview=m.preview;
+  for(i=0;taskRefs&&i<taskRefs.length;i++) taskSet[taskRefs[i]]=true;
+  function matches(item){ return (!taskRefs||taskSet[item.ref]===true)&&fdLibraryMatches(item,query); }
   var ctx={index:m.index,kit:fdLibrarySafetyRefs(m.index),caseArc:o.caseArc,query:query,
     compact:m.view==='full',preview:!!m.preview,selectedRef:m.preview?m.preview.ref:''};
   /* Apply the filter to the scoped groups; sections count their own matches while a query is
@@ -293,19 +322,45 @@ function fdLibraryShell(model, opts){
   for(i=0;i<m.groups.length;i++){
     g=m.groups[i];
     var keep=[];
-    for(var j=0;j<g.items.length;j++){ if(fdLibraryMatches(g.items[j],query)) keep.push(g.items[j]); }
+    for(var j=0;j<g.items.length;j++){
+      var item=g.items[j];
+      if(taskRefs&&taskSet[item.ref]) scopedTask[item.ref]=item;
+      if(matches(item)) keep.push(item);
+    }
     matched+=keep.length;
     if(keep.length) visible.push({key:g.key,name:g.name,items:keep});
   }
-  if(query){
+  /* Task order spans the original groups: safety must precede the interview reading AND
+     its tool, even when Everything places tools before safety. Membership stays scoped. */
+  if(taskRefs){
+    var taskItems=[];
+    for(i=0;i<taskRefs.length;i++){
+      var member=scopedTask[taskRefs[i]];
+      if(member){ taskTotal++; if(fdLibraryMatches(member,query)) taskItems.push(member); }
+    }
+    matched=taskItems.length;
+    visible=matched?[{key:task,name:taskLabel,items:taskItems}]:[];
+    if(m.view==='essentials'){
+      preview=null;
+      for(i=0;i<taskItems.length;i++) if(taskItems[i].ref===o.kitToolPreview) preview=taskItems[i];
+      if(!preview&&matched) preview=taskItems[0];
+    }
+    ctx.preview=!!preview; ctx.selectedRef=preview?preview.ref:'';
+  }
+  if(query||taskRefs){
     for(i=0;i<m.sections.length;i++){
       var s=m.sections[i], n=0;
-      for(var k=0;k<(s.items||[]).length;k++){ if(fdLibraryMatches(s.items[k],query)) n++; }
+      for(var k=0;k<(s.items||[]).length;k++){ if(matches(s.items[k])) n++; }
       sectionMatches[s.key]=n;
     }
   }
   var status;
-  if(query){
+  if(taskRefs){
+    var sectionLabel='';
+    for(i=0;i<m.sections.length;i++) if(m.sections[i].key===m.selected&&m.selected!=='all') sectionLabel=' in '+m.sections[i].label;
+    status=query?matched+' of '+taskTotal+' '+taskLabel+' resources'+sectionLabel+' match “'+query+'”.':
+      'Showing '+matched+' '+taskLabel+' resources'+sectionLabel+'.';
+  } else if(query){
     status=matched?(matched+' of '+m.total+' '+m.noun+' match “'+query+'”.'):('No titles match “'+query+'”.');
   } else status=m.status;
 
@@ -316,27 +371,35 @@ function fdLibraryShell(model, opts){
      back to this view), so the segmented control is withheld rather than offering a dead option. */
   var views=(m.counts&&m.counts.essentials)||m.view==='essentials'?fdLibraryViews(m.view,m.counts):'';
   out+='<div class="fd-library__controls">'+views+fdLibraryFilter(o.filter)+'</div>';
+  out+=fdLibraryTasks(task);
   out+='<p class="fd-library__status" role="status" aria-live="polite">'+fdEsc(status)+'</p>';
-  var showPreview=!!m.preview&&!(query&&!matched);
+  var showPreview=!!preview&&!(query&&!matched);
   out+='<div class="fd-library__body'+(showPreview?' has-preview':'')+'">';
   out+='<nav class="fd-kit__index" aria-label="'+(m.view==='essentials'?'Essentials sections':'Catalogue sections')+'"><div class="fd-kit__index-track">';
   for(i=0;i<m.sections.length;i++){
     var sec=m.sections[i];
-    out+=fdKitIndexButton(sec.key,sec.label,query?sectionMatches[sec.key]:sec.count,m.selected);
+    out+=fdKitIndexButton(sec.key,sec.label,(query||taskRefs)?sectionMatches[sec.key]:sec.count,m.selected);
   }
   out+='</div></nav>';
   out+='<div class="fd-kit__readings">';
-  if(m.readings.pending) out+='<div class="fd-kit__review"><details><summary>Faculty re-review · '+m.readings.pending+' of '+m.readings.total+' readings</summary>'+
+  var review=m.readings;
+  if(taskRefs){
+    review={total:0,pending:0};
+    for(i=0;i<taskItems.length;i++) if(taskItems[i].kind!=='tool'){
+      review.total++; if(taskItems[i].governance&&taskItems[i].governance.status==='pending') review.pending++;
+    }
+  }
+  if(review.pending) out+='<div class="fd-kit__review"><details><summary>Faculty re-review · '+review.pending+' of '+review.total+' readings</summary>'+
     '<p>These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.</p></details></div>';
-  if(query&&!matched){
-    out+=fdLibraryEmpty(query);
+  if((query||taskRefs)&&!matched){
+    out+=taskRefs?fdLibraryTaskEmpty(query,taskLabel):fdLibraryEmpty(query);
   } else {
     for(i=0;i<visible.length;i++) out+=fdLibraryGroup(visible[i].name,visible[i].items,ctx);
     if(query) out+=fdLibraryFooter(query);
-    else out+=m.after||'';
+    else if(!taskRefs) out+=m.after||'';
   }
   out+='</div>';
-  if(showPreview) out+=fdLibraryPreview(m.preview,{index:m.index,kit:ctx.kit,caseArc:o.caseArc,pairings:o.pairings,audience:o.audience});
+  if(showPreview) out+=fdLibraryPreview(preview,{index:m.index,kit:ctx.kit,caseArc:o.caseArc,pairings:o.pairings,audience:o.audience});
   out+='</div></section>';
   return out;
 }

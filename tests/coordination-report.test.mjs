@@ -88,6 +88,33 @@ function run(cwd, ...args) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
+// A tiny timeout alone is not an incomplete-sweep fixture: every submitted job can finish
+// before wait() starts on a busy runner. Hold peer examinations until the timed wait returns,
+// then release them so the real report still finishes its own checkout and shuts down normally.
+function budgetCut(cwd, ...args) {
+  const launcher = `import importlib.util, sys, threading
+spec = importlib.util.spec_from_file_location('coordination', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+release = threading.Event()
+examine, wait = module.examine, module.wait
+def held_examine(repo, worktree, base):
+    if not worktree['self']: release.wait()
+    return examine(repo, worktree, base)
+def timed_wait(futures, timeout=None):
+    if timeout is None: release.set()
+    try: return wait(futures, timeout=timeout)
+    finally: release.set()
+module.examine, module.wait = held_examine, timed_wait
+sys.argv = sys.argv[1:]
+try: raise SystemExit(module.main())
+finally: release.set()
+`;
+  const r = spawnSync('python3', ['-c', launcher, SCRIPT, '--budget', '0.000001', ...args],
+    { cwd, encoding: 'utf8', env: ENV, timeout: 30000 });
+  return { code: r.status, out: r.stdout, err: r.stderr };
+}
+
 function report(cwd, ...args) {
   const r = run(cwd, '--json', ...args);
   assert.ok(r.out.startsWith('{'), r.err || r.out);
@@ -165,14 +192,17 @@ test('--check: 0 clean, 1 on overlap or risk, 2 when it could not check everythi
   assert.equal(run(busy.self, '--check').code, 1);
   assert.equal(run(busy.self).code, 0, 'report mode never blocks');
 
-  // A budget too small to finish: says PARTIAL, still examines this checkout, and --check
-  // refuses to call a partial sweep clean.
-  const cut = report(busy.self, '--budget', '0.000001');
-  assert.equal(cut.data.partial, true);
-  assert.ok(cut.data.worktrees_examined < 7);
-  assert.deepEqual(cut.data.self.changed, ['shared.txt']);
-  assert.match(run(busy.self, '--budget', '0.000001').out, /PARTIAL — examined \d\/7/);
-  assert.equal(run(busy.self, '--budget', '0.000001', '--check').code, 2);
+  // Peers are still pending at the timeout: says PARTIAL, still examines this checkout,
+  // and --check refuses to call the incomplete sweep clean.
+  const cut = budgetCut(busy.self, '--json', '--check');
+  assert.equal(cut.code, 2, cut.out + cut.err);
+  const partial = JSON.parse(cut.out);
+  assert.equal(partial.partial, true);
+  assert.equal(partial.worktrees_examined, 1);
+  assert.deepEqual(partial.self.changed, ['shared.txt']);
+  const partialReport = budgetCut(busy.self);
+  assert.equal(partialReport.code, 0, partialReport.err);
+  assert.match(partialReport.out, /PARTIAL — examined 1\/7/);
 
   const nobase = run(busy.self, '--base', 'origin/does-not-exist');
   assert.equal(nobase.code, 2);

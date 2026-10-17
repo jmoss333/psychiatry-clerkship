@@ -30,7 +30,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
   'data-fd-close-search','data-fd-search-expand','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
-  'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details',
+  'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details','data-fd-library-task',
   'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
@@ -52,6 +52,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-kit-section':'choose a Library section',
   'data-fd-kit-tool':'preview an Essentials item',
   'data-fd-library-details':'open Library resource details',
+  'data-fd-library-task':'choose Library task',
   /* The filter field commits on input events, like the exam-date field, and is deliberately
      absent from FD_ACTION_SELECTOR. data-fd-search-query rides on a data-fd-search control and
      seeds the dialog with the Library filter's query (zero results, filtered footer). */
@@ -126,6 +127,8 @@ function fdOwn(o,k){ return !!o&&Object.prototype.hasOwnProperty.call(o,k); }
 
 function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='care'||tab==='today'; }
 
+function fdValidLibraryTask(task){ return task==='all'||task==='interview'||task==='rounds'; }
+
 function fdClone(o){
   var out={}, src=o||{};
   for(var k in src){ if(fdOwn(src,k)) out[k]=src[k]; }
@@ -172,9 +175,10 @@ function fdResolveState(url, stored, options){
   if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
   out.libraryView='essentials';
-  /* Section, filter and preview are shell memory (one-thread redesign, D3): a reload always
+  /* Section, task, filter and preview are shell memory (one-thread redesign, D3): a reload always
      starts the Library at All with an empty filter, whatever was stored or in the URL. */
   out.kitSection='all';
+  out.libraryTask='all';
   out.libraryFilter='';
   if(typeof src.openId==='string'&&src.openId) out.openId=src.openId;
   if(fdValidTab(src.fromTab)) out.fromTab=src.fromTab;
@@ -723,6 +727,12 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-kit-tool')){
     return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
+  if(fdOwn(a,'data-fd-library-task')){
+    var libraryTask=a['data-fd-library-task'];
+    if(s.screen!=='app'||s.tab!=='library'||s.openId||s.sheet||s.searchOpen||
+       !fdValidLibraryTask(libraryTask)) return {patch:{},route:null,effect:null};
+    return {patch:{libraryTask:libraryTask},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-library-details')){
     ref=String(a['data-fd-library-details']||'');
     var detailColumns=c.index&&c.index.columns||[];
@@ -821,6 +831,8 @@ function fdDispatch(attrs, context, state){
        memory for ONE visit. Patched only when set so an unfiltered transition is unchanged. */
     if(s.libraryFilter) patch.libraryFilter='';
     if(s.kitToolPreview) patch.kitToolPreview='';
+    /* Task follows Essentials/Everything switches, but a new Library visit starts at All. */
+    if((tab!=='library'||s.tab!=='library')&&s.libraryTask&&s.libraryTask!=='all') patch.libraryTask='all';
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-role')){
@@ -905,6 +917,7 @@ function fdDispatch(attrs, context, state){
     if(fdLandsOnEssentials()){
       var home=fdDispatch({'data-fd-tab':'library'},c,s);
       home.patch.sheet=null;
+      if(s.libraryTask&&s.libraryTask!=='all') home.patch.libraryTask='all';
       return home;
     }
     return {
@@ -1267,7 +1280,7 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-details],[data-fd-library-filter-clear],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-details],[data-fd-library-task],[data-fd-library-filter-clear],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
@@ -1603,17 +1616,18 @@ function fdWire(root, initialState, opts){
     for(var k in patch){ if(fdOwn(patch,k)) return true; }
     return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
   }
-  /* The route keys every entry carries, plus the Library's section and filter (owner decision D3,
-     one-thread redesign): both live ONLY here and in memory -- never in the URL, never in
+  /* The route keys every entry carries, plus the Library's section, task and filter (D3):
+     these live ONLY here and in memory -- never in the URL, never in
      storage -- so Back and Forward restore them, and a reload (which reads neither) resets them.
      The preview (kitToolPreview) is deliberately absent: it stays transient. */
-  var FD_HISTORY_KEYS=['tab','viewWeek','openId','fromTab','libraryView','kitSection','libraryFilter'];
+  var FD_HISTORY_KEYS=['tab','viewWeek','openId','fromTab','libraryView','kitSection','libraryTask','libraryFilter'];
   function historySnapshot(){
     var snap={};
     for(var i=0;i<FD_HISTORY_KEYS.length;i++){
       var key=FD_HISTORY_KEYS[i];
       if(state[key]===undefined) continue;
       if(key==='kitSection'&&(state.tab!=='library'||state[key]==='all')) continue;
+      if(key==='libraryTask'&&(state.tab!=='library'||state[key]==='all'||!fdValidLibraryTask(state[key]))) continue;
       if(key==='libraryFilter'&&(state.tab!=='library'||!state[key])) continue;
       snap[key]=state[key];
     }
@@ -1703,7 +1717,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','libraryFilter','careIntentId','carePackIds','offlineOpen'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','libraryTask','libraryFilter','careIntentId','carePackIds','offlineOpen'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -2128,7 +2142,7 @@ function fdWire(root, initialState, opts){
     /* Returning from an item keeps the Library's section and filter (spec section 2 acceptance:
        "Opening an item and pressing Back returns to the same view, section and scroll"). Until
        2026-10-04 this line reset kitSection to All on every return. */
-    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryFilter');
+    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryTask')||fdOwn(patch,'libraryFilter');
     var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
@@ -2205,13 +2219,13 @@ function fdWire(root, initialState, opts){
     }
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
-    var visitOnly=fdOwn(patch,'searchExpanded')||fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryFilter')||
+    var visitOnly=fdOwn(patch,'searchExpanded')||fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryTask')||fdOwn(patch,'libraryFilter')||
       fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'careShareId')||
       fdOwn(patch,'offlineOpen')||!!(result.effect&&(result.effect.type==='refresh-offline'||
         result.effect.type==='copy-care-links'));
     var careShareTransition=fdOwn(patch,'careShareId');
     for(var saveKey in patch){
-      if(fdOwn(patch,saveKey)&&saveKey!=='searchExpanded'&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryFilter'&&
+      if(fdOwn(patch,saveKey)&&saveKey!=='searchExpanded'&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryTask'&&saveKey!=='libraryFilter'&&
          saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='careShareId'&&
          saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
         visitOnly=false;
@@ -2231,7 +2245,7 @@ function fdWire(root, initialState, opts){
     }
     /* The Essentials rail rebuilds with the filtered results. Keep keyboard focus on the exact
        section button the learner chose, which also scrolls a clipped phone rail into view. */
-    if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
+    if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryTask'))&&!afterOverlay&&!beforeHadOverlay){
       var rebuiltFilter=equivalentControl(invoker,root);
       if(rebuiltFilter&&rebuiltFilter.focus) try{rebuiltFilter.focus();}catch(_){}
     }
@@ -2574,10 +2588,11 @@ function fdWire(root, initialState, opts){
         if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
       }
       if(merged.libraryView!=='full') merged.libraryView='essentials';
-      /* Section and filter come back from the entry that recorded them (D3); an entry without
+      /* Section, task and filter come back from the entry that recorded them (D3); an entry without
          them -- every non-Library entry, and every entry written before this change -- means All
          and no filter. Anything but a string is treated as absent. */
       if(typeof merged.kitSection!=='string'||!merged.kitSection) merged.kitSection='all';
+      if(merged.tab!=='library'||!fdValidLibraryTask(merged.libraryTask)) merged.libraryTask='all';
       if(typeof merged.libraryFilter!=='string') merged.libraryFilter='';
     } else {
       merged.roles=o.roles||merged.roles;
