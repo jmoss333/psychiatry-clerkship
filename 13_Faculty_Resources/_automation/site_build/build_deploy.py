@@ -250,6 +250,16 @@ _pretest=qbank_public.pretest_pool(_qb_public)
 with open(OUT+"/pretest_pool.json","w",encoding="utf-8") as _fh:
     json.dump(_pretest,_fh,ensure_ascii=False)
 print("pretest pool:",len(_pretest["items"]),"of",len(qbank_public.PRETEST_CATEGORIES),"categories")
+# Pre/post knowledge check (DRAFT, L8 outcomes design) -- CLERKSHIP_PREPOST, default off.
+# Off: no forms file and the shell marker expands to nothing (see the needle block below).
+_PREPOST=common.prepost_enabled()
+if _PREPOST:
+    _prepost=qbank_public.prepost_forms(_qb_public)
+    with open(OUT+"/prepost_forms.json","w",encoding="utf-8") as _fh:
+        json.dump(_prepost,_fh,ensure_ascii=False)
+    print("pre/post forms: shipped, %d + %d items"%(len(_prepost["forms"]["A"]),len(_prepost["forms"]["B"])))
+else:
+    print("pre/post forms: off (CLERKSHIP_PREPOST=%s)"%common.prepost_mode())
 
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
@@ -591,6 +601,14 @@ for _needle,_ids,_label in ((
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
         raise SystemExit(1)
     _spa_t=_spa_t.replace(_needle,"var %s=%s;"%(_label,json.dumps(_ids)))
+try:
+    _spa_t=common.apply_prepost_marker(_spa_t,_PREPOST)
+except ValueError as _e:
+    print("BUILD ABORTED — %s"%_e)
+    raise SystemExit(1)
+if not _PREPOST and (common.PREPOST_SIGNATURE in _spa_t or os.path.exists(OUT+"/prepost_forms.json")):
+    print("BUILD ABORTED — CLERKSHIP_PREPOST=off but the pre/post check is present")
+    raise SystemExit(1)
 # The longitudinal case ("One Patient, Six Weeks"), READ-ONLY, for Today's "On the unit this
 # week" (one-thread redesign, Phase 1). Injected rather than fetched so the section exists at
 # first render: a runtime fetch made Today's DOM churn after boot and two loads of the same page

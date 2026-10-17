@@ -106,6 +106,45 @@ def pretest_pool(public_bank):
     return {"v": 1, "generated": "build", "items": pool}
 
 
+def _prepost_item(item, category):
+    return {"id": item["id"], "cat": category, "stem": item.get("stem", ""),
+            "options": [{"key": op.get("key"), "t": op.get("t", ""), "c": op.get("c") is True}
+                        for op in item.get("options", [])]}
+
+
+def prepost_forms(public_bank):
+    """Two parallel, disjoint pre/post forms. DRAFT (L8 outcomes design); shipped only
+    when CLERKSHIP_PREPOST=on.
+
+    One item per blueprint category per form, from the same attested projection as
+    practice. Single-best-answer items only, with four options and one key. Placement
+    items are excluded. In each category the two best-ranked candidates (closest to
+    difficulty 2, then high-yield, then id: the placement's own rule) go one to each form,
+    alternating which form gets the first-ranked item so neither form is systematically
+    easier. Explanations and pearls are left out: the check shows no feedback.
+
+    Known limit: these items stay in the practice pool, so a learner can meet them before
+    the end sitting. Holding them out is a question-bank decision, not made here.
+    """
+    bank = project_question_bank(public_bank)
+    placement = {item["id"] for item in pretest_pool(public_bank)["items"]}
+    forms = {"A": [], "B": []}
+    for index, category in enumerate(PRETEST_CATEGORIES):
+        candidates = [item for item in bank["items"]
+                      if item.get("category") == category and item.get("type") == "sba"
+                      and item["id"] not in placement and len(item.get("options", [])) == 4
+                      and sum(option.get("c") is True for option in item["options"]) == 1]
+        candidates.sort(key=lambda item: (abs((item.get("difficulty") or 2) - 2),
+                                          0 if item.get("hy") else 1, item["id"]))
+        if len(candidates) < 2:
+            raise ValueError("pre/post forms: fewer than two eligible items for " + category)
+        first, second = candidates[0], candidates[1]
+        a, b = (first, second) if index % 2 == 0 else (second, first)
+        forms["A"].append(_prepost_item(a, category))
+        forms["B"].append(_prepost_item(b, category))
+    return {"v": 1, "status": "draft", "forms": forms}
+
+
 def _read(path):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -126,6 +165,8 @@ def verify_publication(out, canonical):
         raise ValueError("question bank publication: learner JSON differs from the complete approved projection")
     if _read(out / "pretest_pool.json") != pretest_pool(expected):
         raise ValueError("question bank publication: placement questions differ from the approved projection")
+    if (out / "prepost_forms.json").exists() and _read(out / "prepost_forms.json") != prepost_forms(expected):
+        raise ValueError("question bank publication: pre/post forms differ from the approved projection")
     ids = sorted(item["id"] for item in expected["items"])
     shell = (out / "index.html").read_text(encoding="utf-8")
     matches = re.findall(r"var RELEASED_QB_IDS=(\[[^\]]*\]);", shell)
