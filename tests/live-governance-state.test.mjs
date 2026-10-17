@@ -208,6 +208,11 @@ const REGISTRY = Object.freeze({
     why: 'Real topic_meta.json supplies the search content; the governance triplets it attaches are inline '
       + 'fixtures, so no assertion depends on what is signed.',
   },
+  'tests/cotw-discovery.test.mjs': {
+    kind: 'invariant',
+    why: 'Real topic_meta.json only feeds the reader render; every assertion is about which Case-of-the-Week '
+      + 'row the chrome names, which no review state changes.',
+  },
   'tests/search-golden.test.mjs': {
     kind: 'invariant',
     why: 'Real topic_meta.json supplies the golden-query content; the governance triplets it attaches are '
