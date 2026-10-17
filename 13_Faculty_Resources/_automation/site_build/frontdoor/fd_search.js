@@ -417,9 +417,28 @@ function fdSearchMatches(index, query, synonyms, state){
     return (b._score-a._score) ||
       (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
   });
-  var aliasItems=[], rest=[];
+  /* Item tiers, by position. ALIAS: a recorded faculty statement that a phrasing means a
+     resource (#429) -- it outranks a protocol that merely carries the topic word in its title.
+     EXACT: the learner typed a resource's whole name (normalised like the title: punctuation,
+     dates and audience suffix stripped), the strongest statement a query can make about what
+     it wants. Then everything else by score.
+     The exact tier exists because of the diagnosis aliases added 2026-10-17: a one-word alias
+     ("psychosis" -> the psychosis guide) also sits inside other pages' titles ("First-Episode
+     Psychosis (Sep 7)"), and with aliases as the only tier the guide hijacked that page's own
+     exact title -- tests/search-discovery.test.mjs's generated title variants are the pin.
+     Ordering (see the return below), with the safety prefix always intact:
+       - an exact item that is ALSO an alias hit keeps the alias privilege and leads the alias
+         tier ("decisional capacity" -> the capacity tool, above the consult sheet, #429);
+       - an exact item that is NOT an alias ("Catatonia [Aug 31] -- MS3?") follows the haystack
+         protocols -- a named resource never displaces the safety prefix
+         (frontdoor-search-gate.mjs) -- and precedes every other alias item;
+       - with no exact item the order is unchanged: alias, haystack protocols, rest. */
+  var exactQuery=fdSearchNormalize(rawQuery), exactReading=fdSearchNormalize(readingQuery);
+  var exactAlias=[], exactOnly=[], aliasItems=[], rest=[];
   for(var s=0;s<itemResults.length;s++){
-    (itemResults[s]._alias?aliasItems:rest).push(itemResults[s]);
+    var exactTitle=fdSearchNormalize(itemResults[s].item.searchTitle||itemResults[s].item.title||'');
+    var isExact=!!exactTitle&&(exactTitle===exactQuery||exactTitle===exactReading);
+    (isExact?(itemResults[s]._alias?exactAlias:exactOnly):(itemResults[s]._alias?aliasItems:rest)).push(itemResults[s]);
     delete itemResults[s]._score; delete itemResults[s]._alias;
   }
   /* Haystack-matched protocols rank among themselves by the same score as items (with the same
@@ -436,7 +455,8 @@ function fdSearchMatches(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(careResults, aliasItems, hayProtocols, rest);
+  if(exactOnly.length) return protoResults.concat(careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest);
+  return protoResults.concat(careResults, exactAlias, aliasItems, hayProtocols, rest);
 }
 
 /* Keep one matching/ranking pass for both the honest total and the visible rows. The keyboard
