@@ -397,7 +397,7 @@ test('reading place: Settings erase survives reload and pagehide', async ({ page
   await expectHealthy(page);
 });
 
-test('reading place: guest, guide, tool, and faculty preview cannot claim a saved ordinary reading', async ({ page }, testInfo) => {
+test('reading place: learner guides save positions; guest, tool, and faculty preview stay excluded', async ({ page }, testInfo) => {
   await controlledReading(page);
   await page.goto(`/?page=${READING_REF}`);
   const guest = await readingReady(page);
@@ -410,7 +410,7 @@ test('reading place: guest, guide, tool, and faculty preview cannot claim a save
   }, audience(testInfo).role);
   await page.goto('/?page=orientation.md');
   await expect(page.locator('.fd-reader--guide')).toBeVisible();
-  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  await expect(page.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
   await page.goto('/?tool=question-bank-practice.html');
   await expect(page.locator('.fd-reader--tool')).toBeVisible();
   await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);

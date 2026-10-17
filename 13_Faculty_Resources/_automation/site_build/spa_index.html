@@ -3268,18 +3268,11 @@
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
             var arrivalSearch=options.search===undefined?location.search:options.search;
             if(!returning)fdGuideBookmark=null;
-            if(guide.leads){
-              /* A page whose sections come from bold leads read with a saved place before it had
-                 a guide; it keeps one. An explicit passage or a return from practice still decides
-                 where it opens, so the saved place only saves on those arrivals. */
-              var passage=new URLSearchParams(arrivalSearch||'');
-              installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
-            }else{
-              var statusNode=contentEl.querySelector('[data-fd-reading-status]');
-              var topNode=contentEl.querySelector('[data-fd-reading-top]');
-              if(statusNode)statusNode.remove();
-              if(topNode)topNode.remove();
-            }
+            /* Every reading guide keeps a saved place. An explicit passage or a return from
+               practice still decides where it opens, so the saved place only saves on those
+               arrivals. With no passage, guide.arrive is inert and the saved place restores. */
+            var passage=new URLSearchParams(arrivalSearch||'');
+            installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
             /* Initial resources mount behind the edition startup gate. Their promise must
                settle before focus/scroll can reach the now-visible DOM. Guard the next frame
                so an abandoned load cannot steal focus from the next route. */

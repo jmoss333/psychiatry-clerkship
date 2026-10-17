@@ -12,6 +12,8 @@ tools. This adds navigation convenience, not clinical advice, assessment, or evi
 - “Continue reading” shows at most three unfinished readings with a valid saved position,
   ordered by that position's update time. Opening a reading without saving a position does not
   create a new history record. Continue uses the existing reader resume action and governance.
+- Sectioned guides also save positions. Explicit passage/search links and returns from practice
+  retain arrival priority; collapsed headings cannot become saved positions or resize targets.
 - Only current audience resources actually placed in the Library are eligible. Hidden,
   unlisted, missing, tool, and completed references never enter recent readings.
 - Each recent reading has Remove; Clear saved places removes all saved reading positions.

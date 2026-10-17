@@ -1376,13 +1376,15 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function availableAnchors(){return nodes.map(anchor);}
   function scrollY(){return typeof win.scrollY==='number'&&isFinite(win.scrollY)?Math.max(0,win.scrollY):0;}
   function absoluteTop(node){return node.getBoundingClientRect().top+scrollY();}
+  function rendered(node){return !node.getClientRects||node.getClientRects().length>0;}
   function current(){
-    var y=scrollY(), chosen=nodes[0], pos=absoluteTop(chosen), j, next;
-    for(j=1;j<nodes.length;j++){
+    var y=scrollY(), chosen=null, pos=0, j, next;
+    for(j=0;j<nodes.length;j++){
+      if(!rendered(nodes[j]))continue;
       next=absoluteTop(nodes[j]);
-      if(next<=y&&next>=pos){chosen=nodes[j];pos=next;}
+      if(!chosen||(next<=y&&next>=pos)){chosen=nodes[j];pos=next;}
     }
-    return {heading:anchor(chosen),offset:Math.max(0,y-pos)};
+    return chosen?{heading:anchor(chosen),offset:Math.max(0,y-pos)}:null;
   }
   function write(places){
     state.readingPlaces=places;
@@ -1394,8 +1396,11 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function capture(){
     if(!active||!ready||suppressedY!==null)return;
     if(Math.abs(scrollY()-baselineY)<=4){pendingPosition=null;return;}
-    var position=pendingPosition||current();
+    var position=pendingPosition;
+    if(position&&!nodes.some(function(node){return anchor(node)===position.heading&&rendered(node);}))position=null;
+    position=position||current();
     pendingPosition=null;
+    if(!position)return;
     write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
     baselineY=scrollY();
   }
@@ -1429,7 +1434,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
       var resolved=place&&fdReadingResume(place,availableAnchors()), target=null, j;
       if(resolved){
         for(j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
-        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
+        if(target&&rendered(target)){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
       }
       ready=true;
     });

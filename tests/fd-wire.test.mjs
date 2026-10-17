@@ -3902,6 +3902,34 @@ test('reading place assigns deterministic heading ids, saves the latest debounce
   assert.equal(h.listeners.size, 0);
 });
 
+test('reading capture skips headings hidden by collapsed guide sections', () => {
+  const h=readingPlaceHarness();
+  h.install();h.flush();
+  const hidden=h.headings[3];
+  hidden.getClientRects=()=>[];
+  hidden.getBoundingClientRect=()=>({top:0});
+  h.setScroll(960);h.listeners.get('scroll')();h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading,h.headings[2].getAttribute('data-fd-reading-anchor'));
+  assert.equal(h.state.readingPlaces['a.md'].offset,60);
+  assert.ok(hidden.getAttribute('data-fd-reading-anchor'),'hidden headings keep their stable anchors for later expansion');
+  const saved=JSON.parse(JSON.stringify(h.state.readingPlaces));
+  for(const heading of h.headings)heading.getClientRects=()=>[];
+  h.setScroll(1100);h.listeners.get('scroll')();h.flush();
+  assert.deepEqual(h.state.readingPlaces,saved,'a fully hidden reader cannot invent a saved position');
+});
+
+test('reading reflow leaves a newly collapsed saved section alone', () => {
+  const h=readingPlaceHarness();
+  h.install();h.flush();
+  h.setScroll(960);h.listeners.get('scroll')();h.flush();
+  const saved=JSON.parse(JSON.stringify(h.state.readingPlaces));
+  h.headings[2].getClientRects=()=>[];
+  h.headings[2].getBoundingClientRect=()=>({top:0});
+  h.listeners.get('resize')();h.flush();
+  assert.equal(h.scrollY,960,'resizing must not jump to a zero rect inside a collapsed section');
+  assert.deepEqual(h.state.readingPlaces,saved,'collapsing and resizing do not replace the saved place');
+});
+
 test('Compass labelled section keeps its authored H2 id while private anchors drive save and restore', () => {
   // Welcome renders <section aria-labelledby="fd-compass-title"> with this authored H2;
   // the browser test checks the real component, while this drives the installer directly.
@@ -4163,12 +4191,27 @@ test('restore:false keeps saving but leaves arrival, scroll and focus to the gui
   assert.equal(ordinary.scrollY, 490, 'the default still restores');
 });
 
-test('a lead-promoted guide keeps its reading place; an H2 guide still drops it', () => {
-  assert.match(spa, /if\(guide\.leads\)\{/);
-  assert.match(spa, /installReadingPlace\(!\(returning\|\|passage\.has\('guideSection'\)\|\|passage\.has\('guideFind'\)\)\);/,
-    'a passage link or practice return owns arrival; the saved place only saves');
-  assert.match(spa, /\}else\{\s*var statusNode=contentEl\.querySelector\('\[data-fd-reading-status\]'\);/,
-    'an H2 guide still removes the reading-place controls');
+test('all mounted guides save reading places while explicit passages and practice returns own arrival', () => {
+  const mounted=spa.match(/if\(fdGuideSession\)\{([\s\S]*?)\/\* Initial resources/);
+  assert.ok(mounted,'the live mounted-guide integration is extractable');
+  const run=new Function('fdGuideSession','fdGuideBookmark','fdGuideReturning','options','location','installReadingPlace','contentEl','ref',mounted[1]);
+  for(const leads of [false,true]) {
+    for(const scenario of [
+      {search:'',restore:true},
+      {search:'?page=doc_oral.md&guideSection=plan',restore:false},
+      {search:'?page=doc_oral.md&guideFind=notes',restore:false},
+      {search:'',bookmark:{ref:'doc_oral.md'},returning:true,restore:false},
+      {search:'',bookmark:{ref:'doc_oral.md'},fromHistory:true,restore:false},
+      {search:'',bookmark:{ref:'other.md'},returning:true,restore:true},
+    ]) {
+      const installs=[],removed=[];
+      run({leads},scenario.bookmark||null,!!scenario.returning,
+        {search:scenario.search,fromHistory:scenario.fromHistory},{search:scenario.search},
+        restore=>installs.push(restore),{querySelector:selector=>({remove(){removed.push(selector);}})},'doc_oral.md');
+      assert.deepEqual(installs,[scenario.restore],`guide leads=${leads}, ${JSON.stringify(scenario)}`);
+      assert.deepEqual(removed,[],'every guide retains its saved-place controls');
+    }
+  }
   assert.match(spa, /\}else installReadingPlace\(true\);/, 'a plain reader restores as before');
 });
 

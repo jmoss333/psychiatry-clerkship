@@ -9,7 +9,7 @@ const OTHER_READING = 'pg_interview.md';
 const COMPLETED = 'doc_oral.md';
 const savedPlace = updatedAt => ({ heading: 'fd-reading-fixture', offset: 85, updatedAt });
 
-async function seed(page, info, { readingPlaces = {}, pins = [] } = {}) {
+async function seed(page, info, { readingPlaces = {}, pins = [], completed = COMPLETED } = {}) {
   await page.clock.setFixedTime(NOW);
   await page.addInitScript(({ role, readingPlaces, pins, completed }) => {
     if (window.top !== window || sessionStorage.getItem('__fd_continuity_seeded')) return;
@@ -18,7 +18,7 @@ async function seed(page, info, { readingPlaces = {}, pins = [] } = {}) {
     localStorage.setItem('cw_frontdoor_v1', JSON.stringify({ role, tab: 'library', viewWeek: 1, readingPlaces }));
     localStorage.setItem('cw_progress_v1', JSON.stringify({ [completed]: { done: true, at: '2026-08-16' } }));
     if (pins.length) localStorage.setItem('cw_tool_pins_v1', JSON.stringify(pins));
-  }, { role: isResidentProject(info.project.name) ? 'pgy1' : 'student', readingPlaces, pins, completed: COMPLETED });
+  }, { role: isResidentProject(info.project.name) ? 'pgy1' : 'student', readingPlaces, pins, completed });
 }
 
 async function savedState(page) {
@@ -184,6 +184,100 @@ test('Library Continue restores a real saved heading; Remove and Clear saved pla
   await page.reload();
   await expect(panel.getByText('No unfinished reading places saved yet.', { exact: true })).toBeVisible();
   expect((await savedState(page)).places).toEqual({});
+  await expectHealthy(page, errors);
+});
+
+test('the third visible unfinished reading can be removed when the newest saved reading is completed', async ({ page }, info) => {
+  const errors = trackErrors(page);
+  const oldest = 't_psychosis.md';
+  await seed(page, info, { readingPlaces: {
+    [COMPLETED]: savedPlace(4), [READING]: savedPlace(3), [OTHER_READING]: savedPlace(2), [oldest]: savedPlace(1),
+  }, pins: ['mse.html'] });
+  await page.goto('/?tab=library');
+  await page.locator('[data-fd-continuity-show]').click();
+  const panel = page.locator('.fd-continuity'), recent = panel.locator('[data-fd-reading-resume="1"]');
+  await expect(recent).toHaveCount(3);
+  expect(await recent.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-fd-open')))).toEqual([READING, OTHER_READING, oldest]);
+  const before = await savedState(page);
+  await panel.locator(`[data-fd-reading-place-remove="${oldest}"]`).click();
+  await expect(recent).toHaveCount(2);
+  await expect(panel.locator('.fd-continuity__notice')).toContainText(/removed/i);
+  await expect(page.locator('#fd-continuity-title')).toBeFocused();
+  const after = await savedState(page);
+  expect(after.places).toEqual({ [COMPLETED]: before.places[COMPLETED], [READING]: before.places[READING], [OTHER_READING]: before.places[OTHER_READING] });
+  expect(after.progress).toBe(before.progress);
+  expect(after.pins).toBe(before.pins);
+  await expectHealthy(page, errors);
+});
+
+test('a real H2 guide saves a visible section and Library Continue restores it without overriding passage links', async ({ page }, info) => {
+  const errors = trackErrors(page), ref = 'doc_oral.md';
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await seed(page, info, { completed: 't_psychosis.md' });
+  // Only the governance response is controlled, as in the established guide-reader tests.
+  // Markdown, headings, collapsible sections, and guide mounting come from the actual build.
+  const response = await requestGetWithRetry(page.request, '/governance.json');
+  const ledger = await response.json();
+  expect(ledger.items[ref], 'the built guide has a governance entry').toBeTruthy();
+  ledger.items[ref] = { ...ledger.items[ref], status: 'reviewed', riskLevel: 'low' };
+  await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
+  await page.goto(`/?page=${ref}`);
+  const guide = page.locator('.fd-reader--guide');
+  await expect(guide).toBeVisible();
+  await expect(guide.locator('[data-fd-reading-status]')).toHaveText('Reading place saved on this device only');
+  const headings = guide.locator('.fd-article__body h2');
+  expect(await headings.count()).toBeGreaterThanOrEqual(5);
+  const heading = headings.nth(3), anchor = await heading.getAttribute('data-fd-reading-anchor');
+  expect(anchor).toMatch(/^fd-reading-/);
+  const headingId = await heading.getAttribute('id');
+  expect(headingId).toMatch(/^guide-/);
+  // Hidden nested headings have zero rectangles and must never beat a visible heading
+  // when the reading-position tracker decides which section the learner reached.
+  const collapsed = guide.locator('.sec-c').filter({ has: page.locator('h3, h4') }).first();
+  await collapsed.locator('.sec-h button').click();
+  await expect(collapsed.locator('.sec-h button')).toHaveAttribute('aria-expanded', 'false');
+  await expect(heading).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  await heading.evaluate(node => {
+    window.scrollTo(0, node.getBoundingClientRect().top + window.scrollY + 8);
+    window.dispatchEvent(new Event('scroll'));
+  });
+  await expect.poll(async () => (await savedState(page)).places[ref]?.heading).toBe(anchor);
+  const saved = (await savedState(page)).places[ref];
+  await page.goto('/?tab=library');
+  await page.locator('[data-fd-continuity-show]').click();
+  const resume = page.locator(`.fd-continuity [data-fd-open="${ref}"][data-fd-reading-resume="1"]`);
+  await expect(resume).toBeVisible();
+  await resume.click();
+  await expect(guide).toBeVisible();
+  const restored = guide.locator(`[data-fd-reading-anchor="${anchor}"]`);
+  await expect(restored).toBeFocused();
+  await expect(restored).toHaveAttribute('id', headingId);
+  await expect.poll(() => restored.evaluate(node => -node.getBoundingClientRect().top)).toBeGreaterThan(saved.offset - 12);
+  await expect.poll(() => restored.evaluate(node => -node.getBoundingClientRect().top)).toBeLessThan(saved.offset + 12);
+
+  const firstId = await headings.first().getAttribute('id');
+  expect(firstId).not.toBe(headingId);
+  const firstLabel = (await guide.locator(`[data-guide-section="${firstId}"]`).textContent()).trim();
+  const findQuery = await headings.first().evaluate(node =>
+    node.closest('.sec-c,.fd-guide-section').querySelector('p').textContent.trim().split(/\s+/).slice(0, 8).join(' '));
+  expect(findQuery.length).toBeGreaterThan(0);
+  await page.goto(`/?page=${ref}&guideSection=${encodeURIComponent(firstId.slice('guide-'.length))}`);
+  await expect(page.locator(`#${firstId}`)).toBeFocused();
+  await expect(page.locator(`#${firstId}`)).toBeInViewport();
+  await expect(page.locator('.fd-guide-arrival')).toContainText(`Opened at “${firstLabel}”.`);
+  await expect(page.locator('[data-fd-reading-top]')).toBeHidden();
+  // Establish a different saved position again, so Find must win a genuine conflict.
+  await restored.evaluate(node => {
+    window.scrollTo(0, node.getBoundingClientRect().top + window.scrollY + 8);
+    window.dispatchEvent(new Event('scroll'));
+  });
+  await expect.poll(async () => (await savedState(page)).places[ref]?.heading).toBe(anchor);
+  await page.goto(`/?page=${ref}&guideFind=${encodeURIComponent(findQuery)}`);
+  await expect(page.getByLabel('Find in this guide', { exact: true })).toHaveValue(findQuery);
+  await expect(page.locator('.fd-guide-match').first()).toBeInViewport();
+  await expect(page.locator('[data-fd-reading-top]')).toBeHidden();
   await expectHealthy(page, errors);
 });
 
