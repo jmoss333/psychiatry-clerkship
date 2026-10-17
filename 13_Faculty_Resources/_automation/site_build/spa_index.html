@@ -2832,7 +2832,7 @@
        and filter are the controller's visit-only memory; the case arc and pairings are the
        build-injected READ-ONLY registries behind "Case week N", "Where it is used" and "Practice
        with"; the audience keeps pairings scoped to one site inside it. */
-    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
+    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,libraryTask:state.libraryTask,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
     if(state.tab==='care') return fdSurface('care',function(){
       return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
     });

@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(756 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(758 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -738,6 +738,8 @@ the bare `.fd-library`.
       input.fd-library__filter-input[data-fd-library-filter]
       button.fd-library__filter-clear[data-fd-library-filter-clear]   (only with a query)
       .fd-kbd.fd-library__filter-key     ("/", desktop only, only without a query)
+  .fd-library__tasks [role=group]         (Library tasks: All / Interview / Rounds)
+    button.fd-library__task[data-fd-library-task][aria-pressed] ×3 + .is-active
   p.fd-library__status [role=status]     (visible 13px dim line)
   .fd-library__body                      + .has-preview (Essentials with a previewed item)
     nav.fd-kit__index                    (aria-label="Essentials sections" | "Catalogue sections")
@@ -803,6 +805,7 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 |---|---|
 | `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
 | `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
+| `.fd-library__tasks` / `.fd-library__task` | Wrapping task buttons with 44px touch targets. All preserves the full view; Interview and Rounds intersect the selected section and title filter. Task results use curated order, with Suicide Risk & Safety first in Interview; Rounds selects the audience’s formulation guide. Counts and the desktop preview follow the final visible results. Task state is visit-only and rides the Library history entry for Open/Back; reload resets it. |
 | `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 8px bottom margins, and `.fd-library__body` uses an 8px row gap; text sizes and 44px controls remain unchanged so pending notices and wrapped resident titles fit above the dock. |
 | `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
 | `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
@@ -1265,7 +1268,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-library__task`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |

@@ -66,7 +66,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     // and 'data-fd-search-query' (rides on a data-fd-search control to seed the dialog) joined on
     // 2026-10-04 with the Library's filter field (one-thread redesign, Phase 2).
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-details', 'data-fd-library-filter', 'data-fd-library-filter-clear',
-    'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
+    'data-fd-library-task', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
     'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-expand', 'data-fd-search-query', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
     'data-fd-tree-answer', 'data-fd-tree-back', 'data-fd-tree-restart',
@@ -181,6 +181,14 @@ test('FD_WIRE is registered, injected last, and activated as the sole shell cont
 test('Library view has a distinct registered semantic', () => {
   assert.equal(F.semantic('data-fd-library-view'), 'choose Library view');
   assert.match(wire, /\[data-fd-library-view\]/);
+});
+
+test('Library task has a distinct registered semantic and delegated click action', () => {
+  assert.ok(F.handled.includes('data-fd-library-task'));
+  assert.equal(F.semantic('data-fd-library-task'), 'choose Library task');
+  assert.notEqual(F.semantic('data-fd-library-task'), F.semantic('data-fd-library-view'));
+  assert.notEqual(F.semantic('data-fd-library-task'), F.semantic('data-fd-kit-section'));
+  assert.match(wire, /\[data-fd-library-task\]/);
 });
 
 test('APP actions are distinct, registered, and injected before the controller', () => {

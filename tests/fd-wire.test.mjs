@@ -364,7 +364,7 @@ test('URL page/tool/tab values beat persisted Front Door state', () => {
   };
   assert.deepEqual(F.fdResolveState('/?page=new.md', stored), {
     role: 'first-role', tab: 'library', openId: 'new.md', fromTab: 'library',
-    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials', kitSection: 'all', libraryFilter: '',
+    week: 2, viewWeek: 2, autoAdvance: true, toolExpanded: true, screen: 'app', libraryView: 'essentials', kitSection: 'all', libraryTask: 'all', libraryFilter: '',
   });
   assert.equal(F.fdResolveState('/?tool=drill.html&case=a', stored).openId, 'drill.html');
   const tab = F.fdResolveState('/?tab=path', stored);
@@ -446,7 +446,7 @@ test('a bare URL restores stored state and defaults to Today with autoAdvance tr
     viewWeek: 4, week: 2,
   }), {
     role: 'first-role', tab: 'path', openId: 'saved.md', fromTab: 'library',
-    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials', kitSection: 'all', libraryFilter: '',
+    viewWeek: 4, week: 2, autoAdvance: true, screen: 'app', libraryView: 'essentials', kitSection: 'all', libraryTask: 'all', libraryFilter: '',
   });
   const empty = F.fdResolveState('/', {});
   assert.equal(empty.tab, 'today');
@@ -664,7 +664,7 @@ test('a stored APP never re-enters the rotation wizard or restores the Path tab'
   assert.deepEqual(F.fdResolveState('/?tab=path', {
     role: 'app', tab: 'path', browsing: true, viewWeek: 3,
   }), {
-    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all', libraryFilter: '',
+    role: 'app', tab: 'today', libraryView: 'essentials', kitSection: 'all', libraryTask: 'all', libraryFilter: '',
     viewWeek: 3, autoAdvance: true, browsing: true, screen: 'app',
   });
 });
@@ -4793,6 +4793,115 @@ function libraryMemoryHarness(initial = {}, options = {}) {
   memory.bind(h.windowHandlers.popstate);
   return { h, memory, storage, location, renders, LocalF, fresh: () => fresh };
 }
+
+test('Library task actions accept only exact choices in the active Library list', () => {
+  const initial = { ...roleContext, screen: 'app', tab: 'library', openId: null, libraryTask: 'all' };
+  for (const value of ['all', 'interview', 'rounds']) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-library-task': value }, {}, initial), {
+      patch: { libraryTask: value }, route: null, effect: null,
+    });
+  }
+  for (const value of ['', 'Interview', 'unknown', null, undefined, ['rounds'], { toString: () => 'rounds' }]) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-library-task': value }, {}, initial),
+      { patch: {}, route: null, effect: null }, `reject ${String(value)} without coercing it`);
+  }
+  for (const changed of [{ tab: 'today' }, { screen: 'setup-role' }, { openId: 'mse.html' }, { sheet: 'kit' }, { searchOpen: true }]) {
+    assert.deepEqual(F.fdDispatch({ 'data-fd-library-task': 'rounds' }, {}, { ...initial, ...changed }),
+      { patch: {}, route: null, effect: null }, 'a hidden Library task control stays inert');
+  }
+});
+
+test('Library task selection repaints and refocuses its chip, updates only history memory, and preserves other filters', () => {
+  const freshChip = actionTarget({ 'data-fd-library-task': 'interview' });
+  const { h, memory, storage, location, renders } = libraryMemoryHarness(
+    { libraryTask: 'all', kitSection: 'tools', libraryFilter: 'mental' },
+    { openers: { '[data-fd-library-task="interview"]': freshChip } });
+  let writes = 0;
+  storage.setItem = () => { writes++; };
+  storage.removeItem = () => { writes++; };
+  const before = storage.dump();
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-library-task': 'interview' }), preventDefault() {} });
+  const selected = h.controller.getState();
+  assert.equal(selected.libraryTask, 'interview');
+  assert.equal(selected.kitSection, 'tools');
+  assert.equal(selected.libraryFilter, 'mental');
+  assert.equal(renders.length, 1);
+  assert.equal(renders[0][1].surfaces.base, true);
+  assert.equal(freshChip.focused, 1);
+  assert.equal(writes, 0);
+  assert.deepEqual(storage.dump(), before);
+  assert.equal(location.search, '?tab=library');
+  assert.equal(memory.entries.length, 1);
+  assert.equal(memory.history.state.state.libraryTask, 'interview');
+  h.controller.dispatch({ 'data-fd-library-task': 'all' });
+  assert.equal(h.controller.getState().libraryTask, 'all');
+  assert.equal(Object.hasOwn(memory.history.state.state, 'libraryTask'), false, 'default All needs no history key');
+  assert.equal(writes, 0);
+});
+
+test('Library task survives Details, title Open and Back, both view switches, and section or text changes', () => {
+  const { h, memory } = libraryMemoryHarness({}, { harness: { index: LIBRARY_DETAILS_INDEX } });
+  h.controller.dispatch({ 'data-fd-library-task': 'rounds' });
+  for (const action of [
+    { 'data-fd-library-details': 'mse.html' }, { 'data-fd-close-sheet': '' },
+    { 'data-fd-open': 'mse.html' }, { 'data-fd-back': '' },
+    { 'data-fd-library-view': 'full' }, { 'data-fd-library-view': 'essentials' },
+    { 'data-fd-tab': 'everything' }, { 'data-fd-tab': 'library' },
+    { 'data-fd-kit-section': 'tools' }, { 'data-fd-library-filter': 'mental' },
+    { 'data-fd-library-filter-clear': '' },
+  ]) {
+    h.controller.dispatch(action);
+    assert.equal(h.controller.getState().libraryTask, 'rounds', JSON.stringify(action));
+    assert.equal(memory.history.state.state.libraryTask, 'rounds');
+  }
+});
+
+test('Library task history restores Back and Forward but reloads and invalid snapshots reset to All', () => {
+  const { h, memory, storage, location, LocalF } = libraryMemoryHarness();
+  h.controller.dispatch({ 'data-fd-library-task': 'interview' });
+  h.controller.dispatch({ 'data-fd-open': 'deep.md' });
+  memory.go(-1);
+  assert.equal(h.controller.getState().libraryTask, 'interview');
+  memory.go(1);
+  assert.equal(h.controller.getState().libraryTask, 'interview');
+  assert.equal(h.controller.getState().openId, 'deep.md');
+  assert.equal(Object.hasOwn(JSON.parse(storage.getItem('cw_frontdoor_v1')), 'libraryTask'), false);
+  assert.equal(new URL(location.href).searchParams.has('libraryTask'), false);
+  const reload = LocalF.fdResolveState('/?tab=library&libraryTask=rounds', {
+    ...JSON.parse(storage.getItem('cw_frontdoor_v1')), libraryTask: 'rounds',
+  });
+  assert.equal(reload.libraryTask, 'all', 'neither saved state nor URL may seed a task');
+  for (const extra of [{}, { libraryTask: 'unknown' }, { libraryTask: ['rounds'] }, { libraryTask: null }]) {
+    h.windowHandlers.popstate({ state: { fd: true, state: { tab: 'library', ...extra } } });
+    assert.equal(h.controller.getState().libraryTask, 'all');
+  }
+  h.windowHandlers.popstate({ state: { fd: true, state: { tab: 'today', libraryTask: 'rounds' } } });
+  assert.equal(h.controller.getState().libraryTask, 'all', 'a non-Library snapshot cannot carry a task');
+});
+
+test('Library task resets for a new visit or Home and returns with the prior Library history entry', () => {
+  const { h, memory } = libraryMemoryHarness();
+  h.controller.dispatch({ 'data-fd-library-task': 'rounds' });
+  h.controller.dispatch({ 'data-fd-tab': 'today' });
+  assert.equal(h.controller.getState().libraryTask, 'all');
+  assert.equal(Object.hasOwn(memory.history.state.state, 'libraryTask'), false);
+  memory.go(-1);
+  assert.equal(h.controller.getState().libraryTask, 'rounds');
+  h.controller.dispatch({ 'data-fd-home': '' });
+  assert.equal(h.controller.getState().libraryTask, 'all');
+  assert.equal(Object.hasOwn(memory.history.state.state, 'libraryTask'), false);
+});
+
+test('Library task respects startup and faculty preview guards', () => {
+  for (const options of [{ commitStartup: false }, { facultyPreview: () => true }]) {
+    const { h, storage, renders } = libraryMemoryHarness({ libraryTask: 'all' }, { harness: options });
+    const before = storage.dump();
+    h.rootHandlers.click({ target: actionTarget({ 'data-fd-library-task': 'rounds' }), preventDefault() {} });
+    assert.equal(h.controller.getState().libraryTask, 'all');
+    assert.equal(renders.length, 0);
+    assert.deepEqual(storage.dump(), before);
+  }
+});
 
 test('typing in the Library filter is visit-only: base render, replaceState on the entry, no route, no storage write', () => {
   const { h, memory, storage, location, renders, fresh } = libraryMemoryHarness();
