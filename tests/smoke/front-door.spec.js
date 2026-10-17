@@ -126,6 +126,11 @@ for (const scenario of [
       await expect(input).toBeFocused();
       // locator.press() would refocus the field and conceal a stolen-focus regression.
       await page.keyboard.press('Enter');
+      // C2 (2026-10-17): Enter in the field shows the list -- focus lands on the first row and
+      // nothing opens; a second Enter opens the row the learner can now see.
+      await expect(search).toHaveCount(1);
+      await expect(search.locator('.fd-result').first()).toBeFocused();
+      await page.keyboard.press('Enter');
       await expect(search).toHaveCount(0);
       if (scenario.safety) await expect(page.getByRole('dialog', { name: 'Substance Use', exact: true })).toBeVisible();
       else await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', scenario.ref);
@@ -447,7 +452,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 94 : 85,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
+    libraryCount: resident ? 90 : 85,  // res -4 (C2, 2026-10-17): MS3-track pages excluded; +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
@@ -1214,6 +1219,15 @@ test('legacy completion objects survive Reader previous/next and browser history
   await expectHealthy(page);
 });
 
+// C2 (2026-10-17): Enter in the search field shows the results -- focus moves to the first row
+// and nothing opens; a second Enter opens the row the learner can now see.
+async function enterShowsThenOpens(page, input) {
+  await input.press('Enter');
+  await expect(page.locator('.fd-search')).toHaveCount(1);
+  await expect(page.locator('.fd-searchpanel__body .fd-result').first()).toBeFocused();
+  await page.keyboard.press('Enter');
+}
+
 test('command-K and slash search restore focus on dismissal and open results directly', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
@@ -1235,7 +1249,7 @@ test('command-K and slash search restore focus on dismissal and open results dir
   await expect(page.locator('.fd-result')).not.toHaveCount(0);
   const firstRef = await page.locator('.fd-result').first().getAttribute('data-fd-open');
   expect(firstRef).toBeTruthy();
-  await input.press('Enter');
+  await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toHaveCount(0);
@@ -1292,7 +1306,7 @@ test('Enter on a punctuated exact resource name opens that resource, not a spuri
     const input = page.getByRole('textbox', { name:'Search resources', exact:true });
     await input.fill(query);
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', ref);
-    await input.press('Enter');
+    await enterShowsThenOpens(page, input);
     await expect(page.locator('.fd-search')).toHaveCount(0);
     await expect(page.locator('.fd-sheet')).toHaveCount(0);
     await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
@@ -1312,7 +1326,7 @@ test('dated title variants retain safety priority and open the first ordinary re
   await input.fill(query);
   await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'exp_consult.md');
   await expect(page.locator('.fd-result[data-fd-open]').first()).toHaveAttribute('data-fd-open', ref);
-  await input.press('Enter');
+  await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toBeVisible();
   await page.locator('.fd-sheet__close').click();
@@ -3566,8 +3580,11 @@ test('Patient care resources is a safe, responsive fourth destination and search
   const input = page.locator('.fd-searchpanel__input');
   await input.fill('housing help');
   await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', 'resource-finder');
-  const popupPromise = page.waitForEvent('popup');
   await input.press('Enter');
+  // C2: Enter shows the list (focus on the first row, the care link); the next Enter follows it.
+  await expect(page.locator('.fd-result').first()).toBeFocused();
+  const popupPromise = page.waitForEvent('popup');
+  await page.keyboard.press('Enter');
   const popup = await popupPromise;
   await expect.poll(() => popup.url()).toBe(expectedUrls[0]);
   await popup.close();
@@ -3932,7 +3949,8 @@ test('one-thread Phase 3 reader: one status line, folded practice row, Next in t
   const thread = page.getByRole('navigation', { name: 'Next in this thread' });
   await expect(thread).toBeVisible();
   expect(await thread.locator('.fd-nextthread__row').count()).toBeGreaterThanOrEqual(1);
-  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(3);
+  // <= 4 since C2 (2026-10-17): a topic page also names its newest Case of the Week.
+  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(4);
   await expectHealthy(page);
 });
 
@@ -4462,7 +4480,7 @@ test.describe('Essentials Phase 2', () => {
     const input = dialog.getByRole('textbox', { name: 'Search resources' });
     await expect(input).toHaveValue('milieu rules');
     await expect(input).toBeFocused();
-    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.');
+    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.');
     await input.fill('delirium');
     const labels = dialog.locator('.fd-searchpanel__group');
     await expect(labels.first()).toHaveText('Safety protocols');
@@ -4805,6 +4823,9 @@ test.describe('Essentials Phase 2', () => {
     await input.fill('Dissociative');
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 't_dissociative.md');
     await input.press('Enter');
+    // C2: the first Enter focuses the top result; the second opens it.
+    await expect(page.locator('.fd-result').first()).toBeFocused();
+    await page.keyboard.press('Enter');
     await readyReader(page, 't_dissociative.md');
     expect(new URL(page.url()).searchParams.get('page')).toBe('t_dissociative.md');
     await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
