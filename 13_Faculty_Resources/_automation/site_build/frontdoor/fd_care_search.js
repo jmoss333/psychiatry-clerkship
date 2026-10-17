@@ -1,4 +1,4 @@
-/* Public ReConnect directory. ES5; query, filters and page are visit-only memory.
+/* Public community resource directory. ES5; query, filters and page are visit-only memory.
    Fixed feed URL, no query transmission, storage, geolocation or clinical ranking. */
 var FD_CARE_DIRECTORY_URL='/care-directory.v1.json';
 var FD_CARE_DIRECTORY_CATEGORIES=['aftercare','crisis','peer_support','basic_needs','community_services','housing_shelters','recovery_meetings','telehealth_providers'];
@@ -118,7 +118,7 @@ function fdCareSearch(index){
   var resources=index&&index.careResources||[],finder='';
   for(var i=0;i<resources.length;i++)if(resources[i].id==='resource-finder')finder=resources[i].url;
   return '<section class="fd-care-search" data-care-directory aria-labelledby="fd-care-search-title">'+
-    '<header class="fd-care-search__head"><div><p class="fd-care-search__eyebrow">ReConnect directory</p><h2 id="fd-care-search-title">Find community resources</h2>'+
+    '<header class="fd-care-search__head"><div><p class="fd-care-search__eyebrow">Community directory</p><h2 id="fd-care-search-title">Find community resources</h2>'+
     '<p>Aftercare, recovery support, housing and other community services.</p></div>'+
     (finder?'<a class="fd-care-search__finder" href="'+fdEsc(finder)+'" target="_blank" rel="noopener noreferrer">Open full Finder <span aria-hidden="true">↗</span><span class="vh-live"> (opens in a new tab)</span></a>':'')+'</header>'+
     '<form class="fd-care-search__form" role="search" aria-label="Community resources" autocomplete="off">'+

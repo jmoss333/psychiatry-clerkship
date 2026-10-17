@@ -663,7 +663,7 @@
 /* The phone's Learning activity & review link; the rail carries the desktop one. */
 .fd-today__record{margin:var(--fd-space-9) 0 0}
 
-/* Patient-care launchpad: one stable destination for external ReConnect resources. The paired
+/* Patient-care launchpad: one stable destination for external care resources. The paired
  * columns separate support from education, while the olive rule keeps this distinct from
  * red Safety actions and teal in-library tools. */
 .fd-care-page{max-width:calc(var(--fd-space-10) * 24);animation:fdFadeUp var(--fd-dur-fast) var(--fd-ease-standard)}
