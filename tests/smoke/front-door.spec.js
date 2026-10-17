@@ -3136,7 +3136,8 @@ test('Today announces the newest Case of the Week only in the week it ships, as 
     .toEqual(['fd-study-planner', 'fd-newcase', 'fd-capture']);
   await otfExpectPrimaryIsFirstFocusable(page);
   await row.locator('.fd-newcase').click();
-  await expect(page).toHaveURL(new RegExp(`page=${newest.slug.replace(/\./g, '\\.')}`));
+  // The slug is data, not a pattern: compare the query parameter rather than building a RegExp from it.
+  await page.waitForURL((url) => url.searchParams.get('page') === newest.slug);
   await expect(page.locator('.fd-article__h1')).toBeVisible();
   await expectHealthy(page);
   // Day eight: gone on its own.
