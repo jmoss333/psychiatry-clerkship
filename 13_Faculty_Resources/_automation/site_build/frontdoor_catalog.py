@@ -1,8 +1,11 @@
 """Build verified, site-specific data for the dormant Front Door modules."""
 import copy
 import json
+import os
 import re
 from shipped_pages import load_shipped_pages as load_search_universe
+from search_synonyms import load as load_synonym_groups
+from topic_hub_block import cotw_for_topics
 
 
 DATA_DEFAULTS = {
@@ -116,6 +119,9 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
     if site == "ms3":
         projected.pop("appPathway", None)
     projected["path"] = {"id": expected_id, "weekCount": len(weeks)}
+    # The one bidirectional synonym list (data/search-synonyms.v1.json). Loaded here so both
+    # sites' search gets the same reviewed groups; a malformed file aborts the build.
+    projected["synonymGroups"] = load_synonym_groups()
     projected["weeks"] = copy.deepcopy(weeks)
     projected["essentials"] = copy.deepcopy(selection)
     columns = projected.get("libraryColumns")
@@ -226,6 +232,27 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
             if ref not in path_refs:
                 path_refs.append(ref)
 
+    # Track-specific pages (C2, 2026-10-17). Both sites ship some pages that belong to the OTHER
+    # track's rotation -- the MS3 six-week path's week1..week6 landing pages ship to the resident
+    # site too, and "Week 6" came back from resident search on a four-week rotation. Two pieces of
+    # existing track metadata say which those are, and nothing new is invented here:
+    #   * another track's learningPaths landingRef that this site's own path does not use, and
+    #   * this site's siteLibrary exclusions (the per-track "not in this site's Library" list).
+    # Such a page stays reachable by link (it is registered as libraryExclude below, so the shell
+    # still knows it and shows its title) but is withheld from this site's command search. A page
+    # this site places in its Library or Path is never withheld -- search stays a superset of
+    # browsing (the searchExclude rule below).
+    own_refs = set(placed) | set(path_refs) | set(landing_refs) | set(app_refs)
+    other_landing = set()
+    for other_site, other_path in (learning_paths or {}).items():
+        if other_site == site or not isinstance(other_path, dict):
+            continue
+        for other_week in other_path.get("weeks") or []:
+            if isinstance(other_week, dict) and isinstance(other_week.get("landingRef"), str):
+                other_landing.add(other_week["landingRef"])
+    track_only = sorted(ref for ref in (other_landing | excluded)
+                        if ref in catalog_entries and ref not in own_refs)
+
     library_exclude = projected.get("libraryExclude")
     if not isinstance(library_exclude, list):
         raise ValueError("curriculum.libraryExclude must be a list")
@@ -233,6 +260,14 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         entry for entry in library_exclude
         if not isinstance(entry, dict) or (entry.get("ref") in catalog_entries and entry.get("ref") not in placed)
     ]
+    listed = {entry.get("ref") for entry in projected["libraryExclude"] if isinstance(entry, dict)}
+    for ref in track_only:
+        if ref not in listed:
+            projected["libraryExclude"].append({
+                "ref": ref,
+                "reason": "Track-specific: not part of this site's rotation; opens from links, "
+                          "not listed in Library or search."})
+    projected["searchTrackExclude"] = track_only
     excluded_refs = {
         entry.get("ref") for entry in projected["libraryExclude"]
         if isinstance(entry, dict) and isinstance(entry.get("ref"), str)
@@ -268,12 +303,23 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
             if ref in placed or ref in path_refs:
                 raise ValueError("searchExclude cannot hide a placed resource: %s" % ref)
             excluded_search.add(ref)
-        search_refs = sorted(set(pages) - excluded_search)
+        search_refs = sorted(set(pages) - excluded_search - set(track_only))
         for ref in search_refs:
             if ref not in catalog_entries:
                 raise ValueError("shipped search resource has no final catalog entry: %s" % ref)
         projected["searchResources"] = search_refs
         projected["searchTitles"] = {ref: pages[ref]["title"] for ref in search_refs}
+        # Topic page -> its Case-of-the-Week editions on this site, newest first (C2, 2026-10-17),
+        # for the reader's "Next in this thread" chrome. Derived from topic_hubs.json and the
+        # shipped listing; limited to pages this site searches, so a row can never dead-link.
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "topic_hubs.json"),
+                  encoding="utf-8") as handle:
+            hub_registry = json.load(handle)
+        searchable = set(search_refs)
+        projected["cotwForTopic"] = {
+            ref: [row for row in rows if row["slug"] in searchable]
+            for ref, rows in cotw_for_topics(hub_registry, shipped, build_site).items()
+            if ref in searchable and any(row["slug"] in searchable for row in rows)}
         projected["searchAliases"] = {ref: aliases for ref, aliases in
                                       projected.get("searchAliases", {}).items() if ref in search_refs}
         projected["medicationTerms"] = {ref: terms for ref, terms in

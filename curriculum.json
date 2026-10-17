@@ -457,7 +457,7 @@
         { "column": "Evidence & exam", "group": "Medications & somatic treatments", "refs": ["adv_psychopharm.md"] },
         { "column": "Evidence & exam", "group": "Reading & evidence", "refs": ["canon_200.md"] }
       ],
-      "exclusions": []
+      "exclusions": ["orientation.md", "osce.md", "shelf.md", "reading_map.md"]
     }
   },
   "_rightsReferencesNote": "Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.",
@@ -793,6 +793,10 @@
       "columbia suicide severity rating scale",
       "cssrs",
       "c ssrs"
+    ],
+    "catatonia.md": [
+      "catatonia",
+      "catatonic"
     ],
     "bfcrs.html": [
       "bush francis",

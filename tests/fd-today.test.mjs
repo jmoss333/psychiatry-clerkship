@@ -27,7 +27,8 @@ const make = (governanceBadge) => new Function('governanceBadge', `
            fdQuickTools: fdQuickTools, fdThread: fdThread, fdWeekCaseStep: fdWeekCaseStep,
            fdUnitWeek: fdUnitWeek, fdAlsoRow: fdAlsoRow, fdPilotFeedback: fdPilotFeedback,
            fdTodayPurpose: fdTodayPurpose, fdConsistency: fdConsistency, fdSetupCta: fdSetupCta,
-           FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED };
+           FD_QUICKTOOLS_PREFERRED: FD_QUICKTOOLS_PREFERRED, fdNewCase: fdNewCase,
+           fdNewCaseRow: fdNewCaseRow, FD_NEWCASE_WINDOW_DAYS: FD_NEWCASE_WINDOW_DAYS };
 `)(governanceBadge || function(){return "";});
 const F = make();
 
@@ -742,6 +743,99 @@ test('the chooser, the offline receipt and the case step land where the spec put
   ];
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'pilot · place · thread · Now · offline · Also · rows · chooser · week · unit · pills · record · rail');
   assert.equal((html.match(/data-test-offline/g) || []).length, 1);
+});
+
+// ---- "New this week": the Case-of-the-Week announcement row ---------------------------------------
+// FD_COTW_NEWEST ({slug, title, date} from cotw_archive_block.newest) arrives raw as state.newCase;
+// fdNewCase decides from state.nowMs whether Today announces it. BASE_STATE.nowMs is Monday
+// 2026-08-10, so a case dated that day is "this week" and one dated the Monday before is not.
+
+const NEWEST = { slug: 'cotw_20260810_safety_ms3.md', title: 'Suicide Risk & Safety Planning (Aug 10)', date: '2026-08-10' };
+const at = (y, m, d, h = 9, min = 0) => new Date(y, m - 1, d, h, min, 0).getTime();
+
+test('fdNewCase: the registry date opens a seven-day window of local calendar days, nothing else', () => {
+  assert.equal(F.FD_NEWCASE_WINDOW_DAYS, 7);
+  const shown = { slug: NEWEST.slug, title: NEWEST.title };
+  assert.equal(F.fdNewCase(NEWEST, at(2026, 8, 9, 23, 59)), null, 'the evening before');
+  assert.deepEqual(F.fdNewCase(NEWEST, at(2026, 8, 10, 0, 0)), shown, 'from midnight on the registry day');
+  assert.deepEqual(F.fdNewCase(NEWEST, at(2026, 8, 16, 23, 59)), shown, 'through the last minute of day seven');
+  assert.equal(F.fdNewCase(NEWEST, at(2026, 8, 17, 0, 0)), null, 'gone on day eight');
+  assert.equal(F.fdNewCase(NEWEST, at(2026, 8, 3)), null, 'an older edition is never carried');
+  // The window arithmetic crosses a month end.
+  const late = { ...NEWEST, date: '2026-08-28' };
+  assert.deepEqual(F.fdNewCase(late, at(2026, 9, 3)), shown, 'Sep 3 is inside Aug 28 + 7');
+  assert.equal(F.fdNewCase(late, at(2026, 9, 4)), null);
+  // Only the fields the row needs come back: nothing else from the registry rides along.
+  assert.deepEqual(F.fdNewCase({ ...NEWEST, blurb: 'x', topic: 'safety' }, BASE_STATE.nowMs), shown);
+});
+
+test('fdNewCase: anything malformed renders nothing rather than throwing', () => {
+  const now = BASE_STATE.nowMs;
+  assert.equal(F.fdNewCase(null, now), null);
+  assert.equal(F.fdNewCase(undefined, now), null);
+  assert.equal(F.fdNewCase({}, now), null);
+  assert.equal(F.fdNewCase({ ...NEWEST, slug: '' }, now), null);
+  assert.equal(F.fdNewCase({ ...NEWEST, title: 7 }, now), null);
+  assert.equal(F.fdNewCase({ ...NEWEST, date: '20260810' }, now), null, 'the shell is handed ISO dates only');
+  assert.equal(F.fdNewCase({ ...NEWEST, date: null }, now), null);
+  assert.equal(F.fdNewCase(NEWEST, undefined), null, 'no clock, no row');
+  assert.equal(F.fdNewCase(NEWEST, NaN), null);
+  assert.equal(F.fdNewCaseRow(null), '');
+  assert.equal(F.fdNewCaseRow(undefined), '');
+});
+
+test('the announcement row is one data-fd-open button: kicker, escaped title, Open -- audience-neutral', () => {
+  assert.equal(F.fdNewCaseRow({ slug: 'cotw_x_ms3.md', title: 'T <b> & "q"' }),
+    '<button type="button" class="fd-newcase" data-fd-open="cotw_x_ms3.md">' +
+    '<span class="fd-newcase__kicker">New this week · Case of the Week</span>' +
+    '<span class="fd-newcase__title">T &lt;b&gt; &amp; &quot;q&quot;</span>' +
+    '<span class="fd-newcase__action">Open →</span></button>');
+  assert.equal(F.fdNewCaseRow({ slug: 'a"b', title: 't' }).indexOf('data-fd-open="a&quot;b"') > -1, true, 'the slug is escaped too');
+  assert.doesNotMatch(F.fdNewCaseRow({ slug: 's', title: 't' }), AUDIENCE_TOKEN_RE);
+  assert.doesNotMatch(F.fdNewCaseRow({ slug: 's', title: 't' }), /data-fd-(?!open)/, 'no new action attribute: data-fd-open already routes a page');
+});
+
+test('a case still awaiting faculty review carries the compact pending mark; a reviewed one carries nothing', () => {
+  const badge = (t, o) => (t && t.status === 'pending' ? `<span class="fd-kit__pending"${o && o.compact ? ' data-compact' : ''}></span>` : '');
+  const P = make(badge);
+  const pending = { governance: { status: 'pending', riskKind: 'clinical', riskLevel: 'high' } };
+  const reviewed = { governance: { status: 'reviewed', riskKind: 'clinical', riskLevel: 'high' } };
+  const shown = { slug: NEWEST.slug, title: NEWEST.title };
+  assert.match(P.fdNewCaseRow(shown, pending), /<\/span><span class="fd-kit__pending" data-compact><\/span><span class="fd-newcase__action">/, 'between the title and Open, compact');
+  assert.doesNotMatch(P.fdNewCaseRow(shown, reviewed), /fd-kit__pending/);
+  assert.doesNotMatch(P.fdNewCaseRow(shown, undefined), /fd-kit__pending/, 'no index entry: no claim either way');
+  // fdToday looks the slug up in the index it was handed (searchResources put every shipped case in byRef).
+  const withCase = (gov) => Object.assign({}, IDX, { byRef: Object.assign({}, IDX.byRef, { [NEWEST.slug]: { ref: NEWEST.slug, kind: 'read', title: NEWEST.title, searchOnly: true, governance: gov.governance } }) });
+  assert.match(P.fdToday(withCase(pending), s({ newCase: NEWEST })), /fd-newcase__title">[^<]*<\/span><span class="fd-kit__pending"/);
+  assert.doesNotMatch(P.fdToday(withCase(reviewed), s({ newCase: NEWEST })), /fd-kit__pending/);
+  assert.doesNotMatch(P.fdToday(IDX, s({ newCase: NEWEST })), /fd-kit__pending/, 'unknown to the index: no mark');
+});
+
+test('in its week the case row joins Also today after the week row and before saved questions; outside it, nothing', () => {
+  // The lead card is primary: the announcement is the only row, under the heading, never the Now card.
+  const alone = F.fdToday(IDX, s({ newCase: NEWEST }));
+  assert.match(alone, /<h2 class="fd-sectionhead fd-also">Also today<\/h2><div class="fd-alsolist"><div class="fd-also__row" data-fd-mark="ring"><button type="button" class="fd-newcase" data-fd-open="cotw_20260810_safety_ms3\.md">/);
+  assert.equal((alone.match(/class="fd-newcase"/g) || []).length, 1);
+  assert.ok(alone.indexOf('fd-newcase') > alone.indexOf('fd-also">Also today'), 'below the heading');
+  assert.match(alone, /<div class="fd-today__main"><div class="fd-now fd-now--week"><button type="button" class="fd-continue"/, 'the lead card still leads');
+  // A device-store face won: due · the demoted week · the case · saved questions.
+  const rows = [
+    { kind: 'due', mark: 'due', count: 2, html: '<a class="fd-due" href="#d">due</a>' },
+    { kind: 'capture', mark: 'plus', count: 3, html: '<section class="fd-capture">c</section>' },
+  ];
+  const html = F.fdToday(IDX, s({ primaryKind: 'block', nowHtml: '<section class="fd-block">b</section>', alsoRows: rows, newCase: NEWEST }));
+  const faces = [...html.matchAll(/<div class="fd-also__row" data-fd-mark="([a-z]+)"[^>]*><[a-z]+ [^>]*?class="([a-z-]+)[ "]/g)].map((m) => `${m[1]}:${m[2]}`);
+  assert.deepEqual(faces, ['due:fd-due', 'progress:fd-continue', 'ring:fd-newcase', 'plus:fd-capture']);
+  // Without a saved-questions row the case closes the list.
+  const noCapture = F.fdToday(IDX, s({ primaryKind: 'block', nowHtml: '<section class="fd-block">b</section>', alsoRows: rows.slice(0, 1), newCase: NEWEST }));
+  const tail = [...noCapture.matchAll(/<div class="fd-also__row" data-fd-mark="([a-z]+)"[^>]*><[a-z]+ [^>]*?class="([a-z-]+)[ "]/g)].map((m) => `${m[1]}:${m[2]}`);
+  assert.deepEqual(tail, ['due:fd-due', 'progress:fd-continue', 'ring:fd-newcase']);
+  // An edition dated the Monday before, or no edition at all: no row and no list.
+  assert.doesNotMatch(F.fdToday(IDX, s({ newCase: { ...NEWEST, date: '2026-08-03' } })), /fd-newcase|fd-alsolist/);
+  assert.doesNotMatch(F.fdToday(IDX, s({ newCase: null })), /fd-newcase/);
+  assert.doesNotMatch(F.fdToday(IDX, s({})), /fd-newcase/);
+  // Without a week set (setup), the announcement still shows: it is site news, not week progress.
+  assert.match(F.fdToday(IDX, s({ week: null, newCase: NEWEST })), /fd-now fd-now--setup[\s\S]*fd-newcase/);
 });
 
 // ---- fdContinue: one lead card, demotable ------------------------------------------------

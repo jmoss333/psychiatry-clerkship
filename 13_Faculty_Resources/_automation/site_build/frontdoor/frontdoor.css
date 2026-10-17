@@ -2609,6 +2609,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-alsolist .fd-continue__body{flex:1 1 200px}
 .fd-alsolist .fd-continue__kicker{flex:1 0 100%;order:-1;color:var(--fd-text-dim)}
 .fd-alsolist .fd-continue__segs{display:none}
+/* The Case-of-the-Week announcement (fd_today.js fdNewCaseRow): an Also-today face that only ever
+ * renders flat, in the week a case ships -- the same parts as the faces above (a kicker above the
+ * title like the demoted Continue's, title 15/600, trailing "Open →" 14/700 teal-deep with a 44px
+ * target) and no card chrome to strip, because it is born inside .fd-alsolist. */
+.fd-newcase{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--fd-space-5);row-gap:var(--fd-space-1);width:100%;margin:0;padding:0;border:0;background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
+.fd-newcase__kicker{flex:1 0 100%;order:-1;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-dim)}
+.fd-newcase__title{flex:1 1 200px;min-width:0;font-size:var(--fd-font-base);font-weight:600;line-height:1.4}
+.fd-newcase__action{flex:0 0 auto;display:inline-flex;align-items:center;min-height:var(--fd-target-touch);font-size:var(--fd-font-md);font-weight:700;color:var(--fd-teal-deep);white-space:nowrap}
 .fd-alsolist .fd-continue__meta{display:flex;gap:var(--fd-space-4)}
 .fd-alsolist .fd-block{padding:var(--fd-space-2) 0 0}
 .fd-continue__title .fd-chip{margin-left:var(--fd-space-4);vertical-align:middle}

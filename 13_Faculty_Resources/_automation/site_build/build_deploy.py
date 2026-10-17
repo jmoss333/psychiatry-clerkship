@@ -697,6 +697,16 @@ if _spa_t.count(_media_needle)!=1:
     print("BUILD ABORTED — FD_MEDIA needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_media_needle,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_ms3))
+# The newest Case of the Week for Today's "new this week" row (fd_today.js fdNewCase), from the
+# same archive data that renders the index (cotw_archive_block.newest). Inlined like FD_MEDIA so
+# the row exists at first render; the resident build swaps in its own edition by matching this
+# exact value. Nothing here reads the clock -- the shell decides from the registry date whether
+# the row shows -- so the built page stays byte-stable from one build to the next.
+_cotw_newest_needle="var FD_COTW_NEWEST=null;"
+if _spa_t.count(_cotw_newest_needle)!=1:
+    print("BUILD ABORTED — FD_COTW_NEWEST needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_cotw_newest_needle,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_data,"ms3")))
 # Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
 # copies this index.html, so both sites inherit the same value from the same CONTEXT.
 try:

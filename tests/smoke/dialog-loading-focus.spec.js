@@ -110,6 +110,9 @@ async function assertKeyboard(page, dialog, scenario, focused) {
     await expect(page.locator('#capText')).toHaveValue('Synthetic fixture MRN 1234567');
   } else if (scenario.id === 'search') {
     await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 't_sud.md');
+    // C2: the first Enter shows the list (focus on the top row); the second opens it.
+    await page.keyboard.press('Enter');
+    await expect(dialog.locator('.fd-result').first()).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog', { name: 'Substance Use', exact: true })).toBeVisible();
   } else {

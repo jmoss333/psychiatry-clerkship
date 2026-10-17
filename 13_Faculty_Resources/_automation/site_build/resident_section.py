@@ -287,6 +287,14 @@ if ix.count(_media_ms3_inline)!=1:
 ix=ix.replace(_media_ms3_inline,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_res))
 open(OUT+"/media_index.json","w",encoding="utf-8").write(_media_index.serialize(_media_res))
 print("media index (res): status=%s, %d page(s) render"%(_media_res["status"],len(_media_res["pages"])))
+# Today's "new this week" case row: the copied index.html carries the MS3 edition (build_deploy.py,
+# FD_COTW_NEWEST). Swap in the resident edition by matching that exact inlined value, so a drifted
+# needle aborts the build rather than announcing an MS3 page to residents.
+_cotw_ms3_inline="var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_res_data,"ms3"))
+if ix.count(_cotw_ms3_inline)!=1:
+    print("BUILD ABORTED — the MS3 FD_COTW_NEWEST value is missing or duplicated in the copied index.html")
+    raise SystemExit(1)
+ix=ix.replace(_cotw_ms3_inline,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_res_data,"res")))
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----

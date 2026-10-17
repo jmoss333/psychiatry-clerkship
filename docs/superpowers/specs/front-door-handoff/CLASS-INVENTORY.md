@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(760 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(764 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -269,7 +269,9 @@ concept-count status line when nothing is due), `caseWeek`):
       .fd-sectionhead.fd-also <h2>                    4. "Also today" (always rendered)
       .fd-alsolist                                     (only when a row exists)
         .fd-also__row[data-fd-mark][data-fd-count][style=--mark-share] ×N   the faces that did not win
-          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-capture
+          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-newcase / .fd-capture
+          .fd-newcase <button data-fd-open>            the Case-of-the-Week announcement, only in the week it ships (fdNewCase)
+            .fd-newcase__kicker / .fd-newcase__title / .fd-newcase__action
       .fd-purpose        <details>                    5. the preparation chooser (shell-owned open state)
         .fd-prepare                                    the Prepare-for-tomorrow line + ghost button (sites shipping the tool)
       .fd-today__exam    <div>                        exam-date nudge: exam path only, until a date is stored
@@ -340,6 +342,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
 | ~~`.fd-primary__why`~~ | Retired 2026-10-01 (owner-directed design pass) with `fdTodayWhy`: the page's order already says what the line explained. |
+| `.fd-newcase`, `.fd-newcase__kicker`, `.fd-newcase__title`, `.fd-newcase__action` | "New this week · Case of the Week" row (`fdNewCaseRow` over `fdNewCase`, `fd_today.js`): a `<button data-fd-open="<slug>">` Also-today face with a `ring` mark, rendered only from the registry date of the newest edition through the six days after it (local calendar days, `FD_NEWCASE_WINDOW_DAYS`), then gone on its own. Kicker (13/700 dim, `order:-1`, full width), title (15/600), the compact `.fd-kit__pending` mark when the case's manifest governance is still `pending`, trailing "Open →" (14/700 teal-deep, 44px target). The data is `FD_COTW_NEWEST` ({slug, title, date} from `cotw_archive_block.newest`), inlined read-only by `build_deploy.py` and swapped per site by `resident_section.py` — the same registry row the archive index lists as "Newest case". Never the Now card; sits after the week row, before saved questions. |
 | `.fd-lastread` | "You were reading" row (`fdLastReadRow`, `frontdoor/fd_due.js`): the last opened item when it is an undone read from this week and not already the Continue target. Shares the runtime-row rule with `.fd-due`. Contains `.fd-lastread__kicker` (primary only), `.fd-lastread__title`, `.fd-lastread__action`. |
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
@@ -1111,7 +1114,7 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.")
+    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
