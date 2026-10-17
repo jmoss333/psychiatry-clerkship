@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(758 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(760 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -99,6 +99,8 @@ instead — see their surfaces.)
 | `.fd-btn--accent` | + `.fd-btn` | Teal wash ("Set as my week"). |
 | `.fd-chip` | `<span>` | Type chip. In the week rows and the Continue card it is emitted only for the exceptions (`fdKindChip`, `fd_today.js`): a tool, or a rights reference. A reading carries none (2026-10-01). The item sheet still labels a reading "read". |
 | `.fd-chip.is-tool` | same element | Teal variant for tools. |
+| `.fd-chip.is-card`, `.fd-chip.is-module` | same element | Depth chips on Everything rows (`fdDepthChip`, `fd_library.js`, 2026-10-17): `pg_` readings are pocket cards (olive wash), `exp_` readings are short modules (plain chip). A guide carries none; Essentials rows carry none. |
+| `.fd-kit__subhead`, `.fd-kit__subcount` | `<h3>` + `<span>` | Sub-group heading inside a grouped Everything column (`curriculum.libraryColumns[].groups`, partition-checked by `validate_curriculum.py`): 12px/700 uppercase dim eyebrow with " · n", `margin: space-7 0 space-1` (space-4 above the first). A plain heading, never a `<details>`, so no row leaves the accessibility tree or the nav-crawl inventory. |
 | `.fd-check` | `<button>` | 22px done-toggle circle. |
 | `.fd-check.is-done` | same element | Filled success + visible ✓. |
 | `.fd-check.is-done.is-just-done` | same element | **Both** state classes needed for the pop animation. |
@@ -753,12 +755,14 @@ the bare `.fd-library`.
       details.fd-kit__group[open] ×N
         summary
           .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
+        h3.fd-kit__subhead ×G            (Everything, columns with curriculum `groups` only) "Name" + .fd-kit__subcount (" · n"); plain heading, never disclosure
         .fd-kit__item ×N                 + .is-selected (the previewed row, Essentials)
           button.fd-kit__reading[data-fd-open]      (Essentials)  |  button.fd-collink[data-fd-open]  (Everything)
             .fd-kit__titlerow
               .fd-kit__safety [role=img aria-label="Safety"]   (kit pages and acute-safety tools)
               .fd-kit__title (serif 19)                        |  .fd-collink__label (Inter 600 16)
               .fd-chip.is-tool ("tool" | "reference")          (tools only)
+              .fd-chip.is-card ("card") | .fd-chip.is-module ("module")   (Everything only; pg_ / exp_ readings; a guide carries none)
               governanceBadge(item.governance)                 (full badge, verbatim, when pending)
             .fd-kit__summary             (reading summary verbatim; tool hint verbatim, summary fallback; Everything: hint only)
             .fd-kit__meta                ("Reading|Tool|Reference · N min · Safety kit · Week N · Case week N")

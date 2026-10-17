@@ -141,6 +141,20 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         if not isinstance(refs, list) or not all(isinstance(ref, str) for ref in refs):
             raise ValueError("site library addition refs must be strings")
         column.setdefault("refs", []).extend(refs)
+        # A column rendered in sub-groups (Library re-cut, 2026-10-17) needs the site-only refs
+        # placed in one of them, or they would ship in the column and in no sub-group -- rows the
+        # Everything view would never draw. validate_curriculum.py enforces the same rule on the
+        # source; this keeps the projection itself unable to produce an unplaced ref.
+        groups = column.get("groups")
+        if isinstance(groups, list):
+            target = None
+            for group in groups:
+                if isinstance(group, dict) and group.get("name") == addition.get("group"):
+                    target = group
+            if target is None:
+                raise ValueError("site library addition to grouped column '%s' must name one of its "
+                                 "groups, got %r" % (column["name"], addition.get("group")))
+            target.setdefault("refs", []).extend(refs)
 
     exclusions = config.get("exclusions", [])
     if not isinstance(exclusions, list) or not all(isinstance(ref, str) for ref in exclusions):
@@ -151,6 +165,9 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
         if not isinstance(refs, list):
             raise ValueError("library column '%s' refs must be a list" % column["name"])
         column["refs"] = [ref for ref in refs if ref not in excluded]
+        if isinstance(column.get("groups"), list):
+            for group in column["groups"]:
+                group["refs"] = [ref for ref in group.get("refs", []) if ref not in excluded]
 
     catalog_entries = _catalog_entries(catalog)
     app_refs = []

@@ -155,11 +155,24 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     weeks.push(week);
   }
 
+  /* A column may carry `groups` (Library re-cut, 2026-10-17): named sub-lists that partition its
+     refs (validate_curriculum.py makes the partition exact). The sub-group items are the SAME
+     objects as the column's items -- ensure() returns one object per ref -- so counts, filters
+     and previews see one page, never two. A column without groups has groups:null and the
+     Library renders it flat, as before. */
   var columns=[], cc=cur.libraryColumns||[];
   for(var c=0;c<cc.length;c++){
-    var citems=[], refs=cc[c].refs||[];
+    var citems=[], refs=cc[c].refs||[], subs=null;
     for(var r=0;r<refs.length;r++){ citems.push(ensure(refs[r], null)); }
-    columns.push({ name: cc[c].name, accent: cc[c].accent, items: citems });
+    if(Object.prototype.toString.call(cc[c].groups)==='[object Array]'){
+      subs=[];
+      for(var g=0;g<cc[c].groups.length;g++){
+        var grefs=(cc[c].groups[g]&&cc[c].groups[g].refs)||[], gitems=[];
+        for(var gr=0;gr<grefs.length;gr++){ gitems.push(ensure(grefs[gr], null)); }
+        subs.push({ name: String((cc[c].groups[g]&&cc[c].groups[g].name)||''), items: gitems });
+      }
+    }
+    columns.push({ name: cc[c].name, accent: cc[c].accent, items: citems, groups: subs });
   }
 
   /* triggers is the protocol's crisis vocabulary (curriculum.json), copied rather than aliased so
