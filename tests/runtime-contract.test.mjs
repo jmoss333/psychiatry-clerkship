@@ -30,7 +30,7 @@ test('full-clone onboarding initializes only clone-local LFS filters, never inhe
   assert.match(guide, /git -C "\$clone_parent\/repo" -c core\.hooksPath="\$clone_parent\/repo\/\.git\/hooks" lfs checkout/);
 });
 
-for (const file of ['README.md', 'CLAUDE.md']) {
+for (const file of ['README.md', 'docs/agent-guide/devcontainer.md']) {
   test(`Dev Container receipt documentation states manual proof and status boundaries in ${file}`, () => {
     const source = readFileSync(resolve(ROOT, file), 'utf8');
     assert.match(source, /Verify Dev Container/);
