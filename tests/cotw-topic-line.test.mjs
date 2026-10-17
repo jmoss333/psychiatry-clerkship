@@ -55,3 +55,17 @@ print(json.dumps({'text': text, 'did': did, 'idem': again == text, 'same': strip
   assert.equal((out.res.match(/cotw-for-topic/g) || []).length, 1, 'the resident pass replaces, never duplicates');
   assert.ok(out.res.includes('_res.md') && !out.res.includes('catatonia_ms3.md'));
 });
+
+// The generated archive on the index (#1082) tags every row with its topic and track (C2).
+test('every archive row on the index carries its topic and track tags, on both sites', () => {
+  const out = py(`
+import cotw_archive_block as arc
+d = arc.load('.')
+print(json.dumps({s: arc.render(d, s) for s in ('ms3', 'res')}))
+`);
+  for (const [site, track] of [['ms3', 'MS3'], ['res', 'Resident']]) {
+    const rows = out[site].split('\n').filter((l) => /^(- |\*\*Newest case:\*\* )\[/.test(l));
+    assert.ok(rows.length >= 18, `${site}: ${rows.length} rows`);
+    for (const row of rows) assert.match(row, new RegExp(`\\]\\(\\?page=cotw_[^)]+_${site}\\.md\\) — \\*[^*]+ · ${track}\\*`), row);
+  }
+});
