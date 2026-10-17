@@ -122,16 +122,25 @@ import topic_hub_block as _hub
 _hub_res_data=_hub.resolve(_hub.load(LIB))
 _hub_res_done=set()
 
+# ---- CASE-OF-THE-WEEK ARCHIVE on the resident index ---------------------------------
+# RES_EXTRA writes cotw_index.md fresh from index_resident.md (its marker unconsumed), so this
+# is the pass that renders the resident archive -- resident twins, resident `tldr_res` lines.
+import cotw_archive_block as _archive
+_archive_res_data=_archive.load(LIB)
+_archive_res_done=False
+
 for _md_path in sorted(glob.glob(OUT+"/content/*.md")):
     _t=open(_md_path,encoding="utf-8").read()
     _t,_did=_crisis.inject_markdown(_t,_crisis_res_data)
     _t,_pdid=_pairings.inject_markdown(_t,_pair_res_data,os.path.basename(_md_path),"res")
     _t,_hdid=_hub.inject_markdown(_t,_hub_res_data,os.path.basename(_md_path),"res")
-    if _did or _pdid or _hdid:
+    _t,_adid=_archive.inject_markdown(_t,_archive_res_data,os.path.basename(_md_path),"res")
+    if _did or _pdid or _hdid or _adid:
         open(_md_path,"w",encoding="utf-8").write(_t)
     if _did: _crisis_res_done.add(os.path.basename(_md_path))
     if _pdid: _pair_res_done.add(os.path.basename(_md_path))
     if _hdid: _hub_res_done.add(os.path.basename(_md_path))
+    if _adid: _archive.assert_complete(_t,_archive_res_data,"res"); _archive_res_done=True
 if _pair_res_done:
     print("pairing block injected (resident-only pages):",len(_pair_res_done))
 # Every hub this site ships must carry the RESIDENT rendering: a hub page that kept the
@@ -142,6 +151,10 @@ if _hub_res_gap:
     for _g in _hub_res_gap: print("   -",_g)
     raise SystemExit(1)
 print("topic hub block injected (resident rendering):",len(_hub_res_done),"hub page(s)")
+if not _archive_res_done:
+    print("BUILD ABORTED — Case-of-the-Week archive not rendered on the resident cotw_index.md (marker missing from index_resident.md?)")
+    raise SystemExit(1)
+print("case-of-the-week archive injected on the resident cotw_index.md")
 
 # Resident-only safety surfaces that must carry the block, same contract build_deploy.py
 # enforces for MS3: a marker deleted, a page renamed, or a source dropped from RES_EXTRA
