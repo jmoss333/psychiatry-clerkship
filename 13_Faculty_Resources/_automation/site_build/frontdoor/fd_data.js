@@ -16,6 +16,14 @@ function fdIsTool(ref){ return /\.html$/.test(ref); }
 /* Four-resource Library preview pilot. Only navigational context lives here; the projected
    catalogue still owns each resource's title, purpose, duration and review status. Returning
    null keeps unpiloted rows and item sheets unchanged. No learner or patient data is used. */
+/* Curated navigation shortcuts only. Resolve through the current view's catalog so a
+   task never introduces a page the audience or selected section does not contain. */
+function fdLibraryTaskRefs(task,audience){
+  if(task==='interview') return ['pg_suicide.md','pg_interview.md','mse.html'];
+  if(task==='rounds') return ['doc_oral.md','oral.html',audience==='resident'?'case_formulation.md':'pg_formulation.md'];
+  return null;
+}
+
 function fdResourcePreviewCopy(ref){
   var copy={
     'pg_interview.md':'You’re preparing for an interview or reviewing how to describe your observations.',

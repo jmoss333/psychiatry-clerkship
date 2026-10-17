@@ -552,6 +552,54 @@ print(json.dumps(out))
 // Essentials 31 / 35 reading and tool rows; shipped 110 / 119 (2026-10-12: +1 CotW week per site).
 const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 94, shipped: 119 } };
 
+for (const site of ['ms3', 'res']) {
+  const payload = projected[site];
+  const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+  const audience = site === 'ms3' ? 'ms3' : 'resident';
+  for (const [view, render, refs] of [['Essentials', F.fdEssentials, essentialsRefs], ['Everything', F.fdLibrary, everythingRefs]]) {
+    test(`${site} ${view}: Interview offers only its three resources with safety first`, () => {
+      const html = render(idx, { libraryTask: 'interview', audience });
+      assert.deepEqual(refs(html), ['pg_suicide.md', 'pg_interview.md', 'mse.html']);
+      assert.match(status(html), /3.*Interview/);
+      assert.match(row(html, 'pg_suicide.md'), /aria-label="Safety"/);
+      assert.match(html, /data-fd-library-task="interview" aria-pressed="true"/);
+      assert.match(html, /data-fd-library-task="all" aria-pressed="false"/);
+    });
+    test(`${site} ${view}: Rounds keeps the audience's formulation guide and existing open actions`, () => {
+      const html = render(idx, { libraryTask: 'rounds', audience });
+      assert.deepEqual(refs(html), ['doc_oral.md', 'oral.html', site === 'ms3' ? 'pg_formulation.md' : 'case_formulation.md']);
+      assert.match(status(html), /3.*Rounds/);
+      assert.equal((html.match(/data-fd-library-task="rounds" aria-pressed="true"/g) || []).length, 1);
+    });
+    test(`${site} ${view}: a task combines with text, counts its matches, and never leaks an unrelated preview`, () => {
+      const html = render(idx, { libraryTask: 'interview', audience, filter: 'mental', kitToolPreview: 'oral.html' });
+      assert.deepEqual(refs(html), ['mse.html']);
+      assert.match(status(html), /1 of 3.*Interview.*mental/);
+      assert.match(html, /data-fd-kit-section="all"[^>]*>[\s\S]*?fd-kit__index-count">1</);
+      if (view === 'Essentials') {
+        assert.match(html, /fd-kit__preview-title">Mental Status Exam</);
+        assert.doesNotMatch(html, /fd-kit__preview-title">Treatment Team/);
+      }
+      const empty = render(idx, { libraryTask: 'interview', audience, filter: 'nonexistent' });
+      assert.deepEqual(refs(empty), []);
+      assert.match(empty, /No resources match these filters/);
+      assert.match(empty, /data-fd-library-task="all"[^>]*>Clear task/);
+      assert.match(empty, /data-fd-search data-fd-search-query="nonexistent"/);
+      assert.doesNotMatch(empty, /<aside class="fd-kit__tool-preview"/);
+    });
+  }
+  test(`${site}: Essentials task and section intersect, with recovery for an empty combination`, () => {
+    const tools = F.fdEssentials(idx, { libraryTask: 'interview', audience, kitSection: 'tools' });
+    assert.deepEqual(essentialsRefs(tools), ['mse.html']);
+    assert.match(status(tools), /1.*Interview.*Tools/);
+    const emptyGroup = String(idx.essentials.findIndex((g) => !g.items.some((i) => ['pg_suicide.md', 'pg_interview.md', 'mse.html'].includes(i.ref))));
+    const empty = F.fdEssentials(idx, { libraryTask: 'interview', audience, kitSection: emptyGroup });
+    assert.deepEqual(essentialsRefs(empty), []);
+    assert.match(empty, /data-fd-kit-section="all"[^>]*>All sections/);
+    assert.doesNotMatch(empty, /<aside class="fd-kit__tool-preview"/);
+  });
+}
+
 for (const [site, pins] of Object.entries(SITES)) {
   test(`${site}: every shipped page is in Everything exactly once, or deliberately excluded, or search-only; counts match shipped_pages.json`, () => {
     const payload = projected[site];
@@ -616,7 +664,7 @@ for (const [site, pins] of Object.entries(SITES)) {
 
 test('the live Library shell renders both views through one call, passing section, preview, filter, week, case arc, pairings and audience', () => {
   const shell = read('spa_index.html');
-  assert.match(shell, /var libOpts=\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,filter:state\.libraryFilter,week:live\.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE\}; return state\.libraryView==='full'\?fdLibrary\(FD_INDEX,libOpts\):fdEssentials\(FD_INDEX,libOpts\);/);
+  assert.match(shell, /var libOpts=\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,filter:state\.libraryFilter,libraryTask:state\.libraryTask,week:live\.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE\}; return state\.libraryView==='full'\?fdLibrary\(FD_INDEX,libOpts\):fdEssentials\(FD_INDEX,libOpts\);/);
   assert.match(shell, /var FD_PAIRINGS=null;/, 'the pairings needle build_deploy.py fills');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
   assert.ok(branch, 'Library shell branch remains a shared pure renderer call');
@@ -624,7 +672,7 @@ test('the live Library shell renders both views through one call, passing sectio
   const surface = (_name, render) => render();
   const idx = kitFixture();
   const caseArc = { weeks: [] }, pairings = { pairings: [] };
-  const opts = (state, live) => ({ kitSection: state.kitSection, kitToolPreview: state.kitToolPreview, filter: state.libraryFilter, week: live.week, caseArc, pairings, audience: 'ms3' });
+  const opts = (state, live) => ({ kitSection: state.kitSection, kitToolPreview: state.kitToolPreview, filter: state.libraryFilter, libraryTask: state.libraryTask, week: live.week, caseArc, pairings, audience: 'ms3' });
   for (const libraryView of [undefined, 'essentials']) {
     const state = { tab: 'library', libraryView, kitSection: '0', libraryFilter: 'one', kitToolPreview: 'm1.md' }, live = { week: 2 };
     assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials), F.fdEssentials(idx, opts(state, live)));
