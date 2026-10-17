@@ -2467,7 +2467,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-2)}
   .fd-library__controls{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
   .fd-library__tasks{gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
-  .fd-library__task{padding-inline:var(--fd-space-4)}
+  .fd-library__task{padding-inline:var(--fd-space-2)}
   .fd-library__body{row-gap:var(--fd-space-4)}
   .fd-kit__reading{padding-block:var(--fd-space-4)}
 }
