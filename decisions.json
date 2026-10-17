@@ -286,6 +286,22 @@
         "bin/verify.sh",
         ".github/workflows/ci.yml"
       ]
+    },
+    {
+      "id": "two-audience-copy-accepted",
+      "title": "The resident site is built by copying the MS3 build and patching it; audience-as-data (manifest audiences[], generated nav, one build entrypoint) is deferred until a third learner audience is scheduled",
+      "status": "active",
+      "decided": "2026-10-16",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/superpowers/specs/2026-10-17-audience-as-data-deferral.md (owner's answer in a Cowork session 2026-10-16 to the architecture review's one question: no third learner audience in the next six months)",
+      "note": "The July 2026 architecture review (docs/ARCHITECTURE_REVIEW_2026-07-26.md S1, Phase 2) named the copytree in resident_section.py the main structural defect and the October review (project doc claude/architecture-review-2026-10-17.md R8) measured it unchanged. The owner chose to defer the refactor rather than rewrite the build during a period of ~36 commits/day. Cost accepted: every new surface pays the register-in-N-places tax and ADOPTING.md's promise is harder than it reads. Agents must not re-propose the refactor as a recurring finding or start it inside another PR; a session that wants to change this reads the spec and asks the owner.",
+      "decisionBasis": "accepted-limitation",
+      "acceptedOn": "2026-10-16",
+      "revisitTrigger": "a third learner audience (another institution, nursing, CAP, a family-facing track) is scheduled, or the number of code locations a new resident-only tool must be registered in grows beyond today's list",
+      "revisitBy": "2027-04-16",
+      "governs": [
+        "13_Faculty_Resources/_automation/site_build/resident_section.py"
+      ]
     }
   ]
 }
