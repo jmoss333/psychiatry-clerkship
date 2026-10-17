@@ -863,6 +863,7 @@ SNIPPET_MARKERS = {
     "/*__CONCEPT_RECALL__*/": "concept_recall.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_READING_PLACE__*/": "frontdoor/fd_reading_place.js",
+    "/*__FD_TOOL_PINS__*/": "frontdoor/fd_tool_pins.js",
     "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
     "/*__FD_OFFLINE__*/": "frontdoor/fd_offline.js",

@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(758 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(771 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -803,6 +803,12 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 
 | Class | Notes |
 |---|---|
+| `.fd-library__titlebar` / `.fd-library__continuity` | The Library heading and “On this device” shortcut share one flex row. The shortcut has a 44px minimum target and scrolls/focuses the continuation heading below the catalogue. It adds no block before the first reading. |
+| `.fd-library__pin` | A separate 44px Pin/Unpin control in canonical tool rows; pressed state uses teal wash. It never replaces the direct title opener, Details, or desktop Preview. |
+| `.fd-continuity` / `.fd-continuity__title` / `.fd-continuity__intro` | A hairline-separated device continuation area after the complete Library grid in both views. The named heading accepts programmatic focus and has a top scroll margin. The copy distinguishes saved places and pins from the active filters. |
+| `.fd-continuity__columns` / `.fd-continuity__group` | Two responsive groups: up to three unfinished saved readings and up to five pinned tools. Columns collapse to one on phones; the existing catalogue counts and selected preview exclude this separate area. |
+| `.fd-continuity__row` / `.fd-continuity__open` / `.fd-continuity__remove` / `.fd-continuity__clear` | Flex rows with wrapping title openers and 44px Remove/Unpin/Clear controls. Governance badges stay verbatim and wrap within the open button. Forgetting saved places preserves completion. |
+| `.fd-continuity__notice` | Polite live status for successful changes, a full pin list, or unavailable storage. A failed mutation never claims a saved change. |
 | `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
 | `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
 | `.fd-library__tasks` / `.fd-library__task` | Wrapping task buttons with 44px touch targets. All preserves the full view; Interview and Rounds intersect the selected section and title filter. Task results use curated order, with Suicide Risk & Safety first in Interview; Rounds selects the audience’s formulation guide. Counts and the desktop preview follow the final visible results. Task state is visit-only and rides the Library history entry for Open/Back; reload resets it. |

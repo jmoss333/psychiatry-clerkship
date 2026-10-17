@@ -21,8 +21,12 @@ var FD_STORE='cw_frontdoor_v1';
    week from, it is the only thing that says the app -- not week setup -- is where a reload lands. */
 var FD_KEYS=['role','tab','viewWeek','openId','fromTab','scrollPos','toolExpanded','browsing','appBridge','readingPlaces'];
 
-function fdLoad(){
-  try{ return JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{}; }catch(_){ return {}; }
+function fdLoad(receipt){
+  try{
+    var value=JSON.parse(localStorage.getItem(FD_STORE)||'{}')||{};
+    if(receipt)receipt.ok=true;
+    return value;
+  }catch(_){ if(receipt)receipt.ok=false;return {}; }
 }
 function fdSave(o){
   var out={}, src=o||{};
