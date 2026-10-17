@@ -1325,6 +1325,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
   var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, anchors, authored={}, i;
+  var arrivalInteracted=false, arrivalWaiting=false, arrivalY=0, arrivalPosition=null;
   function empty(){ }
   if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
   anchors=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
@@ -1364,7 +1365,11 @@ function fdInstallReadingPlace(reader,ref,state,options){
     baselineY=scrollY();
   }
   function onScroll(){
-    if(!active||!ready)return;
+    if(!active)return;
+    if(!ready){
+      if(arrivalWaiting&&arrivalInteracted)arrivalPosition=Math.abs(scrollY()-arrivalY)>4?current():null;
+      return;
+    }
     if(suppressedY!==null){
       if(Math.abs(scrollY()-suppressedY)<=4)return;
       suppressedY=null;
@@ -1398,8 +1403,41 @@ function fdInstallReadingPlace(reader,ref,state,options){
       ready=true;
     });
   }
+  function removeArrivalListeners(){
+    win.removeEventListener('pageshow',onArrival);
+    win.removeEventListener('wheel',onArrivalInput);
+    win.removeEventListener('touchmove',onArrivalInput);
+    win.removeEventListener('keydown',onArrivalKey);
+    win.removeEventListener('pointerdown',onArrivalPointer);
+    win.removeEventListener('scroll',onScroll);
+  }
+  function arrivalControl(event,keys){
+    var target=event&&event.target;
+    if(event&&event.defaultPrevented)return true;
+    if(!target)return false;
+    if(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName||''))return true;
+    if(keys&&/^(BUTTON|A)$/.test(target.tagName||''))return true;
+    return !!(target.closest&&target.closest('dialog,[role="dialog"],[contenteditable="true"]'));
+  }
+  function onArrivalInput(event){if(!arrivalControl(event,false))arrivalInteracted=true;}
+  function onArrivalKey(event){
+    if(event&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!arrivalControl(event,true)&&
+       /^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End| |Spacebar)$/.test(event.key))onArrivalInput(event);
+  }
+  function onArrivalPointer(event){
+    /* A press in the document scrollbar gutter, not an ordinary page/control click. */
+    var root=doc&&doc.documentElement;
+    if(event&&event.button===0&&root&&typeof root.clientWidth==='number'&&
+       typeof event.clientX==='number'&&event.clientX>=root.clientWidth)onArrivalInput(event);
+  }
+  function onArrival(){
+    arrivalWaiting=false;
+    win.removeEventListener('pageshow',onArrival);
+    frame(arrive);
+  }
   function destroy(){
     if(!active)return;
+    removeArrivalListeners();
     if(timer!==null){timerClear(timer);timer=null;}
     capture();
     active=false;
@@ -1423,13 +1461,18 @@ function fdInstallReadingPlace(reader,ref,state,options){
     status.textContent='Reading place could not be saved on this device';
     return {destroy:destroy,startAtTop:startAtTop};
   }
-  frame(function(){
+  function arrive(){
     if(!active)return;
+    removeArrivalListeners();
     state.readingPlaces=fdReadingPlaces(state.readingPlaces);
     var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,availableAnchors()), target=null;
-    if(o.restore===false){
+    if(o.restore===false||arrivalInteracted){
+      if(arrivalPosition){
+        for(var k=0;k<nodes.length;k++)if(anchor(nodes[k])===arrivalPosition.heading){target=nodes[k];break;}
+        if(target)win.scrollTo(0,absoluteTop(target)+arrivalPosition.offset);
+        write(fdReadingPlaceUpdate(state.readingPlaces,ref,arrivalPosition.heading,arrivalPosition.offset,now()));
+      }else write(state.readingPlaces);
       baselineY=scrollY();
-      write(state.readingPlaces);
     }else if(place&&!resolved){
       win.scrollTo(0,0);
       suppressedY=scrollY();
@@ -1458,7 +1501,23 @@ function fdInstallReadingPlace(reader,ref,state,options){
     win.addEventListener('scroll',onScroll);
     win.addEventListener('pagehide',onPagehide);
     win.addEventListener('resize',onResize);
-  });
+  }
+  /* On a cold document, native reload restoration can occur after the reader's first frame
+     (for example when a font delays load). Start observing after pageshow's arrival frame so
+     that browser movement cannot recreate a cleared place or overwrite a saved offset. SPA
+     opens are already complete; explicit guide/practice arrivals retain their own timing.
+     The startup gate can open before load, so a learner's scroll input wins while we wait. */
+  var doc=win.document;
+  if(o.restore!==false&&doc&&(doc.readyState==='loading'||doc.readyState==='interactive')){
+    arrivalWaiting=true;
+    arrivalY=scrollY();
+    win.addEventListener('pageshow',onArrival);
+    win.addEventListener('wheel',onArrivalInput,{passive:true});
+    win.addEventListener('touchmove',onArrivalInput,{passive:true});
+    win.addEventListener('keydown',onArrivalKey);
+    win.addEventListener('pointerdown',onArrivalPointer);
+    win.addEventListener('scroll',onScroll);
+  }else frame(arrive);
   return {destroy:destroy,startAtTop:startAtTop};
 }
 
