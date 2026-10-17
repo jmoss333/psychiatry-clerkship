@@ -1,0 +1,50 @@
+# CODEOWNERS — psychiatry-clerkship
+#
+# @jmoss333 (Josh) is the required reviewer for agent governance, CI/deploy, faculty
+# authority, attestation, crisis surfaces and the release train. Agents act as
+# @jmoss333-agents (Write only) and cannot satisfy these. Everything not listed here is
+# routine: it merges on green checks with no approval.
+#
+# This file only GATES once the `main protection` ruleset has require_code_owner_review on
+# (T4 kit, docs: ~/Documents/T4_AGENT_ACCOUNT_KIT_2026-10-16.md). Until then it only
+# auto-requests Josh's review. Last matching pattern wins; every rule names the same owner,
+# so ordering only matters for readability.
+# Source: N8 merge-authority audit 2026-10-14, §4.5.1 (+ reviewed.json, see below).
+
+# Agent governance
+/AGENTS.md                                   @jmoss333
+/CLAUDE.md                                   @jmoss333
+**/AGENTS.md                                 @jmoss333
+**/CLAUDE.md                                 @jmoss333
+/.github/                                    @jmoss333
+
+# Deploy surface
+netlify.toml                                 @jmoss333
+**/netlify.toml                              @jmoss333
+**/netlify/functions/                        @jmoss333
+/bin/check_ruleset_drift.py                  @jmoss333
+
+# Faculty authority & attestation
+/faculty-console/                            @jmoss333
+/13_Faculty_Resources/reviewed.json          @jmoss333
+/13_Faculty_Resources/_automation/attestation_hash.py              @jmoss333
+/13_Faculty_Resources/_automation/build_attest.py                  @jmoss333
+/13_Faculty_Resources/_automation/attest_serve.py                  @jmoss333
+/13_Faculty_Resources/_automation/validate_attestation_consistency.py @jmoss333
+/13_Faculty_Resources/_automation/maintenance/stranded_attestations.py @jmoss333
+/13_Faculty_Resources/_automation/surveillance/config/needs_reattest.json @jmoss333
+/13_Faculty_Resources/*attest*.html          @jmoss333
+/13_Faculty_Resources/Handoffs/*attestation* @jmoss333
+/09_Exam_Prep/shelf_comat_bank/09_ATTESTATION_QUEUE.json @jmoss333
+/bin/check_attestation_*.py                  @jmoss333
+
+# Crisis
+/crisis_resources.json                       @jmoss333
+/crisis_resources.schema.json                @jmoss333
+/13_Faculty_Resources/_automation/site_build/crisis_block.py       @jmoss333
+/13_Faculty_Resources/_automation/sync_crisis_from_reconnect.py    @jmoss333
+/13_Faculty_Resources/_automation/validate_crisis_resources.py     @jmoss333
+/bin/check_crisis_surfaces.py                @jmoss333
+
+# Release machinery
+/13_Faculty_Resources/_automation/maintenance/release_train.py     @jmoss333
