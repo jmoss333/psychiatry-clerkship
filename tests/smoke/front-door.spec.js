@@ -3348,10 +3348,16 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).role)).toBe(site.role);
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
 
-  // Now leave rotation mode.
+  // Leave an ordinary task-filtered Library visit, then choose a fresh browse entrance.
+  await page.locator('[data-fd-tab="library"]:visible').click();
+  await page.locator('[data-fd-library-task="interview"]').click();
+  await expect(page.locator('[data-fd-library-task="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-fd-tab="today"]:visible').click();
   await changeWeek.click();
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
+  await expect(page.locator('[data-fd-library-task="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.fd-collink[data-fd-open]')).toHaveCount(site.libraryCount);
   await expect(page.locator('[data-fd-change-week]')).toHaveCount(0, 'the Library carries no week control');
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(true);

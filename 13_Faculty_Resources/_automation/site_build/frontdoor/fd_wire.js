@@ -549,6 +549,10 @@ function fdDispatch(attrs, context, state){
          week-scoped selection is the wrong first view -- browsing means everything. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
       patch={week:null,tab:'library',libraryView:'full',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      /* This explicit browse entrance is a fresh Library visit, not a view switch or Back. */
+      if(s.libraryTask&&s.libraryTask!=='all') patch.libraryTask='all';
+      if(s.libraryFilter) patch.libraryFilter='';
+      if(s.kitToolPreview) patch.kitToolPreview='';
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,

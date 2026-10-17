@@ -5036,6 +5036,37 @@ test('Library task resets for a new visit or Home and returns with the prior Lib
   assert.equal(Object.hasOwn(memory.history.state.state, 'libraryTask'), false);
 });
 
+test('choosing just browse starts the whole Library fresh while cancelling Change week keeps its shortlist', () => {
+  for(const libraryTask of ['interview','rounds']) {
+    const {h,memory,storage,location}=libraryMemoryHarness({kitSection:'tools',libraryFilter:'mental',kitToolPreview:'mse.html'});
+    h.controller.dispatch({'data-fd-library-task':libraryTask});
+    h.controller.dispatch({'data-fd-change-week':''});
+    assert.equal(h.controller.getState().screen,'setup-week');
+    h.controller.dispatch({'data-fd-back':''});
+    const cancelled=h.controller.getState();
+    assert.equal(cancelled.screen,'app');
+    assert.equal(cancelled.libraryTask,libraryTask);
+    assert.equal(cancelled.libraryFilter,'mental');
+    assert.equal(cancelled.kitSection,'tools');
+    assert.equal(cancelled.kitToolPreview,'mse.html');
+
+    h.controller.dispatch({'data-fd-change-week':''});
+    h.controller.dispatch({'data-fd-week':'0'});
+    const browsing=h.controller.getState();
+    assert.equal(browsing.screen,'app');
+    assert.equal(browsing.tab,'library');
+    assert.equal(browsing.libraryView,'full');
+    assert.deepEqual({task:browsing.libraryTask,filter:browsing.libraryFilter,preview:browsing.kitToolPreview,section:browsing.kitSection},
+      {task:'all',filter:'',preview:'',section:'all'});
+    assert.equal(browsing.browsing,true);
+    assert.equal(new URL(location.href).searchParams.get('library'),'full');
+    for(const key of ['libraryTask','libraryFilter','kitToolPreview']) {
+      assert.equal(Object.hasOwn(memory.history.state.state,key),false,'the fresh history entry has no stale '+key);
+      assert.equal(Object.hasOwn(JSON.parse(storage.getItem('cw_frontdoor_v1')),key),false,'visit-only '+key+' stays out of storage');
+    }
+  }
+});
+
 test('Library task respects startup and faculty preview guards', () => {
   for (const options of [{ commitStartup: false }, { facultyPreview: () => true }]) {
     const { h, storage, renders } = libraryMemoryHarness({ libraryTask: 'all' }, { harness: options });
