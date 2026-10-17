@@ -89,6 +89,11 @@ const KINDS = Object.freeze({
      detected      false for a test the scanner cannot see at all; it must stay undetected, or
                    the flag comes off. */
 const REGISTRY = Object.freeze({
+  'tests/smoke/learner-continuity.spec.js': {
+    kind: 'fixture',
+    why: 'Controls the target reading ledger rows and seeded saved positions/completion before asserting '
+      + 'resume behavior; pins, focus, and layout do not require any live pending or attested page.',
+  },
   'tests/smoke/dialog-loading-focus.spec.js': {
     kind: 'fixture',
     why: 'Reads served content and pins the target ledger row to pending/high or attested before holding its response; '
@@ -172,6 +177,11 @@ const REGISTRY = Object.freeze({
     kind: 'invariant',
     why: 'Real Essentials renders with its pending count computed from the same index and compared with the '
       + 'rendered HTML, never pinned; the review-state branches use inline fixtures.',
+  },
+  'tests/fd-tool-pins.test.mjs': {
+    kind: 'invariant',
+    why: 'Builds current audience projections and checks canonical tool IDs, rights exclusions, and local '
+      + 'storage behavior. Eligibility never depends on facultyReview or any live pending/attested count.',
   },
   'tests/fd-search.test.mjs': {
     kind: 'invariant',
