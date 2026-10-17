@@ -1260,7 +1260,7 @@
 /* The count span is a flex item, so its leading space must be kept explicitly. */
 .fd-library__tasks{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
 .fd-library__tasks>span{margin-right:var(--fd-space-2)}
-.fd-library__task{min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-weight:600;cursor:pointer}
+.fd-library__task{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-weight:600;cursor:pointer}
 .fd-library__task:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 .fd-library__task.is-active{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 .fd-library__view-count{font-weight:inherit;white-space:pre}
@@ -2464,8 +2464,12 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @media (max-width:640px){
   /* Leave room for a pending-review notice and wrapped titles above the dock.
    * Compact the spaces between sections, not the text or 44px touch controls. */
-  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-4)}
+  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-2)}
+  .fd-library__controls{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__tasks{gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__task{padding-inline:var(--fd-space-4)}
   .fd-library__body{row-gap:var(--fd-space-4)}
+  .fd-kit__reading{padding-block:var(--fd-space-4)}
 }
 
 @media print{
