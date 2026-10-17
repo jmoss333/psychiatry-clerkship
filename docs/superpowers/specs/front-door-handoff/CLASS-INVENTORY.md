@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(748 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(756 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -813,6 +813,7 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 | `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
 | `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and tool hints in both views; reading summaries stay verbatim. |
 | `.fd-kit__peek` | Desktop Essentials only (`display:none` otherwise): 44px pill, `aria-pressed` on the previewed row. |
+| `.fd-library__details` | Four-resource pilot: separate 44px Details button with `data-fd-library-details` and `aria-haspopup="dialog"`. Shown in compact Essentials and at every width in Everything; hidden inside desktop `.has-preview`, where the existing Preview control remains. Title taps still open directly. If dismissal follows a resize that hides Details, focus returns to the same row's visible title. |
 | `.fd-kit__tool-preview` | Re-valued as the one card on the screen: padding 20, radius 12, `border-top:3px solid --fd-teal`, `--fd-shadow-card`. Shown only inside `.has-preview` at ≥1000px. |
 | `.fd-library__empty` | Max-width 560, `border-top:1px solid --fd-line-strong`; "Search the library" is the screen's one filled teal button in this state (the preview pane is withheld). |
 | `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab, names that behavior with `.fd-visually-hidden` text, and preserves its local-browser/no-identifiers boundary in the note. |
@@ -1199,6 +1200,28 @@ reference its existing "reference · not reproduced" line. On phones the panel s
   .fd-nudge__go       <button>
   .fd-nudge__dismiss  <button>
 ```
+
+### Library resource Details pilot
+
+The four pilot refs are `pg_interview.md`, `case_formulation.md`, `collateral_workflow.md`, and
+`mse.html`. Only Library Details (`sheet: item:<ref>`, `sheetFrom: library`) takes this treatment;
+generic item previews and safety sheets retain their existing bodies and actions. The shared
+sheet controller owns modal focus, Escape, backdrop dismissal and nested Search. No new storage
+or route state is introduced. The new “Useful when…” lines are navigation copy in
+`fdResourcePreviewCopy`; purpose, title, time, placement and review status remain projected data.
+
+| Class | Contract |
+|---|---|
+| `.fd-sheet--resource` | Right sheet on wider screens; bottom sheet at ≤640px, at most 92dvh (92vh fallback), with a teal top rule and rounded top corners. The title wraps, the close target is 44px, and the body has `min-height:0` so it can scroll without pushing Open off-screen. |
+| `.fd-resource__kind` | Reading, Tool or Reference label from the existing item kind/rights flag. |
+| `.fd-resource__label` / `.fd-resource__text` | Purpose, Estimated time and Useful when heading/value pairs. Purpose is escaped source summary or authored tool hint. A positive finite estimate is labelled “N min read” for readings; missing time stays “Not estimated” or “Self-paced,” never inferred from a title. |
+| `.fd-resource__when` | Quiet teal wash and left rule for the short curated use-case line. No clinical advice or new review claim. |
+| `.fd-resource__placement` | The resource's first assigned week on the current audience's path, omitted when absent. |
+| `.fd-resource__footer` | A flex-shrink-free sibling after the scroll body, with safe-area bottom padding and a full-width Open button at least 48px tall. Opens the same existing resource route. |
+
+Projected pending/high-risk badges take priority over any legacy `attested` flag. Reviewed
+appearance is shown only when the projected governance state is reviewed, or when there is no
+projection and the existing attested flag is true. The preview itself adds no attestation.
 
 | Class | Notes |
 |---|---|
