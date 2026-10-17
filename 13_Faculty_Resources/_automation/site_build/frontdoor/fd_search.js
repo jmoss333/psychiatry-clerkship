@@ -530,12 +530,15 @@ function fdSearchMatches(index, query, synonyms, state){
   var readingWords=fdSearchContentWords(fdExpandQuery(readingQuery, synonyms).split(/\s+/));
   /* Synonym-group alternatives and page-text evidence (see the two notes above fdSearchAlternatives
      and fdSearchBodyScores). Both are ordinary-item evidence only; neither touches protoResults. */
-  var alternatives=fdSearchAlternatives(readingQuery, idx.synonymGroups);
+  /* A typed file name ("t_mood.md") asks for that file: no synonym swaps and no page-text tier,
+     whose tokens ("mood", "md") would otherwise match every page that links another page. */
+  var literalFile=readingQuery===rawQuery&&/\.(md|html)\b/.test(rawQuery);
+  var alternatives=literalFile?[]:fdSearchAlternatives(readingQuery, idx.synonymGroups);
   var altWords=[];
   for(var aw=0;aw<alternatives.length;aw++){
     altWords.push(fdSearchContentWords(fdExpandQuery(alternatives[aw], synonyms).split(/\s+/)));
   }
-  var body=fdSearchBodyScores(state&&state.bodyIndex, readingQuery, alternatives);
+  var body=literalFile?{}:fdSearchBodyScores(state&&state.bodyIndex, readingQuery, alternatives);
   var kitRefs={};
   for(var kr=0;kr<kit.length;kr++){ if(kit[kr].item) kitRefs[kit[kr].item.ref]=true; }
   var itemResults=[], bodyOnly=[];

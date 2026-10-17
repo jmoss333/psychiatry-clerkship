@@ -1219,6 +1219,15 @@ test('legacy completion objects survive Reader previous/next and browser history
   await expectHealthy(page);
 });
 
+// C2 (2026-10-17): Enter in the search field shows the results -- focus moves to the first row
+// and nothing opens; a second Enter opens the row the learner can now see.
+async function enterShowsThenOpens(page, input) {
+  await input.press('Enter');
+  await expect(page.locator('.fd-search')).toHaveCount(1);
+  await expect(page.locator('.fd-searchpanel__body .fd-result').first()).toBeFocused();
+  await page.keyboard.press('Enter');
+}
+
 test('command-K and slash search restore focus on dismissal and open results directly', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
@@ -1240,7 +1249,7 @@ test('command-K and slash search restore focus on dismissal and open results dir
   await expect(page.locator('.fd-result')).not.toHaveCount(0);
   const firstRef = await page.locator('.fd-result').first().getAttribute('data-fd-open');
   expect(firstRef).toBeTruthy();
-  await input.press('Enter');
+  await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toHaveCount(0);
@@ -1297,7 +1306,7 @@ test('Enter on a punctuated exact resource name opens that resource, not a spuri
     const input = page.getByRole('textbox', { name:'Search resources', exact:true });
     await input.fill(query);
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', ref);
-    await input.press('Enter');
+    await enterShowsThenOpens(page, input);
     await expect(page.locator('.fd-search')).toHaveCount(0);
     await expect(page.locator('.fd-sheet')).toHaveCount(0);
     await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
@@ -1317,7 +1326,7 @@ test('dated title variants retain safety priority and open the first ordinary re
   await input.fill(query);
   await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'exp_consult.md');
   await expect(page.locator('.fd-result[data-fd-open]').first()).toHaveAttribute('data-fd-open', ref);
-  await input.press('Enter');
+  await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toBeVisible();
   await page.locator('.fd-sheet__close').click();
@@ -3940,7 +3949,8 @@ test('one-thread Phase 3 reader: one status line, folded practice row, Next in t
   const thread = page.getByRole('navigation', { name: 'Next in this thread' });
   await expect(thread).toBeVisible();
   expect(await thread.locator('.fd-nextthread__row').count()).toBeGreaterThanOrEqual(1);
-  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(3);
+  // <= 4 since C2 (2026-10-17): a topic page also names its newest Case of the Week.
+  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(4);
   await expectHealthy(page);
 });
 
