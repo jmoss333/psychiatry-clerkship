@@ -219,9 +219,11 @@ test('every shipped tool declaration is a known value, and the three viewport to
     'adding a viewport tool is a deliberate act: survey it for fixed/sticky layout, then extend this list in the same change');
 });
 
-test('the contract is written where a tool author reads (CLAUDE.md, mirrored byte-for-byte in AGENTS.md)', () => {
+test('the contract is written where a tool author reads (the tools guide, linked from CLAUDE.md, which AGENTS.md mirrors byte-for-byte)', () => {
   const claude = readFileSync(new URL('../CLAUDE.md', import.meta.url), 'utf8');
   const agents = readFileSync(new URL('../AGENTS.md', import.meta.url), 'utf8');
-  assert.match(claude, /cw-frame/);
+  const guide = readFileSync(new URL('../docs/agent-guide/tools-and-frontdoor.md', import.meta.url), 'utf8');
+  assert.match(guide, /cw-frame/);
+  assert.match(claude, /docs\/agent-guide\/tools-and-frontdoor\.md/);
   assert.equal(claude, agents);
 });
