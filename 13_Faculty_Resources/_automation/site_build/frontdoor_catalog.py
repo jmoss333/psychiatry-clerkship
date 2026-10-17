@@ -1,9 +1,11 @@
 """Build verified, site-specific data for the dormant Front Door modules."""
 import copy
 import json
+import os
 import re
 from shipped_pages import load_shipped_pages as load_search_universe
 from search_synonyms import load as load_synonym_groups
+from topic_hub_block import cotw_for_topics
 
 
 DATA_DEFAULTS = {
@@ -290,6 +292,17 @@ def build_frontdoor_payload(site, curriculum, catalog, revision, rotation_projec
                 raise ValueError("shipped search resource has no final catalog entry: %s" % ref)
         projected["searchResources"] = search_refs
         projected["searchTitles"] = {ref: pages[ref]["title"] for ref in search_refs}
+        # Topic page -> its Case-of-the-Week editions on this site, newest first (C2, 2026-10-17),
+        # for the reader's "Next in this thread" chrome. Derived from topic_hubs.json and the
+        # shipped listing; limited to pages this site searches, so a row can never dead-link.
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "topic_hubs.json"),
+                  encoding="utf-8") as handle:
+            hub_registry = json.load(handle)
+        searchable = set(search_refs)
+        projected["cotwForTopic"] = {
+            ref: [row for row in rows if row["slug"] in searchable]
+            for ref, rows in cotw_for_topics(hub_registry, shipped, build_site).items()
+            if ref in searchable and any(row["slug"] in searchable for row in rows)}
         projected["searchAliases"] = {ref: aliases for ref, aliases in
                                       projected.get("searchAliases", {}).items() if ref in search_refs}
         projected["medicationTerms"] = {ref: terms for ref, terms in

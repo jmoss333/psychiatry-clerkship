@@ -126,6 +126,11 @@ for (const scenario of [
       await expect(input).toBeFocused();
       // locator.press() would refocus the field and conceal a stolen-focus regression.
       await page.keyboard.press('Enter');
+      // C2 (2026-10-17): Enter in the field shows the list -- focus lands on the first row and
+      // nothing opens; a second Enter opens the row the learner can now see.
+      await expect(search).toHaveCount(1);
+      await expect(search.locator('.fd-result').first()).toBeFocused();
+      await page.keyboard.press('Enter');
       await expect(search).toHaveCount(0);
       if (scenario.safety) await expect(page.getByRole('dialog', { name: 'Substance Use', exact: true })).toBeVisible();
       else await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', scenario.ref);
@@ -3566,8 +3571,11 @@ test('Patient care resources is a safe, responsive fourth destination and search
   const input = page.locator('.fd-searchpanel__input');
   await input.fill('housing help');
   await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', 'resource-finder');
-  const popupPromise = page.waitForEvent('popup');
   await input.press('Enter');
+  // C2: Enter shows the list (focus on the first row, the care link); the next Enter follows it.
+  await expect(page.locator('.fd-result').first()).toBeFocused();
+  const popupPromise = page.waitForEvent('popup');
+  await page.keyboard.press('Enter');
   const popup = await popupPromise;
   await expect.poll(() => popup.url()).toBe(expectedUrls[0]);
   await popup.close();
@@ -4805,6 +4813,9 @@ test.describe('Essentials Phase 2', () => {
     await input.fill('Dissociative');
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 't_dissociative.md');
     await input.press('Enter');
+    // C2: the first Enter focuses the top result; the second opens it.
+    await expect(page.locator('.fd-result').first()).toBeFocused();
+    await page.keyboard.press('Enter');
     await readyReader(page, 't_dissociative.md');
     expect(new URL(page.url()).searchParams.get('page')).toBe('t_dissociative.md');
     await page.locator('.fd-searchbtn[data-fd-search]:visible').click();

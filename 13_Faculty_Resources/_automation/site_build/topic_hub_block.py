@@ -81,13 +81,6 @@ BLOCK_RE = re.compile(
     r'<details class="pairing-block topic-hub" data-topic-hub="[^"]*">.*?</details>',
     re.S,
 )
-# The visible one-line Case-of-the-Week link (render_cotw_line), and where it goes.
-LABEL_COTW_LINE = "Case of the Week for this topic"
-COTW_INDEX = "cotw_index.md"
-COTW_INDEX_LABEL = "all cases"
-COTW_LINE_RE = re.compile(
-    r'<p class="pairing-block cotw-for-topic" data-cotw-for="[^"]*">.*?</p>\n*', re.S)
-H1_RE = re.compile(r"^# [^\n]*\n", re.M)
 TOOL_HREF_RE = re.compile(r"[?&]tool=([a-z0-9_-]+\.html)")
 CASE_HREF_RE = re.compile(r"[?&](?:case|scenario)=([A-Za-z0-9_-]+)")
 
@@ -425,40 +418,30 @@ def render(data, ref, site):
     )
 
 
-def render_cotw_line(data, ref, site):
-    """One VISIBLE line naming this topic's Case of the Week (C2, 2026-10-17), or "".
+def cotw_for_topics(registry, shipped, site):
+    """{topic page: [{slug, title, date}] newest first} for one site (C2, 2026-10-17).
 
-    The hub block lists every edition, but it is collapsed and sits near the end of the page,
-    so the weekly cases stayed effectively search-only. This line goes at the top of the built
-    page, under its title: the newest edition for the topic on this site, how many there are,
-    and the generated archive. Same sources and same guarantees as the block -- built output
-    only (no source byte, no contentHash moves), titles the registries already carry, no
-    clinical text, audience-neutral copy.
+    Feeds the reader's "Next in this thread" row "Case of the Week: <newest case>" -- chrome the
+    Front Door renders beside the page, never text inside it, so no source byte, contentHash or
+    page-text index entry changes. Same joins as model(): a hub that ships on the site, the
+    registry's cotwTopics, and only editions the shipped listing carries for this site.
+    `shipped` is {slug: page} or shipped_pages.json's {"pages": [...]}.
     """
-    if ref not in hubs_for_site(data, site):
-        return ""
-    cotw = model(data, ref, site)["cotw"]
-    if not cotw:
-        return ""
-    newest = cotw[0]
-    more = len(cotw) - 1
-    tail = ("%d more on this topic" % more if more else "")
-    src = " · ".join(part for part in (tail, _link("?page=%s" % COTW_INDEX, COTW_INDEX_LABEL)) if part)
-    return ('<p class="pairing-block cotw-for-topic" data-cotw-for="%s"><strong>%s:</strong> %s '
-            '<span class="pairing-src">— %s</span></p>'
-            % (_attr(ref), _esc(LABEL_COTW_LINE), _link(newest["href"], newest["title"]), src))
-
-
-def _place_cotw_line(text, line):
-    """Replace an inherited line in place (resident sweep), else insert under the page's H1."""
-    if COTW_LINE_RE.search(text):
-        return COTW_LINE_RE.sub(lambda _m: (line + "\n\n") if line else "", text, count=1)
-    if not line:
-        return text
-    match = H1_RE.search(text)
-    if match:
-        return text[:match.end()].rstrip("\n") + "\n\n" + line + "\n\n" + text[match.end():].lstrip("\n")
-    return line + "\n\n" + text
+    if isinstance(shipped, dict) and "pages" in shipped:
+        shipped = {p["slug"]: p for p in shipped["pages"]}
+    cotw = _cotw_pages(shipped)
+    out = {}
+    for hub in registry.get("hubs", []):
+        if site not in (shipped.get(hub["ref"]) or {}).get("sites", []):
+            continue
+        rows = []
+        for code in hub.get("cotwTopics") or []:
+            for date, slug, title in cotw.get(code, {}).get(site, []):
+                rows.append({"slug": slug, "title": title, "date": date})
+        rows.sort(key=lambda r: (r["date"], r["slug"]), reverse=True)
+        if rows:
+            out[hub["ref"]] = rows
+    return out
 
 
 def inject_markdown(text, data, dst, site):
@@ -467,21 +450,18 @@ def inject_markdown(text, data, dst, site):
     Non-hub pages are returned untouched. A hub page that already carries a rendered block
     (the resident copytree inherits the MS3 one) has it replaced in place; otherwise the
     block goes immediately before the hand-written "**Pair with**" paragraph when the page
-    has one, else at the end. The visible Case-of-the-Week line (render_cotw_line) is placed
-    or replaced under the page title in the same pass.
+    has one, else at the end.
     """
     slug = os.path.basename(dst)
     if slug not in hubs_for_site(data, site):
         return text, False
-    placed = _place_cotw_line(text, render_cotw_line(data, slug, site))
-    line_changed, text = placed != text, placed
     block = render(data, slug, site)
     if BLOCK_RE.search(text):
         if not block:
             return BLOCK_RE.sub("", text), True
         return BLOCK_RE.sub(lambda _m: block, text, count=1), True
     if not block:
-        return text, line_changed
+        return text, False
     match = PAIR_WITH_RE.search(text)
     if match:
         head, tail = text[:match.start()], text[match.start():]
@@ -567,34 +547,22 @@ def _self_test():
             ref = hubs_for_site(real, "res")[0]
             text = "# Title\n\nBody.\n"
             ms3, _ = inject_markdown(text, real, ref, "ms3")
-            # The page's own text survives in order; only generated blocks are added around it.
-            self.assertEqual(COTW_LINE_RE.sub("", BLOCK_RE.sub("", ms3)).split(), text.split())
+            self.assertTrue(ms3.startswith(text.rstrip("\n")))
             res, did = inject_markdown(ms3, real, ref, "res")
             self.assertTrue(did)
             self.assertEqual(res.count('data-topic-hub="%s"' % ref), 1)
             self.assertEqual(res, inject_markdown(res, real, ref, "res")[0])
 
-        def test_cotw_line_under_title_per_site_and_replaced_not_duplicated(self):
-            with_cotw = [r for r in hubs_for_site(real, "res") if model(real, r, "res")["cotw"]]
-            self.assertTrue(with_cotw)
-            for ref in with_cotw:
-                text = "# Title\n\nBody.\n"
-                ms3, _ = inject_markdown(text, real, ref, "ms3")
-                if model(real, ref, "ms3")["cotw"]:
-                    self.assertTrue(ms3.startswith("# Title\n\n" + '<p class="pairing-block cotw-for-topic"'))
-                    self.assertIn("_ms3.md", COTW_LINE_RE.search(ms3).group(0))
-                res, _ = inject_markdown(ms3, real, ref, "res")
-                line = COTW_LINE_RE.search(res).group(0)
-                self.assertEqual(len(COTW_LINE_RE.findall(res)), 1, ref)
-                self.assertNotIn("_ms3.md", line, "resident line links resident twins only")
-                newest = model(real, ref, "res")["cotw"][0]["slug"]
-                self.assertIn("?page=%s" % newest, line)
-                self.assertIn("?page=%s" % COTW_INDEX, line)
-
-        def test_cotw_line_absent_without_a_case(self):
-            for ref in hubs_for_site(real, "ms3"):
-                if not model(real, ref, "ms3")["cotw"]:
-                    self.assertEqual(render_cotw_line(real, ref, "ms3"), "")
+        def test_cotw_for_topics_matches_the_block_per_site(self):
+            for site in SITES:
+                by_topic = cotw_for_topics(real["registry"], real["shipped"], site)
+                self.assertTrue(by_topic)
+                for ref in hubs_for_site(real, site):
+                    want = [r["slug"] for r in model(real, ref, site)["cotw"]]
+                    self.assertEqual([r["slug"] for r in by_topic.get(ref, [])], want, ref)
+                other = "res" if site == "ms3" else "ms3"
+                for rows in by_topic.values():
+                    self.assertFalse(any(r["slug"].endswith("_%s.md" % other) for r in rows))
 
         def test_non_hub_untouched(self):
             text = "# Not a hub\n"
@@ -603,8 +571,7 @@ def _self_test():
         def test_copy_is_audience_neutral(self):
             banned = re.compile(r"MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford", re.I)
             strings = [BLURB, FOOTNOTE, LABEL_READ, LABEL_COTW, LABEL_REASON, LABEL_FAMILY,
-                       LABEL_DRILL, LABEL_QUESTIONS, EARLIER, real["registry"]["heading"],
-                       LABEL_COTW_LINE, COTW_INDEX_LABEL]
+                       LABEL_DRILL, LABEL_QUESTIONS, EARLIER, real["registry"]["heading"]]
             strings += list(real["registry"]["roles"].values())
             strings += [h["topic"] for h in real["registry"]["hubs"]]
             for s in strings:
