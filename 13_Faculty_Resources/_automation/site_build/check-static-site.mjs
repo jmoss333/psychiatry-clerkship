@@ -1265,6 +1265,71 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
   }
 }
 
+/* ---------- 13. no proprietary "ReConnect" naming in learner-facing output (HARD) ----------
+ * Owner rule: external-facing material never names ReConnect. The Care tab shipped
+ * "ReConnect collection" to learners (2026-10-16 review, P1). Every shipped text file is
+ * scanned for the brand casing "ReConnect"; lowercase URL hosts/paths
+ * (reconnect-tools.netlify.app/...) and the English verb "reconnect" are not matched.
+ *
+ * Allowlist = occurrences inside FACULTY-ATTESTED sources only, where rewording would
+ * reopen the page's signature (attestation_hash.py) and so needs the owner's decision.
+ * Each entry is an exact snippet; a snippet that no longer appears is itself HARD, so the
+ * list cannot outlive the text it excuses. Never add an entry for an unattested source:
+ * fix the wording instead.
+ */
+{
+  const BRAND = /ReConnect/g;
+  const ATTESTED_ALLOW = {
+    'content/t_sud.md': [
+      '### Related ReConnect directories',
+      'Open the ReConnect Resource Finder',
+    ],
+    'content/exp_family.md': [
+      '## Related ReConnect directory',
+      'Open the ReConnect Resource Finder',
+    ],
+    'tools/pharmacy.html': [
+      'the ReConnect handout it cites',
+      "'ReConnect family handout: '",
+    ],
+  };
+  const TEXT_EXT = /\.(html?|md|js|mjs|css|json|txt|xml|svg|webmanifest|vtt)$/i;
+  const walkText = (dir) => {
+    const out = [];
+    for (const name of readdirSync(dir)) {
+      const abs = join(dir, name);
+      const st = statSync(abs);
+      if (st.isDirectory()) out.push(...walkText(abs));
+      else if (TEXT_EXT.test(name)) out.push(abs);
+    }
+    return out;
+  };
+  let scanned = 0;
+  for (const abs of walkText(SITE)) {
+    const rel = relative(SITE, abs).split('\\').join('/');
+    let text = readFileSync(abs, 'utf8');
+    scanned += 1;
+    for (const snippet of ATTESTED_ALLOW[rel] || []) {
+      if (!text.includes(snippet)) {
+        H(`learner naming: stale allowlist entry for ${rel} (snippet no longer shipped — remove it): ${snippet}`);
+      }
+      text = text.split(snippet).join('');
+    }
+    const lines = text.split('\n');
+    lines.forEach((ln, i) => {
+      if (BRAND.test(ln)) {
+        const at = ln.search(BRAND);
+        H(`learner naming: "ReConnect" in learner-facing output ${rel}:${i + 1} — use neutral wording: ${ln.slice(Math.max(0, at - 50), at + 60).trim()}`);
+      }
+      BRAND.lastIndex = 0;
+    });
+  }
+  for (const rel of Object.keys(ATTESTED_ALLOW)) {
+    if (!existsSync(p(rel))) I(`learner naming: allowlisted ${rel} not shipped on this site`);
+  }
+  I(`learner naming: scanned ${scanned} shipped text file(s) for "ReConnect"`);
+}
+
 /* ---------- report ---------- */
 for (const error of checkBuiltSearch(SITE, dirname(fileURLToPath(import.meta.url)))) H(error);
 const line = '─'.repeat(64);

@@ -86,7 +86,7 @@ const FIX_CUR = {
       url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
       searchTerms: ['community resources', 'housing help'] },
     { id: 'meeting-calendar', title: 'Find a recovery meeting',
-      description: 'Current recovery-meeting options from ReConnect.',
+      description: 'Current recovery-meeting options.',
       url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
       searchTerms: ['recovery meeting', 'aa meeting'] },
   ],
