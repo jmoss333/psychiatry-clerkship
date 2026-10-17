@@ -144,8 +144,16 @@ def newest(data, site):
     return {"slug": row["slug"], "title": row["title"], "date": "%s-%s-%s" % (d[:4], d[4:6], d[6:8])}
 
 
-def _line(row):
+# Topic and track tags on every row (C2, 2026-10-17): the topic is the hub label the row is grouped
+# under; the track is the edition's own site. Build output only, like the rest of this block.
+TRACK_TAG = {"ms3": "MS3", "res": "Resident"}
+
+
+def _line(row, label=None, site=None):
     text = "[%s](?page=%s)" % (row["title"], row["slug"])
+    tags = [t for t in (label, TRACK_TAG.get(site)) if t]
+    if tags:
+        text += " — *%s*" % " · ".join(tags)
     if row["blurb"]:
         text += " — " + row["blurb"]
     if row.get("earlier"):
@@ -157,14 +165,16 @@ def render(data, site):
     m = model(data, site)
     if not m["newest"]:
         return ""
-    out = ["**%s:** %s" % (NEWEST, _line(dict(m["newest"], earlier=False))), ""]
+    label_of = {row["slug"]: label for label, items in m["groups"] for row in items}
+    newest = m["newest"]
+    out = ["**%s:** %s" % (NEWEST, _line(dict(newest, earlier=False), label_of.get(newest["slug"]), site)), ""]
     out.append("### %s" % HEADING)
     out.append("")
     for label, items in m["groups"]:
         out.append("**%s**" % label)
         out.append("")
         for row in items:
-            out.append("- " + _line(row))
+            out.append("- " + _line(row, label, site))
         out.append("")
     out.append("*%d cases. Listed from the registry on every build; newest first within each topic.*" % m["count"])
     return "\n".join(out).rstrip("\n")

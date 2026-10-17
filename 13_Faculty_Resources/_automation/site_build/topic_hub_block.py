@@ -418,6 +418,32 @@ def render(data, ref, site):
     )
 
 
+def cotw_for_topics(registry, shipped, site):
+    """{topic page: [{slug, title, date}] newest first} for one site (C2, 2026-10-17).
+
+    Feeds the reader's "Next in this thread" row "Case of the Week: <newest case>" -- chrome the
+    Front Door renders beside the page, never text inside it, so no source byte, contentHash or
+    page-text index entry changes. Same joins as model(): a hub that ships on the site, the
+    registry's cotwTopics, and only editions the shipped listing carries for this site.
+    `shipped` is {slug: page} or shipped_pages.json's {"pages": [...]}.
+    """
+    if isinstance(shipped, dict) and "pages" in shipped:
+        shipped = {p["slug"]: p for p in shipped["pages"]}
+    cotw = _cotw_pages(shipped)
+    out = {}
+    for hub in registry.get("hubs", []):
+        if site not in (shipped.get(hub["ref"]) or {}).get("sites", []):
+            continue
+        rows = []
+        for code in hub.get("cotwTopics") or []:
+            for date, slug, title in cotw.get(code, {}).get(site, []):
+                rows.append({"slug": slug, "title": title, "date": date})
+        rows.sort(key=lambda r: (r["date"], r["slug"]), reverse=True)
+        if rows:
+            out[hub["ref"]] = rows
+    return out
+
+
 def inject_markdown(text, data, dst, site):
     """Place (or replace) the block on a built page. Returns (text, injected).
 
@@ -526,6 +552,17 @@ def _self_test():
             self.assertTrue(did)
             self.assertEqual(res.count('data-topic-hub="%s"' % ref), 1)
             self.assertEqual(res, inject_markdown(res, real, ref, "res")[0])
+
+        def test_cotw_for_topics_matches_the_block_per_site(self):
+            for site in SITES:
+                by_topic = cotw_for_topics(real["registry"], real["shipped"], site)
+                self.assertTrue(by_topic)
+                for ref in hubs_for_site(real, site):
+                    want = [r["slug"] for r in model(real, ref, site)["cotw"]]
+                    self.assertEqual([r["slug"] for r in by_topic.get(ref, [])], want, ref)
+                other = "res" if site == "ms3" else "ms3"
+                for rows in by_topic.values():
+                    self.assertFalse(any(r["slug"].endswith("_%s.md" % other) for r in rows))
 
         def test_non_hub_untouched(self):
             text = "# Not a hub\n"

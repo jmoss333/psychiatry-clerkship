@@ -550,7 +550,9 @@ print(json.dumps(out))
 
 // Pinned per-site counts (2026-10-04): Everything 85 / 94 shipped pages placed in columns;
 // Essentials 31 / 35 reading and tool rows; shipped 110 / 119 (2026-10-12: +1 CotW week per site).
-const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 94, shipped: 119 } };
+// Resident Everything 94 -> 90 (C2, 2026-10-17): orientation, osce, shelf and reading_map are MS3-track
+// pages, now curriculum.siteLibrary.resident.exclusions -- still reachable by link, not listed.
+const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 90, shipped: 119 } };
 
 for (const site of ['ms3', 'res']) {
   const payload = projected[site];

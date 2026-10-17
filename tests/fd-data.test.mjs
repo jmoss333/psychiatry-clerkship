@@ -461,7 +461,8 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 31, 85], ['res', 35, 94]]) {
+// res Everything 94 -> 90 (C2, 2026-10-17): four MS3-track pages are siteLibrary.resident.exclusions.
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 85], ['res', 35, 90]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

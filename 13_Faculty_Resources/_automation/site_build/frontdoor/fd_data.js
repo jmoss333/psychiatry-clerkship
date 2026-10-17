@@ -186,6 +186,16 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     searchItem.readerOnly=false;
   }
 
+  /* Track-specific pages (curriculum.searchTrackExclude, C2 2026-10-17): the other track's pages
+     this site ships but does not offer -- the MS3 week pages on the resident site, say. They keep
+     full reader identity (title, summary, topic metadata), exactly like a week landing page, but
+     are readerOnly, so search, Today and the Library never list them. A page already placed here
+     is never touched (frontdoor_catalog never lists one). */
+  var trackOnly=Array.isArray(cur.searchTrackExclude)?cur.searchTrackExclude:[];
+  for(var to=0;to<trackOnly.length;to++){
+    if(typeof trackOnly[to]==='string'&&trackOnly[to]&&!byRef[trackOnly[to]]) ensure(trackOnly[to], null).readerOnly=true;
+  }
+
   var sourcePath=cur.path||{};
   var pathInfo={
     id:(typeof sourcePath.id==='string')?sourcePath.id:'',
@@ -270,7 +280,30 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     });
   }
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
+  /* The one bidirectional synonym list (site_build/data/search-synonyms.v1.json, projected by
+     frontdoor_catalog as curriculum.synonymGroups). Copied, never aliased; fd_search.js reads it
+     as idx.synonymGroups. Absent on older/bare payloads, which then search exactly as before. */
+  var synonymGroups=[], sg=Array.isArray(cur.synonymGroups)?cur.synonymGroups:[];
+  for(var sgi=0;sgi<sg.length;sgi++){
+    if(Array.isArray(sg[sgi])&&sg[sgi].length>1) synonymGroups.push(sg[sgi].slice());
+  }
+
+  /* Topic page -> its Case-of-the-Week editions on this site, newest first (curriculum.cotwForTopic,
+     projected by frontdoor_catalog from topic_hubs.json). The reader's "Next in this thread" names
+     the newest one. Rows whose case the index does not carry are dropped here, so a link never
+     dead-ends; absent on older/bare payloads, which then render no row. */
+  var cotwForTopic={}, cft=(cur.cotwForTopic&&typeof cur.cotwForTopic==='object')?cur.cotwForTopic:{};
+  for(var cftRef in cft){
+    if(!Object.prototype.hasOwnProperty.call(cft,cftRef)||!Array.isArray(cft[cftRef])) continue;
+    var cftRows=[];
+    for(var cfi=0;cfi<cft[cftRef].length;cfi++){
+      var cfRow=cft[cftRef][cfi];
+      if(cfRow&&typeof cfRow.slug==='string'&&byRef[cfRow.slug]) cftRows.push({slug:cfRow.slug,title:String(cfRow.title||cfRow.slug),date:String(cfRow.date||'')});
+    }
+    if(cftRows.length) cotwForTopic[cftRef]=cftRows;
+  }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known, synonymGroups:synonymGroups, cotwForTopic:cotwForTopic,
     titles:titles, essentials:essentials, essentialsDropped:essentialsDropped,
     careResources:careResources, careBuilder:careBuilder, careNavigator:careNavigator, teachingResources:teachingResources };
 }
