@@ -378,7 +378,7 @@ function fdSearchMatches(index, query, synonyms, state){
   var careResults=[], care=idx.careResources||[];
   for(var ci=0;ci<care.length;ci++){
     if(fdSearchCareHit(care[ci],normalizedQuery)){
-      careResults.push({item:care[ci],kind:'care',meta:'ReConnect · external care resource'});
+      careResults.push({item:care[ci],kind:'care',meta:'External care resource'});
     }
   }
 
