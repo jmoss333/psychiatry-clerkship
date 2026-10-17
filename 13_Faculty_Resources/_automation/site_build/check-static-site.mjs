@@ -744,6 +744,14 @@ const SHELL_REF_ALLOWLIST = new Set([
           H(`sw: PRECACHE entry is media (must never be precached — Range semantics belong to the network): ${entry}`);
           continue;
         }
+        // Netlify consumes these at the publish root and answers 404 for them; one 404 in
+        // PRECACHE makes cache.addAll() reject and the worker never installs (2026-10-16
+        // P0: /_headers). Keep in sync with SW_NETLIFY_RESERVED_ROOT_NAMES in common.py.
+        if (['/_headers', '/_redirects', '/netlify.toml'].includes(entry) ||
+            entry.split('/').some(seg => seg.startsWith('.'))) {
+          H(`sw: PRECACHE entry is not servable on Netlify (control file or dot-path — install would fail): ${entry}`);
+          continue;
+        }
         // "/" is the precache key for the shell (_sw_precache_url() in common.py never
         // keys "/index.html" — a navigate request for "/" must hit this entry offline).
         const target = entry === '/' ? p('index.html') : p(entry.slice(1));
