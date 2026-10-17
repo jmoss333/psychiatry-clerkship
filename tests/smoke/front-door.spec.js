@@ -3127,6 +3127,10 @@ test('Today announces the newest Case of the Week only in the week it ships, as 
   await expect(row.locator('.fd-newcase')).toHaveAttribute('data-fd-open', newest.slug);
   await expect(row.locator('.fd-newcase__kicker')).toHaveText('New this week · Case of the Week');
   await expect(row.locator('.fd-newcase__title')).toHaveText(newest.title);
+  // A case still awaiting faculty review carries the compact pending mark; a reviewed one does not.
+  const ledger = await (await requestGetWithRetry(page.request, '/governance.json')).json();
+  const pending = !!(ledger.items[newest.slug] && ledger.items[newest.slug].status === 'pending');
+  await expect(row.locator('.fd-kit__pending')).toHaveCount(pending ? 1 : 0);
   await expect(page.locator('.fd-primary .fd-newcase, .fd-now .fd-newcase')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-alsolist .fd-also__row > *:first-child')].map(el => el.className.split(' ')[0])))
     .toEqual(['fd-study-planner', 'fd-newcase', 'fd-capture']);

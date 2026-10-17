@@ -795,6 +795,22 @@ test('the announcement row is one data-fd-open button: kicker, escaped title, Op
   assert.doesNotMatch(F.fdNewCaseRow({ slug: 's', title: 't' }), /data-fd-(?!open)/, 'no new action attribute: data-fd-open already routes a page');
 });
 
+test('a case still awaiting faculty review carries the compact pending mark; a reviewed one carries nothing', () => {
+  const badge = (t, o) => (t && t.status === 'pending' ? `<span class="fd-kit__pending"${o && o.compact ? ' data-compact' : ''}></span>` : '');
+  const P = make(badge);
+  const pending = { governance: { status: 'pending', riskKind: 'clinical', riskLevel: 'high' } };
+  const reviewed = { governance: { status: 'reviewed', riskKind: 'clinical', riskLevel: 'high' } };
+  const shown = { slug: NEWEST.slug, title: NEWEST.title };
+  assert.match(P.fdNewCaseRow(shown, pending), /<\/span><span class="fd-kit__pending" data-compact><\/span><span class="fd-newcase__action">/, 'between the title and Open, compact');
+  assert.doesNotMatch(P.fdNewCaseRow(shown, reviewed), /fd-kit__pending/);
+  assert.doesNotMatch(P.fdNewCaseRow(shown, undefined), /fd-kit__pending/, 'no index entry: no claim either way');
+  // fdToday looks the slug up in the index it was handed (searchResources put every shipped case in byRef).
+  const withCase = (gov) => Object.assign({}, IDX, { byRef: Object.assign({}, IDX.byRef, { [NEWEST.slug]: { ref: NEWEST.slug, kind: 'read', title: NEWEST.title, searchOnly: true, governance: gov.governance } }) });
+  assert.match(P.fdToday(withCase(pending), s({ newCase: NEWEST })), /fd-newcase__title">[^<]*<\/span><span class="fd-kit__pending"/);
+  assert.doesNotMatch(P.fdToday(withCase(reviewed), s({ newCase: NEWEST })), /fd-kit__pending/);
+  assert.doesNotMatch(P.fdToday(IDX, s({ newCase: NEWEST })), /fd-kit__pending/, 'unknown to the index: no mark');
+});
+
 test('in its week the case row joins Also today after the week row and before saved questions; outside it, nothing', () => {
   // The lead card is primary: the announcement is the only row, under the heading, never the Now card.
   const alone = F.fdToday(IDX, s({ newCase: NEWEST }));

@@ -509,11 +509,16 @@ function fdNewCase(newest, nowMs){
   return {slug:n.slug, title:n.title};
 }
 
-function fdNewCaseRow(c){
+/* `item` is the index entry for the slug (searchResources puts every shipped case in byRef with
+   its manifest governance), so a case still awaiting faculty review carries the same compact
+   pending mark the Safety kit and "On the unit this week" use -- an announcement never outranks
+   the page's own review state. */
+function fdNewCaseRow(c, item){
   if(!c) return '';
   return '<button type="button" class="fd-newcase" data-fd-open="'+fdEsc(c.slug)+'">'+
     '<span class="fd-newcase__kicker">New this week · Case of the Week</span>'+
     '<span class="fd-newcase__title">'+fdEsc(c.title)+'</span>'+
+    governanceBadge(item&&item.governance,{compact:true})+
     '<span class="fd-newcase__action">Open →</span>'+
   '</button>';
 }
@@ -595,7 +600,8 @@ function fdToday(index, state){
   }
   /* The Case-of-the-Week announcement, only in the week it ships: after the learner's own rows and
      the week row, before saved questions, which still close the list. */
-  var newCaseHtml=fdNewCaseRow(fdNewCase(st.newCase,nowMs));
+  var newCase=fdNewCase(st.newCase,nowMs);
+  var newCaseHtml=newCase?fdNewCaseRow(newCase,idx.byRef&&idx.byRef[newCase.slug]):'';
   if(newCaseHtml){
     var caseRow=fdAlsoRow({mark:'ring',html:newCaseHtml});
     var lastRow=shellRows.length?shellRows[shellRows.length-1]:null;
