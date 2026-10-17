@@ -34,7 +34,7 @@ names the topic when closed. It reuses the pairing block's class names so it inh
 whatever that block is styled with and adds no stylesheet of its own.
 
 PLACEMENT. The block is inserted immediately before the page's hand-written
-"**Pair with**" paragraph when the page has one (34 of the shipped teaching pages do; it
+"Pair with" paragraph or heading when the page has one (14 of the 15 hubs do; it
 extends that paragraph), otherwise appended at the end. A page that already carries a
 rendered block has it REPLACED, which is what lets resident_section.py's sweep swap the
 MS3 rendering the copytree inherited for the resident one: Case-of-the-Week twins differ
@@ -73,7 +73,10 @@ EARLIER = "earlier edition"
 
 COTW_SLUG_RE = re.compile(r"^cotw_(\d{8})_([a-z0-9]+)_(ms3|res)\.md$")
 COTW_TITLE_SUFFIX_RE = re.compile(r"\s+—\s+(MS3|Resident)\s*$")
-PAIR_WITH_RE = re.compile(r"^\*\*Pair with\*\*", re.M)
+# Both spellings the teaching pages use: a bold lead-in ("**Pair with** -- ...", 13 hubs) and a
+# heading ("## Pair with", agitation.md). psychopharm_primer.md has neither and gets the block
+# at the end.
+PAIR_WITH_RE = re.compile(r"^(?:\*\*Pair with\*\*|#{1,6}[ \t]*Pair with\b)", re.M)
 BLOCK_RE = re.compile(
     r'<details class="pairing-block topic-hub" data-topic-hub="[^"]*">.*?</details>',
     re.S,
@@ -506,6 +509,13 @@ def _self_test():
             self.assertTrue(did)
             self.assertLess(out.index("topic-hub"), out.index("**Pair with**"))
             self.assertEqual(out.count('data-topic-hub="'), 1)
+
+        def test_inject_before_pair_with_heading(self):
+            ref = hubs_for_site(real, "ms3")[0]
+            text = "# Title\n\nBody.\n\n## Pair with\n\nPair this with x.\n"
+            out, did = inject_markdown(text, real, ref, "ms3")
+            self.assertTrue(did)
+            self.assertLess(out.index("topic-hub"), out.index("## Pair with"))
 
         def test_inject_appends_without_pair_with_and_replaces_in_place(self):
             ref = hubs_for_site(real, "res")[0]
