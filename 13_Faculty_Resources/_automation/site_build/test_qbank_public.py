@@ -206,5 +206,87 @@ class PublicBankTests(unittest.TestCase):
                 module.verify_publication(root, bank)
 
 
+def blueprint_fixture(per_category=4, drafts=True):
+    """Every blueprint category, `per_category` attested SBA items each, plus a draft and a
+    two-tier item per category that the pre/post forms must never draw."""
+    prefixes = {"mood": "mood", "psychosis": "psy", "anxiety": "anx", "substance": "sud",
+                "neurocog": "cog", "pharm": "pha", "safety": "saf", "personality": "per",
+                "childdev": "cdev", "otherdx": "oth", "ethics": "eth", "relational": "rel"}
+    base = bank_fixture()["items"][0]
+    items = []
+    for category, prefix in prefixes.items():
+        for n in range(1, per_category + 1):
+            item = copy.deepcopy(base)
+            item.update({"id": "qb_%s_%03d" % (prefix, n), "category": category,
+                         "difficulty": 2 if n % 2 else 1, "stem": "%s %d synthetic?" % (category, n)})
+            items.append(item)
+        if drafts:
+            draft = copy.deepcopy(base)
+            draft.update({"id": "qb_%s_900" % prefix, "category": category, "status": "draft"})
+            items.append(draft)
+    return {"_note": "fixture", "version": 1, "items": items}
+
+
+class PrePostFormTests(unittest.TestCase):
+    """DRAFT pre/post forms (L8 outcomes design). Controlled fixtures only."""
+
+    module = PublicBankTests.module
+
+    def test_two_disjoint_twelve_item_forms_one_per_category(self):
+        module = self.module()
+        bank = blueprint_fixture()
+        result = module.prepost_forms(bank)
+        a, b = result["forms"]["A"], result["forms"]["B"]
+        self.assertEqual(result["status"], "draft")
+        self.assertEqual(len(a), 12)
+        self.assertEqual(len(b), 12)
+        self.assertEqual([x["cat"] for x in a], list(module.PRETEST_CATEGORIES))
+        self.assertEqual([x["cat"] for x in b], list(module.PRETEST_CATEGORIES))
+        ids_a, ids_b = {x["id"] for x in a}, {x["id"] for x in b}
+        self.assertFalse(ids_a & ids_b)
+        placement = {x["id"] for x in module.pretest_pool(bank)["items"]}
+        self.assertFalse((ids_a | ids_b) & placement)
+        self.assertFalse(any(i.endswith("_900") for i in ids_a | ids_b), "a draft item was drawn")
+        for x in a + b:
+            self.assertEqual(sorted(x), ["cat", "id", "options", "stem"], "no explanation or pearl ships")
+            self.assertEqual(sum(o["c"] for o in x["options"]), 1)
+
+    def test_deterministic_and_does_not_mutate_the_source(self):
+        module = self.module()
+        bank = blueprint_fixture()
+        before = copy.deepcopy(bank)
+        self.assertEqual(module.prepost_forms(bank), module.prepost_forms(bank))
+        self.assertEqual(bank, before)
+
+    def test_a_category_without_two_eligible_items_fails_closed(self):
+        module = self.module()
+        bank = blueprint_fixture(per_category=2, drafts=False)  # one goes to placement
+        with self.assertRaisesRegex(ValueError, "fewer than two eligible"):
+            module.prepost_forms(bank)
+
+    def test_publication_guard_checks_forms_only_when_shipped(self):
+        module = self.module()
+        bank = blueprint_fixture()
+        public = module.project_question_bank(bank)
+        ids = sorted(item["id"] for item in public["items"])
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "tools").mkdir()
+            (root / "question_bank.json").write_text(json.dumps(public))
+            (root / "pretest_pool.json").write_text(json.dumps(module.pretest_pool(public)))
+            (root / "index.html").write_text("var RELEASED_QB_IDS=%s;" % json.dumps(ids))
+            (root / "tools/review.html").write_text(
+                '<script id="cw-review-qb-inventory" type="application/json">%s</script>'
+                % json.dumps([{"id": item["id"], "retired": False} for item in public["items"]]))
+            module.verify_publication(root, bank)  # off build: no forms file, still valid
+            forms = module.prepost_forms(public)
+            (root / "prepost_forms.json").write_text(json.dumps(forms))
+            module.verify_publication(root, bank)
+            forms["forms"]["A"][0]["id"] = "qb_mood_900"
+            (root / "prepost_forms.json").write_text(json.dumps(forms))
+            with self.assertRaisesRegex(ValueError, "pre/post forms differ|withheld"):
+                module.verify_publication(root, bank)
+
+
 if __name__ == "__main__":
     unittest.main()
