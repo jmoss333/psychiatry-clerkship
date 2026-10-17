@@ -7,6 +7,7 @@ const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf
 const phase = read('phase_policy.js');
 const state = read('frontdoor/fd_state.js');
 const readingPlace = read('frontdoor/fd_reading_place.js');
+const toolPins = read('frontdoor/fd_tool_pins.js');
 const data = read('frontdoor/fd_data.js');
 const careNavigator = read('frontdoor/fd_care_navigator.js');
 const today = read('frontdoor/fd_today.js');
@@ -22,7 +23,7 @@ const spa = read('spa_index.html');
 const CUR = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 
 // eslint-disable-next-line no-new-func
-const buildMake = (wireSrc) => new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${search}\n${wireSrc}\nreturn {
+const buildMake = (wireSrc) => new Function('localStorage', `${phase}\n${state}\n${readingPlace}\n${toolPins}\n${data}\n${careNavigator}\n${offline}\n${today}\n${block}\n${reader}\n${shell}\n${practice}\n${path}\n${search}\n${wireSrc}\nreturn {
   fdResolveState: fdResolveState,
   fdDispatch: fdDispatch,
   fdIsTypingTarget: fdIsTypingTarget,
@@ -1227,6 +1228,106 @@ const LIBRARY_DETAILS_INDEX = {
   byRef: Object.fromEntries(LIBRARY_DETAILS_ITEMS.map(item => [item.ref, item])),
   columns: [{ name: 'Skills', items: LIBRARY_DETAILS_ITEMS }], weeks: [], kit: [],
 };
+
+test('Library continuity pin and clear persist only pins while preserving reading places, progress and filters', () => {
+  const places={'pg_interview.md':{heading:'h',offset:12,updatedAt:2}};
+  const stored={...roleContext,tab:'library',openId:null,readingPlaces:places};
+  const storage=memStorage({cw_frontdoor_v1:JSON.stringify(stored),cw_progress_v1:'{"done.md":true}'});
+  const heading={focus(){this.focused=true;}}, renders=[];
+  const h=fakeHarness({...stored,screen:'app',libraryTask:'interview',kitSection:'tools',libraryFilter:'mental'}, {
+    F:make(storage),index:LIBRARY_DETAILS_INDEX,render:(...args)=>renders.push(args),
+    querySelector:selector=>selector==='.fd-continuity__title'?heading:null,
+  });
+  const before=storage.dump();
+  h.controller.dispatch({'data-fd-tool-pin':'mse.html'});
+  assert.deepEqual(JSON.parse(storage.getItem('cw_tool_pins_v1')),['mse.html']);
+  assert.equal(h.controller.getState().libraryFilter,'mental');
+  assert.equal(h.controller.getState().libraryTask,'interview');
+  assert.equal(h.controller.getState().kitSection,'tools');
+  assert.equal(renders.length,1);
+  assert.equal(storage.getItem('cw_frontdoor_v1'),before.cw_frontdoor_v1);
+  assert.equal(storage.getItem('cw_progress_v1'),before.cw_progress_v1);
+  h.controller.dispatch({'data-fd-tool-pins-clear':''});
+  assert.equal(storage.getItem('cw_tool_pins_v1'),null);
+  assert.deepEqual(h.controller.getState().readingPlaces,places);
+  assert.equal(storage.getItem('cw_progress_v1'),before.cw_progress_v1);
+  h.rootHandlers.click({target:actionTarget({'data-fd-continuity-show':''}),preventDefault(){}});
+  assert.equal(heading.focused,true,'header shortcut reaches the continuation heading');
+});
+
+test('Library continuity removal clears only saved positions and leaves completion intact', () => {
+  const places={'pg_interview.md':{heading:'h',offset:12,updatedAt:2},'case_formulation.md':{heading:'h',offset:8,updatedAt:1}};
+  const stored={...roleContext,tab:'library',readingPlaces:places};
+  const storage=memStorage({cw_frontdoor_v1:JSON.stringify(stored),cw_progress_v1:'{"done.md":true}'});
+  const heading={focus(){this.focused=true;}};
+  const h=fakeHarness({...stored,screen:'app'}, {F:make(storage),index:LIBRARY_DETAILS_INDEX,
+    querySelector:selector=>selector==='.fd-continuity__title'?heading:null});
+  function continuityControl(attrs) {
+    const target=actionTarget(attrs),normalClosest=target.closest;
+    target.closest=function(selector){return selector==='.fd-continuity'?{}:normalClosest.call(this,selector);};
+    return target;
+  }
+  h.rootHandlers.click({target:continuityControl({'data-fd-reading-place-remove':'pg_interview.md'}),preventDefault(){}});
+  assert.deepEqual(JSON.parse(storage.getItem('cw_frontdoor_v1')).readingPlaces,{'case_formulation.md':places['case_formulation.md']});
+  assert.equal(heading.focused,true,'Remove returns focus to the surviving continuation heading');
+  heading.focused=false;
+  h.rootHandlers.click({target:continuityControl({'data-fd-reading-places-clear':''}),preventDefault(){}});
+  assert.deepEqual(JSON.parse(storage.getItem('cw_frontdoor_v1')).readingPlaces,{});
+  assert.equal(heading.focused,true,'Clear returns focus after removing its own control');
+  assert.equal(storage.getItem('cw_progress_v1'),'{"done.md":true}');
+});
+
+test('Library continuity storage failures keep prior state and show failure, never a successful save', () => {
+  const places={'pg_interview.md':{heading:'h',offset:12,updatedAt:2}};
+  const stored={...roleContext,tab:'library',readingPlaces:places};
+  const storage=memStorage({cw_frontdoor_v1:JSON.stringify(stored),cw_tool_pins_v1:'["mse.html"]'});
+  const h=fakeHarness({...stored,screen:'app'}, {F:make(storage),index:LIBRARY_DETAILS_INDEX});
+  storage.setItem=()=>{throw Error('blocked');};storage.removeItem=()=>{throw Error('blocked');};
+  for(const action of [{'data-fd-tool-pin':'mse.html'},{'data-fd-tool-pins-clear':''},{'data-fd-reading-place-remove':'pg_interview.md'},{'data-fd-reading-places-clear':''}]) {
+    h.controller.dispatch(action);
+    assert.match(h.controller.getState().continuityNotice,/could not/i);
+    assert.deepEqual(h.controller.getState().readingPlaces,places);
+    assert.equal(storage.getItem('cw_tool_pins_v1'),'["mse.html"]');
+  }
+});
+
+test('Library continuity controls reject hidden contexts and unavailable references', () => {
+  const initial={...roleContext,screen:'app',tab:'library',readingPlaces:{'pg_interview.md':{heading:'h',offset:0,updatedAt:1}}};
+  for(const action of [{'data-fd-tool-pin':'missing.html'},{'data-fd-tool-pin':'pg_interview.md'},{'data-fd-reading-place-remove':'missing.md'}])
+    assert.deepEqual(F.fdDispatch(action,{index:LIBRARY_DETAILS_INDEX},initial),{patch:{},route:null,effect:null});
+  for(const extra of [{tab:'today'},{openId:'mse.html'},{sheet:'kit'},{searchOpen:true},{screen:'setup-role'}]) {
+    for(const action of [{'data-fd-tool-pin':'mse.html'},{'data-fd-tool-pins-clear':''},{'data-fd-reading-places-clear':''},{'data-fd-continuity-show':''}])
+      assert.deepEqual(F.fdDispatch(action,{index:LIBRARY_DETAILS_INDEX},{...initial,...extra}),{patch:{},route:null,effect:null});
+  }
+});
+
+test('Library saved-place changes refuse a failed read even when writes remain available', () => {
+  const places={'pg_interview.md':{heading:'h',offset:12,updatedAt:2},'case_formulation.md':{heading:'h',offset:8,updatedAt:1}};
+  const stored={...roleContext,tab:'library',readingPlaces:places};
+  const storage=memStorage({cw_frontdoor_v1:JSON.stringify(stored)});
+  const h=fakeHarness({...stored,screen:'app'}, {F:make(storage),index:LIBRARY_DETAILS_INDEX});
+  const before=storage.dump();
+  storage.getItem=()=>{throw Error('read blocked');};
+  for(const action of [{'data-fd-reading-place-remove':'pg_interview.md'},{'data-fd-reading-places-clear':''}]) {
+    h.controller.dispatch(action);
+    assert.deepEqual(storage.dump(),before,'a failed read must never overwrite other saved places');
+    assert.deepEqual(h.controller.getState().readingPlaces,places);
+    assert.match(h.controller.getState().continuityNotice,/could not/i);
+  }
+});
+
+test('Library can remove the third visible unfinished reading when a newer saved reading is complete', () => {
+  const refs=['pg_interview.md','case_formulation.md','collateral_workflow.md','other.md'];
+  const places=Object.fromEntries(refs.map((ref,i)=>[ref,{heading:'h',offset:12,updatedAt:i+1}]));
+  const stored={...roleContext,tab:'library',readingPlaces:places};
+  const storage=memStorage({cw_frontdoor_v1:JSON.stringify(stored),cw_progress_v1:'{"other.md":{"done":true}}'});
+  const h=fakeHarness({...stored,screen:'app'}, {F:make(storage),index:LIBRARY_DETAILS_INDEX});
+  // Live completion excludes the newest item. The controller intentionally has no done map;
+  // it must not compute a different top three and reject this visible Remove control.
+  h.controller.dispatch({'data-fd-reading-place-remove':'pg_interview.md'});
+  assert.equal(Object.hasOwn(JSON.parse(storage.getItem('cw_frontdoor_v1')).readingPlaces,'pg_interview.md'),false);
+  assert.equal(storage.getItem('cw_progress_v1'),'{"other.md":{"done":true}}');
+});
 
 test('Library Details opens only a catalogued pilot resource without navigating', () => {
   const initial = { ...roleContext, screen: 'app', tab: 'library', openId: null };
@@ -3428,7 +3529,7 @@ test('clearing survives a store that throws on the removal itself', () => {
 // resurrecting the role, week and route the erase just removed, with no second confirmation.
 test('the erase effect empties the real store and reloads the page', () => {
   const storage = memStorage({
-    cw_frontdoor_v1: '{"role":"first-role"}', cw_progress_v1: '{}', rp_x: '1', keep_me: 'yes',
+    cw_frontdoor_v1: '{"role":"first-role"}', cw_progress_v1: '{}', cw_tool_pins_v1: '["mse.html"]', rp_x: '1', keep_me: 'yes',
   });
   const LocalF = make(storage);
   let reloads = 0;
@@ -3801,6 +3902,34 @@ test('reading place assigns deterministic heading ids, saves the latest debounce
   assert.equal(h.listeners.size, 0);
 });
 
+test('reading capture skips headings hidden by collapsed guide sections', () => {
+  const h=readingPlaceHarness();
+  h.install();h.flush();
+  const hidden=h.headings[3];
+  hidden.getClientRects=()=>[];
+  hidden.getBoundingClientRect=()=>({top:0});
+  h.setScroll(960);h.listeners.get('scroll')();h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].heading,h.headings[2].getAttribute('data-fd-reading-anchor'));
+  assert.equal(h.state.readingPlaces['a.md'].offset,60);
+  assert.ok(hidden.getAttribute('data-fd-reading-anchor'),'hidden headings keep their stable anchors for later expansion');
+  const saved=JSON.parse(JSON.stringify(h.state.readingPlaces));
+  for(const heading of h.headings)heading.getClientRects=()=>[];
+  h.setScroll(1100);h.listeners.get('scroll')();h.flush();
+  assert.deepEqual(h.state.readingPlaces,saved,'a fully hidden reader cannot invent a saved position');
+});
+
+test('reading reflow leaves a newly collapsed saved section alone', () => {
+  const h=readingPlaceHarness();
+  h.install();h.flush();
+  h.setScroll(960);h.listeners.get('scroll')();h.flush();
+  const saved=JSON.parse(JSON.stringify(h.state.readingPlaces));
+  h.headings[2].getClientRects=()=>[];
+  h.headings[2].getBoundingClientRect=()=>({top:0});
+  h.listeners.get('resize')();h.flush();
+  assert.equal(h.scrollY,960,'resizing must not jump to a zero rect inside a collapsed section');
+  assert.deepEqual(h.state.readingPlaces,saved,'collapsing and resizing do not replace the saved place');
+});
+
 test('Compass labelled section keeps its authored H2 id while private anchors drive save and restore', () => {
   // Welcome renders <section aria-labelledby="fd-compass-title"> with this authored H2;
   // the browser test checks the real component, while this drives the installer directly.
@@ -4062,12 +4191,27 @@ test('restore:false keeps saving but leaves arrival, scroll and focus to the gui
   assert.equal(ordinary.scrollY, 490, 'the default still restores');
 });
 
-test('a lead-promoted guide keeps its reading place; an H2 guide still drops it', () => {
-  assert.match(spa, /if\(guide\.leads\)\{/);
-  assert.match(spa, /installReadingPlace\(!\(returning\|\|passage\.has\('guideSection'\)\|\|passage\.has\('guideFind'\)\)\);/,
-    'a passage link or practice return owns arrival; the saved place only saves');
-  assert.match(spa, /\}else\{\s*var statusNode=contentEl\.querySelector\('\[data-fd-reading-status\]'\);/,
-    'an H2 guide still removes the reading-place controls');
+test('all mounted guides save reading places while explicit passages and practice returns own arrival', () => {
+  const mounted=spa.match(/if\(fdGuideSession\)\{([\s\S]*?)\/\* Initial resources/);
+  assert.ok(mounted,'the live mounted-guide integration is extractable');
+  const run=new Function('fdGuideSession','fdGuideBookmark','fdGuideReturning','options','location','installReadingPlace','contentEl','ref',mounted[1]);
+  for(const leads of [false,true]) {
+    for(const scenario of [
+      {search:'',restore:true},
+      {search:'?page=doc_oral.md&guideSection=plan',restore:false},
+      {search:'?page=doc_oral.md&guideFind=notes',restore:false},
+      {search:'',bookmark:{ref:'doc_oral.md'},returning:true,restore:false},
+      {search:'',bookmark:{ref:'doc_oral.md'},fromHistory:true,restore:false},
+      {search:'',bookmark:{ref:'other.md'},returning:true,restore:true},
+    ]) {
+      const installs=[],removed=[];
+      run({leads},scenario.bookmark||null,!!scenario.returning,
+        {search:scenario.search,fromHistory:scenario.fromHistory},{search:scenario.search},
+        restore=>installs.push(restore),{querySelector:selector=>({remove(){removed.push(selector);}})},'doc_oral.md');
+      assert.deepEqual(installs,[scenario.restore],`guide leads=${leads}, ${JSON.stringify(scenario)}`);
+      assert.deepEqual(removed,[],'every guide retains its saved-place controls');
+    }
+  }
   assert.match(spa, /\}else installReadingPlace\(true\);/, 'a plain reader restores as before');
 });
 
@@ -4890,6 +5034,37 @@ test('Library task resets for a new visit or Home and returns with the prior Lib
   h.controller.dispatch({ 'data-fd-home': '' });
   assert.equal(h.controller.getState().libraryTask, 'all');
   assert.equal(Object.hasOwn(memory.history.state.state, 'libraryTask'), false);
+});
+
+test('choosing just browse starts the whole Library fresh while cancelling Change week keeps its shortlist', () => {
+  for(const libraryTask of ['interview','rounds']) {
+    const {h,memory,storage,location}=libraryMemoryHarness({kitSection:'tools',libraryFilter:'mental',kitToolPreview:'mse.html'});
+    h.controller.dispatch({'data-fd-library-task':libraryTask});
+    h.controller.dispatch({'data-fd-change-week':''});
+    assert.equal(h.controller.getState().screen,'setup-week');
+    h.controller.dispatch({'data-fd-back':''});
+    const cancelled=h.controller.getState();
+    assert.equal(cancelled.screen,'app');
+    assert.equal(cancelled.libraryTask,libraryTask);
+    assert.equal(cancelled.libraryFilter,'mental');
+    assert.equal(cancelled.kitSection,'tools');
+    assert.equal(cancelled.kitToolPreview,'mse.html');
+
+    h.controller.dispatch({'data-fd-change-week':''});
+    h.controller.dispatch({'data-fd-week':'0'});
+    const browsing=h.controller.getState();
+    assert.equal(browsing.screen,'app');
+    assert.equal(browsing.tab,'library');
+    assert.equal(browsing.libraryView,'full');
+    assert.deepEqual({task:browsing.libraryTask,filter:browsing.libraryFilter,preview:browsing.kitToolPreview,section:browsing.kitSection},
+      {task:'all',filter:'',preview:'',section:'all'});
+    assert.equal(browsing.browsing,true);
+    assert.equal(new URL(location.href).searchParams.get('library'),'full');
+    for(const key of ['libraryTask','libraryFilter','kitToolPreview']) {
+      assert.equal(Object.hasOwn(memory.history.state.state,key),false,'the fresh history entry has no stale '+key);
+      assert.equal(Object.hasOwn(JSON.parse(storage.getItem('cw_frontdoor_v1')),key),false,'visit-only '+key+' stays out of storage');
+    }
+  }
 });
 
 test('Library task respects startup and faculty preview guards', () => {

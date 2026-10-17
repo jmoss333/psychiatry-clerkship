@@ -327,7 +327,7 @@ function fdProgressAccess(){
    whose purpose is to say the instrument is not reproduced here is the opposite of that. */
 var FD_QUICKTOOLS_PREFERRED=['mse.html','capacity.html','withdrawal.html','violence.html','interaction-cards.html'];
 
-function fdQuickTools(index, weekItems){
+function fdQuickTools(index, weekItems, toolPins){
   var out=[], seen={}, i, ref;
   for(i=0;i<weekItems.length;i++){
     if(weekItems[i].kind==='tool'&&!weekItems[i].rights&&!seen[weekItems[i].ref]){ out.push(weekItems[i]); seen[weekItems[i].ref]=true; }
@@ -350,7 +350,8 @@ function fdQuickTools(index, weekItems){
       if(!seen[all[i].ref]){ out.push(all[i]); seen[all[i].ref]=true; }
     }
   }
-  return out.slice(0,5);
+  return toolPins&&toolPins.length&&typeof fdToolPinsSelect==='function'
+    ?fdToolPinsSelect(index,toolPins,out):out.slice(0,5);
 }
 
 /* Seven-day activity strip. state.activityDays arrives pre-derived (fdActivityDays, fd_state.js:
@@ -592,7 +593,7 @@ function fdToday(index, state){
   /* 7. On the unit this week -- only where the case tool ships and has this week. */
   if(hasWeek) out+=fdUnitWeek(st.caseWeek);
 
-  var quickTools=fdQuickTools(idx, wItems);
+  var quickTools=fdQuickTools(idx, wItems, st.toolPins);
 
   /* Phone pill row and desktop rail are both always emitted -- see the header comment. Same
      quickTools list feeds both, per the design's "both come from the same data". The pills follow
