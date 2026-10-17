@@ -739,11 +739,20 @@
     ],
     "t_psychosis.md": [
       "voices",
-      "hallucinations"
+      "hallucinations",
+      "psychosis",
+      "psychotic",
+      "schizophrenia",
+      "schizoaffective"
     ],
     "t_mood.md": [
       "not sleeping and full of energy",
-      "little sleep lots of energy"
+      "little sleep lots of energy",
+      "depression",
+      "depressive",
+      "bipolar",
+      "mania",
+      "manic"
     ],
     "motivational_interviewing.md": [
       "mi",
@@ -869,6 +878,34 @@
       "blue paper",
       "involuntary hold",
       "involuntary commitment"
+    ],
+    "psychotherapy.md": [
+      "psychotherapy",
+      "psychotherapies"
+    ],
+    "t_personality.md": [
+      "borderline",
+      "personality disorder"
+    ],
+    "t_anxiety.md": [
+      "panic",
+      "panic disorder"
+    ],
+    "t_neurodev.md": [
+      "adhd",
+      "autism",
+      "adolescent",
+      "child adolescent"
+    ],
+    "t_perinatal.md": [
+      "pregnancy",
+      "pregnant",
+      "perinatal",
+      "postpartum"
+    ],
+    "t_geri.md": [
+      "elderly",
+      "older adult"
     ]
   },
   "medicationTerms": {

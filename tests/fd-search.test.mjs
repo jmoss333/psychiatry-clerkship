@@ -149,6 +149,43 @@ test('matches via summary alone (word appears in tldr, not title or ref)', () =>
     '"orientation" only appears in welcome.md’s tldr');
 });
 
+// ---- the three item tiers: exact title, then alias, then score (2026-10-17) -------------------
+
+test('a one-word alias ranks its page first for the bare word, but never above another page\'s exact title', () => {
+  // Diagnosis aliases (curriculum.searchAliases, 2026-10-17): "psychosis" names the psychosis
+  // guide. Before the aliases, the week page outranked it ("Week 2 — Mood, Psychosis & Pharm").
+  const bare = F.fdSearchResults(REAL_INDEX, 'psychosis', SYN, {}).filter((x) => x.kind === 'item');
+  assert.equal(bare[0]?.item.ref, 't_psychosis.md');
+  // The same word sits inside a Case-of-the-Week title. Typing that whole title must open that
+  // page, not the alias target -- the exact tier sits above the alias tier.
+  const cotw = REAL_INDEX.byRef['cotw_20260907_fep_ms3.md'] && 'cotw_20260907_fep_ms3.md';
+  if (cotw) {
+    const title = REAL_INDEX.byRef[cotw].searchTitle || REAL_INDEX.byRef[cotw].title;
+    const exact = F.fdSearchResults(REAL_INDEX, title, SYN, {}).filter((x) => x.kind === 'item');
+    assert.equal(exact[0]?.item.ref, cotw, title);
+    assert.equal(exact[1]?.item.ref, 't_psychosis.md', 'the alias target follows the exact title');
+  }
+});
+
+test('an exact title that is not an alias never displaces the safety prefix (haystack protocol stays first)', () => {
+  // frontdoor-search-gate.mjs pins the same shape against the built shell: the Catatonia case
+  // page is the first ITEM for its own title, and the Consult Questions protocol row (matched
+  // on "catatonia") keeps row 0. The exact tier may not jump a protocol.
+  const cotw = 'cotw_20260831_catatonia_ms3.md';
+  if (!REAL_INDEX.byRef[cotw]) return;
+  const rows = F.fdSearchResults(REAL_INDEX, 'Catatonia [Aug 31] — MS3?', SYN, {});
+  assert.equal(rows[0]?.kind, 'protocol');
+  assert.equal(rows[0]?.item.ref, 'exp_consult.md');
+  assert.equal(rows.find((r) => r.kind === 'item')?.item.ref, cotw);
+});
+
+test('exact-title tier does not fire on a partial title, so #429 alias-over-topic-word ordering holds', () => {
+  // "capacity" is a recorded alias of capacity.html; the Consult Questions sheet merely carries
+  // the word in its title. The alias still leads (#429) because a partial title is not exact.
+  const r = F.fdSearchResults(REAL_INDEX, 'capacity', SYN, {}).filter((x) => x.kind === 'item');
+  assert.equal(r[0]?.item.ref, 'capacity.html');
+});
+
 // ---- protocol/item dedup (repo-specific: safetyKit refs are ALSO regular week items) ----------
 
 test('a ref that is both a safety-kit protocol and a regular item is returned only once', () => {
