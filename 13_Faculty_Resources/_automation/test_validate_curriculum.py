@@ -70,6 +70,7 @@ MANIFEST = {
         ["src/exp_consult.md", "exp_consult.md", "Capacity"],
         ["src/t_sud.md", "t_sud.md", "Withdrawal"],
         ["src/delirium.md", "delirium.md", "Delirium"],
+        ["src/catatonia.md", "catatonia.md", "Catatonia"],
     ] + WEEK_ROWS,
 }
 # Derived, not restated: a row added above must not need a second edit here.
@@ -109,6 +110,7 @@ SAFETY_REFS = (
     "exp_consult.md",
     "t_sud.md",
     "delirium.md",
+    "catatonia.md",
 )
 PRACTICE_IDS = (
     "training-briefing",
@@ -1642,7 +1644,7 @@ class SafetyKitTest(unittest.TestCase):
     def test_rejects_the_wrong_number_of_protocols(self):
         r = self._run(lambda c: c.__setitem__("safetyKit", c["safetyKit"][:-1]))
         self.assertEqual(r.returncode, 1)
-        self.assertIn("exactly 5", r.stdout)
+        self.assertIn("exactly 6", r.stdout)
 
     def test_rejects_a_duplicate_protocol_ref(self):
         r = self._run(lambda c: c["safetyKit"].__setitem__(1, c["safetyKit"][0]))
@@ -1654,7 +1656,7 @@ class SafetyKitTest(unittest.TestCase):
             cur["safetyKit"][4] = {"ref": "welcome.md", "sub": "Not a protocol"}
         r = self._run(replace_ref)
         self.assertEqual(r.returncode, 1)
-        self.assertIn("current five", r.stdout)
+        self.assertIn("current kit protocols", r.stdout)
 
     def test_rejects_a_non_high_safety_protocol(self):
         meta = _topic_meta()
