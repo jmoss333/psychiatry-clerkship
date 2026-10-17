@@ -205,6 +205,7 @@ if [ ! -d metrics/node_modules/@netlify/blobs ]; then
 fi
 step "unit — metrics collector"             bash -c "cd metrics && node --test tests/*.test.mjs"
 step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
+step "unit — topic hub block"               python3 $A/site_build/topic_hub_block.py --self-test
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
 step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
 step "path coverage (report-only)"          python3 bin/check_path_coverage.py

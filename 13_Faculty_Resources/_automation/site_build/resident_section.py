@@ -111,16 +111,37 @@ import pairings_block as _pairings
 _pair_res_data=_pairings.resolve(_pairings.load(LIB), LIB)
 _pair_res_done=set()
 
+# ---- TOPIC HUB BLOCK on the resident side ------------------------------------------
+# Unlike the two blocks above, this one is NOT a no-op on inherited pages: the copytree
+# brings every hub page across with the MS3 rendering already in place, and that rendering
+# links MS3 Case-of-the-Week twins (cotw_*_ms3.md, deleted from this build above) and omits
+# resident-only siblings. inject_markdown() recognises an existing block and REPLACES it
+# with the resident one, so the sweep below is the step that makes the hub correct here.
+# Runs BEFORE the strip/contrast passes for the same reason the other two do.
+import topic_hub_block as _hub
+_hub_res_data=_hub.resolve(_hub.load(LIB))
+_hub_res_done=set()
+
 for _md_path in sorted(glob.glob(OUT+"/content/*.md")):
     _t=open(_md_path,encoding="utf-8").read()
     _t,_did=_crisis.inject_markdown(_t,_crisis_res_data)
     _t,_pdid=_pairings.inject_markdown(_t,_pair_res_data,os.path.basename(_md_path),"res")
-    if _did or _pdid:
+    _t,_hdid=_hub.inject_markdown(_t,_hub_res_data,os.path.basename(_md_path),"res")
+    if _did or _pdid or _hdid:
         open(_md_path,"w",encoding="utf-8").write(_t)
     if _did: _crisis_res_done.add(os.path.basename(_md_path))
     if _pdid: _pair_res_done.add(os.path.basename(_md_path))
+    if _hdid: _hub_res_done.add(os.path.basename(_md_path))
 if _pair_res_done:
     print("pairing block injected (resident-only pages):",len(_pair_res_done))
+# Every hub this site ships must carry the RESIDENT rendering: a hub page that kept the
+# inherited MS3 block would link Case-of-the-Week pages this build deleted.
+_hub_res_gap=sorted(set(_hub.hubs_for_site(_hub_res_data,"res"))-_hub_res_done)
+if _hub_res_gap:
+    print("BUILD ABORTED — topic hub block not rendered for the resident site on:")
+    for _g in _hub_res_gap: print("   -",_g)
+    raise SystemExit(1)
+print("topic hub block injected (resident rendering):",len(_hub_res_done),"hub page(s)")
 
 # Resident-only safety surfaces that must carry the block, same contract build_deploy.py
 # enforces for MS3: a marker deleted, a page renamed, or a source dropped from RES_EXTRA

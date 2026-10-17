@@ -294,6 +294,18 @@ _crisis_data=_crisis.load(LIB)
 # block, so resident_section.py's second pass is a no-op on pages injected here.
 import pairings_block as _pairings
 _pair_data=_pairings.resolve(_pairings.load(LIB), LIB)
+
+# ---- TOPIC HUB BLOCK ---------------------------------------------------------------
+# "Everything on this topic": one collapsed block per hub page naming every other surface
+# the library has on that problem (pocket card, module, official-form reference, Case of
+# the Week editions, reasoning/family/drill cases, question-bank count) -- generated from
+# the registries, so a new case shows up the week it ships. Injected into the BUILT copy
+# only: the source file is untouched and attestation hashes do not move. No marker: the
+# renderer places the block before the page's "**Pair with**" paragraph (or at the end),
+# and resident_section.py's sweep REPLACES it with the resident rendering (COTW twins and
+# resident-only siblings differ per site). Registry: site_build/topic_hubs.json.
+import topic_hub_block as _hub
+_hub_data=_hub.resolve(_hub.load(LIB))
 # Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
 # planning disposition around self-harm/violence), not merely reading about it. Reference and
 # reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
@@ -375,6 +387,7 @@ missing=[]
 _PAIRINGS_REQUIRED_MD={"week%d.md"%_n for _n in range(1,7)}
 _pair_md_done=set()
 _crisis_md_done=set()
+_hub_md_done=set()
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
     if os.path.exists(p):
@@ -382,13 +395,15 @@ for src,dst,_ in md:
         _t=open(p,encoding="utf-8").read()
         _t,_did=_crisis.inject_markdown(_t,_crisis_data)
         _t,_pdid=_pairings.inject_markdown(_t,_pair_data,dst,"ms3")
+        _t,_hdid=_hub.inject_markdown(_t,_hub_data,dst,"ms3")
         _compass_did=False
         if dst=="welcome.md":
             _t,_compass_did=welcome_compass.inject_compass(_t,_compass_fragment)
-        if _did or _pdid or _compass_did:
+        if _did or _pdid or _hdid or _compass_did:
             open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
         if _did: _crisis_md_done.add(dst)
         if _pdid: _pair_md_done.add(dst)
+        if _hdid: _hub_md_done.add(dst)
     else: missing.append(src)
 
 # Fail the build if a required safety surface lost its crisis block (marker deleted, page
@@ -408,6 +423,16 @@ if _pair_gap:
     for _g in _pair_gap: print("   -",_g,"(expected the pairing-block marker in its source)")
     raise SystemExit(1)
 print("pairing block injected:",len(_pair_md_done),"week page(s)")
+
+# Same hard-fail shape again: every hub the registry names for this site must have received
+# its block. A hub page dropped from the manifest, or a rename, would otherwise ship a topic
+# with no hub and nothing to say so.
+_hub_gap=sorted(set(_hub.hubs_for_site(_hub_data,"ms3"))-_hub_md_done)
+if _hub_gap:
+    print("BUILD ABORTED — topic hub block missing from hub page(s):")
+    for _g in _hub_gap: print("   -",_g,"(listed in site_build/topic_hubs.json but not injected)")
+    raise SystemExit(1)
+print("topic hub block injected:",len(_hub_md_done),"hub page(s)")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
