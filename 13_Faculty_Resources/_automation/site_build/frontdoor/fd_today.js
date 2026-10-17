@@ -5,7 +5,8 @@
      1. place: eyebrow ("Week 2 of 6 · Thursday" + Change week), week-title H1, theme line
      2. the projected-week thread (.fd-thread) -- one node per week, each routing to that week on Path
      3. the Now card (.fd-now) -- ONE shell for every primary kind
-     4. "Also today" -- the device-store rows that did not win, as flat rows with a status mark
+     4. "Also today" -- the device-store rows that did not win, as flat rows with a status mark;
+        in the week a Case of the Week ships, its announcement row sits here too (fdNewCase)
      5. the preparation chooser (fdTodayPurpose; the shell owns its open state)
      6. "This week" -- the week's rows, with "N of M done" at the right
      7. "On the unit this week" -- derived from longitudinal_case.json, only where the tool ships
@@ -39,6 +40,8 @@
      state.offlineHtml  the offline-readiness receipt
      state.statusHtml   a bare status line after the Also rows (the concept-count status, no due row)
      state.caseWeek     fdWeekCaseStep(...) -- this week's step of the longitudinal case, or null
+     state.newCase      the build-injected FD_COTW_NEWEST ({slug, title, date}), raw; fdNewCase
+                        decides from state.nowMs whether Today announces it this week
    -- which is the same contract state.offlineHtml already used. Every field is optional, so a
    fixture that passes none of them renders Today exactly as a learner with empty stores sees it.
 
@@ -484,6 +487,37 @@ function fdAlsoRow(row){
   return '<div class="fd-also__row"'+attrs+'>'+(r.html||'')+'</div>';
 }
 
+/* ---- "New this week": the Case-of-the-Week announcement row -----------------------------------
+   Pure over the build-injected FD_COTW_NEWEST ({slug, title, date} from cotw_archive_block.newest,
+   the same data that renders the index's "Newest case" line) and state.nowMs. The registry date is
+   the trigger: the row renders on that calendar day and the six after it (local time, like the day
+   name above), then disappears on its own -- Today announces a case the week it ships and never
+   carries a stale one. Null for anything malformed, so a build with no edition renders nothing.
+   The row is never the Now card: One Thing First keeps the learner's own work ahead of an
+   announcement, so it joins the "Also today" list after the week row and before saved questions. */
+var FD_NEWCASE_WINDOW_DAYS=7;
+
+function fdNewCaseStamp(d){ return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+
+function fdNewCase(newest, nowMs){
+  var n=newest||{};
+  if(typeof n.slug!=='string'||!n.slug||typeof n.title!=='string'||!n.title) return null;
+  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof n.date==='string'?n.date:'');
+  if(!m||typeof nowMs!=='number'||isNaN(nowMs)) return null;
+  var y=+m[1], mo=+m[2]-1, d=+m[3], today=fdNewCaseStamp(new Date(nowMs));
+  if(today<fdNewCaseStamp(new Date(y,mo,d))||today>=fdNewCaseStamp(new Date(y,mo,d+FD_NEWCASE_WINDOW_DAYS))) return null;
+  return {slug:n.slug, title:n.title};
+}
+
+function fdNewCaseRow(c){
+  if(!c) return '';
+  return '<button type="button" class="fd-newcase" data-fd-open="'+fdEsc(c.slug)+'">'+
+    '<span class="fd-newcase__kicker">New this week · Case of the Week</span>'+
+    '<span class="fd-newcase__title">'+fdEsc(c.title)+'</span>'+
+    '<span class="fd-newcase__action">Open →</span>'+
+  '</button>';
+}
+
 function fdToday(index, state){
   var st=state||{};
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
@@ -558,6 +592,14 @@ function fdToday(index, state){
        row goes before a trailing capture row and after everything else. */
     var last=shellRows.length?shellRows[shellRows.length-1]:null;
     if(last&&last.mark==='plus') rows.splice(rows.length-1,0,weekRow); else rows.push(weekRow);
+  }
+  /* The Case-of-the-Week announcement, only in the week it ships: after the learner's own rows and
+     the week row, before saved questions, which still close the list. */
+  var newCaseHtml=fdNewCaseRow(fdNewCase(st.newCase,nowMs));
+  if(newCaseHtml){
+    var caseRow=fdAlsoRow({mark:'ring',html:newCaseHtml});
+    var lastRow=shellRows.length?shellRows[shellRows.length-1]:null;
+    if(lastRow&&lastRow.mark==='plus') rows.splice(rows.length-1,0,caseRow); else rows.push(caseRow);
   }
   out+='<h2 class="fd-sectionhead fd-also">Also today</h2>';
   if(rows.length) out+='<div class="fd-alsolist">'+rows.join('')+'</div>';

@@ -702,6 +702,11 @@
      Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
      resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
   var FD_MEDIA=null;
+  /* The newest Case of the Week (cotw_archive_block.newest), READ-ONLY, for Today's "new this
+     week" row (fd_today.js fdNewCase). Same verified-needle injection as FD_MEDIA, and the
+     resident build swaps in its own edition. {slug, title, date}: the renderer shows it only for
+     the week after `date`, so null, a malformed value or an older edition renders nothing. */
+  var FD_COTW_NEWEST=null;
   /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
      click, consumed by the next mount of that ref, never stored. */
   var fdMediaArrival=null;
@@ -2734,6 +2739,10 @@
     live.alsoRows=rows;
     live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
     live.caseWeek=fdWeekCaseStep(FD_INDEX,FD_CASE_ARC,weekN);
+    /* The newest case, handed in raw: fdNewCase (fd_today.js) decides from live.nowMs and the
+       registry date whether Today announces it this week. Build data, not a device store, so it
+       is shown in a faculty preview too. */
+    live.newCase=FD_COTW_NEWEST;
     return fdToday(FD_INDEX,live);
   }
 

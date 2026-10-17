@@ -3101,6 +3101,48 @@ test('One Thing First A2: cw_last names an undone week read that is not the Cont
   await expectHealthy(page);
 });
 
+// ---- "New this week": the Case-of-the-Week announcement row (2026-10-17) -----------------------
+// FD_COTW_NEWEST is build-injected per site (cotw_archive_block.newest); fd_today.js shows the row
+// only from the registry date through the six days after it. FROZEN_NOW (2026-08-17) is before
+// every edition that will ever be newest, so every other Today assertion in this file is untouched;
+// this test moves the clock onto the edition's own date and back.
+test('Today announces the newest Case of the Week only in the week it ships, as an Also-today row that opens the case', async ({ page }, testInfo) => {
+  const twin = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
+  await seedApp(page, testInfo, { storage: { cw_capture_v1: OTF.capture } });
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  const newest = await page.evaluate(() => (typeof FD_COTW_NEWEST === 'object' ? FD_COTW_NEWEST : null));
+  expect(newest, 'the served shell embeds the newest edition').toBeTruthy();
+  expect(newest.slug).toMatch(new RegExp(`^cotw_\\d{8}_[a-z0-9]+_${twin}\\.md$`));
+  expect(newest.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  await expect(page.locator('.fd-newcase')).toHaveCount(0);
+  // On the registry date the row is in "Also today", before saved questions, and never the primary.
+  const [y, m, d] = newest.date.split('-').map(Number);
+  await page.clock.setFixedTime(new Date(y, m - 1, d, 12, 0, 0));
+  await page.reload();
+  await otfExpectOnePrimary(page);
+  const row = page.locator('.fd-alsolist .fd-also__row:has(> .fd-newcase)');
+  await expect(row).toHaveCount(1);
+  await expect(row).toHaveAttribute('data-fd-mark', 'ring');
+  await expect(row.locator('.fd-newcase')).toHaveAttribute('data-fd-open', newest.slug);
+  await expect(row.locator('.fd-newcase__kicker')).toHaveText('New this week · Case of the Week');
+  await expect(row.locator('.fd-newcase__title')).toHaveText(newest.title);
+  await expect(page.locator('.fd-primary .fd-newcase, .fd-now .fd-newcase')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-alsolist .fd-also__row > *:first-child')].map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-study-planner', 'fd-newcase', 'fd-capture']);
+  await otfExpectPrimaryIsFirstFocusable(page);
+  await row.locator('.fd-newcase').click();
+  await expect(page).toHaveURL(new RegExp(`page=${newest.slug.replace(/\./g, '\\.')}`));
+  await expect(page.locator('.fd-article__h1')).toBeVisible();
+  await expectHealthy(page);
+  // Day eight: gone on its own.
+  await page.clock.setFixedTime(new Date(y, m - 1, d + 7, 12, 0, 0));
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-newcase')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
 test('One Thing First D2: the Today shortcuts are unchanged with a primary present', async ({ page }, testInfo) => {
   await seedApp(page, testInfo, { storage: { cw_srs_v1: OTF.srs } });
   await page.goto('/');

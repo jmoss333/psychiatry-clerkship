@@ -68,6 +68,17 @@ for site in a.SITES:
 banned = re.compile(r'MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford', re.I)
 for s in (a.NEWEST, a.HEADING, a.EARLIER, a.OTHER):
     assert not banned.search(s), s
+# 7. Today's announcement payload: the newest edition, each site its own twin, ISO date, nothing else
+for site in a.SITES:
+    n = a.newest(real, site)
+    top = a.model(real, site)['newest']
+    assert set(n) == {'slug', 'title', 'date'}, n
+    assert n['slug'] == top['slug'] and n['slug'].endswith('_%s.md' % site)
+    assert n['title'] == top['title'] and not re.search(r'\\s+\u2014\\s+(MS3|Resident)\\s*$', n['title'])
+    assert re.fullmatch(r'\\d{4}-\\d{2}-\\d{2}', n['date']) and n['date'].replace('-', '') == top['date']
+assert a.newest(real, 'ms3')['slug'] != a.newest(real, 'res')['slug']
+empty = dict(real, shipped={})
+assert a.newest(empty, 'ms3') is None
 print('ok')
 `;
 
