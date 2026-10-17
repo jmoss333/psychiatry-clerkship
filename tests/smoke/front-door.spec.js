@@ -447,7 +447,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 94 : 85,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
+    libraryCount: resident ? 90 : 85,  // res -4 (C2, 2026-10-17): MS3-track pages excluded; +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
@@ -4462,7 +4462,7 @@ test.describe('Essentials Phase 2', () => {
     const input = dialog.getByRole('textbox', { name: 'Search resources' });
     await expect(input).toHaveValue('milieu rules');
     await expect(input).toBeFocused();
-    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.');
+    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.');
     await input.fill('delirium');
     const labels = dialog.locator('.fd-searchpanel__group');
     await expect(labels.first()).toHaveText('Safety protocols');

@@ -270,7 +270,15 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     });
   }
 
-  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known,
+  /* The one bidirectional synonym list (site_build/data/search-synonyms.v1.json, projected by
+     frontdoor_catalog as curriculum.synonymGroups). Copied, never aliased; fd_search.js reads it
+     as idx.synonymGroups. Absent on older/bare payloads, which then search exactly as before. */
+  var synonymGroups=[], sg=Array.isArray(cur.synonymGroups)?cur.synonymGroups:[];
+  for(var sgi=0;sgi<sg.length;sgi++){
+    if(Array.isArray(sg[sgi])&&sg[sgi].length>1) synonymGroups.push(sg[sgi].slice());
+  }
+
+  return { byRef:byRef, path:pathInfo, weeks:weeks, columns:columns, kit:kit, known:known, synonymGroups:synonymGroups,
     titles:titles, essentials:essentials, essentialsDropped:essentialsDropped,
     careResources:careResources, careBuilder:careBuilder, careNavigator:careNavigator, teachingResources:teachingResources };
 }

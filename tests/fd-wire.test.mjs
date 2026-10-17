@@ -1542,12 +1542,23 @@ test('delegated tool expansion persists as a layout-only transient without routi
   assert.equal(transientRenders.length, 2);
 });
 
-test('live search input rerenders and Enter opens the first ordinary result directly', () => {
+// C2 (2026-10-17): Enter in the search field SHOWS the results -- focus moves to the first row
+// (closing a phone keyboard) and nothing opens. Before, Enter opened result #1 and ran
+// find-in-page in a page the learner had not chosen.
+function enterRow() {
+  const row = { focused: 0, scrolled: 0, focus() { this.focused += 1; }, scrollIntoView() { this.scrolled += 1; } };
+  return row;
+}
+
+test('live search input rerenders and Enter moves focus to the first result without opening it', () => {
   const renders = [];
+  const row = enterRow();
+  const selected = [];
   const h = fakeHarness({ ...roleContext, searchOpen: true, query: '' }, {
     F,
-    openResource: () => Promise.resolve(true),
+    openResource: () => { throw new Error('Enter must not open a resource'); },
     render: (state) => renders.push({ ...state }),
+    querySelector: (selector) => { selected.push(selector); return selector === '.fd-searchpanel__body .fd-result' ? row : null; },
     searchResults: (_index, query) => query === 'sleep'
       ? [{ kind: 'item', item: { ref: 'sleep.md' } }]
       : [],
@@ -1560,11 +1571,29 @@ test('live search input rerenders and Enter opens the first ordinary result dire
   assert.equal(h.controller.getState().query, 'sleep');
   let prevented = 0;
   h.windowHandlers.keydown({ key: 'Enter', target: input, preventDefault: () => { prevented += 1; } });
-  assert.equal(h.controller.getState().openId, 'sleep.md');
-  assert.equal(h.controller.getState().sheet, null);
-  assert.equal(h.controller.getState().searchOpen, false);
+  const after = h.controller.getState();
+  assert.equal(after.openId, undefined, 'nothing opened');
+  assert.ok(!after.sheet, 'no safety sheet opened');
+  assert.equal(after.searchOpen, true, 'the results stay on screen');
+  assert.equal(after.query, 'sleep');
   assert.equal(prevented, 1);
-  assert.ok(renders.length >= 2);
+  assert.equal(row.focused, 1, 'focus lands on the first result row');
+  assert.ok(selected.includes('.fd-searchpanel__body .fd-result'));
+  assert.ok(renders.length >= 1);
+});
+
+test('Enter with no results keeps the field and changes nothing', () => {
+  const h = fakeHarness({ ...roleContext, searchOpen: true, query: 'zzzz' }, {
+    F, querySelector: () => null, openResource: () => { throw new Error('no open'); },
+  });
+  let prevented = 0;
+  h.windowHandlers.keydown({ key: 'Enter', target: { tagName: 'INPUT', isContentEditable: false }, preventDefault() { prevented += 1; } });
+  const after = h.controller.getState();
+  assert.equal(after.searchOpen, true);
+  assert.equal(after.query, 'zzzz');
+  assert.equal(after.openId, undefined);
+  assert.equal(prevented, 1);
+  h.controller.destroy();
 });
 
 test('search expansion toggles only an open dialog and never emits a route or effect', () => {
@@ -1681,7 +1710,7 @@ test('history navigation discards expanded search even when an old snapshot trie
   h.controller.destroy();
 });
 
-test('Enter in expanded search still follows real safety priority and the curated alias exception', () => {
+test('Enter in expanded search opens neither the safety row nor an alias row; the list stays expanded', () => {
   const protocol = { ref: 'risk.md', title: 'Ward practice safety', summary: '', kind: 'read' };
   const alias = { ref: 'decision.html', title: 'Decision support', summary: '', kind: 'tool', searchAliases: ['ward practice'] };
   const byRef = { [protocol.ref]: protocol, [alias.ref]: alias };
@@ -1690,61 +1719,45 @@ test('Enter in expanded search still follows real safety priority and the curate
     byRef[ref] = { ref, title: 'Ward practice reading', summary: '', kind: 'read' };
   }
   const index = { byRef, weeks: [], columns: [], kit: [{ item: protocol, triggers: ['urgent ward'] }] };
-  for (const [query, expectedSheet, expectedPage] of [
-    ['urgent ward', 'risk.md', 'live.md'],
-    ['ward practice', null, 'decision.html'],
-  ]) {
+  for (const query of ['urgent ward', 'ward practice']) {
+    const row = enterRow();
     const h = fakeHarness({
       ...roleContext, screen: 'app', tab: 'library', openId: 'live.md', fromTab: 'library',
       searchOpen: true, searchExpanded: true, query,
-    }, { F, index, openResource: () => Promise.resolve(true) });
+    }, { F, index, querySelector: () => row, openResource: () => Promise.resolve(true) });
     let prevented = 0;
     h.windowHandlers.keydown({
       key: 'Enter', target: { tagName: 'INPUT', isContentEditable: false },
       preventDefault() { prevented += 1; },
     });
     const after = h.controller.getState();
-    assert.equal(after.sheet, expectedSheet, query);
-    assert.equal(after.openId, expectedPage, query);
-    assert.equal(after.searchOpen, false);
-    assert.equal(after.searchExpanded, false, 'selecting a result closes and resets the expanded overlay');
+    assert.ok(!after.sheet, query);
+    assert.equal(after.openId, 'live.md', `${query}: the reading underneath is untouched`);
+    assert.equal(after.searchOpen, true);
+    assert.equal(after.searchExpanded, true, 'Enter does not collapse the expanded list');
     assert.equal(prevented, 1);
+    assert.equal(row.focused, 1, `${query}: focus moves to the first row (the safety row when one leads)`);
     h.controller.destroy();
   }
 });
 
-test('Enter activates the exact first external care result without routing or forwarding the query', () => {
+test('Enter on a care match focuses its row without following the external link or forwarding the query', () => {
   let clicked = 0;
-  let selected = '';
-  let prevented = 0;
   const routes = [];
-  const careLink = { click() { clicked += 1; } };
+  const row = { ...enterRow(), click() { clicked += 1; } };
   const h = fakeHarness({ ...roleContext, searchOpen: true, query: 'housing help' }, {
     F,
     route: (value) => routes.push(value),
-    querySelector: (selector) => {
-      selected = selector;
-      return selector === '.fd-result.is-care[data-care-resource="resource-finder"]' ? careLink : null;
-    },
-    searchResults: () => [{
-      kind: 'care',
-      item: {
-        id: 'resource-finder',
-        url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
-      },
-    }],
+    querySelector: (selector) => (selector === '.fd-searchpanel__body .fd-result' ? row : null),
+    searchResults: () => [{ kind: 'care', item: { id: 'resource-finder', url: 'https://example.test/finder' } }],
   });
-  const input = {
-    tagName: 'INPUT', isContentEditable: false, value: 'housing help',
-    matches: (selector) => selector === '.fd-searchpanel__input',
-  };
-
+  let prevented = 0;
   h.windowHandlers.keydown({
-    key: 'Enter', target: input, preventDefault() { prevented += 1; },
+    key: 'Enter', target: { tagName: 'INPUT', isContentEditable: false, value: 'housing help' },
+    preventDefault() { prevented += 1; },
   });
-
-  assert.equal(selected, '.fd-result.is-care[data-care-resource="resource-finder"]');
-  assert.equal(clicked, 1);
+  assert.equal(clicked, 0, 'the external link is not followed');
+  assert.equal(row.focused, 1);
   assert.equal(prevented, 1);
   assert.deepEqual(routes, []);
   assert.equal(h.controller.getState().query, 'housing help');

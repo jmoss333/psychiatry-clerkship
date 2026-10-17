@@ -1107,7 +1107,7 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.")
+    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
