@@ -186,6 +186,16 @@ function fdBuildIndex(curriculum, topicMeta, toolRegistry, siteManifest){
     searchItem.readerOnly=false;
   }
 
+  /* Track-specific pages (curriculum.searchTrackExclude, C2 2026-10-17): the other track's pages
+     this site ships but does not offer -- the MS3 week pages on the resident site, say. They keep
+     full reader identity (title, summary, topic metadata), exactly like a week landing page, but
+     are readerOnly, so search, Today and the Library never list them. A page already placed here
+     is never touched (frontdoor_catalog never lists one). */
+  var trackOnly=Array.isArray(cur.searchTrackExclude)?cur.searchTrackExclude:[];
+  for(var to=0;to<trackOnly.length;to++){
+    if(typeof trackOnly[to]==='string'&&trackOnly[to]&&!byRef[trackOnly[to]]) ensure(trackOnly[to], null).readerOnly=true;
+  }
+
   var sourcePath=cur.path||{};
   var pathInfo={
     id:(typeof sourcePath.id==='string')?sourcePath.id:'',
