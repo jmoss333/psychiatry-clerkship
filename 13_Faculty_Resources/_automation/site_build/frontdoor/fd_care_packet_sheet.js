@@ -681,7 +681,7 @@ function fdCarePacketBandHtml(mode){
   return mode==='review'?'<div class="fd-packet-band">'+fdEsc(FD_CARE_PACKET_BAND)+'</div>':'<div class="fd-packet-band is-empty" aria-hidden="true"></div>';
 }
 function fdCarePacketFootHtml(model,n,total){
-  return '<footer class="fd-packet-foot"><p>'+(model.date?'Listings copied from the ReConnect community directory on '+fdEsc(model.date)+'. ':'Listings copied from the ReConnect community directory. ')+
+  return '<footer class="fd-packet-foot"><p>'+(model.date?'Listings copied from the community resource directory on '+fdEsc(model.date)+'. ':'Listings copied from the community resource directory. ')+
     'Call ahead to confirm hours, cost and availability. Not a medical record.</p>'+
     (model.checkedOn?'<p>Helpline numbers checked against official sources, as of '+fdEsc(model.checkedOn)+'.</p>':'')+
     '<p class="fd-packet-pnum">Page '+n+' of '+total+'</p></footer>';
@@ -854,7 +854,7 @@ function fdCarePacketText(state,data,payload,opts){
       lines.push('- '+bits.join(' · ')+(item.desc.text?'. '+item.desc.text:''));
     }
   }
-  lines.push('',(model.date?'Listings copied from the ReConnect community directory on '+model.date+'. ':'Listings copied from the ReConnect community directory. ')+'Call ahead to confirm hours, cost and availability.');
+  lines.push('',(model.date?'Listings copied from the community resource directory on '+model.date+'. ':'Listings copied from the community resource directory. ')+'Call ahead to confirm hours, cost and availability.');
   /* The text is checked, not the loop that built it: every required line's official name and number must be in what is copied. */
   for(i=0;i<payload.required.length;i++){
     contact=payload.contacts[payload.required[i]];
