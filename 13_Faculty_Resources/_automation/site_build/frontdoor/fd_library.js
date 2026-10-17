@@ -109,6 +109,19 @@ function fdLibrarySafetyRefs(index){
   return out;
 }
 
+/* The depth chip on Everything rows (Library re-cut, 2026-10-17): the slug prefix already says
+   how deep a reading goes -- pg_ is a pocket card, exp_ a short module -- and the row said
+   nothing, so pg_suicide.md and suicide.md looked identical until opened. Same rule as the week
+   rows' fdKindChip (fd_today.js): only the exceptions are labelled; a guide, the common case,
+   carries no chip, and a tool keeps its own tool / reference chip. Pure over the ref. */
+function fdDepthChip(item){
+  var ref=(item&&typeof item.ref==='string')?item.ref:'';
+  if(!item||item.kind==='tool') return '';
+  if(ref.indexOf('pg_')===0) return '<span class="fd-chip is-card">card</span>';
+  if(ref.indexOf('exp_')===0) return '<span class="fd-chip is-module">module</span>';
+  return '';
+}
+
 /* One row, both views. Essentials rows (`fd-kit__reading`) use the serif title; Everything rows
    (`fd-collink`) use the compact sans title. The row itself opens the page (data-fd-open, the
    established convention); in Essentials a second, desktop-only control selects the row for the
@@ -131,7 +144,7 @@ function fdLibraryRow(item, ctx){
     '<span class="fd-kit__titlerow">'+
       (safety?'<span class="fd-kit__safety" role="img" aria-label="Safety"></span>':'')+
       '<span class="'+titleCls+'">'+fdLibraryMark(item.title,c.query)+'</span>'+
-      (item.kind==='tool'?'<span class="fd-chip is-tool">'+(item.rights?'reference':'tool')+'</span>':'')+
+      (item.kind==='tool'?'<span class="fd-chip is-tool">'+(item.rights?'reference':'tool')+'</span>':(c.compact?fdDepthChip(item):''))+
       governanceBadge(item.governance)+
     '</span>'+
     (text?'<span class="fd-kit__summary">'+(summary?fdEsc(text):fdLibraryMark(text,c.query))+'</span>':'')+
@@ -150,10 +163,21 @@ function fdLibraryRow(item, ctx){
 
 /* Group heading "Name · count" plus its rows. Every group starts open: the section index is the
    way to narrow, and a collapsed group would hide rows the inventory tests count as reachable. */
-function fdLibraryGroup(name, items, ctx){
+function fdLibraryGroup(name, items, ctx, sub){
   var out='<details class="fd-kit__group" open><summary><span class="fd-kit__group-name">'+fdEsc(name)+'</span>'+
     '<span class="fd-kit__group-count">· '+items.length+'</span><span class="fd-kit__chevron" aria-hidden="true">⌄</span></summary>';
-  for(var i=0;i<items.length;i++) out+=fdLibraryRow(items[i],ctx);
+  /* Sub-groups (curriculum.libraryColumns[].groups, Library re-cut 2026-10-17): plain headings
+     inside the one open group, never nested disclosure -- a collapsed sub-group would hide rows
+     the inventory tests count as reachable. `sub` arrives already filtered and non-empty. */
+  var subs=Object.prototype.toString.call(sub)==='[object Array]'?sub:null, i, j;
+  if(subs&&subs.length){
+    for(i=0;i<subs.length;i++){
+      out+='<h3 class="fd-kit__subhead">'+fdEsc(subs[i].name)+'<span class="fd-kit__subcount"> · '+subs[i].items.length+'</span></h3>';
+      for(j=0;j<subs[i].items.length;j++) out+=fdLibraryRow(subs[i].items[j],ctx);
+    }
+    return out+'</details>';
+  }
+  for(i=0;i<items.length;i++) out+=fdLibraryRow(items[i],ctx);
   return out+'</details>';
 }
 
@@ -328,7 +352,19 @@ function fdLibraryShell(model, opts){
       if(matches(item)) keep.push(item);
     }
     matched+=keep.length;
-    if(keep.length) visible.push({key:g.key,name:g.name,items:keep});
+    /* A grouped column keeps its sub-groups through the filter: each sub-group keeps its own
+       matches and an emptied sub-group drops with its heading. Items are the same objects as
+       g.items, so the counts above are not affected. */
+    var keepSub=null;
+    if(keep.length&&Object.prototype.toString.call(g.sub)==='[object Array]'){
+      keepSub=[];
+      for(var s=0;s<g.sub.length;s++){
+        var subKeep=[];
+        for(var u=0;u<g.sub[s].items.length;u++){ if(matches(g.sub[s].items[u])) subKeep.push(g.sub[s].items[u]); }
+        if(subKeep.length) keepSub.push({name:g.sub[s].name,items:subKeep});
+      }
+    }
+    if(keep.length) visible.push({key:g.key,name:g.name,items:keep,sub:keepSub});
   }
   /* Task order spans the original groups: safety must precede the interview reading AND
      its tool, even when Everything places tools before safety. Membership stays scoped. */
@@ -394,7 +430,7 @@ function fdLibraryShell(model, opts){
   if((query||taskRefs)&&!matched){
     out+=taskRefs?fdLibraryTaskEmpty(query,taskLabel):fdLibraryEmpty(query);
   } else {
-    for(i=0;i<visible.length;i++) out+=fdLibraryGroup(visible[i].name,visible[i].items,ctx);
+    for(i=0;i<visible.length;i++) out+=fdLibraryGroup(visible[i].name,visible[i].items,ctx,visible[i].sub);
     if(query) out+=fdLibraryFooter(query);
     else if(!taskRefs) out+=m.after||'';
   }
@@ -422,7 +458,7 @@ function fdLibrary(index, opts){
     for(var j=0;j<items.length;j++){
       if(items[j].kind!=='tool'){ readings++; if(items[j].governance&&items[j].governance.status==='pending') pending++; }
     }
-    groups.push({key:String(i),name:cols[i].name,items:items});
+    groups.push({key:String(i),name:cols[i].name,items:items,sub:cols[i].groups||null});
   }
   var selected=String(o.kitSection||'all'), valid=selected==='all';
   for(i=0;i<groups.length;i++) if(groups[i].key===selected&&groups[i].items.length) valid=true;

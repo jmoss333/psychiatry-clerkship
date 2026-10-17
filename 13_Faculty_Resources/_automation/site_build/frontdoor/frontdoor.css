@@ -541,6 +541,10 @@
   font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;
 }
 .fd-chip.is-tool{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+/* Depth chips on Everything rows (fd_library.js fdDepthChip): a pocket card in the olive wash, a
+ * short module in the plain chip; a guide, the common case, carries none. */
+.fd-chip.is-card{background:var(--fd-olive-wash);color:var(--fd-olive-deep)}
+.fd-chip.is-module{background:var(--fd-chip);color:var(--fd-text-mid)}
 
 /* The setup face of the Now card (no week set): kicker "30-second setup", serif title, the one
  * button "Set rotation week". The daily pick (.fd-pick) retired from Today on 2026-10-04; the
@@ -1288,6 +1292,13 @@
 .fd-kit__group-count{color:var(--fd-text-mid);font-weight:700}
 .fd-kit__chevron{margin-left:auto;transform:rotate(-90deg);transition:transform .18s var(--fd-ease-standard)}
 .fd-kit__group[open] > summary .fd-kit__chevron{transform:none}
+/* Sub-group headings inside a grouped column (curriculum.libraryColumns[].groups; fd_library.js
+ * fdLibraryGroup, Library re-cut 2026-10-17): plain headings between the rows, never disclosure,
+ * so nothing the inventory tests count as reachable is ever hidden. Small caps-weight eyebrow in
+ * the dim ink, a hair above the first row of its run. */
+.fd-kit__subhead{margin:var(--fd-space-7) 0 var(--fd-space-1);font-family:inherit;font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-kit__subhead:first-of-type{margin-top:var(--fd-space-4)}
+.fd-kit__subcount{font-weight:600;letter-spacing:0;text-transform:none}
 /* Rows (both views). The wrapper carries the row's rule and the selected state; the button inside
  * is the whole row (name first, then badge, summary, meta), and Essentials adds a desktop-only
  * Preview control beside it. */
