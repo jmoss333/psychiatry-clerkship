@@ -3733,6 +3733,7 @@ function readingPlaceHarness(saved = {}, options = {}) {
   const pending = new Map();
   let nextTimer = 1;
   const win = {
+    document: options.document,
     get scrollY() { return y; },
     scrollTo(_x, next) { y = next; },
     addEventListener(type, fn) { listeners.set(type, fn); },
@@ -3954,6 +3955,114 @@ test('Start at top stays clear through two untouched exits, then learner movemen
   h.install(); h.flush();
   h.setScroll(500); h.listeners.get('scroll')(); h.flush();
   assert.equal(h.state.readingPlaces['a.md'].heading, h.headings[1].id);
+});
+
+test('a cleared reading stays cleared when native reload restoration arrives after its first frame', () => {
+  const document = { readyState: 'interactive' };
+  const h = readingPlaceHarness({}, { document });
+  h.install(); h.flush();
+  h.setScroll(100); // pageshow restores the prior Start at top position without learner input
+  document.readyState = 'complete';
+  h.listeners.get('pageshow')?.({ persisted: false });
+  h.listeners.get('scroll')?.();
+  h.flush(); h.flush();
+  h.listeners.get('pagehide')?.();
+  assert.equal(h.state.readingPlaces['a.md'], undefined, 'native arrival must not recreate a bookmark');
+  h.setScroll(500); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].offset, 50, 'later learner movement still saves');
+});
+
+test('a cold reading restores its saved offset after native arrival and final heading layout', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  const document = { readyState: 'interactive' };
+  const h = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 75, updatedAt: 9 } }, { document });
+  h.install(true); h.flush();
+  h.setHeadingTop(1, 650);
+  h.setScroll(525); // browser restores the old document coordinate after its last load blocker
+  document.readyState = 'complete';
+  h.listeners.get('pageshow')?.({ persisted: false });
+  h.listeners.get('scroll')?.();
+  h.flush(); h.flush();
+  assert.equal(h.scrollY, 725, 'saved offset follows the final heading position');
+  assert.equal(h.state.readingPlaces['a.md'].offset, 75, 'native arrival does not rewrite the offset');
+});
+
+test('destroying a cold reading cancels its deferred arrival and listeners', () => {
+  const document = { readyState: 'interactive' };
+  const h = readingPlaceHarness({}, { document });
+  const session = h.install();
+  session.destroy();
+  document.readyState = 'complete';
+  h.listeners.get('pageshow')?.({ persisted: false }); h.flush();
+  assert.equal(h.listeners.size, 0);
+  assert.equal(h.writes.length, 0);
+  assert.equal(h.headings.some(node => node.focused), false);
+});
+
+test('learner scroll input during cold arrival wins over a deferred saved-place restore', () => {
+  const seed = readingPlaceHarness(); seed.install(); seed.flush();
+  for (const [type, event] of [['wheel', {}], ['touchmove', {}], ['keydown', { key: 'PageDown' }],
+    ['pointerdown', { button: 0, clientX: 905 }]]) {
+    const document = { readyState: 'interactive', documentElement: { clientWidth: 900 } };
+    const h = readingPlaceHarness({ 'a.md': { heading: seed.headings[1].id, offset: 75, updatedAt: 9 } }, { document });
+    h.install(true); h.flush();
+    h.listeners.get(type)?.(event);
+    h.setScroll(1000); h.listeners.get('scroll')?.();
+    h.setScroll(100); // a late native restore must not replace the learner's captured position
+    document.readyState = 'complete';
+    h.listeners.get('pageshow')?.({ persisted: false }); h.flush(); h.flush();
+    assert.equal(h.scrollY, 1000, `${type} must retain the learner's position`);
+    assert.equal(h.headings.some(node => node.focused), false, `${type} must retain focus`);
+    assert.equal(h.state.readingPlaces['a.md'].offset, 100, `${type} saves the new reading position`);
+  }
+});
+
+test('field input or a prevented scroll key cannot turn native arrival into a learner bookmark', () => {
+  for (const event of [{ key: ' ', defaultPrevented: true },
+    { key: 'Home', target: { tagName: 'INPUT' } },
+    { key: 'ArrowDown', target: { tagName: 'SELECT' } },
+    { key: ' ', target: { tagName: 'BUTTON' } },
+    { key: 'PageDown', target: { isContentEditable: true } }]) {
+    const document = { readyState: 'interactive' };
+    const h = readingPlaceHarness({}, { document });
+    h.install(); h.flush(); h.listeners.get('keydown')?.(event);
+    h.setScroll(100);
+    document.readyState = 'complete';
+    h.listeners.get('pageshow')?.({ persisted: false }); h.listeners.get('scroll')?.();
+    h.flush(); h.flush(); h.listeners.get('pagehide')?.();
+    assert.equal(h.state.readingPlaces['a.md'], undefined);
+  }
+});
+
+test('scroll intent without document movement does not save the later native position', () => {
+  const document = { readyState: 'interactive' };
+  const h = readingPlaceHarness({}, { document });
+  h.install(); h.flush(); h.listeners.get('wheel')?.({});
+  document.readyState = 'complete';
+  h.setScroll(100); h.listeners.get('pageshow')?.({ persisted: false });
+  h.listeners.get('scroll')?.(); h.flush(); h.flush(); h.listeners.get('pagehide')?.();
+  assert.equal(h.state.readingPlaces['a.md'], undefined);
+});
+
+test('returning to the cold-arrival baseline abandons the early reading position', () => {
+  const document = { readyState: 'interactive' };
+  const h = readingPlaceHarness({}, { document });
+  h.install(); h.flush(); h.listeners.get('wheel')?.({});
+  h.setScroll(1000); h.listeners.get('scroll')?.();
+  h.setScroll(0); h.listeners.get('scroll')?.();
+  document.readyState = 'complete';
+  h.listeners.get('pageshow')?.({ persisted: false }); h.flush(); h.flush();
+  assert.equal(h.scrollY, 0);
+  assert.equal(h.state.readingPlaces['a.md'], undefined, 'the abandoned section is never saved');
+});
+
+test('restore:false leaves a cold guide arrival immediate and independent of page load', () => {
+  const h = readingPlaceHarness({}, { document: { readyState: 'interactive' }, restore: false });
+  h.setScroll(1400); h.install(); h.flush();
+  h.setScroll(960); h.listeners.get('scroll')(); h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].offset, 60);
+  assert.equal(h.scrollY, 960);
+  assert.equal(h.headings.some(node => node.focused), false);
 });
 
 test('reading place restores relative to the heading and focuses the section only for Continue', () => {
