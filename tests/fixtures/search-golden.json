@@ -1,5 +1,5 @@
 {
-  "description": "Golden learner queries (C2, 2026-10-17). Each row: on each site, one of `acceptable` must rank within the top `maxRank` of the real search (titles, summaries, aliases, the synonym list and page text together); `before` pages must not outrank it; `minTotal` guards recall. `{site}` in a ref is the site's own case twin (ms3 or res). `track` lists pages a site's search must never return for the listed queries. Run against the BUILT sites by frontdoor-search-gate.mjs (check-static-site.mjs, every build) and against the source projection by tests/search-golden.test.mjs. Before/after numbers for this list are in the C2 PR body. Change a row only with the reason in the same diff.",
+  "description": "Golden learner queries (C2, 2026-10-17). Each row: on each site, one of `acceptable` must rank within the top `maxRank` of the real search (titles, summaries, aliases, the synonym list and page text together); `before` pages must not outrank it; `minTotal` guards recall. `{site}` in a ref is the site's own case twin (ms3 or res). `track` lists pages a site's search must never return for the listed queries. Run against the BUILT sites by frontdoor-search-gate.mjs (check-static-site.mjs, every build) and against the source projection by tests/search-golden.test.mjs. Before/after numbers for this list are in the C2 PR body. Change a row only with the reason in the same diff. The five brand-name rows (benadryl … prolixin) were added by the 2026-10-18 search sweep: each brand appears on no shipped page and is found only through its synonym group's generic in the page text, which tests/fixtures/search-ward.json's harness does not load, so they are pinned here instead (docs/superpowers/specs/2026-10-18-search-sweep.md).",
   "queries": [
     { "query": "agitation", "sites": { "both": { "acceptable": ["agitation.md"], "maxRank": 1 } } },
     { "query": "lithium level", "sites": { "both": { "acceptable": ["med_monitoring.md"], "maxRank": 1 } } },
@@ -19,7 +19,12 @@
     { "query": "FEP", "sites": { "both": { "acceptable": ["t_psychosis.md", "cotw_20260907_fep_{site}.md"], "maxRank": 2 } } },
     { "query": "decision-making capacity", "sites": { "both": { "acceptable": ["capacity.html"], "maxRank": 1 } } },
     { "query": "CIWA", "sites": { "both": { "acceptable": ["withdrawal.html"], "maxRank": 3 } } },
-    { "query": "EPS", "sites": { "both": { "acceptable": ["med_monitoring.md"], "maxRank": 1 } } }
+    { "query": "EPS", "sites": { "both": { "acceptable": ["med_monitoring.md"], "maxRank": 1 } } },
+    { "query": "benadryl", "sites": { "both": { "acceptable": ["t_sleep.md"], "maxRank": 1 } } },
+    { "query": "inderal", "sites": { "both": { "acceptable": ["t_anxiety.md"], "maxRank": 1 } } },
+    { "query": "neurontin", "sites": { "both": { "acceptable": ["t_sleep.md"], "maxRank": 1 } } },
+    { "query": "minipress", "sites": { "both": { "acceptable": ["t_anxiety.md"], "maxRank": 2 } } },
+    { "query": "prolixin", "sites": { "res": { "acceptable": ["adv_psychopharm.md"], "maxRank": 1 } } }
   ],
   "track": {
     "res": {

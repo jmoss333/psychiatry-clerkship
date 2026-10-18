@@ -36,6 +36,76 @@
       "id": "fep",
       "terms": ["fep", "first episode psychosis"],
       "why": "The abbreviation found one case; the guide and the full-name pages were missed."
+    },
+    {
+      "id": "ocd",
+      "terms": ["ocd", "obsessive compulsive", "obsessive compulsive disorder"],
+      "why": "2026-10-18 sweep: 'obsessive compulsive' opened the Podcast Library (page text only) while 'ocd' found the Anxiety/Trauma/OCD guide by title."
+    },
+    {
+      "id": "observation",
+      "terms": ["1 1", "sitter"],
+      "why": "2026-10-18 sweep: ward words for one-to-one observation ('1:1' is written normalised). Both returned nothing on MS3; 'sitter' opened a Case of the Week on the resident site."
+    },
+    {
+      "id": "chlorpromazine",
+      "terms": ["chlorpromazine", "thorazine"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "fluphenazine",
+      "terms": ["fluphenazine", "prolixin"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "lithium",
+      "terms": ["lithium", "lithobid"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "trazodone",
+      "terms": ["trazodone", "desyrel"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "diazepam",
+      "terms": ["diazepam", "valium"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "chlordiazepoxide",
+      "terms": ["chlordiazepoxide", "librium"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "zolpidem",
+      "terms": ["zolpidem", "ambien"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "diphenhydramine",
+      "terms": ["diphenhydramine", "benadryl"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "propranolol",
+      "terms": ["propranolol", "inderal"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "prazosin",
+      "terms": ["prazosin", "minipress"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "gabapentin",
+      "terms": ["gabapentin", "neurontin"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
+    },
+    {
+      "id": "naltrexone",
+      "terms": ["naltrexone", "vivitrol"],
+      "why": "2026-10-18 sweep: generic and brand. The brand appears on no shipped page and returned nothing."
     }
   ]
 }

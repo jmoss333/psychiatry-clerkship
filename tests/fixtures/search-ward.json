@@ -608,6 +608,248 @@
         "ms3",
         "res"
       ]
+    },
+    {
+      "query": "mdd",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "addiction",
+      "acceptable": [
+        "t_sud.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "substance-related and addictive disorders",
+      "acceptable": [
+        "t_sud.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "diazepam",
+      "acceptable": [
+        "t_sud.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "valium",
+      "acceptable": [
+        "t_sud.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "chlordiazepoxide",
+      "acceptable": [
+        "t_sud.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "librium",
+      "acceptable": [
+        "t_sud.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "lithium",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "lithobid",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "desyrel",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "vivitrol",
+      "acceptable": [
+        "psychopharm_primer.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "zolpidem",
+      "acceptable": [
+        "t_sleep.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "ambien",
+      "acceptable": [
+        "t_sleep.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "1:1",
+      "acceptable": [
+        "suicide.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "sitter",
+      "acceptable": [
+        "suicide.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "obsessive compulsive",
+      "acceptable": [
+        "t_anxiety.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "obsessive-compulsive and related disorders",
+      "acceptable": [
+        "t_anxiety.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "trauma- and stressor-related disorders",
+      "acceptable": [
+        "t_anxiety.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "conversion disorder",
+      "acceptable": [
+        "t_somatic.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "functional neurological disorder",
+      "acceptable": [
+        "t_somatic.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "elimination disorders",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "medication-induced movement disorders",
+      "acceptable": [
+        "med_monitoring.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
     }
   ],
   "crisis": [
