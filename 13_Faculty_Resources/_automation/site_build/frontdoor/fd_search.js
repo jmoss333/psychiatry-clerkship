@@ -782,9 +782,9 @@ function fdSearchOverlay(index, query, synonyms, state){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
     out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
-      '<button type="button" class="fd-btn" data-fd-search="">Edit search</button>';
-    if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button>';
-    if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
+      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search="">Edit search</button>';
+    if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>';
+    if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
     out+='</div>';
   } else {
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
