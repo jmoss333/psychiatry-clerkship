@@ -6273,3 +6273,96 @@ for (const width of [320, 390, 1280]) {
     await expectHealthy(page);
   });
 }
+
+
+test('reading comfort preserves section, keyboard focus and saved preferences without remounting', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page,testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}&tab=library`);
+  const reader=await readingReady(page),original=await reader.elementHandle();
+  const body=reader.locator('.fd-article__body');
+  const font=()=>body.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  const base=await font();
+  await scrollReadingTo(page,1,85);
+  await expect.poll(async()=>((await readingPlaces(page))[READING_REF]||{}).offset).toBeCloseTo(85,0);
+  const place=(await readingPlaces(page))[READING_REF],url=page.url();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  const size=settings.getByRole('group',{name:'Reading text size',exact:true});
+  const spacing=settings.getByRole('group',{name:'Reading line spacing',exact:true});
+  const larger=size.getByRole('button',{name:'Larger',exact:true});
+  await larger.focus();await larger.press('Enter');
+  await expect(larger).toHaveAttribute('aria-pressed','true');
+  await expect(larger).toBeFocused();
+  await expect.poll(font).toBeCloseTo(base*1.15,1);
+  await spacing.getByRole('button',{name:'Spacious',exact:true}).click();
+  await expect.poll(()=>body.evaluate(el=>parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(2,1);
+  expect(await reader.evaluate((el,original)=>el===original,original)).toBe(true);
+  expect(page.url()).toBe(url);
+  expect((await readingPlaces(page))[READING_REF].heading).toBe(place.heading);
+  await expect.poll(()=>reader.locator('.fd-article__body h3').nth(1).evaluate(el=>el.getBoundingClientRect().top)).toBeCloseTo(-85,0);
+  await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  await page.evaluate(()=>sessionStorage.setItem('__fd_test_preserve_seed','1'));
+  await page.reload();await readingReady(page);
+  await expect(reader).toHaveAttribute('data-fd-reader-size','larger');
+  await expect(reader).toHaveAttribute('data-fd-reader-spacing','spacious');
+  await expect.poll(font).toBeCloseTo(base*1.15,1);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await settings.getByRole('button',{name:'Reset reading comfort',exact:true}).click();
+  await expect(size.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(spacing.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect.poll(font).toBeCloseTo(base,1);
+  await page.evaluate(()=>{const write=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='cw_frontdoor_v1')throw new DOMException('Blocked','QuotaExceededError');return write.call(this,key,value);};});
+  await size.getByRole('button',{name:'Largest',exact:true}).click();
+  await expect(size.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(settings.getByRole('status')).toContainText('Could not save');
+  await expect.poll(font).toBeCloseTo(base,1);
+  await expectHealthy(page);
+});
+
+test('reading comfort fits phone, desktop and 200 percent CSS zoom with reduced motion', async ({ page },testInfo) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await seedApp(page,testInfo,{state:{readingComfort:{size:'largest',spacing:'spacious'}}});
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}&tab=library`);
+  const reader=await readingReady(page);
+  await expect(reader).toHaveAttribute('data-fd-reader-size','largest');
+  for(const width of [320,390,1280]) {
+    await page.setViewportSize({width,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.getByRole('button',{name:'Settings',exact:true}).click();
+    const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+    for(const button of await settings.locator('[data-fd-reading-size],[data-fd-reading-spacing],[data-fd-reading-reset]').all()) {
+      const box=await button.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    await settings.screenshot({path:testInfo.outputPath(`comfort-settings-${width}.png`)});
+    await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  }
+  await page.evaluate(()=>{document.documentElement.style.zoom='2';});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect(reader.locator('.fd-article__body')).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath('comfort-css-zoom-200.png')});
+  await page.evaluate(()=>{document.documentElement.style.zoom='';sessionStorage.setItem('__fd_test_preserve_seed','1');});
+  await page.goto('/?page=orientation.md');
+  const guide=page.locator('.fd-reader--guide');
+  await expect(guide).toBeVisible();
+  const guideBody=guide.locator('.fd-article__body');
+  const largeFont=await guideBody.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  await settings.getByRole('button',{name:'Reset reading comfort',exact:true}).click();
+  await expect.poll(()=>guideBody.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(largeFont/1.3,1);
+  await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  await page.goto('/?tool=mse.html');
+  const tool=page.locator('.fd-reader--tool');
+  await expect(tool).toBeVisible();
+  const frame=page.frameLocator('iframe.toolframe').locator('body');
+  await expect(frame).toBeVisible();const toolFont=await frame.evaluate(el=>getComputedStyle(el).fontSize);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await settings.getByRole('group',{name:'Reading text size',exact:true}).getByRole('button',{name:'Largest',exact:true}).click();
+  await expect(tool).not.toHaveAttribute('data-fd-reader-size');
+  expect(await frame.evaluate(el=>getComputedStyle(el).fontSize)).toBe(toolFont);
+  await expectHealthy(page);
+});

@@ -5415,3 +5415,68 @@ test('landing: flipping FD_LANDING_VIEW to today restores Today-first exactly wh
     route: '/?case=c1', effect: null,
   });
 });
+
+
+test('reading comfort validates settings actions and restores only known saved preferences', () => {
+  const base={...roleContext,screen:'app',sheet:'settings',readingComfort:{size:'larger',spacing:'standard'}};
+  const next=F.fdDispatch({'data-fd-reading-spacing':'spacious'},{},base);
+  assert.deepEqual(next.patch.readingComfort,{size:'larger',spacing:'spacious'});
+  assert.equal(next.route,null);
+  assert.equal(next.effect.type,'reading-comfort');
+  assert.deepEqual(F.fdDispatch({'data-fd-reading-reset':''},{},base).patch.readingComfort,{size:'standard',spacing:'standard'});
+  for(const attrs of [{'data-fd-reading-size':'huge'},{'data-fd-reading-spacing':'100px'}])
+    assert.deepEqual(F.fdDispatch(attrs,{},base),{patch:{},route:null,effect:null});
+  assert.deepEqual(F.fdDispatch({'data-fd-reading-size':'largest'},{},{...base,sheet:null}),{patch:{},route:null,effect:null});
+  assert.deepEqual(F.fdResolveState('https://example.test/',{...roleContext,readingComfort:{size:'oops',spacing:'spacious'}}).readingComfort,{size:'standard',spacing:'spacious'});
+});
+
+test('reading comfort saves preferences before repainting the modal and reflows without reopening the reading', () => {
+  const places={'pg_interview.md':{heading:'section',offset:32,updatedAt:1}};
+  const initial={...roleContext,screen:'app',tab:'library',openId:'pg_interview.md',sheet:'settings',readingPlaces:places,readingComfort:{size:'standard',spacing:'standard'}};
+  const store=memStorage({cw_frontdoor_v1:JSON.stringify(initial),cw_progress_v1:'{"done.md":{"done":true}}'}), attrs={}, details=[];
+  let reflows=0,fullRenders=0,opened=0;
+  const h=fakeHarness(initial,{F:make(store),querySelector:s=>s==='.fd-reader'?{setAttribute:(k,v)=>{attrs[k]=v;}}:null,
+    render:()=>{fullRenders++;},renderTransient:(_s,d)=>details.push(d),openResource:()=>{opened++;},readingPlaceSession:()=>({reflow:change=>{reflows++;change();}})});
+  h.controller.dispatch({'data-fd-reading-size':'larger'});
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingComfort,{size:'larger',spacing:'standard'});
+  assert.deepEqual(JSON.parse(store.getItem('cw_frontdoor_v1')).readingPlaces,places);
+  assert.equal(store.getItem('cw_progress_v1'),'{"done.md":{"done":true}}');
+  assert.equal(attrs['data-fd-reader-size'],'larger');
+  assert.equal(reflows,1);
+  assert.equal(fullRenders,0);
+  assert.equal(opened,0);
+  assert.equal(details.at(-1).preserveResource,true);
+  assert.match(h.controller.getState().readingComfortNotice,/Saved/);
+  store.setItem=()=>{throw Error('blocked');};
+  h.controller.dispatch({'data-fd-reading-size':'largest'});
+  assert.deepEqual(h.controller.getState().readingComfort,{size:'larger',spacing:'standard'});
+  assert.equal(attrs['data-fd-reader-size'],'larger');
+  assert.match(h.controller.getState().readingComfortNotice,/could not|Could not/);
+});
+
+test('comfort reflow preserves the latest section before layout changes without inventing new reading progress', () => {
+  const h=readingPlaceHarness(),session=h.install();h.flush();
+  h.setScroll(960);h.listeners.get('scroll')();
+  session.reflow(()=>{h.setHeadingTop(2,1250);});
+  h.flush();
+  assert.equal(h.scrollY,1310);
+  assert.equal(h.state.readingPlaces['a.md'].heading,h.headings[2].getAttribute('data-fd-reading-anchor'));
+  assert.equal(h.state.readingPlaces['a.md'].offset,60);
+  const saved=JSON.stringify(h.state.readingPlaces),writes=h.writes.length;
+  h.listeners.get('scroll')();h.flush();
+  assert.equal(h.writes.length,writes,'the reflow scroll is not learner progress');
+  assert.equal(JSON.stringify(h.state.readingPlaces),saved);
+  session.reflow(()=>{h.setHeadingTop(2,1600);});session.destroy();h.flush();
+  assert.equal(h.scrollY,1310,'a destroyed reading cannot take scroll ownership');
+});
+
+
+test('rapid comfort changes keep one original section and leave reading capture active', () => {
+  const h=readingPlaceHarness(),session=h.install();h.flush();
+  h.setScroll(960);h.listeners.get('scroll')();h.flush();
+  session.reflow(()=>h.setHeadingTop(2,1250));
+  session.reflow(()=>h.setHeadingTop(2,1600));h.flush();
+  assert.equal(h.scrollY,1660,'the second layout must use the original section and offset');
+  h.setScroll(1700);h.listeners.get('scroll')();h.flush();
+  assert.equal(h.state.readingPlaces['a.md'].offset,100,'recording resumes after overlapping layout frames');
+});
