@@ -1642,6 +1642,12 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-searchpanel__foot{padding:var(--fd-space-6) var(--fd-space-7);border-top:1px solid var(--fd-line);background:var(--fd-callout);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
 .fd-searchpanel__foot strong{color:var(--fd-text)}
 .fd-searchpanel__empty{padding:22px;text-align:center;font-size:var(--fd-font-md);color:var(--fd-text-dim)}
+.fd-searchpanel__recovery{display:flex;flex-direction:column;gap:var(--fd-space-3);padding:0 var(--fd-space-5) var(--fd-space-6)}
+.fd-searchpanel__recovery .fd-btn{min-height:var(--fd-target-touch);white-space:normal;text-align:left;justify-content:flex-start}
+.fd-searchpanel__related{display:flex;flex-wrap:wrap;gap:var(--fd-space-2);padding:var(--fd-space-4) var(--fd-space-5)}
+.fd-searchpanel__related p{width:100%;margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fd-searchpanel__related .fd-btn{min-height:var(--fd-target-touch);max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left}
+
 
 /* Result rows: an 8px mark column and the text. Protocols: filled danger dot and the kit's cue
  * line; pages: an outlined dot; tools: teal dot and the hint. The leading protocol of a crisis

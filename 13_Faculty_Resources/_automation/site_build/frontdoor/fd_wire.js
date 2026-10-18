@@ -2344,7 +2344,8 @@ function fdWire(root, initialState, opts){
       if(offlineFocus&&offlineFocus.focus)try{offlineFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
-    if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
+    if(afterOverlay&&(afterOverlay!==beforeOverlay||
+       (result.effect&&result.effect.type==='focus-search'))) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
        there after the render -- is true of every control in the panel except one. The two-tap
@@ -2782,6 +2783,17 @@ function fdWire(root, initialState, opts){
       dispatch:function(attrs,c){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
+      },
+      /* Capture owns its own dialog. Keep Search's query and opener only in this closure
+         so closing the resumed Search still returns to its original button. */
+      suspendSearch:function(){
+        if(destroyed||!startupCommitted||!state.searchOpen) return null;
+        var query=String(state.query||''), invoker=invokers.length?invokers[invokers.length-1]:null;
+        apply(fdDispatch({'data-fd-close-search':''},context(),state),null,false);
+        return function(){
+          if(destroyed||!startupCommitted) return state;
+          return apply(fdDispatch({'data-fd-search':'','data-fd-search-query':query},context(),state),invoker,false);
+        };
       },
       prepareStartup:prepareStartup,
       commitStartup:commitStartup,
