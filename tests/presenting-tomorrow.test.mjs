@@ -191,8 +191,12 @@ test('hostile or unknown picks render nothing dangerous: no card for an unknown 
   const unknown = F.fdTodayPurpose(IDX, 'rounds', true, opts({ prepRef: 'nope.md" onclick="alert(1)' }));
   assert.doesNotMatch(unknown, /onclick|alert|fd-prep__card/);
   assert.doesNotMatch(unknown, /aria-pressed="true">[^<]*<\/button><\/div><div class="fd-prep__phases"/);
-  const badPhase = F.fdTodayPurpose(IDX, 'rounds', true, opts({ prepRef: 'delirium.md', prepPhase: '<script>' }));
-  assert.doesNotMatch(badPhase, /<script>/);
+  // An unknown phase id never reaches the markup at all (the first phase is used instead), so the
+  // check is for the raw string's absence, not a tag filter.
+  const hostilePhase = '<scr' + 'ipt>alert(1)';
+  const badPhase = F.fdTodayPurpose(IDX, 'rounds', true, opts({ prepRef: 'delirium.md', prepPhase: hostilePhase }));
+  assert.equal(badPhase.indexOf(hostilePhase), -1);
+  assert.equal(badPhase.indexOf('alert(1)'), -1);
   assert.match(badPhase, /data-prep-phase="admit"/);
   // A payload with a hostile topic name is escaped.
   const hostile = JSON.parse(JSON.stringify(PREP));
