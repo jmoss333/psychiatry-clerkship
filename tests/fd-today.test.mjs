@@ -17,6 +17,7 @@ const make = (governanceBadge) => new Function('governanceBadge', `
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
+  ${read('frontdoor/fd_tool_pins.js')}
   ${read('frontdoor/fd_edition_student.js')}
   ${todaySrc}
   return { fdTodayProgress: fdTodayProgress, fdToday: fdToday, fdBuildIndex: fdBuildIndex,
@@ -31,6 +32,13 @@ const make = (governanceBadge) => new Function('governanceBadge', `
            fdNewCaseRow: fdNewCaseRow, FD_NEWCASE_WINDOW_DAYS: FD_NEWCASE_WINDOW_DAYS };
 `)(governanceBadge || function(){return "";});
 const F = make();
+
+test('Quick tools leads with valid learner pins then keeps existing suggestions and the five-tool cap', () => {
+  const tools=['a.html','b.html','c.html','d.html','e.html','f.html'].map(ref=>({ref,kind:'tool'}));
+  const idx={byRef:Object.fromEntries(tools.map(item=>[item.ref,item])),columns:[{items:tools}],kit:[{item:{ref:'safety.md'}}]};
+  assert.deepEqual(F.fdQuickTools(idx,[tools[0]],['f.html','b.html','missing.html']).map(item=>item.ref),['f.html','b.html','a.html','c.html','d.html']);
+  assert.deepEqual(idx.kit,[{item:{ref:'safety.md'}}],'pins do not modify Safety');
+});
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 

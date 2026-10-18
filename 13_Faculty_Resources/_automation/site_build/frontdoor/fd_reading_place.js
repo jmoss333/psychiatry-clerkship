@@ -85,6 +85,30 @@ function fdReadingPlaceDrop(places,ref){
   return out;
 }
 
+/* A derived continuation list, never a second history store. Catalogue membership keeps an old
+   saved position from exposing a retired, hidden, or other-audience reading. */
+function fdReadingCatalogItem(index,ref){
+  var idx=index||{},columns=idx.columns||[],item,i,j,items;
+  if(!fdReadingRef(ref)||!FD_READING_OWN.call(idx.byRef||{},ref))return null;
+  item=idx.byRef[ref];
+  if(!item||item.ref!==ref||item.kind!=='read'||item.searchOnly||item.readerOnly||item.rights)return null;
+  for(i=0;i<columns.length;i++){
+    items=columns[i].items||[];
+    for(j=0;j<items.length;j++)if(items[j]&&items[j].ref===ref)return item;
+  }
+  return null;
+}
+
+function fdReadingRecentItems(index,places,done){
+  var idx=index||{}, saved=fdReadingPlaces(places), finished=done||{}, refs=[],ref;
+  for(ref in saved){
+    if(!FD_READING_OWN.call(saved,ref)||!fdReadingCatalogItem(idx,ref)||finished[ref]===true)continue;
+    refs.push(ref);
+  }
+  refs.sort(function(a,b){return saved[b].updatedAt-saved[a].updatedAt||(a<b?-1:a>b?1:0);});
+  return refs.slice(0,3).map(function(key){return idx.byRef[key];});
+}
+
 function fdReadingHeadingSource(label,index){
   if(typeof label==='string')return label;
   if(label===null)return 'null';
