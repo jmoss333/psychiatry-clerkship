@@ -65,11 +65,13 @@ validator, projection and test downstream judges the combined record unchanged.
 `bin/ledger_keygen.mjs`; `13_Faculty_Resources/ledger/` (an empty `keys.json` and the activation
 runbook); the overlay and keygen tests; the governance-set entries for the overlay and the keys.
 
-**Phase 2** (its own PR, console suites run in full): the `ATTEST_LEDGER` mode in
-`faculty-console/netlify/functions/attest.mjs`, `faculty-console/ledger.mjs`,
-`faculty-console/ledger-publish.mjs`, the `ledgerMode` branches in `release-status.mjs` and the
-`ledger-mode` skip in `rolling-pr-sweep.mjs`, and `tests/ledger-core`, `tests/ledger-publish`,
-`tests/faculty-console-ledger`. Until it lands, `ATTEST_LEDGER` stays unset and that code is dead.
+**Phase 2** (its own PR, console suites run in full; done 2026-10-18): the `ATTEST_LEDGER` mode in
+`faculty-console/netlify/functions/attest.mjs` (4,075 → 3,640 lines), `faculty-console/ledger.mjs`,
+`faculty-console/ledger-publish.mjs`, the `ledgerMode` branches in `release-status.mjs` and
+`app.mjs`, the ledger check in `pharmacy-actions.mjs`, the `ledger-mode` skip in
+`rolling-pr-sweep.mjs`, and `tests/ledger-core`, `tests/ledger-publish`,
+`tests/faculty-console-ledger`. The console no longer reads `ATTEST_LEDGER` or any `LEDGER_*`
+variable; tests pin that the handler, release status and the rolling sweep ignore it.
 
 **Kept on purpose:** `question_bank.json`'s manifest line hashed without item `status`
 (`canonical_question_bank` / `canonicalQuestionBank`, parity-pinned) — signing a question must
