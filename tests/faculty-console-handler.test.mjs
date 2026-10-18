@@ -765,6 +765,17 @@ test('the resident base is defaulted in code and overridable by RESIDENT_SITE_UR
   );
 });
 
+test('ATTEST_LEDGER is no longer read: the console serves the git-row queue (decision attestation-ledger-removed)', async () => {
+  // Until 2026-10-18, ATTEST_LEDGER=on without a signing key refused to start (500
+  // server_configuration), and with one it read and signed onto an orphan ledger branch.
+  const mock = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
+  const response = await handlerWith(mock, { ATTEST_LEDGER: 'on' })(apiRequest('GET'));
+  assert.equal(response.status, 200);
+  const payload = await response.json();
+  assert.equal(Object.hasOwn(payload, 'ledger'), false);
+  assert.equal(payload.items.length, 4);
+});
+
 test('a Case-of-the-Week page attests through the ordinary single-slug write path', async () => {
   const mock = createGithubMock({ files: cotwFiles(), sources: cotwSources() });
   const response = await handlerWith(mock)(apiRequest('POST', {

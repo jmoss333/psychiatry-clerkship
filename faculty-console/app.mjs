@@ -862,9 +862,6 @@ export function startFacultyConsole({
           status.train?.week ? el('p', { id: 'release-week', class: 'muted' }, [trainWeekLine(status.train.week)]) : null,
           status.signoffs ? el('p', { id: 'release-signoffs', class: status.signoffs.items.length ? 'release-status__signoffs' : 'muted' }, [staleSignoffLine(status.signoffs)]) : null,
           status.signoffs ? renderResignSchedule(status) : null,
-          status.ledgerMode ? el('p', { class: 'muted' }, [
-            'Ledger mode is on: sign-offs publish through the attestation ledger on their own and are not listed here.',
-          ]) : null,
           status.gaps.length ? el('div', { class: 'release-status__gaps' }, [
             el('p', {}, ['Could not read everything, so this is not the whole picture:']),
             el('ul', {}, status.gaps.map(gap => el('li', {}, [gap]))),
@@ -910,7 +907,6 @@ export function startFacultyConsole({
       signoffs: status.signoffs,
       nextSlot: Date.parse(status.train?.nextSlot),
       nowMs: Date.parse(status.fetchedAt),
-      ledgerMode: status.ledgerMode,
     });
     if (!schedule.total) return null;
     const rows = [
@@ -3264,7 +3260,7 @@ export function startFacultyConsole({
   }
 
   function renderIncomingFromBase() {
-    if (!(Number(state.server?.branchLag) > 0) || state.server?.ledger) return null;
+    if (!(Number(state.server?.branchLag) > 0)) return null;
     return el('details', {
       id: 'incoming-from-main',
       class: 'resign-by-change incoming-from-main',

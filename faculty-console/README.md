@@ -359,8 +359,10 @@ Deploy. Open the site, enter the key, and you're attesting.
 The signed-ledger route (`ATTEST_LEDGER=on`) was built dark and removed by decision
 `attestation-ledger-removed`; `docs/adr/ADR-003-attestation-ledger.md` keeps the design and the
 reasons. Phase 1 removed the build overlay, the `ledger-publish` schedule, the keygen and the
-`13_Faculty_Resources/ledger/` folder; the console's own ledger-mode code is dead until phase 2
-deletes it. **Leave `ATTEST_LEDGER` unset.** The rolling-PR route below is the only route.
+`13_Faculty_Resources/ledger/` folder; phase 2 removed the console's own ledger mode. The console
+no longer reads `ATTEST_LEDGER`, `LEDGER_BRANCH`, `LEDGER_SIGNING_KEY` or `LEDGER_BUILD_HOOKS`;
+any of them still set in the Netlify environment is ignored and can be deleted. The rolling-PR
+route below is the only route.
 
 ### Why attestations do not commit to `main`
 
