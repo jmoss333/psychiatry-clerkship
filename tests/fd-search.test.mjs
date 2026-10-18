@@ -369,6 +369,28 @@ test('a zero-match search offers recovery without turning the query into a quest
   assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, 'suicide', SYN, {}), /aria-label="Search recovery"/);
 });
 
+test('related search terms use the curated alternatives, capped at three after results', () => {
+  const groups = readJson('../13_Faculty_Resources/_automation/site_build/data/search-synonyms.v1.json').groups.map(g => g.terms);
+  const index = { ...REAL_INDEX, synonymGroups: groups };
+  const html = F.fdSearchOverlay(index, 'QTc', SYN, {});
+  assert.match(html, /role="group" aria-label="Related search terms"/);
+  const buttons = [...html.matchAll(/data-fd-search="" data-fd-search-query="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(buttons, ['qt prolongation', 'prolonged qt', 'qtc prolongation']);
+  assert.ok(html.indexOf('aria-label="Related search terms"') > html.lastIndexOf('class="fd-result'));
+  const safety = F.fdSearchOverlay(index, 'suicide qtc', SYN, {searchExpanded:true});
+  assert.ok(safety.indexOf('data-fd-safety="pg_suicide.md"') < safety.indexOf('aria-label="Related search terms"'));
+  assert.match(safety, /data-fd-search-query="suicide qt prolongation"/);
+  const action = F.fdDispatch({'data-fd-search':'','data-fd-search-query':buttons[0]}, {search:''}, {searchOpen:true,searchExpanded:true,query:'qtc'});
+  assert.equal(action.patch.query, 'qt prolongation');
+  assert.equal(action.patch.searchExpanded, false);
+  assert.equal(action.route, null);
+  assert.equal(action.effect.type, 'focus-search');
+  for (const query of ['', 'zzzzqqq', 'nmsx']) {
+    assert.doesNotMatch(F.fdSearchOverlay(index, query, SYN, {}), /aria-label="Related search terms"/);
+  }
+  assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, 'qtc', SYN, {}), /aria-label="Related search terms"/);
+});
+
 test('search recovery respects app navigation and faculty preview boundaries', () => {
   const app = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, { appMode: true });
   assert.doesNotMatch(app, /data-fd-tab="library"/);

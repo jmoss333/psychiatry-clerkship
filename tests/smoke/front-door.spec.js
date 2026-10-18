@@ -108,6 +108,40 @@ test('search recovery edits and browses with usable targets at phone and desktop
   }
 });
 
+test('related search terms update the transient query with safety first on phone and desktop', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('suicide qtc');
+    const related = search.getByRole('group', { name: 'Related search terms', exact: true });
+    await expect(related.getByRole('button')).toHaveCount(3);
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    const expand = search.getByRole('button', { name: 'Show all matches', exact: true });
+    if (await expand.count()) await expand.click();
+    const term = related.getByRole('button', { name: 'suicide qt prolongation', exact: true });
+    await term.scrollIntoViewIfNeeded();
+    const box = await term.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await term.focus();
+    await term.press('Enter');
+    await expect(input).toHaveValue('suicide qt prolongation');
+    await expect(input).toBeFocused();
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => Object.values(localStorage).join('\n'))).not.toContain('suicide qt prolongation');
+    await input.fill('zzzzqqq');
+    await expect(related).toHaveCount(0);
+    await input.press('Escape');
+  }
+  await expectHealthy(page);
+});
+
 test('search recovery Capture starts blank, returns to the query and saves only an explicit question', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
