@@ -6287,6 +6287,8 @@ test('reading comfort preserves section, keyboard focus and saved preferences wi
   await scrollReadingTo(page,1,85);
   await expect.poll(async()=>((await readingPlaces(page))[READING_REF]||{}).offset).toBeCloseTo(85,0);
   const place=(await readingPlaces(page))[READING_REF],url=page.url();
+  const anchorTop=()=>reader.locator('.fd-article__body h3').nth(1).evaluate(el=>el.getBoundingClientRect().top);
+  const beforeSize=await anchorTop();
   await page.getByRole('button',{name:'Settings',exact:true}).click();
   const settings=page.getByRole('dialog',{name:'Settings',exact:true});
   const size=settings.getByRole('group',{name:'Reading text size',exact:true});
@@ -6296,12 +6298,16 @@ test('reading comfort preserves section, keyboard focus and saved preferences wi
   await expect(larger).toHaveAttribute('aria-pressed','true');
   await expect(larger).toBeFocused();
   await expect.poll(font).toBeCloseTo(base*1.15,1);
+  // Scroll destinations round to a device pixel while heading layout can be fractional.
+  // Compare actual positions per change, rather than an unrepresentable requested -85px.
+  await expect.poll(async()=>Math.abs((await anchorTop())-beforeSize)).toBeLessThanOrEqual(1);
+  const beforeSpacing=await anchorTop();
   await spacing.getByRole('button',{name:'Spacious',exact:true}).click();
   await expect.poll(()=>body.evaluate(el=>parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(2,1);
   expect(await reader.evaluate((el,original)=>el===original,original)).toBe(true);
   expect(page.url()).toBe(url);
   expect((await readingPlaces(page))[READING_REF].heading).toBe(place.heading);
-  await expect.poll(()=>reader.locator('.fd-article__body h3').nth(1).evaluate(el=>el.getBoundingClientRect().top)).toBeCloseTo(-85,0);
+  await expect.poll(async()=>Math.abs((await anchorTop())-beforeSpacing)).toBeLessThanOrEqual(1);
   await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
   await page.evaluate(()=>sessionStorage.setItem('__fd_test_preserve_seed','1'));
   await page.reload();await readingReady(page);
