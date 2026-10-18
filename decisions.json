@@ -315,6 +315,18 @@
         "bin/verify.sh",
         "bin/install-hooks.sh"
       ]
+    },
+    {
+      "id": "attest-mjs-shrink-only",
+      "title": "faculty-console/netlify/functions/attest.mjs, the only code that writes an attestation hash, carries a shrinking-only line-count pin: a change that adds net lines must first extract a module",
+      "status": "active",
+      "decided": "2026-10-18",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "claude/architecture-review-2026-10-17.md (project doc) finding F4 / recommendation R5; the owner chose the hard pin over headroom in a Cowork session 2026-10-18",
+      "note": "Pinned at 4075 lines in bin/check_monolith_ratchet_baseline.json; bin/check_monolith_ratchet.py (verify.sh + tests/monolith-ratchet.test.mjs, so CI covers it) fails a rise and notes a fall. The friction is the point: every console feature PR that grows the hash writer extracts something first, following the pure-module-with-parity-test pattern of press-forecast.mjs and attestation-hash.mjs. Candidates named for the next pin: faculty-console/app.mjs (6,485) and site_build/spa_index.html (3,999). Lower the pin only after a reviewed reduction, JSON diff in the same PR. Revisit if the console is rewritten as modules by design, or if the pin blocks a safety fix (then raise it in its own policy-labelled commit with the reason).",
+      "governs": [
+        "bin/check_monolith_ratchet.py"
+      ]
     }
   ]
 }
