@@ -158,7 +158,40 @@ function fdLibraryRow(item, ctx){
   if(fdResourcePreviewCopy(item.ref)){
     out+='<button type="button" class="fd-library__details" data-fd-library-details="'+fdEsc(item.ref)+'" aria-haspopup="dialog" aria-label="Details for '+fdEsc(item.title)+'">Details</button>';
   }
+  if(typeof fdToolPinAllowed==='function'&&fdToolPinAllowed(c.index,item.ref)){
+    var pinned=(c.toolPins||[]).indexOf(item.ref)!==-1;
+    out+='<button type="button" class="fd-library__pin" data-fd-tool-pin="'+fdEsc(item.ref)+'" aria-pressed="'+(pinned?'true':'false')+'" aria-label="'+(pinned?'Unpin ':'Pin ')+fdEsc(item.title)+'">'+(pinned?'Unpin':'Pin')+'</button>';
+  }
   return out+'</div>';
+}
+
+/* Independent of catalogue filters: these are the learner's existing saved positions and pins,
+   not additional matches. Keeping this after the grid protects the first phone reading. */
+function fdLibraryContinuity(index,opts){
+  var o=opts||{}, recent=typeof fdReadingRecentItems==='function'?fdReadingRecentItems(index,o.readingPlaces,o.done):[];
+  var pins=typeof fdToolPinsSelect==='function'?fdToolPinsSelect(index,o.toolPins||[],[]):[];
+  var out='<section class="fd-continuity" aria-labelledby="fd-continuity-title">'+
+    '<h2 class="fd-continuity__title" id="fd-continuity-title" tabindex="-1">On this device</h2>'+
+    '<p class="fd-continuity__intro">Your saved places and pinned tools, separate from the filters above. Saved in this browser.</p>'+
+    '<p class="fd-continuity__notice" role="status" aria-live="polite">'+fdEsc(o.continuityNotice||'')+'</p>'+
+    '<div class="fd-continuity__columns"><div class="fd-continuity__group"><h3>Continue reading</h3>'+
+    '<p>Your last three unfinished readings with a saved place. Removing a place keeps your completion record.</p>';
+  if(!recent.length)out+='<p>No unfinished reading places saved yet.</p>';
+  for(var i=0;i<recent.length;i++){
+    var item=recent[i];
+    out+='<div class="fd-continuity__row"><button type="button" class="fd-continuity__open" data-fd-open="'+fdEsc(item.ref)+'" data-fd-reading-resume="1">Continue '+fdEsc(item.title)+governanceBadge(item.governance)+'</button>'+
+      '<button type="button" class="fd-continuity__remove" data-fd-reading-place-remove="'+fdEsc(item.ref)+'" aria-label="Forget saved place for '+fdEsc(item.title)+'">Remove</button></div>';
+  }
+  if(o.readingPlaces&&Object.keys(o.readingPlaces).length)out+='<button type="button" class="fd-continuity__clear" data-fd-reading-places-clear>Clear saved places</button>';
+  out+='</div><div class="fd-continuity__group"><h3>Pinned tools</h3><p>Choose up to five tools using Pin in the Library. They appear first in Today’s Quick tools.</p>';
+  if(!pins.length)out+='<p>No tools pinned yet.</p>';
+  for(var p=0;p<pins.length;p++){
+    var tool=pins[p];
+    out+='<div class="fd-continuity__row"><button type="button" class="fd-continuity__open" data-fd-open="'+fdEsc(tool.ref)+'">'+fdEsc(tool.title)+governanceBadge(tool.governance)+'</button>'+
+      '<button type="button" class="fd-continuity__remove" data-fd-tool-pin="'+fdEsc(tool.ref)+'" aria-pressed="true" aria-label="Unpin '+fdEsc(tool.title)+'">Unpin</button></div>';
+  }
+  if(pins.length)out+='<button type="button" class="fd-continuity__clear" data-fd-tool-pins-clear>Clear pins</button>';
+  return out+'</div></div></section>';
 }
 
 /* Group heading "Name · count" plus its rows. Every group starts open: the section index is the
@@ -339,7 +372,7 @@ function fdLibraryShell(model, opts){
   for(i=0;taskRefs&&i<taskRefs.length;i++) taskSet[taskRefs[i]]=true;
   function matches(item){ return (!taskRefs||taskSet[item.ref]===true)&&fdLibraryMatches(item,query); }
   var ctx={index:m.index,kit:fdLibrarySafetyRefs(m.index),caseArc:o.caseArc,query:query,
-    compact:m.view==='full',preview:!!m.preview,selectedRef:m.preview?m.preview.ref:''};
+    compact:m.view==='full',preview:!!m.preview,selectedRef:m.preview?m.preview.ref:'',toolPins:o.toolPins||[]};
   /* Apply the filter to the scoped groups; sections count their own matches while a query is
      live so the index says where the matches are. */
   var visible=[], matched=0, sectionMatches={};
@@ -401,7 +434,8 @@ function fdLibraryShell(model, opts){
   } else status=m.status;
 
   var out='<section class="fd-library'+(m.view==='essentials'?' fd-kit':'')+'">';
-  out+='<div class="fd-library__head"><h1 class="fd-library__h1">Library</h1>'+
+  out+='<div class="fd-library__head"><div class="fd-library__titlebar"><h1 class="fd-library__h1">Library</h1>'+
+    '<button type="button" class="fd-library__continuity" data-fd-continuity-show>On this device</button></div>'+
     '<p class="fd-library__lede">'+FD_LIBRARY_LEDE+'</p></div>';
   /* With nothing in curriculum.essentials there is no Essentials to switch to (fdEssentials falls
      back to this view), so the segmented control is withheld rather than offering a dead option. */
@@ -436,7 +470,7 @@ function fdLibraryShell(model, opts){
   }
   out+='</div>';
   if(showPreview) out+=fdLibraryPreview(preview,{index:m.index,kit:ctx.kit,caseArc:o.caseArc,pairings:o.pairings,audience:o.audience});
-  out+='</div></section>';
+  out+='</div>'+fdLibraryContinuity(m.index,o)+'</section>';
   return out;
 }
 

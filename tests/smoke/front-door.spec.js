@@ -402,7 +402,7 @@ test('reading place: Settings erase survives reload and pagehide', async ({ page
   await expectHealthy(page);
 });
 
-test('reading place: guest, guide, tool, and faculty preview cannot claim a saved ordinary reading', async ({ page }, testInfo) => {
+test('reading place: learner guides save positions; guest, tool, and faculty preview stay excluded', async ({ page }, testInfo) => {
   await controlledReading(page);
   await page.goto(`/?page=${READING_REF}`);
   const guest = await readingReady(page);
@@ -415,7 +415,7 @@ test('reading place: guest, guide, tool, and faculty preview cannot claim a save
   }, audience(testInfo).role);
   await page.goto('/?page=orientation.md');
   await expect(page.locator('.fd-reader--guide')).toBeVisible();
-  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  await expect(page.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
   await page.goto('/?tool=question-bank-practice.html');
   await expect(page.locator('.fd-reader--tool')).toBeVisible();
   await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
@@ -3409,10 +3409,16 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).role)).toBe(site.role);
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
 
-  // Now leave rotation mode.
+  // Leave an ordinary task-filtered Library visit, then choose a fresh browse entrance.
+  await page.locator('[data-fd-tab="library"]:visible').click();
+  await page.locator('[data-fd-library-task="interview"]').click();
+  await expect(page.locator('[data-fd-library-task="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-fd-tab="today"]:visible').click();
   await changeWeek.click();
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
+  await expect(page.locator('[data-fd-library-task="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.fd-collink[data-fd-open]')).toHaveCount(site.libraryCount);
   await expect(page.locator('[data-fd-change-week]')).toHaveCount(0, 'the Library carries no week control');
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(true);

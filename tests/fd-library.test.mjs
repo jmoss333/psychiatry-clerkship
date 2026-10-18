@@ -35,13 +35,49 @@ function make(governanceBadge) {
   return new Function('governanceBadge', `
     ${read('phase_policy.js')}
     ${read('frontdoor/fd_state.js')}
+    ${read('frontdoor/fd_reading_place.js')}
+    ${read('frontdoor/fd_tool_pins.js')}
     ${read('frontdoor/fd_data.js')}
     ${librarySrc}
     return { fdLibrary: fdLibrary, fdEssentials: fdEssentials, fdBuildIndex: fdBuildIndex,
-      fdUsedIn: fdUsedIn, fdPracticeWith: fdPracticeWith, fdLibraryMark: fdLibraryMark };
+      fdUsedIn: fdUsedIn, fdPracticeWith: fdPracticeWith, fdLibraryMark: fdLibraryMark, fdReadingPlaces: fdReadingPlaces };
   `)(governanceBadge || realBadge);
 }
 const F = make();
+
+test('Library continuation stays below the catalogue and resumes only unfinished available readings', () => {
+  const a={ref:'a.md',kind:'read',title:'A & B',summary:'Reading summary'}, b={ref:'b.md',kind:'read',title:'Finished'};
+  const idx={byRef:{'a.md':a,'b.md':b},columns:[{name:'Readings',items:[a,b]}],essentials:[{name:'Readings',items:[a,b]}],kit:[],weeks:[]};
+  const options={readingPlaces:{'a.md':{heading:'h',offset:20,updatedAt:2},'b.md':{heading:'h',offset:20,updatedAt:3}},done:{'b.md':true}};
+  for(const render of [F.fdLibrary,F.fdEssentials]) {
+    const html=render(idx,options);
+    const start=html.indexOf('class="fd-continuity"');
+    assert.ok(start>html.indexOf('class="fd-kit__readings"'),'continuity must follow the catalogue');
+    const panel=html.slice(start);
+    assert.match(panel,/data-fd-open="a.md" data-fd-reading-resume="1"/);
+    assert.match(panel,/A &amp; B/);
+    assert.doesNotMatch(panel,/data-fd-open="b.md"/);
+    assert.match(panel,/data-fd-reading-place-remove="a.md"/);
+    assert.match(panel,/data-fd-reading-places-clear/);
+    assert.doesNotMatch(panel,/data-fd-toggle/,'continuation does not mark a reading complete');
+    assert.match(html,/data-fd-continuity-show/,'a compact header control reaches the lower section');
+  }
+});
+
+test('Library pin controls and separate continuation preserve current task and query result counts', () => {
+  const read={ref:'case_formulation.md',kind:'read',title:'Formulation'}, tool={ref:'mse.html',kind:'tool',title:'Mental status',governance:{status:'pending',riskLevel:'high'}};
+  const hidden={ref:'hidden.html',kind:'tool',title:'Hidden',searchOnly:true};
+  const idx={byRef:{[read.ref]:read,[tool.ref]:tool,[hidden.ref]:hidden},columns:[{name:'Resources',items:[read,tool,hidden]}],essentials:[{name:'Resources',items:[read,tool]}],kit:[],weeks:[]};
+  const html=F.fdEssentials(idx,{toolPins:['mse.html','hidden.html'],libraryTask:'rounds',audience:'ms3',filter:'unmatched'});
+  const panel=html.slice(html.indexOf('class="fd-continuity"'));
+  assert.match(html,/Showing|0 of/);
+  assert.match(panel,/data-fd-open="mse.html"/);
+  assert.match(panel,/Pending review/,'saved tools retain the canonical governance badge');
+  assert.doesNotMatch(panel,/data-fd-open="hidden.html"/);
+  assert.match(panel,/data-fd-tool-pin="mse.html"/);
+  assert.match(panel,/data-fd-tool-pins-clear/);
+  assert.match(F.fdEssentials(idx,{toolPins:[]}),/data-fd-tool-pin="mse.html" aria-pressed="false"/);
+});
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
@@ -733,31 +769,46 @@ for (const [site, pins] of Object.entries(SITES)) {
 
 test('the live Library shell renders both views through one call, passing section, preview, filter, week, case arc, pairings and audience', () => {
   const shell = read('spa_index.html');
-  assert.match(shell, /var libOpts=\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,filter:state\.libraryFilter,libraryTask:state\.libraryTask,week:live\.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE\}; return state\.libraryView==='full'\?fdLibrary\(FD_INDEX,libOpts\):fdEssentials\(FD_INDEX,libOpts\);/);
+  assert.match(shell, /var libOpts=\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,filter:state\.libraryFilter,libraryTask:state\.libraryTask,week:live\.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE,readingPlaces:fdReadingPlaces\(fdLoad\(\)\.readingPlaces\),done:live\.done,toolPins:live\.toolPins,continuityNotice:state\.continuityNotice\}; return state\.libraryView==='full'\?fdLibrary\(FD_INDEX,libOpts\):fdEssentials\(FD_INDEX,libOpts\);/);
   assert.match(shell, /var FD_PAIRINGS=null;/, 'the pairings needle build_deploy.py fills');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
   assert.ok(branch, 'Library shell branch remains a shared pure renderer call');
-  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', `return ${branch[1]};`);
+  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', 'fdReadingPlaces', 'fdLoad', `return ${branch[1]};`);
   const surface = (_name, render) => render();
   const idx = kitFixture();
   const caseArc = { weeks: [] }, pairings = { pairings: [] };
   const opts = (state, live) => ({ kitSection: state.kitSection, kitToolPreview: state.kitToolPreview, filter: state.libraryFilter, libraryTask: state.libraryTask, week: live.week, caseArc, pairings, audience: 'ms3' });
   for (const libraryView of [undefined, 'essentials']) {
     const state = { tab: 'library', libraryView, kitSection: '0', libraryFilter: 'one', kitToolPreview: 'm1.md' }, live = { week: 2 };
-    assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials), F.fdEssentials(idx, opts(state, live)));
+    assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials, F.fdReadingPlaces, () => ({})), F.fdEssentials(idx, opts(state, live)));
   }
   const state = { tab: 'library', libraryView: 'full', kitSection: '2', libraryFilter: 'x' }, live = { week: 1 };
-  assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials), F.fdLibrary(idx, opts(state, live)));
+  assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials, F.fdReadingPlaces, () => ({})), F.fdLibrary(idx, opts(state, live)));
 });
 
 test('the live shell passes the actual week to Essentials rather than the browsed Path week', () => {
   const shell = read('spa_index.html');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
-  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', `return ${branch[1]};`);
+  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', 'fdReadingPlaces', 'fdLoad', `return ${branch[1]};`);
   const idx = kitFixture(), state = { tab: 'library', viewWeek: 1, kitSection: 'week' };
-  const render = (live) => run(state, live, idx, null, null, 'ms3', (_n, paint) => paint(), F.fdLibrary, F.fdEssentials);
+  const render = (live) => run(state, live, idx, null, null, 'ms3', (_n, paint) => paint(), F.fdLibrary, F.fdEssentials, F.fdReadingPlaces, () => ({}));
   assert.deepEqual(essentialsRefs(render({ week: 2, viewWeek: 1 })), ['m2.md']);
   assert.deepEqual(essentialsRefs(render({ viewWeek: 1 })), essentialsRefs(F.fdEssentials(idx)));
+});
+
+test('the live Library continuation ignores an in-memory reading place whose save failed', () => {
+  const shell=read('spa_index.html');
+  const branch=/if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
+  const run=new Function('state','live','FD_INDEX','FD_CASE_ARC','FD_PAIRINGS','FD_AUDIENCE','fdSurface','fdLibrary','fdEssentials','fdReadingPlaces','fdLoad',`return ${branch[1]};`);
+  const item={ref:'a.md',kind:'read',title:'Saved reading'};
+  const idx={byRef:{'a.md':item},columns:[{name:'Readings',items:[item]}],essentials:[{name:'Readings',items:[item]}],kit:[],weeks:[]};
+  const readingPlaces={'a.md':{heading:'h',offset:20,updatedAt:2}};
+  for(const libraryView of ['full','essentials']) {
+    const state={tab:'library',libraryView,readingPlaces};
+    const paint=stored=>run(state,{done:{}},idx,null,null,'ms3',(_n,render)=>render(),F.fdLibrary,F.fdEssentials,F.fdReadingPlaces,()=>stored);
+    assert.doesNotMatch(paint({}),/data-fd-reading-resume="1"/,'unsaved session position is never advertised as saved');
+    assert.match(paint({readingPlaces}),/data-fd-reading-resume="1"/,'confirmed stored position still offers Continue');
+  }
 });
 
 test('compact shared badge retains normal behavior and names pending dots accessibly', () => {

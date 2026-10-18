@@ -31,6 +31,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-close-search','data-fd-search-expand','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details','data-fd-library-task',
+  'data-fd-tool-pin','data-fd-tool-pins-clear','data-fd-reading-place-remove','data-fd-reading-places-clear','data-fd-continuity-show',
   'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
@@ -53,6 +54,11 @@ var FD_ACTION_SEMANTICS={
   'data-fd-kit-tool':'preview an Essentials item',
   'data-fd-library-details':'open Library resource details',
   'data-fd-library-task':'choose Library task',
+  'data-fd-tool-pin':'toggle a device tool pin',
+  'data-fd-tool-pins-clear':'clear device tool pins',
+  'data-fd-reading-place-remove':'forget one saved reading place',
+  'data-fd-reading-places-clear':'clear saved reading places',
+  'data-fd-continuity-show':'focus device continuation',
   /* The filter field commits on input events, like the exam-date field, and is deliberately
      absent from FD_ACTION_SELECTOR. data-fd-search-query rides on a data-fd-search control and
      seeds the dialog with the Library filter's query (zero results, filtered footer). */
@@ -543,6 +549,10 @@ function fdDispatch(attrs, context, state){
          week-scoped selection is the wrong first view -- browsing means everything. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
       patch={week:null,tab:'library',libraryView:'full',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      /* This explicit browse entrance is a fresh Library visit, not a view switch or Back. */
+      if(s.libraryTask&&s.libraryTask!=='all') patch.libraryTask='all';
+      if(s.libraryFilter) patch.libraryFilter='';
+      if(s.kitToolPreview) patch.kitToolPreview='';
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,
@@ -732,6 +742,22 @@ function fdDispatch(attrs, context, state){
     if(s.screen!=='app'||s.tab!=='library'||s.openId||s.sheet||s.searchOpen||
        !fdValidLibraryTask(libraryTask)) return {patch:{},route:null,effect:null};
     return {patch:{libraryTask:libraryTask},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-tool-pin')||fdOwn(a,'data-fd-tool-pins-clear')||
+     fdOwn(a,'data-fd-reading-place-remove')||fdOwn(a,'data-fd-reading-places-clear')||fdOwn(a,'data-fd-continuity-show')){
+    if(s.screen!=='app'||s.tab!=='library'||s.openId||s.sheet||s.searchOpen) return {patch:{},route:null,effect:null};
+    var continuityAction='show';
+    if(fdOwn(a,'data-fd-tool-pin')){
+      ref=a['data-fd-tool-pin'];
+      if(typeof fdToolPinAllowed!=='function'||!fdToolPinAllowed(c.index,ref)) return {patch:{},route:null,effect:null};
+      continuityAction='pin';
+    } else if(fdOwn(a,'data-fd-tool-pins-clear')) continuityAction='pins-clear';
+    else if(fdOwn(a,'data-fd-reading-place-remove')){
+      ref=a['data-fd-reading-place-remove'];
+      if(!fdReadingCatalogItem(c.index,ref))return {patch:{},route:null,effect:null};
+      continuityAction='reading-remove';
+    } else if(fdOwn(a,'data-fd-reading-places-clear')) continuityAction='readings-clear';
+    return {patch:{},route:null,effect:{type:'library-continuity',action:continuityAction,ref:ref||null}};
   }
   if(fdOwn(a,'data-fd-library-details')){
     ref=String(a['data-fd-library-details']||'');
@@ -1281,6 +1307,7 @@ function fdTrapFocus(event, dialog){
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
 var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-details],[data-fd-library-task],[data-fd-library-filter-clear],'+
+  '[data-fd-tool-pin],[data-fd-tool-pins-clear],[data-fd-reading-place-remove],[data-fd-reading-places-clear],[data-fd-continuity-show],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
@@ -1353,13 +1380,15 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function availableAnchors(){return nodes.map(anchor);}
   function scrollY(){return typeof win.scrollY==='number'&&isFinite(win.scrollY)?Math.max(0,win.scrollY):0;}
   function absoluteTop(node){return node.getBoundingClientRect().top+scrollY();}
+  function rendered(node){return !node.getClientRects||node.getClientRects().length>0;}
   function current(){
-    var y=scrollY(), chosen=nodes[0], pos=absoluteTop(chosen), j, next;
-    for(j=1;j<nodes.length;j++){
+    var y=scrollY(), chosen=null, pos=0, j, next;
+    for(j=0;j<nodes.length;j++){
+      if(!rendered(nodes[j]))continue;
       next=absoluteTop(nodes[j]);
-      if(next<=y&&next>=pos){chosen=nodes[j];pos=next;}
+      if(!chosen||(next<=y&&next>=pos)){chosen=nodes[j];pos=next;}
     }
-    return {heading:anchor(chosen),offset:Math.max(0,y-pos)};
+    return chosen?{heading:anchor(chosen),offset:Math.max(0,y-pos)}:null;
   }
   function write(places){
     state.readingPlaces=places;
@@ -1371,8 +1400,11 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function capture(){
     if(!active||!ready||suppressedY!==null)return;
     if(Math.abs(scrollY()-baselineY)<=4){pendingPosition=null;return;}
-    var position=pendingPosition||current();
+    var position=pendingPosition;
+    if(position&&!nodes.some(function(node){return anchor(node)===position.heading&&rendered(node);}))position=null;
+    position=position||current();
     pendingPosition=null;
+    if(!position)return;
     write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
     baselineY=scrollY();
   }
@@ -1406,7 +1438,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
       var resolved=place&&fdReadingResume(place,availableAnchors()), target=null, j;
       if(resolved){
         for(j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
-        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
+        if(target&&rendered(target)){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
       }
       ready=true;
     });
@@ -2104,9 +2136,32 @@ function fdWire(root, initialState, opts){
     var beforeRefreshScope=offlineRefreshScope(state);
     var beforeHistory=historyValue();
     var patch=result.patch||{};
+    var continuity=result.effect&&result.effect.type==='library-continuity';
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    if(continuity&&result.effect.action!=='show'){
+      var action=result.effect.action, changed=false, message='';
+      if(action==='pin'){
+        var pinResult=fdToolPinsToggle(result.effect.ref,index);
+        changed=pinResult.ok;
+        message=changed?(pinResult.pins.indexOf(result.effect.ref)!==-1?'Tool pinned to Quick tools.':'Tool unpinned.'):
+          (pinResult.reason==='limit'?'Choose up to five tools. Unpin one before adding another.':'Pins could not be changed on this device.');
+      } else if(action==='pins-clear'){
+        changed=fdToolPinsClear();
+        message=changed?'Pins cleared.':'Pins could not be cleared on this device.';
+      } else {
+        /* Read confirmed storage: a reader's in-memory position may belong to a failed save. */
+        var readReceipt={},savedPlaces=fdReadingPlaces(fdLoad(readReceipt).readingPlaces);
+        var nextPlaces=action==='readings-clear'?{}:fdReadingPlaceDrop(savedPlaces,result.effect.ref);
+        var candidate=fdClone(state);candidate.readingPlaces=nextPlaces;
+        changed=readReceipt.ok&&fdSave(candidate);
+        if(changed)state.readingPlaces=nextPlaces;
+        message=changed?(action==='readings-clear'?'Saved places cleared. Completion kept.':'Saved place removed. Completion kept.'):
+          'Saved places could not be changed on this device.';
+      }
+      state.continuityNotice=message;patch.continuityNotice=message;
+    }
     /* Every way out of Search ends this query's expansion, including a result or another tab. */
     if(!state.searchOpen&&state.searchExpanded){
       state.searchExpanded=false;
@@ -2142,7 +2197,7 @@ function fdWire(root, initialState, opts){
     /* Returning from an item keeps the Library's section and filter (spec section 2 acceptance:
        "Opening an item and pressing Back returns to the same view, section and scroll"). Until
        2026-10-04 this line reset kitSection to All on every return. */
-    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryTask')||fdOwn(patch,'libraryFilter');
+    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryTask')||fdOwn(patch,'libraryFilter')||!!(continuity&&result.effect.action!=='show');
     var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
@@ -2230,7 +2285,7 @@ function fdWire(root, initialState, opts){
          saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
         visitOnly=false;
     }
-    if(!visitOnly) fdSave(state);
+    if(!visitOnly&&!continuity) fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
@@ -2240,6 +2295,18 @@ function fdWire(root, initialState, opts){
     fdApplyEffect(result.effect,fromHistory,generation,
       !!(invoker&&invoker.getAttribute&&invoker.getAttribute('data-fd-reading-resume')==='1'));
     focusPostTransition(before,result,changedBase);
+    if(continuity&&!afterOverlay&&(!externalModalOpen())&&
+       (typeof fdPageFocusAllowed!=='function'||fdPageFocusAllowed())){
+      var fromContinuity=invoker&&invoker.closest&&invoker.closest('.fd-continuity');
+      var continuityTarget=result.effect.action==='show'||fromContinuity||!changed
+        ?root.querySelector('.fd-continuity__title'):equivalentControl(invoker,root);
+      if(continuityTarget&&continuityTarget.focus){
+        try{continuityTarget.focus({preventScroll:true});}catch(_){continuityTarget.focus();}
+        if(result.effect.action==='show'||!changed){
+          if(continuityTarget.scrollIntoView)continuityTarget.scrollIntoView({block:'start'});
+        }
+      }
+    }
     if(fdOwn(patch,'appPractice')&&!afterOverlay&&!beforeHadOverlay){
       focusAppPractice(invoker,before);
     }
