@@ -5480,3 +5480,24 @@ test('rapid comfort changes keep one original section and leave reading capture 
   h.setScroll(1700);h.listeners.get('scroll')();h.flush();
   assert.equal(h.state.readingPlaces['a.md'].offset,100,'recording resumes after overlapping layout frames');
 });
+
+
+test('comfort changes at the beginning do not scroll past the first heading or invent a place', () => {
+  const h=readingPlaceHarness(),session=h.install();h.flush();
+  session.reflow(()=>{});h.flush();
+  assert.equal(h.scrollY,0);
+  assert.equal(h.state.readingPlaces['a.md'],undefined);
+  h.setScroll(30);h.listeners.get('scroll')();
+  session.reflow(()=>{});h.flush();
+  assert.equal(h.scrollY,30,'a viewport above the first heading retains its signed gap');
+});
+
+
+test('selecting the already painted comfort choice does not take scroll ownership', () => {
+  const attrs={'data-fd-reader-size':'standard','data-fd-reader-spacing':'standard'};let reflows=0;
+  const h=fakeHarness({...roleContext,screen:'app',openId:'a.md',sheet:'settings'},
+    {F:make(memStorage()),querySelector:s=>s==='.fd-reader'?{getAttribute:k=>attrs[k],setAttribute:(k,v)=>{attrs[k]=v;}}:null,
+      readingPlaceSession:()=>({reflow:change=>{reflows++;change();}})});
+  h.controller.dispatch({'data-fd-reading-size':'standard'});
+  assert.equal(reflows,0);
+});

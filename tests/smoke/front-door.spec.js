@@ -6366,3 +6366,29 @@ test('reading comfort fits phone, desktop and 200 percent CSS zoom with reduced 
   expect(await frame.evaluate(el=>getComputedStyle(el).fontSize)).toBe(toolFont);
   await expectHealthy(page);
 });
+
+
+test('reading comfort scales guide example, references, crisis text and both table views', async ({ page },testInfo) => {
+  await page.setViewportSize(PHONE);await seedApp(page,testInfo);
+  const ref='pg_formulation.md';
+  await pinGovernance(page,ref,{status:'reviewed',riskLevel:'low'});
+  await page.route(`**/content/${ref}`,route=>route.fulfill({contentType:'text/markdown',body:
+    '# Study note\n\n## Example\n\nA synthetic teaching example.\n\n> <span class="crisis-block-hook">A synthetic safety note.</span>\n\n## References\n\n- A synthetic reference.\n\n## Comparison\n\n| Item | Detail |\n| --- | --- |\n| First | A synthetic explanation. |\n'}));
+  await page.goto(`/?page=${ref}`);
+  const guide=page.locator('.fd-reader--guide');await expect(guide).toBeVisible();
+  const expand=guide.getByRole('button',{name:'Expand all',exact:true});if(await expand.count())await expand.click();
+  await guide.getByRole('button',{name:'Read by row',exact:true}).click();
+  const selectors=['.fd-guide-example p','.fd-guide-references li','blockquote:has(.crisis-block-hook)','table th','table td','.fd-guide-table-rows dt','.fd-guide-table-rows dd'];
+  const sizes=async()=>Promise.all(selectors.map(selector=>guide.locator(selector).first().evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),leading:parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize)}))));
+  const before=await sizes();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  await settings.getByRole('group',{name:'Reading text size',exact:true}).getByRole('button',{name:'Largest',exact:true}).click();
+  await settings.getByRole('group',{name:'Reading line spacing',exact:true}).getByRole('button',{name:'Spacious',exact:true}).click();
+  const after=await sizes();
+  for(let i=0;i<selectors.length;i++) {
+    expect(after[i].font,selectors[i]).toBeCloseTo(before[i].font*1.3,1);
+    expect(after[i].leading,selectors[i]).toBeCloseTo(2,1);
+  }
+  await expectHealthy(page);
+});

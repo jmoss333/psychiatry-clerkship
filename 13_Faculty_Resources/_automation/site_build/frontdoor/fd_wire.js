@@ -1452,6 +1452,12 @@ function fdInstallReadingPlace(reader,ref,state,options){
     if(!active){if(change)change();return;}
     if(timer!==null){timerClear(timer);timer=null;}
     var position=comfortPosition||current(), sequence=++resizeSeq;
+    if(!comfortPosition&&position){
+      for(var n=0;n<nodes.length;n++)if(anchor(nodes[n])===position.heading){
+        /* Negative only in this transient frame: the viewport may precede the first heading. */
+        position.offset=scrollY()-absoluteTop(nodes[n]);break;
+      }
+    }
     if(ready)capture();
     comfortPosition=position;
     pendingPosition=null;
@@ -1461,7 +1467,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
       if(!active||sequence!==resizeSeq)return;
       var target=null;
       for(var j=0;j<nodes.length;j++)if(position&&anchor(nodes[j])===position.heading){target=nodes[j];break;}
-      if(target&&rendered(target))win.scrollTo(0,absoluteTop(target)+position.offset);
+      if(target&&rendered(target))win.scrollTo(0,Math.max(0,absoluteTop(target)+position.offset));
       suppressedY=scrollY();baselineY=scrollY();
       comfortPosition=null;
       ready=o.allowStorage===true;
@@ -1901,6 +1907,8 @@ function fdWire(root, initialState, opts){
       var reader=root&&root.querySelector?root.querySelector('.fd-reader'):null;
       if(reader&&!(reader.classList&&reader.classList.contains('fd-reader--tool'))){
         var pref=fdReadingComfort(state.readingComfort);
+        if(reader.getAttribute&&reader.getAttribute('data-fd-reader-size')===pref.size&&
+           reader.getAttribute('data-fd-reader-spacing')===pref.spacing)return;
         var paint=function(){
           reader.setAttribute('data-fd-reader-size',pref.size);
           reader.setAttribute('data-fd-reader-spacing',pref.spacing);
