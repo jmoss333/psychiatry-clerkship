@@ -103,6 +103,8 @@ step "git config health (before the run)"   python3 bin/check_git_config_health.
 
 # --- contract: CLAUDE.md and AGENTS.md are byte-identical (CI enforces this) ---
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
+step "unit — agent guide contract"          python3 bin/check_agent_guide.py --self-test
+step "agent guide contract (index + tags)"  python3 bin/check_agent_guide.py
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 # Two directions since 2026-10-04. Mirroring (ci.yml → here) only asks whether the two gate
