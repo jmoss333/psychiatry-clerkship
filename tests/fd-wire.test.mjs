@@ -1885,6 +1885,32 @@ test('opening and closing a dialog captures, focuses, and restores the connected
   assert.equal(invoker.focused, 1);
 });
 
+test('Search suspension keeps the query and original opener through an external dialog', () => {
+  let current = { ...roleContext };
+  const input = { focusCount: 0, focus() { this.focusCount++; } };
+  const dialog = { querySelector: () => input, querySelectorAll: () => [input] };
+  const invoker = actionTarget({ 'data-fd-search': '', 'data-fd-search-query': 'zzzzqqq' });
+  const h = fakeHarness(current, {
+    F, render: state => { current = state; },
+    querySelector: () => current.searchOpen ? dialog : null,
+  });
+  assert.equal(h.controller.suspendSearch(), null, 'no callback when Search is closed');
+  h.rootHandlers.click({ target: invoker, preventDefault() {} });
+  const resume = h.controller.suspendSearch();
+  assert.equal(h.controller.getState().searchOpen, false);
+  assert.equal(invoker.focused, 1, 'the initial close returns to the opener');
+  resume();
+  assert.equal(h.controller.getState().query, 'zzzzqqq');
+  assert.equal(h.controller.getState().searchOpen, true);
+  assert.equal(h.controller.getState().searchExpanded, false);
+  h.controller.dispatch({ 'data-fd-close-search': '' });
+  assert.equal(invoker.focused, 2, 'the final close still restores the original opener');
+  assert.equal(h.controller.getState().query, '', 'closing Search clears its transient query');
+  h.controller.destroy();
+  resume();
+  assert.equal(h.controller.getState().searchOpen, false, 'a destroyed controller cannot reopen Search');
+});
+
 test('runtime theme selection writes cw_theme and updates data-theme without reload', () => {
   const ls = memStorage();
   const LocalF = make(ls);

@@ -756,7 +756,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">Close</button>';
   out+='</div>';
-  if(!(state&&state.appMode===true)){
+  if(!(state&&state.appMode===true)&&(!trimmed||matches.length)){
     out+='<div class="fd-searchpanel__browse">'+
       '<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button></div>';
   }
@@ -781,11 +781,27 @@ function fdSearchOverlay(index, query, synonyms, state){
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
+    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
+      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search="">Edit search</button>';
+    if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>';
+    if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
+    out+='</div>';
   } else {
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
       return /\bcalculator\b/i.test(fdSearchHaystack(r.item));
     })) out+='<p class="fd-searchpanel__empty">No matching calculator found. Related teaching resources:</p>';
     out+=fdSearchGroupedRows(results,index);
+  }
+  /* Reuse the matching vocabulary; suggestions never precede or reorder safety rows. */
+  var related=trimmed?fdSearchAlternatives(q,index.synonymGroups).slice(0,3):[];
+  if(related.length){
+    out+='<div class="fd-searchpanel__related" role="group" aria-label="Related search terms">'+
+      '<p>Related search terms</p>';
+    for(var r=0;r<related.length;r++){
+      out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-search="" data-fd-search-query="'+
+        fdEsc(related[r])+'">'+fdEsc(related[r])+'</button>';
+    }
+    out+='</div>';
   }
   out+='</div>';
   out+='<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text. Not here? <strong>＋ Ask a question</strong> saves it for supervision.</div>';
