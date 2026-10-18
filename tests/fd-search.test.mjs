@@ -197,22 +197,29 @@ test('a ref that is both a safety-kit protocol and a regular item is returned on
 
 // ---- empty-query defaults ------------------------------------------------------------------
 
-test('empty query with no week set: 5 protocols then the 3 pinned reference tools, capped exactly at 8', () => {
+// The kit has 6 protocols since #1087 (catatonia.md). The cap of 8 is unchanged, so the pinned
+// tools that follow are cut from the tail: 6 protocols + 2 pinned with no week set, and
+// 6 protocols + next-unread + 1 pinned with a week set. KIT_N pins the kit size itself.
+const KIT_N = 6;
+
+test('empty query with no week set: every protocol (6) then the pinned reference tools, capped exactly at 8', () => {
+  assert.equal(REAL_CUR.safetyKit.length, KIT_N, 'kit size changed: re-derive the default slots below');
   const r = F.fdSearchResults(REAL_INDEX, '', SYN, {});
   assert.equal(r.length, 8);
-  for (let i = 0; i < 5; i++) assert.equal(r[i].kind, 'protocol', `result ${i} should be a protocol`);
-  assert.deepEqual(r.slice(0, 5).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
-  assert.deepEqual(r.slice(5).map((x) => x.item.ref), ['mse.html', 'withdrawal.html', 'pg_interview.md']);
+  for (let i = 0; i < KIT_N; i++) assert.equal(r[i].kind, 'protocol', `result ${i} should be a protocol`);
+  assert.deepEqual(r.slice(0, KIT_N).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
+  assert.deepEqual(r.slice(KIT_N).map((x) => x.item.ref), ['mse.html', 'withdrawal.html'],
+    'the cap drops the LAST pinned tool (pg_interview.md)');
 });
 
 test('empty query with a week set: next-unread item slots in after the protocols; the cap still drops the tail', () => {
   const r = F.fdSearchResults(REAL_INDEX, '', SYN, { week: 1, done: {} });
-  assert.equal(r.length, 8, 'cap holds: 5 protocols + next-unread + 3 pinned = 9 raw candidates');
-  assert.deepEqual(r.slice(0, 5).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
-  assert.equal(r[5].item.ref, 'welcome.md', 'first item in week 1, nothing done yet');
-  assert.equal(r[5].kind, 'item');
-  assert.deepEqual(r.slice(6).map((x) => x.item.ref), ['mse.html', 'withdrawal.html'],
-    'the cap drops the LAST pinned tool (pg_interview.md), matching the prototype’s own slice(0,8) behaviour');
+  assert.equal(r.length, 8, 'cap holds: 6 protocols + next-unread + 3 pinned = 10 raw candidates');
+  assert.deepEqual(r.slice(0, KIT_N).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
+  assert.equal(r[KIT_N].item.ref, 'welcome.md', 'first item in week 1, nothing done yet');
+  assert.equal(r[KIT_N].kind, 'item');
+  assert.deepEqual(r.slice(KIT_N + 1).map((x) => x.item.ref), ['mse.html'],
+    'the cap drops the LAST two pinned tools, matching the prototype’s own slice(0,8) behaviour');
 });
 
 test('empty query never throws on a missing index (undefined defaults like every sibling renderer)', () => {
@@ -228,9 +235,10 @@ test('renders the panel skeleton with input, Close button, grouped results and t
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
   assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>Close<\/button>/);
   assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
-  // Defaults: the five protocols lead, then the pinned tools and the pocket guide, each under its group label.
+  // Defaults: the six protocols lead, then the two pinned tools the cap leaves, each under its
+  // group label (the pocket guide, a Page, is the pinned item the cap drops since #1087).
   const groups = [...html.matchAll(/<p class="fd-searchpanel__group(?: (is-[a-z]+))?">([^<]+)<\/p>/g)].map((m) => m[2]);
-  assert.deepEqual(groups, ['Safety protocols', 'Tools', 'Pages']);
+  assert.deepEqual(groups, ['Safety protocols', 'Tools']);
   assert.match(html, /<p class="fd-searchpanel__group is-safety">Safety protocols<\/p><button type="button" class="fd-result is-first" data-fd-safety="/,
     'the leading protocol sits on the danger wash');
 });
@@ -938,12 +946,12 @@ test('searches with eight or fewer matches never offer an empty expansion action
 });
 
 test('clearing an expanded query retains the bounded useful defaults and removes the toggle', () => {
-  const expected = ['pg_suicide.md', 'agitation.md', 'exp_consult.md', 't_sud.md', 'delirium.md'];
+  const expected = ['pg_suicide.md', 'agitation.md', 'exp_consult.md', 't_sud.md', 'delirium.md', 'catatonia.md'];
   for (const query of ['', '   ']) {
     const results = F.fdSearchResults(REAL_INDEX, query, SYN, { searchExpanded: true, week: 1, done: {} });
     assert.equal(results.length, 8);
-    assert.deepEqual(results.slice(0, 5).map((row) => row.item.ref), expected);
-    assert.deepEqual(results.slice(5).map((row) => row.item.ref), ['welcome.md', 'mse.html', 'withdrawal.html']);
+    assert.deepEqual(results.slice(0, 6).map((row) => row.item.ref), expected);
+    assert.deepEqual(results.slice(6).map((row) => row.item.ref), ['welcome.md', 'mse.html']);
     const html = F.fdSearchOverlay(REAL_INDEX, query, SYN, { searchExpanded: true, week: 1, done: {} });
     assert.doesNotMatch(html, /data-fd-search-expand|Showing (?:the top|all) .*matches/);
   }
