@@ -515,20 +515,87 @@ test('the canonical curriculum places 84 pages across five columns and Everythin
   for (const c of REAL_CUR.libraryColumns) assert.ok(c.refs.length > 0, `column "${c.name}" must not be empty`);
 });
 
-test('real chips follow the item: every tool row wears "tool", a rights reference "reference", reads none', () => {
+test('real chips follow the item: every tool row wears "tool", a rights reference "reference"; a pg_ read "card", an exp_ read "module", other reads none', () => {
   const html = F.fdLibrary(REAL_IDX);
-  let sawTool = false, sawRead = false, sawRights = false;
+  let sawTool = false, sawRead = false, sawRights = false, sawCard = false, sawModule = false;
   for (const c of REAL_CUR.libraryColumns) {
     for (const ref of c.refs) {
       const item = REAL_IDX.byRef[ref], r = row(html, ref);
-      if (item.kind === 'tool' && item.rights) { sawRights = true; assert.match(r, /fd-chip is-tool">reference</); }
-      else if (item.kind === 'tool') { sawTool = true; assert.match(r, /fd-chip is-tool">tool</); assert.ok(item.hint, `${ref} must carry a hint`); assert.match(r, /<span class="fd-kit__summary">/); }
+      if (item.kind === 'tool' && item.rights) { sawRights = true; assert.match(r, /fd-chip is-tool">reference</); assert.doesNotMatch(r, /is-card|is-module/); }
+      else if (item.kind === 'tool') { sawTool = true; assert.match(r, /fd-chip is-tool">tool</); assert.doesNotMatch(r, /is-card|is-module/); assert.ok(item.hint, `${ref} must carry a hint`); assert.match(r, /<span class="fd-kit__summary">/); }
+      // Depth chips (Library re-cut, 2026-10-17): the slug prefix is the depth; only the exceptions are labelled.
+      else if (ref.startsWith('pg_')) { sawCard = true; assert.match(r, /<span class="fd-chip is-card">card<\/span>/); assert.equal((r.match(/fd-chip/g) || []).length, 1); }
+      else if (ref.startsWith('exp_')) { sawModule = true; assert.match(r, /<span class="fd-chip is-module">module<\/span>/); assert.equal((r.match(/fd-chip/g) || []).length, 1); }
       else { sawRead = true; assert.doesNotMatch(r, /fd-chip/); }
       // Everything rows show the hint; the hint must ship to both sites.
       assert.doesNotMatch(item.hint || '', AUDIENCE_TOKEN_RE, `${ref}'s hint ships to both sites`);
     }
   }
-  assert.ok(sawTool && sawRead && sawRights, 'fixture sanity: real data exercises tools, reads and a rights reference');
+  assert.ok(sawTool && sawRead && sawRights && sawCard && sawModule, 'fixture sanity: real data exercises tools, reads, a rights reference, a card and a module');
+});
+
+// ---- Sub-groups (Library re-cut, O2, 2026-10-17) -------------------------------------------------
+// curriculum.libraryColumns[].groups partitions a column into named sub-lists (validate_curriculum.py
+// makes the partition exact). The Everything view renders them as plain <h3> headings inside the one
+// open group -- never nested disclosure -- so nothing the inventory counts as reachable is hidden.
+
+// Reverse fdEsc for comparing rendered names with the source names: `&amp;` is undone LAST, so an
+// escaped `&amp;lt;` can never be unescaped twice (CodeQL js/double-escaping).
+const unesc = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+const subheads = (html) => [...html.matchAll(/<h3 class="fd-kit__subhead">([^<]*)<span class="fd-kit__subcount"> · (\d+)<\/span><\/h3>/g)].map((m) => [unesc(m[1]), Number(m[2])]);
+
+test('every grouped column renders its sub-groups in order, each ref exactly once, no sub-group over 12 rows, totals unchanged', () => {
+  for (const site of ['ms3', 'res']) {
+    const payload = projected[site];
+    const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+    const html = F.fdLibrary(idx);
+    const expectedHeads = payload.curriculum.libraryColumns.flatMap((c) => (c.groups || []).map((g) => [g.name, g.refs.length]));
+    assert.ok(expectedHeads.length >= 2, `${site}: the real file carries sub-groups`);
+    assert.deepEqual(subheads(html), expectedHeads, `${site}: sub-headings in curriculum order with their counts`);
+    for (const [name, n] of expectedHeads) {
+      assert.ok(n <= 12, `${site}: "${name}" has ${n} rows; no sub-group may need a scroll to see its shape`);
+      assert.doesNotMatch(name, AUDIENCE_TOKEN_RE, `${site}: "${name}" ships to both sites`);
+    }
+    // Rows follow their sub-heading, in group order, and every column ref appears exactly once.
+    const expectedRefs = payload.curriculum.libraryColumns.flatMap((c) => (c.groups ? c.groups.flatMap((g) => g.refs) : c.refs));
+    assert.deepEqual(everythingRefs(html), expectedRefs, `${site}: rows in sub-group order`);
+    assert.equal(everythingRefs(html).length, SITES[site].full, `${site}: the Everything count does not move`);
+    for (const c of payload.curriculum.libraryColumns) if (c.groups) assert.deepEqual([...c.groups.flatMap((g) => g.refs)].sort(), [...c.refs].sort(), `${c.name}: groups partition the column`);
+    // The headings are not disclosure: one <details> per column, as before.
+    assert.equal((html.match(/<details class="fd-kit__group" open>/g) || []).length, payload.curriculum.libraryColumns.length);
+    assert.doesNotMatch(html, /<details[^>]*fd-kit__subhead|fd-kit__subhead[^>]*<summary/);
+    // The section index still counts whole columns.
+    assert.deepEqual(groupHeadings(html).map(([n, c]) => [unesc(n), c]), payload.curriculum.libraryColumns.map((c) => [c.name, c.refs.length]));
+    // Essentials never sub-groups and never carries a depth chip: its section names already say "Pocket cards".
+    const ess = F.fdEssentials(idx);
+    assert.match(ess, /fd-kit__reading/, `${site}: Essentials resolved`);
+    assert.doesNotMatch(ess, /fd-kit__subhead|is-card|is-module/);
+  }
+});
+
+test('a column without groups renders flat; the filter keeps only matching sub-groups; tasks and Essentials show no sub-heads', () => {
+  const flat = F.fdLibrary(IDX);
+  assert.doesNotMatch(flat, /fd-kit__subhead/, 'the fixture columns carry no groups');
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryColumns[0].groups = [{ name: 'Alpha', refs: ['t1.html'] }, { name: 'Beta', refs: ['t2.html', 'mismatch-read.md'] }];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const html = F.fdLibrary(idx);
+  assert.deepEqual(subheads(html), [['Alpha', 1], ['Beta', 2]]);
+  assert.deepEqual(everythingRefs(html).slice(0, 3), ['t1.html', 't2.html', 'mismatch-read.md']);
+  assert.ok(html.indexOf('>Alpha<') < html.indexOf('data-fd-open="t1.html"') && html.indexOf('data-fd-open="t1.html"') < html.indexOf('>Beta<'), 'rows sit under their heading');
+  // Only Beta has a match: Alpha's heading drops with its rows; Beta's count is its matches.
+  const title = idx.byRef['mismatch-read.md'].title;
+  const filtered = F.fdLibrary(idx, { filter: title });
+  assert.deepEqual(subheads(filtered), [['Beta', 1]]);
+  assert.deepEqual(everythingRefs(filtered), ['mismatch-read.md']);
+  // A section selection keeps the sub-heads of that column only.
+  assert.deepEqual(subheads(F.fdLibrary(idx, { kitSection: '0' })), [['Alpha', 1], ['Beta', 2]]);
+  assert.deepEqual(subheads(F.fdLibrary(idx, { kitSection: '1' })), []);
+  // The task shortlist is a flat synthetic group; Essentials never sub-groups.
+  assert.doesNotMatch(F.fdLibrary(REAL_IDX, { libraryTask: 'interview', audience: 'ms3' }), /fd-kit__subhead/);
+  // The index objects are shared: the sub-group items ARE the column items.
+  assert.equal(idx.columns[0].groups[1].items[1], idx.columns[0].items[2]);
+  assert.equal(idx.columns[1].groups, null);
 });
 
 const PROJECT_ROOT = new URL('../', import.meta.url);
@@ -550,7 +617,9 @@ print(json.dumps(out))
 
 // Pinned per-site counts (2026-10-04): Everything 85 / 94 shipped pages placed in columns;
 // Essentials 31 / 35 reading and tool rows; shipped 110 / 119 (2026-10-12: +1 CotW week per site).
-const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 94, shipped: 119 } };
+// Resident Everything 94 -> 90 (C2, 2026-10-17): orientation, osce, shelf and reading_map are MS3-track
+// pages, now curriculum.siteLibrary.resident.exclusions -- still reachable by link, not listed.
+const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 90, shipped: 119 } };
 
 for (const site of ['ms3', 'res']) {
   const payload = projected[site];

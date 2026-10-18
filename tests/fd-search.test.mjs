@@ -91,7 +91,7 @@ test('care-intent searches surface the matching ReConnect resource without forwa
   const html = F.fdSearchOverlay(REAL_INDEX, 'housing help', SYN, {});
   const row = html.match(/<a class="fd-result is-care"[^>]*>[\s\S]*?<\/a>/)?.[0] || '';
   assert.match(row, /data-care-resource="resource-finder"/);
-  assert.match(row, /ReConnect · external care resource/);
+  assert.match(row, /External care resource/);
   assert.doesNotMatch(row, />Reading</);
   assert.match(row, /href="https:\/\/reconnect-tools\.netlify\.app\/tools\/reconnect-resource-finder-v7\.html"/);
   assert.match(row, /target="_blank" rel="noopener noreferrer"/);
@@ -100,7 +100,7 @@ test('care-intent searches surface the matching ReConnect resource without forwa
   // Phase 2 of the one-thread redesign: care results sit under their own group label; the footer
   // sentence is the spec's.
   assert.match(html, /<p class="fd-searchpanel__group is-care">Patient care resources<\/p><a class="fd-result is-care"/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
 });
 
 test('care suggestions never outrank an explicit safety trigger', () => {
@@ -227,7 +227,7 @@ test('renders the panel skeleton with input, Close button, grouped results and t
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
   assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>Close<\/button>/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
   // Defaults: the five protocols lead, then the pinned tools and the pocket guide, each under its group label.
   const groups = [...html.matchAll(/<p class="fd-searchpanel__group(?: (is-[a-z]+))?">([^<]+)<\/p>/g)].map((m) => m[2]);
   assert.deepEqual(groups, ['Safety protocols', 'Tools', 'Pages']);

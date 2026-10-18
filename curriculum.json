@@ -205,6 +205,13 @@
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
         "pharmacy.html", "reflection.html", "shelf-mode.html", "review.html",
         "question-bank-practice.html"
+      ],
+      "groups": [
+        { "name": "Interview & present", "refs": ["mse.html", "interview-circle.html", "sp-interview.html", "communication-practice.html", "oral.html"] },
+        { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "capacity.html", "violence.html", "withdrawal.html"] },
+        { "name": "Medications", "refs": ["pharmacy.html", "interaction-cards.html", "decision-aids.html"] },
+        { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html"] },
+        { "name": "Practice & review", "refs": ["shelf-mode.html", "review.html", "question-bank-practice.html", "reflection.html"] }
       ]
     },
     {
@@ -215,6 +222,11 @@
         "delirium.md", "catatonia.md", "bfcrs.html", "violence.md",
         "exp_consult.md", "toxidromes.md", "medical_workup.md",
         "protocol_library.md"
+      ],
+      "groups": [
+        { "name": "Suicide risk", "refs": ["pg_suicide.md", "suicide.md", "cssrs.html"] },
+        { "name": "Agitation, delirium & catatonia", "refs": ["agitation.md", "delirium.md", "catatonia.md", "bfcrs.html", "violence.md"] },
+        { "name": "Medical, toxic & consult", "refs": ["exp_consult.md", "toxidromes.md", "medical_workup.md", "protocol_library.md"] }
       ]
     },
     {
@@ -226,6 +238,10 @@
         "t_neurodev.md", "t_eating.md", "t_neurocog.md", "t_somatic.md",
         "t_sleep.md", "t_dissociative.md", "t_sexual.md", "t_impulse.md",
         "t_adjustment.md"
+      ],
+      "groups": [
+        { "name": "Core conditions", "refs": ["ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md", "t_personality.md", "t_sud.md"] },
+        { "name": "Lifespan & special topics", "refs": ["t_geri.md", "t_perinatal.md", "t_neurodev.md", "t_eating.md", "t_neurocog.md", "t_somatic.md", "t_sleep.md", "t_dissociative.md", "t_sexual.md", "t_impulse.md", "t_adjustment.md"] }
       ]
     },
     {
@@ -239,6 +255,12 @@
         "therapy_on_the_unit.md",
         "motivational_interviewing.md", "cultural_psychiatry.md",
         "ethics_legal.md"
+      ],
+      "groups": [
+        { "name": "Start here & present", "refs": ["welcome.md", "orientation.md", "pg_interview.md", "pg_formulation.md", "case_formulation.md", "doc_oral.md"] },
+        { "name": "Family, collateral & discharge", "refs": ["collateral_workflow.md", "exp_family.md", "family_modalities.md", "family_playbook.md"] },
+        { "name": "Treatment & psychotherapy", "refs": ["exp_tx.md", "psychotherapy.md", "brief_psychotherapy.md", "therapy_on_the_unit.md", "motivational_interviewing.md"] },
+        { "name": "Culture, ethics & law", "refs": ["cultural_psychiatry.md", "ethics_legal.md"] }
       ]
     },
     {
@@ -252,6 +274,13 @@
         "med_monitoring.md", "ect_neuromodulation.md", "nutrition_metabolic.md",
         "omm_resources.md", "book_library.md", "podcast_library.md",
         "cotw_index.md"
+      ],
+      "groups": [
+        { "name": "Exam prep", "refs": ["shelf.md", "rapid_review.md", "anki.md", "osce.md", "rounds_questions.md"] },
+        { "name": "Cases", "refs": ["cases.md", "cotw_index.md"] },
+        { "name": "Reading & evidence", "refs": ["core_readings.md", "reading_map.md", "landmark_trials.md", "evidence_inpatient.md", "therapy_reading_room.md"] },
+        { "name": "Medications & somatic treatments", "refs": ["psychopharm_primer.md", "med_monitoring.md", "ect_neuromodulation.md", "nutrition_metabolic.md"] },
+        { "name": "Books, podcasts & OMM", "refs": ["book_library.md", "podcast_library.md", "omm_resources.md"] }
       ]
     }
   ],
@@ -315,7 +344,7 @@
       "id": "meeting-calendar",
       "group": "support",
       "title": "Find a recovery meeting",
-      "description": "Current recovery-meeting options from ReConnect.",
+      "description": "Current recovery-meeting options.",
       "url": "https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html",
       "searchTerms": [
         "recovery meeting", "meeting near me", "aa meeting", "na meeting",
@@ -359,7 +388,7 @@
   "careBuilder": {
     "id": "supervised-resource-builder",
     "title": "Build a specific resource handout",
-    "description": "Choose a topic, broad area, and resource types, then review transparent ReConnect suggestions with a supervisor.",
+    "description": "Choose a topic, broad area, and resource types, then review transparent suggestions with a supervisor.",
     "url": "https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html"
   },
   "careNavigator": [
@@ -417,17 +446,18 @@
   ],
   "siteLibrary": {
     "ms3": {
-      "additions": [{ "column": "Interactive tools", "refs": ["prepare-for-tomorrow.html"] }],
+      "additions": [{ "column": "Interactive tools", "group": "Practice & review", "refs": ["prepare-for-tomorrow.html"] }],
       "exclusions": []
     },
     "resident": {
       "additions": [
-        { "column": "Interactive tools", "refs": ["rp-agitation.html", "rp-brief-psych.html", "rp-canon-quiz.html", "rp-post-event-huddle.html"] },
-        { "column": "Acute & safety", "refs": ["systems_medlegal.md", "cl_reference.md"] },
-        { "column": "Clinical skills", "refs": ["rotation.md", "supervision_teaching.md"] },
-        { "column": "Evidence & exam", "refs": ["adv_psychopharm.md", "canon_200.md"] }
+        { "column": "Interactive tools", "group": "Practice & review", "refs": ["rp-agitation.html", "rp-brief-psych.html", "rp-canon-quiz.html", "rp-post-event-huddle.html"] },
+        { "column": "Acute & safety", "group": "Medical, toxic & consult", "refs": ["systems_medlegal.md", "cl_reference.md"] },
+        { "column": "Clinical skills", "group": "Start here & present", "refs": ["rotation.md", "supervision_teaching.md"] },
+        { "column": "Evidence & exam", "group": "Medications & somatic treatments", "refs": ["adv_psychopharm.md"] },
+        { "column": "Evidence & exam", "group": "Reading & evidence", "refs": ["canon_200.md"] }
       ],
-      "exclusions": []
+      "exclusions": ["orientation.md", "osce.md", "shelf.md", "reading_map.md"]
     }
   },
   "_rightsReferencesNote": "Shipped .html pages that are REFERENCES about an instrument this library does not reproduce. They must not present as interactive tools (Fresh Eyes Audit A3). Derived from instrument_rights.json — every page whose requiredDisclaimerType is 'instrument-not-reproduced' — and validate_curriculum.py fails if the two ever disagree, so this list cannot drift.",
@@ -763,6 +793,10 @@
       "columbia suicide severity rating scale",
       "cssrs",
       "c ssrs"
+    ],
+    "catatonia.md": [
+      "catatonia",
+      "catatonic"
     ],
     "bfcrs.html": [
       "bush francis",

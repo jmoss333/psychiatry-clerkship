@@ -399,6 +399,47 @@ def main(argv):
                 bad("column %s" % name, "ref '%s' is not a shipped slug" % ref)
             else:
                 placed.add(ref)
+        # Optional sub-groups (2026-10-17, Library re-cut): the Everything view renders a
+        # column with `groups` as named sub-lists, so the groups must partition the column's
+        # refs EXACTLY -- a ref in no group would vanish from the only browse surface, a ref in
+        # two would render twice, and an unknown ref would be a dead row. A column without
+        # `groups` is one flat list, as before.
+        groups = col.get("groups")
+        if groups is not None:
+            column_refs = [ref for ref in refs if isinstance(ref, str)]
+            if not isinstance(groups, list) or len(groups) < 2:
+                bad("column %s" % name, "'groups' must be a list of at least two sub-groups")
+                groups = []
+            seen_names = set()
+            grouped = []
+            for group in groups:
+                if not isinstance(group, dict):
+                    bad("column %s" % name, "each group must be an object")
+                    continue
+                gname = group.get("name")
+                if not isinstance(gname, str) or not gname.strip():
+                    bad("column %s" % name, "group name must be a non-empty string")
+                elif gname in seen_names:
+                    bad("column %s" % name, "duplicate group name '%s'" % gname)
+                seen_names.add(gname)
+                grefs = group.get("refs")
+                if not isinstance(grefs, list) or not grefs:
+                    bad("column %s / %s" % (name, gname), "group 'refs' must be a non-empty list")
+                    continue
+                for ref in grefs:
+                    if not isinstance(ref, str):
+                        bad("column %s / %s" % (name, gname), "group ref must be a string (got %r)" % (ref,))
+                        continue
+                    if ref not in column_refs:
+                        bad("column %s / %s" % (name, gname),
+                            "group ref '%s' is not in the column's refs" % ref)
+                    elif ref in grouped:
+                        bad("column %s / %s" % (name, gname), "ref '%s' is in two groups" % ref)
+                    grouped.append(ref)
+            for ref in column_refs:
+                if ref not in grouped:
+                    bad("column %s" % name,
+                        "ref '%s' is in no group (groups must partition the column)" % ref)
 
     excluded = set()
     exclude = cur.get("libraryExclude")
@@ -432,6 +473,11 @@ def main(argv):
         bad("siteLibrary", "must be an object with ms3 and resident entries")
         site_library = {}
     column_names = {column.get("name") for column in columns if isinstance(column, dict)}
+    column_groups = {
+        column.get("name"): {g.get("name") for g in column["groups"] if isinstance(g, dict)}
+        for column in columns
+        if isinstance(column, dict) and isinstance(column.get("groups"), list)
+    }
     site_placed = {site: set(placed) for site in ("ms3", "resident")}
     for site in ("ms3", "resident"):
         overlay = site_library.get(site)
@@ -450,6 +496,17 @@ def main(argv):
             column = addition.get("column")
             if column not in column_names:
                 bad("siteLibrary %s" % site, "addition names unknown column '%s'" % column)
+            # A column rendered in sub-groups must know where a site-only ref goes, and the
+            # named sub-group must exist; a flat column takes no `group`.
+            group = addition.get("group")
+            group_names = column_groups.get(column)
+            if group_names is not None and group not in group_names:
+                bad("siteLibrary %s" % site,
+                    "addition to '%s' must name one of its groups (%s), got %r"
+                    % (column, ", ".join(sorted(group_names)), group))
+            elif group_names is None and group is not None:
+                bad("siteLibrary %s" % site,
+                    "addition to '%s' names group %r but that column has no groups" % (column, group))
             refs = addition.get("refs")
             if not isinstance(refs, list):
                 bad("siteLibrary %s" % site, "addition refs must be a list")

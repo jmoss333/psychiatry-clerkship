@@ -228,6 +228,51 @@ class FrontdoorCatalogTest(unittest.TestCase):
                 self.assertIsInstance(selection, list)
                 self.assertEqual(selection, curriculum["essentials"][site])
 
+    def test_column_groups_project_per_site_with_additions_placed_and_exclusions_dropped(self):
+        # Library re-cut (2026-10-17): a grouped column's sub-groups ride into the projection; a
+        # site addition lands in the sub-group it names; a site exclusion leaves every sub-group.
+        curriculum = copy.deepcopy(self.curriculum)
+        core = curriculum["libraryColumns"][0]
+        core["groups"] = [{"name": "First", "refs": self.shared[:40]},
+                          {"name": "Rest", "refs": self.shared[40:]}]
+        curriculum["siteLibrary"]["resident"]["additions"] = [
+            {"column": "Core", "group": "Rest", "refs": RESIDENT_EXTRAS}]
+        curriculum["siteLibrary"]["resident"]["exclusions"] = [self.shared[0]]
+        ms3 = build_frontdoor_payload("ms3", curriculum, self.ms3_catalog, REVISION)
+        resident = build_frontdoor_payload("resident", curriculum, self.resident_catalog, REVISION)
+        ms3_groups = ms3["curriculum"]["libraryColumns"][0]["groups"]
+        res_groups = resident["curriculum"]["libraryColumns"][0]["groups"]
+        self.assertEqual([g["name"] for g in ms3_groups], ["First", "Rest"])
+        self.assertEqual(ms3_groups[0]["refs"], self.shared[:40])
+        self.assertEqual(ms3_groups[1]["refs"], self.shared[40:])
+        self.assertEqual(res_groups[0]["refs"], self.shared[1:40], "the exclusion leaves its sub-group")
+        self.assertEqual(res_groups[1]["refs"], self.shared[40:] + list(RESIDENT_EXTRAS),
+                         "the additions join the named sub-group, in order")
+        for payload in (ms3, resident):
+            column = payload["curriculum"]["libraryColumns"][0]
+            self.assertEqual(sorted(column["refs"]),
+                             sorted(column["groups"][0]["refs"] + column["groups"][1]["refs"]),
+                             "the projected groups still partition the projected column")
+        self.assertNotIn("groups", self.curriculum["libraryColumns"][0], "source untouched")
+
+    def test_an_addition_into_a_grouped_column_must_name_an_existing_group(self):
+        for addition in ({"column": "Core", "refs": RESIDENT_EXTRAS},
+                         {"column": "Core", "group": "Nope", "refs": RESIDENT_EXTRAS}):
+            with self.subTest(addition=addition):
+                curriculum = copy.deepcopy(self.curriculum)
+                curriculum["libraryColumns"][0]["groups"] = [
+                    {"name": "First", "refs": self.shared[:40]},
+                    {"name": "Rest", "refs": self.shared[40:]}]
+                curriculum["siteLibrary"]["resident"]["additions"] = [addition]
+                with self.assertRaisesRegex(ValueError, r"must name one of its groups"):
+                    build_frontdoor_payload("resident", curriculum, self.resident_catalog, REVISION)
+        # A flat column is unchanged by the rule: the projection ignores `group` there.
+        curriculum = copy.deepcopy(self.curriculum)
+        curriculum["siteLibrary"]["resident"]["additions"] = [
+            {"column": "Core", "group": "Anything", "refs": RESIDENT_EXTRAS}]
+        resident = build_frontdoor_payload("resident", curriculum, self.resident_catalog, REVISION)
+        self.assertNotIn("groups", resident["curriculum"]["libraryColumns"][0])
+
     def test_essentials_projection_is_deep_copied(self):
         source = copy.deepcopy(self.curriculum)
         ms3 = build_frontdoor_payload("ms3", self.curriculum, self.ms3_catalog, REVISION)
@@ -646,7 +691,9 @@ class FrontdoorCatalogTest(unittest.TestCase):
         self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 85)  # +pharmacy.html 2026-09-30
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         # 94 as of 2026-09-30: +pharmacy.html in both sites' "Interactive tools" column.
-        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 94)
+        # 90 as of 2026-10-17 (C2): orientation, osce, shelf, reading_map are MS3-track pages,
+        # curriculum.siteLibrary.resident.exclusions -- reachable by link, out of Library and search.
+        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 90)
         for site, payload, count in (("ms3", ms3, 31), ("resident", resident, 35)):
             selection = payload["curriculum"]["essentials"]
             essential_refs = [ref for section in selection for ref in section["refs"]]

@@ -6,7 +6,7 @@ gain in). A **rise fails** and blocks the push. Nobody has to drive the number t
 gate to be useful, and nobody can let it drift upward without a diff a reviewer sees. Hard
 checks — the ones that must be zero regardless — live *beside* the ratchets, never inside them.
 
-Six tools use it (the sixth, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
+Seven tools use it (one, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
 gate, so the pre-push hook is the enforcement.
 
@@ -16,13 +16,14 @@ in `validate_scheduled_workflows.py`), and `verify.sh` runs before every push an
 `bin/check_citation_attribution.py` **is** in `ci.yml` as of 2026-09-27, and those contracts
 were paid rather than dodged — because the defect it gates arrives *in a pull request from an
 agent session*, which is exactly the path a pre-push hook on one Mac does not cover. That is
-the test for whether a future ratchet belongs in CI too. See `CLAUDE.md`, "Validate & test".
+the test for whether a future ratchet belongs in CI too. See `docs/agent-guide/gates.md`.
 
 | Tool | Baseline | Pinned keys | Hard checks beside the ratchet |
 |---|---|---|---|
 | `bin/check_design_drift.py` | `13_Faculty_Resources/_automation/site_build/design_drift_baseline.json` | raw dimension declarations, distinct font sizes, sub-floor font sizes, non-standard breakpoints (per file) | C1–C9, see `docs/DESIGN_SYSTEM.md` §3 |
 | `bin/verify_spans.py` | `bin/verify_spans_baseline.json` | `rows_flagged`, `sentences_truncated`, `sentences_edited`, `rows_uncached` | any **REWORDED** sentence (a sentence the paper never wrote) fails whatever the baseline says |
 | `bin/check_qbank_coherence.py` | `bin/check_qbank_coherence_baseline.json` | `pairs` (0 today) | none — the pin is the floor |
+| `bin/check_agent_guide.py` | `bin/check_agent_guide_baseline.json` | `claude_md_lines` (112 at the 2026-10-16 split; was 938) | G1 every topic page linked from the index; G2 every `###` rule tagged `[gate:]`/`[report:]`/`[judgment]` and every tagged path exists; G3 every path in the index's read-first table matches a tracked file; G4 no page over 300 lines |
 | `bin/check_citation_attribution.py` | `bin/citation_identifier_allowlist.json`, capped by `ALLOWLIST_CAP` **in the script** | the number of grandfathered identifier-less references (3 today) | a citation whose identifier resolves to a different paper, a missing cache entry, a self-attribution, a fabricated author list — none of which any allowlist entry can suppress |
 
 ## The allowlist ratchet is shaped differently, on purpose
