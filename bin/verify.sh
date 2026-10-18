@@ -7,7 +7,9 @@
 # command a human can re-run and compare. Installed as a pre-push hook by bin/install-hooks.sh.
 # This script's stdout is what goes in the PR body.
 #
-#   bash bin/verify.sh            # full battery
+#   bash bin/verify.sh            # full battery, both site builds included
+#   bash bin/verify.sh --push     # the pre-push tier: everything except the two site builds,
+#                                 # which CI and the deploy previews run on every PR (a gate run)
 #   bash bin/verify.sh --quick    # skip the two site builds (fast inner loop; NOT a gate run)
 #
 # Exits non-zero if ANY step fails. Installed as a pre-push hook by bin/install-hooks.sh.
@@ -37,8 +39,16 @@ unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR \
       GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH \
       GIT_CONFIG GIT_CONFIG_GLOBAL GIT_CONFIG_SYSTEM GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL
 
-QUICK=0
-[ "${1:-}" = "--quick" ] && QUICK=1
+# DECISION: prepush-builds-to-ci (decisions.json, 2026-10-18). The pre-push hook runs the
+# --push tier: every check except the two site builds. Measured 2026-10-17 (R2's ledger): the
+# builds were 254 s of a 530 s hook, 48 %, and CI plus the five Netlify deploy previews already
+# build both sites on every PR, so the hook was paying for the builds a third time. The full
+# tier (no flag) is unchanged and is what a release, a build-script change or a doubt deserves.
+QUICK=0; TIER=full
+case "${1:-}" in
+  --quick) QUICK=1; TIER=quick ;;
+  --push)  QUICK=1; TIER=push ;;
+esac
 
 FAILED=()
 # Every step runs with TMPDIR pointed at a private directory of its own, which is removed as soon
@@ -135,6 +145,8 @@ step "git config health (before the run)"   python3 bin/check_git_config_health.
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
 step "unit — agent guide contract"          python3 bin/check_agent_guide.py --self-test
 step "agent guide contract (index + tags)"  python3 bin/check_agent_guide.py
+step "unit — monolith ratchet"              python3 bin/check_monolith_ratchet.py --self-test
+step "monolith ratchet (attest.mjs shrinks)" python3 bin/check_monolith_ratchet.py
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 # Two directions since 2026-10-04. Mirroring (ci.yml → here) only asks whether the two gate
@@ -484,6 +496,8 @@ step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
 if [ $QUICK -eq 0 ]; then
   step "build_and_check ms3"                bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
   step "build_and_check res"                bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+elif [ "$TIER" = push ]; then
+  echo "  SKIP  build_and_check ms3/res             (--push tier: CI and the deploy previews build both sites — decision prepush-builds-to-ci)"
 else
   echo "  SKIP  build_and_check ms3/res             (--quick; NOT a gate run)"
 fi
@@ -520,13 +534,14 @@ if [ ${#STEP_SECS[@]} -gt 0 ]; then
     | sort -rn | head -5 | awk -F'\t' '{printf "          %8.1fs  %s\n", $1, $2}'
 fi
 if [ -n "$VERIFY_LEDGER" ]; then
-  printf '{"type":"run","run":"%s","ts":"%s","branch":"%s","head":"%s","quick":%d,"steps":%d,"failed":%d,"seconds":%s}\n' \
-    "$VERIFY_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$VERIFY_BRANCH" "$VERIFY_HEAD" "$QUICK" \
+  printf '{"type":"run","run":"%s","ts":"%s","branch":"%s","head":"%s","quick":%d,"tier":"%s","steps":%d,"failed":%d,"seconds":%s}\n' \
+    "$VERIFY_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$VERIFY_BRANCH" "$VERIFY_HEAD" "$QUICK" "$TIER" \
     "${#STEP_SECS[@]}" "${#FAILED[@]}" "$VERIFY_RUN_SECS" >> "$VERIFY_LEDGER" 2>/dev/null || true
   echo "  ledger  $VERIFY_LEDGER  (python3 bin/gate_report.py for the 90-day view)"
 fi
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then
+  [ "$TIER" = push ] && { echo "PUSH-TIER PASS — every check except the two site builds, which CI runs on the PR (decision prepush-builds-to-ci)"; exit 0; }
   [ $QUICK -eq 1 ] && { echo "QUICK PASS — builds skipped, not a gate run"; exit 0; }
   echo "ALL CHECKS PASSED"
   exit 0

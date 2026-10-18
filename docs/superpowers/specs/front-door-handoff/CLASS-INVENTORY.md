@@ -1253,7 +1253,7 @@ projection and the existing attested flag is true. The preview itself adds no at
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
-| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. The settings panel renders **two** of them and the counts differ: Appearance has three segments, Usage two. Usage is also the only section of the panel that is usually absent — it renders only where the usage emitter shipped, and under a browser DNT/GPC signal it renders an explanatory note and no segments at all, because a control the panel could not honour would misrepresent who is deciding. |
+| `.fd-seg` | Labelled button group with adjacent segments. Appearance has three choices; Reading comfort has text size (Standard/Larger/Largest) and spacing (Standard/Spacious). Usage adds On/Off only where enabled and allowed by device privacy signals. |
 | `.fd-seg__btn` | An ordinary toggle button, never `role="radio"` — that role promises roving tabindex and arrow-key selection, which this control does not implement. `.is-active` (what the CSS fills) and `aria-pressed` (what assistive tech reads) are set together and must stay on the same button. |
 | `.fd-choices` | Wrapping chip set for a single choice from a variable-length list (today: role). Chips size to their text and wrap, because the labels are per-site prose — equal segments strand them over three lines at phone width. |
 | `.fd-set__label` | Visible label for a settings field, bound by `for`. The panel's other sections are button groups named by `aria-label`; this is the one control that needs a real `<label>`. |
@@ -1393,3 +1393,10 @@ The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
 - `.fd-care-packet__outcome` retains the last bulk result and an expandable omission list, outside patient output and storage.
 - `dialog.fd-care-packet__confirm` is a body-level native modal with counted heading, Keep packet first, Clear packet second; Escape/backdrop preserve state. It uses the shared theme and focus tokens.
 - Category order is fixed; moves operate within a category and clear review confirmations.
+
+
+### Reading comfort (original learner UX idea 6)
+
+Settings adds a Reading comfort section before Your data, using existing `.fd-set`, `.fd-seg`, `.fd-seg__btn`, `.fd-set__note` and `.fd-btn--ghost` classes. Each choice is a normal `aria-pressed` button; Reset reading comfort restores both Standard choices. A status note reports save success or failure; failure retains the prior choice.
+
+Reading roots carry non-action `data-fd-reader-size` / `data-fd-reader-spacing` markers. Larger/Largest set `--fd-reading-scale` to 1.15/1.3; Spacious sets `--fd-reading-leading` to 2. Standard keeps the existing typography, including the guide's existing scale and leading. Rules affect reading bodies, guide leads, section headings, examples, references, crisis blocks and both table views; tool roots carry no markers. No new class selectors or motion. The mounted reading stays intact, and the reading-place session preserves its heading and offset through reflow, including a transient signed gap above the first heading. Selecting an already painted choice never takes scroll ownership.

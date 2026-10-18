@@ -5957,7 +5957,34 @@
       "strawn-2007-neuroleptic-malignant-syndrome",
       "bap-catatonia-2023",
       "rosenberg-2015-malignant-hyperthermia"
-    ]
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "bfcrs.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what changed in the last 72 hours: an antipsychotic started or increased, a dopamine agonist stopped, a serotonergic agent added (SSRI, SNRI, MAOI, tramadol, linezolid, triptans), anticholinergics or antihistamines, recent anesthesia or ECT — and whether it came on over minutes, hours, or days.",
+      "mse": "Do the two-second exam before anything else: reflexes (lead-pipe rigidity with hyporeflexia vs clonus with hyperreflexia, legs more than arms) and skin (diaphoretic vs dry and flushed); then pupils, mental status, and the vital-sign trend.",
+      "safety": "Treat as a medical emergency: hold the antipsychotic and never add another to calm a rigid, febrile patient; cool and hydrate aggressively, send a CK, monitor continuously, and escalate to the medical team early.",
+      "say": "Your fever and stiffness can be a reaction to a medicine, so we are stopping the likely one and treating this as an emergency until you are safe.",
+      "collateral": "Reconstruct the complete medication history with nursing, pharmacy, and family — every change in the last 72 hours, over-the-counter antihistamines, supplements, and substances — and what the patient looked like before the fever.",
+      "rounds": "Present the triad (fever, altered mental status, autonomic instability), the 72-hour medication timeline, the reflex and skin findings that separate NMS, serotonin syndrome, anticholinergic toxicity, and malignant catatonia, the CK, what was stopped, supportive care, and the escalation plan.",
+      "exam": "Hyporeflexia and lead-pipe rigidity days after a dopamine blocker is NMS; clonus and hyperreflexia hours after a serotonergic change is serotonin syndrome; dry, flushed skin with mydriasis is anticholinergic.",
+      "actions": [
+        {
+          "label": "Open the decision aids (NMS vs serotonin syndrome)",
+          "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
+          "href": "?tool=bfcrs.html"
+        },
+        {
+          "label": "Open the catatonia guide",
+          "href": "?page=catatonia.md"
+        }
+      ]
+    }
   },
   "med_monitoring.md": {
     "read": 4,

@@ -304,6 +304,31 @@
       ]
     },
     {
+      "id": "prepush-builds-to-ci",
+      "title": "The pre-push hook runs bin/verify.sh --push: every check except the two site builds, which CI and the Netlify deploy previews run on every pull request",
+      "status": "active",
+      "decided": "2026-10-18",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "claude/architecture-sequence-status-2026-10-17.md (project doc) — review decision §6-b, chosen 2026-10-18 in a Cowork session with the condition that it must not raise GitHub spend; the repository is public, Actions minutes are free, and CI already built both sites on every PR, so the change adds no run anywhere",
+      "note": "Measured first (R2's gate ledger, 2026-10-17): the two builds were 254 s of a 530 s contended hook (48 %); the top nine steps were ~87 %. The hook was building both sites a third time after CI and the deploy previews. Trade accepted: a build-breaking push shows red in CI about six minutes later instead of locally; the deploy previews remain the authoritative build test. `bash bin/verify.sh` with no flag is still the full battery and is what a release, a build-script change or any doubt deserves; `--quick` stays a non-gate inner loop. The build-OUTPUT contracts after the builds (crisis surfaces, design drift) already skip or report PARTIAL when _build/ is absent or stale. Revisit if CI stops building both sites on every PR, if the repository becomes private (Actions billing), or if a broken build reaches main twice in a quarter.",
+      "governs": [
+        "bin/verify.sh",
+        "bin/install-hooks.sh"
+      ]
+    },
+    {
+      "id": "attest-mjs-shrink-only",
+      "title": "faculty-console/netlify/functions/attest.mjs, the only code that writes an attestation hash, carries a shrinking-only line-count pin: a change that adds net lines must first extract a module",
+      "status": "active",
+      "decided": "2026-10-18",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "claude/architecture-review-2026-10-17.md (project doc) finding F4 / recommendation R5; the owner chose the hard pin over headroom in a Cowork session 2026-10-18",
+      "note": "Pinned at 4075 lines in bin/check_monolith_ratchet_baseline.json; bin/check_monolith_ratchet.py (verify.sh + tests/monolith-ratchet.test.mjs, so CI covers it) fails a rise and notes a fall. The friction is the point: every console feature PR that grows the hash writer extracts something first, following the pure-module-with-parity-test pattern of press-forecast.mjs and attestation-hash.mjs. Candidates named for the next pin: faculty-console/app.mjs (6,485) and site_build/spa_index.html (3,999). Lower the pin only after a reviewed reduction, JSON diff in the same PR. Revisit if the console is rewritten as modules by design, or if the pin blocks a safety fix (then raise it in its own policy-labelled commit with the reason).",
+      "governs": [
+        "bin/check_monolith_ratchet.py"
+      ]
+    },
+    {
       "id": "attestation-ledger-removed",
       "title": "The signed attestation ledger (ADR-003) is removed: reviewed.json's hash-bound rows, written only by the faculty console, are the one attestation record",
       "status": "active",

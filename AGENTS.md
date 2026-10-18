@@ -32,7 +32,7 @@ Three rules about this file itself:
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3   # build + QA gate → _build/ms3
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → _build/res
 node --test tests/*.test.mjs       # root contract tests (also run before every build)
-bash bin/verify.sh                 # THE local gate = the pre-push hook; several minutes, background it
+bash bin/verify.sh                 # THE local gate; the hook runs `--push` (no site builds — CI has them)
 python3 bin/coordination_report.py --prs   # who else is working here — run before you start
 python3 bin/what_needs_josh.py             # what only the owner can do
 ```
@@ -53,7 +53,7 @@ One line each; the topic page holds the why, the how, and the incident that earn
 | 8 | The library teaches administration; it never reproduces a copyrighted instrument; scope is a faculty decision, not an agent's | `instrument-rights-gate.mjs`; hooks | safety-content |
 | 9 | Every claim about a paper carries that paper's own words; every citation carries a DOI or PMID that resolves to the paper claimed | `validate_evidence_annotations.py`; `bin/check_citation_attribution.py` | content-and-pages; gates |
 | 10 | A test may not depend on live governance state; a flag only tests pass is an untested production path | `tests/live-governance-state.test.mjs` | gates |
-| 11 | `bin/verify.sh` is the pre-push hook and a superset of CI; a ratchet may only fall; exit 2 (could not check) blocks like exit 1 | `bin/check-verify-coverage.py`; `docs/RATCHETS.md` | gates |
+| 11 | `bin/verify.sh --push` is the pre-push hook (the two site builds are CI's, decision `prepush-builds-to-ci`); the full run is a superset of CI; a ratchet may only fall; exit 2 (could not check) blocks like exit 1 | `bin/check-verify-coverage.py`; `docs/RATCHETS.md` | gates |
 | 12 | Never merge to `main` locally, never force-push, never `git worktree prune` from a sandbox; push the branch the day you create it, as a draft PR | ruleset *main protection*; `bin/check_ruleset_drift.py` | branching-and-worktrees |
 | 13 | localStorage keys are `cw_*` or `rp_*`; usage analytics store integers from a generated allowlist | `check-static-site.mjs` | tools-and-frontdoor |
 | 14 | Every live draft question is attestable from the phone; revised questions stage for faculty, not learners | `bin/check-qbank-drafts.mjs`; `qbank_public.py` | question-bank |
