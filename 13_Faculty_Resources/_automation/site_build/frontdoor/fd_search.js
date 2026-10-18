@@ -756,7 +756,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">Close</button>';
   out+='</div>';
-  if(!(state&&state.appMode===true)){
+  if(!(state&&state.appMode===true)&&(!trimmed||matches.length)){
     out+='<div class="fd-searchpanel__browse">'+
       '<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button></div>';
   }
@@ -781,6 +781,11 @@ function fdSearchOverlay(index, query, synonyms, state){
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
+    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
+      '<button type="button" class="fd-btn" data-fd-search="">Edit search</button>';
+    if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button>';
+    if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
+    out+='</div>';
   } else {
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
       return /\bcalculator\b/i.test(fdSearchHaystack(r.item));

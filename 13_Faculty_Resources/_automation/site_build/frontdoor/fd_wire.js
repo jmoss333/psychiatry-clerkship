@@ -2277,7 +2277,8 @@ function fdWire(root, initialState, opts){
       if(offlineFocus&&offlineFocus.focus)try{offlineFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
-    if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
+    if(afterOverlay&&(afterOverlay!==beforeOverlay||
+       (result.effect&&result.effect.type==='focus-search'))) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
        there after the render -- is true of every control in the panel except one. The two-tap

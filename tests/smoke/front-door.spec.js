@@ -78,6 +78,76 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test('search recovery edits and browses with usable targets at phone and desktop widths', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('zzzzqqq');
+    const recovery = search.getByRole('group', { name: 'Search recovery', exact: true });
+    await expect(recovery).toBeVisible();
+    for (const button of await recovery.getByRole('button').all()) {
+      const box = await button.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await recovery.getByRole('button', { name: 'Edit search', exact: true }).click();
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('zzzzqqq');
+    await input.fill('suicide');
+    await expect(recovery).toHaveCount(0);
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await input.fill('zzzzqqq');
+    await recovery.getByRole('button', { name: 'Browse the Library', exact: true }).click();
+    await expect(search).toHaveCount(0);
+    await expect(page.locator('.fd-library')).toBeVisible();
+  }
+});
+
+test('search recovery Capture starts blank, returns to the query and saves only an explicit question', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const questions = () => page.evaluate(() => localStorage.getItem('cw_capture_v1'));
+  const before = await questions();
+  await openHeaderSearch(page);
+  const search = page.getByRole('dialog', { name: 'Search', exact: true });
+  const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+  await input.fill('zzzzqqq');
+  const ask = search.getByRole('button', { name: 'Save a question for supervision', exact: true });
+  await ask.click();
+  const capture = page.getByRole('dialog', { name: 'Capture a question', exact: true });
+  const editor = capture.getByRole('textbox', { name: 'Your question, no patient identifiers', exact: true });
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('[role="dialog"][aria-modal="true"]:visible')).toHaveCount(1);
+  await expect(editor).toHaveValue('');
+  await expect(editor).toBeFocused();
+  expect(await questions()).toBe(before);
+  expect(await page.evaluate(() => Object.values(localStorage).join('\n'))).not.toContain('zzzzqqq');
+  await editor.press('Escape');
+  await expect(capture).toHaveCount(0);
+  await expect(input).toHaveValue('zzzzqqq');
+  await expect(input).toBeFocused();
+  expect(await questions()).toBe(before);
+  await ask.click();
+  await expect(editor).toHaveValue('');
+  await editor.fill('How do I describe the mental status exam?');
+  await capture.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(capture.getByText('Saved on this device', { exact: true })).toBeVisible();
+  const saved = JSON.parse(await questions());
+  expect(saved.items.map(item => item.text)).toEqual(['How do I describe the mental status exam?']);
+  expect(await questions()).not.toContain('zzzzqqq');
+  await capture.getByRole('button', { name: 'Open now', exact: true }).click();
+  await expect(capture).toHaveCount(0);
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('.fd-reader')).toBeVisible();
+  await expectHealthy(page);
+});
+
 for (const scenario of [
   { name: 'safety result', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true },
   { name: 'reading result', query: 'Medication Monitoring & Labs', ref: 'med_monitoring.md' },

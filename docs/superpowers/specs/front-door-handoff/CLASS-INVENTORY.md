@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(764 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(765 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1114,11 +1114,13 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
+      .fd-searchpanel__recovery       (zero matches: Edit search / Browse Library / blank Capture)
     .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
-holds in `fdSearchResults`, so the first rendered row is always `results[0]` — the row Enter opens. A
+holds in `fdSearchResults`, so the first rendered row is always `results[0]`. Enter in the field
+focuses that row; a second Enter opens it. A
 crisis query leads with its trigger protocol by contract, so Safety protocols lead exactly as the
 concept draws; an alias query (#429, "patient refuses medication") keeps its tool ahead of a protocol
 that merely shares a word. Meta lines: protocols carry the kit's own cue line (`safetyKit[].sub`);
@@ -1129,7 +1131,8 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 |---|---|
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). Phone: `padding:12px 10px 20px`. |
 | `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
-| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
+| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above suggestions/matches. At zero matches the route moves into the recovery group. APP already has The Essentials in dock slot 2, so this row is absent. |
+| `.fd-searchpanel__recovery` | Zero-match actions stack with at least 44px targets. Edit search focuses the existing query. Browse opens the current audience's Library. Capture closes Search and opens a blank editor; Cancel/Escape restores the transient query and input focus. Only explicit Save stores the learner's question. Faculty preview omits Capture; APP omits the Library route. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
 | `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |

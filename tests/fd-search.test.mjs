@@ -357,6 +357,26 @@ test('empty query never shows the no-results state (defaults always populate it)
   assert.doesNotMatch(html, /fd-searchpanel__empty/);
 });
 
+test('a zero-match search offers recovery without turning the query into a question draft', () => {
+  const html = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, {});
+  assert.match(html, /role="group" aria-label="Search recovery"/);
+  assert.match(html, /data-fd-search=""[^>]*>Edit search<\/button>/);
+  assert.match(html, /data-fd-tab="library"[^>]*>Browse the Library<\/button>/);
+  assert.equal((html.match(/>Browse the Library<\/button>/g) || []).length, 1);
+  assert.match(html, /data-capture-open=""[^>]*>Save a question for supervision<\/button>/);
+  assert.doesNotMatch(html, /data-cap-prefill|data-search-query/);
+  assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, '', SYN, {}), /aria-label="Search recovery"/);
+  assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, 'suicide', SYN, {}), /aria-label="Search recovery"/);
+});
+
+test('search recovery respects app navigation and faculty preview boundaries', () => {
+  const app = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, { appMode: true });
+  assert.doesNotMatch(app, /data-fd-tab="library"/);
+  const preview = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, { facultyPreview: true });
+  assert.doesNotMatch(preview, /data-capture-open/);
+  assert.match(preview, />Edit search<\/button>/);
+});
+
 test('the search overlay is a labelled modal dialog and its close control is named', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
   assert.match(html, /^<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">/,
