@@ -23,10 +23,10 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   identity work of review item R4 answer the question it was built for. Phase 1 removed the
   build-side overlay and the `CLERKSHIP_LEDGER` hook in `build_and_check.sh`, the `ledger-publish`
   scheduled function, `bin/ledger.mjs`, `bin/ledger_keygen.mjs` and `13_Faculty_Resources/ledger/`.
-  Phase 2 removes the console's `ATTEST_LEDGER` mode (`faculty-console/ledger.mjs`,
+  Phase 2 removed the console's `ATTEST_LEDGER` mode (`faculty-console/ledger.mjs`,
   `faculty-console/ledger-publish.mjs`, the ledger branches in `attest.mjs`, `release-status.mjs`
-  and `rolling-pr-sweep.mjs`, and their tests); until it lands, `ATTEST_LEDGER` stays unset and
-  that code is dead. Two things from the design survive on purpose: `question_bank.json`'s
+  and `rolling-pr-sweep.mjs`, and their tests); the console no longer reads `ATTEST_LEDGER` or
+  any `LEDGER_*` variable. Two things from the design survive on purpose: `question_bank.json`'s
   manifest line is hashed WITHOUT item `status` (`canonical_question_bank` /
   `canonicalQuestionBank`, parity-pinned) so signing a question never drifts the question tools,
   and **an agent never mints a signing key or writes a signatures branch** of any kind.

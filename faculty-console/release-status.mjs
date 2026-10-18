@@ -328,15 +328,14 @@ export function untilLabel(slotMs, nowMs) {
  *            drifted it is merged or on its way, so the next publish takes it out unless the
  *            re-signature reaches main first
  *   signed   learners still see it pending, but the console's queue shows it signed: it clears
- *            once that sign-off reaches main and the next publish runs (ledger mode: the
- *            ledger-publish rebuild about 10 minutes after sign-offs go quiet)
+ *            once that sign-off reaches main and the next publish runs
  *
  * `drifted` and `known` are the console's content slugs (drifted ones, and all of them);
  * `signoffs` is staleSignoffs() of what each site serves. When a site could not be read,
  * `next` may hold pages that are in fact already live as pending, so the result says it is
  * partial rather than letting `next` read as "not live yet". Information, never a verdict.
  */
-export function resignSchedule({ drifted = [], known = [], signoffs = null, nextSlot, nowMs, ledgerMode = false }) {
+export function resignSchedule({ drifted = [], known = [], signoffs = null, nextSlot, nowMs }) {
   const driftedSet = new Set(drifted);
   const knownSet = new Set(known);
   const served = new Map((signoffs?.items || []).map(item => [item.slug, item]));
@@ -349,7 +348,7 @@ export function resignSchedule({ drifted = [], known = [], signoffs = null, next
   const next = [...driftedSet].filter(slug => !served.has(slug)).sort().map(slug => ({ slug }));
   return {
     now, next, signed,
-    nextSlot, until: untilLabel(nextSlot, nowMs), ledgerMode: Boolean(ledgerMode),
+    nextSlot, until: untilLabel(nextSlot, nowMs),
     complete: Boolean(signoffs && signoffs.complete),
     total: now.length + next.length + signed.length,
   };
@@ -361,9 +360,7 @@ export function resignHeading(schedule) {
   const at = `${new Date(schedule.nextSlot).toISOString().slice(11, 16)} UTC`;
   if (!schedule.total) return '';
   if (!toSign) {
-    return schedule.ledgerMode
-      ? 'Every drifted page is signed; learners see them cleared once the ledger publish rebuilds the sites.'
-      : `Every drifted page is signed; learners see them cleared after the sign-offs merge and the ${at} publish (${schedule.until}).`;
+    return `Every drifted page is signed; learners see them cleared after the sign-offs merge and the ${at} publish (${schedule.until}).`;
   }
   return `Re-sign ${plural(toSign, 'page')} before the next publish — ${at}, ${schedule.until}`
     + `${schedule.complete ? '' : ' (a learner site could not be read, so some pages marked "not live yet" may already be)'}.`;

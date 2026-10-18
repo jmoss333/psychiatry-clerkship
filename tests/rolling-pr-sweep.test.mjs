@@ -59,14 +59,15 @@ function fakeGitHub({ aheadBy = 1, open = [], compareStatus = 200, createStatus 
 
 const writes = calls => calls.filter(c => c.method !== 'GET');
 
-test('inert in ledger mode, without a token, and when the branch IS the base', async () => {
-  for (const env of [{ ...ENV, ATTEST_LEDGER: 'on' }, { GITHUB_REPO: REPO }, { ...ENV, GIT_BRANCH: 'main' }]) {
+test('inert without a token, and when the branch IS the base', async () => {
+  for (const env of [{ GITHUB_REPO: REPO }, { ...ENV, GIT_BRANCH: 'main' }]) {
     const gh = fakeGitHub();
     const report = await runRollingPrSweep({ env, fetchImpl: gh.fetchImpl });
     assert.equal(report.action, 'skipped');
     assert.equal(gh.calls.length, 0, 'a skipped tick makes no GitHub call at all');
   }
-  assert.equal(sweepSettings({ ...ENV, ATTEST_LEDGER: 'on' }).skip, 'ledger-mode');
+  // Decision attestation-ledger-removed: the variable is no longer read, so it cannot park the sweep.
+  assert.equal(sweepSettings({ ...ENV, ATTEST_LEDGER: 'on' }).skip, undefined);
 });
 
 test('nothing waiting: the branch is not ahead of main, or does not exist yet', async () => {
