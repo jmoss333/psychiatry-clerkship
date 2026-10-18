@@ -78,6 +78,116 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test('search recovery edits and browses with usable targets at phone and desktop widths', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('zzzzqqq');
+    const recovery = search.getByRole('group', { name: 'Search recovery', exact: true });
+    await expect(recovery).toBeVisible();
+    for (const button of await recovery.getByRole('button').all()) {
+      const box = await button.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await recovery.getByRole('button', { name: 'Edit search', exact: true }).click();
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('zzzzqqq');
+    await input.fill('suicide');
+    await expect(recovery).toHaveCount(0);
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await input.fill('zzzzqqq');
+    await recovery.getByRole('button', { name: 'Browse the Library', exact: true }).click();
+    await expect(search).toHaveCount(0);
+    await expect(page.locator('.fd-library')).toBeVisible();
+  }
+});
+
+test('related search terms update the transient query with safety first on phone and desktop', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('suicide qtc');
+    const related = search.getByRole('group', { name: 'Related search terms', exact: true });
+    await expect(related.getByRole('button')).toHaveCount(3);
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    const expand = search.getByRole('button', { name: 'Show all matches', exact: true });
+    if (await expand.count()) await expand.click();
+    const term = related.getByRole('button', { name: 'suicide qt prolongation', exact: true });
+    await term.scrollIntoViewIfNeeded();
+    const box = await term.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await term.focus();
+    await term.press('Enter');
+    await expect(input).toHaveValue('suicide qt prolongation');
+    await expect(input).toBeFocused();
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => Object.values(localStorage).join('\n'))).not.toContain('suicide qt prolongation');
+    await input.fill('zzzzqqq');
+    await expect(related).toHaveCount(0);
+    await input.press('Escape');
+  }
+  await expectHealthy(page);
+});
+
+test('search recovery Capture starts blank, returns to the query and saves only an explicit question', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const questions = () => page.evaluate(() => localStorage.getItem('cw_capture_v1'));
+  const before = await questions();
+  await openHeaderSearch(page);
+  const search = page.getByRole('dialog', { name: 'Search', exact: true });
+  const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+  await input.fill('zzzzqqq');
+  const ask = search.getByRole('button', { name: 'Save a question for supervision', exact: true });
+  await ask.click();
+  const capture = page.getByRole('dialog', { name: 'Capture a question', exact: true });
+  const editor = capture.getByRole('textbox', { name: 'Your question, no patient identifiers', exact: true });
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('[role="dialog"][aria-modal="true"]:visible')).toHaveCount(1);
+  await expect(editor).toHaveValue('');
+  await expect(editor).toBeFocused();
+  expect(await questions()).toBe(before);
+  expect(await page.evaluate(() => Object.values(localStorage).join('\n'))).not.toContain('zzzzqqq');
+  await editor.press('Escape');
+  await expect(capture).toHaveCount(0);
+  await expect(input).toHaveValue('zzzzqqq');
+  await expect(input).toBeFocused();
+  expect(await questions()).toBe(before);
+  await input.press('Escape');
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('.fd-header .fd-searchbtn:visible')).toBeFocused();
+  await openHeaderSearch(page);
+  await expect(input).toHaveValue('');
+  await input.fill('zzzzqqq');
+  await ask.click();
+  await expect(editor).toHaveValue('');
+  await editor.fill('How do I describe the mental status exam?');
+  await capture.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(capture.getByText('Saved on this device', { exact: true })).toBeVisible();
+  const saved = JSON.parse(await questions());
+  expect(saved.items.map(item => item.text)).toEqual(['How do I describe the mental status exam?']);
+  expect(await questions()).not.toContain('zzzzqqq');
+  await capture.getByRole('button', { name: 'Open now', exact: true }).click();
+  await expect(capture).toHaveCount(0);
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('.fd-reader')).toBeVisible();
+  await expectHealthy(page);
+});
+
 for (const scenario of [
   { name: 'safety result', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true },
   { name: 'reading result', query: 'Medication Monitoring & Labs', ref: 'med_monitoring.md' },
@@ -6329,3 +6439,128 @@ for (const width of [320, 390, 1280]) {
     await expectHealthy(page);
   });
 }
+
+
+test('reading comfort preserves section, keyboard focus and saved preferences without remounting', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page,testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}&tab=library`);
+  const reader=await readingReady(page),original=await reader.elementHandle();
+  const body=reader.locator('.fd-article__body');
+  const font=()=>body.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  const base=await font();
+  await scrollReadingTo(page,1,85);
+  await expect.poll(async()=>((await readingPlaces(page))[READING_REF]||{}).offset).toBeCloseTo(85,0);
+  const place=(await readingPlaces(page))[READING_REF],url=page.url();
+  const anchorTop=()=>reader.locator('.fd-article__body h3').nth(1).evaluate(el=>el.getBoundingClientRect().top);
+  const beforeSize=await anchorTop();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  const size=settings.getByRole('group',{name:'Reading text size',exact:true});
+  const spacing=settings.getByRole('group',{name:'Reading line spacing',exact:true});
+  const larger=size.getByRole('button',{name:'Larger',exact:true});
+  await larger.focus();await larger.press('Enter');
+  await expect(larger).toHaveAttribute('aria-pressed','true');
+  await expect(larger).toBeFocused();
+  await expect.poll(font).toBeCloseTo(base*1.15,1);
+  // Scroll destinations round to a device pixel while heading layout can be fractional.
+  // Compare actual positions per change, rather than an unrepresentable requested -85px.
+  await expect.poll(async()=>Math.abs((await anchorTop())-beforeSize)).toBeLessThanOrEqual(1);
+  const beforeSpacing=await anchorTop();
+  await spacing.getByRole('button',{name:'Spacious',exact:true}).click();
+  await expect.poll(()=>body.evaluate(el=>parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(2,1);
+  expect(await reader.evaluate((el,original)=>el===original,original)).toBe(true);
+  expect(page.url()).toBe(url);
+  expect((await readingPlaces(page))[READING_REF].heading).toBe(place.heading);
+  await expect.poll(async()=>Math.abs((await anchorTop())-beforeSpacing)).toBeLessThanOrEqual(1);
+  await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  await page.evaluate(()=>sessionStorage.setItem('__fd_test_preserve_seed','1'));
+  await page.reload();await readingReady(page);
+  await expect(reader).toHaveAttribute('data-fd-reader-size','larger');
+  await expect(reader).toHaveAttribute('data-fd-reader-spacing','spacious');
+  await expect.poll(font).toBeCloseTo(base*1.15,1);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await settings.getByRole('button',{name:'Reset reading comfort',exact:true}).click();
+  await expect(size.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(spacing.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect.poll(font).toBeCloseTo(base,1);
+  await page.evaluate(()=>{const write=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='cw_frontdoor_v1')throw new DOMException('Blocked','QuotaExceededError');return write.call(this,key,value);};});
+  await size.getByRole('button',{name:'Largest',exact:true}).click();
+  await expect(size.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(settings.getByRole('status')).toContainText('Could not save');
+  await expect.poll(font).toBeCloseTo(base,1);
+  await expectHealthy(page);
+});
+
+test('reading comfort fits phone, desktop and 200 percent CSS zoom with reduced motion', async ({ page },testInfo) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await seedApp(page,testInfo,{state:{readingComfort:{size:'largest',spacing:'spacious'}}});
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}&tab=library`);
+  const reader=await readingReady(page);
+  await expect(reader).toHaveAttribute('data-fd-reader-size','largest');
+  for(const width of [320,390,1280]) {
+    await page.setViewportSize({width,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.getByRole('button',{name:'Settings',exact:true}).click();
+    const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+    for(const button of await settings.locator('[data-fd-reading-size],[data-fd-reading-spacing],[data-fd-reading-reset]').all()) {
+      const box=await button.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    await settings.screenshot({path:testInfo.outputPath(`comfort-settings-${width}.png`)});
+    await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  }
+  await page.evaluate(()=>{document.documentElement.style.zoom='2';});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect(reader.locator('.fd-article__body')).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath('comfort-css-zoom-200.png')});
+  await page.evaluate(()=>{document.documentElement.style.zoom='';sessionStorage.setItem('__fd_test_preserve_seed','1');});
+  await page.goto('/?page=orientation.md');
+  const guide=page.locator('.fd-reader--guide');
+  await expect(guide).toBeVisible();
+  const guideBody=guide.locator('.fd-article__body');
+  const largeFont=await guideBody.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  await settings.getByRole('button',{name:'Reset reading comfort',exact:true}).click();
+  await expect.poll(()=>guideBody.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(largeFont/1.3,1);
+  await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  await page.goto('/?tool=mse.html');
+  const tool=page.locator('.fd-reader--tool');
+  await expect(tool).toBeVisible();
+  const frame=page.frameLocator('iframe.toolframe').locator('body');
+  await expect(frame).toBeVisible();const toolFont=await frame.evaluate(el=>getComputedStyle(el).fontSize);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await settings.getByRole('group',{name:'Reading text size',exact:true}).getByRole('button',{name:'Largest',exact:true}).click();
+  await expect(tool).not.toHaveAttribute('data-fd-reader-size');
+  expect(await frame.evaluate(el=>getComputedStyle(el).fontSize)).toBe(toolFont);
+  await expectHealthy(page);
+});
+
+
+test('reading comfort scales guide example, references, crisis text and both table views', async ({ page },testInfo) => {
+  await page.setViewportSize(PHONE);await seedApp(page,testInfo);
+  const ref='pg_formulation.md';
+  await pinGovernance(page,ref,{status:'reviewed',riskLevel:'low'});
+  await page.route(`**/content/${ref}`,route=>route.fulfill({contentType:'text/markdown',body:
+    '# Study note\n\n## Example\n\nA synthetic teaching example.\n\n> <span class="crisis-block-hook">A synthetic safety note.</span>\n\n## References\n\n- A synthetic reference.\n\n## Comparison\n\n| Item | Detail |\n| --- | --- |\n| First | A synthetic explanation. |\n'}));
+  await page.goto(`/?page=${ref}`);
+  const guide=page.locator('.fd-reader--guide');await expect(guide).toBeVisible();
+  const expand=guide.getByRole('button',{name:'Expand all',exact:true});if(await expand.count())await expand.click();
+  await guide.getByRole('button',{name:'Read by row',exact:true}).click();
+  const selectors=['.fd-guide-example p','.fd-guide-references li','blockquote:has(.crisis-block-hook)','table th','table td','.fd-guide-table-rows dt','.fd-guide-table-rows dd'];
+  const sizes=async()=>Promise.all(selectors.map(selector=>guide.locator(selector).first().evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),leading:parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize)}))));
+  const before=await sizes();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  await settings.getByRole('group',{name:'Reading text size',exact:true}).getByRole('button',{name:'Largest',exact:true}).click();
+  await settings.getByRole('group',{name:'Reading line spacing',exact:true}).getByRole('button',{name:'Spacious',exact:true}).click();
+  const after=await sizes();
+  for(let i=0;i<selectors.length;i++) {
+    expect(after[i].font,selectors[i]).toBeCloseTo(before[i].font*1.3,1);
+    expect(after[i].leading,selectors[i]).toBeCloseTo(2,1);
+  }
+  await expectHealthy(page);
+});

@@ -590,7 +590,12 @@ function fdReader(index, state, bodyHtml){
 
   var expanded=isTool&&st.toolExpanded===true;
   var out='<article class="fd-reader'+(isTool?' fd-reader--tool':'')+
-    (expanded?' is-tool-expanded':'')+'">';
+    (expanded?' is-tool-expanded':'')+'"';
+  if(!isTool){
+    var comfort=fdReadingComfort(st.readingComfort);
+    out+=' data-fd-reader-size="'+comfort.size+'" data-fd-reader-spacing="'+comfort.spacing+'"';
+  }
+  out+='>';
   var back='<button type="button" class="fd-reader__back" data-fd-back>‹ '+
     fdEsc(backLabel)+'</button>';
   if(isTool){

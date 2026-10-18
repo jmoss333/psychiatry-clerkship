@@ -8,8 +8,10 @@
 #
 #   bash bin/install-hooks.sh
 #
-# The pre-push hook runs bin/verify.sh, then Git LFS's media uploader. Either failure blocks
-# the push; both receive the push refs. Reinstall after changing this file.
+# The pre-push hook runs bin/verify.sh --push (every check except the two site builds, which
+# CI and the deploy previews run on every PR — DECISION: prepush-builds-to-ci, 2026-10-18),
+# then Git LFS's media uploader. Either failure blocks the push; both receive the push refs.
+# Reinstall after changing this file.
 #
 # BOTH HOOKS FAIL CLOSED (2026-09-24). They used to open with
 #     TOP="$(git rev-parse --show-toplevel)"; [ -f "$TOP/bin/verify.sh" ] || exit 0
@@ -80,8 +82,8 @@ else
     cd "$TOP" || exit 1
     unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR \
           GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH
-    echo "pre-push: running $GATE"
-    printf '%s\n' "$REFS" | bash "$TOP/$GATE"
+    echo "pre-push: running $GATE --push"
+    printf '%s\n' "$REFS" | bash "$TOP/$GATE" --push
   ) || block "$GATE failed."
 fi
 # Verification consumes stdin. Replay the entire ref list for LFS, preserving Git's remote
