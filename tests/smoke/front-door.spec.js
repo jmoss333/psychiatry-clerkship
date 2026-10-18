@@ -167,6 +167,12 @@ test('search recovery Capture starts blank, returns to the query and saves only 
   await expect(input).toHaveValue('zzzzqqq');
   await expect(input).toBeFocused();
   expect(await questions()).toBe(before);
+  await input.press('Escape');
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('.fd-header .fd-searchbtn:visible')).toBeFocused();
+  await openHeaderSearch(page);
+  await expect(input).toHaveValue('');
+  await input.fill('zzzzqqq');
   await ask.click();
   await expect(editor).toHaveValue('');
   await editor.fill('How do I describe the mental status exam?');

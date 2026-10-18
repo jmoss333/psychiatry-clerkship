@@ -3453,9 +3453,7 @@
       if(facultyPreviewRequest)return;
       var returnToSearch=null;
       if(el.closest('.fd-search')){
-        var searchDraft=String(fdController.getState().query||'');
-        fdController.dispatch({'data-fd-close-search':''});
-        returnToSearch=function(){fdController.dispatch({'data-fd-search':'','data-fd-search-query':searchDraft});};
+        returnToSearch=fdController.suspendSearch();
       }
       capOpen(el,fdCaptureAction,returnToSearch);
       return;

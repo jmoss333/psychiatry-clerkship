@@ -2784,6 +2784,17 @@ function fdWire(root, initialState, opts){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
       },
+      /* Capture owns its own dialog. Keep Search's query and opener only in this closure
+         so closing the resumed Search still returns to its original button. */
+      suspendSearch:function(){
+        if(destroyed||!startupCommitted||!state.searchOpen) return null;
+        var query=String(state.query||''), invoker=invokers.length?invokers[invokers.length-1]:null;
+        apply(fdDispatch({'data-fd-close-search':''},context(),state),null,false);
+        return function(){
+          if(destroyed||!startupCommitted) return state;
+          return apply(fdDispatch({'data-fd-search':'','data-fd-search-query':query},context(),state),invoker,false);
+        };
+      },
       prepareStartup:prepareStartup,
       commitStartup:commitStartup,
       startupCommitted:function(){ return startupCommitted; },
