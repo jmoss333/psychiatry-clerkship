@@ -165,7 +165,7 @@ test('Front Door Library exactly matches the projected placed refs', async ({ pa
     controls.map(control => control.getAttribute('data-fd-open')).sort()
   ));
   // +1 MS3 on 2026-10-03: the preparation guide is placed in its Library overlay.
-  const expectedCount = isResidentProject(testInfo.project.name) ? 94 : 85;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04); +1 both pharmacy.html (2026-09-30)
+  const expectedCount = isResidentProject(testInfo.project.name) ? 90 : 85;  // res 94 -> 90 (C2): 4 MS3-track pages excluded;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04); +1 both pharmacy.html (2026-09-30)
 
   expect(new Set(expected).size).toBe(expectedCount);
   expect(new Set(rendered).size).toBe(expectedCount);

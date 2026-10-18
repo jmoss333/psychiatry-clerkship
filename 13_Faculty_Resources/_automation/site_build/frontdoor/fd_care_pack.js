@@ -26,7 +26,7 @@ function fdCareBuilder(index){
      typeof item.url!=='string'||!/^https:\/\/[^\s?#<>"']+$/.test(item.url)) return '';
   return '<aside class="fd-care-builder" aria-labelledby="fd-care-builder-link">'+
     '<div><p id="fd-care-builder-description">'+fdEsc(item.description)+'</p>'+
-    '<p>Opens ReConnect in a new tab. No patient information or choices from this screen are sent.</p></div>'+
+    '<p>Opens in a new tab. No patient information or choices from this screen are sent.</p></div>'+
     '<a id="fd-care-builder-link" class="fd-care-builder__link" data-fd-care-builder="'+fdEsc(item.id)+
     '" href="'+fdEsc(item.url)+'" target="_blank" rel="noopener noreferrer" '+
     'aria-describedby="fd-care-builder-description">'+fdEsc(item.title)+'</a></aside>';
@@ -160,7 +160,7 @@ function fdCareShare(index,id,ids){
     (limit?' aria-describedby="fd-care-share-limit-'+fdEsc(item.id)+'" disabled':'')+'>'+
     (selected?'Remove from handout':'Add to handout')+'</button></div>'+
     '<p class="fd-care-share__status" data-fd-care-copy-status="share-'+fdEsc(item.id)+'" role="status" aria-live="polite"></p>'+
-    '<p class="fd-care-share__privacy">Exact ReConnect link only. No patient information is added or saved.</p>'+
+    '<p class="fd-care-share__privacy">Exact resource link only. No patient information is added or saved.</p>'+
     '</div></aside>';
 }
 
@@ -195,7 +195,7 @@ function fdCarePack(index,ids,crisisHtml){
     '<button type="button" class="fd-care-pack__clear" data-fd-care-pack-clear'+
     (selectedIds.length?'':' disabled')+'>Clear</button></div></section>'+
     '<article class="fd-care-pack__sheet" aria-labelledby="fd-care-pack-sheet-title">'+
-    '<header class="fd-care-pack__sheet-head"><p>ReConnect collection</p><h3 id="fd-care-pack-sheet-title">Patient care resources</h3>'+
+    '<header class="fd-care-pack__sheet-head"><p>Curated collection</p><h3 id="fd-care-pack-sheet-title">Patient care resources</h3>'+
     '<span>Verify current details before using or sharing these resources.</span></header>';
   if(selectedIds.length){
     out+='<div class="fd-care-pack__resources">';
@@ -211,7 +211,7 @@ function fdCarePack(index,ids,crisisHtml){
     out+='<details class="fd-care-pack__crisis"><summary>Crisis resources included automatically</summary>'+
       String(crisisHtml)+'</details>';
   }
-  out+='<footer class="fd-care-pack__provenance">Created by Joshua Moss, MD from personally curated ReConnect databases.</footer>'+
+  out+='<footer class="fd-care-pack__provenance">Created by Joshua Moss, MD from personally curated resource databases.</footer>'+
     '</article></div><div class="fd-care-pack__actions"><p>Your choices stay only on this screen.</p>'+
     '<button type="button" class="fd-care-pack__copy" data-fd-care-copy-selected'+
     (selectedIds.length?'':' disabled')+'>Copy selected links</button>'+

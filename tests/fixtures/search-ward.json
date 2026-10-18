@@ -443,6 +443,171 @@
         "ms3",
         "res"
       ]
+    },
+    {
+      "query": "psychotherapy",
+      "acceptable": [
+        "psychotherapy.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "psychosis",
+      "acceptable": [
+        "t_psychosis.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "schizophrenia",
+      "acceptable": [
+        "t_psychosis.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "depression",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "bipolar",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "mania",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "borderline",
+      "acceptable": [
+        "t_personality.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "personality disorder",
+      "acceptable": [
+        "t_personality.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "panic",
+      "acceptable": [
+        "t_anxiety.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "adhd",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "autism",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "adolescent",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "pregnancy",
+      "acceptable": [
+        "t_perinatal.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "postpartum",
+      "acceptable": [
+        "t_perinatal.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "elderly",
+      "acceptable": [
+        "t_geri.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
     }
   ],
   "crisis": [
@@ -540,6 +705,9 @@
     ],
     "motivational_interviewing.md": [
       "mi"
+    ],
+    "catatonia.md": [
+      "catatonia"
     ],
     "bfcrs.html": [
       "bush francis catatonia rating scale"

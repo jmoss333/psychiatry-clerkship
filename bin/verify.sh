@@ -103,6 +103,8 @@ step "git config health (before the run)"   python3 bin/check_git_config_health.
 
 # --- contract: CLAUDE.md and AGENTS.md are byte-identical (CI enforces this) ---
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
+step "unit — agent guide contract"          python3 bin/check_agent_guide.py --self-test
+step "agent guide contract (index + tags)"  python3 bin/check_agent_guide.py
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 # Two directions since 2026-10-04. Mirroring (ci.yml → here) only asks whether the two gate
@@ -205,6 +207,7 @@ if [ ! -d metrics/node_modules/@netlify/blobs ]; then
 fi
 step "unit — metrics collector"             bash -c "cd metrics && node --test tests/*.test.mjs"
 step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
+step "unit — topic hub block"               python3 $A/site_build/topic_hub_block.py --self-test
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
 step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
 step "path coverage (report-only)"          python3 bin/check_path_coverage.py

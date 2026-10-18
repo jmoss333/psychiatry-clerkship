@@ -294,6 +294,27 @@ _crisis_data=_crisis.load(LIB)
 # block, so resident_section.py's second pass is a no-op on pages injected here.
 import pairings_block as _pairings
 _pair_data=_pairings.resolve(_pairings.load(LIB), LIB)
+
+# ---- TOPIC HUB BLOCK ---------------------------------------------------------------
+# "Everything on this topic": one collapsed block per hub page naming every other surface
+# the library has on that problem (pocket card, module, official-form reference, Case of
+# the Week editions, reasoning/family/drill cases, question-bank count) -- generated from
+# the registries, so a new case shows up the week it ships. Injected into the BUILT copy
+# only: the source file is untouched and attestation hashes do not move. No marker: the
+# renderer places the block before the page's "**Pair with**" paragraph (or at the end),
+# and resident_section.py's sweep REPLACES it with the resident rendering (COTW twins and
+# resident-only siblings differ per site). Registry: site_build/topic_hubs.json.
+import topic_hub_block as _hub
+_hub_data=_hub.resolve(_hub.load(LIB))
+
+# ---- CASE-OF-THE-WEEK ARCHIVE on the index page ------------------------------------
+# The index (cotw_index.md) is the only Library-placed route to the weekly cases, and its
+# line-up was hand-written -- on 2026-10-17 it listed 12 of 17 shipped editions. The
+# archive is now rendered from the registry at the page's marker: newest case first, every
+# edition grouped under its topic hub. The index source is attested (one slug, two sources);
+# the marker replaced the hand list once, and the registry's own `tldr` lines are the blurbs.
+import cotw_archive_block as _archive
+_archive_data=_archive.load(LIB)
 # Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
 # planning disposition around self-harm/violence), not merely reading about it. Reference and
 # reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
@@ -375,6 +396,8 @@ missing=[]
 _PAIRINGS_REQUIRED_MD={"week%d.md"%_n for _n in range(1,7)}
 _pair_md_done=set()
 _crisis_md_done=set()
+_hub_md_done=set()
+_archive_md_done=False
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
     if os.path.exists(p):
@@ -382,13 +405,17 @@ for src,dst,_ in md:
         _t=open(p,encoding="utf-8").read()
         _t,_did=_crisis.inject_markdown(_t,_crisis_data)
         _t,_pdid=_pairings.inject_markdown(_t,_pair_data,dst,"ms3")
+        _t,_hdid=_hub.inject_markdown(_t,_hub_data,dst,"ms3")
+        _t,_adid=_archive.inject_markdown(_t,_archive_data,dst,"ms3")
         _compass_did=False
         if dst=="welcome.md":
             _t,_compass_did=welcome_compass.inject_compass(_t,_compass_fragment)
-        if _did or _pdid or _compass_did:
+        if _did or _pdid or _hdid or _adid or _compass_did:
             open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
         if _did: _crisis_md_done.add(dst)
         if _pdid: _pair_md_done.add(dst)
+        if _hdid: _hub_md_done.add(dst)
+        if _adid: _archive.assert_complete(_t,_archive_data,"ms3"); _archive_md_done=True
     else: missing.append(src)
 
 # Fail the build if a required safety surface lost its crisis block (marker deleted, page
@@ -408,6 +435,23 @@ if _pair_gap:
     for _g in _pair_gap: print("   -",_g,"(expected the pairing-block marker in its source)")
     raise SystemExit(1)
 print("pairing block injected:",len(_pair_md_done),"week page(s)")
+
+# Same hard-fail shape again: every hub the registry names for this site must have received
+# its block. A hub page dropped from the manifest, or a rename, would otherwise ship a topic
+# with no hub and nothing to say so.
+_hub_gap=sorted(set(_hub.hubs_for_site(_hub_data,"ms3"))-_hub_md_done)
+if _hub_gap:
+    print("BUILD ABORTED — topic hub block missing from hub page(s):")
+    for _g in _hub_gap: print("   -",_g,"(listed in site_build/topic_hubs.json but not injected)")
+    raise SystemExit(1)
+print("topic hub block injected:",len(_hub_md_done),"hub page(s)")
+
+# The index must carry the archive (marker present and consumed) and the archive must list
+# every shipped edition -- assert_complete above fails the build on a missing case.
+if not _archive_md_done:
+    print("BUILD ABORTED — Case-of-the-Week archive not rendered on cotw_index.md (marker missing from its source?)")
+    raise SystemExit(1)
+print("case-of-the-week archive injected on cotw_index.md")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
@@ -653,6 +697,16 @@ if _spa_t.count(_media_needle)!=1:
     print("BUILD ABORTED — FD_MEDIA needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_media_needle,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_ms3))
+# The newest Case of the Week for Today's "new this week" row (fd_today.js fdNewCase), from the
+# same archive data that renders the index (cotw_archive_block.newest). Inlined like FD_MEDIA so
+# the row exists at first render; the resident build swaps in its own edition by matching this
+# exact value. Nothing here reads the clock -- the shell decides from the registry date whether
+# the row shows -- so the built page stays byte-stable from one build to the next.
+_cotw_newest_needle="var FD_COTW_NEWEST=null;"
+if _spa_t.count(_cotw_newest_needle)!=1:
+    print("BUILD ABORTED — FD_COTW_NEWEST needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_cotw_newest_needle,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_data,"ms3")))
 # Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
 # copies this index.html, so both sites inherit the same value from the same CONTEXT.
 try:

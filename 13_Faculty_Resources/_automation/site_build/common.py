@@ -1076,6 +1076,13 @@ def assert_page_contract(out_dir, label=""):
 SW_EXCLUDE_PREFIXES = ("audio/", "audio_oe/", "media/", "anki/")
 SW_EXCLUDE_EXTS = (".mp4", ".vtt", ".m4a", ".mp3", ".wav")
 SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html", "tool-governance.json"}
+# Netlify control files at the publish root are CONSUMED by Netlify at deploy time and
+# never served: a GET for /_headers or /_redirects returns 404. One unservable PRECACHE
+# entry makes `cache.addAll()` reject, so the install event fails and the worker never
+# installs on either site (offline mode silently dead; 2026-10-16 review, P0). Dot-paths
+# are excluded for the same reason (Netlify does not reliably serve hidden files).
+# check-static-site.mjs (section 7c) HARD-fails if any of these reappear in sw.js.
+SW_NETLIFY_RESERVED_ROOT_NAMES = {"_headers", "_redirects", "netlify.toml"}
 SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
 SW_TEMPLATE_NAME = "sw_template.js"
 _SW_VERSION_ANCHOR = "VERSION='__VERSION__';"
@@ -1106,6 +1113,10 @@ def _sw_precache_url(rel_posix):
 
 def _sw_is_excluded(rel_posix):
     if rel_posix in SW_EXCLUDE_NAMES:
+        return True
+    if rel_posix in SW_NETLIFY_RESERVED_ROOT_NAMES:
+        return True
+    if any(segment.startswith(".") for segment in rel_posix.split("/")):
         return True
     if any(rel_posix.startswith(prefix) for prefix in SW_EXCLUDE_PREFIXES):
         return True
@@ -1201,8 +1212,10 @@ def emit_service_worker(out_dir, kill=None):
 
     - Precached set = every shipped file EXCEPT media (by prefix + extension,
       never precached — Range semantics belong to the network), sw.js /
-      robots.txt / 404.html, and tool-governance.json (embeds the git
-      revision, so it churns every commit — see module docstring).
+      robots.txt / 404.html, tool-governance.json (embeds the git
+      revision, so it churns every commit — see module docstring), Netlify
+      control files (_headers / _redirects / netlify.toml — consumed, never
+      served, so one 404 would abort install) and dot-paths.
     - `index.html` maps to `"/"` — sw.js must never precache-key `/index.html`,
       or a navigation request for `/` won't hit the cached entry offline.
     - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,

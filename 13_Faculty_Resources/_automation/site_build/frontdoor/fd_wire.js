@@ -2573,25 +2573,19 @@ function fdWire(root, initialState, opts){
       apply(fdDispatch({close:true},context(),state),event.target,false);
       return;
     }
+    /* Enter in the search field SHOWS the results; it never opens one (C2, 2026-10-17). Until
+       then Enter jumped into result #1 and ran find-in-page there, so a learner who pressed Go on
+       a phone keyboard landed in a page they had not chosen ("QTc" opened the primer and then
+       reported "No matching passage"). Now focus moves to the first result row: the phone keyboard
+       closes, the list is in view, a screen reader lands on the list, and one more Enter or tap
+       opens the row the learner can see -- the same row Enter used to open, so nothing about
+       ranking or the safety-first order changes. No results: the field keeps focus. */
     if(event.key==='Enter'&&state.searchOpen&&fdIsTypingTarget(event.target)){
-      var searcher=o.searchResults||fdSearchResults;
-      var results=searcher(index,state.query||'',o.synonyms||{},state)||[];
-      if(results.length){
-        var first=results[0], attrs={};
-        if(first.kind==='care'){
-          var careId=first.item&&first.item.id;
-          var careLink=careId&&root&&root.querySelector?
-            root.querySelector('.fd-result.is-care[data-care-resource="'+careId+'"]'):null;
-          if(event.preventDefault) event.preventDefault();
-          if(careLink&&careLink.click) careLink.click();
-          return;
-        }
-        if(first.kind==='protocol') attrs['data-fd-safety']=first.item.ref;
-        else{
-          attrs['data-fd-open']=first.item.ref;
-        }
-        if(event.preventDefault) event.preventDefault();
-        apply(fdDispatch(attrs,context(),state),event.target,false);
+      var firstRow=root&&root.querySelector?root.querySelector('.fd-searchpanel__body .fd-result'):null;
+      if(event.preventDefault) event.preventDefault();
+      if(firstRow&&firstRow.focus){
+        try{ firstRow.focus(); }catch(_){}
+        try{ if(firstRow.scrollIntoView) firstRow.scrollIntoView({block:'nearest'}); }catch(_){}
       }
       return;
     }
