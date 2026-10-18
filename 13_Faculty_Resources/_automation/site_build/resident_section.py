@@ -27,6 +27,10 @@ OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 _ANALYTICS_RES = common.analytics_enabled_for("res")
 
 if os.path.exists(OUT): shutil.rmtree(OUT)
+# DECISION: two-audience-copy-accepted (decisions.json, 2026-10-16) — the copy-and-patch build
+# below IS the accepted limitation; audience-as-data is deferred until a third learner audience
+# is scheduled. Read docs/superpowers/specs/2026-10-17-audience-as-data-deferral.md before
+# changing it, and ask the owner.
 common.copytree_with_virtiofs_retry(MS3, OUT)   # full polished/dark/motion MS3 build
 _copied_governance=os.path.join(OUT,"tool-governance.json")
 if os.path.exists(_copied_governance): os.remove(_copied_governance)
