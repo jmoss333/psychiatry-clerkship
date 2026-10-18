@@ -17,8 +17,9 @@ python3 13_Faculty_Resources/_automation/validate_attestation_consistency.py
 node --test tests/*.test.mjs        # guarded in CI (build-test-validate)
 
 # THE one-command local gate. Runs everything CI runs plus checks CI does not have
-# (span audit, qbank coherence). ~90s+ — background it to a log and poll. This is what the
-# pre-push hook runs, so a red verify.sh blocks every push from the Mac.
+# (span audit, qbank coherence). Several minutes — background it to a log and poll. The pre-push
+# hook runs `--push` (everything except the two site builds, which CI runs on the PR — decision
+# prepush-builds-to-ci), so a red verify.sh blocks every push from the Mac.
 bash bin/verify.sh            # --quick for the fast subset
 
 # Playwright smoke suite (nav crawl · LFS integrity · visual regression)
