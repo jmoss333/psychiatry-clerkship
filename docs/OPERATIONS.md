@@ -16,8 +16,9 @@ runbook or tool; this page is the index, not a replacement for them.
 2. **Never push to `release` by hand, never merge to `main` locally, never force-push.** The release
    train publishes; GitHub's ruleset blocks the rest (`docs/agent-guide/branching-and-worktrees.md`).
 3. **When in doubt, do nothing to production.** A failed deploy leaves the last good site live. The
-   dangerous moves are the "fixes" — clearing Netlify's cache, re-running keygen, rebinding
-   attestations — and each is named below as something not to do.
+   dangerous moves are the "fixes" — clearing Netlify's cache, rebinding attestations by hand,
+   minting any signing key — and each is named below as something not to do. An agent never
+   mints a signing key or writes a signatures branch of any kind.
 
 ---
 
@@ -117,7 +118,6 @@ before publishing again.
 | Faculty console's GitHub token (`GITHUB_TOKEN`; commits as `faculty@clerkship.local`) | Netlify env of the console site | GitHub → Settings → Developer settings; paste into the console site's env; redeploy the console |
 | Each attester's console credential | the attester alone; enrolled by the owner | re-enrol (`faculty-console/README.md`); never shared, never in Git or logs |
 | LLM provider API key (Interview Room) | Netlify env of the proxy — **never the browser** | provider dashboard, then the proxy site's env |
-| Attestation-ledger signing key (ADR-003, currently dark) | nobody yet — created only by the owner, on the owner's Mac | `13_Faculty_Resources/ledger/ACTIVATION.md`; an agent never runs `bin/ledger_keygen.mjs` |
 
 ## 7. If the owner leaves
 

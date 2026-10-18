@@ -354,25 +354,13 @@ If the console uses a different origin, update the learner site's exact `frame-a
 
 Deploy. Open the site, enter the key, and you're attesting.
 
-### Ledger mode — sign-offs without a pull request (ADR-003)
+### Ledger mode (ADR-003) — removed 2026-10-18
 
-With `ATTEST_LEDGER=on` the console stops using `GIT_BRANCH` and the rolling PR entirely. A
-sign-off (or a reopen) becomes one Ed25519-signed line appended to `ledger/events.jsonl` on the
-`attestations` branch, hashed against the page **as it stands on `main`**, and the learner sites
-pick it up on their next build (the scheduled `ledger-publish` function asks for one about ten
-minutes after sign-offs go quiet; **Publish now** asks at once). Nothing is ever written to
-`main`, so nothing ever needs merging. In ledger mode the console signs questions but does not
-edit their wording — that arrives through a content PR.
-
-| Variable | Value |
-|---|---|
-| `ATTEST_LEDGER` | `on` to enable; anything else keeps the rolling-PR route below |
-| `LEDGER_SIGNING_KEY` | **set only by `node bin/ledger_keygen.mjs --install`** — a production-only Netlify secret |
-| `LEDGER_BUILD_HOOKS` | `ms3=<build hook URL>,res=<build hook URL>` (secret) |
-| `LEDGER_BRANCH` | optional; default `attestations` |
-
-Turning it on is a five-step runbook: `13_Faculty_Resources/ledger/ACTIVATION.md`. The design, its
-invariants and its honest limits: `docs/superpowers/specs/2026-09-25-attestation-ledger-design.md`.
+The signed-ledger route (`ATTEST_LEDGER=on`) was built dark and removed by decision
+`attestation-ledger-removed`; `docs/adr/ADR-003-attestation-ledger.md` keeps the design and the
+reasons. Phase 1 removed the build overlay, the `ledger-publish` schedule, the keygen and the
+`13_Faculty_Resources/ledger/` folder; the console's own ledger-mode code is dead until phase 2
+deletes it. **Leave `ATTEST_LEDGER` unset.** The rolling-PR route below is the only route.
 
 ### Why attestations do not commit to `main`
 
