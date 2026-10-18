@@ -208,6 +208,9 @@ G_DIRS = (
     # The ledger's public keys (ADR-003): whoever can change keys.json can mint sign-offs the
     # builds will accept, so it can never ride in a content PR.
     "13_Faculty_Resources/ledger/",
+    # The agent rulebook's topic pages: CLAUDE.md is their index since 2026-10-16, and a
+    # content PR must not be able to rewrite the rules it is judged by any more than CLAUDE.md.
+    "docs/agent-guide/",
 )
 # A schema is the shape a registry must hold; loosening one is a governance act wherever the
 # file lives — including under site_build/, whose DATA rides with a page but whose CONTRACTS

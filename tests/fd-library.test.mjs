@@ -35,13 +35,49 @@ function make(governanceBadge) {
   return new Function('governanceBadge', `
     ${read('phase_policy.js')}
     ${read('frontdoor/fd_state.js')}
+    ${read('frontdoor/fd_reading_place.js')}
+    ${read('frontdoor/fd_tool_pins.js')}
     ${read('frontdoor/fd_data.js')}
     ${librarySrc}
     return { fdLibrary: fdLibrary, fdEssentials: fdEssentials, fdBuildIndex: fdBuildIndex,
-      fdUsedIn: fdUsedIn, fdPracticeWith: fdPracticeWith, fdLibraryMark: fdLibraryMark };
+      fdUsedIn: fdUsedIn, fdPracticeWith: fdPracticeWith, fdLibraryMark: fdLibraryMark, fdReadingPlaces: fdReadingPlaces };
   `)(governanceBadge || realBadge);
 }
 const F = make();
+
+test('Library continuation stays below the catalogue and resumes only unfinished available readings', () => {
+  const a={ref:'a.md',kind:'read',title:'A & B',summary:'Reading summary'}, b={ref:'b.md',kind:'read',title:'Finished'};
+  const idx={byRef:{'a.md':a,'b.md':b},columns:[{name:'Readings',items:[a,b]}],essentials:[{name:'Readings',items:[a,b]}],kit:[],weeks:[]};
+  const options={readingPlaces:{'a.md':{heading:'h',offset:20,updatedAt:2},'b.md':{heading:'h',offset:20,updatedAt:3}},done:{'b.md':true}};
+  for(const render of [F.fdLibrary,F.fdEssentials]) {
+    const html=render(idx,options);
+    const start=html.indexOf('class="fd-continuity"');
+    assert.ok(start>html.indexOf('class="fd-kit__readings"'),'continuity must follow the catalogue');
+    const panel=html.slice(start);
+    assert.match(panel,/data-fd-open="a.md" data-fd-reading-resume="1"/);
+    assert.match(panel,/A &amp; B/);
+    assert.doesNotMatch(panel,/data-fd-open="b.md"/);
+    assert.match(panel,/data-fd-reading-place-remove="a.md"/);
+    assert.match(panel,/data-fd-reading-places-clear/);
+    assert.doesNotMatch(panel,/data-fd-toggle/,'continuation does not mark a reading complete');
+    assert.match(html,/data-fd-continuity-show/,'a compact header control reaches the lower section');
+  }
+});
+
+test('Library pin controls and separate continuation preserve current task and query result counts', () => {
+  const read={ref:'case_formulation.md',kind:'read',title:'Formulation'}, tool={ref:'mse.html',kind:'tool',title:'Mental status',governance:{status:'pending',riskLevel:'high'}};
+  const hidden={ref:'hidden.html',kind:'tool',title:'Hidden',searchOnly:true};
+  const idx={byRef:{[read.ref]:read,[tool.ref]:tool,[hidden.ref]:hidden},columns:[{name:'Resources',items:[read,tool,hidden]}],essentials:[{name:'Resources',items:[read,tool]}],kit:[],weeks:[]};
+  const html=F.fdEssentials(idx,{toolPins:['mse.html','hidden.html'],libraryTask:'rounds',audience:'ms3',filter:'unmatched'});
+  const panel=html.slice(html.indexOf('class="fd-continuity"'));
+  assert.match(html,/Showing|0 of/);
+  assert.match(panel,/data-fd-open="mse.html"/);
+  assert.match(panel,/Pending review/,'saved tools retain the canonical governance badge');
+  assert.doesNotMatch(panel,/data-fd-open="hidden.html"/);
+  assert.match(panel,/data-fd-tool-pin="mse.html"/);
+  assert.match(panel,/data-fd-tool-pins-clear/);
+  assert.match(F.fdEssentials(idx,{toolPins:[]}),/data-fd-tool-pin="mse.html" aria-pressed="false"/);
+});
 
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
@@ -515,20 +551,87 @@ test('the canonical curriculum places 84 pages across five columns and Everythin
   for (const c of REAL_CUR.libraryColumns) assert.ok(c.refs.length > 0, `column "${c.name}" must not be empty`);
 });
 
-test('real chips follow the item: every tool row wears "tool", a rights reference "reference", reads none', () => {
+test('real chips follow the item: every tool row wears "tool", a rights reference "reference"; a pg_ read "card", an exp_ read "module", other reads none', () => {
   const html = F.fdLibrary(REAL_IDX);
-  let sawTool = false, sawRead = false, sawRights = false;
+  let sawTool = false, sawRead = false, sawRights = false, sawCard = false, sawModule = false;
   for (const c of REAL_CUR.libraryColumns) {
     for (const ref of c.refs) {
       const item = REAL_IDX.byRef[ref], r = row(html, ref);
-      if (item.kind === 'tool' && item.rights) { sawRights = true; assert.match(r, /fd-chip is-tool">reference</); }
-      else if (item.kind === 'tool') { sawTool = true; assert.match(r, /fd-chip is-tool">tool</); assert.ok(item.hint, `${ref} must carry a hint`); assert.match(r, /<span class="fd-kit__summary">/); }
+      if (item.kind === 'tool' && item.rights) { sawRights = true; assert.match(r, /fd-chip is-tool">reference</); assert.doesNotMatch(r, /is-card|is-module/); }
+      else if (item.kind === 'tool') { sawTool = true; assert.match(r, /fd-chip is-tool">tool</); assert.doesNotMatch(r, /is-card|is-module/); assert.ok(item.hint, `${ref} must carry a hint`); assert.match(r, /<span class="fd-kit__summary">/); }
+      // Depth chips (Library re-cut, 2026-10-17): the slug prefix is the depth; only the exceptions are labelled.
+      else if (ref.startsWith('pg_')) { sawCard = true; assert.match(r, /<span class="fd-chip is-card">card<\/span>/); assert.equal((r.match(/fd-chip/g) || []).length, 1); }
+      else if (ref.startsWith('exp_')) { sawModule = true; assert.match(r, /<span class="fd-chip is-module">module<\/span>/); assert.equal((r.match(/fd-chip/g) || []).length, 1); }
       else { sawRead = true; assert.doesNotMatch(r, /fd-chip/); }
       // Everything rows show the hint; the hint must ship to both sites.
       assert.doesNotMatch(item.hint || '', AUDIENCE_TOKEN_RE, `${ref}'s hint ships to both sites`);
     }
   }
-  assert.ok(sawTool && sawRead && sawRights, 'fixture sanity: real data exercises tools, reads and a rights reference');
+  assert.ok(sawTool && sawRead && sawRights && sawCard && sawModule, 'fixture sanity: real data exercises tools, reads, a rights reference, a card and a module');
+});
+
+// ---- Sub-groups (Library re-cut, O2, 2026-10-17) -------------------------------------------------
+// curriculum.libraryColumns[].groups partitions a column into named sub-lists (validate_curriculum.py
+// makes the partition exact). The Everything view renders them as plain <h3> headings inside the one
+// open group -- never nested disclosure -- so nothing the inventory counts as reachable is hidden.
+
+// Reverse fdEsc for comparing rendered names with the source names: `&amp;` is undone LAST, so an
+// escaped `&amp;lt;` can never be unescaped twice (CodeQL js/double-escaping).
+const unesc = (s) => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+const subheads = (html) => [...html.matchAll(/<h3 class="fd-kit__subhead">([^<]*)<span class="fd-kit__subcount"> · (\d+)<\/span><\/h3>/g)].map((m) => [unesc(m[1]), Number(m[2])]);
+
+test('every grouped column renders its sub-groups in order, each ref exactly once, no sub-group over 12 rows, totals unchanged', () => {
+  for (const site of ['ms3', 'res']) {
+    const payload = projected[site];
+    const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+    const html = F.fdLibrary(idx);
+    const expectedHeads = payload.curriculum.libraryColumns.flatMap((c) => (c.groups || []).map((g) => [g.name, g.refs.length]));
+    assert.ok(expectedHeads.length >= 2, `${site}: the real file carries sub-groups`);
+    assert.deepEqual(subheads(html), expectedHeads, `${site}: sub-headings in curriculum order with their counts`);
+    for (const [name, n] of expectedHeads) {
+      assert.ok(n <= 12, `${site}: "${name}" has ${n} rows; no sub-group may need a scroll to see its shape`);
+      assert.doesNotMatch(name, AUDIENCE_TOKEN_RE, `${site}: "${name}" ships to both sites`);
+    }
+    // Rows follow their sub-heading, in group order, and every column ref appears exactly once.
+    const expectedRefs = payload.curriculum.libraryColumns.flatMap((c) => (c.groups ? c.groups.flatMap((g) => g.refs) : c.refs));
+    assert.deepEqual(everythingRefs(html), expectedRefs, `${site}: rows in sub-group order`);
+    assert.equal(everythingRefs(html).length, SITES[site].full, `${site}: the Everything count does not move`);
+    for (const c of payload.curriculum.libraryColumns) if (c.groups) assert.deepEqual([...c.groups.flatMap((g) => g.refs)].sort(), [...c.refs].sort(), `${c.name}: groups partition the column`);
+    // The headings are not disclosure: one <details> per column, as before.
+    assert.equal((html.match(/<details class="fd-kit__group" open>/g) || []).length, payload.curriculum.libraryColumns.length);
+    assert.doesNotMatch(html, /<details[^>]*fd-kit__subhead|fd-kit__subhead[^>]*<summary/);
+    // The section index still counts whole columns.
+    assert.deepEqual(groupHeadings(html).map(([n, c]) => [unesc(n), c]), payload.curriculum.libraryColumns.map((c) => [c.name, c.refs.length]));
+    // Essentials never sub-groups and never carries a depth chip: its section names already say "Pocket cards".
+    const ess = F.fdEssentials(idx);
+    assert.match(ess, /fd-kit__reading/, `${site}: Essentials resolved`);
+    assert.doesNotMatch(ess, /fd-kit__subhead|is-card|is-module/);
+  }
+});
+
+test('a column without groups renders flat; the filter keeps only matching sub-groups; tasks and Essentials show no sub-heads', () => {
+  const flat = F.fdLibrary(IDX);
+  assert.doesNotMatch(flat, /fd-kit__subhead/, 'the fixture columns carry no groups');
+  const cur = JSON.parse(JSON.stringify(FIX_CUR));
+  cur.libraryColumns[0].groups = [{ name: 'Alpha', refs: ['t1.html'] }, { name: 'Beta', refs: ['t2.html', 'mismatch-read.md'] }];
+  const idx = F.fdBuildIndex(cur, FIX_META, FIX_TOOLS, FIX_MAN);
+  const html = F.fdLibrary(idx);
+  assert.deepEqual(subheads(html), [['Alpha', 1], ['Beta', 2]]);
+  assert.deepEqual(everythingRefs(html).slice(0, 3), ['t1.html', 't2.html', 'mismatch-read.md']);
+  assert.ok(html.indexOf('>Alpha<') < html.indexOf('data-fd-open="t1.html"') && html.indexOf('data-fd-open="t1.html"') < html.indexOf('>Beta<'), 'rows sit under their heading');
+  // Only Beta has a match: Alpha's heading drops with its rows; Beta's count is its matches.
+  const title = idx.byRef['mismatch-read.md'].title;
+  const filtered = F.fdLibrary(idx, { filter: title });
+  assert.deepEqual(subheads(filtered), [['Beta', 1]]);
+  assert.deepEqual(everythingRefs(filtered), ['mismatch-read.md']);
+  // A section selection keeps the sub-heads of that column only.
+  assert.deepEqual(subheads(F.fdLibrary(idx, { kitSection: '0' })), [['Alpha', 1], ['Beta', 2]]);
+  assert.deepEqual(subheads(F.fdLibrary(idx, { kitSection: '1' })), []);
+  // The task shortlist is a flat synthetic group; Essentials never sub-groups.
+  assert.doesNotMatch(F.fdLibrary(REAL_IDX, { libraryTask: 'interview', audience: 'ms3' }), /fd-kit__subhead/);
+  // The index objects are shared: the sub-group items ARE the column items.
+  assert.equal(idx.columns[0].groups[1].items[1], idx.columns[0].items[2]);
+  assert.equal(idx.columns[1].groups, null);
 });
 
 const PROJECT_ROOT = new URL('../', import.meta.url);
@@ -550,7 +653,57 @@ print(json.dumps(out))
 
 // Pinned per-site counts (2026-10-04): Everything 85 / 94 shipped pages placed in columns;
 // Essentials 31 / 35 reading and tool rows; shipped 110 / 119 (2026-10-12: +1 CotW week per site).
-const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 94, shipped: 119 } };
+// Resident Everything 94 -> 90 (C2, 2026-10-17): orientation, osce, shelf and reading_map are MS3-track
+// pages, now curriculum.siteLibrary.resident.exclusions -- still reachable by link, not listed.
+const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 90, shipped: 119 } };
+
+for (const site of ['ms3', 'res']) {
+  const payload = projected[site];
+  const idx = F.fdBuildIndex(payload.curriculum, REAL_META, REAL_TOOLS, payload.manifest);
+  const audience = site === 'ms3' ? 'ms3' : 'resident';
+  for (const [view, render, refs] of [['Essentials', F.fdEssentials, essentialsRefs], ['Everything', F.fdLibrary, everythingRefs]]) {
+    test(`${site} ${view}: Interview offers only its three resources with safety first`, () => {
+      const html = render(idx, { libraryTask: 'interview', audience });
+      assert.deepEqual(refs(html), ['pg_suicide.md', 'pg_interview.md', 'mse.html']);
+      assert.match(status(html), /3.*Interview/);
+      assert.match(row(html, 'pg_suicide.md'), /aria-label="Safety"/);
+      assert.match(html, /data-fd-library-task="interview" aria-pressed="true"/);
+      assert.match(html, /data-fd-library-task="all" aria-pressed="false"/);
+    });
+    test(`${site} ${view}: Rounds keeps the audience's formulation guide and existing open actions`, () => {
+      const html = render(idx, { libraryTask: 'rounds', audience });
+      assert.deepEqual(refs(html), ['doc_oral.md', 'oral.html', site === 'ms3' ? 'pg_formulation.md' : 'case_formulation.md']);
+      assert.match(status(html), /3.*Rounds/);
+      assert.equal((html.match(/data-fd-library-task="rounds" aria-pressed="true"/g) || []).length, 1);
+    });
+    test(`${site} ${view}: a task combines with text, counts its matches, and never leaks an unrelated preview`, () => {
+      const html = render(idx, { libraryTask: 'interview', audience, filter: 'mental', kitToolPreview: 'oral.html' });
+      assert.deepEqual(refs(html), ['mse.html']);
+      assert.match(status(html), /1 of 3.*Interview.*mental/);
+      assert.match(html, /data-fd-kit-section="all"[^>]*>[\s\S]*?fd-kit__index-count">1</);
+      if (view === 'Essentials') {
+        assert.match(html, /fd-kit__preview-title">Mental Status Exam</);
+        assert.doesNotMatch(html, /fd-kit__preview-title">Treatment Team/);
+      }
+      const empty = render(idx, { libraryTask: 'interview', audience, filter: 'nonexistent' });
+      assert.deepEqual(refs(empty), []);
+      assert.match(empty, /No resources match these filters/);
+      assert.match(empty, /data-fd-library-task="all"[^>]*>Clear task/);
+      assert.match(empty, /data-fd-search data-fd-search-query="nonexistent"/);
+      assert.doesNotMatch(empty, /<aside class="fd-kit__tool-preview"/);
+    });
+  }
+  test(`${site}: Essentials task and section intersect, with recovery for an empty combination`, () => {
+    const tools = F.fdEssentials(idx, { libraryTask: 'interview', audience, kitSection: 'tools' });
+    assert.deepEqual(essentialsRefs(tools), ['mse.html']);
+    assert.match(status(tools), /1.*Interview.*Tools/);
+    const emptyGroup = String(idx.essentials.findIndex((g) => !g.items.some((i) => ['pg_suicide.md', 'pg_interview.md', 'mse.html'].includes(i.ref))));
+    const empty = F.fdEssentials(idx, { libraryTask: 'interview', audience, kitSection: emptyGroup });
+    assert.deepEqual(essentialsRefs(empty), []);
+    assert.match(empty, /data-fd-kit-section="all"[^>]*>All sections/);
+    assert.doesNotMatch(empty, /<aside class="fd-kit__tool-preview"/);
+  });
+}
 
 for (const [site, pins] of Object.entries(SITES)) {
   test(`${site}: every shipped page is in Everything exactly once, or deliberately excluded, or search-only; counts match shipped_pages.json`, () => {
@@ -616,31 +769,46 @@ for (const [site, pins] of Object.entries(SITES)) {
 
 test('the live Library shell renders both views through one call, passing section, preview, filter, week, case arc, pairings and audience', () => {
   const shell = read('spa_index.html');
-  assert.match(shell, /var libOpts=\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,filter:state\.libraryFilter,week:live\.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE\}; return state\.libraryView==='full'\?fdLibrary\(FD_INDEX,libOpts\):fdEssentials\(FD_INDEX,libOpts\);/);
+  assert.match(shell, /var libOpts=\{kitSection:state\.kitSection,kitToolPreview:state\.kitToolPreview,filter:state\.libraryFilter,libraryTask:state\.libraryTask,week:live\.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE,readingPlaces:fdReadingPlaces\(fdLoad\(\)\.readingPlaces\),done:live\.done,toolPins:live\.toolPins,continuityNotice:state\.continuityNotice\}; return state\.libraryView==='full'\?fdLibrary\(FD_INDEX,libOpts\):fdEssentials\(FD_INDEX,libOpts\);/);
   assert.match(shell, /var FD_PAIRINGS=null;/, 'the pairings needle build_deploy.py fills');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
   assert.ok(branch, 'Library shell branch remains a shared pure renderer call');
-  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', `return ${branch[1]};`);
+  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', 'fdReadingPlaces', 'fdLoad', `return ${branch[1]};`);
   const surface = (_name, render) => render();
   const idx = kitFixture();
   const caseArc = { weeks: [] }, pairings = { pairings: [] };
-  const opts = (state, live) => ({ kitSection: state.kitSection, kitToolPreview: state.kitToolPreview, filter: state.libraryFilter, week: live.week, caseArc, pairings, audience: 'ms3' });
+  const opts = (state, live) => ({ kitSection: state.kitSection, kitToolPreview: state.kitToolPreview, filter: state.libraryFilter, libraryTask: state.libraryTask, week: live.week, caseArc, pairings, audience: 'ms3' });
   for (const libraryView of [undefined, 'essentials']) {
     const state = { tab: 'library', libraryView, kitSection: '0', libraryFilter: 'one', kitToolPreview: 'm1.md' }, live = { week: 2 };
-    assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials), F.fdEssentials(idx, opts(state, live)));
+    assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials, F.fdReadingPlaces, () => ({})), F.fdEssentials(idx, opts(state, live)));
   }
   const state = { tab: 'library', libraryView: 'full', kitSection: '2', libraryFilter: 'x' }, live = { week: 1 };
-  assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials), F.fdLibrary(idx, opts(state, live)));
+  assert.equal(run(state, live, idx, caseArc, pairings, 'ms3', surface, F.fdLibrary, F.fdEssentials, F.fdReadingPlaces, () => ({})), F.fdLibrary(idx, opts(state, live)));
 });
 
 test('the live shell passes the actual week to Essentials rather than the browsed Path week', () => {
   const shell = read('spa_index.html');
   const branch = /if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
-  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', `return ${branch[1]};`);
+  const run = new Function('state', 'live', 'FD_INDEX', 'FD_CASE_ARC', 'FD_PAIRINGS', 'FD_AUDIENCE', 'fdSurface', 'fdLibrary', 'fdEssentials', 'fdReadingPlaces', 'fdLoad', `return ${branch[1]};`);
   const idx = kitFixture(), state = { tab: 'library', viewWeek: 1, kitSection: 'week' };
-  const render = (live) => run(state, live, idx, null, null, 'ms3', (_n, paint) => paint(), F.fdLibrary, F.fdEssentials);
+  const render = (live) => run(state, live, idx, null, null, 'ms3', (_n, paint) => paint(), F.fdLibrary, F.fdEssentials, F.fdReadingPlaces, () => ({}));
   assert.deepEqual(essentialsRefs(render({ week: 2, viewWeek: 1 })), ['m2.md']);
   assert.deepEqual(essentialsRefs(render({ viewWeek: 1 })), essentialsRefs(F.fdEssentials(idx)));
+});
+
+test('the live Library continuation ignores an in-memory reading place whose save failed', () => {
+  const shell=read('spa_index.html');
+  const branch=/if\(state\.tab==='library'\) return (fdSurface\('library',function\(\)\{[^\n]+\}\));/.exec(shell);
+  const run=new Function('state','live','FD_INDEX','FD_CASE_ARC','FD_PAIRINGS','FD_AUDIENCE','fdSurface','fdLibrary','fdEssentials','fdReadingPlaces','fdLoad',`return ${branch[1]};`);
+  const item={ref:'a.md',kind:'read',title:'Saved reading'};
+  const idx={byRef:{'a.md':item},columns:[{name:'Readings',items:[item]}],essentials:[{name:'Readings',items:[item]}],kit:[],weeks:[]};
+  const readingPlaces={'a.md':{heading:'h',offset:20,updatedAt:2}};
+  for(const libraryView of ['full','essentials']) {
+    const state={tab:'library',libraryView,readingPlaces};
+    const paint=stored=>run(state,{done:{}},idx,null,null,'ms3',(_n,render)=>render(),F.fdLibrary,F.fdEssentials,F.fdReadingPlaces,()=>stored);
+    assert.doesNotMatch(paint({}),/data-fd-reading-resume="1"/,'unsaved session position is never advertised as saved');
+    assert.match(paint({readingPlaces}),/data-fd-reading-resume="1"/,'confirmed stored position still offers Continue');
+  }
 });
 
 test('compact shared badge retains normal behavior and names pending dots accessibly', () => {

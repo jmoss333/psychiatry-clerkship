@@ -541,6 +541,10 @@
   font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;
 }
 .fd-chip.is-tool{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+/* Depth chips on Everything rows (fd_library.js fdDepthChip): a pocket card in the olive wash, a
+ * short module in the plain chip; a guide, the common case, carries none. */
+.fd-chip.is-card{background:var(--fd-olive-wash);color:var(--fd-olive-deep)}
+.fd-chip.is-module{background:var(--fd-chip);color:var(--fd-text-mid)}
 
 /* The setup face of the Now card (no week set): kicker "30-second setup", serif title, the one
  * button "Set rotation week". The daily pick (.fd-pick) retired from Today on 2026-10-04; the
@@ -663,7 +667,7 @@
 /* The phone's Learning activity & review link; the rail carries the desktop one. */
 .fd-today__record{margin:var(--fd-space-9) 0 0}
 
-/* Patient-care launchpad: one stable destination for external ReConnect resources. The paired
+/* Patient-care launchpad: one stable destination for external care resources. The paired
  * columns separate support from education, while the olive rule keeps this distinct from
  * red Safety actions and teal in-library tools. */
 .fd-care-page{max-width:calc(var(--fd-space-10) * 24);animation:fdFadeUp var(--fd-dur-fast) var(--fd-ease-standard)}
@@ -1248,6 +1252,9 @@
  * entrance animation: the list repaints on every keystroke of the filter. */
 .fd-library{animation:none}
 .fd-library__head{margin:0 0 var(--fd-space-8)}
+.fd-library__titlebar{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-3)}
+.fd-library__titlebar .fd-library__h1{margin-bottom:0}
+.fd-library__continuity{flex:none;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-3);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
 .fd-library__h1{margin:0 0 var(--fd-space-2);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-4xl);line-height:1.15;letter-spacing:-.01em;color:var(--fd-text)}
 .fd-library__lede{margin:0;font-size:var(--fd-font-base);color:var(--fd-text-mid)}
 .fd-library__controls{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-6) var(--fd-space-7);margin:0 0 var(--fd-space-5)}
@@ -1258,6 +1265,11 @@
 .fd-library__view:hover{color:var(--fd-text)}
 .fd-library__view.is-active{background:var(--fd-surface);color:var(--fd-teal-deep);font-weight:700;box-shadow:var(--fd-shadow-sm)}
 /* The count span is a flex item, so its leading space must be kept explicitly. */
+.fd-library__tasks{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-library__tasks>span{margin-right:var(--fd-space-2)}
+.fd-library__task{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-weight:600;cursor:pointer}
+.fd-library__task:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep)}
+.fd-library__task.is-active{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 .fd-library__view-count{font-weight:inherit;white-space:pre}
 /* Filter field: one bordered box holding the glyph, the input and either the "/" chip (desktop,
  * no query) or Clear (any width, with a query). The input itself has no border, so the box is
@@ -1283,6 +1295,13 @@
 .fd-kit__group-count{color:var(--fd-text-mid);font-weight:700}
 .fd-kit__chevron{margin-left:auto;transform:rotate(-90deg);transition:transform .18s var(--fd-ease-standard)}
 .fd-kit__group[open] > summary .fd-kit__chevron{transform:none}
+/* Sub-group headings inside a grouped column (curriculum.libraryColumns[].groups; fd_library.js
+ * fdLibraryGroup, Library re-cut 2026-10-17): plain headings between the rows, never disclosure,
+ * so nothing the inventory tests count as reachable is ever hidden. Small caps-weight eyebrow in
+ * the dim ink, a hair above the first row of its run. */
+.fd-kit__subhead{margin:var(--fd-space-7) 0 var(--fd-space-1);font-family:inherit;font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-kit__subhead:first-of-type{margin-top:var(--fd-space-4)}
+.fd-kit__subcount{font-weight:600;letter-spacing:0;text-transform:none}
 /* Rows (both views). The wrapper carries the row's rule and the selected state; the button inside
  * is the whole row (name first, then badge, summary, meta), and Essentials adds a desktop-only
  * Preview control beside it. */
@@ -1305,6 +1324,20 @@
 .fd-kit__peek{display:none}
 .fd-library__details{display:inline-flex;align-items:center;justify-content:center;align-self:center;min-height:var(--fd-target-touch);margin-left:var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
 .fd-library__details:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+.fd-library__pin{grid-column:2;justify-self:end;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);margin:0 0 var(--fd-space-3) var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
+.fd-library__pin[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+.fd-continuity{margin-top:var(--fd-space-10);padding-top:var(--fd-space-8);border-top:1px solid var(--fd-line-strong)}
+.fd-continuity__title{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:var(--fd-font-section);line-height:1.3;scroll-margin-top:100px}
+.fd-continuity__intro,.fd-continuity__group p{color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
+.fd-continuity__columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:var(--fd-space-8)}
+.fd-continuity__group{min-width:0}
+.fd-continuity__group h3{font-size:var(--fd-font-base);margin:var(--fd-space-5) 0}
+.fd-continuity__row{display:flex;align-items:center;gap:var(--fd-space-3);border-bottom:1px solid var(--fd-line)}
+.fd-continuity__open{flex:1;min-width:0;min-height:var(--fd-target-touch);padding:var(--fd-space-3) 0;border:0;background:transparent;text-align:left;font:inherit;color:var(--fd-text);cursor:pointer;overflow-wrap:anywhere}
+.fd-continuity__open .governance-badge{display:block;width:fit-content;max-width:100%;white-space:normal}
+.fd-continuity__remove,.fd-continuity__clear{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-3);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
+.fd-continuity__notice{color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fd-continuity__notice:empty{margin:0}
 /* Zero results and the filtered footer. */
 .fd-library__empty{max-width:560px;padding:var(--fd-space-10) 0 var(--fd-space-4);border-top:1px solid var(--fd-line-strong)}
 .fd-library__empty-h{margin:0 0 var(--fd-space-4);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:600;font-size:calc(var(--fd-font-xl) + 1px);line-height:1.3;color:var(--fd-text)}
@@ -2459,8 +2492,12 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @media (max-width:640px){
   /* Leave room for a pending-review notice and wrapped titles above the dock.
    * Compact the spaces between sections, not the text or 44px touch controls. */
-  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-4)}
+  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-2)}
+  .fd-library__controls{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__tasks{gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__task{padding-inline:var(--fd-space-2)}
   .fd-library__body{row-gap:var(--fd-space-4)}
+  .fd-kit__reading{padding-block:var(--fd-space-4)}
 }
 
 @media print{
@@ -2589,6 +2626,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-alsolist .fd-continue__body{flex:1 1 200px}
 .fd-alsolist .fd-continue__kicker{flex:1 0 100%;order:-1;color:var(--fd-text-dim)}
 .fd-alsolist .fd-continue__segs{display:none}
+/* The Case-of-the-Week announcement (fd_today.js fdNewCaseRow): an Also-today face that only ever
+ * renders flat, in the week a case ships -- the same parts as the faces above (a kicker above the
+ * title like the demoted Continue's, title 15/600, trailing "Open →" 14/700 teal-deep with a 44px
+ * target) and no card chrome to strip, because it is born inside .fd-alsolist. */
+.fd-newcase{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--fd-space-5);row-gap:var(--fd-space-1);width:100%;margin:0;padding:0;border:0;background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
+.fd-newcase__kicker{flex:1 0 100%;order:-1;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-dim)}
+.fd-newcase__title{flex:1 1 200px;min-width:0;font-size:var(--fd-font-base);font-weight:600;line-height:1.4}
+.fd-newcase__action{flex:0 0 auto;display:inline-flex;align-items:center;min-height:var(--fd-target-touch);font-size:var(--fd-font-md);font-weight:700;color:var(--fd-teal-deep);white-space:nowrap}
 .fd-alsolist .fd-continue__meta{display:flex;gap:var(--fd-space-4)}
 .fd-alsolist .fd-block{padding:var(--fd-space-2) 0 0}
 .fd-continue__title .fd-chip{margin-left:var(--fd-space-4);vertical-align:middle}

@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(756 distinct `fd-*` selector names, 34 `is-*` state classes). Every class below has a rule in that file unless
+(777 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -99,6 +99,8 @@ instead — see their surfaces.)
 | `.fd-btn--accent` | + `.fd-btn` | Teal wash ("Set as my week"). |
 | `.fd-chip` | `<span>` | Type chip. In the week rows and the Continue card it is emitted only for the exceptions (`fdKindChip`, `fd_today.js`): a tool, or a rights reference. A reading carries none (2026-10-01). The item sheet still labels a reading "read". |
 | `.fd-chip.is-tool` | same element | Teal variant for tools. |
+| `.fd-chip.is-card`, `.fd-chip.is-module` | same element | Depth chips on Everything rows (`fdDepthChip`, `fd_library.js`, 2026-10-17): `pg_` readings are pocket cards (olive wash), `exp_` readings are short modules (plain chip). A guide carries none; Essentials rows carry none. |
+| `.fd-kit__subhead`, `.fd-kit__subcount` | `<h3>` + `<span>` | Sub-group heading inside a grouped Everything column (`curriculum.libraryColumns[].groups`, partition-checked by `validate_curriculum.py`): 12px/700 uppercase dim eyebrow with " · n", `margin: space-7 0 space-1` (space-4 above the first). A plain heading, never a `<details>`, so no row leaves the accessibility tree or the nav-crawl inventory. |
 | `.fd-check` | `<button>` | 22px done-toggle circle. |
 | `.fd-check.is-done` | same element | Filled success + visible ✓. |
 | `.fd-check.is-done.is-just-done` | same element | **Both** state classes needed for the pop animation. |
@@ -267,7 +269,9 @@ concept-count status line when nothing is due), `caseWeek`):
       .fd-sectionhead.fd-also <h2>                    4. "Also today" (always rendered)
       .fd-alsolist                                     (only when a row exists)
         .fd-also__row[data-fd-mark][data-fd-count][style=--mark-share] ×N   the faces that did not win
-          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-capture
+          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-newcase / .fd-capture
+          .fd-newcase <button data-fd-open>            the Case-of-the-Week announcement, only in the week it ships (fdNewCase)
+            .fd-newcase__kicker / .fd-newcase__title / .fd-newcase__action
       .fd-purpose        <details>                    5. the preparation chooser (shell-owned open state)
         .fd-prepare                                    the Prepare-for-tomorrow line + ghost button (sites shipping the tool)
       .fd-today__exam    <div>                        exam-date nudge: exam path only, until a date is stored
@@ -338,6 +342,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
 | ~~`.fd-primary__why`~~ | Retired 2026-10-01 (owner-directed design pass) with `fdTodayWhy`: the page's order already says what the line explained. |
+| `.fd-newcase`, `.fd-newcase__kicker`, `.fd-newcase__title`, `.fd-newcase__action` | "New this week · Case of the Week" row (`fdNewCaseRow` over `fdNewCase`, `fd_today.js`): a `<button data-fd-open="<slug>">` Also-today face with a `ring` mark, rendered only from the registry date of the newest edition through the six days after it (local calendar days, `FD_NEWCASE_WINDOW_DAYS`), then gone on its own. Kicker (13/700 dim, `order:-1`, full width), title (15/600), the compact `.fd-kit__pending` mark when the case's manifest governance is still `pending`, trailing "Open →" (14/700 teal-deep, 44px target). The data is `FD_COTW_NEWEST` ({slug, title, date} from `cotw_archive_block.newest`), inlined read-only by `build_deploy.py` and swapped per site by `resident_section.py` — the same registry row the archive index lists as "Newest case". Never the Now card; sits after the week row, before saved questions. |
 | `.fd-lastread` | "You were reading" row (`fdLastReadRow`, `frontdoor/fd_due.js`): the last opened item when it is an undone read from this week and not already the Continue target. Shares the runtime-row rule with `.fd-due`. Contains `.fd-lastread__kicker` (primary only), `.fd-lastread__title`, `.fd-lastread__action`. |
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
@@ -739,6 +744,8 @@ the bare `.fd-library`.
       input.fd-library__filter-input[data-fd-library-filter]
       button.fd-library__filter-clear[data-fd-library-filter-clear]   (only with a query)
       .fd-kbd.fd-library__filter-key     ("/", desktop only, only without a query)
+  .fd-library__tasks [role=group]         (Library tasks: All / Interview / Rounds)
+    button.fd-library__task[data-fd-library-task][aria-pressed] ×3 + .is-active
   p.fd-library__status [role=status]     (visible 13px dim line)
   .fd-library__body                      + .has-preview (Essentials with a previewed item)
     nav.fd-kit__index                    (aria-label="Essentials sections" | "Catalogue sections")
@@ -752,12 +759,14 @@ the bare `.fd-library`.
       details.fd-kit__group[open] ×N
         summary
           .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
+        h3.fd-kit__subhead ×G            (Everything, columns with curriculum `groups` only) "Name" + .fd-kit__subcount (" · n"); plain heading, never disclosure
         .fd-kit__item ×N                 + .is-selected (the previewed row, Essentials)
           button.fd-kit__reading[data-fd-open]      (Essentials)  |  button.fd-collink[data-fd-open]  (Everything)
             .fd-kit__titlerow
               .fd-kit__safety [role=img aria-label="Safety"]   (kit pages and acute-safety tools)
               .fd-kit__title (serif 19)                        |  .fd-collink__label (Inter 600 16)
               .fd-chip.is-tool ("tool" | "reference")          (tools only)
+              .fd-chip.is-card ("card") | .fd-chip.is-module ("module")   (Everything only; pg_ / exp_ readings; a guide carries none)
               governanceBadge(item.governance)                 (full badge, verbatim, when pending)
             .fd-kit__summary             (reading summary verbatim; tool hint verbatim, summary fallback; Everything: hint only)
             .fd-kit__meta                ("Reading|Tool|Reference · N min · Safety kit · Week N · Case week N")
@@ -802,14 +811,21 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 
 | Class | Notes |
 |---|---|
+| `.fd-library__titlebar` / `.fd-library__continuity` | The Library heading and “On this device” shortcut share one flex row. The shortcut has a 44px minimum target and scrolls/focuses the continuation heading below the catalogue. It adds no block before the first reading. |
+| `.fd-library__pin` | A separate 44px Pin/Unpin control in canonical tool rows; pressed state uses teal wash. It never replaces the direct title opener, Details, or desktop Preview. |
+| `.fd-continuity` / `.fd-continuity__title` / `.fd-continuity__intro` | A hairline-separated device continuation area after the complete Library grid in both views. The named heading uses 600-weight Source Serif 4 with Georgia fallback, accepts programmatic focus, and has a top scroll margin. The copy distinguishes saved places and pins from the active filters. |
+| `.fd-continuity__columns` / `.fd-continuity__group` | Two responsive groups: up to three unfinished saved readings and up to five pinned tools. Columns collapse to one on phones; the existing catalogue counts and selected preview exclude this separate area. |
+| `.fd-continuity__row` / `.fd-continuity__open` / `.fd-continuity__remove` / `.fd-continuity__clear` | Flex rows with wrapping title openers and 44px Remove/Unpin/Clear controls. Governance badges stay verbatim and wrap within the open button. Forgetting saved places preserves completion. |
+| `.fd-continuity__notice` | Polite live status for successful changes, a full pin list, or unavailable storage. A failed mutation never claims a saved change. |
 | `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
 | `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
-| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 8px bottom margins, and `.fd-library__body` uses an 8px row gap; text sizes and 44px controls remain unchanged so pending notices and wrapped resident titles fit above the dock. |
+| `.fd-library__tasks` / `.fd-library__task` | Wrapping task buttons with 44px touch targets. All preserves the full view; Interview and Rounds intersect the selected section and title filter. Task results use curated order, with Suicide Risk & Safety first in Interview; Rounds selects the audience’s formulation guide. Counts and the desktop preview follow the final visible results. Task state is visit-only and rides the Library history entry for Open/Back; reload resets it. |
+| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 4px bottom margins. Controls use a 4px row gap and bottom margin; tasks use 4px gaps/margin and 4px inline button padding to fit wider system fonts at 320px, retaining minimum 44×44px targets and wrapping at enlarged text sizes. The body uses an 8px row gap. Text and review notices remain intact so the first reading fits above the dock. |
 | `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
 | `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
 | `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
 | `.fd-kit__item` | Row wrapper: `grid minmax(0,1fr) auto; border-bottom:1px solid --fd-line`. `.is-selected` (desktop Essentials): `--fd-selected` background, `inset 3px 0 0 --fd-teal`, bleeds 16px into the gutters. |
-| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px), name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
+| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px), name first. Essentials uses 8px vertical padding at ≤640px, retaining its 44px minimum height and all text. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
 | `.fd-kit__safety` | The 8px `--fd-danger` dot — the only red in the list. |
 | `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
 | `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and tool hints in both views; reading summaries stay verbatim. |
@@ -1105,7 +1121,7 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.")
+    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
@@ -1266,7 +1282,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-library__task`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |

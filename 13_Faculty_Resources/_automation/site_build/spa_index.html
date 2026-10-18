@@ -702,6 +702,11 @@
      Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
      resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
   var FD_MEDIA=null;
+  /* The newest Case of the Week (cotw_archive_block.newest), READ-ONLY, for Today's "new this
+     week" row (fd_today.js fdNewCase). Same verified-needle injection as FD_MEDIA, and the
+     resident build swaps in its own edition. {slug, title, date}: the renderer shows it only for
+     the week after `date`, so null, a malformed value or an older edition renders nothing. */
+  var FD_COTW_NEWEST=null;
   /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
      click, consumed by the next mount of that ref, never stored. */
   var fdMediaArrival=null;
@@ -2003,8 +2008,11 @@
   }
   /* SI===null means "failed" OR "not yet resolved". Refresh the guarded Today surface after
      the index settles so captures can gain matches without a reload. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
+  /* One request serves both readers: this matcher and the Front Door command search's page-text
+     tier, which takes the same parsed index from cwSearchIndexPromise rather than fetching again. */
+  var SI_PROMISE=fetch('search-index.json').then(function(r){return r.json()}); SI_PROMISE.then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
     .catch(function(){ SI=null; VOCAB=[]; });
+  try{ window.cwSearchIndexPromise=SI_PROMISE; }catch(_){}
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
   /* Length normalisation: the BM25 pivot (1-b) + b*(L/avgLen), b = 0.5. Without it
@@ -2167,6 +2175,8 @@
   /*__FD_STATE__*/
 
   /*__FD_READING_PLACE__*/
+
+  /*__FD_TOOL_PINS__*/
 
   /*__FD_CAPTURE_EMAIL__*/
 
@@ -2495,6 +2505,17 @@
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
   var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
   var fdController=null;
+  /* search-index.json for the command search's page-text tier: the SAME parsed object the ＋Ask
+     matcher requested (cwSearchIndexPromise, set where it fetches), so no second request. A failed
+     or missing load leaves it null and title/summary search works exactly as before. */
+  var fdBodyIndex=null;
+  try{
+    var fdBodyPromise=window.cwSearchIndexPromise;
+    if(fdBodyPromise&&typeof fdBodyPromise.then==='function'){
+      fdBodyPromise.then(function(d){ fdBodyIndex=(d&&d.postings&&Array.isArray(d.docs))?d:null; },
+        function(){ fdBodyIndex=null; });
+    }
+  }catch(_){ fdBodyIndex=null; }
   var fdActiveEditionSnapshot=null;
   var fdCatalogSnapshot=null;
   var fdEditionBootKeys=null;
@@ -2578,6 +2599,7 @@
        the list on the device. Guarded like the usage emitter below: a surface built without the
        store renders no notes rather than failing. */
     out.feedbackLog=typeof fdFeedbackRead==='function'?fdFeedbackRead():[];
+    out.toolPins=typeof fdToolPinsRead==='function'?fdToolPinsRead(FD_INDEX):[];
     /* The Usage section, and the one key on this state that is legitimately null: null means
        CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
        then renders no section at all rather than describing collection that is not happening.
@@ -2734,6 +2756,10 @@
     live.alsoRows=rows;
     live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
     live.caseWeek=fdWeekCaseStep(FD_INDEX,FD_CASE_ARC,weekN);
+    /* The newest case, handed in raw: fdNewCase (fd_today.js) decides from live.nowMs and the
+       registry date whether Today announces it this week. Build data, not a device store, so it
+       is shown in a faculty preview too. */
+    live.newCase=FD_COTW_NEWEST;
     return fdToday(FD_INDEX,live);
   }
 
@@ -2832,7 +2858,7 @@
        and filter are the controller's visit-only memory; the case arc and pairings are the
        build-injected READ-ONLY registries behind "Case week N", "Where it is used" and "Practice
        with"; the audience keeps pairings scoped to one site inside it. */
-    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
+    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,libraryTask:state.libraryTask,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE,readingPlaces:fdReadingPlaces(fdLoad().readingPlaces),done:live.done,toolPins:live.toolPins,continuityNotice:state.continuityNotice}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
     if(state.tab==='care') return fdSurface('care',function(){
       return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
     });
@@ -2888,7 +2914,12 @@
 
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
-    if(state.searchOpen)overlays+=fdSurface('search',function(){ return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live); });
+    if(state.searchOpen)overlays+=fdSurface('search',function(){
+      /* Page-text evidence (fd_search.js fdSearchBodyScores): the same search-index.json the
+         ＋Ask matcher reads. Absent until it loads, and search then ranks exactly as before. */
+      live.bodyIndex=fdBodyIndex;
+      return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live);
+    });
     if(state.sheet)overlays+=fdSurface('sheet',function(){ return fdSheet(FD_INDEX,FD_TOPIC_META,live); });
     if(state.careShareId)overlays+=fdSurface('care-share',function(){
       return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
@@ -3265,18 +3296,11 @@
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
             var arrivalSearch=options.search===undefined?location.search:options.search;
             if(!returning)fdGuideBookmark=null;
-            if(guide.leads){
-              /* A page whose sections come from bold leads read with a saved place before it had
-                 a guide; it keeps one. An explicit passage or a return from practice still decides
-                 where it opens, so the saved place only saves on those arrivals. */
-              var passage=new URLSearchParams(arrivalSearch||'');
-              installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
-            }else{
-              var statusNode=contentEl.querySelector('[data-fd-reading-status]');
-              var topNode=contentEl.querySelector('[data-fd-reading-top]');
-              if(statusNode)statusNode.remove();
-              if(topNode)topNode.remove();
-            }
+            /* Every reading guide keeps a saved place. An explicit passage or a return from
+               practice still decides where it opens, so the saved place only saves on those
+               arrivals. With no passage, guide.arrive is inert and the saved place restores. */
+            var passage=new URLSearchParams(arrivalSearch||'');
+            installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
             /* Initial resources mount behind the edition startup gate. Their promise must
                settle before focus/scroll can reach the now-visible DOM. Guard the next frame
                so an abandoned load cannot steal focus from the next route. */
