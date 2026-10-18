@@ -53,5 +53,5 @@ test('the three standing rules and the seven procedures are present', () => {
   }
   assert.match(DOC, /Never edit `13_Faculty_Resources\/reviewed\.json` by hand/);
   assert.match(DOC, /Never push to `release` by hand/);
-  assert.match(DOC, /never runs `bin\/ledger_keygen\.mjs`/);
+  assert.match(DOC, /An agent never\s+mints a signing key/);
 });

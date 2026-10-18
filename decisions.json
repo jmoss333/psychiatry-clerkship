@@ -302,6 +302,16 @@
       "governs": [
         "13_Faculty_Resources/_automation/site_build/resident_section.py"
       ]
+    },
+    {
+      "id": "attestation-ledger-removed",
+      "title": "The signed attestation ledger (ADR-003) is removed: reviewed.json's hash-bound rows, written only by the faculty console, are the one attestation record",
+      "status": "active",
+      "decided": "2026-10-18",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/adr/ADR-003-attestation-ledger.md (Status and Removal sections); review decision §6-a chosen 2026-10-18 in a Cowork session",
+      "note": "Built dark on 2026-09-25 and never activated. Two integrity mechanisms with one switched off was design debt: a code path production never ran, a scheduled function invoked every ten minutes to return immediately, a signing-key runbook nobody had followed, and the largest single topic in the agent rulebook. The forgeable console identity the ledger would have fixed cryptographically is closed instead by a GitHub App identity plus a ruleset on attest/pending (review R4). Phase 1 removed the build overlay, the ledger-publish schedule, bin/ledger.mjs, bin/ledger_keygen.mjs and 13_Faculty_Resources/ledger/; phase 2 removes the console's ATTEST_LEDGER mode and its tests in its own PR with the console suites run in full. Kept: the question bank's manifest line is hashed without item status (signing a question must never drift the question tools), and an agent never mints a signing key or writes a signatures branch. Revisit only if an institutional sponsor requires cryptographic signatures; the design doc stays in docs/superpowers/specs.",
+      "governs": []
     }
   ]
 }
