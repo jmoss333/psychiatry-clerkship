@@ -1,8 +1,9 @@
 # ADR-003 — The attestation ledger: sign-offs that never merge
 
-**Status:** Accepted 2026-09-25; built; **DARK** (not activated). Decision §6-a of the
-2026-10-17 architecture review asks the owner to activate it by a date or remove it — two
-integrity mechanisms with one switched off is design debt, not defence in depth.
+**Status:** **Superseded 2026-10-18** by decision `attestation-ledger-removed` (Joshua Moss, MD):
+built dark on 2026-09-25, never activated, removed. Two integrity mechanisms with one switched
+off was design debt, not defence in depth; hash-bound signatures plus a non-forgeable console
+identity (review R4) answer the question this was built for. See *Removal* at the end.
 **Design:** `docs/superpowers/specs/2026-09-25-attestation-ledger-design.md`.
 **Activation:** `13_Faculty_Resources/ledger/ACTIVATION.md`.
 
@@ -55,3 +56,22 @@ validator, projection and test downstream judges the combined record unchanged.
   (review recommendation R4). If that lands and the owner chooses **remove**, this ADR is
   superseded and the overlay, `bin/ledger.mjs`, the ledger tests and `ledger/` go in one
   governance PR.
+
+## Removal (2026-10-18)
+
+**Phase 1** (this change): `site_build/ledger_overlay.mjs` and the `CLERKSHIP_LEDGER` hook in
+`build_and_check.sh`; the `ledger-publish` scheduled function and its `netlify.toml` schedule
+(it had been invoked every 10 minutes to return immediately); `bin/ledger.mjs`;
+`bin/ledger_keygen.mjs`; `13_Faculty_Resources/ledger/` (an empty `keys.json` and the activation
+runbook); the overlay and keygen tests; the governance-set entries for the overlay and the keys.
+
+**Phase 2** (its own PR, console suites run in full): the `ATTEST_LEDGER` mode in
+`faculty-console/netlify/functions/attest.mjs`, `faculty-console/ledger.mjs`,
+`faculty-console/ledger-publish.mjs`, the `ledgerMode` branches in `release-status.mjs` and the
+`ledger-mode` skip in `rolling-pr-sweep.mjs`, and `tests/ledger-core`, `tests/ledger-publish`,
+`tests/faculty-console-ledger`. Until it lands, `ATTEST_LEDGER` stays unset and that code is dead.
+
+**Kept on purpose:** `question_bank.json`'s manifest line hashed without item `status`
+(`canonical_question_bank` / `canonicalQuestionBank`, parity-pinned) — signing a question must
+never drift the question tools — and the rule that an agent never mints a signing key or writes
+a signatures branch of any kind.

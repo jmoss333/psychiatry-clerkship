@@ -66,7 +66,6 @@ One line each; the topic page holds the why, the how, and the incident that earn
 |---|---|
 | `13_Faculty_Resources/reviewed.json`; `topic_meta.json` (`facultyReview`); `question_bank.json` (`status`); `pharmacy.json` (`facultyReview`) | governance-separation; attestation-hashes |
 | `13_Faculty_Resources/_automation/attestation_hash.py`; `13_Faculty_Resources/_automation/surface_governance.py`; `13_Faculty_Resources/_automation/validate_attestation_consistency.py`; `faculty-console/` | attestation-hashes; attestation-delivery-and-ledger |
-| `13_Faculty_Resources/ledger/`; `13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs` | attestation-delivery-and-ledger |
 | `CLAUDE.md`; `AGENTS.md`; `.github/`; `bin/`; `.claude/`; `*.schema.json`; `decisions.json`; `docs/agent-guide/` | governance-separation; gates |
 | `.github/workflows/ci.yml`; `bin/verify.sh` | gates |
 | `13_Faculty_Resources/_automation/site_build/` (the build, `site_manifest.json`, `shipped_pages.json`, nav) | build-and-deploy; content-and-pages |
@@ -95,7 +94,7 @@ One line each; the topic page holds the why, the how, and the incident that earn
 | [question-bank](docs/agent-guide/question-bank.md) | phone-attestable drafts; review-only staging (2026-10-11) |
 | [attestation-hashes](docs/agent-guide/attestation-hashes.md) | `contentHash` / `clinicalHash`, drift projection on every surface, the spent backfill, what the projection test pins and does not pin |
 | [governance-separation](docs/agent-guide/governance-separation.md) | policy vs content commits; L1–L4; what a promotion is in each registry; pack-case review as registration; the stale-base hint; the limits |
-| [attestation-delivery-and-ledger](docs/agent-guide/attestation-delivery-and-ledger.md) | the rolling `attest/pending` sweep and the delivery check; the dark Ed25519 ledger (ADR-003) |
+| [attestation-delivery-and-ledger](docs/agent-guide/attestation-delivery-and-ledger.md) | the rolling `attest/pending` sweep and the delivery check; what survives the removed ledger (ADR-003) |
 | [interview-room](docs/agent-guide/interview-room.md) | `sp-proxy/`, the retired red-team sign-off, `bin/rotation_turnover.py` |
 | [automation-and-audit-tools](docs/agent-guide/automation-and-audit-tools.md) | subagents, `.mcp.json`, session hooks, the `bin/` audit family and currency guards, the egress probe, the queue that cannot rot, `SILENT_SHRINK_CHECKLIST.md`, the nightly runner |
 | [safety-content](docs/agent-guide/safety-content.md) | the crisis block and its two consequences, no PHI, instrument reproduction |
@@ -107,6 +106,6 @@ One line each; the topic page holds the why, the how, and the incident that earn
   `sp-redteam-signoff-retired`, …) means that decision, not an agent's inference.
 - ADRs: `13_Faculty_Resources/_automation/surveillance/ADR-001-curriculum-surveillance.md`;
   `13_Faculty_Resources/_automation/site_build/ADR-002-shipped-pages-single-source.md`; ADR-003
-  (the ledger) is described in `docs/agent-guide/attestation-delivery-and-ledger.md`.
+  (the ledger, removed 2026-10-18) is `docs/adr/ADR-003-attestation-ledger.md`.
 - `docs/superpowers/{specs,plans}/` — dated design docs. `docs/SILENT_SHRINK_CHECKLIST.md` — the
   failure mode every gate here exists for. `docs/RATCHETS.md` — how the pinned counts work.

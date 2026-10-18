@@ -16,28 +16,17 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   creates a signature; they only move ones the owner made. Born of 2026-09-28, when the Interview
   Room re-attestation sat on `attest/pending` with no PR on a rotation's first morning.
 
-### The attestation ledger (ADR-003) — built and DARK — [gate: 13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs]
-- **The attestation ledger (ADR-003) — sign-offs that never merge.** Built and DARK: nothing
-  changes until `13_Faculty_Resources/ledger/ACTIVATION.md` is followed. Once on, a faculty
-  sign-off is one Ed25519-signed, hash-chained line appended to `ledger/events.jsonl` on the
-  orphan branch `attestations` (never merged; pushes to it trigger no CI and no Netlify build),
-  written only by the console in ledger mode (`ATTEST_LEDGER=on`), which hashes the page AS IT
-  STANDS ON `main`. Each learner-site build runs `site_build/ledger_overlay.mjs` FIRST
-  (`CLERKSHIP_LEDGER=on`): it verifies every signature and link against
-  `13_Faculty_Resources/ledger/keys.json` and projects the latest event per item onto the
-  working copies of `reviewed.json` / `topic_meta.json` / `question_bank.json`, so every
-  validator, projection and test below it judges the combined record unchanged. A tampered
-  ledger fails the build (last good deploy stays live); an unreachable one builds the baseline
-  and says so; `CLERKSHIP_LEDGER=off` is the emergency override. The console's scheduled
-  `ledger-publish` function rebuilds a site ~10 min after sign-offs go quiet, reading the
-  `ledger-receipt.json` each site serves. Rules that follow: **`reviewed.json` stays the
-  registration record** — content PRs still register and demote there, and a baseline row dated
-  LATER than a ledger event wins over it; **an agent never runs `bin/ledger_keygen.mjs`** (whoever
-  runs it briefly holds the signing key — it is Josh's step) and never writes the ledger branch;
-  **git-side report tools read the baseline only** — `node bin/ledger.mjs materialize --out DIR`
-  gives them the combined view; `node bin/ledger.mjs verify|status|audit` inspect the ledger.
-  Core: `faculty-console/ledger.mjs`; tests: `tests/ledger-*.test.mjs`,
-  `tests/faculty-console-ledger.test.mjs` (every guard in them was broken once to watch its test
-  go red). Also note `question_bank.json`'s manifest line is hashed WITHOUT item `status`
-  (`canonical_question_bank` / `canonicalQuestionBank`, parity-pinned) — signing a question must
-  not drift the question tools.
+### The attestation ledger (ADR-003) — removed 2026-10-18 — [judgment]
+- **The attestation ledger (ADR-003) was built dark and has been removed** (decision
+  `attestation-ledger-removed`, Joshua Moss, MD, 2026-10-18; `docs/adr/ADR-003-attestation-ledger.md`
+  keeps the design and the reasons). Hash-bound signatures in `reviewed.json` plus the console
+  identity work of review item R4 answer the question it was built for. Phase 1 removed the
+  build-side overlay and the `CLERKSHIP_LEDGER` hook in `build_and_check.sh`, the `ledger-publish`
+  scheduled function, `bin/ledger.mjs`, `bin/ledger_keygen.mjs` and `13_Faculty_Resources/ledger/`.
+  Phase 2 removes the console's `ATTEST_LEDGER` mode (`faculty-console/ledger.mjs`,
+  `faculty-console/ledger-publish.mjs`, the ledger branches in `attest.mjs`, `release-status.mjs`
+  and `rolling-pr-sweep.mjs`, and their tests); until it lands, `ATTEST_LEDGER` stays unset and
+  that code is dead. Two things from the design survive on purpose: `question_bank.json`'s
+  manifest line is hashed WITHOUT item `status` (`canonical_question_bank` /
+  `canonicalQuestionBank`, parity-pinned) so signing a question never drifts the question tools,
+  and **an agent never mints a signing key or writes a signatures branch** of any kind.
