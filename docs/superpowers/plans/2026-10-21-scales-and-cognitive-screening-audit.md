@@ -16,7 +16,7 @@
 2. **The CIWA-Ar tab makes a promise it does not keep.** It says administration teaching "is authored separately and is not yet published here" — since 2026-08-28. The `decision-aids.html` CIWA bands also need a check against the ASAM 2020 categories the page itself cites.
 3. **Cognitive and delirium screening is the largest teaching gap**, and the one with the cleanest rights path. The 4AT is published under **CC BY 4.0** by its authors (the4AT.com/attribution), which would make it the first instrument this library could ship verbatim with a recorded licence rather than a waiver. MoCA, MMSE, Mini-Cog, SLUMS and CAM are link-only candidates with different reasons each (§5).
 4. **Three high-yield, public-domain instruments are missing**: AIMS (NIMH, public domain; the medication-monitoring page already names it), ASQ (NIMH, public domain; validated in adult medical inpatients with sensitivity 100 %), and the VA's PC-PTSD-5 / PCL-5. Each still needs a recorded disposition before a line of it ships.
-5. **Governance needs one small addition.** `instrument_rights.json` has `retired`, `restricted` and `provisional`; it has no `cleared` / `public-domain` status, so even a federal instrument cannot be recorded as shippable without inventing a status. That is a one-line schema change and a policy PR, and it is what every build item below is waiting on.
+5. **Governance already has the status the builds need.** `instrument_rights.schema.json` carries a `cleared` status and `instrument-rights-gate.mjs` exits early for a cleared entry once its `decisionRef` is present, so a federal or openly licensed instrument can be recorded as shippable today. What each build item waits on is the capture-then-decide pattern in §7, not a schema change. *(Corrected 2026-10-21: the first draft of this document said the status did not exist. The registry's six live entries use only three statuses, which is what the draft read.)*
 
 ---
 
@@ -171,7 +171,7 @@ Pattern key: **Build** = scored trainer is rights-feasible once a disposition is
 
 1. **Capture the permission** as a dated file in `docs/permissions/` (the PHQ precedent: live sentence, URL, retrieval date).
 2. **Record the decision** in `decisions.json` (`instrument-<id>-cleared`, author-signed).
-3. **Register the instrument** in `instrument_rights.json` with a status the schema allows. **Today it allows none for a cleared instrument** — add `cleared` (and optionally `public-domain`) to `instrument_rights.schema.json`, with `officialSource` still required and `decisionRef` still mandatory. This is a **policy commit** (`bin/check_policy_content_separation.py`) and goes alone.
+3. **Register the instrument** in `instrument_rights.json` as `cleared`, citing the decision. The schema already allows the status and the gate skips a cleared entry's signature scan after checking its `decisionRef`; the schema does not require `officialSource` on a cleared entry, but `tests/instrument-rights-gate.test.mjs` pins that every real entry records a route, so record one. `instrument_rights.json` is a governance path (L1): the registry edit travels in its own PR, never with the page it clears. *(Corrected 2026-10-21; the draft asked for a schema change that is not needed.)*
 4. **Build to the house pattern**: every item tagged `OBSERVED` / `ASKED`; sparse legal values only; in-house descriptors unless the licence covers verbatim text; a route block with the custodian's `formUrl`; `<!-- crisis-block-html -->` wherever the learner does risk work (ASQ, any suicide item); no dose literals; storage keys `cw_*` / `rp_*`; no free-text field that could hold an identifier.
 5. **Register the page** (G10): `site_manifest.json`, nav in `build_deploy.py` (+ `resident_section.py`), `shipped_pages.py --write`, a pending ledger row, `analytics_events.py --write`, a `topic_meta.json` entry through the `topic-meta-author` skill.
 6. **Pin it**: a legal-values test on the `cows-legal-values.test.mjs` model; a presentation test that the page says exactly what it reproduces; controlled fixtures only (invariant 10).
@@ -183,7 +183,7 @@ Pattern key: **Build** = scored trainer is rights-feasible once a disposition is
 
 | ID | Decision | Options (recommended first) | Unblocks |
 |---|---|---|---|
-| **S1** | Add a `cleared` status to `instrument_rights.schema.json` | Yes, policy-only PR · no, keep three statuses | every build item |
+| **S1** | ~~Add a `cleared` status to `instrument_rights.schema.json`~~ **Moot** — the status already exists in the schema and the gate (corrected 2026-10-21) | — | — |
 | **S2** | 4AT: record `cleared` under CC BY 4.0 after capturing the attribution page | Yes, verbatim with credit line · administration-only + link · defer | §5.3 layer 3 |
 | **S3** | AIMS: record `public-domain` and build the examination trainer | Yes · teach + link only | §6 #1 |
 | **S4** | ASQ posture on `screeners.html` | Teach + link (consistent with the safety-planning precedent) · build the four items (public domain) · leave the item-9 route as is | §6 #2 |
@@ -243,13 +243,13 @@ Known decoys to avoid (from the 2026-09-24 remediation §7-C): ASAM 2020 OUD gui
 
 | Horizon | Work | Type | Gate |
 |---|---|---|---|
-| **Now** (one PR each, agent-executable) | COWS C1 + C2 + C8 (`withdrawal-ciwa-cows-card.html`, one new test); CIWA preconditions check (A2); fix the "RASS/PAWSS" clause (A4, teach + link); update the MSE pearl for the December 2025 MoCA policy | content | S5 |
-| **Now** (policy-only PR) | `cleared` status in `instrument_rights.schema.json` + `decisions.json` entry for PHQ-9/GAD-7 | policy | S1, S10 |
+| **Now** (one PR each, agent-executable) | COWS C1 + C2 + C8 (`withdrawal-ciwa-cows-card.html`, one new test) — **approved 2026-10-21, in progress**; CIWA preconditions check (A2); fix the "RASS/PAWSS" clause (A4, teach + link); update the MSE pearl for the December 2025 MoCA policy | content | S5 |
+| **Now** (governance-only PR) | `decisions.json` entry moving PHQ-9/GAD-7 to `cleared` (the schema already allows it; no schema change) | governance | S10 |
 | **Next** | `cognition.html` layers 1–2 (attention trainer, CAM tree, clock-drawing trainer, "which screen, when" chooser with routes); AIMS examination trainer; substance-screening card; ODC-4 closure on `violence.html` | content + registration | S3, S9 |
 | **Next** (author) | COWS C3/C4/C6/C9 copy review; C7 criterion scores; CIWA-Ar administration teaching (A1); PAWSS card (WP-23); decision-aids bands (A5) | author-gated | S6, S7, S8 |
 | **Later** | 4AT scored tool (after S2 and a captured licence); ASQ per S4; PC-PTSD-5 trainer after the VA statement is captured; EPDS after the RCPsych sentence is captured; "scales in the landmark trials" explainer in 07_Evidence | content | S2, S4 |
 
-**Next best step.** Approve S1 and S5 together: the schema addition is the one policy change every later build depends on, and C1/C2/C8 are a half-day of agent work on a page whose rights are now settled — they turn the library's only fully-controlled instrument into one that can show a trend, name its objective signs, and produce the line a resident actually charts.
+**Next best step.** Approve S5: C1/C2/C8 are a half-day of agent work on a page whose rights are now settled — they turn the library's only fully-controlled instrument into one that can show a trend, name its objective signs, and produce the line a resident actually charts. (S1 was approved 2026-10-21 and then found to be unnecessary; see the correction in §0 and §7.)
 
 **Innovative next idea.** A **cross-instrument calibration ladder**: the rater-calibration shell built for COWS (C7) is generic — a vignette, a criterion score, a named error type. Once it exists, the same engine runs clock-drawing scoring, AIMS severity, and 4AT attention items from one fixture format, and the question bank's calibration-gap panel can report a learner's *signed* bias across instruments on the same dashboard. That is the one capability no commercial scale app offers and the one that best fits a library whose rule is to teach administration rather than reproduce forms.
 
