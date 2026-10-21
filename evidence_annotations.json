@@ -3220,6 +3220,31 @@
           ]
         }
       ]
+    },
+    {
+      "sourceId": "bostwick-2016-suicide-attempt-lethality",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-10-21",
+        "pmid": "27523496",
+        "doi": "10.1176/appi.ajp.2016.15070854",
+        "sourceSpan": "During the study period, 81/1,490 enrollees (5.4%) died by suicide. Of the 81, 48 (59.3%) perished on index attempt; 27 of the surviving 33 index attempt survivors (81.8%) killed themselves within a year."
+      },
+      "claims": [
+        {
+          "claimId": "recent-attempt-acute-risk",
+          "claimText": "In a community cohort of 1,490 people with a first medically treated suicide attempt, 81 died by suicide, 48 on the index attempt; of the 33 who survived it and later died by suicide, 27 did so within a year.",
+          "claimTerms": [
+            "killed themselves within a year",
+            "perished on index attempt"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "pg_suicide"
+          ]
+        }
+      ]
     }
   ]
 }

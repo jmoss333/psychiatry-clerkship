@@ -2597,7 +2597,8 @@
       "diefenbach-2025",
       "shank-2026",
       "stanley-brown-2012-safety-planning",
-      "franklin-2017-suicide-risk-meta-analysis"
+      "franklin-2017-suicide-risk-meta-analysis",
+      "bostwick-2016-suicide-attempt-lethality"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2729,7 +2730,7 @@
         },
         {
           "id": "acute",
-          "ask": "Is any acute risk factor present right now?",
+          "ask": "Is any acute risk factor present right now, or a suicide attempt in the past 3 months?",
           "hint": "Intoxication or withdrawal, severe agitation, psychosis or command hallucinations, severe insomnia, new access to lethal means, or unwilling to work on safety.",
           "options": [
             {
@@ -2795,8 +2796,8 @@
           "title": "Thoughts without plan or acute factors: still report",
           "tone": "first",
           "act": [
-            "Tell your team before this encounter ends. You do not decide their risk.",
-            "Ask about lethal means, firearms first, and any past attempt.",
+            "Tell your team now, before this encounter ends. Don't hold it for rounds. You do not decide their risk.",
+            "Ask about lethal means, firearms first, and past attempts. An attempt in the past 3 months: escalate now.",
             "Write down their exact words and the reasons for living they named."
           ],
           "escalate": "soon"
@@ -2833,12 +2834,12 @@
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         },
         "soon": {
-          "label": "Ask them to see the patient today",
+          "label": "Ask them to see the patient this shift",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
           "situation": "I want to report a safety concern from my interview: [their exact words, or what prompted my concern].",
           "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
           "assessment": "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]. I'm not the one who decides their risk.",
-          "recommendation": "Can you assess them today — when? Is there anything I should do first?",
+          "recommendation": "Can you assess them this shift — when? Is there anything I should do first?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         }
       }
