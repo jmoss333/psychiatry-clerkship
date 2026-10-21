@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.2" built="2026-08-27" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for opioid (COWS) withdrawal scoring plus the CIWA-Ar official-form reference: item list, interactive tally, severity bands. Neither instrument is reproduced (CIWA-Ar retired 2026-08-28; COWS anchor text retired 2026-09-10, interim waiver closed) \u2014 item names and legal score values only, descriptors ours (instrument_rights.json). Educational reference — NOT a dosing calculator. Fictional use only." -->
+<!-- [RC-META] tool="Withdrawal Scales — CIWA-Ar & COWS" version="1.3" built="2026-10-21" category="core-topics" subcategory="SUD/Withdrawal" audience="trainee,ms3" settings="inpatient" time="10min" summary="Teaching pocket card for opioid (COWS) withdrawal scoring plus the CIWA-Ar official-form reference: item list, interactive tally, severity bands. Neither instrument is reproduced (CIWA-Ar retired 2026-08-28; COWS anchor text retired 2026-09-10, interim waiver closed) \u2014 item names and legal score values only, descriptors ours (instrument_rights.json). Logs a practice score series in this browser only (cw_cows_series_v1: timestamp, total, item scores; 7-day retention; no PHI, no free-text fields) and shows the objective-sign count and a copyable note line. Educational reference — NOT a dosing calculator. Fictional use only." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Withdrawal: COWS Tool · CIWA-Ar Official Form &amp; Training</title>
@@ -88,6 +88,28 @@
   .tlpill{display:inline-block;margin-top:8px;padding:3px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-dark);font-size:.74rem;font-weight:600;text-decoration:none}
   @media(prefers-reduced-motion:reduce){.needle,.mini i,.dbar i{transition:none}}
   @media(max-width:720px){.scaleWrap{grid-template-columns:1fr}.readout{position:static}.item{grid-template-columns:1fr auto 66px 42px}}
+  /* C1/C2/C8 (2026-10-21) — objective-sign readout, practice series, note line. Tokens only. */
+  .objective{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3);box-shadow:var(--shadow-sm)}
+  .objcount{font-family:var(--font-head);font-size:1.6rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+  .objnames{font-size:.8rem;color:var(--text-mid);margin:4px 0 8px}
+  .gate{font-size:.82rem;border-radius:var(--radius-sm);padding:7px 10px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text-mid)}
+  .gate.met{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+  .gatenote{display:block;margin-top:5px;font-size:.74rem;color:var(--text-light);font-weight:400}
+  .series,.noteCard{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border)}
+  .series h4,.noteCard h4{font-family:var(--font-head);font-size:1.05rem;margin:0 0 var(--sp2)}
+  .banner{background:var(--warning-light);border:1px solid var(--warning);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);font-size:.86rem;color:var(--warning);margin:0 0 var(--sp2)}
+  .seriesControls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .seriesControls .btn{margin-top:0}
+  .btn.primary{background:var(--accent-dark);color:var(--surface);border-color:var(--accent-dark)}
+  .btn.primary:hover,.btn.primary:focus{background:var(--accent)}
+  .spark{width:100%;max-width:440px;height:auto;display:block;margin:var(--sp3) 0 var(--sp2)}
+  .readline{font-weight:700;color:var(--accent-dark)}
+  .deltaline{font-size:.84rem;color:var(--text-mid);margin-top:4px}
+  .entries{list-style:none;margin:var(--sp2) 0 0;padding:0;font-size:.84rem;color:var(--text-mid);display:flex;flex-wrap:wrap;gap:6px 14px}
+  .entries li b{color:var(--text);font-variant-numeric:tabular-nums}
+  .seriesEmpty{font-size:.88rem;color:var(--text-mid);margin:var(--sp2) 0 0}
+  .noteline{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;line-height:1.5;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp2) var(--sp3);user-select:all;-webkit-user-select:all;overflow-wrap:anywhere}
+  .notehint{font-size:.8rem;color:var(--text-light);margin-left:10px}
   footer{margin-top:var(--sp4);padding-top:var(--sp3);border-top:1px solid var(--border);font-size:.85rem;color:var(--text-light);text-align:center}
 </style>
 </head>
@@ -150,16 +172,132 @@ var COWS_GAUGE={
     return {tier:'Severe',color:'var(--danger)',bg:'var(--danger-light)',pill:'Severe withdrawal',action:'Significant distress — treat per protocol.',timeline:null};
   }
 };
+/* COWS_SERIES_HELPERS_BEGIN — pure functions: no DOM, no storage, no clock of their own.
+   tests/cows-series.test.mjs executes this block directly (the cows-legal-values trust model:
+   the only input is this git-tracked file). Enhancements C1 (practice series), C2 (objective-
+   sign readout) and C8 (note line), approved 2026-10-21 — decision S5 in
+   docs/superpowers/plans/2026-10-21-scales-and-cognitive-screening-audit.md §3.
+   Nothing here stores or formats a patient identifier: an entry is a timestamp, a total and
+   the per-item scores, and the page has no free-text field anywhere. */
+var COWS_SERIES={
+  KEY:'cw_cows_series_v1',
+  RETENTION_MS:7*24*60*60*1000,
+  MAX_POINTS:8,
+  TRACK:48,
+  GATE_TOTAL:8,
+  /* Drop anything malformed, older than the retention window, or from a clock set forward;
+     return ascending by time. Runs on every read and every write. */
+  prune:function(entries,nowMs){
+    if(!Array.isArray(entries)) return [];
+    var out=[];
+    for(var i=0;i<entries.length;i++){
+      var x=entries[i]; if(!x||typeof x.t!=='string') continue;
+      var ms=Date.parse(x.t); if(isNaN(ms)) continue;
+      if(nowMs-ms>COWS_SERIES.RETENTION_MS) continue;
+      if(ms>nowMs+60000) continue;
+      var total=parseInt(x.total,10); if(isNaN(total)||total<0||total>COWS_SERIES.TRACK) continue;
+      out.push({t:x.t,total:total,items:(x.items&&typeof x.items==='object')?x.items:{}});
+    }
+    out.sort(function(a,b){return Date.parse(a.t)-Date.parse(b.t);});
+    return out;
+  },
+  delta:function(prev,last){
+    var hours=(Date.parse(last.t)-Date.parse(prev.t))/3600000;
+    var points=last.total-prev.total;
+    return {points:points,hours:hours,perHour:hours>0?points/hours:null};
+  },
+  spanLabel:function(hours){
+    if(hours<(1/60)) return 'under a minute';
+    if(hours<1) return Math.round(hours*60)+' min';
+    return (Math.round(hours*10)/10)+' h';
+  },
+  perHourLabel:function(d){
+    if(d.perHour===null||d.hours<(1/60)) return 'logged within the same minute';
+    var v=Math.round(d.perHour*10)/10;
+    return (v>0?'+':'')+v+' per hour';
+  },
+  /* The one-line read a clinician actually communicates. */
+  read:function(entries){
+    if(!entries||!entries.length) return '';
+    if(entries.length===1) return 'One point logged — a trend needs a second.';
+    var d=COWS_SERIES.delta(entries[entries.length-2],entries[entries.length-1]);
+    var span=COWS_SERIES.spanLabel(d.hours);
+    var n=Math.abs(d.points)+(Math.abs(d.points)===1?' point':' points');
+    if(d.points>0) return 'Rising '+n+' in '+span+'.';
+    if(d.points<0) return 'Falling '+n+' in '+span+' — what does a falling score oblige you to do?';
+    return 'Plateau — unchanged over '+span+'.';
+  },
+  /* The eight OBSERVED items are the objective signs; ASKED and ASKED/OBSERVED items are not. */
+  objective:function(items,values){
+    var names=[],max=0;
+    for(var i=0;i<items.length;i++){
+      var it=items[i]; if(it.tag!=='OBSERVED') continue; max++;
+      if(parseInt(values[it.k]||0,10)>0) names.push(it.b);
+    }
+    return {count:names.length,max:max,names:names};
+  },
+  gateMet:function(total,objectiveCount){ return total>=COWS_SERIES.GATE_TOTAL && objectiveCount>=1; },
+  noteLine:function(items,values,tier){
+    var total=0,scored=[];
+    for(var i=0;i<items.length;i++){var x=parseInt(values[items[i].k]||0,10);total+=x;if(x>0)scored.push({b:items[i].b,v:x});}
+    scored.sort(function(a,b){return b.v-a.v;});
+    var obj=COWS_SERIES.objective(items,values);
+    var parts=scored.map(function(sc){return sc.b+' '+sc.v;});
+    return 'COWS '+total+' ('+tier+')'+(parts.length?' — '+parts.join(', '):' — no items scored')
+      +'; objective signs '+obj.count+'/'+obj.max+(obj.names.length?' ('+obj.names.join(', ')+')':'')
+      +'; COWS ≥ 8 with ≥ 1 objective sign: '+(COWS_SERIES.gateMet(total,obj.count)?'met':'not met')
+      +'. Practice entry — no patient identifiers.';
+  }
+};
+/* COWS_SERIES_HELPERS_END */
+/* Storage wrappers: the only two places the key is read or written. Literal key on purpose —
+   check-static-site.mjs §5 verifies the cw_* namespace from the literal and reports a computed
+   key as unverifiable. */
+function loadSeries(){try{return COWS_SERIES.prune(JSON.parse(localStorage.getItem('cw_cows_series_v1')||'[]'),Date.now());}catch(_){return [];}}
+function saveSeries(entries){try{if(entries.length)localStorage.setItem('cw_cows_series_v1',JSON.stringify(entries));else localStorage.removeItem('cw_cows_series_v1');}catch(_){}}
+function fmtWhen(iso,nowMs){
+  var d=new Date(iso); var hm=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  return d.toDateString()===new Date(nowMs).toDateString()?hm:(d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+hm);
+}
+function Sparkline(props){
+  var pts=props.points.slice(-COWS_SERIES.MAX_POINTS); var W=440,H=84,P=12; var n=pts.length;
+  var xs=pts.map(function(_,i){return n===1?W/2:P+i*(W-2*P)/(n-1);});
+  var ys=pts.map(function(pt){return H-P-(pt.total/COWS_SERIES.TRACK)*(H-2*P);});
+  var d=xs.map(function(x,i){return (i?'L':'M')+x.toFixed(1)+' '+ys[i].toFixed(1);}).join(' ');
+  return e('svg',{className:'spark',viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Last '+n+' logged scores: '+pts.map(function(pt){return pt.total;}).join(', ')},
+    e('path',{d:d,fill:'none',stroke:'var(--accent-dark)',strokeWidth:2,strokeLinejoin:'round'}),
+    pts.map(function(pt,i){return e('circle',{key:'c'+i,cx:xs[i],cy:ys[i],r:3.5,fill:'var(--surface)',stroke:'var(--accent-dark)',strokeWidth:2});}),
+    pts.map(function(pt,i){return e('text',{key:'t'+i,x:xs[i],y:Math.max(10,ys[i]-8),textAnchor:'middle',fontSize:11,fontWeight:700,fill:'var(--text-mid)'},pt.total);}));
+}
 function Scale(props){
   var items=props.items; var g=props.gauge;
   var v=useState({}); var setV=v[1]; v=v[0];
+  /* C1 — the practice series: loaded once, pruned to the retention window on every read and
+     write. Reset clears the item scores, never the series; "Clear series" does that. */
+  var sr=useState(loadSeries); var series=sr[0]; var setSeries=sr[1];
+  var cp=useState(false); var copied=cp[0]; var setCopied=cp[1];
   function set(k,val){var n=Object.assign({},v);n[k]=val;setV(n);}
   var total=items.reduce(function(a,i){return a+(parseInt(v[i.k]||0,10));},0);
   var info=g.info(total);
   var needle=Math.min(100, total/g.track*100);
   function rc(r){return r<0.4?'var(--accent)':(r<0.7?'var(--warning)':'var(--danger)');}
   var scored=items.map(function(i){return {b:i.b,val:parseInt(v[i.k]||0,10),max:i.max};}).filter(function(x){return x.val>0;}).sort(function(a,b){return b.val-a.val;}).slice(0,6);
-  return e('div',{className:'scaleWrap'},
+  var obj=COWS_SERIES.objective(items,v);
+  var gate=COWS_SERIES.gateMet(total,obj.count);
+  var note=COWS_SERIES.noteLine(items,v,info.tier);
+  var nowMs=Date.now();
+  var lastPt=series.length?series[series.length-1]:null; var prevPt=series.length>1?series[series.length-2]:null;
+  var delta=prevPt?COWS_SERIES.delta(prevPt,lastPt):null;
+  function logNow(){
+    var when=Date.now(); var snap={};
+    items.forEach(function(i){var x=parseInt(v[i.k]||0,10); if(x>0) snap[i.k]=x;});
+    var next=COWS_SERIES.prune(series.concat([{t:new Date(when).toISOString(),total:total,items:snap}]),when);
+    saveSeries(next); setSeries(next);
+  }
+  function clearSeries(){ saveSeries([]); setSeries([]); }
+  function copyNote(){ if(navigator.clipboard){ navigator.clipboard.writeText(note).then(function(){ setCopied(true); setTimeout(function(){setCopied(false);},1600); }); } }
+  return e(React.Fragment,null,
+    e('div',{className:'scaleWrap'},
     e('div',{className:'scaleItems'},
       items.map(function(i){
         var val=parseInt(v[i.k]||0,10); var r=i.max?val/i.max:0;
@@ -193,6 +331,17 @@ function Scale(props){
           e('div',{className:'needle',style:{left:needle+'%'}})),
         e('div',{className:'meterlabels'}, g.labels.map(function(l,idx){return e('span',{key:idx,style:{color:l.c}},l.t);}))
       ),
+      /* C2 — objective-sign readout. The eight OBSERVED items are the signs; the gate line is
+         the canonical §7-C wording (decision canonical-values-2026-09) and is teaching, not an
+         order: the number a team starts on lives in its protocol. */
+      e('div',{className:'objective'},
+        e('div',{className:'eyebrow'},'Objective signs scored'),
+        e('div',{className:'objcount'}, obj.count+' of '+obj.max),
+        e('div',{className:'objnames'}, obj.names.length? obj.names.join(' · ') : 'none yet — the eight OBSERVED items are the signs you can see, not the ones you ask about'),
+        e('div',{className:'gate'+(gate?' met':'')},
+          e('b',null,'Gate check — '),'COWS ≥ 8 with at least one objective sign: ',e('b',null, gate?'met':'not met'),
+          e('span',{className:'gatenote'},'Teaching, not an order. This is the ASAM 2023 wording for people using high-potency synthetic opioids (Weimer et al., J Addict Med 2023, PMID 37934520); the threshold your team starts on is in its protocol.'))
+      ),
       scored.length? e('div',{className:'drivers'},
         e('div',{className:'eyebrow'},'What’s driving it'),
         scored.map(function(x,idx){var r=x.max?x.val/x.max:0;return e('div',{className:'drow',key:idx},
@@ -203,6 +352,33 @@ function Scale(props){
       e('div',{className:'mgmt'},
         e('div',null, e('b',{style:{color:info.color}}, info.tier+': '), info.action),
         info.timeline? e('a',{className:'tlpill',href:'../index.html?tool=decision-aids.html'}, 'On the withdrawal timeline · '+info.timeline+' →') : null)
+    )
+    ),
+    /* C1 — the practice series. The banner renders before the only control that can write an
+       entry, every time; there is no field that could hold an identifier. */
+    e('div',{className:'series'},
+      e('div',{className:'eyebrow'},'Trend — practice series'),
+      e('h4',null,'Log this score, change the case, log again'),
+      e('div',{className:'banner'}, e('b',null,'Practice tool. '),'Log scores from a case or a simulated patient only. Never enter data from a real patient. The series stays in this browser and clears itself after 7 days.'),
+      e('div',{className:'seriesControls'},
+        e('button',{className:'btn primary',onClick:logNow},'Log this score ('+total+')'),
+        series.length? e('button',{className:'btn',onClick:clearSeries},'Clear series') : null),
+      series.length? e('div',null,
+        e(Sparkline,{points:series}),
+        e('div',{className:'readline','aria-live':'polite'}, COWS_SERIES.read(series)),
+        delta? e('div',{className:'deltaline'}, 'Change per hour between the last two points: '+COWS_SERIES.perHourLabel(delta)+' · '+series.length+(series.length===1?' point':' points')+' in the last 7 days') : null,
+        e('ul',{className:'entries'}, series.slice(-COWS_SERIES.MAX_POINTS).slice().reverse().map(function(pt){return e('li',{key:pt.t}, fmtWhen(pt.t,nowMs)+' · ', e('b',null,pt.total));}))
+      ) : e('p',{className:'seriesEmpty'},'No points yet. Score the case, log it, then change the scores as the case evolves and log again — the trend is what you hand over, and the rate of change is the number a team acts on.')
+    ),
+    /* C8 — the note line: what a resident charts, built from the tally. Rendered as text, not a
+       field, so there is nothing to type into; copy uses the clipboard API where it exists and
+       select-all where it does not. */
+    e('div',{className:'noteCard'},
+      e('div',{className:'eyebrow'},'Note line'),
+      e('div',{className:'noteline',tabIndex:0}, note),
+      e('div',{style:{marginTop:'8px'}},
+        e('button',{className:'btn',style:{marginTop:0},onClick:copyNote}, copied?'Copied':'Copy note line'),
+        e('span',{className:'notehint'},'Total, band, the items that drive it and the objective-sign count. Add the time since last use and which opioid from your own interview — the tally cannot know them.'))
     )
   );
 }
@@ -279,7 +455,7 @@ function App(){
       e('i',null,'J Psychoactive Drugs'),' 2003;35(2):253–9 (',
       e('a',{href:'https://pubmed.ncbi.nlm.nih.gov/12924748/',target:'_blank',rel:'noopener noreferrer'},'PMID 12924748'),
       '). Neither instrument is reproduced here. The CIWA-Ar descriptors were withdrawn 2026-08-28 because its rights could not be established; the COWS anchor text was withdrawn 2026-09-10 because the permission that exists for it covers clinical copying, not publication on a teaching site. What remains of each scale is its item list and its legal score values \u2014 the scale itself, not the authors\u2019 words. Obtain the complete, current form from your institution or from NIDA, and score at the bedside from that form, not from this page.'),
-    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. Neither the CIWA-Ar nor the COWS is reproduced here \u2014 item names and score values only, with descriptors written by us; use the full validated form at the bedside. For fictional/practice use only — no protected health information.'),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. This is a reference and tally — NOT a dosing calculator or a substitute for the validated instrument, supervision, or your institution’s withdrawal protocol and orders. Neither the CIWA-Ar nor the COWS is reproduced here \u2014 item names and score values only, with descriptors written by us; use the full validated form at the bedside. For fictional/practice use only — no protected health information. The practice score series is kept in this browser only (cw_cows_series_v1) and holds no identifiers.'),
     e('footer',null,'Withdrawal: COWS tool · CIWA-Ar official form · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')
   );
 }
