@@ -67,6 +67,18 @@ most wasted work here has been one session not seeing another.
   `~/Psychiatry-Clerkship-Library-<purpose>/`. Remove with `git worktree remove <path>` once
   the PR merges — deleting the directory by hand leaves the registration behind.
 
+### Remove your own worktree when its PR merges or closes — [judgment]
+- **One worktree per task; the session that made it removes it.** Reuse your own for follow-ups,
+  and check `git worktree list` first: with 40+ pool worktrees or 25+ loose siblings live, clean
+  up before creating another. When the PR merges or closes (or the task ends with nothing to
+  ship), in the same session: `git status --porcelain --untracked-files=all` is empty,
+  `git rev-list --count HEAD --not --remotes` is `0` or your commits are in the PR, then
+  `git worktree remove <path>` host-side — **never `--force`**; if git refuses, stop and say why.
+  A lock is for work in flight: unlock when you finish. The host's nightly sweep honours a lock
+  younger than 7 days and lifts an older one only when the tree is clean, pushed and its PR is
+  merged or closed — re-lock with a fresh dated reason if a copy really must stay. Never delete
+  `_build/`, `node_modules/`, or a worktree another session locked or a running watcher uses.
+
 ### Make a new worktree host-side with `lean_worktrees.py` — [judgment]
 - **Make a new worktree host-side with `python3 bin/lean_worktrees.py new <name> [--base REF]`.**
   It always lands in `<main checkout>/.claude/worktrees/<name>` and fills the LFS media by
