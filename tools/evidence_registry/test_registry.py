@@ -377,6 +377,12 @@ PSYCHOPHARM_PRIMER_2026_10_IDS = {
     "wang-2025-lithium-suicidality",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | PSYCHOPHARM_PRIMER_2026_10_IDS
+# Re-sign packet 2026-10-21, wording item 1: the recent-attempt acute-risk factor on the
+# pg_suicide.md safety tree. One new identity with a stored abstract span.
+PG_SUICIDE_RECENT_ATTEMPT_2026_10_IDS = {
+    "bostwick-2016-suicide-attempt-lethality",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PG_SUICIDE_RECENT_ATTEMPT_2026_10_IDS
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
