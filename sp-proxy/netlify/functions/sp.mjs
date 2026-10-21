@@ -30,6 +30,14 @@ const ENCOUNTER_ID = /^[A-Za-z0-9_-]{22}$/;
 const ROTATION_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const POST_PACK_STATUSES = new Set(['reviewed', 'attested']);
 const FEEDBACK_RATINGS = new Set(['observed', 'partial', 'missed']);
+// The learner tool's two modes. Optional on the wire (a cached client that sends none is
+// Supported); the live patient reads it the way the offline simulator does (speakingState).
+const DIFFICULTIES = new Set(['supported', 'realistic']);
+const DEFAULT_DIFFICULTY = 'supported';
+// A quoted span shorter than this is a word, not a claim's evidence ("burden"); it is not checked.
+const QUOTE_CHECK_MIN_CHARS = 8;
+// What a learner reads in place of a model note whose quotation is not in the exchange.
+const WITHHELD_NOTE = 'The model quoted words that are not in this exchange, so its note is not shown. Review the exchange with your supervisor.';
 
 function invalidConfiguration() {
   return operationalError(500, 'invalid_configuration', 'The Interview Room is not configured.');
@@ -382,7 +390,18 @@ function lockedDeflection(g) {
   const rapportLocked = (g.requiresRapport || 0) > RAPPORT_FLOOR;
   return (rapportLocked && g.deflectLowRapport) || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally';
 }
-function actorSystem(caseDef, s) {
+// The offline simulator's tier rule (MockProvider._tier): Realistic shifts the rapport the patient
+// SPEAKS from by the case's guardedShift; the gates keep the raw rapport, exactly as the mock does.
+// Until 2026-10-21 the wire carried no difficulty, so the live patient was identical in both modes.
+function speakingState(state, caseDef, difficulty, engine) {
+  const declared = caseDef?.difficulty?.realistic?.guardedShift;
+  const shift = difficulty === 'realistic' && Number.isSafeInteger(declared) ? declared : 0;
+  const floor = Number.isSafeInteger(engine?.rapportMin) ? engine.rapportMin : RAPPORT_FLOOR;
+  const openTierMin = Number.isSafeInteger(engine?.openTierMin) ? engine.openTierMin : 1;
+  const effective = Math.max(floor, state.rapport - shift);
+  return { rapportShown: effective, tier: effective >= openTierMin ? 'open' : 'guarded' };
+}
+function actorSystem(caseDef, s, { rapportShown = s.rapport, tier = null } = {}) {
   // Locked gates: ONLY deflection lines enter context. Unlocked: reveal + repeatAsk.
   const gates = caseDef.gated.map(g => s.unlocked[g.id]
     ? { id: g.id, status: 'UNLOCKED', reveal: g.reveal, ifAskedAgain: g.repeatAsk || null }
@@ -397,14 +416,22 @@ function actorSystem(caseDef, s) {
   });
   return caseDef.promptTemplates.actor
     .replace('{{PERSONA_BLOCK}}', personaBlock)
-    .replace('{{RAPPORT}}', String(s.rapport))
+    // The tier names which inventory lines to speak from (the template's old "'onAsking'
+    // content" named a key the inventory never had). Omitted when no tier is given so the
+    // spoken room's persona-block parity test keeps comparing like with like.
+    .replace('{{RAPPORT}}', tier === null
+      ? String(rapportShown)
+      : `${rapportShown} (speaking tier: ${tier} — speak from the "${tier}" lines of each inventory entry)`)
     .replace('{{UNLOCKED}}', JSON.stringify(Object.keys(s.unlocked)))
     // M1: the director side-channel is deterministic and server-side; actor returns prose only.
     .replace(/Output JSON:.*$/s, 'Respond with the patient\'s spoken words only — no JSON, no narration of internal state, no stage directions longer than a brief *action*.');
 }
 function evaluatorSystem(caseDef, coverage, s) {
   return caseDef.promptTemplates.evaluator + '\n\nRUBRIC: ' + JSON.stringify(caseDef.rubric)
-    + '\nCOVERAGE_MAP (deterministic — trust it): ' + JSON.stringify(coverage)
+    // One line, label then JSON: benchmarks/interview-room/run.mjs reads the map back from this
+    // exact prefix. The explanation follows on its own line so the JSON stays parseable.
+    + '\nRECOGNISED_WORDING: ' + JSON.stringify(coverage)
+    + '\n(RECOGNISED_WORDING is deterministic regex recognition of the STUDENT\'S words, one row per checklist topic. A row reads "missed" when no wording matched — that is NOT evidence the topic was never raised. Where the numbered transcript shows the student raised a topic the row calls missed or partial, say so and credit it; never tell the student they skipped something the transcript shows they asked.)'
     + '\nRAPPORT_FINAL: ' + s.rapport + '  REFLECTIONS_USED: ' + s.reflections
     + '\nTEACHING_POINTS (the only management content you may draw on): ' + JSON.stringify(caseDef.debriefTeachingPoints)
     + '\nLINKED_PAGES (growth points must map to these): ' + JSON.stringify(caseDef.linkedPages)
@@ -427,25 +454,35 @@ function validateTurns(value, maximum, { evaluation = false } = {}) {
   return value.map(validateTurn);
 }
 
+function learnerDifficulty(body) {
+  if (!Object.hasOwn(body, 'difficulty')) return DEFAULT_DIFFICULTY;
+  if (!DIFFICULTIES.has(body.difficulty)) throw invalidRequest();
+  return body.difficulty;
+}
+function withDifficultyKey(body, keys) {
+  return Object.hasOwn(body, 'difficulty') ? [...keys, 'difficulty'] : keys;
+}
 function validateLearnerBody(body, pack) {
   const maximumTurns = pack?.engine?.maxTurns;
   if (!Number.isSafeInteger(maximumTurns) || maximumTurns <= 0) throw invalidConfiguration();
   if (!canonicalEncounterId(body?.encounterId) || !nonempty(body.caseId)) throw invalidRequest();
+  const difficulty = learnerDifficulty(body);
 
   if (body.mode === 'open') {
-    if (!exactKeys(body, ['caseId', 'encounterId', 'mode', 'turnId']) || body.turnId !== 0) {
+    if (!exactKeys(body, withDifficultyKey(body, ['caseId', 'encounterId', 'mode', 'turnId'])) || body.turnId !== 0) {
       throw invalidRequest();
     }
     return Object.freeze({
       caseId: body.caseId,
       mode: 'open',
+      difficulty,
       encounterId: body.encounterId,
       turnId: 0,
       turns: Object.freeze([]),
     });
   }
   if (body.mode === 'converse') {
-    if (!exactKeys(body, ['caseId', 'encounterId', 'message', 'mode', 'turnId', 'turns'])) {
+    if (!exactKeys(body, withDifficultyKey(body, ['caseId', 'encounterId', 'message', 'mode', 'turnId', 'turns']))) {
       throw invalidRequest();
     }
     const turns = validateTurns(body.turns, maximumTurns);
@@ -460,6 +497,7 @@ function validateLearnerBody(body, pack) {
     return Object.freeze({
       caseId: body.caseId,
       mode: 'converse',
+      difficulty,
       encounterId: body.encounterId,
       turnId: body.turnId,
       turns: Object.freeze(turns),
@@ -467,7 +505,7 @@ function validateLearnerBody(body, pack) {
     });
   }
   if (body.mode === 'evaluate') {
-    if (!exactKeys(body, ['caseId', 'encounterId', 'mode', 'selfAssess', 'turns'])) {
+    if (!exactKeys(body, withDifficultyKey(body, ['caseId', 'encounterId', 'mode', 'selfAssess', 'turns']))) {
       throw invalidRequest();
     }
     const turns = validateTurns(body.turns, maximumTurns, { evaluation: true });
@@ -483,6 +521,7 @@ function validateLearnerBody(body, pack) {
     return Object.freeze({
       caseId: body.caseId,
       mode: 'evaluate',
+      difficulty,
       encounterId: body.encounterId,
       turns: Object.freeze(turns),
       selfAssess: Object.freeze({ ...body.selfAssess }),
@@ -597,16 +636,19 @@ function evaluationMessage(input) {
   const transcript = input.turns.map((turn, index) => (
     `[${index + 1}] STUDENT: ${turn.me}\n[${index + 1}] PATIENT: ${turn.pt}`
   )).join('\n');
-  return `TRANSCRIPT:\n${transcript}\n\nSTUDENT SELF-ASSESSMENT:\n1 (patient's fear): ${input.selfAssess.a}\n2 (wish I had asked): ${input.selfAssess.b}\n3 (problem representation): ${input.selfAssess.c}`;
+  const mode = input.difficulty === 'realistic'
+    ? 'realistic (no topic map, no coach, a more guarded patient)'
+    : 'supported (topic map and coach were available)';
+  return `TRANSCRIPT:\n${transcript}\n\nSTUDENT SELF-ASSESSMENT:\n1 (patient's fear): ${input.selfAssess.a}\n2 (wish I had asked): ${input.selfAssess.b}\n3 (problem representation): ${input.selfAssess.c}\n\nMODE: ${mode}`;
 }
 
-function assembleOutbound(input, caseDef, contract) {
+function assembleOutbound(input, caseDef, contract, engine) {
   if (input.mode === 'converse') {
     const state = deriveState(caseDef, input.turns.map((turn) => turn.me).concat(input.message));
     const payload = {
       model: contract.actorModel,
       max_tokens: contract.actorMaximum,
-      system: actorSystem(caseDef, state),
+      system: actorSystem(caseDef, state, speakingState(state, caseDef, input.difficulty, engine)),
       messages: actorMessages(input),
     };
     return Object.freeze({
@@ -672,7 +714,8 @@ function publicState(state, engine) {
 
 function validateProviderResult(result) {
   if (
-    !exactKeys(result, ['text', 'usage'])
+    !(exactKeys(result, ['text', 'usage'])
+      || (exactKeys(result, ['stopReason', 'text', 'usage']) && typeof result.stopReason === 'string'))
     || typeof result.text !== 'string'
     || !exactKeys(result.usage, ['inputTokens', 'outputTokens'])
     || !Number.isSafeInteger(result.usage.inputTokens)
@@ -685,8 +728,15 @@ function validateProviderResult(result) {
   return result;
 }
 
-function actorReply(text) {
-  const reply = text.trim();
+// The last sentence terminator (with any closing quote or asterisk) that sits past 40% of the
+// text; below that, cutting would lose more than it saves and the text is left as it came.
+function trimToSentence(text) {
+  let cut = -1;
+  for (const match of text.matchAll(/[.!?\u2026]["\u201d\u2019')*]*(?=\s|$)/g)) cut = match.index + match[0].length;
+  return cut >= text.length * 0.4 ? text.slice(0, cut) : text;
+}
+function actorReply(text, { truncated = false } = {}) {
+  const reply = (truncated ? trimToSentence(text.trim()) : text).trim();
   if (!boundedText(reply)) throw providerFailed();
   return reply;
 }
@@ -695,26 +745,70 @@ function feedbackText(value) {
   return boundedText(value, { maximum: FEEDBACK_TEXT_LIMIT });
 }
 
-function validateFeedback(raw, linkedPages) {
-  let value;
-  try {
-    value = JSON.parse(raw);
-  } catch {
-    throw providerFailed();
+function normaliseQuote(text) {
+  return String(text)
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/\u2026/g, '...')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+// Every double-quoted span in a feedback field, normalised; the evaluator prompt demands that
+// every claim quote a numbered turn verbatim, and until 2026-10-21 nothing checked that it did.
+function quotedSpans(text) {
+  const spans = [];
+  for (const match of String(text).matchAll(/["\u201c\u201d]([^"\u201c\u201d]+)["\u201c\u201d]/g)) {
+    const span = normaliseQuote(match[1]).replace(/^[\s.]+|[\s.,;:!?]+$/g, '');
+    if ([...span].length >= QUOTE_CHECK_MIN_CHARS) spans.push(span);
   }
+  return spans;
+}
+function quotesVerified(text, evidence) {
+  return quotedSpans(text).every((span) => evidence.includes(span));
+}
+function evidenceTextFor(input) {
+  const parts = [];
+  for (const turn of input.turns) parts.push(turn.me, turn.pt);
+  parts.push(input.selfAssess.a, input.selfAssess.b, input.selfAssess.c);
+  return normaliseQuote(parts.join('\n'));
+}
+// A fenced or prefixed JSON object is still the object; only an unparsable one is discarded.
+function extractJsonObject(raw) {
+  const text = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  try {
+    return JSON.parse(text);
+  } catch {
+    const first = text.indexOf('{');
+    const last = text.lastIndexOf('}');
+    if (first < 0 || last <= first) throw providerFailed();
+    try {
+      return JSON.parse(text.slice(first, last + 1));
+    } catch {
+      throw providerFailed();
+    }
+  }
+}
+function validateFeedback(raw, linkedPages, evidence) {
+  const value = extractJsonObject(raw);
   if (
-    !exactKeys(value, ['domains', 'growth', 'selfAssessmentNote', 'strengths'])
+    !value || typeof value !== 'object' || Array.isArray(value)
+    || !exactKeys(value, ['domains', 'growth', 'selfAssessmentNote', 'strengths'])
     || !exactKeys(value.domains, ['alliance', 'data', 'organization', 'technique'])
     || !Array.isArray(value.strengths)
-    || value.strengths.length !== 2
+    || value.strengths.length < 1
+    || value.strengths.length > 3
     || !value.strengths.every(feedbackText)
     || !Array.isArray(value.growth)
-    || value.growth.length !== 2
+    || value.growth.length < 1
+    || value.growth.length > 3
     || !feedbackText(value.selfAssessmentNote)
     || !Array.isArray(linkedPages)
+    || typeof evidence !== 'string'
   ) {
     throw providerFailed();
   }
+  const withheld = { strengths: 0, growth: 0, notes: 0 };
   const domains = {};
   for (const name of ['alliance', 'data', 'technique', 'organization']) {
     const domain = value.domains[name];
@@ -725,7 +819,9 @@ function validateFeedback(raw, linkedPages) {
     ) {
       throw providerFailed();
     }
-    domains[name] = { rating: domain.rating, note: domain.note };
+    const verified = quotesVerified(domain.note, evidence);
+    if (!verified) withheld.notes += 1;
+    domains[name] = { rating: domain.rating, note: verified ? domain.note : WITHHELD_NOTE };
   }
   const growth = value.growth.map((item) => {
     if (
@@ -737,12 +833,24 @@ function validateFeedback(raw, linkedPages) {
       throw providerFailed();
     }
     return { t: item.t, link: item.link };
+  }).slice(0, 2).filter((item) => {
+    const verified = quotesVerified(item.t, evidence);
+    if (!verified) withheld.growth += 1;
+    return verified;
   });
+  const strengths = value.strengths.slice(0, 2).filter((text) => {
+    const verified = quotesVerified(text, evidence);
+    if (!verified) withheld.strengths += 1;
+    return verified;
+  });
+  const selfVerified = quotesVerified(value.selfAssessmentNote, evidence);
+  if (!selfVerified) withheld.notes += 1;
   return {
     domains,
-    strengths: [...value.strengths],
+    strengths,
     growth,
-    selfAssessmentNote: value.selfAssessmentNote,
+    selfAssessmentNote: selfVerified ? value.selfAssessmentNote : WITHHELD_NOTE,
+    withheld,
   };
 }
 
@@ -875,13 +983,17 @@ function parseAnthropicResponse(value) {
   }
   const combined = text.join('');
   if (combined.trim().length === 0) throw providerFailed();
-  return Object.freeze({
+  const result = {
     text: combined,
     usage: Object.freeze({
       inputTokens: value.usage.input_tokens,
       outputTokens: value.usage.output_tokens,
     }),
-  });
+  };
+  // Carried only when the provider sent one: a reply cut at max_tokens is trimmed to its last
+  // whole sentence instead of being shown mid-word (audit S3-B); the evaluator logs it.
+  if (typeof value.stop_reason === 'string') result.stopReason = value.stop_reason;
+  return Object.freeze(result);
 }
 
 export function createAnthropicProvider({
@@ -1194,9 +1306,19 @@ async function executeBudgeted({
   let result;
   try {
     result = outbound.kind === 'actor'
-      ? actorReply(providerResult.text)
-      : validateFeedback(providerResult.text, caseDef.linkedPages);
+      ? actorReply(providerResult.text, { truncated: providerResult.stopReason === 'max_tokens' })
+      : validateFeedback(providerResult.text, caseDef.linkedPages, evidenceTextFor(input));
   } catch {
+    // Until 2026-10-21 an evaluator reply that did not parse settled as provider_failed and was
+    // otherwise invisible, so nobody knew how often learners got the deterministic debrief instead.
+    try {
+      logger?.({
+        event: outbound.kind === 'actor' ? 'actor_reply_invalid' : 'evaluator_parse_failed',
+        stopReason: providerResult.stopReason ?? null,
+      });
+    } catch {
+      // Logging must never change the settle below.
+    }
     try {
       const settled = await ledger.settle({
         reservation,
@@ -1242,6 +1364,17 @@ async function executeBudgeted({
     });
   } catch {
     // Logging must never discard a completed actor reply.
+  }
+  try {
+    if (outbound.kind === 'actor' && providerResult.stopReason === 'max_tokens') {
+      logger?.({ event: 'actor_truncated', trimmed: result !== providerResult.text.trim() });
+    }
+    if (outbound.kind === 'evaluation'
+      && (result.withheld.strengths || result.withheld.growth || result.withheld.notes)) {
+      logger?.({ event: 'evaluator_quotes_unverified', ...result.withheld });
+    }
+  } catch {
+    // Logging must never discard a completed reply.
   }
   if (request.signal.aborted) throw requestCancelled();
 
@@ -1354,7 +1487,7 @@ export function createSpHandler({
         }, { origin });
       }
 
-      const outbound = assembleOutbound(input, caseDef, contract);
+      const outbound = assembleOutbound(input, caseDef, contract, snapshot.pack.engine);
       const result = await executeBudgeted({
         request,
         snapshot,

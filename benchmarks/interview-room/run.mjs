@@ -259,7 +259,7 @@ async function responsePair(runtime, pair) {
     }
     assert.equal(response.status, 200, `${pair.id}: evaluation handler failed: ${JSON.stringify(body)}`);
     assert.ok(captured, 'Evaluation request was not captured');
-    const line = captured.system.split('\n').find(s => s.startsWith('COVERAGE_MAP (deterministic — trust it): '));
+    const line = captured.system.split('\n').find(s => s.startsWith('RECOGNISED_WORDING: '));
     assert.ok(line, 'Coverage map was not located in the actual evaluator prompt');
     variants.push({ patient, handlerStatus: response.status, transcript: captured.messages[0].content,
       coverage: JSON.parse(line.slice(line.indexOf(': ') + 2)), promptSha256: sha(JSON.stringify(captured)) });
