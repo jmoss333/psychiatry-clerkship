@@ -169,13 +169,16 @@ test('a one-word alias ranks its page first for the bare word, but never above a
 
 test('an exact title that is not an alias never displaces the safety prefix (haystack protocol stays first)', () => {
   // frontdoor-search-gate.mjs pins the same shape against the built shell: the Catatonia case
-  // page is the first ITEM for its own title, and the Consult Questions protocol row (matched
-  // on "catatonia") keeps row 0. The exact tier may not jump a protocol.
+  // page is the first ITEM for its own title, and the protocol rows keep the top: since #1087 the
+  // catatonia protocol (trigger "catatonia") leads, then Consult Questions (matched on
+  // "catatonia"). The exact tier may not jump a protocol.
   const cotw = 'cotw_20260831_catatonia_ms3.md';
   if (!REAL_INDEX.byRef[cotw]) return;
   const rows = F.fdSearchResults(REAL_INDEX, 'Catatonia [Aug 31] — MS3?', SYN, {});
   assert.equal(rows[0]?.kind, 'protocol');
-  assert.equal(rows[0]?.item.ref, 'exp_consult.md');
+  assert.equal(rows[0]?.item.ref, 'catatonia.md');
+  assert.equal(rows[1]?.kind, 'protocol');
+  assert.equal(rows[1]?.item.ref, 'exp_consult.md');
   assert.equal(rows.find((r) => r.kind === 'item')?.item.ref, cotw);
 });
 
