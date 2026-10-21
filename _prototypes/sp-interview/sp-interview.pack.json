@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0",
   "tool": "sp-interview",
-  "version": "0.2.0",
-  "built": "2026-09-26",
+  "version": "0.2.1",
+  "built": "2026-10-21",
   "evidenceThrough": "2026-06-30",
   "reviewCadenceDays": 180,
   "status": "reviewed",
@@ -171,32 +171,32 @@
       },
       "hiddenAgenda": "Lost her job as a school nurse two months ago and has not told her extended family. Feels she has become a burden to her husband. Most nights she has thoughts of not waking up, and she has thought about her husband's sleeping pills — no rehearsal, and her niece is a reason she holds on. She is testing whether this team will flinch or judge her.",
       "intents": [
-        { "id": "greeting_agenda", "label": "Introduced self / set agenda collaboratively", "category": "organization", "coverage": "core", "patterns": ["\\bmy name is\\b", "\\bi'?m (dr|doctor|a med|the med|a student)", "what (would|do) you (want|hope|like)", "is (that|this) (ok|okay|alright)", "we have about", "before we start"] },
-        { "id": "open_invite", "label": "Opened with an open-ended invitation", "category": "technique", "coverage": "core", "patterns": ["tell me (a (little|bit) )?(more )?about", "what('?s| has) been (going on|happening)", "in your own words", "start wherever", "what brought you"] },
-        { "id": "reflection", "label": "Reflected / validated", "category": "alliance", "coverage": "bonus", "patterns": ["(it )?sounds (like|as if)", "that (must|sounds|seems) (be )?(really |very )?(hard|difficult|exhausting|heavy|painful|lonely)", "i can (hear|see) (that|how)", "you('?ve| have) been (carrying|holding)", "when you say"] },
-        { "id": "mood", "label": "Asked about mood", "category": "data", "coverage": "core", "patterns": ["\\bmood\\b", "how (have you been|are you) feeling", "\\bdepress", "\\bsad\\b", "\\bdown\\b.*(lately|feeling|been)", "feeling (down|low|blue)"] },
-        { "id": "anhedonia", "label": "Asked about interest / pleasure", "category": "data", "coverage": "core", "patterns": ["\\benjoy", "\\binterest", "\\bpleasure", "\\bfun\\b", "things you used to (like|love|enjoy)", "\\bhobb"] },
-        { "id": "sleep", "label": "Asked about sleep", "category": "data", "coverage": "core", "patterns": ["\\bsleep", "\\binsomnia", "\\bwaking (up )?(early|at night)", "trouble falling asleep", "\\bnights?\\b.*(like|going|been)"] },
-        { "id": "appetite", "label": "Asked about appetite / weight", "category": "data", "coverage": "core", "patterns": ["\\bappetite", "\\beating", "\\bweight", "\\bmeals?\\b", "\\bfood\\b"] },
-        { "id": "energy", "label": "Asked about energy / fatigue", "category": "data", "coverage": "core", "patterns": ["\\benergy", "\\btired", "\\bfatigue", "\\bexhaust", "\\bworn (out|down)"] },
-        { "id": "concentration", "label": "Asked about concentration", "category": "data", "coverage": "core", "patterns": ["\\bconcentrat", "\\bfocus", "\\battention", "\\bmemory", "keep(ing)? track", "\\bdistract"] },
-        { "id": "guilt", "label": "Asked about guilt / worthlessness", "category": "data", "coverage": "core", "patterns": ["\\bguilt", "\\bworthless", "\\bburden", "hard on yourself", "\\bblam(e|ing) yourself", "\\bfailure"] },
+        { "id": "greeting_agenda", "label": "Introduced self / set agenda collaboratively", "category": "organization", "coverage": "core", "patterns": ["\\bmy name is\\b", "\\bi'?m (dr|doctor|a med|the med|a student)", "what (would|do) you (want|hope|like)", "is (that|this) (ok|okay|alright)", "we have about", "before we start", "\\b(?:a|the|one of the) (?:(?:first|second|third|fourth).year )?(?:med(?:ical)? )?students?\\b", "\\bstudent doctor\\b", "\\bi work with (?:dr\\b|doctor|the (?:team|doctors))", "\\bis (?:now|this) (?:an? )?(?:ok|okay|good|alright|bad) time\\b", "\\bon the (?:psychiatry |psych |medical )?(?:team|service) (?:here|today|this (?:week|month))\\b", "\\bwe(?:'ve| have)? (?:got )?(?:about |around )?(?:\\d+|ten|fifteen|twenty|a few) minutes\\b"] },
+        { "id": "open_invite", "label": "Opened with an open-ended invitation", "category": "technique", "coverage": "core", "patterns": ["tell me (a (little|bit) )?(more )?about", "what('?s| has) been (going on|happening)", "in your own words", "start wherever", "what brought you", "\\bwalk me through\\b", "\\bhelp me understand\\b", "\\bhow did you (?:end up|come to be|get|wind up) (?:here|in the hospital|admitted)\\b", "\\bwhere would you like to (?:start|begin)\\b", "\\bwhat (?:happened|led (?:up )?to)\\b", "\\bwhat (?:has|have) (?:the last|these last|the past) (?:few |couple of |\\w+ )?(?:weeks?|months?|days?) been like\\b", "\\bwhat(?:'s| is| has) (?:it|this|that) been like\\b", "\\bwhat (?:was|were|is|are) (?:it (?:that )?)?(?:they|he|she|tom|your \\w+)?\\s*(?:was |were |is |are )?(?:so )?worried about\\b", "\\bwhat (?:was|were) (?:it|they|he|she|tom|your \\w+) (?:so )?worried about\\b"] },
+        { "id": "reflection", "label": "Reflected / validated", "category": "alliance", "coverage": "bonus", "patterns": ["(it )?sounds (like|as if)", "that (must|sounds|seems) (?:have been |has been |be |been )?(?:really |very |so |pretty |incredibly |truly )?(hard|difficult|exhausting|heavy|painful|lonely)", "i can (hear|see) (that|how)", "you('?ve| have) been (carrying|holding)", "when you say", "\\bi hear you\\b", "\\bit seems (?:like|as if)\\b", "\\bthat(?:'s| is) a lot\\b", "^\\s*(?:so )?(?:it sounds like )?you(?:'ve| have|'re| are| were)? (?:been )?(?:feel(?:ing|s)?|felt|tired of|exhausted|worried|scared|afraid|frustrated|angry|ashamed|embarrassed|overwhelmed|carrying|holding|dealing with|going through|struggling)\\b", "\\byou(?:'ve| have) been (?:through|dealing with|struggling)\\b"] },
+        { "id": "mood", "label": "Asked about mood", "category": "data", "coverage": "core", "patterns": ["\\bmood\\b", "how (have you been|are you) feeling", "\\bdepress", "\\bsad\\b", "\\bdown\\b.*(lately|feeling|been)", "feeling (down|low|blue)", "\\bhow are your spirits\\b", "\\bscale of (?:one|1) to (?:ten|10)\\b", "\\bwhat word would you use\\b", "\\bhopeless", "\\bhow (?:have|has) (?:you|things|it) been (?:feeling )?emotionally\\b", "\\bfeeling (?:emotionally|inside)\\b"] },
+        { "id": "anhedonia", "label": "Asked about interest / pleasure", "category": "data", "coverage": "core", "patterns": ["\\benjoy", "\\binterest", "\\bpleasure", "\\bfun\\b", "things you used to (like|love|enjoy)", "\\bhobb", "\\blook(?:ing|ed)? forward to\\b", "\\bfelt good\\b", "\\bthings you (?:normally|usually|used to) (?:like|love|enjoy|do)\\b"] },
+        { "id": "sleep", "label": "Asked about sleep", "category": "data", "coverage": "core", "patterns": ["\\bsleep(?!ing\\s+(?:pills?|meds?|medication|medicine|tablets?|aids?)\\b|\\s+(?:pills?|meds?|medication|medicine|tablets?|aids?)\\b)", "\\binsomnia", "\\bwaking (up )?(early|at night)", "trouble falling asleep", "\\bnights?\\b.*(like|going|been)", "\\bhours (?:a|per|each|of sleep a) night\\b", "\\bhow many hours\\b"] },
+        { "id": "appetite", "label": "Asked about appetite / weight", "category": "data", "coverage": "core", "patterns": ["\\bappetite", "\\beating", "\\bweight", "\\bmeals?\\b", "\\bfood\\b", "\\bclothes (?:fit|fitting|looser|loose|tighter)\\b", "\\btaste\\b"] },
+        { "id": "energy", "label": "Asked about energy / fatigue", "category": "data", "coverage": "core", "patterns": ["\\benergy", "\\btired", "\\bfatigue", "\\bexhaust", "\\bworn (out|down)", "\\b(?:hard|difficult|tough) to get (?:through the day|moving|going|out of bed|up)\\b", "\\bhow much effort\\b", "\\bmotivat"] },
+        { "id": "concentration", "label": "Asked about concentration", "category": "data", "coverage": "core", "patterns": ["\\bconcentrat", "\\bfocus(?!\\s+on\\s+(?:your|the|this|that|what|how)\\b)", "\\battention", "\\bmemory", "keep(ing)? track", "\\bdistract", "\\bthinking (?:felt|been|seems?|is|has been) (?:slow(?:er|ed)?|foggy|fuzzy)\\b", "\\btrain of thought\\b", "\\bforget(?:ting|ful)?\\b", "\\bkeep your mind on\\b", "\\bmind (?:wander|drift)", "\\bbrain fog\\b", "\\bthinking (?:felt|been|seems?|is|has been) (?:slow(?:er|ed)?|foggy|fuzzy)\\b", "\\bthinking (?:felt|been|seems?|is|has been) (?:slow|foggy|fuzzy)\\b"] },
+        { "id": "guilt", "label": "Asked about guilt / worthlessness", "category": "data", "coverage": "core", "patterns": ["\\bguilt", "\\bworthless", "\\bburden", "hard on yourself", "\\bblam(e|ing) yourself", "\\bfailure", "\\blet (?:people|everyone|them|him|her|anyone|your \\w+) down\\b", "\\bfeel about yourself\\b", "\\bsham(?:e|eful)\\b|\\bashamed\\b"] },
         { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "end(?:ing)? it all\\b"] },
-        { "id": "si_passive", "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["thoughts? of dying", "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"] },
-        { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "do(ing)? something (to yourself|drastic|stupid)", "dark (thoughts|places?)", "unsafe thoughts", "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself", "self.?(?:harm|injur)", "(?:just )?disappear\\b", "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"] },
-        { "id": "si_plan", "label": "Asked about plan (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)", "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)", "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b", "^\\s*plans?\\s*\\??\\s*$", "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)", "thought about how", "\\bspecific\\b.*(thought|way)"] },
-        { "id": "si_means", "label": "Asked about means / access (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)", "\\bpills?\\b.*(home|have|husband)", "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?", "at home.*(medic|pills?)", "get (a ?hold|ahold) of"] },
-        { "id": "si_intent_protective", "label": "Explored intent / what keeps her going", "category": "safety", "coverage": "core", "patterns": ["\\bintent", "\\bact(?:ed|ing)? on\\b", "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b", "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)", "worth (?:living|staying|sticking around|holding on|getting up) for\\b", "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b", "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b", "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)", "\\bprotect"] },
-        { "id": "si_behavior", "label": "Asked about past attempts / preparatory acts (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)", "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)", "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b", "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)", "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b", "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b", "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b", "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)", "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b", "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)"] },
-        { "id": "psychosis_screen", "label": "Screened for psychotic symptoms", "category": "data", "coverage": "core", "patterns": ["\\bhear(ing)?\\b.*(voices?|things)", "\\bsee(ing)?\\b.*(things|stuff)", "\\bvoices\\b", "\\bparanoi", "watched|following you", "thoughts (that )?(aren'?t|not) yours", "mind play(ing)? tricks"] },
-        { "id": "substance", "label": "Asked about alcohol / substances", "category": "data", "coverage": "core", "patterns": ["\\balcohol", "\\bdrink", "\\bdrugs?\\b", "\\bcannabis|\\bmarijuana|\\bweed\\b", "\\bsubstance", "anything (else )?to (cope|take the edge)"] },
-        { "id": "meds_medical", "label": "Asked about medications / medical history", "category": "data", "coverage": "core", "patterns": ["\\bmedications?\\b", "\\bmeds\\b", "medical (history|problems|conditions)", "\\bthyroid", "health (problems|conditions|issues)", "seeing a (doctor|therapist|counselor)"] },
-        { "id": "prior_episodes", "label": "Asked about prior episodes / treatment", "category": "data", "coverage": "core", "patterns": ["\\bbefore\\b.*(felt|feeling|happened|like this)", "first time", "\\bpast\\b.*(depress|episode|treatment)", "\\btherapy\\b", "\\bcounseling", "ever (felt|been) (like this|this way)"] },
-        { "id": "work_stressor", "label": "Explored work / recent stressors", "category": "data", "coverage": "core", "patterns": ["\\bwork\\b", "\\bjob\\b", "\\bnurse|nursing", "\\bstress", "anything (change|happen)", "\\btwo months|couple (of )?months"] },
-        { "id": "family_social", "label": "Asked about family / supports", "category": "data", "coverage": "core", "patterns": ["\\bhusband", "\\bfamily", "\\bsupport", "\\bfriends?\\b", "who (do you|can you) (talk|lean|count) (to|on)", "\\bniece", "at home\\b"] },
-        { "id": "summary_close", "label": "Summarized and closed safely", "category": "organization", "coverage": "core", "patterns": ["let me (make sure|see if) i('?ve| have)?( got| understood)?", "to summarize", "what i('?m| am) hearing", "did i (miss|get)", "anything (else )?(you want|i should)", "we('?ll| will) (talk|check in|come back)"] },
-        { "id": "judgmental", "label": "Judgmental / minimizing phrasing", "category": "flag", "coverage": "flag", "patterns": ["you should(n'?t)?\\b", "\\bat least\\b", "other people have it", "snap out", "look on the bright side", "that'?s not a big deal", "why (didn'?t|don'?t) you just"] },
-        { "id": "premature_reassurance", "label": "Reassured before assessing", "category": "flag", "coverage": "flag", "patterns": ["everything (will|is going to) be (fine|ok|okay|alright)", "don'?t worry", "you('?ll| will) be fine", "it('?s| is) all going to work out"] },
+        { "id": "si_passive", "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["thoughts? of dying", "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here|without (me|you)\\b|if i wasn'?t here)", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))", "\\bnot want(?:ing)? to (?:be alive|be here|live|go on|carry on)\\b", "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"] },
+        { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)", "dark (thoughts|places?)", "unsafe thoughts", "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself", "self.?(?:harm|injur)", "(?:just )?disappear\\b", "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"] },
+        { "id": "si_plan", "label": "Asked about plan (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)(?!\\s+(?:you|she|he|i|we|they)(?:'re| are|'m| am)?\\s+(?:leave|leaving|get|getting|go|going|come|coming|head|heading|discharged|out|home|back|released)\\b)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)", "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)", "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b(?!\\s+(?:for|over|this|next)\\s+(?:the\\s+)?(?:weekend|week|summer|holidays?|trip|discharge|after)\\b)", "^\\s*plans?\\s*\\??\\s*$", "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)", "thought about how(?!\\s+(?:to|you(?:'d|'ll| would| might| could| will)?\\s+(?:tell|talk|explain|handle|manage|cope|approach|bring|break|get through|get back|pay|afford|deal))\\b)", "\\bspecific\\b.*(thought|way)", "\\bthought about (?:when|where)(?!\\s+(?:you(?:'ll| will|'d| would|'re| are)?\\s+)?(?:stay|staying|live|living|go|going|work|working|be))", "\\b(?:particular|specific|certain) (?:method|way|means)\\b", "\\bhow far (?:has|have|did) (?:that|it|this|those thoughts?) (?:gone|gotten|got|come)\\b"] },
+        { "id": "si_means", "label": "Asked about means / access (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)", "\\bpills?\\b.*(home|have|husband)", "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?", "at home.*(medic|pills?)", "get (a ?hold|ahold) of", "\\b(?:guns?|firearms?|weapons?|rifles?|pistols?)\\b", "\\bwhere (?:are|is|do you keep) the (?:pills?|meds?|medications?|bottles?)\\b", "\\bget (?:to|at) (?:them|it|the (?:pills?|bottle))\\b", "\\bstill (?:in|at|around) the house\\b", "\\b(?:pills?|bottles?|medications?|meds)\\b.{0,30}\\b(?:house|cabinet|around|reach|kept|keep)\\b", "\\b(?:anything|something) (?:at home |in the house |around |here )?(?:that )?(?:you )?(?:could|would|might) use to\\b"] },
+        { "id": "si_intent_protective", "label": "Explored intent / what keeps her going", "category": "safety", "coverage": "core", "patterns": ["\\bintent", "\\bact(?:ed|ing)? on\\b", "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b", "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)", "worth (?:living|staying|sticking around|holding on|getting up) for\\b", "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b", "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b", "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)", "\\bprotect", "\\bwant the (?:pain|tired(?:ness)?|hurting|suffering|feeling) to (?:stop|end|go away)\\b", "\\bkept the (?:bottle|pills|lid) (?:closed|shut|away)\\b"] },
+        { "id": "si_behavior", "label": "Asked about past attempts / preparatory acts (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)", "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)", "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b", "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)", "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b", "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b", "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b", "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)", "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b", "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)", "\\bgone (?:any )?further than (?:a |just a )?thoughts?\\b", "\\btaken? (?:any )?steps\\b", "\\bdone anything (?:to|towards?) (?:end|take|hurt|harm|kill|act)\\b", "\\bever (?:come|came|gotten|got) close to (?:doing|acting|ending|killing|taking)"] },
+        { "id": "psychosis_screen", "label": "Screened for psychotic symptoms", "category": "data", "coverage": "core", "patterns": ["\\bhear(?:ing)?\\b(?:\\s+\\w+){0,3}\\s+(?:voices?|sounds?|noises?)\\b|\\bhear(?:ing)?\\s+(?:any\\s+)?things\\b", "\\bsee(?:ing)?\\s+(?:or hear(?:ing)?\\s+)?(?:any\\s+)?(?:things|stuff|visions)\\b", "\\bvoices\\b", "\\bparanoi", "watched|following you", "thoughts (that )?(aren'?t|not) yours", "mind play(ing)? tricks", "\\bmind (?:been |is |was |has been )?playing tricks\\b", "\\b(?:watching|out to get|talking about|spying on|plotting against) you\\b", "\\bthoughts (?:that )?(?:aren'?t|are not|don'?t feel like) (?:your own|yours)\\b", "\\bunusual experiences\\b"] },
+        { "id": "substance", "label": "Asked about alcohol / substances", "category": "data", "coverage": "core", "patterns": ["\\balcohol", "\\bdrink", "\\bdrugs?\\b", "\\bcannabis|\\bmarijuana|\\bweed\\b", "\\bsubstance", "anything (else )?to (cope|take the edge)", "\\bsmok(?:e|ing)\\b|\\bvap(?:e|ing)\\b|\\bnicotine\\b|\\btobacco\\b|\\bcigarette"] },
+        { "id": "meds_medical", "label": "Asked about medications / medical history", "category": "data", "coverage": "core", "patterns": ["\\bmedications?\\b", "\\bmeds\\b", "medical (history|problems|conditions)", "\\bthyroid", "health (problems|conditions|issues)", "seeing a (doctor|therapist|counselor)", "\\bprescriptions?\\b", "\\bprimary care\\b|\\bpcp\\b|\\bfamily doctor\\b", "\\btake anything (?:regularly|daily|every day)\\b", "\\bsupplements?\\b"] },
+        { "id": "prior_episodes", "label": "Asked about prior episodes / treatment", "category": "data", "coverage": "core", "patterns": ["\\bbefore\\b.*(felt|feeling|happened|like this)", "first time", "\\bpast\\b.*(depress|episode|treatment)", "\\btherapy\\b", "\\bcounseling", "ever (felt|been) (like this|this way)", "\\bhappened before\\b", "\\bever (?:been )?(?:treated|hospitali[sz]ed|admitted)\\b", "\\bantidepressants?\\b", "\\bepisodes?\\b", "\\b(?:seen|saw|see|seeing) a (?:therapist|counsel(?:l)?or|psychiatrist|psychologist)\\b", "\\bin the past\\b.*(?:depress|like this|this way|low|down)", "\\bprevious(?:ly)?\\b.*(?:depress|episode|treat)"] },
+        { "id": "work_stressor", "label": "Explored work / recent stressors", "category": "data", "coverage": "core", "patterns": ["\\bwork\\b", "\\bjob\\b", "\\bnurse|nursing", "\\bstress", "anything (change|happen)", "\\btwo months|couple (of )?months", "\\bfor a living\\b", "\\bare you working\\b", "\\b(?:big|major) change\\b", "\\bunemploy|\\blaid off|\\blost (?:your|a|the|her) job", "\\bcareer\\b", "\\bwhat (?:changed|happened) (?:around|before|when|at the time)\\b"] },
+        { "id": "family_social", "label": "Asked about family / supports", "category": "data", "coverage": "core", "patterns": ["\\bhusband", "\\bfamily", "\\bsupport", "\\bfriends?\\b", "who (do you|can you) (talk|lean|count) (to|on)", "\\bniece", "at home\\b", "\\bpeople you can (?:talk|lean|count|rely) (?:to|on)\\b", "\\bwho(?:'s| is) in your life\\b", "\\bclose (?:with|to) (?:anyone|your|him|her|them)\\b", "\\brelationship\\b", "\\bsister\\b", "\\b(?:partner|spouse|wife)\\b"] },
+        { "id": "summary_close", "label": "Summarized and closed safely", "category": "organization", "coverage": "core", "patterns": ["let me (make sure|see if) i('?ve| have)?( got| understood)?", "to summarize", "what i('?m| am) hearing", "did i (miss|get)", "anything (else )?(you want|i should)", "we('?ll| will) (talk|check in|come back)", "\\banything else (?:you(?:'d| would)? (?:like|want) (?:me )?to know|i should know|on your mind|you(?:'d| would)? (?:like|want) to (?:add|say|tell|mention|ask))\\b", "\\banything i (?:missed|got wrong|left out)\\b", "\\b(?:let me|to) recap\\b", "\\bif i(?:'m| am) (?:understanding|hearing|following)\\b", "\\bi(?:'ll| will) (?:be back|come back (?!to\\b)|check (?:in|back)|see you)\\b", "\\bwhat i(?:'ve| have) heard\\b", "\\bplay(?:ing)? (?:that|this|it) back\\b", "\\bso far,? (?:you'?ve|i'?ve) (?:told|heard|said)\\b"] },
+        { "id": "judgmental", "label": "Judgmental / minimizing phrasing", "category": "flag", "coverage": "flag", "patterns": ["\\byou should(?:n'?t)?\\b(?!\\s+(?:know|feel (?:free|welcome|comfortable|able)|be able|tell me|say so|stop me|let me know|have to|ever (?:feel|have)|never (?:feel|have)|take (?:your|all the|as much) time)\\b)", "\\bat least\\b(?!\\s+(?:for (?:now|the moment|today|a (?:moment|minute|second|bit|while))|at first|to (?:start|begin)|once)\\b)", "other people have it", "snap out", "look on the bright side", "that'?s not a big deal", "why (didn'?t|don'?t) you just", "\\b(?:lots of|many|most|plenty of|a lot of|other) people (?:go|get|have been|are going|went|have gone) through\\b"] },
+        { "id": "premature_reassurance", "label": "Reassured before assessing", "category": "flag", "coverage": "flag", "patterns": ["everything (will|is going to) be (fine|ok|okay|alright)", "\\bdon'?t worry\\b(?=\\s*(?:[,.!;:—–-]|$)|\\s+(?:about (?:it|that|this|things|anything|him|her|them)\\b|so much|too much|you(?:'ll| will)|it(?:'s| is| will|'ll)|we(?:'ll| will)|everything|things|yourself))", "you('?ll| will) be fine", "it('?s| is) all going to work out"] },
         { "id": "ooc_attempt", "label": "Out-of-character / prompt-injection attempt", "category": "flag", "coverage": "flag", "patterns": ["ignore (your|all|previous) (instructions|prompts?)", "you('?re| are) an? (ai|llm|language model|bot)", "system prompt", "\\bjailbreak", "reveal (your|the) (instructions|rules|prompt)", "what('?s| is) (your|the) diagnosis"] }
       ],
       "responses": {
@@ -461,7 +461,13 @@
             "what (would|do) you (want|hope|like)",
             "is (that|this) (ok|okay|alright)",
             "we have about",
-            "before we start"
+            "before we start",
+            "\\b(?:a|the|one of the) (?:(?:first|second|third|fourth).year )?(?:med(?:ical)? )?students?\\b",
+            "\\bstudent doctor\\b",
+            "\\bi work with (?:dr\\b|doctor|the (?:team|doctors))",
+            "\\bis (?:now|this) (?:an? )?(?:ok|okay|good|alright|bad) time\\b",
+            "\\bon the (?:psychiatry |psych |medical )?(?:team|service) (?:here|today|this (?:week|month))\\b",
+            "\\bwe(?:'ve| have)? (?:got )?(?:about |around )?(?:\\d+|ten|fifteen|twenty|a few) minutes\\b"
           ]
         },
         {
@@ -474,7 +480,14 @@
             "what('?s| has) been (going on|happening)",
             "in your own words",
             "start wherever",
-            "what brought you"
+            "what brought you",
+            "\\bwalk me through\\b",
+            "\\bhelp me understand\\b",
+            "\\bhow did you (?:end up|come to be|get|wind up) (?:here|in the hospital|admitted)\\b",
+            "\\bwhere would you like to (?:start|begin)\\b",
+            "\\bwhat (?:happened|led (?:up )?to)\\b",
+            "\\bwhat (?:has|have) (?:the last|these last|the past) (?:few |couple of |\\w+ )?(?:weeks?|months?|days?) been like\\b",
+            "\\bwhat(?:'s| is| has) (?:it|this|that) been like\\b"
           ]
         },
         {
@@ -484,10 +497,15 @@
           "coverage": "bonus",
           "patterns": [
             "(it )?sounds (like|as if)",
-            "that (must|sounds|seems) (be )?(really |very )?(exciting|intense|fast|exhausting|scary|frustrating)",
+            "that (must|sounds|seems) (?:have been |has been |be |been )?(?:really |very |so |pretty |incredibly |truly )?(exciting|intense|fast|exhausting|scary|frustrating)",
             "i can (hear|see) (that|how)",
             "when you say",
-            "i believe (you|that)"
+            "i believe (you|that)",
+            "\\bi hear you\\b",
+            "\\bit seems (?:like|as if)\\b",
+            "\\bthat(?:'s| is) a lot\\b",
+            "^\\s*(?:so )?(?:it sounds like )?you(?:'ve| have|'re| are| were)? (?:been )?(?:feel(?:ing|s)?|felt|tired of|exhausted|worried|scared|afraid|frustrated|angry|ashamed|embarrassed|overwhelmed|carrying|holding|dealing with|going through|struggling)\\b",
+            "\\byou(?:'ve| have) been (?:through|dealing with|struggling)\\b"
           ]
         },
         {
@@ -504,7 +522,16 @@
             "i (do )?want to hear (about )?(that|all of it|the rest|more)",
             "before we (get|go) (to|there|on)",
             "first,? (let'?s|tell me|i'?d like)",
-            "we'?ll (come back|get) to"
+            "we'?ll (come back|get) to",
+            "\\bgo back to\\b",
+            "\\bone at a time\\b",
+            "\\bhold that thought\\b",
+            "\\bslow (?:us|this|things|it) down\\b",
+            "\\bstay (?:with|on) (?:the|this|that|your|one)\\b",
+            "\\bbefore (?:we|i) (?:get to|go on|move on|get into)\\b",
+            "\\bfirst,? (?:can|could|let'?s) (?:we|i|us)?\\b",
+            "\\bi need to understand\\b",
+            "\\bcan we (?:stay|stick) with\\b"
           ]
         },
         {
@@ -513,13 +540,15 @@
           "category": "data",
           "coverage": "core",
           "patterns": [
-            "\\bsleep",
+            "\\bsleep(?!ing\\s+(?:pills?|meds?|medication|medicine|tablets?|aids?)\\b|\\s+(?:pills?|meds?|medication|medicine|tablets?|aids?)\\b)",
             "how many hours",
             "\\brest\\b",
             "stay(ed|ing)? up",
             "all night",
             "\\btired",
-            "\\bnaps?\\b"
+            "\\bnaps?\\b",
+            "\\bhours (?:a|per|each|of sleep a) night\\b",
+            "\\bhow many hours\\b"
           ]
         },
         {
@@ -534,7 +563,13 @@
             "\\birritab",
             "\\bangry|\\bcranky",
             "on top of the world",
-            "\\beuphori"
+            "\\beuphori",
+            "\\bhow are your spirits\\b",
+            "\\bscale of (?:one|1) to (?:ten|10)\\b",
+            "\\bwhat word would you use\\b",
+            "\\bhopeless",
+            "\\bhow (?:have|has) (?:you|things|it) been (?:feeling )?emotionally\\b",
+            "\\bfeeling (?:emotionally|inside)\\b"
           ]
         },
         {
@@ -613,7 +648,8 @@
             "\\bcannabis|\\bmarijuana|\\bweed\\b",
             "energy drinks?",
             "\\bcaffeine",
-            "anything (to|that) (help(s)?|keep(s)?) you (going|up|awake)"
+            "anything (to|that) (help(s)?|keep(s)?) you (going|up|awake)",
+            "\\bsmok(?:e|ing)\\b|\\bvap(?:e|ing)\\b|\\bnicotine\\b|\\btobacco\\b|\\bcigarette"
           ]
         },
         {
@@ -663,7 +699,9 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+            "\\bnot want(?:ing)? to (?:be alive|be here|live|go on|carry on)\\b",
+            "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
           ]
         },
         {
@@ -675,7 +713,7 @@
           "patterns": [
             "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
             "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-            "do(ing)? something (to yourself|drastic|stupid)",
+            "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)",
             "dark (thoughts|places?)",
             "unsafe thoughts",
             "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
@@ -691,13 +729,17 @@
           "coverage": "core",
           "patterns": [
             "\\bvoices\\b",
-            "\\bhear(ing)?\\b.*(voices?|things)",
+            "\\bhear(?:ing)?\\b(?:\\s+\\w+){0,3}\\s+(?:voices?|sounds?|noises?)\\b|\\bhear(?:ing)?\\s+(?:any\\s+)?things\\b",
             "messages? (meant |just )?for you",
             "tv\\b.*(talk|message)|radio\\b.*(talk|message)",
-            "\\bsee(ing)?\\b.*(things|stuff)",
+            "\\bsee(?:ing)?\\s+(?:or hear(?:ing)?\\s+)?(?:any\\s+)?(?:things|stuff|visions)\\b",
             "\\bparanoi",
             "watched|following you",
-            "thoughts (that )?(aren'?t|not) yours"
+            "thoughts (that )?(aren'?t|not) yours",
+            "\\bmind (?:been |is |was |has been )?playing tricks\\b",
+            "\\b(?:watching|out to get|talking about|spying on|plotting against) you\\b",
+            "\\bthoughts (?:that )?(?:aren'?t|are not|don'?t feel like) (?:your own|yours)\\b",
+            "\\bunusual experiences\\b"
           ]
         },
         {
@@ -752,7 +794,15 @@
             "what i('?m| am) hearing",
             "did i (miss|get)",
             "anything (else )?(you want|i should)",
-            "we('?ll| will) (talk|check in|come back)"
+            "we('?ll| will) (talk|check in|come back)",
+            "\\banything else (?:you(?:'d| would)? (?:like|want) (?:me )?to know|i should know|on your mind|you(?:'d| would)? (?:like|want) to (?:add|say|tell|mention|ask))\\b",
+            "\\banything i (?:missed|got wrong|left out)\\b",
+            "\\b(?:let me|to) recap\\b",
+            "\\bif i(?:'m| am) (?:understanding|hearing|following)\\b",
+            "\\bi(?:'ll| will) (?:be back|come back (?!to\\b)|check (?:in|back)|see you)\\b",
+            "\\bwhat i(?:'ve| have) heard\\b",
+            "\\bplay(?:ing)? (?:that|this|it) back\\b",
+            "\\bso far,? (?:you'?ve|i'?ve) (?:told|heard|said)\\b"
           ]
         },
         {
@@ -762,12 +812,13 @@
           "coverage": "flag",
           "patterns": [
             "\\bcalm down\\b",
-            "you should(n'?t)?\\b",
+            "\\byou should(?:n'?t)?\\b(?!\\s+(?:know|feel (?:free|welcome|comfortable|able)|be able|tell me|say so|stop me|let me know|have to|ever (?:feel|have)|never (?:feel|have)|take (?:your|all the|as much) time)\\b)",
             "snap out",
             "\\bslow down[.!]",
             "that'?s (crazy|insane|nuts)",
             "why (didn'?t|don'?t) you just",
-            "\\bact normal"
+            "\\bact normal",
+            "\\b(?:lots of|many|most|plenty of|a lot of|other) people (?:go|get|have been|are going|went|have gone) through\\b"
           ]
         },
         {
@@ -778,7 +829,7 @@
           "patterns": [
             "that'?s not (true|possible|real|realistic)",
             "you can'?t possibly",
-            "there'?s no way (you|that)",
+            "there'?s no way (?:you|that)\\b(?!\\s+(?:could (?:have )?(?:be|been)|was|is|'?s|would (?:have )?(?:be|been)|must (?:have )?(?:be|been)|has been|have been)\\s+(?:easy|simple|pleasant|comfortable|fun|okay|ok|fine|restful|painless)\\b)",
             "\\bprove it",
             "that (won'?t|will never) work",
             "\\bbe (realistic|serious)",
@@ -792,7 +843,7 @@
           "coverage": "flag",
           "patterns": [
             "everything (will|is going to) be (fine|ok|okay|alright)",
-            "don'?t worry",
+            "\\bdon'?t worry\\b(?=\\s*(?:[,.!;:—–-]|$)|\\s+(?:about (?:it|that|this|things|anything|him|her|them)\\b|so much|too much|you(?:'ll| will)|it(?:'s| is| will|'ll)|we(?:'ll| will)|everything|things|yourself))",
             "you('?ll| will) be fine",
             "it('?s| is) all going to work out"
           ]
@@ -1334,7 +1385,13 @@
             "what (would|do) you (want|hope|like)",
             "is (that|this) (ok|okay|alright)",
             "before we start",
-            "you('?re| are) in (control|charge) of"
+            "you('?re| are) in (control|charge) of",
+            "\\b(?:a|the|one of the) (?:(?:first|second|third|fourth).year )?(?:med(?:ical)? )?students?\\b",
+            "\\bstudent doctor\\b",
+            "\\bi work with (?:dr\\b|doctor|the (?:team|doctors))",
+            "\\bis (?:now|this) (?:an? )?(?:ok|okay|good|alright|bad) time\\b",
+            "\\bon the (?:psychiatry |psych |medical )?(?:team|service) (?:here|today|this (?:week|month))\\b",
+            "\\bwe(?:'ve| have)? (?:got )?(?:about |around )?(?:\\d+|ten|fifteen|twenty|a few) minutes\\b"
           ]
         },
         {
@@ -1350,7 +1407,14 @@
             "i'?ll (sit|stay) (over )?here",
             "no (rush|pressure)",
             "your (call|choice|pace)",
-            "only what you want to"
+            "only what you want to",
+            "\\byou (?:don'?t|do not) (?:have|need) to (?:answer|tell|talk|share|say|explain)\\b",
+            "\\b(?:only|just) (?:tell|share) (?:me )?what you(?:'re| are) comfortable\\b",
+            "\\b(?:if|when|whenever) (?:anything|something|it|this) (?:feels|gets|is|becomes) (?:like )?too much\\b",
+            "\\bwe(?:'ll| will| can) slow down\\b",
+            "\\byou(?:'re| are) in control\\b",
+            "\\byou can (?:stop|pause|say no|skip|take a break)\\b",
+            "\\bno pressure\\b"
           ]
         },
         {
@@ -1364,7 +1428,12 @@
             "in your own words",
             "start wherever",
             "what brought you",
-            "what('?s| has) (this|the last few weeks?) been like"
+            "what('?s| has) (this|the last few weeks?) been like",
+            "\\bhow did you (?:end up|come to be|get|wind up) (?:here|in the hospital|admitted)\\b",
+            "\\bwhere would you like to (?:start|begin)\\b",
+            "\\bwhat (?:happened|led (?:up )?to)\\b",
+            "\\bwhat (?:has|have) (?:the last|these last|the past) (?:few |couple of |\\w+ )?(?:weeks?|months?|days?) been like\\b",
+            "\\bwhat(?:'s| is| has) (?:it|this|that) been like\\b"
           ]
         },
         {
@@ -1378,7 +1447,12 @@
             "feeling (that )?(scared|unsafe|watched|frightened|afraid).*(sounds|must|would)",
             "i can (hear|see) how (scared|frightening|hard)",
             "you'?ve been (carrying|living with) (this|that) (fear|alone)",
-            "when you (feel|felt) (that )?(watched|unsafe|scared|afraid)"
+            "when you (feel|felt) (that )?(watched|unsafe|scared|afraid)",
+            "\\bi hear you\\b",
+            "\\bit seems (?:like|as if)\\b",
+            "\\bthat(?:'s| is) a lot\\b",
+            "^\\s*(?:so )?(?:it sounds like )?you(?:'ve| have|'re| are| were)? (?:been )?(?:feel(?:ing|s)?|felt|tired of|exhausted|worried|scared|afraid|frustrated|angry|ashamed|embarrassed|overwhelmed|carrying|holding|dealing with|going through|struggling)\\b",
+            "\\byou(?:'ve| have) been (?:through|dealing with|struggling)\\b"
           ]
         },
         {
@@ -1403,9 +1477,9 @@
           "category": "data",
           "coverage": "core",
           "patterns": [
-            "\\bhear(ing)?\\b.*(voices?|things|anything|sounds?)",
+            "\\bhear(?:ing)?\\b(?:\\s+\\w+){0,3}\\s+(?:voices?|sounds?|noises?)\\b|\\bhear(?:ing)?\\s+(?:any\\s+)?(?:things|anything)\\b",
             "\\bvoices?\\b",
-            "\\bsee(ing)?\\b.*(things|stuff|anything)",
+            "\\bsee(?:ing)?\\s+(?:or hear(?:ing)?\\s+)?(?:any\\s+)?(?:things|stuff|anything|visions)\\b",
             "sounds? (that )?(other people|others) (don'?t|can'?t)",
             "hearing anything"
           ]
@@ -1424,7 +1498,14 @@
             "does (the|it) (voice|it) (tell|ask|want) you to",
             "asked to (do|hurt|harm)",
             "command",
-            "voice(s)? (want|ask|tell).*(you )?to"
+            "voice(s)? (want|ask|tell).*(you )?to",
+            "\\b(?:give|giving|gave|given) you (?:instructions|orders|commands|directions)\\b",
+            "\\btold (?:you )?to do\\b|\\bbeen told to\\b",
+            "\\bask(?:ing|ed)? you to (?:act|do)\\b",
+            "\\bdo they ask you\\b",
+            "\\bvoices?\\b.{0,40}\\b(?:hurt|harm|kill) (?:yourself|anyone|someone|others|them|people)\\b",
+            "\\bhave to do what (?:they|the voices?|it) say",
+            "\\bcommand"
           ]
         },
         {
@@ -1456,7 +1537,9 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+            "\\bnot want(?:ing)? to (?:be alive|be here|live|go on|carry on)\\b",
+            "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
           ]
         },
         {
@@ -1468,7 +1551,7 @@
           "patterns": [
             "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
             "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-            "do(ing)? something (to yourself|drastic|stupid)",
+            "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)",
             "dark (thoughts|places?)",
             "unsafe thoughts",
             "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
@@ -1520,7 +1603,8 @@
             "\\bcannabis|\\bmarijuana|\\bweed\\b",
             "\\bstimulant|\\bmeth|\\bcocaine",
             "\\bsubstance",
-            "using anything"
+            "using anything",
+            "\\bsmok(?:e|ing)\\b|\\bvap(?:e|ing)\\b|\\bnicotine\\b|\\btobacco\\b|\\bcigarette"
           ]
         },
         {
@@ -1535,7 +1619,11 @@
             "seeing a (doctor|psychiatrist|therapist)",
             "\\bprescri",
             "any health (problems|conditions|issues)",
-            "hit your head|head injury|\\bfever\\b"
+            "hit your head|head injury|\\bfever\\b",
+            "\\bprescriptions?\\b",
+            "\\bprimary care\\b|\\bpcp\\b|\\bfamily doctor\\b",
+            "\\btake anything (?:regularly|daily|every day)\\b",
+            "\\bsupplements?\\b"
           ]
         },
         {
@@ -1607,7 +1695,15 @@
             "did i (miss|get)",
             "anything (else )?(you want|i should)",
             "we('?ll| will) (talk|check in|come back)",
-            "what would (help|make) you feel (a little )?(safer|better)"
+            "what would (help|make) you feel (a little )?(safer|better)",
+            "\\banything else (?:you(?:'d| would)? (?:like|want) (?:me )?to know|i should know|on your mind|you(?:'d| would)? (?:like|want) to (?:add|say|tell|mention|ask))\\b",
+            "\\banything i (?:missed|got wrong|left out)\\b",
+            "\\b(?:let me|to) recap\\b",
+            "\\bif i(?:'m| am) (?:understanding|hearing|following)\\b",
+            "\\bi(?:'ll| will) (?:be back|come back (?!to\\b)|check (?:in|back)|see you)\\b",
+            "\\bwhat i(?:'ve| have) heard\\b",
+            "\\bplay(?:ing)? (?:that|this|it) back\\b",
+            "\\bso far,? (?:you'?ve|i'?ve) (?:told|heard|said)\\b"
           ]
         },
         {
@@ -1616,7 +1712,7 @@
           "category": "flag",
           "coverage": "flag",
           "patterns": [
-            "that('?s| is) not (real|true|happening|possible)",
+            "that('?s| is) not (real|true|happening|possible)(?!\\s+(?:of|for)\\s+(?:everyone|everybody|all|every|some|most|any|them all)\\b)",
             "no one('?s| is) (watching|following|after|poisoning|pumping)",
             "you'?re (being )?paranoid",
             "that can'?t be (true|real|happening)",
@@ -1633,7 +1729,7 @@
           "coverage": "flag",
           "patterns": [
             "they (are|'?re) (really |actually )?(watching|after|following|poisoning) you",
-            "you'?re right (to|that|they)",
+            "you'?re right (?:to|that|they)(?!\\s+(?:it(?:'s| is)|that(?:'s| is)|this is|to be|to feel|feel)\\s+(?:frightening|scary|hard|a lot|exhausting|unsettling|terrifying|confusing|upsetting|overwhelming|stressful|awful)\\b)",
             "we (need to|should|will|have to) (stop|catch|find|report) (them|him|her|whoever)",
             "i believe (they|someone|the neighbou?rs?) (is|are|'?re) (watching|after|poisoning|doing)",
             "let'?s (get|stop|catch) them",
@@ -1648,11 +1744,12 @@
           "patterns": [
             "\\bcalm down\\b",
             "snap out",
-            "you should(n'?t)?\\b",
+            "\\byou should(?:n'?t)?\\b(?!\\s+(?:know|feel (?:free|welcome|comfortable|able)|be able|tell me|say so|stop me|let me know|have to|ever (?:feel|have)|never (?:feel|have)|take (?:your|all the|as much) time)\\b)",
             "that'?s (crazy|insane|nuts|ridiculous)",
             "why (didn'?t|don'?t) you just",
             "act normal",
-            "get a grip"
+            "get a grip",
+            "\\b(?:lots of|many|most|plenty of|a lot of|other) people (?:go|get|have been|are going|went|have gone) through\\b"
           ]
         },
         {
@@ -1663,7 +1760,7 @@
           "patterns": [
             "you'?re (safe|fine) (here|now)",
             "everything (will|is going to) be (fine|ok|okay|alright)",
-            "don'?t worry",
+            "\\bdon'?t worry\\b(?=\\s*(?:[,.!;:—–-]|$)|\\s+(?:about (?:it|that|this|things|anything|him|her|them)\\b|so much|too much|you(?:'ll| will)|it(?:'s| is| will|'ll)|we(?:'ll| will)|everything|things|yourself))",
             "nothing (bad )?(is going to|will) happen",
             "you'?re (completely )?safe"
           ]
@@ -2256,7 +2353,13 @@
             "\\bmy name is\\b",
             "what (would|do) you (want|hope|like)",
             "what feels (?:most )?important",
-            "is (?:that|this) (?:ok|okay|alright)"
+            "is (?:that|this) (?:ok|okay|alright)",
+            "\\b(?:a|the|one of the) (?:(?:first|second|third|fourth).year )?(?:med(?:ical)? )?students?\\b",
+            "\\bstudent doctor\\b",
+            "\\bi work with (?:dr\\b|doctor|the (?:team|doctors))",
+            "\\bis (?:now|this) (?:an? )?(?:ok|okay|good|alright|bad) time\\b",
+            "\\bon the (?:psychiatry |psych |medical )?(?:team|service) (?:here|today|this (?:week|month))\\b",
+            "\\bwe(?:'ve| have)? (?:got )?(?:about |around )?(?:\\d+|ten|fifteen|twenty|a few) minutes\\b"
           ]
         },
         {
@@ -2268,7 +2371,14 @@
             "tell me (?:a little |a bit )?(?:more )?about",
             "what(?: has|\\’s|'s) been (?:going on|happening)",
             "where would you like to (?:start|begin)",
-            "how do you see"
+            "how do you see",
+            "\\bwalk me through\\b",
+            "\\bhelp me understand\\b",
+            "\\bhow did you (?:end up|come to be|get|wind up) (?:here|in the hospital|admitted)\\b",
+            "\\bwhere would you like to (?:start|begin)\\b",
+            "\\bwhat (?:happened|led (?:up )?to)\\b",
+            "\\bwhat (?:has|have) (?:the last|these last|the past) (?:few |couple of |\\w+ )?(?:weeks?|months?|days?) been like\\b",
+            "\\bwhat(?:'s| is| has) (?:it|this|that) been like\\b"
           ]
         },
         {
@@ -2282,7 +2392,12 @@
             "part of you",
             "and at the same time",
             "you(?:\\’re|'re| are) saying",
-            "alcohol helps you"
+            "alcohol helps you",
+            "\\bi hear you\\b",
+            "\\bit seems (?:like|as if)\\b",
+            "\\bthat(?:'s| is) a lot\\b",
+            "^\\s*(?:so )?(?:it sounds like )?you(?:'ve| have|'re| are| were)? (?:been )?(?:feel(?:ing|s)?|felt|tired of|exhausted|worried|scared|afraid|frustrated|angry|ashamed|embarrassed|overwhelmed|carrying|holding|dealing with|going through|struggling)\\b",
+            "\\byou(?:'ve| have) been (?:through|dealing with|struggling)\\b"
           ]
         },
         {
@@ -2296,7 +2411,12 @@
             "you decide",
             "what fits for you",
             "not here to tell you",
-            "you are in charge"
+            "you are in charge",
+            "\\bnobody (?:can|else can|is going to|else is going to) (?:make|decide|tell)\\b",
+            "\\byour (?:call|decision)\\b",
+            "\\bonly you can\\b",
+            "\\bi(?:'m| am) not (?:here )?(?:going )?to (?:tell|make|push|lecture)\\b",
+            "\\bno one (?:can|is going to) (?:make|decide|tell) you\\b"
           ]
         },
         {
@@ -2310,7 +2430,12 @@
             "good things about",
             "benefits?",
             "what does it do for you",
-            "what does (?:it|drinking|alcohol) give you"
+            "what does (?:it|drinking|alcohol) give you",
+            "\\bwhat does (?:drinking|alcohol|it) (?:do|give|get) (?:for )?you\\b",
+            "\\bupside\\b",
+            "\\bhelps? you (?:relax|sleep|unwind|cope|forget|take the edge)",
+            "\\bwhat you (?:get|enjoy|like) (?:out of|from|about)\\b",
+            "\\bbenefits?\\b"
           ]
         },
         {
@@ -2325,7 +2450,14 @@
             "less good",
             "what (?:do you|don(?:\\’t|'t) you) like",
             "how has (?:drinking|alcohol) affected",
-            "another fall"
+            "another fall",
+            "\\bnot.so.good (?:side|part|things?)\\b",
+            "\\bcaused? (?:any )?(?:problems?|trouble)\\b",
+            "\\bworr(?:y|ies|ied)\\b",
+            "\\bless good\\b",
+            "\\bcost (?:you|anything|something)\\b",
+            "\\bdrawbacks?\\b",
+            "\\bgets? in the way\\b"
           ]
         },
         {
@@ -2342,7 +2474,10 @@
             "reliable",
             "maya",
             "workday mornings",
-            "wants? to protect"
+            "wants? to protect",
+            "\\bwhat (?:do you )?care (?:most |the most )?about\\b",
+            "\\bkind of (?:person|parent|partner|friend) you want\\b",
+            "\\bmatters? (?:most |the most )?to you\\b"
           ]
         },
         {
@@ -2370,7 +2505,11 @@
             "what might you try",
             "small change",
             "what would you like to do",
-            "options?"
+            "options?",
+            "\\b(?:do|try|want to do) (?:something |anything )?differently\\b",
+            "\\bwhat(?:'s| is) one (?:small )?thing\\b",
+            "\\bgo from here\\b",
+            "\\bif you (?:did|were to) (?:decide|change|cut)"
           ]
         },
         {
@@ -2417,7 +2556,9 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+            "\\bnot want(?:ing)? to (?:be alive|be here|live|go on|carry on)\\b",
+            "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
           ]
         },
         {
@@ -2429,7 +2570,7 @@
           "patterns": [
             "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
             "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-            "do(ing)? something (to yourself|drastic|stupid)",
+            "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)",
             "dark (thoughts|places?)",
             "unsafe thoughts",
             "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
@@ -2891,7 +3032,13 @@
             "is (that|this) (ok|okay|alright)",
             "we have about",
             "before we start",
-            "\\b(?:today|this visit) i'?d like to\\b"
+            "\\b(?:today|this visit) i'?d like to\\b",
+            "\\b(?:a|the|one of the) (?:(?:first|second|third|fourth).year )?(?:med(?:ical)? )?students?\\b",
+            "\\bstudent doctor\\b",
+            "\\bi work with (?:dr\\b|doctor|the (?:team|doctors))",
+            "\\bis (?:now|this) (?:an? )?(?:ok|okay|good|alright|bad) time\\b",
+            "\\bon the (?:psychiatry |psych |medical )?(?:team|service) (?:here|today|this (?:week|month))\\b",
+            "\\bwe(?:'ve| have)? (?:got )?(?:about |around )?(?:\\d+|ten|fifteen|twenty|a few) minutes\\b"
           ]
         },
         {
@@ -2905,7 +3052,14 @@
             "in your own words",
             "start wherever",
             "how (?:has|have) (?:it|things|the (?:last )?week|this (?:past )?week) been",
-            "how (?:have you been|are things|has it been) since (?:you (?:left|got home|were discharged)|discharge|the hospital)"
+            "how (?:have you been|are things|has it been) since (?:you (?:left|got home|were discharged)|discharge|the hospital)",
+            "\\bwalk me through\\b",
+            "\\bhelp me understand\\b",
+            "\\bhow did you (?:end up|come to be|get|wind up) (?:here|in the hospital|admitted)\\b",
+            "\\bwhere would you like to (?:start|begin)\\b",
+            "\\bwhat (?:happened|led (?:up )?to)\\b",
+            "\\bwhat (?:has|have) (?:the last|these last|the past) (?:few |couple of |\\w+ )?(?:weeks?|months?|days?) been like\\b",
+            "\\bwhat(?:'s| is| has) (?:it|this|that) been like\\b"
           ]
         },
         {
@@ -2915,10 +3069,15 @@
           "coverage": "bonus",
           "patterns": [
             "(it )?sounds (like|as if)",
-            "that (must|sounds|seems) (be )?(really |very )?(hard|difficult|exhausting|heavy|painful|lonely)",
+            "that (must|sounds|seems) (?:have been |has been |be |been )?(?:really |very |so |pretty |incredibly |truly )?(hard|difficult|exhausting|heavy|painful|lonely)",
             "i can (hear|see) (that|how)",
             "you('?ve| have) been (carrying|holding)",
-            "when you say"
+            "when you say",
+            "\\bi hear you\\b",
+            "\\bit seems (?:like|as if)\\b",
+            "\\bthat(?:'s| is) a lot\\b",
+            "^\\s*(?:so )?(?:it sounds like )?you(?:'ve| have|'re| are| were)? (?:been )?(?:feel(?:ing|s)?|felt|tired of|exhausted|worried|scared|afraid|frustrated|angry|ashamed|embarrassed|overwhelmed|carrying|holding|dealing with|going through|struggling)\\b",
+            "\\byou(?:'ve| have) been (?:through|dealing with|struggling)\\b"
           ]
         },
         {
@@ -2932,7 +3091,13 @@
             "\\bdepress",
             "\\bsad\\b",
             "\\bdown\\b.*(lately|feeling|been)",
-            "feeling (down|low|blue)"
+            "feeling (down|low|blue)",
+            "\\bhow are your spirits\\b",
+            "\\bscale of (?:one|1) to (?:ten|10)\\b",
+            "\\bwhat word would you use\\b",
+            "\\bhopeless",
+            "\\bhow (?:have|has) (?:you|things|it) been (?:feeling )?emotionally\\b",
+            "\\bfeeling (?:emotionally|inside)\\b"
           ]
         },
         {
@@ -2941,7 +3106,7 @@
           "category": "data",
           "coverage": "core",
           "patterns": [
-            "\\bsleeping\\b",
+            "\\bsleeping\\b(?!\\s+(?:pills?|meds?|medication|medicine|tablets?)\\b)",
             "\\bsleep (?:been|going|like)\\b",
             "how (?:are|is|have) you sleeping",
             "\\binsomnia",
@@ -2960,7 +3125,10 @@
             "\\btired",
             "\\bfatigue",
             "\\bexhaust",
-            "\\bworn (out|down)"
+            "\\bworn (out|down)",
+            "\\b(?:hard|difficult|tough) to get (?:through the day|moving|going|out of bed|up)\\b",
+            "\\bhow much effort\\b",
+            "\\bmotivat"
           ]
         },
         {
@@ -2986,7 +3154,8 @@
             "\\bmedications?\\b",
             "\\bmedicines?\\b",
             "\\bmeds\\b",
-            "\\bprescriptions?\\b"
+            "\\bprescriptions?\\b",
+            "\\bprimary care\\b|\\bpcp\\b|\\bfamily doctor\\b"
           ]
         },
         {
@@ -3057,7 +3226,8 @@
             "\\bwine\\b",
             "\\bdrugs?\\b",
             "\\bcannabis|\\bmarijuana|\\bweed\\b",
-            "\\bsubstance"
+            "\\bsubstance",
+            "\\bsmok(?:e|ing)\\b|\\bvap(?:e|ing)\\b|\\bnicotine\\b|\\btobacco\\b|\\bcigarette"
           ]
         },
         {
@@ -3109,7 +3279,9 @@
             "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)",
             "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b",
             "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)",
-            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))"
+            "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
+            "\\bnot want(?:ing)? to (?:be alive|be here|live|go on|carry on)\\b",
+            "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
           ]
         },
         {
@@ -3121,7 +3293,7 @@
           "patterns": [
             "hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
             "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)",
-            "do(ing)? something (to yourself|drastic|stupid)",
+            "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)",
             "dark (thoughts|places?)",
             "unsafe thoughts",
             "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself",
@@ -3136,13 +3308,16 @@
           "category": "safety",
           "coverage": "core",
           "patterns": [
-            "\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)",
+            "\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)(?!\\s+(?:you|she|he|i|we|they)(?:'re| are|'m| am)?\\s+(?:leave|leaving|get|getting|go|going|come|coming|head|heading|discharged|out|home|back|released)\\b)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)",
             "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)",
-            "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b",
+            "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b(?!\\s+(?:for|over|this|next)\\s+(?:the\\s+)?(?:weekend|week|summer|holidays?|trip|discharge|after)\\b)",
             "^\\s*plans?\\s*\\??\\s*$",
             "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|that|this)|go about|end|kill|hurt|harm|take|carry)",
-            "thought about how",
-            "\\bspecific\\b.*(thought|way)"
+            "thought about how(?!\\s+(?:to|you(?:'d|'ll| would| might| could| will)?\\s+(?:tell|talk|explain|handle|manage|cope|approach|bring|break|get through|get back|pay|afford|deal))\\b)",
+            "\\bspecific\\b.*(thought|way)",
+            "\\bthought about (?:when|where)(?!\\s+(?:you(?:'ll| will|'d| would|'re| are)?\\s+)?(?:stay|staying|live|living|go|going|work|working|be))",
+            "\\b(?:particular|specific|certain) (?:method|way|means)\\b",
+            "\\bhow far (?:has|have|did) (?:that|it|this|those thoughts?) (?:gone|gotten|got|come)\\b"
           ]
         },
         {
@@ -3173,7 +3348,9 @@
             "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b",
             "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b",
             "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
-            "\\bprotect"
+            "\\bprotect",
+            "\\bwant the (?:pain|tired(?:ness)?|hurting|suffering|feeling) to (?:stop|end|go away)\\b",
+            "\\bkept the (?:bottle|pills|lid) (?:closed|shut|away)\\b"
           ]
         },
         {
@@ -3192,7 +3369,11 @@
             "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)",
             "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b",
             "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)",
-            "\\b(?:done|did) anything since\\b"
+            "\\b(?:done|did) anything since\\b",
+            "\\bgone (?:any )?further than (?:a |just a )?thoughts?\\b",
+            "\\btaken? (?:any )?steps\\b",
+            "\\bdone anything (?:to|towards?) (?:end|take|hurt|harm|kill|act)\\b",
+            "\\bever (?:come|came|gotten|got) close to (?:doing|acting|ending|killing|taking)"
           ]
         },
         {
@@ -3256,7 +3437,13 @@
             "\\bsupport",
             "\\bfriends?\\b",
             "\\bniece",
-            "\\bellie\\b"
+            "\\bellie\\b",
+            "\\bpeople you can (?:talk|lean|count|rely) (?:to|on)\\b",
+            "\\bwho(?:'s| is) in your life\\b",
+            "\\bclose (?:with|to) (?:anyone|your|him|her|them)\\b",
+            "\\brelationship\\b",
+            "\\bsister\\b",
+            "\\b(?:partner|spouse|wife)\\b"
           ]
         },
         {
@@ -3269,7 +3456,13 @@
             "\\bjob\\b",
             "\\binterview\\b",
             "\\bnurse|nursing",
-            "\\bstress"
+            "\\bstress",
+            "\\bfor a living\\b",
+            "\\bare you working\\b",
+            "\\b(?:big|major) change\\b",
+            "\\bunemploy|\\blaid off|\\blost (?:your|a|the|her) job",
+            "\\bcareer\\b",
+            "\\bwhat (?:changed|happened) (?:around|before|when|at the time)\\b"
           ]
         },
         {
@@ -3298,7 +3491,15 @@
             "what i('?m| am) hearing",
             "did i (miss|get)",
             "anything (else )?(you want|i should)",
-            "we('?ll| will) (talk|check in|come back)"
+            "we('?ll| will) (talk|check in|come back)",
+            "\\banything else (?:you(?:'d| would)? (?:like|want) (?:me )?to know|i should know|on your mind|you(?:'d| would)? (?:like|want) to (?:add|say|tell|mention|ask))\\b",
+            "\\banything i (?:missed|got wrong|left out)\\b",
+            "\\b(?:let me|to) recap\\b",
+            "\\bif i(?:'m| am) (?:understanding|hearing|following)\\b",
+            "\\bi(?:'ll| will) (?:be back|come back (?!to\\b)|check (?:in|back)|see you)\\b",
+            "\\bwhat i(?:'ve| have) heard\\b",
+            "\\bplay(?:ing)? (?:that|this|it) back\\b",
+            "\\bso far,? (?:you'?ve|i'?ve) (?:told|heard|said)\\b"
           ]
         },
         {
@@ -3307,14 +3508,15 @@
           "category": "flag",
           "coverage": "flag",
           "patterns": [
-            "you should(n'?t)?\\b",
-            "\\bat least\\b",
+            "\\byou should(?:n'?t)?\\b(?!\\s+(?:know|feel (?:free|welcome|comfortable|able)|be able|tell me|say so|stop me|let me know|have to|ever (?:feel|have)|never (?:feel|have)|take (?:your|all the|as much) time)\\b)",
+            "\\bat least\\b(?!\\s+(?:for (?:now|the moment|today|a (?:moment|minute|second|bit|while))|at first|to (?:start|begin)|once)\\b)",
             "other people have it",
             "snap out",
             "look on the bright side",
             "that'?s not a big deal",
             "why (didn'?t|don'?t) you just",
-            "why would you (?:cancel|stop|skip)"
+            "why would you (?:cancel|stop|skip)",
+            "\\b(?:lots of|many|most|plenty of|a lot of|other) people (?:go|get|have been|are going|went|have gone) through\\b"
           ]
         },
         {
@@ -3324,7 +3526,7 @@
           "coverage": "flag",
           "patterns": [
             "everything (will|is going to) be (fine|ok|okay|alright)",
-            "don'?t worry",
+            "\\bdon'?t worry\\b(?=\\s*(?:[,.!;:—–-]|$)|\\s+(?:about (?:it|that|this|things|anything|him|her|them)\\b|so much|too much|you(?:'ll| will)|it(?:'s| is| will|'ll)|we(?:'ll| will)|everything|things|yourself))",
             "you('?ll| will) be fine",
             "it('?s| is) all going to work out",
             "\\b(?:the|your) (?:form|score|questionnaire) looks (?:good|great|fine)\\b",
