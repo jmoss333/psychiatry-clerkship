@@ -5511,7 +5511,10 @@
     "evidenceIds": [
       "clozapine-rems",
       "fda-drug-safety",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "cipriani-2013-lithium-suicide",
+      "katz-2022-lithium-va",
+      "wang-2025-lithium-suicidality"
     ],
     "facultyReview": {
       "status": "reviewed",
