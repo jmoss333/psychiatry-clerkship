@@ -875,7 +875,7 @@ test('evaluation validates and returns the exact feedback object directly', asyn
   });
   const response = await harness.handler(learnerRequest({ body: evaluateBody() }));
   assert.equal(response.status, 200);
-  assert.deepEqual(await json(response), expected);
+  assert.deepEqual(await json(response), { ...expected, withheld: { strengths: 0, growth: 0, notes: 0 } });
   const call = harness.anthropicSpy.calls[1].input;
   const outbound = JSON.parse(new TextDecoder().decode(call.bodyBytes));
   assert.equal(outbound.max_tokens, 1_500);
@@ -1212,7 +1212,9 @@ test('feedback mutations fail closed and charge the reserved maximum', async () 
     (value) => { value.extra = true; },
     (value) => { value.domains.alliance.extra = true; },
     (value) => { value.domains.data.rating = 'excellent'; },
-    (value) => { value.strengths.pop(); },
+    (value) => { value.strengths.length = 0; },
+    (value) => { value.strengths.push('Third.', 'Fourth.'); },
+    (value) => { value.growth.length = 0; },
     (value) => { value.growth[0].link = 'unknown.md'; },
     (value) => { value.growth[0].t = 'x'.repeat(601); },
     (value) => { value.selfAssessmentNote = '\ud800'; },
@@ -1708,4 +1710,176 @@ test('actor handler spend changes voice health and capacity in one shared $20 re
     fake.calls.every((call) => call.key === `${PRODUCTION_BUDGET_NAMESPACE}/rotation-shared`),
     true,
   );
+});
+
+/* ---------------- 2026-10-21 audit: difficulty on the wire, truncation, evaluator honesty -------- */
+
+const REFLECTION_TURN = { me: 'It sounds like this has been really hard.', pt: 'Yeah. That is exactly it.' };
+
+test('difficulty is optional on the wire, validated when present, and Realistic shifts only the tier the patient speaks from', async () => {
+  const body = { turns: [REFLECTION_TURN], turnId: 2, message: 'How has your sleep been?' };
+  for (const [difficulty, expectedPrompt] of [
+    [undefined, 'rapport=1 (speaking tier: open'],
+    ['supported', 'rapport=1 (speaking tier: open'],
+    ['realistic', 'rapport=0 (speaking tier: guarded'],
+  ]) {
+    const harness = makeHarness();
+    const overrides = difficulty === undefined ? body : { ...body, difficulty };
+    const response = await harness.handler(learnerRequest({ body: converseBody(overrides) }));
+    assert.equal(response.status, 200, difficulty);
+    const responseBody = await json(response);
+    // Gates and the public state keep the raw rapport, exactly as the offline mock does.
+    assert.equal(responseBody.state.rapport, 1, difficulty);
+    const outbound = JSON.parse(new TextDecoder().decode(harness.anthropicSpy.calls[1].input.bodyBytes));
+    assert.ok(outbound.system.includes(expectedPrompt), `${difficulty}: ${outbound.system.slice(outbound.system.indexOf('CURRENT STATE'), outbound.system.indexOf('CURRENT STATE') + 90)}`);
+    assert.ok(!outbound.system.includes("'onAsking'"), 'the template no longer names an inventory key that never existed');
+  }
+  for (const difficulty of ['hard', '', null, 1]) {
+    const harness = makeHarness();
+    const response = await harness.handler(learnerRequest({ body: converseBody({ ...body, difficulty }) }));
+    assert.equal(response.status, 400, String(difficulty));
+    assertError(await json(response), 'invalid_request');
+    assert.deepEqual(harness.anthropicSpy.calls, [], 'rejected before any provider work');
+  }
+  // open and evaluate accept it too.
+  const open = await makeHarness().handler(learnerRequest({ body: openBody({ difficulty: 'realistic' }) }));
+  assert.equal(open.status, 200);
+  const evalHarness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: JSON.stringify(feedback()) }) });
+  const evaluation = await evalHarness.handler(learnerRequest({ body: evaluateBody({ difficulty: 'realistic' }) }));
+  assert.equal(evaluation.status, 200);
+  const evalOutbound = JSON.parse(new TextDecoder().decode(evalHarness.anthropicSpy.calls[1].input.bodyBytes));
+  assert.match(evalOutbound.messages[0].content, /MODE: realistic/);
+});
+
+test('the evaluator is told the map is recognised wording, never that a missed row proves the topic was not raised', async () => {
+  const harness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: JSON.stringify(feedback()) }) });
+  await harness.handler(learnerRequest({ body: evaluateBody() }));
+  const outbound = JSON.parse(new TextDecoder().decode(harness.anthropicSpy.calls[1].input.bodyBytes));
+  assert.ok(outbound.system.includes('RECOGNISED_WORDING'));
+  assert.ok(!outbound.system.includes('trust it'));
+  assert.ok(!outbound.system.includes('COVERAGE_MAP'));
+});
+
+test('a reply cut at max_tokens is trimmed to its last whole sentence and logged; a finished reply is untouched', async () => {
+  const cut = 'I looked at the bottle for a long time last night. I never opened it, not once. But I looked long enough that it';
+  const harness = makeHarness({
+    anthropicSpy: createAnthropicSpy({ text: cut, usage: { inputTokens: 100, outputTokens: 300 } }),
+  });
+  // The spy returns the provider-result shape directly; carry the stop reason the adapter would.
+  harness.anthropicSpy.anthropic.prepare = async () => ({
+    async call() { return { text: cut, usage: { inputTokens: 100, outputTokens: 300 }, stopReason: 'max_tokens' }; },
+  });
+  const response = await harness.handler(learnerRequest({ body: converseBody() }));
+  assert.equal(response.status, 200);
+  assert.equal((await json(response)).reply, 'I looked at the bottle for a long time last night. I never opened it, not once.');
+  assert.deepEqual(harness.logs.filter((event) => event.event === 'actor_truncated'), [{ event: 'actor_truncated', trimmed: true }]);
+
+  const whole = makeHarness();
+  whole.anthropicSpy.anthropic.prepare = async () => ({
+    async call() { return { text: 'Fine. Low, I guess.', usage: { inputTokens: 100, outputTokens: 8 }, stopReason: 'end_turn' }; },
+  });
+  const finished = await whole.handler(learnerRequest({ body: converseBody() }));
+  assert.equal((await json(finished)).reply, 'Fine. Low, I guess.');
+  assert.deepEqual(whole.logs.filter((event) => event.event === 'actor_truncated'), []);
+
+  // A cut with no sentence boundary past 40% of the text is left as it came rather than emptied.
+  const stub = makeHarness();
+  stub.anthropicSpy.anthropic.prepare = async () => ({
+    async call() { return { text: 'Hm. I do not really know how to answer that one because', usage: { inputTokens: 1, outputTokens: 1 }, stopReason: 'max_tokens' }; },
+  });
+  assert.equal((await json(await stub.handler(learnerRequest({ body: converseBody() })))).reply, 'Hm. I do not really know how to answer that one because');
+  assert.deepEqual(stub.logs.filter((event) => event.event === 'actor_truncated'), [{ event: 'actor_truncated', trimmed: false }]);
+});
+
+test('the Anthropic adapter carries stop_reason when the provider sends one and omits it otherwise', async () => {
+  const provider = createAnthropicProvider({
+    async fetchImpl() {
+      return new Response(JSON.stringify({
+        content: [{ type: 'text', text: 'Validated reply.' }],
+        usage: { input_tokens: 17, output_tokens: 5 },
+        stop_reason: 'max_tokens',
+      }), { status: 200, headers: { 'content-type': 'application/json' } });
+    },
+    readApiKey: () => 'sk-test',
+  });
+  const prepared = await provider.prepare();
+  assert.deepEqual(await prepared.call({ bodyBytes: Uint8Array.of(1) }), {
+    text: 'Validated reply.',
+    usage: { inputTokens: 17, outputTokens: 5 },
+    stopReason: 'max_tokens',
+  });
+});
+
+test('evaluator output in a code fence, or with one to three items, is accepted and truncated to two', async () => {
+  const three = feedback({ strengths: ['One.', 'Two.', 'Three.'], growth: [
+    { t: 'Ask directly about suicide.', link: 'pg_suicide.md' },
+    { t: 'Summarize before closing.', link: 'pg_interview.md' },
+    { t: 'Set an agenda.', link: 'pg_interview.md' },
+  ] });
+  const harness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: '```json\n' + JSON.stringify(three) + '\n```' }) });
+  const response = await harness.handler(learnerRequest({ body: evaluateBody() }));
+  assert.equal(response.status, 200);
+  const value = await json(response);
+  assert.deepEqual(value.strengths, ['One.', 'Two.']);
+  assert.deepEqual(value.growth.map((item) => item.t), ['Ask directly about suicide.', 'Summarize before closing.']);
+  assert.deepEqual(value.withheld, { strengths: 0, growth: 0, notes: 0 });
+  const one = feedback({ strengths: ['Only one.'], growth: [{ t: 'Only one.', link: 'pg_suicide.md' }] });
+  const single = await makeHarness({ anthropicSpy: createAnthropicSpy({ text: JSON.stringify(one) }) })
+    .handler(learnerRequest({ body: evaluateBody() }));
+  assert.equal(single.status, 200);
+  assert.equal((await json(single)).strengths.length, 1);
+});
+
+test('a model claim that quotes words not in the exchange is withheld, counted, and logged; a verbatim quote is kept', async () => {
+  const value = feedback({
+    strengths: [
+      'Asked plainly: "How have you been feeling?"',
+      'Opened collaboratively: "what would you most want us to understand today?"',
+    ],
+    growth: [
+      { t: 'Next time, follow "Pretty low." with a plain suicide question.', link: 'pg_suicide.md' },
+      { t: 'Next time, after "I feel like a burden" ask about guilt.', link: 'pg_interview.md' },
+    ],
+    domains: {
+      alliance: { rating: 'partial', note: 'The reflection "it sounds like you have been carrying this alone" landed.' },
+      data: { rating: 'partial', note: 'Mood was asked ("How have you been feeling?").' },
+      technique: { rating: 'observed', note: 'Plain language throughout.' },
+      organization: { rating: 'partial', note: 'The sequence could be clearer.' },
+    },
+    selfAssessmentNote: 'You wrote "She fears judgment." and the transcript supports it.',
+  });
+  const harness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: JSON.stringify(value) }) });
+  const response = await harness.handler(learnerRequest({ body: evaluateBody() }));
+  assert.equal(response.status, 200);
+  const result = await json(response);
+  assert.deepEqual(result.strengths, ['Asked plainly: "How have you been feeling?"']);
+  assert.deepEqual(result.growth.map((item) => item.t), ['Next time, follow "Pretty low." with a plain suicide question.']);
+  assert.equal(result.domains.data.note, 'Mood was asked ("How have you been feeling?").');
+  assert.match(result.domains.alliance.note, /not in this exchange/);
+  assert.equal(result.domains.alliance.rating, 'partial', 'the rating stays; only the unsupported rationale is withheld');
+  assert.equal(result.selfAssessmentNote, 'You wrote "She fears judgment." and the transcript supports it.');
+  assert.deepEqual(result.withheld, { strengths: 1, growth: 1, notes: 1 });
+  assert.deepEqual(harness.logs.filter((event) => event.event === 'evaluator_quotes_unverified'),
+    [{ event: 'evaluator_quotes_unverified', strengths: 1, growth: 1, notes: 1 }]);
+  // Curly quotes, case and spacing differences do not defeat a verbatim quote.
+  const curly = feedback({ strengths: ['Asked: \u201cHOW have  you been feeling?\u201d'] });
+  const kept = await makeHarness({ anthropicSpy: createAnthropicSpy({ text: JSON.stringify(curly) }) })
+    .handler(learnerRequest({ body: evaluateBody() }));
+  assert.deepEqual((await json(kept)).strengths, ['Asked: \u201cHOW have  you been feeling?\u201d']);
+});
+
+test('an evaluator reply that does not parse is logged as evaluator_parse_failed, with the stop reason when known', async () => {
+  const harness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: 'Sorry, I cannot produce JSON here.' }) });
+  const response = await harness.handler(learnerRequest({ body: evaluateBody() }));
+  assert.equal(response.status, 502);
+  assertError(await json(response), 'anthropic_provider_error');
+  assert.deepEqual(harness.logs.filter((event) => event.event === 'evaluator_parse_failed'),
+    [{ event: 'evaluator_parse_failed', stopReason: null }]);
+  const cut = makeHarness();
+  cut.anthropicSpy.anthropic.prepare = async () => ({
+    async call() { return { text: '{"domains": {"alliance": {"rating": "obs', usage: { inputTokens: 1, outputTokens: 1500 }, stopReason: 'max_tokens' }; },
+  });
+  await cut.handler(learnerRequest({ body: evaluateBody() }));
+  assert.deepEqual(cut.logs.filter((event) => event.event === 'evaluator_parse_failed'),
+    [{ event: 'evaluator_parse_failed', stopReason: 'max_tokens' }]);
 });
