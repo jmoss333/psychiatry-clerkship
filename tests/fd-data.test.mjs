@@ -372,7 +372,7 @@ test('every real library column item resolves', () => {
 // until it is decided, an unattested kit protocol is reported here as a diagnostic, never hidden.
 test('all five real kit items carry safety steps, and each one is attested exactly when its facultyReview says so', (t) => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
-  assert.equal(idx.kit.length, 5);
+  assert.equal(idx.kit.length, 6);
   for (const k of idx.kit) {
     assert.equal(k.item.attested, META[k.item.ref]?.facultyReview?.status === 'reviewed',
       `${k.item.ref}: attested must follow its own facultyReview block`);
