@@ -1637,7 +1637,7 @@
   /* ---- capture sheet: own dialog, own focus trap ----
      Deliberately NOT reusing .tl-sheet — visual-regression.spec.js Shift+Tab-cycles that sheet and
      asserts its last .tl-sheet__item is focused, so joining its tab order breaks it. */
-  var capSheet=null, capBackdrop=null, capInvoker=null;
+  var capSheet=null, capBackdrop=null, capInvoker=null, capReturnToSearch=null;
   function capFocusables(){
     if(!capSheet)return [];
     var all=capSheet.querySelectorAll('button,textarea,[href],input,select,[tabindex]:not([tabindex="-1"])'), out=[];
@@ -1653,7 +1653,7 @@
     if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   }
-  function capClose(){
+  function capClose(skipSearchReturn){
     if(capEmailSheet)capEmailClose();
     if(capBackdrop&&capBackdrop.parentNode)capBackdrop.parentNode.removeChild(capBackdrop);
     if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
@@ -1661,6 +1661,14 @@
     document.removeEventListener('keydown',capKeydown,true);
     var opens=document.querySelectorAll('.capture-open,[data-capture-open]');
     for(var i=0;i<opens.length;i++)opens[i].setAttribute('aria-expanded','false');
+    /* Search's draft stays in memory only. Recreate its dialog after Capture is gone so its
+       input owns focus again; raw search text never becomes a question or a stored draft. */
+    var returnToSearch=capReturnToSearch; capReturnToSearch=null;
+    if(!skipSearchReturn&&returnToSearch){
+      capInvoker=null;
+      returnToSearch();
+      return;
+    }
     /* The global launcher remains mounted, while a Today-card launcher can be recreated by a
        capture refresh. Resolve that semantic equivalent before falling back to the main region. */
     var inv=capInvoker; capInvoker=null;
@@ -1907,8 +1915,9 @@
     try{ specialRefresh(); }
     finally{ capFocusEditor(); }
   }
-  function capOpen(invoker,onAction){
+  function capOpen(invoker,onAction,onReturnToSearch){
     if(capSheet)return;
+    capReturnToSearch=typeof onReturnToSearch==='function'?onReturnToSearch:null;
     if(typeof fdController!=='undefined'&&fdController&&fdController.externalModalOpened)
       fdController.externalModalOpened();
     capInvoker=invoker||null;
@@ -2918,6 +2927,7 @@
       /* Page-text evidence (fd_search.js fdSearchBodyScores): the same search-index.json the
          ＋Ask matcher reads. Absent until it loads, and search then ranks exactly as before. */
       live.bodyIndex=fdBodyIndex;
+      live.facultyPreview=!!facultyPreviewRequest;
       return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live);
     });
     if(state.sheet)overlays+=fdSurface('sheet',function(){ return fdSheet(FD_INDEX,FD_TOPIC_META,live); });
@@ -3401,7 +3411,7 @@
       }else if(capSheet)capAnnounce('Could not finish this question on this device. Try again.');
       return;
     }
-    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
+    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose(true);fdOpenRef(ref);return;}
   }
 
   function fdRefreshLocalCompletion(identity,kind,id){
@@ -3438,7 +3448,16 @@
     el=target.closest&&target.closest('[data-media-side]');
     if(el){event.preventDefault();fdMediaSwitch(el);return;}
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
+    if(el){
+      event.preventDefault();
+      if(facultyPreviewRequest)return;
+      var returnToSearch=null;
+      if(el.closest('.fd-search')){
+        returnToSearch=fdController.suspendSearch();
+      }
+      capOpen(el,fdCaptureAction,returnToSearch);
+      return;
+    }
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');

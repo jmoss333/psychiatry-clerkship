@@ -1,10 +1,11 @@
 # Anki Export — Psychiatry Clerkship Library
 
 The site build creates three downloads from the same released Concepts feed used
-by native cards and the current, post-overlay question bank. Every rendered Anki
+by native cards and the current question bank. Every rendered Anki
 card is checked before the site build succeeds.
 
-Measured on 2026-09-27 with the local baseline ledger:
+Measured on 2026-09-27 from the committed question bank (the attestation ledger that then
+existed was removed on 2026-10-18; counts are unaffected):
 
 | Download | Content | Cards / notes |
 |---|---|---|
@@ -36,17 +37,16 @@ question bank. Stale fallback packages fail the build.
 
 ## Explicit local baseline refresh
 
-Run only after reviewing the staged cards, outside an active ledger overlay.
-This rebuilds with the baseline ledger, verifies semantic equality, and copies
+Run only after reviewing the staged cards.
+This rebuilds from the committed question bank, verifies semantic equality, and copies
 only the three verified packages. Review and commit those three files explicitly;
 do not commit unrelated generated files or media pointer stubs.
 
 ```bash
 (
   set -e
-  test "${CLERKSHIP_LEDGER:-off}" = off
   test -z "${NETLIFY:-}"
-  CLERKSHIP_LEDGER=off bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
+  bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
   python3 13_Faculty_Resources/_automation/site_build/check_anki_parity.py _build/ms3 ms3
   for name in psychiatry_clerkship_library psychiatry_clerkship_concepts psychiatry_clerkship_library_ALL; do
     cp "_build/ms3/anki/$name.apkg" "09_Exam_Prep/anki_export/$name.apkg"

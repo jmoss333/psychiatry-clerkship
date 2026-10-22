@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(777 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(779 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1121,11 +1121,14 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
+      .fd-searchpanel__related        (up to three curated equivalent-query buttons after results)
+      .fd-searchpanel__recovery       (zero matches: Edit search / Browse Library / blank Capture)
     .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
-holds in `fdSearchResults`, so the first rendered row is always `results[0]` — the row Enter opens. A
+holds in `fdSearchResults`, so the first rendered row is always `results[0]`. Enter in the field
+focuses that row; a second Enter opens it. A
 crisis query leads with its trigger protocol by contract, so Safety protocols lead exactly as the
 concept draws; an alias query (#429, "patient refuses medication") keeps its tool ahead of a protocol
 that merely shares a word. Meta lines: protocols carry the kit's own cue line (`safetyKit[].sub`);
@@ -1136,7 +1139,9 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 |---|---|
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). Phone: `padding:12px 10px 20px`. |
 | `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
-| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
+| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above suggestions/matches. At zero matches the route moves into the recovery group. APP already has The Essentials in dock slot 2, so this row is absent. |
+| `.fd-searchpanel__related` | Up to three alternatives from the same curated synonym groups used for matching; no suggestions for unknown terms. Appears after results, preserving safety priority. Buttons wrap at phone widths with 44px targets, update the transient query, reset expansion and focus the input; nothing is saved. |
+| `.fd-searchpanel__recovery` | Zero-match actions stack with at least 44px targets. Edit search focuses the existing query. Browse opens the current audience's Library. Capture closes Search and opens a blank editor; Cancel/Escape restores the transient query and input focus. Only explicit Save stores the learner's question. Faculty preview omits Capture; APP omits the Library route. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
 | `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
@@ -1249,7 +1254,7 @@ projection and the existing attested flag is true. The preview itself adds no at
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
-| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. The settings panel renders **two** of them and the counts differ: Appearance has three segments, Usage two. Usage is also the only section of the panel that is usually absent — it renders only where the usage emitter shipped, and under a browser DNT/GPC signal it renders an explanatory note and no segments at all, because a control the panel could not honour would misrepresent who is deciding. |
+| `.fd-seg` | Labelled button group with adjacent segments. Appearance has three choices; Reading comfort has text size (Standard/Larger/Largest) and spacing (Standard/Spacious). Usage adds On/Off only where enabled and allowed by device privacy signals. |
 | `.fd-seg__btn` | An ordinary toggle button, never `role="radio"` — that role promises roving tabindex and arrow-key selection, which this control does not implement. `.is-active` (what the CSS fills) and `aria-pressed` (what assistive tech reads) are set together and must stay on the same button. |
 | `.fd-choices` | Wrapping chip set for a single choice from a variable-length list (today: role). Chips size to their text and wrap, because the labels are per-site prose — equal segments strand them over three lines at phone width. |
 | `.fd-set__label` | Visible label for a settings field, bound by `for`. The panel's other sections are button groups named by `aria-label`; this is the one control that needs a real `<label>`. |
@@ -1389,3 +1394,10 @@ The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
 - `.fd-care-packet__outcome` retains the last bulk result and an expandable omission list, outside patient output and storage.
 - `dialog.fd-care-packet__confirm` is a body-level native modal with counted heading, Keep packet first, Clear packet second; Escape/backdrop preserve state. It uses the shared theme and focus tokens.
 - Category order is fixed; moves operate within a category and clear review confirmations.
+
+
+### Reading comfort (original learner UX idea 6)
+
+Settings adds a Reading comfort section before Your data, using existing `.fd-set`, `.fd-seg`, `.fd-seg__btn`, `.fd-set__note` and `.fd-btn--ghost` classes. Each choice is a normal `aria-pressed` button; Reset reading comfort restores both Standard choices. A status note reports save success or failure; failure retains the prior choice.
+
+Reading roots carry non-action `data-fd-reader-size` / `data-fd-reader-spacing` markers. Larger/Largest set `--fd-reading-scale` to 1.15/1.3; Spacious sets `--fd-reading-leading` to 2. Standard keeps the existing typography, including the guide's existing scale and leading. Rules affect reading bodies, guide leads, section headings, examples, references, crisis blocks and both table views; tool roots carry no markers. No new class selectors or motion. The mounted reading stays intact, and the reading-place session preserves its heading and offset through reflow, including a transient signed gap above the first heading. Selecting an already painted choice never takes scroll ownership.

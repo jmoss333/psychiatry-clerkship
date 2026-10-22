@@ -342,6 +342,26 @@ function fdSettingsSeg(mode){
   return out+'</div>';
 }
 
+function fdSettingsReadingComfort(state){
+  var st=state||{}, pref=fdReadingComfort(st.readingComfort);
+  var groups=[['Reading text size','size','data-fd-reading-size',[['standard','Standard'],['larger','Larger'],['largest','Largest']]],
+    ['Reading line spacing','spacing','data-fd-reading-spacing',[['standard','Standard'],['spacious','Spacious']]]];
+  var out='<p class="fd-set__note">Readings only. Tools keep their own layout.</p>';
+  for(var g=0;g<groups.length;g++){
+    var group=groups[g];
+    out+='<p class="fd-set__note">'+group[0]+'</p><div class="fd-seg" role="group" aria-label="'+group[0]+'">';
+    for(var i=0;i<group[3].length;i++){
+      var opt=group[3][i], active=pref[group[1]]===opt[0];
+      out+='<button type="button" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+        group[2]+'="'+opt[0]+'" aria-pressed="'+active+'">'+opt[1]+'</button>';
+    }
+    out+='</div>';
+  }
+  out+='<p class="fd-set__note"><button type="button" class="fd-btn fd-btn--ghost" data-fd-reading-reset>Reset reading comfort</button></p>';
+  out+='<p class="fd-set__note" role="status">'+fdEsc(st.readingComfortNotice||'')+'</p>';
+  return out;
+}
+
 function fdSettingsSection(title, body){
   return '<section class="fd-set"><h3 class="fd-set__h">'+fdEsc(title)+'</h3>'+body+'</section>';
 }
@@ -524,6 +544,7 @@ function fdSheetSettingsBody(state){
     '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
   /* Last of the sections that ALWAYS render: a learner scrolling this panel meets every
      reversible setting before the one that is not. */
+  out+=fdSettingsSection('Reading comfort',fdSettingsReadingComfort(st));
   out+=fdSettingsSection('Your data', fdSettingsData(st.settingsConfirmClear===true));
   /* And Usage after it, on the builds that have one. A section present on some builds and absent
      on most must not open a gap in the middle of the fixed order, and this one is reversible, so

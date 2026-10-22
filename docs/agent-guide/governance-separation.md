@@ -31,9 +31,9 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   `13_Faculty_Resources/reviewed.json`, `CLAUDE.md`, `AGENTS.md`, `decisions.json`,
   `standards.json`, `instrument_rights.json`, `vocabulary.json`, `.gitattributes`,
   `reviewed.schema.json`, and `_automation/`'s `attestation_hash.py`, `surface_governance.py`,
-  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`,
-  `site_build/ledger_overlay.mjs` (the attestation ledger's build-side reader), and everything
-  under `13_Faculty_Resources/ledger/` (its public keys);
+  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`
+  (the ledger overlay and `13_Faculty_Resources/ledger/` were governance too until the ledger
+  was removed on 2026-10-18);
   everything under `.claude/` (skills, hooks, subagents, settings), `.github/` **in full** — not
   only `workflows/`: an action, a template or CODEOWNERS decides how work is reviewed too —
   `bin/` (every gate and audit tool, this one and `verify.sh` included), `faculty-console/`

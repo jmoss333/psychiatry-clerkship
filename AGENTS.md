@@ -32,7 +32,7 @@ Three rules about this file itself:
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3   # build + QA gate → _build/ms3
 bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res   # → _build/res
 node --test tests/*.test.mjs       # root contract tests (also run before every build)
-bash bin/verify.sh                 # THE local gate = the pre-push hook; several minutes, background it
+bash bin/verify.sh                 # THE local gate; the hook runs `--push` (no site builds — CI has them)
 python3 bin/coordination_report.py --prs   # who else is working here — run before you start
 python3 bin/what_needs_josh.py             # what only the owner can do
 ```
@@ -53,7 +53,7 @@ One line each; the topic page holds the why, the how, and the incident that earn
 | 8 | The library teaches administration; it never reproduces a copyrighted instrument; scope is a faculty decision, not an agent's | `instrument-rights-gate.mjs`; hooks | safety-content |
 | 9 | Every claim about a paper carries that paper's own words; every citation carries a DOI or PMID that resolves to the paper claimed | `validate_evidence_annotations.py`; `bin/check_citation_attribution.py` | content-and-pages; gates |
 | 10 | A test may not depend on live governance state; a flag only tests pass is an untested production path | `tests/live-governance-state.test.mjs` | gates |
-| 11 | `bin/verify.sh` is the pre-push hook and a superset of CI; a ratchet may only fall; exit 2 (could not check) blocks like exit 1 | `bin/check-verify-coverage.py`; `docs/RATCHETS.md` | gates |
+| 11 | `bin/verify.sh --push` is the pre-push hook (the two site builds are CI's, decision `prepush-builds-to-ci`); the full run is a superset of CI; a ratchet may only fall; exit 2 (could not check) blocks like exit 1 | `bin/check-verify-coverage.py`; `docs/RATCHETS.md` | gates |
 | 12 | Never merge to `main` locally, never force-push, never `git worktree prune` from a sandbox; push the branch the day you create it, as a draft PR | ruleset *main protection*; `bin/check_ruleset_drift.py` | branching-and-worktrees |
 | 13 | localStorage keys are `cw_*` or `rp_*`; usage analytics store integers from a generated allowlist | `check-static-site.mjs` | tools-and-frontdoor |
 | 14 | Every live draft question is attestable from the phone; revised questions stage for faculty, not learners | `bin/check-qbank-drafts.mjs`; `qbank_public.py` | question-bank |
@@ -66,7 +66,6 @@ One line each; the topic page holds the why, the how, and the incident that earn
 |---|---|
 | `13_Faculty_Resources/reviewed.json`; `topic_meta.json` (`facultyReview`); `question_bank.json` (`status`); `pharmacy.json` (`facultyReview`) | governance-separation; attestation-hashes |
 | `13_Faculty_Resources/_automation/attestation_hash.py`; `13_Faculty_Resources/_automation/surface_governance.py`; `13_Faculty_Resources/_automation/validate_attestation_consistency.py`; `faculty-console/` | attestation-hashes; attestation-delivery-and-ledger |
-| `13_Faculty_Resources/ledger/`; `13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs` | attestation-delivery-and-ledger |
 | `CLAUDE.md`; `AGENTS.md`; `.github/`; `bin/`; `.claude/`; `*.schema.json`; `decisions.json`; `docs/agent-guide/` | governance-separation; gates |
 | `.github/workflows/ci.yml`; `bin/verify.sh` | gates |
 | `13_Faculty_Resources/_automation/site_build/` (the build, `site_manifest.json`, `shipped_pages.json`, nav) | build-and-deploy; content-and-pages |
@@ -95,7 +94,7 @@ One line each; the topic page holds the why, the how, and the incident that earn
 | [question-bank](docs/agent-guide/question-bank.md) | phone-attestable drafts; review-only staging (2026-10-11) |
 | [attestation-hashes](docs/agent-guide/attestation-hashes.md) | `contentHash` / `clinicalHash`, drift projection on every surface, the spent backfill, what the projection test pins and does not pin |
 | [governance-separation](docs/agent-guide/governance-separation.md) | policy vs content commits; L1–L4; what a promotion is in each registry; pack-case review as registration; the stale-base hint; the limits |
-| [attestation-delivery-and-ledger](docs/agent-guide/attestation-delivery-and-ledger.md) | the rolling `attest/pending` sweep and the delivery check; the dark Ed25519 ledger (ADR-003) |
+| [attestation-delivery-and-ledger](docs/agent-guide/attestation-delivery-and-ledger.md) | the rolling `attest/pending` sweep and the delivery check; what survives the removed ledger (ADR-003) |
 | [interview-room](docs/agent-guide/interview-room.md) | `sp-proxy/`, the retired red-team sign-off, `bin/rotation_turnover.py` |
 | [automation-and-audit-tools](docs/agent-guide/automation-and-audit-tools.md) | subagents, `.mcp.json`, session hooks, the `bin/` audit family and currency guards, the egress probe, the queue that cannot rot, `SILENT_SHRINK_CHECKLIST.md`, the nightly runner |
 | [safety-content](docs/agent-guide/safety-content.md) | the crisis block and its two consequences, no PHI, instrument reproduction |
@@ -107,6 +106,6 @@ One line each; the topic page holds the why, the how, and the incident that earn
   `sp-redteam-signoff-retired`, …) means that decision, not an agent's inference.
 - ADRs: `13_Faculty_Resources/_automation/surveillance/ADR-001-curriculum-surveillance.md`;
   `13_Faculty_Resources/_automation/site_build/ADR-002-shipped-pages-single-source.md`; ADR-003
-  (the ledger) is described in `docs/agent-guide/attestation-delivery-and-ledger.md`.
+  (the ledger, removed 2026-10-18) is `docs/adr/ADR-003-attestation-ledger.md`.
 - `docs/superpowers/{specs,plans}/` — dated design docs. `docs/SILENT_SHRINK_CHECKLIST.md` — the
   failure mode every gate here exists for. `docs/RATCHETS.md` — how the pinned counts work.

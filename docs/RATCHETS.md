@@ -6,7 +6,7 @@ gain in). A **rise fails** and blocks the push. Nobody has to drive the number t
 gate to be useful, and nobody can let it drift upward without a diff a reviewer sees. Hard
 checks — the ones that must be zero regardless — live *beside* the ratchets, never inside them.
 
-Seven tools use it (one, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
+Eight tools use it (one, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
 gate, so the pre-push hook is the enforcement.
 
@@ -23,6 +23,7 @@ the test for whether a future ratchet belongs in CI too. See `docs/agent-guide/g
 | `bin/check_design_drift.py` | `13_Faculty_Resources/_automation/site_build/design_drift_baseline.json` | raw dimension declarations, distinct font sizes, sub-floor font sizes, non-standard breakpoints (per file) | C1–C9, see `docs/DESIGN_SYSTEM.md` §3 |
 | `bin/verify_spans.py` | `bin/verify_spans_baseline.json` | `rows_flagged`, `sentences_truncated`, `sentences_edited`, `rows_uncached` | any **REWORDED** sentence (a sentence the paper never wrote) fails whatever the baseline says |
 | `bin/check_qbank_coherence.py` | `bin/check_qbank_coherence_baseline.json` | `pairs` (0 today) | none — the pin is the floor |
+| `bin/check_monolith_ratchet.py` | `bin/check_monolith_ratchet_baseline.json` | one integer per pinned file: `faculty-console/netlify/functions/attest.mjs` (4,075 at the 2026-10-18 pin; 3,640 after the ledger's phase-2 removal) | a pinned file that is missing is could-not-check (exit 2), never a pass |
 | `bin/check_agent_guide.py` | `bin/check_agent_guide_baseline.json` | `claude_md_lines` (112 at the 2026-10-16 split; was 938) | G1 every topic page linked from the index; G2 every `###` rule tagged `[gate:]`/`[report:]`/`[judgment]` and every tagged path exists; G3 every path in the index's read-first table matches a tracked file; G4 no page over 300 lines |
 | `bin/check_citation_attribution.py` | `bin/citation_identifier_allowlist.json`, capped by `ALLOWLIST_CAP` **in the script** | the number of grandfathered identifier-less references (3 today) | a citation whose identifier resolves to a different paper, a missing cache entry, a self-attribution, a fabricated author list — none of which any allowlist entry can suppress |
 
@@ -49,7 +50,7 @@ Run `python3 bin/check_citation_attribution.py --self-test` to falsify it: the f
 classes (no identifier; an identifier on a different paper; an addition past the cap; a stale
 entry) each have a case, and the last assertion runs the live tree against the committed cap.
 | `bin/check_editorial_leaks.py` | `bin/editorial_leaks_baseline.json` | `leaks` (16 at 2026-09-24: the three pasted-instruction audio-quiz items, both deck copies; 0 since 2026-09-25, after WP-3 #772 removed them) | could-not-check is exit 2: a required registry missing or unparsable, a listed shipped source missing, no pack, nothing examined |
-| `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest` (125 of 134), `live_uniquely_longest` (155 of 189) — items whose keyed option is the uniquely longest (WP-7) | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
+| `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest`, `live_uniquely_longest` — items whose keyed option is the uniquely longest (WP-7); pinned 125 of 134 / 155 of 189 on 2026-09-25, re-pinned 112 of 189 / 112 of 189 on 2026-10-18 after 36 rewrites were re-attested | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
 | `bin/qbank_blueprint_report.py` | `bin/qbank_blueprint_baseline.json` — **not shipped yet** | points outside the NBME/COMAT band, per dimension, over the attested pool (WP-8) | any untagged attested item exits 2 (PARTIAL), so only `--self-test` is in `verify.sh` until tagging is complete |
 
 ## Lowering the ratchet

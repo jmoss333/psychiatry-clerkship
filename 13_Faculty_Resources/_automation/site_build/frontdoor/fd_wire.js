@@ -23,6 +23,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
+  'data-fd-reading-size','data-fd-reading-spacing','data-fd-reading-reset',
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-app-bridge','data-fd-app-shift','data-fd-app-start','data-fd-app-reflect','data-fd-app-reset',
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
@@ -93,6 +94,9 @@ var FD_ACTION_SEMANTICS={
   'data-fd-search':'open search dialog',
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
+  'data-fd-reading-size':'set saved reading text size',
+  'data-fd-reading-spacing':'set saved reading line spacing',
+  'data-fd-reading-reset':'reset reading comfort',
   'data-fd-theme':'set saved color theme',
   'data-fd-settings':'open settings panel',
   'data-fd-analytics':'set usage measurement',
@@ -200,6 +204,7 @@ function fdResolveState(url, stored, options){
      interrupted read -- scrolled to the top. */
   if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
   if(src.readingPlaces!==undefined) out.readingPlaces=fdReadingPlaces(src.readingPlaces);
+  if(src.readingComfort!==undefined) out.readingComfort=fdReadingComfort(src.readingComfort);
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -1006,6 +1011,19 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-clear-confirm')){
     return {patch:{settingsConfirmClear:false},route:null,effect:{type:'clear-device-data'}};
   }
+  if(fdOwn(a,'data-fd-reading-size')||fdOwn(a,'data-fd-reading-spacing')||fdOwn(a,'data-fd-reading-reset')){
+    if(s.sheet!=='settings') return {patch:{},route:null,effect:null};
+    var comfort=fdReadingComfort(s.readingComfort), size=a['data-fd-reading-size'], spacing=a['data-fd-reading-spacing'];
+    if(fdOwn(a,'data-fd-reading-reset'))comfort=fdReadingComfort(null);
+    else if(fdOwn(a,'data-fd-reading-size')){
+      if(size!=='standard'&&size!=='larger'&&size!=='largest')return {patch:{},route:null,effect:null};
+      comfort.size=size;
+    }else{
+      if(spacing!=='standard'&&spacing!=='spacious')return {patch:{},route:null,effect:null};
+      comfort.spacing=spacing;
+    }
+    return {patch:{readingComfort:comfort},route:null,effect:{type:'reading-comfort'}};
+  }
   if(fdOwn(a,'data-fd-theme')){
     /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
        unknown value reads as 'system' rather than toggling, because this control is a three-way
@@ -1318,6 +1336,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-feedback-open],[data-fd-feedback-cancel],[data-fd-feedback-save],'+
   '[data-fd-feedback-edit],[data-fd-feedback-confirm],[data-fd-feedback-delete],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
+  '[data-fd-reading-size],[data-fd-reading-spacing],[data-fd-reading-reset],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
@@ -1364,10 +1383,10 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
-  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, anchors, authored={}, i;
+  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, comfortPosition=null, anchors, authored={}, i;
   var arrivalInteracted=false, arrivalWaiting=false, arrivalY=0, arrivalPosition=null;
   function empty(){ }
-  if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
+  if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty,reflow:function(change){if(change)change();}};
   anchors=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
   for(i=0;i<nodes.length;i++)if(nodes[i].id)authored[nodes[i].id]=true;
   for(i=0;i<nodes.length;i++){
@@ -1431,6 +1450,33 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function onPagehide(){
     if(timer!==null){timerClear(timer);timer=null;}
     capture();
+  }
+  /* Capture before typography changes, then restore after layout without treating it as a
+     learner scroll. The resource and the modal stay mounted throughout. */
+  function reflow(change){
+    if(!active){if(change)change();return;}
+    if(timer!==null){timerClear(timer);timer=null;}
+    var position=comfortPosition||current(), sequence=++resizeSeq;
+    if(!comfortPosition&&position){
+      for(var n=0;n<nodes.length;n++)if(anchor(nodes[n])===position.heading){
+        /* Negative only in this transient frame: the viewport may precede the first heading. */
+        position.offset=scrollY()-absoluteTop(nodes[n]);break;
+      }
+    }
+    if(ready)capture();
+    comfortPosition=position;
+    pendingPosition=null;
+    ready=false;
+    if(change)change();
+    frame(function(){
+      if(!active||sequence!==resizeSeq)return;
+      var target=null;
+      for(var j=0;j<nodes.length;j++)if(position&&anchor(nodes[j])===position.heading){target=nodes[j];break;}
+      if(target&&rendered(target))win.scrollTo(0,Math.max(0,absoluteTop(target)+position.offset));
+      suppressedY=scrollY();baselineY=scrollY();
+      comfortPosition=null;
+      ready=o.allowStorage===true;
+    });
   }
   function onResize(){
     if(!active||!ready)return;
@@ -1504,7 +1550,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
   }
   if(o.allowStorage!==true){
     status.textContent='Reading place could not be saved on this device';
-    return {destroy:destroy,startAtTop:startAtTop};
+    return {destroy:destroy,startAtTop:startAtTop,reflow:reflow};
   }
   function arrive(){
     if(!active)return;
@@ -1563,7 +1609,7 @@ function fdInstallReadingPlace(reader,ref,state,options){
     win.addEventListener('pointerdown',onArrivalPointer);
     win.addEventListener('scroll',onScroll);
   }else frame(arrive);
-  return {destroy:destroy,startAtTop:startAtTop};
+  return {destroy:destroy,startAtTop:startAtTop,reflow:reflow};
 }
 
 function fdWire(root, initialState, opts){
@@ -1820,7 +1866,7 @@ function fdWire(root, initialState, opts){
        under it. Left out, it falls to the else branch and is classed as a base change, so every
        arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
     var overlayKeys={searchOpen:true,query:true,searchExpanded:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
-      nudge:true,settingsConfirmClear:true,treePath:true,escalate:true};
+      nudge:true,settingsConfirmClear:true,readingComfort:true,readingComfortNotice:true,treePath:true,escalate:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
@@ -1834,6 +1880,7 @@ function fdWire(root, initialState, opts){
     }
     var type=effect&&effect.type;
     if(type==='set-theme') surfaces.chrome=true;
+    if(type==='reading-comfort') surfaces.overlay=true;
     if(type==='focus-search'||type==='open-sheet'||type==='open-protocol'||
         type==='nudge-timeout'||type==='search-input'||
         type==='set-analytics') surfaces.overlay=true;
@@ -1914,6 +1961,20 @@ function fdWire(root, initialState, opts){
             return !destroyed&&generation===navGeneration&&state.openId===effect.openRef;
           }
         });
+      }
+    } else if(effect.type==='reading-comfort'){
+      var reader=root&&root.querySelector?root.querySelector('.fd-reader'):null;
+      if(reader&&!(reader.classList&&reader.classList.contains('fd-reader--tool'))){
+        var pref=fdReadingComfort(state.readingComfort);
+        if(reader.getAttribute&&reader.getAttribute('data-fd-reader-size')===pref.size&&
+           reader.getAttribute('data-fd-reader-spacing')===pref.spacing)return;
+        var paint=function(){
+          reader.setAttribute('data-fd-reader-size',pref.size);
+          reader.setAttribute('data-fd-reader-spacing',pref.spacing);
+        };
+        var session=o.readingPlaceSession&&o.readingPlaceSession();
+        if(session&&session.reflow)session.reflow(paint);
+        else paint();
       }
     } else if(effect.type==='set-theme'){
       /* Paints only. The cw_theme write is hoisted above the render in apply() -- see the comment
@@ -2344,7 +2405,11 @@ function fdWire(root, initialState, opts){
          saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
         visitOnly=false;
     }
-    if(!visitOnly&&!continuity) fdSave(state);
+    if(result.effect&&result.effect.type==='reading-comfort'){
+      var comfortSaved=fdSave(state);
+      if(!comfortSaved)state.readingComfort=fdReadingComfort(before.readingComfort);
+      state.readingComfortNotice=comfortSaved?'Saved on this device.':'Could not save reading preferences on this device.';
+    }else if(!visitOnly&&!continuity) fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
@@ -2403,7 +2468,8 @@ function fdWire(root, initialState, opts){
       if(offlineFocus&&offlineFocus.focus)try{offlineFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
-    if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
+    if(afterOverlay&&(afterOverlay!==beforeOverlay||
+       (result.effect&&result.effect.type==='focus-search'))) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
        there after the render -- is true of every control in the panel except one. The two-tap
@@ -2841,6 +2907,17 @@ function fdWire(root, initialState, opts){
       dispatch:function(attrs,c){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
+      },
+      /* Capture owns its own dialog. Keep Search's query and opener only in this closure
+         so closing the resumed Search still returns to its original button. */
+      suspendSearch:function(){
+        if(destroyed||!startupCommitted||!state.searchOpen) return null;
+        var query=String(state.query||''), invoker=invokers.length?invokers[invokers.length-1]:null;
+        apply(fdDispatch({'data-fd-close-search':''},context(),state),null,false);
+        return function(){
+          if(destroyed||!startupCommitted) return state;
+          return apply(fdDispatch({'data-fd-search':'','data-fd-search-query':query},context(),state),invoker,false);
+        };
       },
       prepareStartup:prepareStartup,
       commitStartup:commitStartup,
