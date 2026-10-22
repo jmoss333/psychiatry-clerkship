@@ -3253,7 +3253,7 @@
         },
         {
           "claimId": "cotw-first-attempt-lethality-guns",
-          "claimText": "Of the 81 suicide deaths in the cohort, 48 (59.3%) occurred on the index attempt, and 72.9% of dead index attempters used guns (odds ratio for gunshot death versus all other methods 140).",
+          "claimText": "Of the 81 suicide deaths in the cohort, 48 (59.3%) occurred on the index attempt, and 72.9% of those 48 index-attempt deaths were by gunshot (odds ratio for gunshot death versus all other methods on the index attempt 140); the denominator is the 48 deaths on the index attempt, not all 81 suicides.",
           "claimTerms": [
             "perished on index attempt",
             "72.9% used guns"
