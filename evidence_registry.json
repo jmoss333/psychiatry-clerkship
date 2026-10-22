@@ -11634,6 +11634,126 @@
           }
         ]
       }
+    },
+    {
+      "id": "bostwick-2016-suicide-attempt-lethality",
+      "type": "primary-study",
+      "citation": {
+        "title": "Suicide Attempt as a Risk Factor for Completed Suicide: Even More Lethal Than We Knew.",
+        "authors": [
+          {
+            "family": "Bostwick",
+            "given": "JM"
+          },
+          {
+            "family": "Pabbati",
+            "given": "C"
+          },
+          {
+            "family": "Geske",
+            "given": "JR"
+          },
+          {
+            "family": "McKean",
+            "given": "AJ"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "Am J Psychiatry",
+        "volume": "173",
+        "pages": "1094-1100",
+        "doi": "10.1176/appi.ajp.2016.15070854",
+        "pmid": "27523496",
+        "url": "https://doi.org/10.1176/appi.ajp.2016.15070854"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 27523496): title, authors, journal, volume, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-10-21",
+        "note": "PMID 27523496 resolved via NCBI efetch on 2026-10-21: title, all four authors (Bostwick JM, Pabbati C, Geske JR, McKean AJ), Am J Psychiatry 2016;173(11):1094-1100, DOI 10.1176/appi.ajp.2016.15070854 and PMC5510596 match; PubMed lists only CommentIn items (an editorial and a letter/reply), so no erratum or retraction is known. Rochester Epidemiology Project cohort of 1,490 Olmsted County residents with a first lifetime suicide attempt reaching medical attention (1986-2007), followed 3-25 years: 81 (5.4%) died by suicide, 48 of them on the index attempt; of the 33 who survived the index attempt and later died by suicide, 27 (81.8%) did so within a year. Observational, single US county, first attempts only: it licenses 'risk is concentrated in the year after an attempt', which is the window the pg_suicide.md safety tree uses ('a suicide attempt in the past year', approved by Josh 2026-10-22). Of the 48 who died on the index attempt, 72.9% (35/48, full-text Table 1) died by gunshot (OR for death on the index attempt by gunshot vs all other methods 140, 95% CI 60-325); the abstract's 'dead index attempters' means these 48, not all 81 suicides (full text: 'nearly three fourths (72.9%) of those who died on index suicide attempt had shot themselves'; PMC5510596, checked 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "community cohort (retrospective-prospective)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "risk-assessment",
+          "safety"
+        ],
+        "clerkshipRelevance": "Why a recent attempt is an acute, not only a historical, risk factor: in a community cohort of first medically treated attempts, most deaths after surviving the attempt came within a year.",
+        "noteHistory": [
+          {
+            "date": "2026-10-21",
+            "note": "PMID 27523496 resolved via NCBI efetch on 2026-10-21: title, all four authors (Bostwick JM, Pabbati C, Geske JR, McKean AJ), Am J Psychiatry 2016;173(11):1094-1100, DOI 10.1176/appi.ajp.2016.15070854 and PMC5510596 match; PubMed lists only CommentIn items (an editorial and a letter/reply), so no erratum or retraction is known. Rochester Epidemiology Project cohort of 1,490 Olmsted County residents with a first lifetime suicide attempt reaching medical attention (1986-2007), followed 3-25 years: 81 (5.4%) died by suicide, 48 of them on the index attempt; of the 33 who survived the index attempt and later died by suicide, 27 (81.8%) did so within a year. Observational, single US county, first attempts only: it licenses 'risk is concentrated in the year after an attempt', which is the window the pg_suicide.md safety tree uses ('a suicide attempt in the past year', approved by Josh 2026-10-22). Of the 48 who died on the index attempt, 72.9% (35/48, full-text Table 1) died by gunshot (OR for death on the index attempt by gunshot vs all other methods 140, 95% CI 60-325); the abstract's 'dead index attempters' means these 48, not all 81 suicides (full text: 'nearly three fourths (72.9%) of those who died on index suicide attempt had shot themselves'; PMC5510596, checked 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "RESIGN_PACKET_2026-10-21 wording item 1 (pg_suicide.md recent-attempt factor); not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "anglemyer-2014-firearm-access-suicide",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The accessibility of firearms and risk for suicide and homicide victimization among household members: a systematic review and meta-analysis.",
+        "authors": [
+          {
+            "family": "Anglemyer",
+            "given": "A"
+          },
+          {
+            "family": "Horvath",
+            "given": "T"
+          },
+          {
+            "family": "Rutherford",
+            "given": "G"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "Ann Intern Med",
+        "volume": "160",
+        "pages": "101-110",
+        "doi": "10.7326/M13-1301",
+        "pmid": "24592495",
+        "url": "https://doi.org/10.7326/M13-1301"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 24592495): title, authors, journal, volume, issue, pages and DOI all match",
+        "verifiedAt": "2026-10-22",
+        "note": "PMID 24592495 resolved via NCBI efetch on 2026-10-22: title, all three authors (Anglemyer A, Horvath T, Rutherford G), Ann Intern Med 2014;160(2):101-110 and DOI 10.7326/M13-1301 match. PubMed lists an ErratumIn (Ann Intern Med 2014;160(9):658-659) and a CommentIn editorial; the PubMed abstract carries the corrected figures inline ('16 [not 15] observational studies'; homicide OR 2.00 [not 1.94]); the suicide OR 3.24 (95% CI 2.41-4.40) is the corrected value. Observational meta-analysis: firearm access was mostly self-reported in survey interviews and heterogeneous populations were pooled, so it licenses an association with suicide, not the effect of removing access. Added for the 2026-10-12 Case of the Week firearm-access teaching point (re-sign packet 2026-10-21 W5/V3, approved by Josh 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and meta-analysis of observational studies",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "lethal-means",
+          "firearms"
+        ],
+        "clerkshipRelevance": "Why firearm access belongs in every suicide assessment: across 16 observational studies, access to a firearm was associated with roughly three times the odds of suicide.",
+        "noteHistory": [
+          {
+            "date": "2026-10-22",
+            "note": "PMID 24592495 resolved via NCBI efetch on 2026-10-22: title, all three authors (Anglemyer A, Horvath T, Rutherford G), Ann Intern Med 2014;160(2):101-110 and DOI 10.7326/M13-1301 match. PubMed lists an ErratumIn (Ann Intern Med 2014;160(9):658-659) and a CommentIn editorial; the PubMed abstract carries the corrected figures inline ('16 [not 15] observational studies'; homicide OR 2.00 [not 1.94]); the suicide OR 3.24 (95% CI 2.41-4.40) is the corrected value. Observational meta-analysis: firearm access was mostly self-reported in survey interviews and heterogeneous populations were pooled, so it licenses an association with suicide, not the effect of removing access. Added for the 2026-10-12 Case of the Week firearm-access teaching point (re-sign packet 2026-10-21 W5/V3, approved by Josh 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "re-sign packet 2026-10-21 W5/V3 (CoTW firearm-access evidence); not faculty attestation"
+          }
+        ]
+      }
     }
   ]
 }

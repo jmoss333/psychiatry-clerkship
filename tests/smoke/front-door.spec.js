@@ -312,6 +312,53 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await expectHealthy(page);
 });
 
+test('reading place: a font-delayed native reload cannot recreate a cleared bookmark', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await scrollReadingTo(page, 1);
+  await expectReadingAnchor(page, 1);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await readingReady(page);
+  await page.locator('[data-fd-reading-top]').click();
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
+  let releaseFont, fontRequested = false;
+  const heldFont = new Promise(resolve => { releaseFont = resolve; });
+  await page.route('**/fonts/*.woff2', async route => {
+    const response = await routeFetchWithRetry(route);
+    fontRequested = true;
+    await heldFont;
+    await route.fulfill({ response });
+  });
+  try {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.fd-article__body h3')).toHaveCount(3);
+    await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
+    await expect.poll(() => fontRequested).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    expect(await page.evaluate(() => document.readyState)).toBe('interactive');
+    expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+    releaseFont();
+    await page.waitForLoadState('load');
+    await readingReady(page);
+    // Let native restoration and the reader's arrival frame complete, then flush any pending
+    // save synchronously. No arbitrary debounce sleep and no change to native restoration.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('pagehide')); resolve();
+    }))));
+    expect(await page.evaluate(() => history.scrollRestoration)).toBe('auto');
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(clearedY + 0.5);
+    expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+    await expectHealthy(page);
+  } finally {
+    releaseFont();
+  }
+});
+
 test('reading place: a removed heading opens at top and deletes only that reading', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await controlledReading(page);
@@ -1434,7 +1481,10 @@ test('dated title variants retain safety priority and open the first ordinary re
   await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const input = page.getByRole('textbox', { name:'Search resources', exact:true });
   await input.fill(query);
-  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'exp_consult.md');
+  // Since #1087 the title's word "catatonia" is the catatonia protocol's authored trigger, so it
+  // leads the safety prefix, followed by Consult Questions (the frontdoor-search-gate.mjs shape).
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+  await expect(page.locator('.fd-result').nth(1)).toHaveAttribute('data-fd-safety', 'exp_consult.md');
   await expect(page.locator('.fd-result[data-fd-open]').first()).toHaveAttribute('data-fd-open', ref);
   await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-search')).toHaveCount(0);
@@ -4352,7 +4402,10 @@ test('medication search: names reach readings while clinical context keeps its d
     await expect(dialog.locator('[data-fd-open="psychopharm_primer.md"]')).toBeVisible();
   }
   await input.fill('Ativan catatonia');
-  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toBeVisible();
+  // catatonia.md is a safety-kit protocol since #1087: it leads as its protocol row and is never
+  // double-listed as a plain item.
+  await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toHaveCount(0);
   await input.fill('Spravato');
   await expect(dialog.locator('[data-fd-open="ect_neuromodulation.md"]')).toBeVisible();
   await input.fill('Ativan withdrawing from alcohol');
@@ -4388,9 +4441,15 @@ for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
     await input.fill('patient-refuses-medication');
     await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
     await expect(dialog.locator('[data-fd-safety="exp_consult.md"]')).toBeVisible();
+    // catatonia.md is a safety-kit protocol since #1087: punctuated context recovers its authored
+    // trigger, so it leads as the protocol row (ahead of any primer) and is not double-listed.
+    for (const query of ['Ativan catatonia?', 'lorazepam (catatonia)']) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+      await expect(dialog.locator('[data-fd-safety="catatonia.md"]')).toHaveCount(1);
+      await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toHaveCount(0);
+    }
     for (const [query, ref] of [
-      ['Ativan catatonia?', 'catatonia.md'],
-      ['lorazepam (catatonia)', 'catatonia.md'],
       ['lithium/monitoring', 'med_monitoring.md'],
       ['lithium—monitoring', 'med_monitoring.md'],
       ['lithium monitoring?', 'med_monitoring.md'],

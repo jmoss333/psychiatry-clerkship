@@ -377,6 +377,17 @@ PSYCHOPHARM_PRIMER_2026_10_IDS = {
     "wang-2025-lithium-suicidality",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | PSYCHOPHARM_PRIMER_2026_10_IDS
+# Re-sign packet 2026-10-21, wording item 1: the recent-attempt acute-risk factor on the
+# pg_suicide.md safety tree. One new identity with a stored abstract span.
+PG_SUICIDE_RECENT_ATTEMPT_2026_10_IDS = {
+    "bostwick-2016-suicide-attempt-lethality",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PG_SUICIDE_RECENT_ATTEMPT_2026_10_IDS
+# Re-sign packet V3 (2026-10-22): firearm-access outcome evidence for the 2026-10-12 case.
+COTW_FIREARM_EVIDENCE_2026_10_IDS = {
+    "anglemyer-2014-firearm-access-suicide",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | COTW_FIREARM_EVIDENCE_2026_10_IDS
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
@@ -647,7 +658,11 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     # asam-oud-2020 and donofrio-2026-ed-bup (WP-1, 2026-09-24) carry PubMed ErratumIn links
     # (PMIDs 32487948 and 41915466; the JAMA one reverses Figure 2's labels only) — recorded in
     # each entry's identity note, pending faculty review with the rest of the WP-1 sources.
-    CORRECTED_IDS = {"abbass-2020", "linehan-2015", "asam-oud-2020", "donofrio-2026-ed-bup", "lieberman-2005-catie"}
+    # anglemyer-2014-firearm-access-suicide (V3, 2026-10-22): PubMed ErratumIn (Ann Intern Med
+    # 2014;160(9):658-659) corrects the study count and homicide OR; the suicide OR used is the
+    # corrected value — recorded in the identity note, pending faculty review.
+    CORRECTED_IDS = {"abbass-2020", "linehan-2015", "asam-oud-2020", "donofrio-2026-ed-bup", "lieberman-2005-catie",
+                     "anglemyer-2014-firearm-access-suicide"}
 
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)

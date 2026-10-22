@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Franklin et al. · 2017 · Psychological Bulletin",
-     "sourceId": "franklin-2017-suicide-risk-meta-analysis",
+     "t": "Chung et al. · 2017 · JAMA Psychiatry",
+     "sourceId": "chung-2017-postdischarge-suicide",
      "key": "A"
     },
     {
-     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
-     "sourceId": "lieberman-2005-catie",
+     "t": "Huhn et al. · 2019 · Lancet",
+     "sourceId": "huhn-2019-antipsychotics",
      "key": "B"
     },
     {
@@ -1132,24 +1132,24 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Appelbaum et al. · 1988 · The New England Journal of Medicine",
-     "sourceId": "appelbaum-grisso-1988-capacity",
+     "t": "Chung et al. · 2019 · BMJ Open",
+     "sourceId": "chung-2019-first-week-month",
      "key": "A"
-    },
-    {
-     "t": "Ferguson et al. · 2022 · Archives of suicide research : official journal of the International Academy for Suicide Research",
-     "sourceId": "ferguson-2021-safety-planning-review",
-     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
-     "key": "C"
+     "key": "B"
     },
     {
      "t": "Wesseloo et al. · 2016 · The American Journal of Psychiatry",
      "c": true,
      "sourceId": "wesseloo-2016-postpartum-relapse",
+     "key": "C"
+    },
+    {
+     "t": "Xia et al. · 2011 · Cochrane Database Syst Rev",
+     "sourceId": "xia-2011",
      "key": "D"
     }
    ],
