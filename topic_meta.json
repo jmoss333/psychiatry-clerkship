@@ -2598,7 +2598,8 @@
       "shank-2026",
       "stanley-brown-2012-safety-planning",
       "franklin-2017-suicide-risk-meta-analysis",
-      "bostwick-2016-suicide-attempt-lethality"
+      "bostwick-2016-suicide-attempt-lethality",
+      "chung-2017-postdischarge-suicide"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2730,7 +2731,7 @@
         },
         {
           "id": "acute",
-          "ask": "Is any acute risk factor present right now, or a suicide attempt in the past 3 months?",
+          "ask": "Is any acute risk factor present right now, a suicide attempt in the past year, or a psychiatric discharge in the past 3 months?",
           "hint": "Intoxication or withdrawal, severe agitation, psychosis or command hallucinations, severe insomnia, new access to lethal means, or unwilling to work on safety.",
           "options": [
             {
@@ -2797,7 +2798,7 @@
           "tone": "first",
           "act": [
             "Tell your team now, before this encounter ends. Don't hold it for rounds. You do not decide their risk.",
-            "Ask about lethal means, firearms first, and past attempts. An attempt in the past 3 months: escalate now.",
+            "Ask about lethal means, firearms first, and past attempts. An attempt in the past year or a discharge in the past 3 months: escalate now.",
             "Write down their exact words and the reasons for living they named."
           ],
           "escalate": "soon"

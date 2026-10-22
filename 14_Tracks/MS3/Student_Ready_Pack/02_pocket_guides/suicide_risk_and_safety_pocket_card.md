@@ -54,7 +54,8 @@ Acute risk:
 
 - Current intent or plan.
 - Recent preparation.
-- A suicide attempt in the past 3 months.
+- A suicide attempt in the past year.
+- Discharge from a psychiatric hospital in the past 3 months.
 - Recent loss or humiliation.
 - Intoxication or withdrawal.
 - Severe insomnia.
