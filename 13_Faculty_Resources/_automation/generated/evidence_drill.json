@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
-     "sourceId": "lieberman-2005-catie",
+     "t": "Chung et al. · 2017 · JAMA Psychiatry",
+     "sourceId": "chung-2017-postdischarge-suicide",
      "key": "A"
     },
     {
-     "t": "Schnurr et al. · 2024 · Ann Intern Med",
-     "sourceId": "schnurr-2024-vadod-ptsd-cpg-synopsis",
+     "t": "Huhn et al. · 2019 · Lancet",
+     "sourceId": "huhn-2019-antipsychotics",
      "key": "B"
     },
     {
@@ -1132,8 +1132,8 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Hajek et al. · 2024 · Suicide Life Threat Behav",
-     "sourceId": "hajek-gross-2024",
+     "t": "Chung et al. · 2019 · BMJ Open",
+     "sourceId": "chung-2019-first-week-month",
      "key": "A"
     },
     {
@@ -1148,8 +1148,8 @@
      "key": "C"
     },
     {
-     "t": "Winkelman et al. · 2025 · J Clin Sleep Med",
-     "sourceId": "winkelman-2025-aasm-rls",
+     "t": "Xia et al. · 2011 · Cochrane Database Syst Rev",
+     "sourceId": "xia-2011",
      "key": "D"
     }
    ],

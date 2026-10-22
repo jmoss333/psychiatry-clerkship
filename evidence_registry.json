@@ -11696,6 +11696,64 @@
           }
         ]
       }
+    },
+    {
+      "id": "anglemyer-2014-firearm-access-suicide",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The accessibility of firearms and risk for suicide and homicide victimization among household members: a systematic review and meta-analysis.",
+        "authors": [
+          {
+            "family": "Anglemyer",
+            "given": "A"
+          },
+          {
+            "family": "Horvath",
+            "given": "T"
+          },
+          {
+            "family": "Rutherford",
+            "given": "G"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "Ann Intern Med",
+        "volume": "160",
+        "pages": "101-110",
+        "doi": "10.7326/M13-1301",
+        "pmid": "24592495",
+        "url": "https://doi.org/10.7326/M13-1301"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 24592495): title, authors, journal, volume, issue, pages and DOI all match",
+        "verifiedAt": "2026-10-22",
+        "note": "PMID 24592495 resolved via NCBI efetch on 2026-10-22: title, all three authors (Anglemyer A, Horvath T, Rutherford G), Ann Intern Med 2014;160(2):101-110 and DOI 10.7326/M13-1301 match. PubMed lists an ErratumIn (Ann Intern Med 2014;160(9):658-659) and a CommentIn editorial; the PubMed abstract carries the corrected figures inline ('16 [not 15] observational studies'; homicide OR 2.00 [not 1.94]); the suicide OR 3.24 (95% CI 2.41-4.40) is the corrected value. Observational meta-analysis: firearm access was mostly self-reported in survey interviews and heterogeneous populations were pooled, so it licenses an association with suicide, not the effect of removing access. Added for the 2026-10-12 Case of the Week firearm-access teaching point (re-sign packet 2026-10-21 W5/V3, approved by Josh 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and meta-analysis of observational studies",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "lethal-means",
+          "firearms"
+        ],
+        "clerkshipRelevance": "Why firearm access belongs in every suicide assessment: across 16 observational studies, access to a firearm was associated with roughly three times the odds of suicide.",
+        "noteHistory": [
+          {
+            "date": "2026-10-22",
+            "note": "PMID 24592495 resolved via NCBI efetch on 2026-10-22: title, all three authors (Anglemyer A, Horvath T, Rutherford G), Ann Intern Med 2014;160(2):101-110 and DOI 10.7326/M13-1301 match. PubMed lists an ErratumIn (Ann Intern Med 2014;160(9):658-659) and a CommentIn editorial; the PubMed abstract carries the corrected figures inline ('16 [not 15] observational studies'; homicide OR 2.00 [not 1.94]); the suicide OR 3.24 (95% CI 2.41-4.40) is the corrected value. Observational meta-analysis: firearm access was mostly self-reported in survey interviews and heterogeneous populations were pooled, so it licenses an association with suicide, not the effect of removing access. Added for the 2026-10-12 Case of the Week firearm-access teaching point (re-sign packet 2026-10-21 W5/V3, approved by Josh 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "re-sign packet 2026-10-21 W5/V3 (CoTW firearm-access evidence); not faculty attestation"
+          }
+        ]
+      }
     }
   ]
 }
