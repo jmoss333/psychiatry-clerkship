@@ -312,6 +312,53 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await expectHealthy(page);
 });
 
+test('reading place: a font-delayed native reload cannot recreate a cleared bookmark', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await scrollReadingTo(page, 1);
+  await expectReadingAnchor(page, 1);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await readingReady(page);
+  await page.locator('[data-fd-reading-top]').click();
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
+  let releaseFont, fontRequested = false;
+  const heldFont = new Promise(resolve => { releaseFont = resolve; });
+  await page.route('**/fonts/*.woff2', async route => {
+    const response = await routeFetchWithRetry(route);
+    fontRequested = true;
+    await heldFont;
+    await route.fulfill({ response });
+  });
+  try {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.fd-article__body h3')).toHaveCount(3);
+    await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
+    await expect.poll(() => fontRequested).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    expect(await page.evaluate(() => document.readyState)).toBe('interactive');
+    expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+    releaseFont();
+    await page.waitForLoadState('load');
+    await readingReady(page);
+    // Let native restoration and the reader's arrival frame complete, then flush any pending
+    // save synchronously. No arbitrary debounce sleep and no change to native restoration.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('pagehide')); resolve();
+    }))));
+    expect(await page.evaluate(() => history.scrollRestoration)).toBe('auto');
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(clearedY + 0.5);
+    expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+    await expectHealthy(page);
+  } finally {
+    releaseFont();
+  }
+});
+
 test('reading place: a removed heading opens at top and deletes only that reading', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await controlledReading(page);
