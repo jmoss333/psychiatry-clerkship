@@ -1434,7 +1434,10 @@ test('dated title variants retain safety priority and open the first ordinary re
   await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const input = page.getByRole('textbox', { name:'Search resources', exact:true });
   await input.fill(query);
-  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'exp_consult.md');
+  // Since #1087 the title's word "catatonia" is the catatonia protocol's authored trigger, so it
+  // leads the safety prefix, followed by Consult Questions (the frontdoor-search-gate.mjs shape).
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+  await expect(page.locator('.fd-result').nth(1)).toHaveAttribute('data-fd-safety', 'exp_consult.md');
   await expect(page.locator('.fd-result[data-fd-open]').first()).toHaveAttribute('data-fd-open', ref);
   await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-search')).toHaveCount(0);
@@ -4352,7 +4355,10 @@ test('medication search: names reach readings while clinical context keeps its d
     await expect(dialog.locator('[data-fd-open="psychopharm_primer.md"]')).toBeVisible();
   }
   await input.fill('Ativan catatonia');
-  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toBeVisible();
+  // catatonia.md is a safety-kit protocol since #1087: it leads as its protocol row and is never
+  // double-listed as a plain item.
+  await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toHaveCount(0);
   await input.fill('Spravato');
   await expect(dialog.locator('[data-fd-open="ect_neuromodulation.md"]')).toBeVisible();
   await input.fill('Ativan withdrawing from alcohol');
@@ -4388,9 +4394,15 @@ for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
     await input.fill('patient-refuses-medication');
     await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
     await expect(dialog.locator('[data-fd-safety="exp_consult.md"]')).toBeVisible();
+    // catatonia.md is a safety-kit protocol since #1087: punctuated context recovers its authored
+    // trigger, so it leads as the protocol row (ahead of any primer) and is not double-listed.
+    for (const query of ['Ativan catatonia?', 'lorazepam (catatonia)']) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+      await expect(dialog.locator('[data-fd-safety="catatonia.md"]')).toHaveCount(1);
+      await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toHaveCount(0);
+    }
     for (const [query, ref] of [
-      ['Ativan catatonia?', 'catatonia.md'],
-      ['lorazepam (catatonia)', 'catatonia.md'],
       ['lithium/monitoring', 'med_monitoring.md'],
       ['lithium—monitoring', 'med_monitoring.md'],
       ['lithium monitoring?', 'med_monitoring.md'],
