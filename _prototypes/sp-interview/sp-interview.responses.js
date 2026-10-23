@@ -52,8 +52,11 @@
     }
     // A single reflective statement is an acknowledgement, not a new data
     // question. Retain the core's clinical state but play its reflection clip.
+    // The stems mirror the pack's reflection intent (2026-10-21: 'it seems like', 'I hear you',
+    // "that's a lot", 'must have been'); a stem the pack recognises but this list does not
+    // falls through to the canonical cursor and can repeat the clip just played.
     // Questions and additional clauses are deliberately not handled here.
-    if (hits.indexOf('reflection') >= 0 && /^(?:(?:it )?sounds (?:like|as if)|that (?:must|sounds|seems) (?:be )?(?:really |very )?(?:hard|difficult|exhausting|heavy|painful|lonely)|i can (?:hear|see) (?:that|how))\b[^?!.;]*[.!]?$/i.test(normalized) && !/\b(?:what|why|can you|could you|do you|did you|have you|are you|tell me)\b/i.test(normalized) && !/\bhow\b/i.test(normalized.replace(/^i can (?:hear|see) how\b/i, ''))) return {bank:'reflection'};
+    if (hits.indexOf('reflection') >= 0 && /^(?:(?:it )?sounds (?:like|as if)|it seems (?:like|as if)|i hear you|that(?:'s| is) a lot|that(?:'s| is) (?:really |very )?(?:hard|difficult|exhausting|heavy|painful|lonely)(?: (?:it seems|it sounds) like)?|that (?:must|sounds|seems) (?:have been |has been |be |been )?(?:really |very |so |pretty |incredibly |truly )?(?:hard|difficult|exhausting|heavy|painful|lonely)|i can (?:hear|see) (?:that|how))\b[^?!.;]*[.!]?$/i.test(normalized) && !/\b(?:what|why|can you|could you|do you|did you|have you|are you|tell me)\b/i.test(normalized) && !/\bhow\b/i.test(normalized.replace(/^i can (?:hear|see) how\b/i, ''))) return {bank:'reflection'};
     return null;
   }
 
