@@ -898,6 +898,47 @@ SNIPPET_MARKERS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Pre/post knowledge check (L8 outcomes design, DRAFT) -- off by default.
+# ---------------------------------------------------------------------------
+# CLERKSHIP_PREPOST=off|on. Deliberately NOT a SNIPPET_MARKERS entry: those always expand,
+# and this one must expand to NOTHING in an off build. The shell carries the marker exactly
+# once; the build replaces it either with frontdoor/fd_prepost.js (on) or with "" (off), and
+# writes prepost_forms.json only when on. The resident shell is a copy of the MS3 one.
+PREPOST_MODES = ("off", "on")
+PREPOST_MARKER = "/*__FD_PREPOST__*/"
+PREPOST_SNIPPET = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontdoor", "fd_prepost.js")
+PREPOST_SIGNATURE = "function fdPrepostSectionHtml("
+
+
+def prepost_mode():
+    """Read CLERKSHIP_PREPOST from the environment; default 'off'."""
+    raw = os.environ.get("CLERKSHIP_PREPOST", "off").strip().lower()
+    if raw not in PREPOST_MODES:
+        raise ValueError(
+            "CLERKSHIP_PREPOST must be one of %s, got %r" % ("|".join(PREPOST_MODES), raw)
+        )
+    return raw
+
+
+def prepost_enabled(mode=None):
+    """Whether this build ships the pre/post knowledge-check UI and its forms."""
+    mode = prepost_mode() if mode is None else mode
+    return mode == "on"
+
+
+def apply_prepost_marker(text, enabled=False):
+    """Expand the shell's pre/post marker: the snippet when enabled, nothing otherwise.
+
+    Fails closed (ValueError) when the marker is missing or duplicated, so a refactor of
+    the shell cannot silently drop the off-by-default guarantee or ship two copies.
+    """
+    if text.count(PREPOST_MARKER) != 1:
+        raise ValueError("pre/post marker %s missing or duplicated in the shell" % PREPOST_MARKER)
+    body = open(PREPOST_SNIPPET, encoding="utf-8").read() if enabled else ""
+    return text.replace(PREPOST_MARKER, body, 1)
+
+
 def inject_shared_snippets(path):
     """Replace shared-snippet markers with their canonical bodies. Idempotent."""
     t = open(path, encoding="utf-8").read()
