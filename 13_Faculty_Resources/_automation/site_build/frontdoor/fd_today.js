@@ -702,7 +702,118 @@ function fdPrepareInvitation(index){
     governanceBadge(item.governance,{compact:true})+
     '<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(item.ref)+'">Choose tomorrow’s task</button></div>';
 }
-function fdTodayPurpose(index,id,isOpen){
+/* ---- "Presenting tomorrow" (F4, 2026-10-18) ---------------------------------------------------
+   Under "Before rounds": "Presenting a specific patient? Pick the syndrome", then the hospital day.
+   The card is a pure render over data the shell already has at first paint -- the syndrome's own
+   attested topic_meta record (opts.meta = FD_TOPIC_META: clinicalWorkflow / firstMove / ruleOut /
+   epa, the SAME text the topic page's "On the unit" card shows), the hub's Case-of-the-Week
+   editions (index.cotwForTopic) and the build-injected routing payload (opts.prep = FD_PRESENTING:
+   which fields and links each phase shows, the syndromes that qualify on this site, the case
+   titles). presenting_tomorrow.py fails the build if any syndrome x phase cell would render fewer
+   than its minimum items, and fdPrepItems draws exactly the list its cell_items() counts
+   (tests/presenting-tomorrow.test.mjs pins the parity). No new clinical text lives here: every
+   label is payload data, every line is the record's. Session-only choices (the shell owns them),
+   never persisted, never in the URL; the syndrome row is rendered only while "Before rounds" is
+   the active purpose, so Regular Today is unchanged. */
+var FD_PREP_WORKFLOW_KEYS=['ask','mse','safety','say','collateral','rounds','exam'];
+
+function fdPrepPhase(prep, id){
+  var phases=(prep&&Object.prototype.toString.call(prep.phases)==='[object Array]')?prep.phases:[];
+  for(var i=0;i<phases.length;i++){ if(phases[i]&&phases[i].id===id) return phases[i]; }
+  return phases.length?phases[0]:null;
+}
+
+function fdPrepSyndrome(prep, ref){
+  var list=(prep&&Object.prototype.toString.call(prep.syndromes)==='[object Array]')?prep.syndromes:[];
+  for(var i=0;i<list.length;i++){ if(list[i]&&list[i].ref===ref) return list[i]; }
+  return null;
+}
+
+/* The items one card renders, in order: the renderer's contract with presenting_tomorrow.py. */
+function fdPrepItems(index, prep, meta, syn, phase){
+  var rec=(meta&&syn&&meta[syn.ref])||{}, cw=rec.clinicalWorkflow||{}, labels=(prep&&prep.labels)||{};
+  var cases=(index&&index.cotwForTopic&&syn)?(index.cotwForTopic[syn.ref]||[]):[];
+  var items=[], f, k, a, key;
+  var fields=(phase&&phase.fields)||[], links=(phase&&phase.links)||[];
+  for(f=0;f<fields.length;f++){
+    key=fields[f];
+    if(FD_PREP_WORKFLOW_KEYS.indexOf(key)>-1){
+      if(typeof cw[key]==='string'&&cw[key].replace(/\s+/g,'')) items.push({kind:'text',key:key,label:labels[key]||key,value:cw[key]});
+    } else if(key==='firstMove'){
+      if(typeof rec.firstMove==='string'&&rec.firstMove.replace(/\s+/g,'')) items.push({kind:'text',key:key,label:labels[key]||key,value:rec.firstMove});
+    } else if(key==='ruleOut'){
+      if(Object.prototype.toString.call(rec.ruleOut)==='[object Array]'&&rec.ruleOut.length) items.push({kind:'text',key:key,label:labels[key]||key,value:rec.ruleOut.join(' · ')});
+    }
+  }
+  for(k=0;k<links.length;k++){
+    key=links[k];
+    if(key==='guide'){
+      var page=index&&index.byRef&&index.byRef[syn.ref];
+      items.push({kind:'link',key:'guide',label:labels.guide||key,title:(page&&page.title)||syn.topic,ref:syn.ref});
+    } else if(key==='cotw'&&cases.length&&cases[0]&&cases[0].slug){
+      items.push({kind:'link',key:'cotw',label:labels.cotw||key,title:cases[0].title||cases[0].slug,ref:cases[0].slug});
+    } else if(key==='comm'&&syn.comm&&syn.comm.id){
+      items.push({kind:'link',key:'comm',label:labels.comm||key,title:syn.comm.title||syn.comm.id,href:'?tool=communication-practice.html&case='+syn.comm.id});
+    } else if(key==='family'&&syn.family&&syn.family.id){
+      items.push({kind:'link',key:'family',label:labels.family||key,title:syn.family.title||syn.family.id,href:'?tool=family-systems.html&scenario='+syn.family.id});
+    } else if(key==='actions'){
+      var acts=Object.prototype.toString.call(syn.actions)==='[object Array]'?syn.actions:[];
+      for(a=0;a<acts.length;a++){ if(acts[a]&&typeof acts[a].href==='string') items.push({kind:'link',key:'action',label:labels.actions||key,title:acts[a].label||acts[a].href,href:acts[a].href}); }
+    }
+  }
+  return items;
+}
+
+function fdPrepCard(index, prep, meta, syn, phase, audience){
+  if(!syn||!phase) return '';
+  var items=fdPrepItems(index,prep,meta,syn,phase), rec=(meta&&meta[syn.ref])||{}, i;
+  var h='<div class="fd-prep__card" data-prep-ref="'+fdEsc(syn.ref)+'" data-prep-phase="'+fdEsc(phase.id)+'">';
+  h+='<h3 class="fd-prep__title">'+fdEsc(syn.topic)+' · '+fdEsc(phase.label)+'</h3>';
+  if(phase.lead) h+='<p class="fd-prep__lead">'+fdEsc(phase.lead)+'</p>';
+  h+='<dl class="fd-prep__lines">';
+  for(i=0;i<items.length;i++){ if(items[i].kind==='text') h+='<div class="fd-prep__line"><dt>'+fdEsc(items[i].label)+'</dt><dd>'+fdEsc(items[i].value)+'</dd></div>'; }
+  h+='</dl><ul class="fd-prep__links">';
+  for(i=0;i<items.length;i++){
+    var it=items[i]; if(it.kind!=='link') continue;
+    /* A ref-only destination routes through data-fd-open; a destination that carries a query
+       (a drill's case=, a scenario=, a tool's own parameters) is a real link, because the Front
+       Door action drops query parameters (fdUnitWeek precedent). */
+    var text=fdEsc(it.label)+': '+fdEsc(it.title);
+    h+='<li>'+(it.ref?'<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(it.ref)+'">'+text+'</button>'
+                     :'<a class="fd-btn fd-btn--ghost" href="'+fdEsc(it.href)+'">'+text+'</a>')+'</li>';
+  }
+  h+='</ul>';
+  if(audience==='resident'&&Object.prototype.toString.call(rec.epa)==='[object Array]'&&rec.epa.length){
+    h+='<p class="fd-prep__epa">'+fdEsc(((prep&&prep.labels)||{}).epa||'EPA')+' · '+fdEsc(rec.epa.join(' · '))+'</p>';
+  }
+  return h+'</div>';
+}
+
+function fdPrepPicker(index, opts){
+  var o=opts||{}, prep=o.prep, list, i;
+  if(!prep||Object.prototype.toString.call(prep.syndromes)!=='[object Array]'||!prep.syndromes.length) return '';
+  list=[];
+  for(i=0;i<prep.syndromes.length;i++){ var s=prep.syndromes[i]; if(s&&typeof s.ref==='string'&&index&&index.byRef&&index.byRef[s.ref]) list.push(s); }
+  if(!list.length) return '';
+  var syn=fdPrepSyndrome({syndromes:list},o.prepRef), phase=fdPrepPhase(prep,o.prepPhase);
+  var h='<div class="fd-prep">';
+  h+='<p class="fd-prep__prompt">'+fdEsc(prep.prompt||'')+'</p>';
+  h+='<div class="fd-prep__syndromes" role="group" aria-label="'+fdEsc(prep.heading||'')+'">';
+  for(i=0;i<list.length;i++){
+    h+='<button type="button" class="fd-btn fd-btn--ghost" data-today-prep="'+fdEsc(list[i].ref)+'" aria-pressed="'+(syn&&syn.ref===list[i].ref?'true':'false')+'">'+fdEsc(list[i].topic)+'</button>';
+  }
+  h+='</div>';
+  if(syn&&phase){
+    h+='<div class="fd-prep__phases" role="group" aria-label="'+fdEsc(prep.phasePrompt||'')+'">';
+    for(i=0;i<prep.phases.length;i++){
+      h+='<button type="button" class="fd-btn fd-btn--ghost" data-today-prep-phase="'+fdEsc(prep.phases[i].id)+'" aria-pressed="'+(prep.phases[i].id===phase.id?'true':'false')+'">'+fdEsc(prep.phases[i].label)+'</button>';
+    }
+    h+='</div>'+fdPrepCard(index,prep,o.meta,syn,phase,o.audience);
+  }
+  return h+'</div>';
+}
+
+function fdTodayPurpose(index,id,isOpen,opts){
   var options=fdTodayPurposeOptions(index),active=null,i;
   for(i=0;i<options.length;i++){if(options[i].id===id)active=options[i];}
   var h='<details class="fd-purpose"'+(isOpen?' open':'')+'>';
@@ -717,6 +828,8 @@ function fdTodayPurpose(index,id,isOpen){
   if(active){
     h+='<p class="fd-purpose__reason" role="status">Suggested because you chose '+fdEsc(active.label)+'.</p>';
     h+='<button type="button" class="fd-btn fd-btn--accent" '+(active.ref?'data-fd-open="'+fdEsc(active.ref)+'"':'data-today-planner')+'>'+fdEsc(active.title)+'</button>';
+    /* F4: only "Before rounds" offers the syndrome picker; every other purpose is as before. */
+    if(active.id==='rounds') h+=fdPrepPicker(index,opts);
   }
   h+=fdPrepareInvitation(index);
   return h+'</details>';

@@ -178,6 +178,13 @@ const REGISTRY = Object.freeze({
     why: 'Real Essentials renders with its pending count computed from the same index and compared with the '
       + 'rendered HTML, never pinned; the review-state branches use inline fixtures.',
   },
+  'tests/presenting-tomorrow.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads real topic_meta.json only for clinicalWorkflow / firstMove / ruleOut / epa text and asserts the '
+      + 'card renders those lines verbatim; nothing reads facultyReview, the projections pin a fixed reviewed '
+      + 'governance triplet, and every count is a partition computed from the same registries (Python and JS '
+      + 'compared), so a signature or a reopened page changes no assertion.',
+  },
   'tests/fd-tool-pins.test.mjs': {
     kind: 'invariant',
     why: 'Builds current audience projections and checks canonical tool IDs, rights exclusions, and local '

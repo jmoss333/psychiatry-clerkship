@@ -2716,6 +2716,26 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-prepare__copy{flex:1 1 240px;margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
 .fd-prepare__title{color:var(--fd-text);font-weight:700}
 .fd-prepare .fd-btn{color:var(--fd-teal-deep);margin:0}
+/* "Presenting tomorrow" (fd_today.js fdPrepPicker / fdPrepCard, F4): under "Before rounds", the
+ * syndrome pills, the hospital-day pills, then one card -- a kicker-style title, the phase's lead,
+ * the attested lines as a definition list (label 13/700 dim over text 15/1.5), the ghost links in a
+ * wrapping row, and the EPA line (one audience's build only). Pills reuse the chooser's pill rule. */
+.fd-prep{margin:var(--fd-space-6) 0 0;padding:var(--fd-space-5) 0 0;border-top:1px solid var(--fd-line)}
+.fd-prep__prompt{margin:0 0 var(--fd-space-3);font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text)}
+.fd-prep__syndromes,.fd-prep__phases{display:flex;flex-wrap:wrap;gap:var(--fd-space-3)}
+.fd-prep__syndromes button,.fd-prep__phases button{white-space:normal;min-width:0;max-width:100%;overflow-wrap:anywhere;min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);font-size:var(--fd-font-sm);font-weight:600}
+.fd-prep__syndromes button[aria-pressed="true"],.fd-prep__phases button[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep);font-weight:700}
+.fd-prep__phases{margin-top:var(--fd-space-5)}
+.fd-prep__card{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-6) var(--fd-space-7);border:1px solid var(--fd-line);border-left:3px solid var(--fd-teal);border-radius:var(--fd-radius-lg);background:var(--fd-surface)}
+.fd-prep__title{margin:0;font-family:inherit;font-size:var(--fd-font-md);font-weight:700;color:var(--fd-text)}
+.fd-prep__lead{margin:var(--fd-space-1) 0 var(--fd-space-5);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
+.fd-prep__lines{margin:0;display:grid;gap:var(--fd-space-4)}
+.fd-prep__line dt{font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-prep__line dd{margin:var(--fd-space-1) 0 0;font-size:var(--fd-font-base);line-height:1.5;color:var(--fd-text)}
+.fd-prep__links{display:flex;flex-wrap:wrap;gap:var(--fd-space-3);margin:var(--fd-space-6) 0 0;padding:0;list-style:none}
+.fd-prep__links li{display:contents}
+.fd-prep__links .fd-btn{min-height:var(--fd-target-touch);white-space:normal;text-align:left;color:var(--fd-teal-deep)}
+.fd-prep__epa{margin:var(--fd-space-5) 0 0;font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-text-mid)}
 
 /* Today: disclose new study planning while keeping unfinished work visible. */
 .fd-study-planner{margin:0;border-bottom:0}
