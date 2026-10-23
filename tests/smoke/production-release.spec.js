@@ -184,6 +184,11 @@ for (const [device, viewport] of [
         await expect(dialog.locator('.fd-result').first()).toBeFocused();
         await page.keyboard.press('Enter');
         const safety = page.getByRole('dialog', { name: 'Substance Use', exact: true });
+        // Search's first Enter moves to the ranked result; activation takes a second Enter.
+        const firstSafety = dialog.locator('.fd-result').first();
+        await expect(firstSafety).toBeFocused();
+        await expect(safety).toHaveCount(0);
+        await firstSafety.press('Enter');
         await expect(safety).toBeVisible();
         await expect(dialog).toHaveCount(0);
         await safety.getByRole('button', { name: 'Close side sheet', exact: true }).click();
