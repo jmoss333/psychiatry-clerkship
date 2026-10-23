@@ -59,9 +59,12 @@
       "category": "acute-safety",
       "riskLevel": "high",
       "disclaimerType": "validated-scale-protocol-dependent",
-      "storageKeys": [],
+      "storageKeys": [
+        "cw_cows_series_v1"
+      ],
       "evidenceIds": [
-        "asam-alcohol-withdrawal-2020"
+        "asam-alcohol-withdrawal-2020",
+        "asam-hpso-bup-2023"
       ],
       "relatedPages": [
         "t_sud.md"
