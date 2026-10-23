@@ -97,6 +97,10 @@ def norm(s: str) -> str:
     s = re.sub(r"\bI\s*2\s*=", "I =", s)
     s = re.sub(r"(?<![A-Za-z])[A-Za-z]{1,2}\s*=\s*", "= ", s)
     s = re.sub(r"\s*=\s*", " = ", s)          # uniform spacing around "="
+    # The same artifact before an inequality: the italic "p < 0.0001" comes back as
+    # "< 0.0001" (driessen-2023, 2026-10-18). Same collapse, on both sides.
+    s = re.sub(r"(?<![A-Za-z])[A-Za-z]{1,2}\s*([<>≤≥])\s*", r"\1 ", s)
+    s = re.sub(r"\s*([<>≤≥])\s*", r" \1 ", s)
     s = re.sub(r"\s+", " ", s)
     return s
 
@@ -440,6 +444,21 @@ def self_test() -> int:
     rc, out = run(_fx(tr=("1", _FX_TRUNC)), _FX_CACHE, zero)
     expect("truncated sentence raises sentences_truncated and exits 1",
            rc == 1 and "[TRUNCATED]" in out and "sentences_truncated rose 0 -> 1" in out)
+
+    # 6b. PubMed's plain text drops italic labels before "<" as well as "=": the paper's
+    # "B = -0.49 ... p < 0.0001" is fetched as "= -0.49 ...,< 0.0001" (driessen-2023).
+    lbl_abs = ("Adding it was more efficacious for high levels [= -0.49, 95% CI -0.61 to "
+               "-0.37,< 0.0001] and for >2 years rather than <1 year (= -0.68,= 0.03).")
+    lbl_cache = {"7": lbl_abs}
+    rc, out = run(_fx(lbl=("7", "Adding it was more efficacious for high levels [B = -0.49, "
+                               "95% CI -0.61 to -0.37, p < 0.0001] and for >2 years rather "
+                               "than <1 year (B = -0.68, p = 0.03).")), lbl_cache, zero)
+    expect("a dropped italic label before '<' is a fetch artifact, not an edit",
+           rc == 0 and "1 clean" in out)
+    rc, out = run(_fx(lbl=("7", "Adding it was more efficacious for high levels [B = -0.49, "
+                               "95% CI -0.61 to -0.37, p < 0.05] and for >2 years rather "
+                               "than <1 year (B = -0.68, p = 0.03).")), lbl_cache, zero)
+    expect("a changed threshold after '<' is still a finding", rc == 1 and "0 clean" in out)
 
     # 7. a fall is a note naming the lowering command, never a failure
     rc, out = run(_fx(clean=("1", _FX_S1)), _FX_CACHE, dict(zero, rows_flagged=2, sentences_edited=3))
