@@ -337,6 +337,18 @@
       "rationaleRef": "docs/adr/ADR-003-attestation-ledger.md (Status and Removal sections); review decision §6-a chosen 2026-10-18 in a Cowork session",
       "note": "Built dark on 2026-09-25 and never activated. Two integrity mechanisms with one switched off was design debt: a code path production never ran, a scheduled function invoked every ten minutes to return immediately, a signing-key runbook nobody had followed, and the largest single topic in the agent rulebook. The forgeable console identity the ledger would have fixed cryptographically is closed instead by a GitHub App identity plus a ruleset on attest/pending (review R4). Phase 1 removed the build overlay, the ledger-publish schedule, bin/ledger.mjs, bin/ledger_keygen.mjs and 13_Faculty_Resources/ledger/; phase 2 removes the console's ATTEST_LEDGER mode and its tests in its own PR with the console suites run in full. Kept: the question bank's manifest line is hashed without item status (signing a question must never drift the question tools), and an agent never mints a signing key or writes a signatures branch. Revisit only if an institutional sponsor requires cryptographic signatures; the design doc stays in docs/superpowers/specs.",
       "governs": []
+    },
+    {
+      "id": "console-identity-github-app",
+      "title": "The faculty console's GitHub identity is a GitHub App installed on this repository alone, not a person's token; a ruleset on attest/pending with the App as its only bypass actor is what makes the console identity non-forgeable",
+      "status": "active",
+      "decided": "2026-10-18",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/adr/ADR-004-console-identity-github-app.md; architecture review item R4, chosen 2026-10-18 in a Cowork session (GitHub App over a machine user)",
+      "note": "Commits still name faculty@clerkship.local, so CONSOLE_IDENTITY and gate L4 are unchanged; what changes is who can hold the credential. With none of GITHUB_APP_ID, GITHUB_APP_INSTALLATION_ID, GITHUB_APP_PRIVATE_KEY set the console uses GITHUB_TOKEN as before; with some but not all, or a key that does not parse, or an exchange GitHub refuses, every request fails server_configuration before any repository call — a half-configured identity must never fall back to the personal token it replaces. The read-only functions and the rolling-PR sweep keep GITHUB_TOKEN (no pushes). Activation is the owner's: create and install the App, set the three variables, prove one sign-off, then the ruleset (attest/pending and attest/evidence-review; Restrict updates + creations; bypass = the App) and pin it in bin/check_ruleset_drift.py. The proof is a human push to attest/pending being refused, not a Verified badge.",
+      "governs": [
+        "faculty-console/github-app-auth.mjs"
+      ]
     }
   ]
 }
