@@ -49,6 +49,9 @@ export default defineConfig({
   // layer (net-resilience.js), and a larger whole-test retry budget would start masking real
   // intermittent product bugs, which is exactly what the canary exists to surface.
   retries: process.env.CI ? 1 : 0,
+  // PW_WORKERS is exported only by the host-side ~/bin/heavy-test wrapper, which caps local runs
+  // while a self-hosted CI runner shares the Mac. Unset in CI, so CI keeps Playwright's default.
+  workers: process.env.PW_WORKERS ? Number(process.env.PW_WORKERS) : undefined,
   reporter: [
     ['list'],
     ['html', { outputFolder: 'test-results/report', open: 'never' }],
