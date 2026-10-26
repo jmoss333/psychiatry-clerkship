@@ -591,7 +591,7 @@
     "tldr": "Mutism, immobility, posturing, or waxy flexibility — recognize catatonia, do a lorazepam challenge, and hold antipsychotics.",
     "points": [
       "Use the Bush-Francis signs; describe motor findings objectively.",
-      "The lorazepam challenge is both diagnostic and therapeutic.",
+      "The lorazepam challenge both supports the diagnosis and starts treatment.",
       "ECT is definitive, especially for malignant catatonia."
     ],
     "cant": "Antipsychotics can precipitate malignant catatonia / NMS — exclude those before giving one.",
@@ -683,7 +683,7 @@
       "Name the signs with the Bush-Francis screen: mutism, stupor, staring, posturing, waxy flexibility, negativism, echophenomena",
       "Vitals first: fever, rigidity, or autonomic instability suggests malignant catatonia, which overlaps with NMS and is a medical emergency",
       "Hold antipsychotics until catatonia is excluded or has responded; raise it with the team before one is given",
-      "Lorazepam challenge per institutional protocol and your supervisor: diagnostic and the start of treatment",
+      "Lorazepam challenge per institutional protocol and your supervisor: supports the diagnosis and starts treatment",
       "Escalate: ECT for severe, malignant, or benzodiazepine-refractory catatonia, without delay if deteriorating"
     ],
     "safetyDoc": "the Bush-Francis signs observed, vitals, recent antipsychotic exposure, and the lorazepam-challenge plan or response.",
@@ -781,7 +781,7 @@
           "title": "Catatonic signs, vitals stable: assess and plan",
           "tone": "first",
           "act": [
-            "Tell the team now. A lorazepam challenge per institutional protocol is diagnostic and starts treatment.",
+            "Tell the team now. A lorazepam challenge per institutional protocol supports the diagnosis and starts treatment.",
             "Score the full Bush-Francis scale so severity can be tracked over time.",
             "Look for the driver: med list, vitals, CK and basic labs, EEG if nonconvulsive status is possible.",
             "Track intake, mobility, and complications of immobility."
