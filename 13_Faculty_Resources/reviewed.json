@@ -1568,5 +1568,25 @@
     "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
     "at": "2026-10-27",
     "by": "Pending faculty review"
+  },
+  "cotw_20261026_alcwd_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Alcohol withdrawal & delirium tremens, MS3) added 2026-10-26; awaiting faculty attestation.",
+    "at": "2026-10-26",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261026_alcwd_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Alcohol withdrawal & delirium tremens, resident) added 2026-10-26; awaiting faculty attestation.",
+    "at": "2026-10-26",
+    "by": "Pending faculty review"
   }
 }
