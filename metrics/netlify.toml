@@ -51,7 +51,10 @@
   # docs: "All paths defined in the netlify.toml file must be absolute paths relative to the
   # base directory." metrics/allowlist.json relative to base directory "metrics" is
   # "allowlist.json".
-  included_files = ["allowlist.json"]
+  included_files = ["allowlist.json", "aggregate/cohort_aggregate.js", "aggregate/synthetic_feed.json"]
+  # cohort.mjs (F8 read-only aggregate, D-F8-2) imports aggregate/cohort_aggregate.js and reads
+  # aggregate/synthetic_feed.json the same way ev.mjs reads allowlist.json; listed for the same
+  # reason. It serves the SYNTHETIC feed only — real counters are hard-disabled in code.
 
 # Pinned explicitly: in-source route registration was observed NOT to register on the live
 # sp-proxy deploy, so the path fell through to the static 404 (which carries no CORS header)
@@ -59,5 +62,13 @@
 [[redirects]]
   from = "/api/ev"
   to = "/.netlify/functions/ev"
+  status = 200
+  force = true
+
+# F8 read-only cohort aggregate (synthetic feed only until the L8 D1–D3 owner decisions).
+# No CORS header: same-origin reads only; nothing on a learner site calls it.
+[[redirects]]
+  from = "/api/cohort"
+  to = "/.netlify/functions/cohort"
   status = 200
   force = true

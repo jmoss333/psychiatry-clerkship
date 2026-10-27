@@ -44,3 +44,24 @@ would send.
 
 `node --test tests/director-dashboard.test.mjs`; `node --test tests/*.test.mjs`;
 `bash bin/verify.sh --push`; `shipped_pages.py --check` unchanged (nothing registered).
+
+## Addendum 2026-10-27 — D-F8-6, D-F8-2, D-F8-3 (owner decisions "fw rec")
+
+- **One engine, moved to the deployable.** The inline `dd-engine` block became
+  `metrics/aggregate/cohort_aggregate.js` (classic-script/ESM neutral, `globalThis.CohortAggregate`)
+  so the dashboard and the metrics function share one implementation; the synthetic fixture moved
+  beside it as `synthetic_feed.json` and is now generated from seeded visit atoms.
+- **D-F8-6 closed.** Output is `publish(feed)`: cells that are `{shown:false}` carry no value;
+  cumulative thresholds become disjoint tiers; every identity (totals, pooled-vs-block,
+  answered-10 ↔ bands) drives complementary suppression with a residual rule, followed by an
+  exact Gauss–Jordan audit. Hidden cells render uniformly as `—`. The reach "Total" column was
+  dropped and reach "tools" excludes the two funnel tools, removing two identities rather than
+  protecting them. The tests audit from visit atoms, independently of the engine's identities.
+- **D-F8-2 built.** `metrics/netlify/functions/cohort.mjs`, `/api/cohort`: GET-only, no storage,
+  no logging, no cookies, no request reading; synthetic feed only; real counters behind
+  `REAL_COUNTERS_ENABLED = false` (literal) and an unwired `REAL_CALENDAR`. Deploys with the
+  metrics site from `main`; no Netlify UI, environment or DNS change.
+- **D-F8-3.** The calendar of record already exists:
+  `13_Faculty_Resources/_automation/maintenance/rotation_blocks.json` (MS3; dates only). The
+  engine converts it (`blocksFromRotationConfig`) instead of adding a parallel file. Residents'
+  dates are not in the repository.
