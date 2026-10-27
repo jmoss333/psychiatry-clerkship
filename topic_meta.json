@@ -6497,5 +6497,19 @@
       "Write a progress note"
     ],
     "safetyLevel": "moderate"
+  },
+  "maine_law.md": {
+    "read": 8,
+    "tldr": "Before you act, name the Maine pathway and its clock: the blue paper (34-B §3863), the 24-hour second opinion, the 3-day court filing, and who decides when capacity is lost. Educational summary; not legal advice.",
+    "points": [
+      "An emergency admission (§3863) is not a commitment; without a staff practitioner's second-opinion certificate within 24 hours, the person must be discharged.",
+      "Commitment does not authorize treatment over objection; that needs a separate court order under §3864(7-A).",
+      "A minor may consent to treatment for substance use disorder or emotional or psychological problems (22 §1502), but informal admission under 18 needs a parent or guardian (§3831(3))."
+    ],
+    "relatedTools": [
+      "maine-law-navigator.html",
+      "capacity.html"
+    ],
+    "safetyLevel": "moderate"
   }
 }
