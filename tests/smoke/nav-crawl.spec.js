@@ -97,7 +97,8 @@ test('nav items: exact inventory + HTTP 200 + non-empty content', async ({ reque
   // +1 both on 2026-09-30: pharmacy.html (Make a Plan).
   // +1 MS3 on 2026-10-03: prepare-for-tomorrow.html.
   // +2 both on 2026-10-27: maine_law.md and maine-law-navigator.html (Assess Safety and Acuity).
-  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 104 : 95) + COTW_WEEKS);
+  // +1 both on 2026-10-27: family-meeting-sim.html (Work with Family and Systems).
+  expect(items).toHaveLength((isResidentProject(testInfo.project.name) ? 105 : 96) + COTW_WEEKS);
   expect(items.filter(item => item.f === 'rotation-curator.html').map(({
     t, f, k, hidden,
   }) => ({ t, f, k, hidden }))).toEqual([{
@@ -166,7 +167,7 @@ test('Front Door Library exactly matches the projected placed refs', async ({ pa
     controls.map(control => control.getAttribute('data-fd-open')).sort()
   ));
   // +1 MS3 on 2026-10-03: the preparation guide is placed in its Library overlay.
-  const expectedCount = isResidentProject(testInfo.project.name) ? 92 : 87;  // +2 both: Maine law page + navigator (2026-10-27);  // res 94 -> 90 (C2): 4 MS3-track pages excluded;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04); +1 both pharmacy.html (2026-09-30)
+  const expectedCount = isResidentProject(testInfo.project.name) ? 93 : 88;  // +1 both: family-meeting-sim.html (2026-10-27); +2 both: Maine law page + navigator (2026-10-27);  // res 94 -> 90 (C2): 4 MS3-track pages excluded;  // +2, WP-T3; res +1 rp-post-event-huddle.html (2026-09-04); +1 both pharmacy.html (2026-09-30)
 
   expect(new Set(expected).size).toBe(expectedCount);
   expect(new Set(rendered).size).toBe(expectedCount);
