@@ -128,7 +128,7 @@ test('both builders emit governance inventories matching their final tools', (t)
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 27); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04); +pharmacy.html (2026-09-30)
+    assertInventory(resident, 28); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04); +pharmacy.html (2026-09-30); +maine-law-navigator.html (2026-10-27)
     const residentIndex = fs.readFileSync(path.join(resident, 'index.html'), 'utf8');
     for (const expected of [
       '<span class="fd-brand__name">MMC Psychiatry</span>',
@@ -677,14 +677,14 @@ test('CI gates and tested smoke launcher are structurally ordered', () => {
 test('managed gate ordering accepts immutable action pins but rejects mutable refs', () => {
   const ci = fs.readFileSync(CI, 'utf8');
   const immutableSetupNode =
-    '- uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7';
+    '- uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7';
   assert.match(ci, new RegExp(immutableSetupNode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.doesNotThrow(() => assertManagedGateOrder(ci));
 
   const hostileRefs = [
     '- uses: actions/setup-node@main',
     '- uses: actions/setup-node@v7',
-    '- uses: actions/setup-node@820762786026',
+    '- uses: actions/setup-node@949feb2413d6',
     immutableSetupNode.replace(' # v7', ''),
   ];
   for (const hostileRef of hostileRefs) {
