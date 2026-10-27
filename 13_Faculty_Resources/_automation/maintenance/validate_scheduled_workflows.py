@@ -34,23 +34,23 @@ EXPECTED_CRONS = {
 }
 PINNED_ACTIONS = {
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-    "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
-    "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
-    "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
-    "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+    "actions/setup-python": "6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+    "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1",
+    "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+    "actions/download-artifact": "9000827ccba6bdab643e8b6fd33ac0654aef8333",
     "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
     "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
-    "actions/create-github-app-token": "bcd2ba49218906704ab6c1aa796996da409d3eb1",
+    "actions/create-github-app-token": "64ab729a6294000f5aa4a4bc0b73d1f32bc45510",
 }
 PIN_TAGS = {
     "actions/checkout": "v7",
     "actions/setup-python": "v7",
     "actions/setup-node": "v7",
     "actions/upload-artifact": "v7",
-    "actions/download-artifact": "v8.0.1",
+    "actions/download-artifact": "v8.0.2",
     "actions/cache": "v6",
     "lycheeverse/lychee-action": "v2",
-    "actions/create-github-app-token": "v3.2.0",
+    "actions/create-github-app-token": "v3.3.0",
 }
 MAINTENANCE_FILES = {
     name for name in EXPECTED_CRONS if name.startswith("maintenance-")
@@ -461,49 +461,49 @@ EXPECTED_STEP_INVENTORIES = {
 # Native true/false values stay typed, `on` stays a string, and action inputs
 # use runner-coerced string semantics. Pin comments are validated separately.
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
-    "surveillance-firecrawl.yml": "493fa98a5cff2d2b24bd259dfd64a368bf6a28f0ab76267016bb7c9973b5e950",
+    "surveillance-firecrawl.yml": "4845dc39a03fa1e80da9034f228c8a97e6e86e4ed803d7b09b35c582a3fe88dc",
     ESCALATION_FILE: (
-        "3f5928311af63793711d75f5b28debb1b2e050024b1a5fcdb0c5a28ed7150c21"
+        "c6db98eac6546a8002dfc81e0285ec07f7e430c17555fecb0adac5354c136996"
     ),
-    "ci.yml": "6f9c9228639e0f9aa37267661c879432e00a17a50f9e5eba313853f4fc5d7fc7",
+    "ci.yml": "946cf64d8c9708702c9420081849ab0daf8650b1615c966d0a462524ff8c4012",
     "maintenance-governance-digest.yml": (
-        "3642bbcc45b6321dcaaf1f172c8ece91483494bec04647a31ec1f0e0ee3eb12b"
+        "fa69401d6a2ddbbf4d1b1fba20760ead231e953acf5d9e60d7ae1269e8dc853b"
     ),
     "maintenance-heartbeat.yml": (
-        "2fd18edc8a3d3cf15ea82c4838e28fb4d075513f027fd751b995dee3ea887261"
+        "a200087cad8c8bda9d28134e367c63ccf5ca1487a58ee8d62f14e417f07266e2"
     ),
     "maintenance-monthly-review.yml": (
-        "befffbc8571c855dd5cf152c0bbe41085ffddf7cdb03a53de0d70074653f4e41"
+        "e693d9d4d25371dc57b399cf956a9ebaf213b243cf24892a49bcfad23f90c761"
     ),
     "maintenance-queue-runner.yml": (
-        "2044dc589d3df7e1f850fca0468637fa2aa8e6798012cc1fda481b8c6d0fbf65"
+        "b4f1c920362f270e4cf71c8dc10a1350f92b3541753a40a6a9435fbb092961ef"
     ),
     "maintenance-release-watch.yml": (
-        "e91af78ce495d3edc91bd07d3eb5d68d258347e09bf877f502b3cde6db27c8d7"
+        "5f8f516540d2ee4194133eb59c7e1f85de6b9d6d13db21749b215722e90bdf01"
     ),
     "maintenance-production-canary.yml": (
-        "fe71a56f8bd2cd7f3ff752ee5dab681219323d113ed5bc46fecace047335737c"
+        "6dcbefb1a7008afd8218cfe6cd7a530fba6c99668430d494f55d83069339ebcc"
     ),
     "maintenance-rotation-readiness.yml": (
-        "655504ee205ce4f27ddc63dc2a819dc1d1eb7987f56bbacbbfc452d1cc48476a"
+        "c46228b9f5477c9430a7014b6a2cccc77d8846b875c2e563d45f8183340838a1"
     ),
     "maintenance-sp-health-monitor.yml": (
-        "fa79af1e841096550e462774445a6b2a5a198c52aa24423301abf1d3bcb0501e"
+        "17dfbaf3e47f76d16daa54e7cb7f4dc6e0e50c26a4552807bd1099274145a2b1"
     ),
     "surveillance-citations.yml": (
-        "c2395675498c9796dfcaa33b459a752b416129062329b5f67f0353a6d21054db"
+        "00f92cb960cf444a70946ed0884eb0e10f8fba96fe73d53b5c468065c6d7decd"
     ),
     "surveillance-evidence-watch.yml": (
-        "518d9a7950239ab0caa64b05c866c60f019a0211b46e61e18a98065b297966a6"
+        "7d9646766c9d4a982001c70ba2f9b7fc783c419d69a86df4d7c6acf2931ebd8a"
     ),
     "surveillance-guideline.yml": (
-        "ba27d694f588f7a8019b37a25d6f28636ffa14e62a4e19f35daf9f013890e8c3"
+        "7a36414d1304f2f600c8cf071539f2114a39c39c9fefbaebb79f75dd299314b5"
     ),
     "surveillance-link-monitor.yml": (
-        "b7aa9fa53f463ce5d93c82039c8160c1093c29c1cbf4389ebfa5b89399a6d52b"
+        "3d6210e69d83cc4bab5fbc71be313ca50a3e772bb29a974bd31bf689ed0ad180"
     ),
     "surveillance-resource-intake.yml": (
-        "0fee528d5f705d53b69112d0b08917c6ad8380443435e7ae41e2abf1c402440e"
+        "956934d851970f5058e02a98130bdad18d51a095e434f4bef70cdbe231c7f999"
     ),
 }
 

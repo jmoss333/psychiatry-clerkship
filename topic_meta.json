@@ -2751,7 +2751,9 @@
       "stanley-brown-2012-safety-planning",
       "franklin-2017-suicide-risk-meta-analysis",
       "bostwick-2016-suicide-attempt-lethality",
-      "chung-2017-postdischarge-suicide"
+      "chung-2017-postdischarge-suicide",
+      "posner-2011-cssrs",
+      "liu-2020-passive-suicidal-ideation"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2858,7 +2860,7 @@
             },
             {
               "label": "Only a wish to be dead",
-              "next": "plan"
+              "next": "passive"
             },
             {
               "label": "No to both",
@@ -2893,6 +2895,25 @@
             {
               "label": "No",
               "next": "thoughts"
+            }
+          ]
+        },
+        {
+          "id": "passive",
+          "ask": "Only a wish to be dead: any preparation, an attempt in the past year, a discharge in the past 3 months, or an acute risk factor?",
+          "hint": "Ask about steps taken, intoxication or withdrawal, psychosis, severe insomnia, and new access to lethal means. Recheck for active thoughts.",
+          "options": [
+            {
+              "label": "Preparation or steps taken",
+              "next": "high"
+            },
+            {
+              "label": "Recent attempt, discharge, or acute factor",
+              "next": "high-acute"
+            },
+            {
+              "label": "None of these",
+              "next": "passive-only"
             }
           ]
         },
@@ -2946,11 +2967,23 @@
         },
         {
           "id": "thoughts",
-          "title": "Thoughts without plan or acute factors: still report",
+          "title": "Active thoughts, no plan or acute factor: report before encounter ends",
           "tone": "first",
           "act": [
             "Tell your team now, before this encounter ends. Don't hold it for rounds. You do not decide their risk.",
             "Ask about lethal means, firearms first, and past attempts. An attempt in the past year or a discharge in the past 3 months: escalate now.",
+            "Write down their exact words and the reasons for living they named."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "passive-only",
+          "title": "Wish to be dead, no active thoughts: report this shift",
+          "tone": "first",
+          "act": [
+            "Tell your team this shift, before the patient leaves your care. The team completes the full risk assessment; you do not decide their risk.",
+            "Ask about lethal means, firearms first, and past attempts. Any steps, an attempt in the past year, or a discharge in the past 3 months: escalate now.",
+            "Recheck for active thoughts. If the wish becomes thoughts of killing themselves, tell the team before this encounter ends.",
             "Write down their exact words and the reasons for living they named."
           ],
           "escalate": "soon"

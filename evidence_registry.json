@@ -11754,6 +11754,64 @@
           }
         ]
       }
+    },
+    {
+      "id": "liu-2020-passive-suicidal-ideation",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Characterizing the phenomenology of passive suicidal ideation: a systematic review and meta-analysis of its prevalence, psychiatric comorbidity, correlates, and comparisons with active suicidal ideation.",
+        "authors": [
+          {
+            "family": "Liu",
+            "given": "RT"
+          },
+          {
+            "family": "Bettis",
+            "given": "AH"
+          },
+          {
+            "family": "Burke",
+            "given": "TA"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Psychol Med",
+        "volume": "50",
+        "pages": "367-383",
+        "doi": "10.1017/S003329171900391X",
+        "pmid": "31907085",
+        "url": "https://doi.org/10.1017/S003329171900391X"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 31907085): title, authors, journal, volume, issue, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-10-26",
+        "note": "PMID 31907085 resolved via NCBI efetch on 2026-10-26: title, all three authors (Liu RT, Bettis AH, Burke TA), Psychol Med 2020;50(3):367-383, DOI 10.1017/S003329171900391X and PMC7024002 match; PubMed lists no erratum, retraction or comment. Systematic review and meta-analysis of 86 studies through 9 September 2019. Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths, and correlates of passive and active ideation were largely equivalent in head-to-head comparisons. It licenses 'passive ideation is clinically significant and needs full assessment', not 'passive ideation is low risk'. Added for the pg_suicide.md passive-versus-active routing (decision X6, Josh 2026-10-26). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "risk-assessment",
+          "passive-ideation"
+        ],
+        "clerkshipRelevance": "Why a passive wish to be dead is still reported and fully assessed: across 86 studies it tracked psychiatric comorbidity and suicide attempts, and its correlates largely matched those of active ideation.",
+        "noteHistory": [
+          {
+            "date": "2026-10-26",
+            "note": "PMID 31907085 resolved via NCBI efetch on 2026-10-26: title, all three authors (Liu RT, Bettis AH, Burke TA), Psychol Med 2020;50(3):367-383, DOI 10.1017/S003329171900391X and PMC7024002 match; PubMed lists no erratum, retraction or comment. Systematic review and meta-analysis of 86 studies through 9 September 2019. Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths, and correlates of passive and active ideation were largely equivalent in head-to-head comparisons. It licenses 'passive ideation is clinically significant and needs full assessment', not 'passive ideation is low risk'. Added for the pg_suicide.md passive-versus-active routing (decision X6, Josh 2026-10-26). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "decision X6 (pg_suicide passive vs active routing); not faculty attestation"
+          }
+        ]
+      }
     }
   ]
 }

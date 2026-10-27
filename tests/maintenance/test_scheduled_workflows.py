@@ -409,13 +409,13 @@ class ScheduledWorkflowTests(unittest.TestCase):
     def test_all_action_references_are_immutable_approved_pins(self):
         expected_pins = {
             "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
-            "actions/setup-python": "5fda3b95a4ea91299a34e894583c3862153e4b97",
-            "actions/setup-node": "820762786026740c76f36085b0efc47a31fe5020",
-            "actions/upload-artifact": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
-            "actions/download-artifact": "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
+            "actions/setup-python": "6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+            "actions/setup-node": "949feb2413d6458794dcd2491c4babbbce0c15c1",
+            "actions/upload-artifact": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+            "actions/download-artifact": "9000827ccba6bdab643e8b6fd33ac0654aef8333",
             "actions/cache": "55cc8345863c7cc4c66a329aec7e433d2d1c52a9",
             "lycheeverse/lychee-action": "e7477775783ea5526144ba13e8db5eec57747ce8",
-            "actions/create-github-app-token": "bcd2ba49218906704ab6c1aa796996da409d3eb1",
+            "actions/create-github-app-token": "64ab729a6294000f5aa4a4bc0b73d1f32bc45510",
         }
         self.assertEqual(PINNED_ACTIONS, expected_pins)
         names = [
@@ -452,7 +452,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     "          lfs: false\n"
                     "          fetch-depth: 0\n\n"
                     "      - uses: actions/setup-node@"
-                    "820762786026740c76f36085b0efc47a31fe5020 # v7\n"
+                    "949feb2413d6458794dcd2491c4babbbce0c15c1 # v7\n"
                     "        with:\n"
                     "          node-version: \"22\"\n\n"
                 ),
@@ -460,7 +460,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
                     "          lfs: false\n"
                     "          fetch-depth: 0\n\n"
                     "      - uses: actions/setup-node@"
-                    "820762786026740c76f36085b0efc47a31fe5020\n"
+                    "949feb2413d6458794dcd2491c4babbbce0c15c1\n"
                     "        with:\n"
                     "          node-version: \"22\"\n\n"
                 ),
@@ -587,7 +587,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
         self.assertLess(heartbeat_steps.index(detector), heartbeat_steps.index(upload))
         self.assertEqual(upload["if"], "always()")
         self.assertEqual(upload["uses"],
-                         "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a")
+                         "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9")
         self.assertEqual(upload["with"], {
             "name": "maintenance-automation-branch-prs-${{ github.run_id }}",
             "path": "${{ runner.temp }}/automation-branch-prs.json",

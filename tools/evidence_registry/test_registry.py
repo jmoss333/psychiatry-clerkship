@@ -388,6 +388,11 @@ COTW_FIREARM_EVIDENCE_2026_10_IDS = {
     "anglemyer-2014-firearm-access-suicide",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | COTW_FIREARM_EVIDENCE_2026_10_IDS
+# Decision X6 (2026-10-26): passive vs active ideation routing on pg_suicide.md.
+PG_SUICIDE_PASSIVE_IDEATION_2026_10_IDS = {
+    "liu-2020-passive-suicidal-ideation",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PG_SUICIDE_PASSIVE_IDEATION_2026_10_IDS
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
