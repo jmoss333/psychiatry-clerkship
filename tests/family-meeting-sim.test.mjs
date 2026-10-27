@@ -1,4 +1,4 @@
-// Family Meeting Simulator (WP-F1-engine): the branching engine and its three draft scenarios.
+// Family Conversation Simulator (WP-F1-engine): the branching engine and its three draft scenarios.
 //
 // The tool is one file: scenario data inline as <script type="application/json"
 // id="fms-scenarios">, and a DOM-free engine in <script id="fms-engine"> that this test
@@ -164,7 +164,7 @@ test('library rules: no doses, crisis block by marker, one literal cw_* key, no 
   assert.doesNotMatch(html, /<script[^>]+src=/i, 'no external scripts');
   assert.doesNotMatch(html, /<textarea|<input\b/i, 'no free-text fields');
   assert.match(html, /Fictional practice\. Do not enter real patient or family details\./, 'no-PHI banner');
-  assert.match(html, /<!-- \[CLERKSHIP-META v1\] tool="Family Meeting Simulator"/, 'metadata marker');
-  assert.match(html, /<h1>Family Meeting Simulator<\/h1>/, 'the tool titles itself');
+  assert.match(html, /<!-- \[CLERKSHIP-META v1\] tool="Family Conversation Simulator"/, 'metadata marker');
+  assert.match(html, /<h1>Family Conversation Simulator<\/h1>/, 'the tool titles itself');
   assert.doesNotMatch(html, /name="cw-frame"/, 'content-height frame (no cw-frame=viewport)');
 });

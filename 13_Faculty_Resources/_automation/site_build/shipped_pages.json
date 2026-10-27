@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "25a67a30ce3f2b6394e019d967d0b01a40138dc52318fc3f5301b5c21843f9a9",
     "site_extras.py": "2ffc966d904a2e67c13b6d6c9951808098b76d02f0e4ec02d3e2b74924dae8ad",
-    "site_manifest.json": "8a274be1d4bf24166dd1c6bda4e7b6c700e69034415189af655f84733e33f84a"
+    "site_manifest.json": "b157aaa2d648c1f061e616c717f0a3b3a88cf4dddea4269da36a895a412aef01"
   },
   "pages": [
     {
@@ -671,6 +671,17 @@
       "slug": "exp_tx.md",
       "source": "14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/treatment_basics_digest.md",
       "title": "Treatment Basics"
+    },
+    {
+      "kind": "tool",
+      "producer": "site_manifest",
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "slug": "family-meeting-sim.html",
+      "source": "08_Cases_and_Simulation/family-meeting-sim/family-meeting-sim.html",
+      "title": "Family Conversation Simulator"
     },
     {
       "extraSources": [

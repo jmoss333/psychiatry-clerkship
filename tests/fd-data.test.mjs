@@ -358,7 +358,8 @@ test('every real library column item resolves', () => {
   // therapy_reading_room.md) placed in the Clinical-skills and Evidence-&-exam columns.
   // 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
   // 86 = 84 + maine_law.md and maine-law-navigator.html (2026-10-27).
-  assert.equal(placed, 86, 'expected the 86 pages curriculum.json places');
+  // 87 = 86 + family-meeting-sim.html (2026-10-27).
+  assert.equal(placed, 87, 'expected the 87 pages curriculum.json places');
 });
 
 // The kit is curriculum.json's safetyKit list, attested or not: fd_data.js never filters it by
@@ -463,8 +464,8 @@ print(json.dumps(out))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
 // res Everything 94 -> 90 (C2, 2026-10-17): four MS3-track pages are siteLibrary.resident.exclusions.
-// +2 on both sites (2026-10-27): maine_law.md and maine-law-navigator.html.
-for (const [site, expectedKit, expectedFull] of [['ms3', 31, 87], ['res', 35, 92]]) {
+// +2 on both sites (2026-10-27): maine_law.md and maine-law-navigator.html; +1 family-meeting-sim.html.
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 88], ['res', 35, 93]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

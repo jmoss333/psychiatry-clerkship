@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Family Meeting Simulator" version="0.1" built="2026-10-27" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,small-group" time="10-15min" summary="Branching family-meeting rehearsal: three draft fictional scenarios (angry parent at admission, ambivalent spouse at discharge, silent teen with guardian present). Choose a response at each moment; a debrief shows four skill bars (validation, structure, safety planning, non-blaming stance) with authored feedback, never pass/fail. No free text, no network calls. Stores only scenario ids, run counts, best per-skill percentages and a day-granularity date under cw_family_sim_v1." -->
+<!-- [CLERKSHIP-META v1] tool="Family Conversation Simulator" version="0.1" built="2026-10-27" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,small-group" time="10-15min" summary="Branching family-meeting rehearsal: three draft fictional scenarios (angry parent at admission, ambivalent spouse at discharge, silent teen with guardian present). Choose a response at each moment; a debrief shows four skill bars (validation, structure, safety planning, non-blaming stance) with authored feedback, never pass/fail. No free text, no network calls. Stores only scenario ids, run counts, best per-skill percentages and a day-granularity date under cw_family_sim_v1." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>Family Meeting Simulator</title>
+<title>Family Conversation Simulator</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:var(--fd-bg,#f6f3ee);color:var(--fd-text,#3b332c);font-family:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5}
@@ -27,6 +27,7 @@ h3{margin:0 0 8px;text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;
 .pick em{display:block;font-style:normal;font-size:.8rem;color:var(--fd-text-dim,#76695d);margin-top:8px}
 .meta{font-size:.9rem;color:var(--fd-text-mid,#64574b)}
 .meta ul{margin:4px 0 8px;padding-left:1.1rem}
+.meta summary{cursor:pointer;font-weight:850;color:var(--fd-teal-deep,#2c6356);margin:8px 0 4px;min-height:24px}
 .phase{font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text-dim,#76695d);margin:0 0 6px}
 .exchange{border-left:4px solid var(--fd-teal,#3a7d6e);background:var(--fd-teal-wash,#edf4f2);border-radius:0 12px 12px 0;padding:12px 14px;margin:0 0 12px}
 .exchange.repair{border-left-color:var(--fd-terracotta,#a9634b);background:var(--fd-terracotta-wash,#f5e8e2)}
@@ -69,7 +70,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
 <body>
 <main class="shell">
   <div class="kicker">Work with family and systems · rehearsal</div>
-  <h1>Family Meeting Simulator</h1>
+  <h1>Family Conversation Simulator</h1>
   <p class="sub">Rehearse three conversations a reading page cannot teach: the angry parent at admission, the ambivalent spouse at discharge, and the teenager who won't talk. Pick a response at each moment; the debrief shows four skills, not a grade.</p>
   <div class="notice"><b>Fictional practice. Do not enter real patient or family details.</b> Every person here is a fictional composite. The authored options are examples of stronger and weaker moves, not a script, and this tool decides nothing about discharge, safety, consent or confidentiality — those stay with your supervisor and local policy. <span class="pill draft">Draft · faculty review pending</span></div>
   <div id="fms-app"><div class="card">Loading scenarios…</div></div>
@@ -481,7 +482,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
 }
 </script>
 <script id="fms-engine">
-/* Family Meeting Simulator — branching engine. Pure functions, no DOM, no storage, no
+/* Family Conversation Simulator — branching engine. Pure functions, no DOM, no storage, no
    network: tests/family-meeting-sim.test.mjs evaluates this block on its own.
    Scoring is deterministic. Each choice scores 0-2 on four axes; a run's score per axis is
    earned / maximum reachable on the path actually taken (the sum, over the nodes visited,
@@ -664,16 +665,17 @@ var FMSEngine = (function () {
       '<h3 style="margin-top:14px">Read alongside</h3>' + linksHtml() + '</section>';
   }
 
-  function briefHtml(sc) {
-    var html = '<section class="card" aria-labelledby="fms-sc-title"><h2 id="fms-sc-title">' + esc(sc.title) + '</h2>' +
+  function briefHtml(sc, first) {
+    var html = '<section class="card" aria-labelledby="fms-sc-title"><h2 id="fms-sc-title" tabindex="-1">' + esc(sc.title) + '</h2>' +
       '<span class="pill">' + esc(sc.setting) + '</span><span class="pill">' + esc(sc.time) + '</span><span class="pill draft">Draft · faculty review pending</span>' +
-      '<div class="meta"><p><b>Your role:</b> ' + esc(sc.learnerRole) + '</p><b>In the room</b><ul>' +
+      '<details class="meta"' + (first ? ' open' : '') + '><summary>Your role, who is in the room, practice goals</summary>' +
+      '<p><b>Your role:</b> ' + esc(sc.learnerRole) + '</p><b>In the room</b><ul>' +
       sc.participants.map(function (p) { return '<li><b>' + esc(p.name) + '</b> — ' + esc(p.role) + '. ' + esc(p.stance) + '</li>'; }).join('') +
       '</ul><b>Practice goals</b><ul>' + sc.goals.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>';
     if (sc.note) {
       html += '<p class="small">' + esc(sc.note) + (sc.noteLink ? ' <a href="' + pageHref(sc.noteLink.page) + '">' + esc(sc.noteLink.label) + '</a>' : '') + '</p>';
     }
-    return html + '</div></section>';
+    return html + '</details></section>';
   }
 
   function renderPlay() {
@@ -688,7 +690,7 @@ var FMSEngine = (function () {
       return '<li><button type="button" class="choice" data-act="choose" data-choice="' + idx + '">' +
         '<span class="sr-only">Option ' + (k + 1) + ': </span>' + esc(node.choices[idx].text) + '</button></li>';
     }).join('');
-    app.innerHTML = briefHtml(sc) +
+    app.innerHTML = briefHtml(sc, run.steps.length === 0) +
       (hist ? '<section class="card" aria-label="So far"><h3>So far</h3><ol class="history">' + hist + '</ol></section>' : '') +
       '<section class="card" aria-labelledby="fms-moment"><p class="phase">' + esc(DATA.phases[node.phase] || '') + (node.repair ? ' · repair moment' : '') + '</p>' +
       '<h3 id="fms-moment" tabindex="-1">Decision ' + (run.steps.length + 1) + '</h3>' +

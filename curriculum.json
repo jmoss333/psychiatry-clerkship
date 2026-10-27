@@ -200,7 +200,7 @@
       "refs": [
         "mse.html", "interview-circle.html", "sp-interview.html",
         "communication-practice.html", "diagnostic-reasoning.html",
-        "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
+        "family-systems.html", "family-meeting-sim.html", "one-patient-six-weeks.html", "capacity.html",
         "maine-law-navigator.html",
         "oral.html", "violence.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
@@ -211,7 +211,7 @@
         { "name": "Interview & present", "refs": ["mse.html", "interview-circle.html", "sp-interview.html", "communication-practice.html", "oral.html"] },
         { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "capacity.html", "maine-law-navigator.html", "violence.html", "withdrawal.html"] },
         { "name": "Medications", "refs": ["pharmacy.html", "interaction-cards.html", "decision-aids.html"] },
-        { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html"] },
+        { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html", "family-meeting-sim.html"] },
         { "name": "Practice & review", "refs": ["shelf-mode.html", "review.html", "question-bank-practice.html", "reflection.html"] }
       ]
     },
@@ -471,6 +471,7 @@
     "communication-practice.html": "Say your first line in a hard clinical moment, then compare it with the authored options.",
     "diagnostic-reasoning.html": "Turn bedside data into a problem representation, a differential, and a supervised next step.",
     "family-systems.html": "Rehearse collateral calls, family meetings, discharge-role mapping, and high-emotion conversations.",
+    "family-meeting-sim.html": "Rehearse an angry parent, an ambivalent spouse and a silent teen, then debrief four conversation skills.",
     "one-patient-six-weeks.html": "Follow four patients through psychosis, mood, trauma, delirium, safety, and care transitions.",
     "capacity.html": "Walk the four abilities at the bedside with sample questions, then draft a structured capacity note.",
     "maine-law-navigator.html": "Pick the question you face; see the Maine pathway, clock, pitfall and statute. Not legal advice.",
@@ -718,6 +719,7 @@
     "maine_law.md": ["blue paper", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "maine-law-navigator.html": ["blue paper", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "one-patient-six-weeks.html": ["one patient six weeks", "case journeys"],
+    "family-meeting-sim.html": ["family simulation", "angry parent", "ambivalent spouse", "silent teen", "discharge meeting"],
     "capacity.html": [
       "capacity",
       "decisional capacity",

@@ -85,6 +85,18 @@
         { "role": "practice", "kind": "tool",     "ref": "maine-law-navigator.html" },
         { "role": "deeper",   "kind": "page",     "ref": "ethics_legal.md" }
       ]
+    },
+    {
+      "id": "pair_family_meeting_rehearsal",
+      "topic": "Rehearse the family meeting",
+      "weeks": [4],
+      "audiences": ["ms3", "res"],
+      "blurb": "Read the five phases, then rehearse them with an angry parent, an ambivalent spouse and a silent teen.",
+      "items": [
+        { "role": "read",     "kind": "page",     "ref": "family_playbook.md" },
+        { "role": "read",     "kind": "page",     "ref": "collateral_workflow.md" },
+        { "role": "practice", "kind": "tool",     "ref": "family-meeting-sim.html" }
+      ]
     }
   ]
 }
