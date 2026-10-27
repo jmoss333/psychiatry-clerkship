@@ -127,7 +127,7 @@ class ConfigAndItemsTests(unittest.TestCase):
     def test_committed_config_validates_and_carries_the_plan_defaults(self):
         cfg = config()
         fda = cfg["openfda"]
-        # D-F10-1 recommended default: boxed warning / contraindication / REMS = P0.
+        # D-F10-1 (DECIDED 2026-10-27, owner): boxed warning / contraindication / REMS = P0.
         self.assertEqual(fda["label_sections"]["boxed_warning"], "P0")
         self.assertEqual(fda["label_sections"]["contraindications"], "P0")
         self.assertEqual(fda["rems_language"], "P0")
