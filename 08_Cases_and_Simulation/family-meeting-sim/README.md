@@ -1,6 +1,6 @@
 # Family Conversation Simulator — authoring guide
 
-`family-meeting-sim.html` (slug `family-meeting-sim.html`, both sites) is a static branching rehearsal of three family conversations. It has no AI, no voice, no network calls and no free text. Scenario data lives inline in the tool, in `<script type="application/json" id="fms-scenarios">`, so the whole tool is one attestable artifact.
+`family-meeting-sim.html` (slug `family-meeting-sim.html`, both sites) is a static branching rehearsal of eight family conversations. It has no AI, no voice, no network calls and no free text. Scenario data lives inline in the tool, in `<script type="application/json" id="fms-scenarios">`, so the whole tool is one attestable artifact.
 
 The display title deliberately avoids the phrase "Family Meeting": `tests/fd-search.test.mjs` pins that searching "family meeting" puts the Family Meeting Playbook first, and a tool titled "Family Meeting Simulator" outranks it. Search aliases for the tool avoid that phrase for the same reason.
 

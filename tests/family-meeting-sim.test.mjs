@@ -1,4 +1,5 @@
-// Family Conversation Simulator (WP-F1-engine): the branching engine and its three draft scenarios.
+// Family Conversation Simulator (WP-F1-engine): the branching engine and its eight draft scenarios
+// (three from WP-F1-engine, five added by the F1 scenario wave 2026-10-27).
 //
 // The tool is one file: scenario data inline as <script type="application/json"
 // id="fms-scenarios">, and a DOM-free engine in <script id="fms-engine"> that this test
@@ -17,17 +18,25 @@ const html = readFileSync(FILE, 'utf8');
 const dataMatch = html.match(/<script type="application\/json" id="fms-scenarios">([\s\S]*?)<\/script>/);
 const engineMatch = html.match(/<script id="fms-engine">([\s\S]*?)<\/script>/);
 const AXES = ['validation', 'structure', 'safety', 'nonblaming'];
-const IDS = ['angry-parent-admission', 'ambivalent-spouse-discharge', 'silent-teen-guardian-present'];
+const IDS = [
+  'angry-parent-admission', 'ambivalent-spouse-discharge', 'silent-teen-guardian-present',
+  'hold-disagreement-admission', 'shared-decision-household', 'siblings-late-onset-psychosis',
+  'coparents-discharge-adolescent', 'parent-own-untreated-illness',
+];
 
 function data() { return JSON.parse(dataMatch[1]); }
 function engine() { return new Function(`${engineMatch[1]}\nreturn FMSEngine;`)(); }
 const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 
-test('the scenario block parses and carries the three draft scenarios', () => {
+test('the scenario block parses and carries the eight draft scenarios', () => {
   assert.ok(dataMatch, 'inline scenario JSON block present');
   const d = data();
   assert.equal(d.status, 'draft', 'scenarios ship as draft until faculty attest the tool');
   for (const id of IDS) assert.ok(d.scenarios.some((s) => s.id === id), `scenario ${id} exists`);
+  for (const sc of d.scenarios) {
+    assert.ok(sc.goals.length >= 3, `${sc.id}: at least three practice goals`);
+    assert.ok(Object.values(sc.nodes).filter((n) => n.repair).length >= 2, `${sc.id}: at least two repair moments`);
+  }
   assert.deepEqual(d.axes.map((a) => a.id), AXES, 'four axes, in order');
   for (const a of d.axes) assert.ok(a.label && a.anchor, `axis ${a.id} has a label and rubric anchor`);
 });
@@ -118,6 +127,17 @@ test('scoring is deterministic and normalised to the path actually taken', () =>
   assert.equal(run.steps.length, 6);
   assert.deepEqual(Object.fromEntries(AXES.map((a) => [a, E.tally(sc, run.steps)[a].pct])),
     { validation: 100, structure: 100, safety: 100, nonblaming: 100 });
+  // The same authoring convention holds for every scenario: option 0 is the strongest authored
+  // move at each main-line node, so playing it throughout visits six moments and scores 100% on
+  // every axis. A rescore that breaks this is a rubric change and should be deliberate.
+  for (const s of data().scenarios) {
+    let r = E.newRun(s);
+    while (!r.ended) r = E.choose(s, r, 0);
+    assert.equal(r.steps.length, 6, `${s.id}: option-0 path has six decisions`);
+    assert.ok(r.steps.every((st) => !s.nodes[st.node].repair), `${s.id}: option-0 path stays on the main line`);
+    assert.deepEqual(Object.fromEntries(AXES.map((a) => [a, E.tally(s, r.steps)[a].pct])),
+      { validation: 100, structure: 100, safety: 100, nonblaming: 100 }, `${s.id}: option 0 throughout scores 100%`);
+  }
   assert.equal(E.band(100), 'often');
   assert.equal(E.band(50), 'sometimes');
   assert.equal(E.band(10), 'rarely');
