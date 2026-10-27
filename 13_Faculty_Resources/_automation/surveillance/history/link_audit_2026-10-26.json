@@ -1,0 +1,255 @@
+[
+  {
+    "finding_id": "link:www.fda.gov::broken-link::fbc9487ba46f65a6",
+    "fingerprint": "link:www.fda.gov::broken-link::fbc9487ba46f65a6",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md: https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md"
+    ],
+    "recommended_action": "Fix or replace the link in `05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "new",
+    "disposition": "environment"
+  },
+  {
+    "finding_id": "link:unknown::broken-link::5917a7dbc2c315b7",
+    "fingerprint": "link:unknown::broken-link::5917a7dbc2c315b7",
+    "job": "link-source-monitor",
+    "source_id": "link:unknown",
+    "source_name": "unknown",
+    "source_url": "error:",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 08_Cases_and_Simulation/one-patient-six-weeks.html: error:",
+    "evidence": {
+      "http_status": null,
+      "confirm_status": null
+    },
+    "affects": [
+      "08_Cases_and_Simulation/one-patient-six-weeks.html"
+    ],
+    "recommended_action": "Fix or replace the link in `08_Cases_and_Simulation/one-patient-six-weeks.html`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::463998ce56ffef4c",
+    "fingerprint": "link:www.fda.gov::broken-link::463998ce56ffef4c",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/fda-requiring-boxed-warning-updated-improve-safe-use-benzodiazepine-drug-class",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on docs/research/2026-10-11-medication-search.md: https://www.fda.gov/drugs/drug-safety-and-availability/fda-requiring-boxed-warning-updated-improve-safe-use-benzodiazepine-drug-class",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "docs/research/2026-10-11-medication-search.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/research/2026-10-11-medication-search.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "new",
+    "disposition": "environment"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "fingerprint": "link:www.fda.gov::broken-link::f48ddedaa541bacf",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on docs/flashcards/2026-09-26-card-audit.md: https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "docs/flashcards/2026-09-26-card-audit.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/flashcards/2026-09-26-card-audit.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "new",
+    "disposition": "environment"
+  },
+  {
+    "finding_id": "link:127.0.0.1:4300::broken-link::8301b11fa550dce2",
+    "fingerprint": "link:127.0.0.1:4300::broken-link::8301b11fa550dce2",
+    "job": "link-source-monitor",
+    "source_id": "link:127.0.0.1:4300",
+    "source_name": "127.0.0.1:4300",
+    "source_url": "http://127.0.0.1:4300/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md: http://127.0.0.1:4300/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html",
+    "evidence": {
+      "http_status": null,
+      "confirm_status": null
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:localhost:4200::broken-link::b8b8032b2a2e6bed",
+    "fingerprint": "link:localhost:4200::broken-link::b8b8032b2a2e6bed",
+    "job": "link-source-monitor",
+    "source_id": "link:localhost:4200",
+    "source_name": "localhost:4200",
+    "source_url": "http://localhost:4200/?tool=prepare-for-tomorrow.html",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (no response) on 13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md: http://localhost:4200/?tool=prepare-for-tomorrow.html",
+    "evidence": {
+      "http_status": null,
+      "confirm_status": null
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "fingerprint": "link:www.admsep.org::broken-link::378d5c25815a68ca",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/csi-emodules.php",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/csi-emodules.php",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "fingerprint": "link:www.admsep.org::broken-link::56951baa3f00270a",
+    "job": "link-source-monitor",
+    "source_id": "link:www.admsep.org",
+    "source_name": "www.admsep.org",
+    "source_url": "https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md: https://www.admsep.org/Educational-Objectives-for-a-Junior-Psychiatry-Clerkship.php",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/Handoffs/CURRICULUM_GAP_REVIEW_2026-07-08.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.fda.gov::broken-link::7415e355b41cccda",
+    "fingerprint": "link:www.fda.gov::broken-link::7415e355b41cccda",
+    "job": "link-source-monitor",
+    "source_id": "link:www.fda.gov",
+    "source_name": "www.fda.gov",
+    "source_url": "https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md: https://www.fda.gov/drugs/drug-safety-and-availability/drug-safety-communications",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md"
+    ],
+    "recommended_action": "Fix or replace the link in `docs/curriculum-review/resident/RESIDENT_CURRICULUM_COMPLETE.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "new",
+    "disposition": "environment"
+  },
+  {
+    "finding_id": "link:www.appi.org::broken-link::84a1b42c50a5af9a",
+    "fingerprint": "link:www.appi.org::broken-link::84a1b42c50a5af9a",
+    "job": "link-source-monitor",
+    "source_id": "link:www.appi.org",
+    "source_name": "www.appi.org",
+    "source_url": "https://www.appi.org/Institutions/PsychiatryOnline-Subscription-Contents",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md: https://www.appi.org/Institutions/PsychiatryOnline-Subscription-Contents",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  },
+  {
+    "finding_id": "link:www.appi.org::broken-link::62e8151ad521db06",
+    "fingerprint": "link:www.appi.org::broken-link::62e8151ad521db06",
+    "job": "link-source-monitor",
+    "source_id": "link:www.appi.org",
+    "source_name": "www.appi.org",
+    "source_url": "https://www.appi.org/cme",
+    "source_type": "html",
+    "detected_at": "2026-10-26T06:36:40+00:00",
+    "change_type": "broken-link",
+    "severity": "P1",
+    "summary": "Broken link (404) on 13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md: https://www.appi.org/cme",
+    "evidence": {
+      "http_status": 404,
+      "confirm_status": 404
+    },
+    "affects": [
+      "13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md"
+    ],
+    "recommended_action": "Fix or replace the link in `13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md`; if the source moved, update the citation and re-stamp reviewed.json.",
+    "status": "triaged",
+    "disposition": "actionable"
+  }
+]

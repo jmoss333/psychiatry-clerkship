@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20250131",
+  "sections": {
+    "boxed_warning": {
+      "hash": "aeb63693f3a1a28ef131f628cc631c6057c825a4819c5cd4aa432abefc48e5b7",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. LATUDA is not approved for the treatment of patients with dementia-related psychosis ( 5.1 ). Antidepressants increased the risk of suicidal thoughts and behavior in pediatric and young adult patients. Closely monitor for clinical worsening and emergence of suicidal thoughts and behaviors ( 5.2 ). Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. LATUDA is not approved for the treatment of patients with dementia-related psychosis [see Warnings and Precautions ( 5.1 )]. Suicidal Thoughts and Behaviors Antidepressants increased the risk of suicidal thoughts and behavior in pediatric and young adults in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and for emergence of suicidal thoughts and behaviors [see Warnings and Precautions ( 5.2 )]."
+    },
+    "contraindications": {
+      "hash": "9cde0366fdedf1bb3820ce8326be05f3da7d8204e527df445546948cc524fec2",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Known hypersensitivity to lurasidone HCl or any components in the formulation. Angioedema has been observed with lurasidone [see Adverse Reactions ( 6.1 )] . Strong CYP3A4 inhibitors (e.g., ketoconazole, clarithromycin, ritonavir, voriconazole, mibefradil, etc.) [see Drug Interactions ( 7.1 )]. Strong CYP3A4 inducers (e.g., rifampin, avasimibe, St. John's wort, phenytoin, carbamazepine, etc.) [see Drug Interactions ( 7.1 )]. Known hypersensitivity to LATUDA or any components in the formulation ( 4 ). Concomitant use with a strong CYP3A4 inhibitor (e.g., ketoconazole) ( 2.6 , 4 , 7.1 ). Concomitant use with a strong CYP3A4 inducer (e.g., rifampin) ( 2.6 , 4 , 7.1 )."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "d8789e752e2143a704dbe075166b56d0a4716410b15e043d24e9db9610848cb1",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "afad3051-9df2-4c54-9684-e8262a133af8",
+  "version": "37"
+}

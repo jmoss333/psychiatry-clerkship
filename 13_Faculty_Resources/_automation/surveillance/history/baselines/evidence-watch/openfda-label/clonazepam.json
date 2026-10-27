@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20251201",
+  "sections": {
+    "boxed_warning": {
+      "hash": "ad7a3b120fa50553739ad6de0dc5e76b9b491f9fddacd21708f7fa2c41da8d4c",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and death. Reserve concomitant prescribing of these drugs for patients for whom alternative treatment options are inadequate. Limit dosages and durations to the minimum required. Follow patients for signs and symptoms of respiratory depression and sedation (see WARNINGS and PRECAUTIONS ). The use of benzodiazepines, including Klonopin, exposes users to risks of abuse, misuse, and addiction, which can lead to overdose or death. Abuse and misuse of benzodiazepines commonly involve concomitant use of other medications, alcohol, and/or illicit substances, which is associated with an increased frequency of serious adverse outcomes. Before prescribing Klonopin and throughout treatment, assess each patient's risk for abuse, misuse, and addiction (see WARNINGS ) . The continued use of benzodiazepines, including Klonopin, may lead to clinically significant physical dependence. The risks of dependence and withdrawal increase with longer treatment duration and higher daily dose. Abrupt discontinuation or rapid dosage reduction of Klonopin after continued use may precipitate acute withdrawal reactions, which can be life-threatening. To reduce the risk of withdrawal reactions, use a gradual taper to discontinue Klonopin or reduce the dosage (see DOSAGE AND ADMINISTRATION and WARNINGS ) ."
+    },
+    "contraindications": {
+      "hash": "31a21c42c560079793a3073b6f0ce55be6e086a50703f3c79604823dde83958e",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Klonopin is contraindicated in patients with the following conditions: History of sensitivity to benzodiazepines Clinical or biochemical evidence of significant liver disease Acute narrow angle glaucoma (it may be used in patients with open angle glaucoma who are receiving appropriate therapy)."
+    },
+    "warnings": {
+      "hash": "a5a504e690df7efad2e37f18df8d6f61a00bbaee0703c1ad6868f44e9346ad41",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "cfa0d79a-843c-4b88-95a1-e9511d649ca1",
+  "version": "6"
+}
