@@ -3,10 +3,21 @@ import { readFileSync } from 'node:fs';
 // Side-effect import: the shared engine defines globalThis.CohortAggregate. It is the SAME file
 // the director dashboard prototype loads as a classic <script> (one implementation, tested once
 // in tests/director-dashboard.test.mjs).
-import '../../aggregate/cohort_aggregate.js';
+import './cohort_aggregate.js';
 
 // F8 read-only cohort aggregate (D-F8-2, permitted by D-X-4: a function on an existing site that
 // stores nothing per person).
+//
+// UN-WIRED. This file deliberately lives OUTSIDE metrics/netlify/functions/ and nothing in any
+// netlify.toml references it, so no Netlify site deploys it. Reason (2026-10-27): the metrics
+// Netlify site itself does not exist yet — clerkship-metrics.netlify.app answers Netlify's
+// "site not found", no metrics deploy preview runs on PRs, and creating the site is the
+// owner-only Step 6 of docs/superpowers/plans/2026-09-04-usage-analytics-collection.md.
+// To wire it after that site exists (an owner decision): `git mv` this file to
+// metrics/netlify/functions/cohort.mjs, change the two relative paths ('./' -> '../../aggregate/'),
+// and add to metrics/netlify.toml a `/api/cohort` -> `/.netlify/functions/cohort` redirect (as
+// for /api/ev) and "aggregate/cohort_aggregate.js", "aggregate/synthetic_feed.json" to
+// included_files. No environment variable or secret is needed.
 //
 // GET /api/cohort -> CohortAggregate.publish(feed): grouped, small-cell-suppressed totals only.
 //
@@ -25,7 +36,7 @@ export const REAL_COUNTERS_ENABLED = false;
 // (MS3 only today; residents' block dates are not in the repository).
 export const REAL_CALENDAR = null;
 
-const syntheticPath = new URL('../../aggregate/synthetic_feed.json', import.meta.url);
+const syntheticPath = new URL('./synthetic_feed.json', import.meta.url);
 
 function engine() {
   const A = globalThis.CohortAggregate;

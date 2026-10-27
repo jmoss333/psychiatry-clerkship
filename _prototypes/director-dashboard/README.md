@@ -33,7 +33,7 @@ uploaded).
 | `../../metrics/aggregate/cohort_aggregate.js` | **The one engine**: validation, aggregation, small-cell + complementary suppression, exact differencing audit. Shared with the metrics site's read-only function. |
 | `../../metrics/aggregate/synthetic_feed.json` | SYNTHETIC feed (`"_synthetic": true`), generated from seeded visit atoms; includes a 4-learner resident block so small cells occur. |
 | `../../metrics/aggregate/synthetic_feed_generator.mjs` | Regenerates the feed (`--write` / `--check`); the tests use its atoms for the independent audit. |
-| `../../metrics/netlify/functions/cohort.mjs` | Read-only function `GET /api/cohort` on the metrics site (D-F8-2): synthetic only; real counters hard-disabled. |
+| `../../metrics/aggregate/cohort_function.mjs` | Read-only function `GET /api/cohort` (D-F8-2): synthetic only; real counters hard-disabled. **Un-wired** — the metrics Netlify site does not exist yet. |
 | `DATA_CONTRACT.md` | Input contract, published-aggregate shape, suppression rules (rule 4 now enforced). |
 | `../../tests/director-dashboard.test.mjs` | Engine + differencing proofs (tested once). `metrics/tests/cohort-handler.test.mjs` pins only the function's HTTP/no-storage behaviour. |
 
@@ -43,8 +43,8 @@ uploaded).
 learner sites ── allowlisted keys ──► metrics/ counters {site, week, key, n}
                                           │  (CLERKSHIP_ANALYTICS off today; L8 D1–D3)
                                           ▼
-              metrics/ /api/cohort — publish(): grouped, suppressed totals (D-F8-2, built;
-                                          │       serves SYNTHETIC until REAL_COUNTERS_ENABLED)
+              metrics/ /api/cohort — publish(): grouped, suppressed totals (D-F8-2, built,
+                                          │       un-wired; SYNTHETIC until REAL_COUNTERS_ENABLED)
 rotation calendar (D-F8-3: maintenance/rotation_blocks.json, MS3) ──►┘
                                           ▼
                      this page (moves into faculty-console/ later — a governance PR)
@@ -59,7 +59,8 @@ L8 clerkship-outcomes design (questions, claims boundary, feasibility bars), and
 ## Decisions
 
 - **D-F8-1** aggregate-only scope — decided 2026-10-27; record in `decisions.json` (governance PR).
-- **D-F8-2** read-only function on `metrics/` — built (`/api/cohort`), synthetic only.
+- **D-F8-2** read-only function on `metrics/` — built and tested, synthetic only, **un-wired**:
+  the metrics Netlify site has not been created (owner-only, usage-analytics plan Step 6).
 - **D-F8-3** rotation calendar — the committed `maintenance/rotation_blocks.json` (MS3); residents'
   dates waiting on the coordinator.
 - **D-F8-5** weak-topics category counter — deferred until L8 D1–D3.

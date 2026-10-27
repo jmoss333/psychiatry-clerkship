@@ -3,8 +3,8 @@
  * Shared, byte for byte, by:
  *   - the director dashboard prototype (_prototypes/director-dashboard/director-dashboard.html),
  *     which loads this file as a classic <script>, and
- *   - the metrics site's read-only function (metrics/netlify/functions/cohort.mjs), which imports
- *     it for its side effect.
+ *   - the read-only function (metrics/aggregate/cohort_function.mjs — un-wired until the metrics
+ *     Netlify site exists), which imports it for its side effect.
  * Both read `globalThis.CohortAggregate`. Tested once: tests/director-dashboard.test.mjs.
  *
  * Pure: no DOM, no storage, no network, no clock, no logging. Input contract and suppression

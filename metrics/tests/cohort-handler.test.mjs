@@ -6,10 +6,10 @@ import { readFileSync } from 'node:fs';
 // request reading, no logging, real data hard-off. The aggregation/suppression engine it shares
 // with the director dashboard is tested once, in the root tests/director-dashboard.test.mjs.
 
-const SOURCE = readFileSync(new URL('../netlify/functions/cohort.mjs', import.meta.url), 'utf8');
+const SOURCE = readFileSync(new URL('../aggregate/cohort_function.mjs', import.meta.url), 'utf8');
 // Code only (comments describe what the function never does, so they must not trip the scans).
 const CODE = SOURCE.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-const mod = await import('../netlify/functions/cohort.mjs');
+const mod = await import('../aggregate/cohort_function.mjs');
 
 test('module boots (bundler-carried files resolve) and the default export is a handler', async () => {
   assert.equal(typeof mod.default, 'function');
@@ -81,6 +81,14 @@ test('readRealCounters keeps only the 4-field contract shape (fake store, flag u
   };
   const store = { list: async () => ({ blobs: Object.keys(rows).map((key) => ({ key })) }), get: async (k) => rows[k] };
   assert.deepEqual(await mod.readRealCounters(store), [{ site: 'ms3', week: '2026-W37', key: 'page:x.md', n: 3 }]);
+});
+
+test('UN-WIRED: no Netlify site deploys it (the metrics site does not exist yet)', () => {
+  const toml = readFileSync(new URL('../netlify.toml', import.meta.url), 'utf8');
+  assert.doesNotMatch(toml, /cohort|aggregate\//, 'metrics/netlify.toml must not reference it until the owner wires it');
+  assert.throws(() => readFileSync(new URL('../netlify/functions/cohort.mjs', import.meta.url)),
+    /ENOENT/, 'it must stay out of the auto-discovered functions directory');
+  assert.match(SOURCE, /UN-WIRED\. This file deliberately lives OUTSIDE metrics\/netlify\/functions\//);
 });
 
 test('a broken feed fails closed with no detail', async () => {

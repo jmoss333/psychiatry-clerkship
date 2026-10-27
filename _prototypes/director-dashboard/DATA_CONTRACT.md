@@ -7,8 +7,8 @@ review pending** — nothing here is claimed to satisfy FERPA or any other regim
 
 **One engine.** `metrics/aggregate/cohort_aggregate.js` (`globalThis.CohortAggregate`) is the only
 implementation of validation, aggregation and suppression. The dashboard loads it as a classic
-script; the metrics site's read-only function `metrics/netlify/functions/cohort.mjs`
-(`GET /api/cohort`, D-F8-2) imports it. Both call `publish(feed)`, which returns grouped,
+script; the read-only function `metrics/aggregate/cohort_function.mjs` (`GET /api/cohort`
+once wired, D-F8-2) imports it. Both call `publish(feed)`, which returns grouped,
 suppressed totals only (below). Tested once: `tests/director-dashboard.test.mjs`.
 
 The engine accepts one JSON feed. `validateFeed()` enforces every input rule below and
@@ -140,8 +140,12 @@ each of these a validation failure.
 
 ## The read-only function (D-F8-2)
 
-`metrics/netlify/functions/cohort.mjs`, routed `/api/cohort` in `metrics/netlify.toml`.
-GET/HEAD only (405 otherwise); same-origin (no CORS header); `Cache-Control: no-store`; reads
+`metrics/aggregate/cohort_function.mjs`. **Built and tested, NOT deployed (un-wired):** the
+metrics Netlify site does not exist yet (`clerkship-metrics.netlify.app` answers "site not
+found"; creating it is the owner-only Step 6 of the 2026-09-04 usage-analytics plan), and this
+package may not create sites. The file sits outside `metrics/netlify/functions/` and no
+`netlify.toml` references it; its header lists the three-step wiring for after the site exists
+(no environment variable or secret needed). Behaviour once wired: GET/HEAD only (405 otherwise); same-origin (no CORS header); `Cache-Control: no-store`; reads
 nothing from the request; writes nothing; no cookies; no `console.*` (Netlify's platform request
 log is the only record). It serves `publish(synthetic_feed.json)`. The path to real counters
 (`readRealCounters` over the `usage-counters` Blobs store) is behind
