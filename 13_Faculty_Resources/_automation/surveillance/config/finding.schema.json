@@ -17,11 +17,11 @@
     },
     "job": {
       "type": "string",
-      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake", "source-integrity"]
+      "enum": ["guideline-surveillance", "link-source-monitor", "resource-intake", "source-integrity", "evidence-watch"]
     },
     "source_id": {
       "type": "string",
-      "description": "Foreign key into config/source_registry.yaml (e.g. 'fda-drug-safety'). For link-monitor findings on arbitrary outbound links, use 'link:<domain>'."
+      "description": "Foreign key into config/source_registry.yaml (e.g. 'fda-drug-safety'). For link-monitor findings on arbitrary outbound links, use 'link:<domain>'. For evidence-watch findings: 'pubmed:<item>', 'openfda:<pharmacy id>', or the channel id 'evidence-watch:<channel>' for an environment finding."
     },
     "source_name": { "type": "string" },
     "source_url": { "type": "string", "format": "uri" },

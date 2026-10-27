@@ -25,6 +25,7 @@ EXPECTED = {
     "ci.yml": "0 8 * * 0",
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
+    "surveillance-evidence-watch.yml": "0 8 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
@@ -672,6 +673,7 @@ class ScheduledWorkflowTests(unittest.TestCase):
             self.assertIs(actual["cancel-in-progress"], False)
         for name in (
             "surveillance-citations.yml",
+            "surveillance-evidence-watch.yml",
             "surveillance-guideline.yml",
             "surveillance-link-monitor.yml",
             "surveillance-resource-intake.yml",

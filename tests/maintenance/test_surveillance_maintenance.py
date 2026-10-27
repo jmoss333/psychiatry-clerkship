@@ -233,7 +233,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 block,
                 f"{path.name} passes --out-dir; the production default is no longer exercised",
             )
-        self.assertEqual(len(callers), 4, f"expected 4 surveillance callers, got {callers}")
+        self.assertEqual(len(callers), 5, f"expected 5 surveillance callers, got {callers}")
 
     def test_sync_completes_end_to_end_on_the_production_flag_set(self):
         """The two pins above read the parsed value and the workflow files; neither RUNS the
@@ -1348,6 +1348,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
         workflows = {
             "surveillance-link-monitor.yml": "0 6 * * 1",
             "surveillance-citations.yml": "0 7 * * 1",
+            "surveillance-evidence-watch.yml": "0 8 * * 1",
             "surveillance-guideline.yml": "0 6 1 * *",
             "surveillance-resource-intake.yml": None,
         }

@@ -44,7 +44,8 @@ def _load(path, default):
 def _all_reports(history_dir):
     """Load report history and retain only the newest record per fingerprint."""
     newest = {}
-    stems = ("guideline_delta", "link_audit", "citation_audit", "resource_intake")
+    stems = ("guideline_delta", "link_audit", "citation_audit", "resource_intake",
+             "evidence_watch")
     files = sorted(
         path
         for stem in stems
@@ -193,6 +194,10 @@ def compute(history_dir, reviewed_path, issues_path=None):
     cad = {s["id"]: s.get("cadence", "monthly") for s in reg.get("sources", [])}
     cad["link-monitor"] = reg["link_monitor"]["cadence"]
     cad[reg["resource_intake"]["job"]] = reg["resource_intake"]["cadence"]
+    # evidence-watch stamps one id per channel (run_evidence_watch.py CHANNEL_*), weekly.
+    for channel in ("evidence-watch:pubmed", "evidence-watch:openfda-label",
+                    "evidence-watch:openfda-enforcement"):
+        cad[channel] = "weekly"
     for sid, ts in sorted(last_run.items()):
         age = _days_since(ts)
         limit = CADENCE_DAYS.get(cad.get(sid, "monthly"), 31)

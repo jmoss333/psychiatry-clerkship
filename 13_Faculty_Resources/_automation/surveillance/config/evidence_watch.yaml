@@ -1,0 +1,176 @@
+# Evidence watch — configuration for bin/run_evidence_watch.py (job: evidence-watch)
+#
+# The fifth surveillance job. Weekly, it asks two keyless public APIs what is NEW
+# for the medications and topics the library teaches, and turns each hit into a
+# finding that sync_findings.py routes into a GitHub issue (P0/P1) or the monthly
+# digest (P2). It never edits teaching content, pharmacy.json, or any ledger: a
+# finding is a review item, and a person decides whether a page changes.
+#
+#   * PubMed E-utilities (esearch + esummary). Keyless; NCBI asks for <= 3 req/s
+#     without a key, so requests are spaced by `pubmed.min_interval_s`.
+#   * openFDA drug/label (+ drug/enforcement). Keyless; 240 req/min and
+#     1,000 req/day per IP without a key, spaced by `openfda.min_interval_s`.
+#
+# NO API KEY, NO SECRET, NO AI SUMMARY. The workflow uses GITHUB_TOKEN only.
+# Do not add an `api_key`/`email` that is a secret; `pubmed.tool` is a public
+# identifier NCBI asks for, nothing more.
+#
+# SEVERITY POLICY — PENDING OWNER DECISIONS (F-wave plan §6.7 / §9):
+#   D-F10-1  openFDA boxed-warning / REMS / contraindication change = P0
+#            (recommended default, implemented below as `openfda.label_sections`
+#            and `openfda.rems_language`). Set to P1 to downgrade.
+#   D-F10-2  PubMed P1 allowlist = guideline/practice-guideline publication types
+#            from the named bodies, and meta-analyses / systematic reviews in the
+#            named journals; everything else P2 (digest). Edit
+#            `pubmed.p1_guideline_*` and `pubmed.p1_review_journals`.
+#   D-F10-3  AI summaries: OFF. No model is called anywhere in this job.
+# Every threshold lives in this file so a decision is a one-line config edit
+# (governance PR), never a code change.
+#
+# Watch items are DERIVED at run time from pharmacy.json (one item per record,
+# keyed by the record id, label pinned by its dailymedSetId) plus the curated
+# `topics` below. Affected pages are DERIVED at run time: every shipped source
+# (site_build/shipped_pages.json) whose text mentions one of the item's terms,
+# plus pharmacy.json for drug items. Mapping only reads; it never writes a page.
+
+version: 1
+
+pubmed:
+  enabled: true
+  tool: psychiatry-clerkship-evidence-watch
+  # Entrez date window in days. 8 = a weekly cadence plus one day of overlap; the
+  # per-item baseline of seen PMIDs absorbs the overlap.
+  reldate: 8
+  retmax: 100
+  min_interval_s: 0.4
+  # Applied to every item unless the item names its own `publication_types`.
+  publication_types:
+    - guideline
+    - practice guideline
+    - meta-analysis
+    - systematic review
+  # D-F10-2 — P1 when a Guideline / Practice Guideline comes from one of these
+  # bodies (matched in the title) or appears in one of these journals.
+  p1_guideline_bodies:
+    - American Psychiatric Association
+    - "\\bAPA\\b"
+    - "\\bNICE\\b"
+    - National Institute for Health and Care Excellence
+    - British Association for Psychopharmacology
+    - "\\bBAP\\b"
+    - American Academy of Child and Adolescent Psychiatry
+    - "\\bAACAP\\b"
+    - Preventive Services Task Force
+    - "\\bUSPSTF\\b"
+    - World Federation of Societies of Biological Psychiatry
+    - "\\bWFSBP\\b"
+  p1_guideline_journals:
+    - Am J Psychiatry
+    - J Psychopharmacol
+    - J Am Acad Child Adolesc Psychiatry
+    - World J Biol Psychiatry
+    - JAMA
+  # D-F10-2 — P1 when a Meta-Analysis / Systematic Review appears in one of these.
+  p1_review_journals:
+    - Lancet Psychiatry
+    - JAMA Psychiatry
+    - Am J Psychiatry
+    - Cochrane Database Syst Rev
+  # Everything not matched above is P2 (digest). P2 is a CAP: the acute-path
+  # escalation in lib_surveillance.escalate may not raise a PubMed paper into an
+  # issue on its own, and a P1 paper may not become P0.
+  cap_at_assigned_severity: true
+
+openfda:
+  enabled: true
+  min_interval_s: 0.3
+  # D-F10-1 — severity when this label section changes (compared by SHA-256 of
+  # the whitespace-normalised section text against the stored baseline).
+  label_sections:
+    boxed_warning: P0
+    contraindications: P0
+    warnings_and_cautions: P1
+    warnings: P1
+  # Sections whose text is stored in the baseline so an issue can show the diff.
+  # The others are stored as hashes only (keeps the inbox branch small).
+  store_text:
+    - boxed_warning
+    - contraindications
+  # D-F10-1 — any watched section that changed while mentioning REMS (before or
+  # after), or whose REMS mention appeared/disappeared, is at least this severe.
+  rems_language: P0
+  rems_pattern: "\\bREMS\\b|Risk Evaluation and Mitigation Strateg"
+  # A new label version/effective date with no watched-section change. null skips it.
+  revision_only: P2
+  # A set id openFDA no longer returns: routed to a person, never silenced.
+  set_id_not_found: P2
+  enforcement:
+    enabled: true
+    days: 8
+    class_i: P1
+    other: P2
+
+pharmacy:
+  enabled: true
+  # Per-record overrides keyed by pharmacy.json `id`. `terms` replace the default
+  # (the generic name before any parenthesis). `skip: true` removes the record.
+  overrides:
+    lithium:
+      terms: [lithium]
+    valproate:
+      terms: [valproate, divalproex, valproic acid]
+    buprenorphine:
+      terms: [buprenorphine]
+    nicotine-replacement:
+      terms: [nicotine replacement]
+
+# Curated high-signal topics. `query` is a raw PubMed term (publication-type
+# filter appended unless `publication_types` is given); `terms` drive the
+# affected-page mapping; `affects` adds explicit repo paths.
+topics:
+  - id: topic-clozapine-rems
+    label: Clozapine REMS and neutropenia monitoring
+    query: 'clozapine[tiab] AND (REMS[tiab] OR "risk evaluation and mitigation"[tiab] OR neutropenia[tiab] OR "absolute neutrophil count"[tiab])'
+    publication_types: any
+    terms: [clozapine]
+  - id: topic-esketamine
+    label: Esketamine
+    query: 'esketamine[tiab]'
+    terms: [esketamine, spravato]
+  - id: topic-lithium-toxicity
+    label: Lithium toxicity and extracorporeal treatment
+    query: 'lithium[tiab] AND (toxicity[tiab] OR poisoning[tiab]) AND (extracorporeal[tiab] OR hemodialysis[tiab] OR dialysis[tiab])'
+    publication_types: any
+    terms: [lithium toxicity, lithium]
+  - id: topic-catatonia
+    label: Catatonia
+    query: 'catatonia[tiab]'
+    terms: [catatonia]
+  - id: topic-nms
+    label: Neuroleptic malignant syndrome
+    query: '"neuroleptic malignant syndrome"[tiab]'
+    terms: [neuroleptic malignant syndrome]
+  - id: topic-serotonin-syndrome
+    label: Serotonin syndrome
+    query: '"serotonin syndrome"[tiab] OR "serotonin toxicity"[tiab]'
+    terms: [serotonin syndrome]
+  - id: topic-delirium
+    label: Delirium
+    query: 'delirium[tiab] AND (hospital*[tiab] OR inpatient*[tiab])'
+    terms: [delirium]
+  - id: topic-agitation
+    label: Acute agitation
+    query: 'agitation[tiab] AND (emergency[tiab] OR acute[tiab]) AND (antipsychotic*[tiab] OR benzodiazepine*[tiab])'
+    terms: [agitation]
+  - id: topic-alcohol-withdrawal
+    label: Alcohol withdrawal
+    query: '"alcohol withdrawal"[tiab]'
+    terms: [alcohol withdrawal]
+  - id: topic-suicide-risk
+    label: Suicide risk assessment and safety planning
+    query: 'suicid*[tiab] AND ("risk assessment"[tiab] OR "safety planning"[tiab] OR "safety plan"[tiab])'
+    terms: [suicide risk, safety plan]
+
+# Upper bound on the affected-page list carried by one finding; the finding's
+# recommended action states how many more pages matched.
+affects_cap: 30
