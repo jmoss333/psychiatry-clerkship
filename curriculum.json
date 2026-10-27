@@ -678,6 +678,8 @@
   "synonyms": {
     "first shift": "orientation welcome rotation",
     "first day": "orientation welcome rotation",
+    "blue paper": "maine 3863",
+    "blue papers": "maine 3863",
     "refuses medication": "capacity decisional",
     "refusing medication": "capacity decisional",
     "refuses meds": "capacity decisional",
@@ -716,8 +718,8 @@
     "pharm": "drug primer pharmacology"
   } ,
   "searchAliases": {
-    "maine_law.md": ["blue paper", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
-    "maine-law-navigator.html": ["blue paper", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
+    "maine_law.md": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
+    "maine-law-navigator.html": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "one-patient-six-weeks.html": ["one patient six weeks", "case journeys"],
     "family-meeting-sim.html": ["family simulation", "angry parent", "ambivalent spouse", "silent teen", "discharge meeting"],
     "capacity.html": [
