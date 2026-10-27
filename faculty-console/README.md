@@ -341,7 +341,8 @@ If the console uses a different origin, update the learner site's exact `frame-a
 ### 3. Set environment variables (Netlify → Site config → Environment variables)
 | Variable | Value |
 |---|---|
-| `GITHUB_TOKEN` | the fine-grained PAT from step 1 |
+| `GITHUB_TOKEN` | the fine-grained PAT from step 1 — the attestation writer until the three App variables below exist; the read-only panels keep using it afterwards |
+| `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, `GITHUB_APP_PRIVATE_KEY` | *(ADR-004)* the console's own identity. Set all three (production secrets; the PEM pasted whole) and attestations are written with an installation token minted from the App's key; set none and `GITHUB_TOKEN` writes them. Set some, or a key that does not parse, and every request is `server_configuration` — on purpose |
 | `FACULTY_ATTEST_PASSWORD` | a strong shared faculty key |
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
 | `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
@@ -363,6 +364,19 @@ reasons. Phase 1 removed the build overlay, the `ledger-publish` schedule, the k
 no longer reads `ATTEST_LEDGER`, `LEDGER_BRANCH`, `LEDGER_SIGNING_KEY` or `LEDGER_BUILD_HOOKS`;
 any of them still set in the Netlify environment is ignored and can be deleted. The rolling-PR
 route below is the only route.
+
+### Who the console is to GitHub (ADR-004)
+
+Commits are made as `Faculty Attestation Console <faculty@clerkship.local>` either way. What the
+three `GITHUB_APP_*` variables change is the *credential* behind them: a GitHub App installed on
+this repository alone, whose private key exists only in this site's environment
+(`faculty-console/github-app-auth.mjs`). Once the owner adds the `attest/pending` ruleset that
+lists the App as its only bypass actor, nobody else — not the owner, not a session — can push
+that branch, and GitHub's **Update branch** button on the rolling PR is refused for people; it
+is not needed, because `main` does not require branches to be up to date. A rolling PR with a
+`reviewed.json` conflict is resolved by the owner adding themselves to the bypass list for the
+duration (`docs/OPERATIONS.md` §6). `docs/adr/ADR-004-console-identity-github-app.md` has the
+activation steps and the proof.
 
 ### Why attestations do not commit to `main`
 
