@@ -2,7 +2,7 @@
 
 > **Review status:** Pending faculty review (legal content, added 2026-10-27). Educational; no PHI.
 
-> **Educational summary — not legal advice — hospital policy and counsel govern.** Verify the current statute and consult counsel or institutional policy before acting. Statute text below was read on the Maine Revisor of Statutes site on 2026-10-26 (pages marked "Data for this page extracted on 10/05/2026").
+> **Educational summary — not legal advice — hospital policy and counsel govern.** Verify the current statute and consult counsel or institutional policy before acting. Statute text below was read on the Maine Revisor of Statutes site on 2026-10-26 (the Revisor's "data extracted" date on each page is 2026-10-05).
 
 **In one line** — On a Maine inpatient unit, four questions recur: *which admission pathway is this patient in*, *what is the clock*, *who may decide when the patient cannot*, and *when may or must I disclose* — and each has a specific section of Maine statute behind it that you should be able to name before you act.
 
@@ -73,7 +73,7 @@
 
 ## Minors
 
-- **Consent to outpatient-type treatment (22 §1502):** "a minor may consent to treatment for substance use disorder or for emotional or psychological problems." (The Revisor page carries two versions of the cross-references — text effective until 1/01/27 and text effective 1/01/27; this sentence is the same in both.)
+- **Consent to treatment (22 §1502):** "a minor may consent to treatment for substance use disorder or for emotional or psychological problems." (The Revisor page carries two versions of the cross-references — text effective until 1 January 2027 and text effective 1 January 2027; this sentence is the same in both.)
 - **Informal admission is different (34-B §3831(3)):** "Any person under 18 years of age must have the consent of the person's parent or guardian" for informal admission; admission of a minor to a state mental health institute also needs the commissioner's consent (§3831(4)).
 - **Pitfall:** §1502 does not make a 16-year-old able to admit themselves voluntarily. Where a minor is placed, and under whose consent, is also hospital policy — a minor on an adult unit is a question for your attending and the hospital, not this page.
 
@@ -101,7 +101,7 @@
 
 ## Statutes and official sources
 
-All read on the Office of the Revisor of Statutes site on 2026-10-26; each page reads "Data for this page extracted on 10/05/2026".
+All read on the Office of the Revisor of Statutes site on 2026-10-26; the Revisor's "data extracted" date on each page is 2026-10-05.
 
 - 34-B M.R.S. §1207, Confidentiality of information — https://legislature.maine.gov/statutes/34-B/title34-Bsec1207.html
 - 34-B M.R.S. §3801, Definitions — https://legislature.maine.gov/statutes/34-B/title34-Bsec3801.html

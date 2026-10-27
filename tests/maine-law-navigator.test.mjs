@@ -62,7 +62,7 @@ test('the markdown keeps statutes out of a References list and links only offici
   assert.ok(urls.length >= 10, 'the sources section lists the statutes');
   for (const u of urls) assert.match(u, OFFICIAL);
   assert.match(section, /2026-10-26/, 'the date the statutes were read is recorded');
-  assert.match(section, /extracted on 10\/05\/2026/, 'the Revisor extraction date is recorded');
+  assert.match(section, /2026-10-05/, 'the Revisor extraction date is recorded');
 });
 
 test('both surfaces carry the not-legal-advice banner', () => {
