@@ -1,0 +1,79 @@
+{
+  "_note": "SYNTHETIC E-utilities responses; PMIDs 3999000x are placeholders.",
+  "esearch_a": {
+    "header": {
+      "type": "esearch"
+    },
+    "esearchresult": {
+      "count": "2",
+      "retmax": "2",
+      "retstart": "0",
+      "idlist": [
+        "39990001",
+        "39990002"
+      ]
+    }
+  },
+  "esearch_b": {
+    "header": {
+      "type": "esearch"
+    },
+    "esearchresult": {
+      "count": "1",
+      "retmax": "1",
+      "retstart": "0",
+      "idlist": [
+        "39990002"
+      ]
+    }
+  },
+  "esummary": {
+    "header": {
+      "type": "esummary"
+    },
+    "result": {
+      "uids": [
+        "39990001",
+        "39990002"
+      ],
+      "39990001": {
+        "uid": "39990001",
+        "title": "Synthetic practice guideline on the pharmacological treatment of schizophrenia: American Psychiatric Association update.",
+        "source": "Am J Psychiatry",
+        "fulljournalname": "The American journal of psychiatry",
+        "pubdate": "2025 Oct",
+        "pubtype": [
+          "Journal Article",
+          "Practice Guideline"
+        ],
+        "articleids": [
+          {
+            "idtype": "pubmed",
+            "value": "39990001"
+          },
+          {
+            "idtype": "doi",
+            "value": "10.0000/synthetic.0001"
+          }
+        ]
+      },
+      "39990002": {
+        "uid": "39990002",
+        "title": "Synthetic network meta-analysis of antipsychotic adverse effects.",
+        "source": "Psychiatry Res",
+        "fulljournalname": "Psychiatry research",
+        "pubdate": "2025 Oct",
+        "pubtype": [
+          "Journal Article",
+          "Meta-Analysis"
+        ],
+        "articleids": [
+          {
+            "idtype": "pubmed",
+            "value": "39990002"
+          }
+        ]
+      }
+    }
+  }
+}

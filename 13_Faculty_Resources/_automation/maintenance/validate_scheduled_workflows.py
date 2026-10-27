@@ -21,6 +21,7 @@ EXPECTED_CRONS = {
     "ci.yml": "0 8 * * 0",
     "surveillance-link-monitor.yml": "0 6 * * 1",
     "surveillance-citations.yml": "0 7 * * 1",
+    "surveillance-evidence-watch.yml": "0 8 * * 1",
     "surveillance-guideline.yml": "0 6 1 * *",
     "maintenance-queue-runner.yml": "40 4 * * *",
     "maintenance-sp-health-monitor.yml": "15 */12 * * *",
@@ -57,6 +58,7 @@ MAINTENANCE_FILES = {
 SURVEILLANCE_FILES = {
     "surveillance-link-monitor.yml",
     "surveillance-citations.yml",
+    "surveillance-evidence-watch.yml",
     "surveillance-guideline.yml",
     "surveillance-resource-intake.yml",
 }
@@ -168,6 +170,7 @@ EXPECTED_JOB_IDS = {
     "maintenance-monthly-review.yml": {"monthly"},
     "maintenance-rotation-readiness.yml": {"rotation"},
     "surveillance-citations.yml": {"citation-check"},
+    "surveillance-evidence-watch.yml": {"evidence-watch"},
     "surveillance-guideline.yml": {"guideline-delta"},
     "surveillance-link-monitor.yml": {"link-audit"},
     "surveillance-resource-intake.yml": {"resource-intake"},
@@ -385,6 +388,20 @@ EXPECTED_STEP_INVENTORIES = {
             ("name", "Publish rolling surveillance inbox"),
         ),
     },
+    "surveillance-evidence-watch.yml": {
+        "evidence-watch": (
+            ("uses", "actions/checkout"),
+            ("uses", "actions/setup-python"),
+            ("name", "Install dependencies"),
+            ("name", "Prepare run directory"),
+            ("name", "Hydrate rolling surveillance inbox"),
+            ("name", "Query PubMed and openFDA for new evidence and label changes"),
+            ("name", "Sync findings into issues and reports"),
+            ("name", "Rebuild faculty status page from live issue state"),
+            ("uses", "actions/upload-artifact"),
+            ("name", "Publish rolling surveillance inbox"),
+        ),
+    },
     "surveillance-guideline.yml": {
         "guideline-delta": (
             ("uses", "actions/checkout"),
@@ -446,7 +463,7 @@ EXPECTED_STEP_INVENTORIES = {
 EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     "surveillance-firecrawl.yml": "4845dc39a03fa1e80da9034f228c8a97e6e86e4ed803d7b09b35c582a3fe88dc",
     ESCALATION_FILE: (
-        "fc3380c3cc8775abbf082cff15ac9fb228c525a18d5a0d6a5bdf969203577b0a"
+        "c6db98eac6546a8002dfc81e0285ec07f7e430c17555fecb0adac5354c136996"
     ),
     "ci.yml": "946cf64d8c9708702c9420081849ab0daf8650b1615c966d0a462524ff8c4012",
     "maintenance-governance-digest.yml": (
@@ -475,6 +492,9 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ),
     "surveillance-citations.yml": (
         "00f92cb960cf444a70946ed0884eb0e10f8fba96fe73d53b5c468065c6d7decd"
+    ),
+    "surveillance-evidence-watch.yml": (
+        "7d9646766c9d4a982001c70ba2f9b7fc783c419d69a86df4d7c6acf2931ebd8a"
     ),
     "surveillance-guideline.yml": (
         "7a36414d1304f2f600c8cf071539f2114a39c39c9fefbaebb79f75dd299314b5"
