@@ -609,7 +609,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 90 : 85,  // res -4 (C2, 2026-10-17): MS3-track pages excluded; +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
+    libraryCount: resident ? 92 : 87,  // +2 both: maine_law.md, maine-law-navigator.html (2026-10-27); res -4 (C2, 2026-10-17): MS3-track pages excluded; +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
