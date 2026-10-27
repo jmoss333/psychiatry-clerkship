@@ -335,6 +335,8 @@
     {
       "query": "blue paper",
       "acceptable": [
+        "maine_law.md",
+        "maine-law-navigator.html",
         "ethics_legal.md",
         "systems_medlegal.md"
       ],

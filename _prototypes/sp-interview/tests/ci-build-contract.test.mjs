@@ -128,7 +128,7 @@ test('both builders emit governance inventories matching their final tools', (t)
       timeout: 60_000,
     });
     assert.equal(residentBuilt.status, 0, residentBuilt.stdout + residentBuilt.stderr);
-    assertInventory(resident, 27); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04); +pharmacy.html (2026-09-30)
+    assertInventory(resident, 28); // +rotation-curator.html (#377); +rp-post-event-huddle.html (2026-09-04); +pharmacy.html (2026-09-30); +maine-law-navigator.html (2026-10-27)
     const residentIndex = fs.readFileSync(path.join(resident, 'index.html'), 'utf8');
     for (const expected of [
       '<span class="fd-brand__name">MMC Psychiatry</span>',

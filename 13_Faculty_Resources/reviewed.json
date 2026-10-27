@@ -1538,5 +1538,25 @@
     "reason": "New Case of the Week (Suicide risk assessment & safety planning, resident) added 2026-10-12; awaiting faculty attestation.",
     "at": "2026-10-12",
     "by": "Pending faculty review"
+  },
+  "maine_law.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "legal",
+      "level": "high"
+    },
+    "reason": "New Maine law & capacity statute page added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
+  },
+  "maine-law-navigator.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "legal",
+      "level": "high"
+    },
+    "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
   }
 }

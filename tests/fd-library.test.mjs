@@ -532,16 +532,17 @@ const REAL_PAIRINGS = readJson('../pairings.json');
 const REAL_SHIPPED = readJson('../13_Faculty_Resources/_automation/site_build/shipped_pages.json');
 const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 
-test('the canonical curriculum places 84 pages across five columns and Everything renders each once', () => {
+test('the canonical curriculum places 86 pages across five columns and Everything renders each once', () => {
   const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
   // therapy_reading_room.md). 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
-  assert.equal(expected, 84, 'curriculum.json is expected to place 84 pages across the five columns');
+  // 86 = 84 + maine_law.md and maine-law-navigator.html (2026-10-27).
+  assert.equal(expected, 86, 'curriculum.json is expected to place 86 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const refs = everythingRefs(html);
   assert.equal(refs.length, expected);
-  assert.equal(new Set(refs).size, 84);
-  assert.equal(status(html), 'Showing all 84 pages.');
+  assert.equal(new Set(refs).size, 86);
+  assert.equal(status(html), 'Showing all 86 pages.');
   // The canonical file keys essentials by audience ({ms3, resident}); only a projected payload
   // resolves them, so the canonical render has no Essentials and withholds the segmented control.
   assert.doesNotMatch(html, /data-fd-library-view=/);
@@ -655,7 +656,8 @@ print(json.dumps(out))
 // Essentials 31 / 35 reading and tool rows; shipped 110 / 119 (2026-10-12: +1 CotW week per site).
 // Resident Everything 94 -> 90 (C2, 2026-10-17): orientation, osce, shelf and reading_map are MS3-track
 // pages, now curriculum.siteLibrary.resident.exclusions -- still reachable by link, not listed.
-const SITES = { ms3: { kit: 31, full: 85, shipped: 110 }, res: { kit: 35, full: 90, shipped: 119 } };
+// +2 full and +2 shipped on both sites (2026-10-27): maine_law.md and maine-law-navigator.html.
+const SITES = { ms3: { kit: 31, full: 87, shipped: 112 }, res: { kit: 35, full: 92, shipped: 121 } };
 
 for (const site of ['ms3', 'res']) {
   const payload = projected[site];
