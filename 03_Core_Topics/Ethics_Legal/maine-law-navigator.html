@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Maine Law Navigator" version="1.0" built="2026-10-27" category="ethics-legal" audience="trainee,ms3,resident" settings="inpatient,self-study" time="3-8min" summary="Question-led navigator for Maine mental health law on an inpatient unit: emergency involuntary admission (blue paper), clocks, capacity and surrogates, confidentiality and disclosure of danger, minors, and mandated reporting. Statute excerpts quoted from the Maine Revisor of Statutes with links and dates. Educational summary; not legal advice. Stores nothing; no PHI." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Maine Law Navigator</title>
+<style>
+.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:root{
+  --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
+  --primary:#bc573a;--primary-dark:#a84830;--primary-light:#f3ebe5;
+  --accent:#2a6b5e;--accent-dark:#1e5248;--accent-light:#edf4f2;
+  --text:#2f2924;--text-mid:#51473d;--text-light:#665a4f;
+  --warning:#7a6234;--warning-light:#f5efe2;--danger:#a34132;--danger-light:#fbece9;
+  --focus:#155eef;
+  --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.shell{max-width:1060px;margin:0 auto;padding:24px 18px 70px}
+.kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:900;color:var(--accent-dark)}
+h1{font-family:var(--font-head);font-size:2rem;color:var(--primary);margin:.08em 0 .2em}
+h2{font-family:var(--font-head);font-size:1.35rem;margin:.2em 0 .4em}
+h3{font-size:1rem;margin:1em 0 .35em}
+.sub{color:var(--text-mid);max-width:72ch;margin:0 0 12px}
+.banner{background:var(--warning-light);border:1px solid var(--warning);border-left:4px solid var(--warning);border-radius:10px;padding:10px 12px;font-size:.92rem;color:var(--text-mid);margin:0 0 16px}
+.banner strong{color:var(--text)}
+.layout{display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.layout{grid-template-columns:1fr}}
+.side,.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(59,51,44,.06)}
+.side{padding:12px}
+.side p{margin:0 0 8px;font-size:.88rem;color:var(--text-mid)}
+.q{display:block;width:100%;text-align:left;background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin:0 0 8px;font:inherit;font-size:.92rem;color:var(--text);cursor:pointer}
+.q:hover{border-color:var(--accent)}
+.q[aria-pressed="true"]{background:var(--accent-light);border-color:var(--accent);font-weight:700}
+.q:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.card{padding:16px 18px}
+.lead{color:var(--text-mid);margin:0 0 10px}
+ol.steps,ul.list{margin:.2em 0 .6em 1.2em;padding:0}
+ol.steps li,ul.list li{margin:.2em 0}
+table.clocks{border-collapse:collapse;width:100%;font-size:.9rem;margin:.2em 0 .6em}
+table.clocks th,table.clocks td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+table.clocks th{background:var(--bg-alt)}
+.statute{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px;margin:0 0 10px;background:var(--bg-alt)}
+.statute .cite{font-weight:800}
+.statute blockquote{margin:.4em 0;padding:0 0 0 10px;border-left:2px solid var(--border);color:var(--text);font-style:italic}
+.statute .meaning{font-size:.9rem;color:var(--text-mid)}
+.statute .meta{font-size:.8rem;color:var(--text-light)}
+.verify{background:var(--danger-light);border:1px solid var(--danger);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:.92rem}
+.links a{display:inline-block;margin:4px 8px 0 0;color:var(--accent-dark);font-weight:700}
+.empty{color:var(--text-mid)}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="kicker">Ethics &amp; law · Maine</div>
+  <h1>Maine Law Navigator</h1>
+  <p class="sub">Pick the question you are facing on the unit. Each answer names the pathway, the clock, the common pitfall, and the Maine statute behind it, quoted from the Revisor of Statutes.</p>
+  <p class="banner" id="mln-banner"><strong>Educational summary — not legal advice — hospital policy and counsel govern.</strong> Verify the current statute and consult counsel or institutional policy before acting. Statute text read on 2026-10-26 from pages the Revisor marks "Data for this page extracted on 10/05/2026". Local hospital procedure is deliberately not included.</p>
+  <div class="layout">
+    <nav class="side" aria-label="Questions">
+      <p>What are you trying to decide?</p>
+      <div id="mln-questions"></div>
+    </nav>
+    <section class="card" id="mln-card" aria-live="polite">
+      <p class="empty">Choose a question to see the pathway and the statute text.</p>
+    </section>
+  </div>
+</main>
+
+<script type="application/json" id="mln-data">
+{
+  "verifiedOn": "2026-10-26",
+  "statutes": {
+    "3801-4A": {
+      "cite": "34-B M.R.S. §3801(4-A)",
+      "title": "Definitions — likelihood of serious harm",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3801.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "\"Likelihood of serious harm\" means: A. A substantial risk of physical harm to the person as manifested by recent threats of, or attempts at, suicide or serious self-inflicted harm;",
+      "meaning": "Paragraph A is self-harm; B is harm to others; C is inability to avoid risk or protect oneself; D applies only to the progressive treatment program."
+    },
+    "3801-4B": {
+      "cite": "34-B M.R.S. §3801(4-B)",
+      "title": "Definitions — medical practitioner",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3801.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "\"Medical practitioner\" or \"practitioner\" means a licensed physician, licensed physician associate, certified psychiatric clinical nurse specialist, certified nurse practitioner or licensed clinical psychologist.",
+      "meaning": "These are the clinicians who may sign the certifying examination for an emergency admission."
+    },
+    "3801-10": {
+      "cite": "34-B M.R.S. §3801(10)",
+      "title": "Definitions — inability to make an informed decision",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3801.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "\"Inability to make an informed decision\" means being unable to make a responsible decision whether to accept or refuse a recommended treatment as a result of lack of mental capacity to understand sufficiently the benefits and risks of the treatment after a thorough and informative explanation has been given by a qualified mental health professional.",
+      "meaning": "The legal threshold is tied to understanding after a thorough explanation — document what you explained."
+    },
+    "3831": {
+      "cite": "34-B M.R.S. §3831(3)",
+      "title": "Admission (informal voluntary) — persons under 18",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3831.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "Any person under 18 years of age must have the consent of the person's parent or guardian.",
+      "meaning": "Informal admission of a minor requires a parent or guardian, whatever the minor can consent to elsewhere."
+    },
+    "3832": {
+      "cite": "34-B M.R.S. §3832(1)",
+      "title": "Freedom to leave",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3832.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "A patient admitted under section 3831 is free to leave the psychiatric hospital at any time after admission within 16 hours of the patient's request unless application for admission of the person under section 3863 is initiated within that time.",
+      "meaning": "A request to leave starts a 16-hour window: discharge, or start an emergency application if the criteria are met."
+    },
+    "3862": {
+      "cite": "34-B M.R.S. §3862(3)",
+      "title": "Protective custody — certificate executed",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3862.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "If the certificate is executed by the examiner under section 3863, the officer shall undertake forthwith to secure the endorsement of a judicial officer under section 3863 and may detain the person for a period of time not to exceed 18 hours as may be necessary to obtain that endorsement.",
+      "meaning": "Police custody exists to get the person examined; it is not a hospital hold."
+    },
+    "3862A": {
+      "cite": "34-B M.R.S. §3862-A(2)(B)",
+      "title": "Extreme risk protection orders — assessment",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3862-A.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "The medical practitioner under this subsection shall assess whether the person presents a likelihood of foreseeable harm.",
+      "meaning": "A separate weapons-restriction assessment that can run alongside an emergency examination."
+    },
+    "3863-2": {
+      "cite": "34-B M.R.S. §3863(2)",
+      "title": "Emergency procedure — certifying examination",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3863.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "The written application must be accompanied by a dated certificate, signed by a medical practitioner stating: A. That the practitioner has examined the person on the date of the certificate;",
+      "meaning": "The certificate also states mental illness, likelihood of serious harm (with grounds), and that adequate community resources are unavailable."
+    },
+    "3863-3": {
+      "cite": "34-B M.R.S. §3863(3)(B)",
+      "title": "Emergency procedure — hold pending endorsement",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3863.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "A person may not be held against the person's will in a hospital under this section, except that a person for whom an examiner has executed the certificate under subsection 2 may be detained in a hospital for a reasonable period of time, not to exceed 24 hours, pending endorsement by a judge or justice,",
+      "meaning": "Further 48-hour periods under §3863(3)(D)-(E) apply only when no inpatient bed can be found and the department is notified."
+    },
+    "3863-5A": {
+      "cite": "34-B M.R.S. §3863(5-A)",
+      "title": "Emergency procedure — continuation of hospitalization",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3863.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "If there is need for further hospitalization of the person as determined by the chief administrative officer of the hospital, the chief administrative officer shall first determine if the person may be informally admitted under section 3831.",
+      "meaning": "Consider voluntary first. Otherwise the District Court application is due within 3 days of admission, and without a timely filing the person must be promptly discharged (§3863(5-A)(C))."
+    },
+    "3863-7": {
+      "cite": "34-B M.R.S. §3863(7)",
+      "title": "Emergency procedure — post-admission examination",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3863.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "If findings required for admission under subsection 2 are not certified in a 2nd opinion by a staff medical practitioner within 24 hours after admission, the person must be immediately discharged.",
+      "meaning": "The second-opinion clock starts at admission and ends in mandatory discharge if missed."
+    },
+    "3863-9": {
+      "cite": "34-B M.R.S. §3863(9)",
+      "title": "Emergency procedure — limitation",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3863.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "Admission to a psychiatric hospital on an emergency basis under the provisions of this section is not commitment to a psychiatric hospital.",
+      "meaning": "Say \"emergency admission\", not \"commitment\", for a blue paper."
+    },
+    "3864-5": {
+      "cite": "34-B M.R.S. §3864(5)(A)",
+      "title": "Judicial procedure — hearing",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3864.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "The District Court shall hold a hearing on the application not later than 14 days from the date of the application.",
+      "meaning": "A continuance may not exceed 21 additional days; a hearing not held in time means dismissal and discharge."
+    },
+    "3864-7": {
+      "cite": "34-B M.R.S. §3864(7)",
+      "title": "Judicial procedure — commitment",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3864.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "Upon making the findings described in subsection 6, paragraph A, the court may order commitment to a psychiatric hospital for a period not to exceed 4 months in the first instance and not to exceed one year after the first and all subsequent hearings.",
+      "meaning": "The findings include clear and convincing evidence of mental illness and likelihood of serious harm (§3864(6)(A))."
+    },
+    "3864-7A": {
+      "cite": "34-B M.R.S. §3864(7-A)(A)",
+      "title": "Judicial procedure — involuntary treatment",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3864.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "The court may grant a psychiatric hospital power to implement a recommended treatment plan without a person's consent for up to 120 days or until the end of the commitment, whichever is sooner, if upon application the court finds: (1) That the person lacks the capacity to make an informed decision regarding treatment;",
+      "meaning": "The other findings: unable or unwilling to comply; need outweighs risks and side effects; least intrusive appropriate option."
+    },
+    "3873A": {
+      "cite": "34-B M.R.S. §3873-A",
+      "title": "Progressive treatment program",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3873-A.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "After notice, examination and hearing, the court may issue an order effective for a period of up to 12 months directing the patient to follow an individualized treatment plan and identifying incentives for compliance and potential consequences for noncompliance.",
+      "meaning": "A court-ordered community treatment plan for severe and persistent mental illness; not an inpatient hold."
+    },
+    "1207-1": {
+      "cite": "34-B M.R.S. §1207(1)",
+      "title": "Confidentiality of information — generally",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec1207.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "All orders of commitment, medical and administrative records, applications and reports, and facts contained in them, pertaining to any client shall be kept confidential and may not be disclosed by any person, except that:",
+      "meaning": "Confidentiality is the default; disclosure needs an exception."
+    },
+    "1207-5A": {
+      "cite": "34-B M.R.S. §1207(5-A)",
+      "title": "Disclosure to family, caretakers",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec1207.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "Under the following circumstances, a licensed mental health professional providing care to an adult client may disclose to a family member, to another relative, to a close personal friend or caretaker of the client or to anyone identified by the client, the client's health information that is directly relevant to the person's involvement with the client's care.",
+      "meaning": "Consent, no objection, or reasonable inference of no objection — or best interests if the client lacks capacity or an emergency precludes participation."
+    },
+    "1207-6A": {
+      "cite": "34-B M.R.S. §1207(6-A)",
+      "title": "Disclosure of danger",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec1207.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "A licensed mental health professional shall disclose protected health information that the professional believes is necessary to avert a serious and imminent threat to health or safety when the disclosure is made in good faith to any person, including a target of the threat, who is reasonably able to prevent or minimize the threat.",
+      "meaning": "Whether this creates an enforceable Tarasoff-type duty is not settled by the text alone — escalate and follow counsel."
+    },
+    "1207-7": {
+      "cite": "34-B M.R.S. §1207(7)",
+      "title": "Disclosure to law enforcement; knowledge of firearms",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec1207.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "A licensed mental health professional shall disclose protected health information when the disclosure is made in good faith for a law enforcement purpose to a law enforcement officer if the conditions, as applicable, are met as described in 45 Code of Federal Regulations, Section 164.512(f) (2008).",
+      "meaning": "Subsection 8 separately covers notifying law enforcement that a person committed to a state mental health institute has access to firearms."
+    },
+    "1711C": {
+      "cite": "22 M.R.S. §1711-C(6)(D)",
+      "title": "Confidentiality of health care information — serious threat",
+      "url": "https://legislature.maine.gov/statutes/22/title22sec1711-C.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "To appropriate persons when a health care practitioner or facility that is providing or has provided diagnosis, treatment or care to the individual in good faith believes that disclosure is made to avert a serious threat to health or safety and meets the conditions, as applicable, described in 45 Code of Federal Regulations, Section 164.512(j) (2012).",
+      "meaning": "Maine's general health-information statute permits ('may disclose') this disclosure for any treating practitioner."
+    },
+    "1502": {
+      "cite": "22 M.R.S. §1502",
+      "title": "Consent (minors)",
+      "url": "https://legislature.maine.gov/statutes/22/title22sec1502.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "In addition to the ability to consent to treatment for health services as provided in sections 1823 and 1908 and Title 32, sections 3817, 6221, 7004 and 20156, a minor may consent to treatment for substance use disorder or for emotional or psychological problems.",
+      "meaning": "Quoted from the text effective 1/01/27; the text effective until then lists different Title 32 cross-references but the same minor-consent clause."
+    },
+    "4011A": {
+      "cite": "22 M.R.S. §4011-A(1)",
+      "title": "Reporting of suspected abuse or neglect (children)",
+      "url": "https://legislature.maine.gov/statutes/22/title22sec4011-A.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "The following adult persons shall immediately, within no more than 24 hours, report or cause a report to be made to the department when the person knows or has reasonable cause to suspect that a child has been or is likely to be abused or neglected or that a suspicious child death has occurred:",
+      "meaning": "Health care practitioners and licensed mental health professionals acting in a professional capacity are on the list."
+    },
+    "3477": {
+      "cite": "22 M.R.S. §3477(1)",
+      "title": "Persons mandated to report (incapacitated or dependent adults)",
+      "url": "https://legislature.maine.gov/statutes/22/title22sec3477.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "The following persons immediately shall report to the department when the person knows or has reasonable cause to suspect that an incapacitated or dependent adult has been or is likely to be abused, neglected or exploited:",
+      "meaning": "Physicians, medical residents and interns, physician associates and mental health professionals are on the list; the trigger is incapacity or dependency, not age."
+    },
+    "5-802": {
+      "cite": "18-C M.R.S. §5-802(3)",
+      "title": "Health-care decisions — definition of capacity",
+      "url": "https://legislature.maine.gov/statutes/18-C/title18-Csec5-802.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "\"Capacity\" means the ability to have a basic understanding of the diagnosed condition and to understand the significant benefits, risks and alternatives to the proposed health care and the consequences of forgoing the proposed treatment, the ability to make and communicate a health care decision and the ability to understand the consequences of designating an agent or surrogate to make health care decisions.",
+      "meaning": "Maps onto the four abilities you assess at the bedside; capacity is decision-specific."
+    },
+    "5-803": {
+      "cite": "18-C M.R.S. §5-803(9)",
+      "title": "Advance health care directives — mental health treatment",
+      "url": "https://legislature.maine.gov/statutes/18-C/title18-Csec5-803.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "An advance health care directive is valid for purposes of directing mental health treatment. The terms of the directive must be construed in accordance with this Part and Title 34‑B, sections 3831 and 3862.",
+      "meaning": "Ask every patient whether they have one; it can govern admission and treatment when capacity is lost."
+    },
+    "5-806": {
+      "cite": "18-C M.R.S. §5-806(1)",
+      "title": "Decisions by surrogate",
+      "url": "https://legislature.maine.gov/statutes/18-C/title18-Csec5-806.html",
+      "extractedOn": "2026-10-05",
+      "excerpt": "A surrogate also is authorized to make any other health care decision for a patient who is an adult or emancipated minor if the patient has been determined by the primary physician to lack capacity and no agent or guardian exists, except that a surrogate may not deny surgery, procedures or other interventions that are lifesaving and medically necessary.",
+      "meaning": "Priority runs spouse, spouse-equivalent adult, adult child, parent, adult sibling, and onward (§5-806(2))."
+    }
+  },
+  "questions": [
+    { "id": "q-emergency", "text": "A patient is dangerous because of mental illness and will not stay. Is this a blue paper?", "pathway": "emergency" },
+    { "id": "q-leave", "text": "A voluntary patient is asking to leave.", "pathway": "voluntary" },
+    { "id": "q-police", "text": "Police have brought someone in for examination.", "pathway": "custody" },
+    { "id": "q-continue", "text": "A blue-paper patient still needs the hospital. What happens next?", "pathway": "commitment" },
+    { "id": "q-refuses", "text": "An involuntary patient is refusing treatment.", "pathway": "treatment" },
+    { "id": "q-capacity", "text": "Can this patient decide — and if not, who decides?", "pathway": "capacity" },
+    { "id": "q-family", "text": "The family is asking me what is going on.", "pathway": "family" },
+    { "id": "q-threat", "text": "The patient threatened to hurt a specific person.", "pathway": "danger" },
+    { "id": "q-minor", "text": "A 16-year-old wants treatment, or wants to be admitted.", "pathway": "minors" },
+    { "id": "q-report", "text": "I suspect a child or a dependent adult is being abused.", "pathway": "reporting" }
+  ],
+  "pathways": {
+    "emergency": {
+      "title": "Emergency involuntary admission (\"blue paper\")",
+      "lead": "Three documents in order — an application, a certificate from a medical practitioner who examined the person that day, and a judicial endorsement — then two hospital clocks.",
+      "steps": [
+        "Application by a health officer, law enforcement officer or other person: belief that the person is mentally ill and, because of it, poses a likelihood of serious harm, with the grounds.",
+        "Certificate by a medical practitioner who examined the person on the date of the certificate: mentally ill, likelihood of serious harm (grounds described), adequate community resources unavailable.",
+        "Judicial endorsement by a justice, judge or justice of the peace. A hold pending endorsement may not exceed 24 hours (extensions only when no bed is available and the department is notified).",
+        "Transport by the least restrictive form that meets clinical needs.",
+        "After admission: notify a guardian or family member after consulting the patient, unless notice would pose a risk of harm.",
+        "Within 24 hours of admission: second-opinion certification by a staff medical practitioner, or immediate discharge."
+      ],
+      "clocks": [["Hold pending endorsement", "24 h (+48 h, +48 h only if no bed)", "§3863(3)"], ["Second opinion", "24 h from admission", "§3863(7)"], ["Court filing to continue", "3 days from admission", "§3863(5-A)(C)"]],
+      "pitfalls": ["Calling it a commitment — §3863(9) says it is not.", "Certifying from someone else's examination: the certifier must have examined the person on the date of the certificate.", "Forgetting the community-resources finding."],
+      "statutes": ["3863-2", "3801-4A", "3801-4B", "3863-3", "3863-7", "3863-9"],
+      "links": ["ethics_legal.md", "pg_suicide.md", "violence.html"]
+    },
+    "voluntary": {
+      "title": "Informal (voluntary) admission and the request to leave",
+      "lead": "A voluntary patient's request to leave starts a 16-hour window. In it, either the patient leaves or, if the emergency criteria are met, an emergency application is initiated.",
+      "steps": [
+        "Confirm the patient was admitted informally under §3831 and was told of their freedom to leave (§3832(2)).",
+        "Reassess now: does the patient meet the §3863 criteria (mental illness plus likelihood of serious harm, community resources unavailable)?",
+        "If not, plan a safe discharge within the window. If so, the emergency procedure must be initiated within the 16 hours."
+      ],
+      "clocks": [["Freedom to leave", "within 16 h of the request", "§3832(1)"]],
+      "pitfalls": ["Holding a voluntary patient past the window without initiating §3863.", "Using the threat of a blue paper to coerce a 'voluntary' stay."],
+      "statutes": ["3832", "3863-2"],
+      "links": ["ethics_legal.md"]
+    },
+    "custody": {
+      "title": "Protective custody by law enforcement",
+      "lead": "An officer with probable cause may take a person into protective custody and must deliver them immediately for examination by a medical practitioner.",
+      "steps": [
+        "Examine promptly: the officer's custody exists to get the examination done.",
+        "If you execute a certificate, the officer seeks the judicial endorsement and may detain up to 18 hours for that purpose.",
+        "If you do not, the person is released from protective custody (returned home or to where they were taken, with permission), unless under arrest.",
+        "If weapons are at issue, a separate extreme-risk assessment of 'likelihood of foreseeable harm' may apply (§3862-A)."
+      ],
+      "clocks": [["Detention to obtain endorsement", "up to 18 h", "§3862(3)"]],
+      "pitfalls": ["Confusing the §3862-A weapons assessment with the §3863 admission certificate — they are different findings.", "Assuming the person may be held in jail: §3863(2-A) bars jail detention of a person with mental illness absent a criminal matter."],
+      "statutes": ["3862", "3862A", "3801-4B"],
+      "links": ["violence.html", "ethics_legal.md"]
+    },
+    "commitment": {
+      "title": "From emergency admission to judicial commitment",
+      "lead": "Before seeking commitment, the hospital must first consider informal admission. Otherwise the District Court application is due within 3 days of admission.",
+      "steps": [
+        "Ask whether the patient can and will accept informal admission under §3831.",
+        "If not, the application is filed in District Court within 3 days (next business day if the third day falls on a weekend or holiday).",
+        "The court holds a hearing within 14 days (continuance up to 21 days); the patient has counsel and may choose an independent examiner.",
+        "Findings by clear and convincing evidence: mental illness, likelihood of serious harm shown by recent actions, community resources unavailable, inpatient care the best available means, and a satisfactory treatment plan.",
+        "Commitment up to 4 months the first time, up to 1 year thereafter. The court informs the person of the firearms prohibition."
+      ],
+      "clocks": [["Court filing", "3 days from admission", "§3863(5-A)(C)"], ["Hearing", "14 days (+21)", "§3864(5)(A)"], ["Commitment", "4 months / 1 year", "§3864(7)"]],
+      "pitfalls": ["Skipping the voluntary-first question.", "Assuming commitment authorizes treatment over objection — it does not; see involuntary treatment."],
+      "statutes": ["3863-5A", "3864-5", "3864-7"],
+      "links": ["ethics_legal.md"]
+    },
+    "treatment": {
+      "title": "Treatment over objection",
+      "lead": "Involuntary hospitalization is not consent to treat. A court order under §3864(7-A) requires four findings and lasts up to 120 days or the end of the commitment.",
+      "steps": [
+        "Assess and document capacity for this specific treatment decision, after a thorough explanation.",
+        "If the patient lacks capacity and the other findings apply, the request is made with the commitment application (§3864(1-A)); the examiner must be qualified to prescribe relevant medication.",
+        "The court may instead appoint a surrogate for the commitment's duration.",
+        "Emergencies on the unit are governed by hospital policy — ask your attending."
+      ],
+      "clocks": [["Involuntary treatment order", "up to 120 days or end of commitment", "§3864(7-A)(A)"]],
+      "pitfalls": ["Equating refusal with incapacity.", "Treating a committed patient over objection without an order outside a policy-defined emergency."],
+      "statutes": ["3864-7A", "3801-10", "5-802"],
+      "links": ["capacity.html", "ethics_legal.md"]
+    },
+    "capacity": {
+      "title": "Capacity, and who decides when it is absent",
+      "lead": "Capacity is clinical and decision-specific; competence is a court's finding. Maine's health-care decisions statute defines capacity and sets who may decide when it is lost.",
+      "steps": [
+        "Assess the four abilities for the specific decision and document them (Decisional Capacity tool).",
+        "Ask about an advance health care directive; one that authorizes mental health treatment can govern admission and treatment.",
+        "If the patient lacks capacity and no agent or guardian exists, a surrogate may decide in the statutory priority order — but a surrogate may not deny lifesaving, medically necessary interventions.",
+        "A family surrogate is not one of the routes to informal psychiatric admission listed in §3831 — ask your attending and counsel."
+      ],
+      "clocks": [],
+      "pitfalls": ["A global 'lacks capacity' note without a named decision.", "Assuming the next of kin is automatically the surrogate for psychiatric admission."],
+      "statutes": ["5-802", "5-806", "5-803", "3801-10"],
+      "links": ["capacity.html", "ethics_legal.md", "delirium.md"]
+    },
+    "family": {
+      "title": "Talking with family",
+      "lead": "Confidentiality is the default. Listening to family is not a disclosure; telling them about the patient is.",
+      "steps": [
+        "If the adult patient has capacity and is available: ask. Disclosure is permitted with consent, without objection when given the chance, or when you can reasonably infer no objection.",
+        "If the patient lacks capacity or an emergency precludes participation: disclose only what is directly relevant to the family member's involvement in care, if in the patient's best interests.",
+        "Collateral history in is always welcome."
+      ],
+      "clocks": [],
+      "pitfalls": ["Refusing to listen to family because of confidentiality.", "Sharing more than is directly relevant to their role in care."],
+      "statutes": ["1207-1", "1207-5A"],
+      "links": ["collateral_workflow.md", "exp_family.md", "ethics_legal.md"]
+    },
+    "danger": {
+      "title": "A threat to a specific person (the \"duty to warn\" question)",
+      "lead": "Maine's text says a licensed mental health professional 'shall disclose' what is necessary to avert a serious and imminent threat, in good faith, to a person reasonably able to prevent it, including the target. Escalate first.",
+      "steps": [
+        "Tell your attending now. This is not a decision for a student or a resident alone.",
+        "Assess the threat: seriousness, imminence, identifiable target, access to means (including firearms).",
+        "Consider every protective option the attending and hospital policy allow: hospitalization, treatment changes, disclosure to the target or to police.",
+        "Document the threat, the reasoning, and what was disclosed to whom."
+      ],
+      "clocks": [],
+      "pitfalls": ["Overstating the law: whether §1207(6-A) creates an enforceable Tarasoff-type duty is not settled by the text alone, and this navigator does not claim it.", "Understating it: confidentiality does not prevent good-faith disclosure to avert a serious, imminent threat."],
+      "statutes": ["1207-6A", "1207-7", "1711C"],
+      "links": ["violence.html", "ethics_legal.md"]
+    },
+    "minors": {
+      "title": "Minors: consent to treatment versus admission",
+      "lead": "A minor may consent to treatment for substance use disorder or emotional or psychological problems. Informal admission of a person under 18 needs a parent or guardian.",
+      "steps": [
+        "Treatment consent: §1502 lets the minor consent to treatment for these problems.",
+        "Admission: §3831(3) requires the consent of a parent or guardian for informal admission of a person under 18 (and the commissioner's consent for a state mental health institute).",
+        "Where a minor is placed, and under whose consent, is also hospital policy — ask your attending."
+      ],
+      "clocks": [],
+      "pitfalls": ["Reading §1502 as permission for a minor's voluntary admission."],
+      "statutes": ["1502", "3831"],
+      "links": ["ethics_legal.md"]
+    },
+    "reporting": {
+      "title": "Mandated reporting",
+      "lead": "Reasonable cause to suspect is the threshold, not proof. Tell your attending and follow hospital procedure for making the report.",
+      "steps": [
+        "Child: health care practitioners and licensed mental health professionals acting in a professional capacity report immediately, within no more than 24 hours.",
+        "Incapacitated or dependent adult: physicians, residents and interns, physician associates and mental health professionals report immediately.",
+        "Document what you observed and when you reported."
+      ],
+      "clocks": [["Child abuse or neglect", "immediately, within no more than 24 h", "22 §4011-A(1)"], ["Incapacitated or dependent adult", "immediately", "22 §3477(1)"]],
+      "pitfalls": ["Waiting for proof.", "Assuming older age alone triggers the adult-protective duty — the statute's trigger is incapacity or dependency."],
+      "statutes": ["4011A", "3477"],
+      "links": ["ethics_legal.md"]
+    }
+  }
+}
+</script>
+<script>
+(function(){
+  'use strict';
+  var DATA = JSON.parse(document.getElementById('mln-data').textContent);
+  var LABELS = {
+    'ethics_legal.md': 'Ethics & the Law',
+    'maine_law.md': 'Maine Law & Capacity (reading)',
+    'pg_suicide.md': 'Suicide Risk & Safety',
+    'violence.html': 'Violence Risk (FRST)',
+    'capacity.html': 'Decisional Capacity tool',
+    'delirium.md': 'Delirium',
+    'collateral_workflow.md': 'Collateral workflow',
+    'exp_family.md': 'Working with families'
+  };
+  var qBox = document.getElementById('mln-questions');
+  var card = document.getElementById('mln-card');
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function pageHref(f){
+    return f && f.endsWith('.html') ? '../index.html?tool=' + encodeURIComponent(f) : '../index.html?page=' + encodeURIComponent(f);
+  }
+  function statuteHtml(id){
+    var s = DATA.statutes[id];
+    if (!s) return '';
+    return '<div class="statute"><div class="cite">' + esc(s.cite) + ' — ' + esc(s.title) + '</div>' +
+      '<blockquote>' + esc(s.excerpt) + '</blockquote>' +
+      '<div class="meaning"><strong>On the unit:</strong> ' + esc(s.meaning) + '</div>' +
+      '<div class="meta"><a href="' + esc(s.url) + '" target="_blank" rel="noopener">Official text</a> · Revisor data extracted ' +
+      esc(s.extractedOn) + ' · read ' + esc(DATA.verifiedOn) + '</div></div>';
+  }
+  function render(pid){
+    var p = DATA.pathways[pid];
+    if (!p) { card.innerHTML = '<p class="empty">Choose a question to see the pathway and the statute text.</p>'; return; }
+    var h = '<h2>' + esc(p.title) + '</h2><p class="lead">' + esc(p.lead) + '</p>';
+    h += '<h3>Decision flow</h3><ol class="steps">' + p.steps.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>';
+    if (p.clocks.length) {
+      h += '<h3>Clocks</h3><table class="clocks"><thead><tr><th>What</th><th>Limit</th><th>Statute</th></tr></thead><tbody>' +
+        p.clocks.map(function(c){ return '<tr><td>' + esc(c[0]) + '</td><td>' + esc(c[1]) + '</td><td>' + esc(c[2]) + '</td></tr>'; }).join('') +
+        '</tbody></table>';
+    }
+    h += '<h3>Common pitfalls</h3><ul class="list">' + p.pitfalls.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
+    h += '<h3>What the statute says</h3>' + p.statutes.map(statuteHtml).join('');
+    h += '<div class="verify"><strong>Verify with:</strong> your attending, hospital policy, and risk management or counsel — before any hold, discharge, disclosure or report. Check the current statute: Maine law changes after each legislative session.</div>';
+    var links = ['maine_law.md'].concat(p.links || []);
+    h += '<h3>Read and practise</h3><div class="links">' + links.map(function(f){
+      return '<a href="' + pageHref(f) + '">' + esc(LABELS[f] || f) + '</a>';
+    }).join('') + '</div>';
+    card.innerHTML = h;
+  }
+  DATA.questions.forEach(function(q){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'q';
+    b.id = q.id;
+    b.setAttribute('aria-pressed', 'false');
+    b.textContent = q.text;
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(qBox.querySelectorAll('.q'), function(x){ x.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true');
+      render(q.pathway);
+    });
+    qBox.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>
