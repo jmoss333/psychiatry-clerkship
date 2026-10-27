@@ -2766,3 +2766,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-set [data-fd-reading-size],.fd-set [data-fd-reading-spacing],.fd-set [data-fd-reading-reset]{min-height:var(--fd-target-touch)}
 
 .fd-reader:not(.fd-reader--tool):not(.fd-reader--guide) .fd-article__body table{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,inherit)}
+
+/* L8 D3 usage notice (fd_shell.js fdUsageNotice). Empty -- every build without the usage emitter --
+   means not rendered at all, so off builds keep their exact layout. On phones the fixed dock covers
+   the bottom of the page, so the footer clears it the same way .fd-main does. */
+.fd-usage-foot:empty{display:none}
+.fd-usage-foot{width:100%;max-width:1200px;margin:0 auto;padding:0 var(--fd-space-8) var(--fd-space-8)}
+.fd-usage-notice{margin:0;font-size:var(--fd-font-xs);color:var(--fd-text-mid);line-height:1.5}
+.fd-usage-notice__btn{border:0;background:none;padding:0;font:inherit;color:var(--fd-teal-deep);text-decoration:underline;cursor:pointer;min-height:24px}
+@media (max-width:640px){
+  .fd-usage-foot{padding:0 20px calc(88px + env(safe-area-inset-bottom))}
+}
