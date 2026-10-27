@@ -1,0 +1,99 @@
+name: Surveillance — Evidence Watch
+
+# The fifth surveillance job (F10). Keyless PubMed E-utilities + openFDA, for the
+# medications in pharmacy.json and the curated topics in
+# 13_Faculty_Resources/_automation/surveillance/config/evidence_watch.yaml.
+# Findings route through sync_findings.py (idempotent issues for P0/P1, monthly
+# digest for P2); nothing here edits a page or a ledger. GITHUB_TOKEN only — no
+# API key, no other secret, no model. Monday 08:00 UTC, after the citation job.
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [surveillance-evidence]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: surveillance-inbox
+  cancel-in-progress: false
+
+jobs:
+  evidence-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+          ref: main
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install --quiet pyyaml
+
+      - name: Prepare run directory
+        run: mkdir -p "$RUNNER_TEMP/surveillance"
+
+      - name: Hydrate rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py hydrate
+          --state "$RUNNER_TEMP/surveillance/report-branch-state.json"
+
+      - name: Query PubMed and openFDA for new evidence and label changes
+        run: |
+          python3 13_Faculty_Resources/_automation/surveillance/bin/run_evidence_watch.py \
+            --out "$RUNNER_TEMP/surveillance/findings.json" \
+            --checked-out "$RUNNER_TEMP/surveillance/checked-sources.json" \
+            --receipt-out "$RUNNER_TEMP/surveillance/examination.json" \
+            2>&1 | tee "$RUNNER_TEMP/surveillance/collector.log"
+
+      - name: Sync findings into issues and reports
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/sync_findings.py
+          --findings "$RUNNER_TEMP/surveillance/findings.json"
+          --checked-sources "$RUNNER_TEMP/surveillance/checked-sources.json"
+          --issues-out "$RUNNER_TEMP/surveillance/issue-state.json"
+          --job evidence-watch
+
+      - name: Rebuild faculty status page from live issue state
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/build_status.py
+          --issues-json "$RUNNER_TEMP/surveillance/issue-state.json"
+
+      - name: Upload surveillance evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: surveillance-evidence-watch-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/surveillance/findings.json
+            ${{ runner.temp }}/surveillance/examination.json
+            ${{ runner.temp }}/surveillance/checked-sources.json
+            ${{ runner.temp }}/surveillance/issue-state.json
+            ${{ runner.temp }}/surveillance/collector.log
+            13_Faculty_Resources/_automation/surveillance/history
+            13_Faculty_Resources/_automation/surveillance/STATUS.md
+            13_Faculty_Resources/_automation/surveillance/status.html
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Publish rolling surveillance inbox
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python3 13_Faculty_Resources/_automation/surveillance/bin/report_branch.py publish
+          --state "$RUNNER_TEMP/surveillance/report-branch-state.json"

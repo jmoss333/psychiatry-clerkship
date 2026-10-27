@@ -22,6 +22,7 @@ on:
       - "Maintenance — Rotation Readiness"
       - "Maintenance — Workflow Heartbeat"
       - "Surveillance — Citation Validity"
+      - "Surveillance — Evidence Watch"
       - "Surveillance — Guideline Monitor"
       - "Surveillance — Link Monitor"
       - "Surveillance — Resource Intake"
