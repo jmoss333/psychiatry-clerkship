@@ -44,10 +44,12 @@ test('every shipped page that renders a panel has a snapshot, and nothing else d
     const shipped = [...shippedPanelRefs(site)].sort();
 
     const missing = shipped.filter((ref) => !stored.has(snapshotName(ref)));
-    assert.deepEqual(missing, ['rapid_review.md'],
+    // maine_law.md (2026-10-27) ships pending with no topic_meta entry yet, so it renders no panel;
+    // giving it one is a follow-up (topic_meta record + build + render_panels --write).
+    assert.deepEqual(missing, ['maine_law.md', 'rapid_review.md'],
       `${site}: the set of shipped pages with no snapshot changed.\n`
-      + '  rapid_review.md is expected here and only here: it has no topic_meta entry, so it\n'
-      + '  renders no panel. Anything else means a page that ships lost or gained a panel, or a\n'
+      + '  maine_law.md and rapid_review.md are expected here and only here: neither has a topic_meta\n'
+      + '  entry, so neither renders a panel. Anything else means a page that ships lost or gained a panel, or a\n'
       + `  new page-producing route appeared — snapshot it (${REGEN}) or record why not.`);
 
     const shippedFiles = new Set(shipped.map(snapshotName));
@@ -57,11 +59,13 @@ test('every shipped page that renders a panel has a snapshot, and nothing else d
   }
 });
 
-test('the one uncovered page is uncovered because it has no metadata at all', () => {
+test('the uncovered pages are uncovered because they have no metadata at all', () => {
   // Guards the exemption above from decaying into a permanent excuse. If rapid_review.md ever
   // gains a topic_meta entry it can render a panel, and it needs a snapshot like everything else.
   assert.ok(!TOPIC_META['rapid_review.md'],
     'rapid_review.md now has a topic_meta entry — it may render a panel and needs snapshotting');
+  assert.ok(!TOPIC_META['maine_law.md'],
+    'maine_law.md now has a topic_meta entry — it may render a panel and needs snapshotting');
 });
 
 test('the stored snapshots are real panels, not an empty render agreeing with an empty file', () => {
