@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Family Conversation Simulator" version="0.1" built="2026-10-27" category="family-systems" audience="trainee,ms3,resident" settings="inpatient,self-study,small-group" time="10-15min" summary="Branching family-meeting rehearsal: three draft fictional scenarios (angry parent at admission, ambivalent spouse at discharge, silent teen with guardian present). Choose a response at each moment; a debrief shows four skill bars (validation, structure, safety planning, non-blaming stance) with authored feedback, never pass/fail. No free text, no network calls. Stores only scenario ids, run counts, best per-skill percentages and a day-granularity date under cw_family_sim_v1." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Family Conversation Simulator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--fd-bg,#f6f3ee);color:var(--fd-text,#3b332c);font-family:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5}
+.shell{max-width:980px;margin:0 auto;padding:24px 18px 64px}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:.72rem;font-weight:900;color:var(--fd-teal-deep,#2c6356)}
+h1{font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;font-size:2.1rem;line-height:1.05;color:var(--fd-terracotta-dark,#96523b);margin:.08em 0 .24em}
+h2{font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;font-size:1.42rem;color:var(--fd-terracotta-dark,#96523b);margin:0 0 6px}
+h3{margin:0 0 8px;text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;color:var(--fd-teal-deep,#2c6356)}
+.sub{max-width:70ch;margin:0 0 12px;color:var(--fd-text-mid,#64574b)}
+.notice{border:1px solid var(--fd-olive,#8b7040);border-left:4px solid var(--fd-olive,#8b7040);border-radius:10px;background:var(--fd-olive-wash,#f7f0e2);padding:10px 12px;color:var(--fd-text-mid,#64574b);font-size:.92rem;margin:0 0 16px}
+.card{background:var(--fd-surface,#ffffff);border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:14px;box-shadow:0 1px 4px rgba(56,48,40,.06);padding:16px;margin:0 0 14px}
+.pill{display:inline-flex;align-items:center;border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:999px;background:var(--fd-surface-warm,#fffdf9);padding:3px 9px;font-size:.75rem;font-weight:850;color:var(--fd-text-mid,#64574b);margin:0 6px 6px 0}
+.pill.draft{border-color:var(--fd-olive,#8b7040);background:var(--fd-olive-wash,#f7f0e2);color:var(--fd-olive-deep,#725b35)}
+.picker{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.pick{display:block;width:100%;text-align:left;font:inherit;color:var(--fd-text,#3b332c);background:var(--fd-surface,#ffffff);border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:14px;padding:14px;cursor:pointer;min-height:44px}
+.pick:hover{border-color:var(--fd-teal,#3a7d6e);background:var(--fd-teal-wash,#edf4f2)}
+.pick strong{display:block;font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;font-size:1.12rem;color:var(--fd-terracotta-dark,#96523b)}
+.pick span{display:block;font-size:.86rem;color:var(--fd-text-mid,#64574b);margin-top:4px}
+.pick em{display:block;font-style:normal;font-size:.8rem;color:var(--fd-text-dim,#76695d);margin-top:8px}
+.meta{font-size:.9rem;color:var(--fd-text-mid,#64574b)}
+.meta ul{margin:4px 0 8px;padding-left:1.1rem}
+.meta summary{cursor:pointer;font-weight:850;color:var(--fd-teal-deep,#2c6356);margin:8px 0 4px;min-height:24px}
+.phase{font-size:.78rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--fd-text-dim,#76695d);margin:0 0 6px}
+.exchange{border-left:4px solid var(--fd-teal,#3a7d6e);background:var(--fd-teal-wash,#edf4f2);border-radius:0 12px 12px 0;padding:12px 14px;margin:0 0 12px}
+.exchange.repair{border-left-color:var(--fd-terracotta,#a9634b);background:var(--fd-terracotta-wash,#f5e8e2)}
+.line{margin:0 0 8px;font-family:"Source Serif 4","Iowan Old Style",Georgia,serif;font-size:1.08rem;line-height:1.45}
+.line b{font-family:"Source Sans 3","Segoe UI",system-ui,sans-serif;font-size:.85rem;letter-spacing:.04em;color:var(--fd-teal-deep,#2c6356);margin-right:6px}
+.line.stage{font-family:inherit;font-style:italic;font-size:.95rem;color:var(--fd-text-mid,#64574b)}
+.cue{font-size:.9rem;color:var(--fd-text-mid,#64574b);margin:8px 0 0}
+.choices{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.choice{display:block;width:100%;text-align:left;font:inherit;color:var(--fd-text,#3b332c);background:var(--fd-surface,#ffffff);border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:12px;padding:11px 13px;cursor:pointer;min-height:44px}
+.choice:hover{border-color:var(--fd-teal,#3a7d6e);background:var(--fd-teal-wash,#edf4f2)}
+.history{margin:0 0 12px;padding:0;list-style:none}
+.history li{border-bottom:1px solid var(--fd-line,#ebe5da);padding:8px 0;font-size:.9rem;color:var(--fd-text-mid,#64574b)}
+.history li b{color:var(--fd-text,#3b332c)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid var(--fd-teal,#3a7d6e);background:var(--fd-teal,#3a7d6e);color:var(--fd-on-accent,#ffffff);border-radius:999px;padding:8px 14px;font:inherit;font-size:.9rem;font-weight:900;cursor:pointer;min-height:44px}
+.btn:hover{background:var(--fd-teal-deep,#2c6356)}
+.btn.secondary{background:var(--fd-surface,#ffffff);color:var(--fd-teal-deep,#2c6356)}
+.btn.secondary:hover{background:var(--fd-teal-wash,#edf4f2)}
+.ending{border-left:4px solid var(--fd-olive,#8b7040);background:var(--fd-olive-wash,#f7f0e2);border-radius:0 12px 12px 0;padding:12px 14px;margin:0 0 14px}
+.axis{margin:0 0 14px}
+.axis-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:900}
+.axis-head span{font-weight:700;color:var(--fd-text-mid,#64574b);font-size:.88rem}
+.track{height:10px;border-radius:999px;border:1px solid var(--fd-line-strong,#ddd3c6);background:var(--fd-surface-warm,#fffdf9);overflow:hidden;margin:6px 0}
+.track i{display:block;height:100%;background:var(--fd-teal,#3a7d6e)}
+.anchor{font-size:.86rem;color:var(--fd-text-dim,#76695d);margin:0}
+.step{border-top:1px solid var(--fd-line,#ebe5da);padding:12px 0}
+.step p{margin:0 0 6px}
+.said{font-family:"Source Serif 4","Iowan Old Style",Georgia,serif}
+.fb{border-left:3px solid var(--fd-teal,#3a7d6e);padding-left:10px;color:var(--fd-text-mid,#64574b)}
+.alt{border-left:3px solid var(--fd-olive,#8b7040);padding-left:10px;color:var(--fd-text-mid,#64574b)}
+.small{font-size:.84rem;color:var(--fd-text-dim,#76695d)}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.links a{display:inline-flex;border:1px solid var(--fd-line-strong,#ddd3c6);border-radius:999px;padding:6px 10px;text-decoration:none;color:var(--fd-teal-deep,#2c6356);font-size:.86rem;font-weight:850;background:var(--fd-surface,#ffffff)}
+.links a:hover{border-color:var(--fd-teal,#3a7d6e);background:var(--fd-teal-wash,#edf4f2)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px solid var(--fd-focus,#2f6fd0);outline-offset:2px}
+@media(max-width:640px){.shell{padding:18px 14px 48px}h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="kicker">Work with family and systems · rehearsal</div>
+  <h1>Family Conversation Simulator</h1>
+  <p class="sub">Rehearse three conversations a reading page cannot teach: the angry parent at admission, the ambivalent spouse at discharge, and the teenager who won't talk. Pick a response at each moment; the debrief shows four skills, not a grade.</p>
+  <div class="notice"><b>Fictional practice. Do not enter real patient or family details.</b> Every person here is a fictional composite. The authored options are examples of stronger and weaker moves, not a script, and this tool decides nothing about discharge, safety, consent or confidentiality — those stay with your supervisor and local policy. <span class="pill draft">Draft · faculty review pending</span></div>
+  <div id="fms-app"><div class="card">Loading scenarios…</div></div>
+  <div id="fms-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <p class="small">Stored on this device only, under one key: which scenarios you finished, how many times, your best percentage per skill and the date (day only). No choices, text or identifiers are kept. Nothing is sent anywhere.</p>
+</main>
+<script type="application/json" id="fms-scenarios">
+{
+  "version": 1,
+  "status": "draft",
+  "axes": [
+    { "id": "validation", "label": "Validation", "anchor": "Names the emotion and the concern underneath it before informing or correcting; validates fear without accepting blame as the plan." },
+    { "id": "structure", "label": "Structure and agenda", "anchor": "Introduces roles, names a goal and an agenda, invites the family's agenda, summarizes in their words and closes with a next step." },
+    { "id": "safety", "label": "Safety planning", "anchor": "Treats risk information as clinical data, raises means safety collaboratively, agrees specific roles, and routes decisions to the team." },
+    { "id": "nonblaming", "label": "Non-blaming stance", "anchor": "Frames behavior as illness and regulation rather than character or fault; holds several perspectives at once; never lets anyone be cross-examined." }
+  ],
+  "phases": {
+    "join": "Phase 1 · Open and join",
+    "share": "Phase 2 · Share the picture",
+    "hear": "Phase 3 · Hear the family",
+    "plan": "Phase 4 · Problem-solve and plan",
+    "close": "Phase 5 · Summarize and close"
+  },
+  "scenarios": [
+    {
+      "id": "angry-parent-admission",
+      "title": "The angry parent at admission",
+      "setting": "Inpatient unit · morning after an overnight admission · family room",
+      "time": "8-10 min",
+      "learnerRole": "You are on Alex's admitting team. Your attending has asked you to start a brief first conversation with Alex's parent and will join in about ten minutes.",
+      "participants": [
+        { "name": "Dana", "role": "Parent", "stance": "Frightened, exhausted after driving through the night, and angry that nobody has explained anything." },
+        { "name": "Alex", "role": "Patient, age twenty (not in the room)", "stance": "Agreed that the team may tell Dana he was admitted for his safety and what the next few days look like — not the details of what he told the team." }
+      ],
+      "goals": [
+        "Join before you inform: name the feeling and the grievance.",
+        "Share only what Alex has agreed to share, and say so kindly.",
+        "Turn Dana's observations into collateral without confirming her self-blame.",
+        "Treat firearm access as clinical data and route it to the team.",
+        "Close with a summary and a next contact — no promised discharge date."
+      ],
+      "start": "open",
+      "nodes": {
+        "open": {
+          "phase": "join",
+          "lines": [
+            { "speaker": "Dana", "text": "I've been out here since six this morning. Nobody will tell me anything. Alex is twenty years old and you've got him behind a locked door like he's a criminal. I want answers, and I want them now." }
+          ],
+          "cue": "Dana is standing, arms crossed. You have been asked to start.",
+          "choices": [
+            { "text": "I can hear how frightening and frustrating this morning has been — you drove all night and nobody has sat down with you. I'm part of Alex's treatment team. Can we sit for a few minutes? I'll tell you what I'm able to share, and I want to hear what's worrying you most.", "next": "share-limits", "scores": { "validation": 2, "structure": 2, "safety": 0, "nonblaming": 1 }, "feedback": "Names the emotion and the concrete grievance first, introduces your role, and offers a two-part agenda. This is the playbook's opening phase — join before you inform — in one breath." },
+            { "text": "The unit is locked for everyone's safety — it isn't because Alex did anything wrong. It's standard for every patient here.", "next": "repair-rules", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Accurate, and kind to Alex, but it answers the policy before the person. Explaining first usually lands as defending the unit, and Dana hears that her alarm is the problem." },
+            { "text": "I understand. Let me go and find the attending for you.", "next": "repair-rules", "scores": { "validation": 1, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Bringing in the attending is sometimes right, but leaving in the first minute tells Dana nobody here will engage with her. You can start now and still say when the attending will join." }
+          ]
+        },
+        "repair-rules": {
+          "phase": "join",
+          "repair": true,
+          "lines": [
+            { "speaker": "Dana", "text": "That's exactly what everyone has done since I got here — read me the rules or tell me to wait. My kid is in there." }
+          ],
+          "cue": "The temperature just went up. This is a repair moment: what you do next matters more than what you just said.",
+          "choices": [
+            { "text": "You're right — that isn't what you came here for, and I'm sorry. Let me start again: you've been waiting for hours, you're scared for Alex, and you need someone to actually talk with you. I'm here to do that now, and the attending will join us shortly.", "next": "share-limits", "scores": { "validation": 2, "structure": 1, "safety": 0, "nonblaming": 2 }, "feedback": "A clean repair: own the miss without over-explaining, name the feeling, restate the offer. A rupture that is named is usually more workable than one you talk past." },
+            { "text": "I'm sorry you feel that way.", "next": "share-limits", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "'Sorry you feel that way' locates the problem in Dana's feelings rather than in what happened. Name the event instead: she has waited for hours and nobody sat down with her." },
+            { "text": "I understand you're upset, but raising your voice isn't going to help Alex.", "next": "share-limits", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Limits on threatening behavior are legitimate, but Dana is distressed, not threatening. Policing her tone frames her as the problem and usually escalates the room." }
+          ]
+        },
+        "share-limits": {
+          "phase": "share",
+          "lines": [
+            { "speaker": "Dana", "text": "Fine. Just tell me what happened. Is he okay? Did he try to hurt himself? The school called it 'a crisis' and hung up." }
+          ],
+          "cue": "Alex agreed that the team may tell Dana he was admitted for his safety and what the next few days look like — not the details of what he told the team.",
+          "choices": [
+            { "text": "Alex is safe right now, and staff are checking on him closely. He's asked us to keep the details of what he told us between him and the team for now, and I'm going to respect that. He did say we can talk with you about the plan for the next few days. Can I walk you through that, and then hear what you've noticed?", "next": "collateral", "scores": { "validation": 1, "structure": 2, "safety": 1, "nonblaming": 2 }, "feedback": "Shares what Alex permitted, frames the boundary as Alex's choice rather than a rule aimed at Dana, and sets the next agenda item. Clarify what can be shared before discussing diagnosis, risk, medications or discharge." },
+            { "text": "He told the emergency department that he wanted to die and that he'd made a plan, so he needs to be here for now.", "next": "repair-disclosure", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "This discloses more than Alex agreed to share. Pressure in the room is not a safety exception; disclosure beyond consent needs a clear clinical or legal reason and your supervisor, not the urgency of the moment." },
+            { "text": "I'm sorry, I can't tell you anything — privacy rules.", "next": "collateral", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Cautious, but more closed than necessary: Alex permitted the team to share the plan. You can receive information without sharing private details back, and still share what you are allowed to." }
+          ]
+        },
+        "repair-disclosure": {
+          "phase": "share",
+          "repair": true,
+          "lines": [
+            { "speaker": "Dana", "text": "A plan? He had a plan? Oh my God. What kind of plan? Why didn't anyone call me?" }
+          ],
+          "cue": "You have shared more than Alex agreed to, and Dana is flooded. You cannot take it back; you can stop, own it, and steady the room.",
+          "choices": [
+            { "text": "I said more than Alex gave me permission to share, and I'm going to let him and my attending know that I did. I can see how frightening that was to hear. What I can tell you is that he is safe on the unit right now. Can we take a breath together, and then talk about what happens next?", "next": "collateral", "scores": { "validation": 2, "structure": 1, "safety": 1, "nonblaming": 2 }, "feedback": "Owning a disclosure error — to the family, the patient and your supervisor — is the repair. Don't compound it by answering the follow-up details; return to what is permitted." },
+            { "text": "I can't go into what the plan was, but it was serious enough that he needed to be admitted.", "next": "collateral", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "This keeps disclosing in pieces and raises Dana's alarm without giving her anything she can act on. Stop, name the error, and steady the room first." },
+            { "text": "Let me get the attending — they can explain the rest.", "next": "collateral", "scores": { "validation": 0, "structure": 1, "safety": 1, "nonblaming": 1 }, "feedback": "Involving your attending is right, but leaving Dana alone with a frightening half-disclosure is not. Own what you said and stay with her until help arrives." }
+          ]
+        },
+        "collateral": {
+          "phase": "hear",
+          "lines": [
+            { "speaker": "Dana", "text": "What have I noticed? He stopped calling. His roommate said he hadn't been to class in weeks. I kept telling him to push through. Maybe if I'd been harder on him about the drinking, none of this would have happened." }
+          ],
+          "cue": "Dana has just offered useful collateral — and some self-blame.",
+          "choices": [
+            { "text": "It sounds like you've been carrying a lot of worry, and some of it is landing on yourself. This isn't something a parent causes by being too soft or too hard. What you just told me — the calls stopping, the missed classes, the drinking — is exactly the kind of detail that helps the team. Can you tell me more about what changed, and when?", "next": "means", "scores": { "validation": 2, "structure": 1, "safety": 1, "nonblaming": 2 }, "feedback": "Validates, de-shames, and turns the observation into collateral. Concrete examples help the team more than labels: what did Dana see or hear, and when?" },
+            { "text": "Well, the drinking probably did play a part.", "next": "means", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Agreeing with the self-blame, and naming a single cause on the first day, confirms that someone is at fault — usually Dana or Alex. It also closes a question the team has not yet assessed." },
+            { "text": "Let's not get into blame. Do you know which medications he takes at home?", "next": "means", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Moving away from blame is the right instinct, but jumping to a checklist steps over what Dana just disclosed. Validate first, then gather — the medication list can wait a minute." }
+          ]
+        },
+        "means": {
+          "phase": "hear",
+          "lines": [
+            { "speaker": "Dana", "text": "He came home at Thanksgiving and slept the whole week. And — this probably doesn't matter — his grandfather left him a hunting rifle. It's at his apartment. Is that something I should worry about?" }
+          ],
+          "cue": "Firearm access is safety-relevant information. Your job is to take it seriously and get it to the team, not to settle it alone.",
+          "choices": [
+            { "text": "Thank you for telling me — it does matter, and I'll make sure the team hears it today. Before Alex leaves the hospital, we'll want to talk with him, and with you, about keeping the rifle away from him for a while; many families arrange for someone they trust to hold onto it. Who else has a key to his apartment?", "next": "visit", "scores": { "validation": 1, "structure": 1, "safety": 2, "nonblaming": 2 }, "feedback": "Treats the firearm as clinical data, routes it to the team today, and introduces means safety as something families commonly do together — not an accusation. Specific arrangements follow supervisor guidance and local policy." },
+            { "text": "I wouldn't worry — lots of people keep a hunting rifle.", "next": "visit", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "False reassurance closes the most important safety door in this conversation. Access to lethal means is a modifiable risk factor; take it seriously and hand it to the team." },
+            { "text": "You need to get that gun out of his apartment today. Leaving it there is irresponsible.", "next": "visit", "scores": { "validation": 0, "structure": 1, "safety": 1, "nonblaming": 0 }, "feedback": "The safety instinct is right; the framing blames Dana, and the directive isn't yours to issue alone. Means safety works best as a plan the family helps design, under supervisor guidance." }
+          ]
+        },
+        "visit": {
+          "phase": "plan",
+          "lines": [
+            { "speaker": "Dana", "text": "Can I at least see him? He'll talk to me. He always talks to me." }
+          ],
+          "cue": "Nobody has asked Alex about visitors today.",
+          "choices": [
+            { "text": "I'd like that to happen if Alex wants it too. Let me ask him this afternoon whether he'd like a visit today, and I'll come back and tell you either way. Is there anything you'd like me to pass on to him?", "next": "close", "scores": { "validation": 1, "structure": 2, "safety": 0, "nonblaming": 2 }, "feedback": "Keeps Alex's choice at the center without shutting Dana out, and makes a specific promise you can keep. Coach influence, not control." },
+            { "text": "Visiting hours are in the evening. You can come back then.", "next": "close", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Accurate, but procedural: it skips whether Alex wants the visit and leaves Dana holding a rule rather than talking with a person." },
+            { "text": "It might be better to give him some space from family right now.", "next": "close", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Families are not the problem by default. Without Alex's view or the team's assessment, this frames Dana as a risk — the opposite of a non-blaming stance." }
+          ]
+        },
+        "close": {
+          "phase": "close",
+          "lines": [
+            { "speaker": "Dana", "text": "Okay. So what happens now? When can he come home? I'm supposed to be back at work on Monday." }
+          ],
+          "choices": [
+            { "text": "Let me make sure I've got it: Alex is safe and being assessed; you've told us about the sleep, the missed classes, the drinking and the rifle, and I'll pass all of it to the team today. I can't promise a discharge date yet. What I can do is ask the attending to set up a family meeting — with Alex, if he agrees — in the next day or two, and make sure you have the unit's number so you're not left waiting again.", "next": "end-next-step", "scores": { "validation": 1, "structure": 2, "safety": 1, "nonblaming": 1 }, "feedback": "Summarizes in Dana's terms, avoids a promise the team can't keep, and names the next contact. Do not end without a shared next step and a follow-up contact plan." },
+            { "text": "Usually people stay three to five days, so probably by the end of the week.", "next": "end-promise", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Do not promise discharge. A date offered to calm the room becomes the thing Dana plans around — and the thing the team is later blamed for missing." },
+            { "text": "That really depends on Alex. I need to get back to rounds now.", "next": "end-door", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "True, but it ends without a summary, a next step or a way to reach the team — the same experience that made Dana angry this morning." }
+          ]
+        }
+      },
+      "endings": {
+        "end-next-step": { "title": "A next step everyone can name", "text": "Dana leaves with a summary, the unit's number and a family meeting to look forward to. Nothing has been promised that the team cannot deliver, and the rifle is now on the team's list." },
+        "end-promise": { "title": "A date nobody can keep", "text": "Dana calms down — for now. She has arranged her week around a discharge date the team never agreed to, and the next conversation will start from that broken expectation." },
+        "end-door": { "title": "The door closes again", "text": "Dana is left where she started: waiting, with no way to reach anyone. Her collateral may still reach the team, but the alliance with the family has to be rebuilt." }
+      }
+    },
+    {
+      "id": "ambivalent-spouse-discharge",
+      "title": "The ambivalent spouse at discharge",
+      "setting": "Inpatient unit · day before planned discharge · family meeting with the patient present",
+      "time": "8-10 min",
+      "learnerRole": "You are leading the discharge family meeting. Your attending is in the room and will step in only if you ask.",
+      "participants": [
+        { "name": "Robin", "role": "Patient", "stance": "Admitted with depression and suicidal thinking after losing his job; much improved; wants to go home and is embarrassed to be discussed." },
+        { "name": "Casey", "role": "Spouse", "stance": "Wants Robin home and is frightened, worn out and quietly angry. Works long shifts." }
+      ],
+      "goals": [
+        "Welcome the ambivalence instead of arguing with it.",
+        "Hold both perspectives when fear shows up as anger.",
+        "Make the safety plan shared, with specific and realistic roles.",
+        "Raise firearm and medication safety collaboratively, and route it to the team.",
+        "Close honestly about who decides, with a summary and a rehearsed first step."
+      ],
+      "start": "open",
+      "nodes": {
+        "open": {
+          "phase": "join",
+          "lines": [
+            { "speaker": "Casey", "text": "I'll be honest, I don't know if I'm ready for this. Everyone keeps saying 'tomorrow' like it's already settled." },
+            { "speaker": "narration", "text": "Robin looks at the floor." }
+          ],
+          "cue": "You have introduced everyone. Robin and Casey both agreed to talk about going home and about the safety plan.",
+          "choices": [
+            { "text": "Thank you for saying that out loud — it's exactly what this meeting is for. I'd like us to cover three things: how each of you feels about going home, the safety plan Robin has been working on, and what support is realistic. Casey, what worries you most?", "next": "feelings", "scores": { "validation": 2, "structure": 2, "safety": 0, "nonblaming": 1 }, "feedback": "Welcomes the ambivalence instead of arguing with it, and sets an agenda both people can see. Ambivalence voiced in the room is far easier to plan around than ambivalence carried home." },
+            { "text": "The team feels Robin is ready. He's doing much better than when he came in.", "next": "repair-ready", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "It may be clinically true, but it answers Casey's worry with a verdict. Whether home can hold the plan is part of the assessment, and Casey is the person who knows home." },
+            { "text": "Robin, how do you feel hearing Casey say that?", "next": "feelings", "scores": { "validation": 1, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Inviting Robin in is a good instinct, but turning to him straight after Casey's worry can feel like a cross-examination. Acknowledge Casey, set the agenda, then invite each person in turn." }
+          ]
+        },
+        "repair-ready": {
+          "phase": "join",
+          "repair": true,
+          "lines": [
+            { "speaker": "Casey", "text": "Ready according to who? You see him for twenty minutes a day. I'm the one who'll be there at three in the morning." }
+          ],
+          "cue": "Casey has heard 'the team has decided.' A repair here keeps her in the plan.",
+          "choices": [
+            { "text": "You're right — you'll see things we never will, and that matters. I spoke too quickly. Can we start with what you're worried about at home?", "next": "feelings", "scores": { "validation": 2, "structure": 1, "safety": 0, "nonblaming": 2 }, "feedback": "Concedes the real point — Casey's knowledge of home — owns the misstep, and opens the agenda. Caregiver expertise informs the plan." },
+            { "text": "I understand, but our assessment is that his risk is lower now.", "next": "feelings", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Restating the assessment defends the team rather than repairing the alliance. Casey hasn't disputed the assessment; she has said what she is afraid of." },
+            { "text": "Let's not argue about this. Robin, can you tell Casey how you've been doing?", "next": "feelings", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 0 }, "feedback": "Redirecting to Robin puts him in the position of reassuring his spouse on demand. Stay with Casey's worry first." }
+          ]
+        },
+        "feelings": {
+          "phase": "hear",
+          "lines": [
+            { "speaker": "Casey", "text": "I'm scared I'll miss something. And — I feel terrible saying this — I'm angry too. He didn't tell me how bad it was. I found out from the emergency department." },
+            { "speaker": "Robin", "text": "I didn't want to put it on you." }
+          ],
+          "cue": "Two feelings at once, and a couple at risk of a blame spiral.",
+          "choices": [
+            { "text": "Scared and angry make sense together — they often do when someone you love was hurting and you didn't know. Robin, it sounds like not telling Casey was a way of protecting her. Maybe part of today is planning how the two of you let each other know when things are getting worse.", "next": "plan-review", "scores": { "validation": 2, "structure": 1, "safety": 1, "nonblaming": 2 }, "feedback": "The translator role: anger as fear, silence as protection. Holding both perspectives at once lowers the temperature and sets up the safety-plan conversation." },
+            { "text": "Casey, depression makes people withdraw — he couldn't have told you. Try not to be angry with him.", "next": "plan-review", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Defending Robin by correcting Casey's feelings swaps one blame for another. You can validate the fear and the anger without accepting blame as the treatment plan." },
+            { "text": "Let's park the feelings for now and focus on the plan, since discharge is tomorrow.", "next": "plan-review", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Structure matters, but hearing the family is the phase most often squeezed out, and it is where the emotional climate becomes workable. A minute here saves the plan later." }
+          ]
+        },
+        "plan-review": {
+          "phase": "plan",
+          "lines": [
+            { "speaker": "Robin", "text": "I wrote a safety plan with the team. Warning signs, people I can call. Casey's on it." },
+            { "speaker": "Casey", "text": "Am I? Nobody asked me." }
+          ],
+          "choices": [
+            { "text": "That's a fair point — a plan that names you should include you. Robin, would you be willing to walk Casey through it? Casey, tell us which parts feel doable and which don't.", "next": "limits", "scores": { "validation": 1, "structure": 2, "safety": 2, "nonblaming": 2 }, "feedback": "Makes the plan shared rather than delivered. A useful plan names what family can do and what remains the treatment team's responsibility." },
+            { "text": "Don't worry — your part is simple. Just keep an eye on him.", "next": "limits", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "'Keep an eye on him' is a role nobody can perform. Don't write 'family supportive' without specific tasks — and support is not the same as supervision." },
+            { "text": "We'll give you a copy at discharge so you can look it over.", "next": "limits", "scores": { "validation": 0, "structure": 1, "safety": 1, "nonblaming": 1 }, "feedback": "Sharing the document is good; handing it over at the door misses the chance to test it with the person it depends on." }
+          ]
+        },
+        "limits": {
+          "phase": "plan",
+          "lines": [
+            { "speaker": "Casey", "text": "Doable… I work twelve-hour shifts three days a week. I can't be his babysitter. Is that awful?" }
+          ],
+          "choices": [
+            { "text": "It isn't awful — it's honest, and it's information the team needs. Support isn't the same as supervision. Let's be specific: what could you realistically do on a shift day, and who else could check in with Robin?", "next": "means", "scores": { "validation": 2, "structure": 1, "safety": 2, "nonblaming": 2 }, "feedback": "It is okay to say what you cannot safely provide; treating it as clinical data rather than failure keeps Casey honest. Specific tasks beat good intentions." },
+            { "text": "Robin's an adult — he doesn't need a babysitter.", "next": "means", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Reassuring past the limit Casey just named leaves a gap in the plan. Her shift days are exactly where the plan needs another person or another check-in." },
+            { "text": "If you can't be there, maybe he shouldn't go home tomorrow.", "next": "repair-verdict", "scores": { "validation": 0, "structure": 0, "safety": 1, "nonblaming": 0 }, "feedback": "Casey's limits are clinical data the team should weigh — but turning them into a verdict in the room makes honesty costly for her and blame-laden for Robin. Take it to the team." }
+          ]
+        },
+        "repair-verdict": {
+          "phase": "plan",
+          "repair": true,
+          "lines": [
+            { "speaker": "Robin", "text": "So now it's her fault if I have to stay?" },
+            { "speaker": "Casey", "text": "That's not what I—" }
+          ],
+          "cue": "Your words have put the couple on opposite sides.",
+          "choices": [
+            { "text": "Let me slow us down — I put that badly. Nobody is at fault here. What Casey told us is useful, and the team will weigh it together with both of you; it isn't a test either of you can fail. Can we look at what support would make home workable?", "next": "means", "scores": { "validation": 2, "structure": 2, "safety": 1, "nonblaming": 2 }, "feedback": "Slowing the room when facts turn into blame is the core move. Own the misstep, de-shame both people, and return to the shared task." },
+            { "text": "I'm just saying what the plan would need.", "next": "means", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Standing by the framing leaves Robin feeling blamed and Casey feeling she has betrayed him. Repair first; the content can wait a moment." },
+            { "text": "Robin, nobody said that. Casey, go on.", "next": "means", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 0 }, "feedback": "Correcting Robin dismisses the hurt underneath his question. Name what happened — your words, not his reaction — and steady both people." }
+          ]
+        },
+        "means": {
+          "phase": "plan",
+          "lines": [
+            { "speaker": "Casey", "text": "There's something else. The bathroom cabinet is full of old prescriptions from the last couple of years. And my father's handgun is in our bedroom closet, in a case. Locked, I think." }
+          ],
+          "cue": "Two kinds of lethal means at home. Means-safety arrangements are agreed with the team and follow supervisor guidance and local policy.",
+          "choices": [
+            { "text": "Thank you — this is one of the most important things we can plan together. Reducing access to firearms and stored medicines for a while after discharge is one of the most protective steps families take. Robin, how would you feel about the handgun being kept outside the home for now, and the old prescriptions being disposed of before you get there? Casey, who could help with that? I'll make sure the team goes over it with you both before discharge.", "next": "close", "scores": { "validation": 1, "structure": 1, "safety": 2, "nonblaming": 2 }, "feedback": "Collaborative means-safety counseling at the level of the concept: say why, invite Robin's view, make it concrete, and route the details through the team. Crises can be brief, and what is within reach during one matters." },
+            { "text": "If it's in a case and locked, that's probably fine.", "next": "close", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "'Locked, I think' is not a plan, and the medicines went unaddressed. False reassurance here leaves the most modifiable risk untouched." },
+            { "text": "Casey, you'll need to get the gun out of the house before he comes home, or we can't discharge him.", "next": "close", "scores": { "validation": 0, "structure": 1, "safety": 1, "nonblaming": 0 }, "feedback": "The content points the right way; the ultimatum does not. It isn't your call alone, it leaves Robin out, and it makes Casey the enforcer. Means safety lands better as a shared plan." }
+          ]
+        },
+        "close": {
+          "phase": "close",
+          "lines": [
+            { "speaker": "Robin", "text": "So… am I still going home tomorrow?" },
+            { "speaker": "narration", "text": "Casey looks at you." }
+          ],
+          "choices": [
+            { "text": "Here's what I heard: you both want Robin home; Casey has real limits on shift days; the plan needs Casey's input and a second person to check in; and the handgun and old medicines need a plan before discharge. I'll take all of this to the team this afternoon — the discharge decision is the team's, made together with you both. Before we finish: if things got worse at home, what would each of you do first?", "next": "end-shared", "scores": { "validation": 1, "structure": 2, "safety": 2, "nonblaming": 1 }, "feedback": "A summary in their words, an honest statement of who decides, and a last rehearsal of the first step in a crisis. One realistic next step beats a perfect plan." },
+            { "text": "Yes — everything's set. You'll both be fine.", "next": "end-reassure", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Reassurance closes the meeting on a promise nobody can keep and buries the gaps Casey named. The discharge decision isn't yours to announce." },
+            { "text": "Let's see how the rest of the day goes and decide later.", "next": "end-unresolved", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Leaves both people holding the uncertainty that started the meeting, with no summary and no next contact." }
+          ]
+        }
+      },
+      "endings": {
+        "end-shared": { "title": "A plan with both names on it", "text": "Robin and Casey leave with a summary they can repeat, a means-safety task with a helper, and a clear sense of who decides what. Casey's limits are now part of the plan instead of a secret." },
+        "end-reassure": { "title": "Reassured, not prepared", "text": "The room relaxes, but Casey's shift-day gap and the handgun are still unaddressed, and the team now has to walk back a promise." },
+        "end-unresolved": { "title": "Still up in the air", "text": "Nothing was decided and nothing was summarized. The ambivalence Casey voiced will go home with her, unspoken." }
+      }
+    },
+    {
+      "id": "silent-teen-guardian-present",
+      "title": "The teen who won't talk",
+      "setting": "Adolescent inpatient unit · day five · first family meeting, guardian present",
+      "time": "8-10 min",
+      "learnerRole": "You are leading the first family meeting, with your attending and the unit social worker present.",
+      "participants": [
+        { "name": "Sam", "role": "Patient, age fifteen", "stance": "Agreed to attend. Silent, guarded, on her phone. Admitted after self-harm." },
+        { "name": "Teresa", "role": "Grandmother and Sam's legal guardian", "stance": "Raising Sam since Sam's mother left. Frightened, exhausted, and checking everything." }
+      ],
+      "goals": [
+        "Make participation safe for Sam without demanding that she speak.",
+        "Hear Teresa's fear without letting it become a case against Sam.",
+        "Translate the privacy-versus-safety conflict into a shared problem.",
+        "Frame safety roles at home that both can live with, and route details to the team.",
+        "Close honestly about who decides, with separate time offered and a next step."
+      ],
+      "note": "This scenario rehearses communication only. It does not teach consent or confidentiality rules for minors, which vary by state and setting — ask your supervisor and see the Maine law page (pending review).",
+      "noteLink": { "label": "Maine Law & Capacity (pending review)", "page": "maine_law.md" },
+      "start": "open",
+      "nodes": {
+        "open": {
+          "phase": "join",
+          "lines": [
+            { "speaker": "Teresa", "text": "Go on, Sam. Tell them what you told me." },
+            { "speaker": "narration", "text": "Sam shrugs and keeps looking at her phone." },
+            { "speaker": "Teresa", "text": "See? This is what I get at home. Nothing." }
+          ],
+          "cue": "Sam agreed to come to the meeting. Nobody has set the frame yet.",
+          "choices": [
+            { "text": "Thanks for coming, both of you. Before anyone has to say anything, here's how I'd like this to go: I'll say why we're meeting, each of you gets a turn, and Sam, you can pass on anything you don't want to talk about right now — that's allowed. Teresa, it sounds like it's been really hard to reach Sam lately.", "next": "story", "scores": { "validation": 1, "structure": 2, "safety": 0, "nonblaming": 2 }, "feedback": "Sets the frame before asking anything, gives Sam an explicit right to pass, and validates Teresa without joining the pressure. Making participation safe matters more than getting words out of her." },
+            { "text": "Sam, your grandmother's asking you a question. It would really help if you answered.", "next": "repair-pressure", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Joining the pressure makes you one more adult demanding a performance. Silence in a teenager is often protective, and pushing on it usually deepens it." },
+            { "text": "Sam, would it be okay if I talked with your grandmother alone for a minute?", "next": "story", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Separate time with each person is a routine, valuable part of adolescent care — but leading with it signals that Sam's silence has ended the joint meeting. Set the frame first; offer separate time later." }
+          ]
+        },
+        "repair-pressure": {
+          "phase": "join",
+          "repair": true,
+          "lines": [
+            { "speaker": "narration", "text": "Sam pulls her hood up." },
+            { "speaker": "Sam", "text": "Whatever." },
+            { "speaker": "Teresa", "text": "This is how it always goes." }
+          ],
+          "cue": "You have joined the pressure, and Sam has withdrawn further. Repair before you continue.",
+          "choices": [
+            { "text": "I came in pushing, and that's on me, not you, Sam. You don't have to talk right now. Teresa, I can hear how worn down you are. Can I tell you both what I'm hoping we get out of today?", "next": "story", "scores": { "validation": 2, "structure": 2, "safety": 0, "nonblaming": 2 }, "feedback": "Owning the push, releasing Sam from the demand and validating Teresa's exhaustion resets the room. Then set the frame you skipped." },
+            { "text": "Sam, we can't help you if you won't talk to us.", "next": "story", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "This makes help conditional on speech and puts the failure on Sam. It is the message most likely to keep her silent." },
+            { "text": "Okay. Teresa, why don't you tell us what's been happening?", "next": "story", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Moving on is better than pushing, but the rupture with Sam goes unacknowledged, and the meeting becomes Teresa's account of Sam — in front of her." }
+          ]
+        },
+        "story": {
+          "phase": "hear",
+          "lines": [
+            { "speaker": "Teresa", "text": "Hard doesn't cover it. Since her mother left, she's in her room every night on that phone until three. Her grades fell apart. And then I found out she'd been hurting herself. I don't know who she is anymore." },
+            { "speaker": "Sam", "text": "Can you not." }
+          ],
+          "cue": "Teresa has named self-harm in front of Sam. Sam has said her first words.",
+          "choices": [
+            { "text": "Teresa, it sounds like you've been really frightened for Sam, and sad about losing the Sam you knew. Sam, I heard you — 'can you not.' It's hard to hear this talked about in front of people, and that makes sense. We can come back to the hardest parts in a way that feels more okay for you.", "next": "privacy", "scores": { "validation": 2, "structure": 1, "safety": 1, "nonblaming": 2 }, "feedback": "Validates both, and treats Sam's protest as communication rather than defiance. Pacing the hardest material, and offering a separate space for it, is part of safety work, not avoidance of it." },
+            { "text": "The team already knows about the self-harm, so we don't need to go into it here.", "next": "privacy", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Protecting Sam from detail is reasonable, but shutting the topic down dismisses Teresa's fear and leaves Sam's protest unacknowledged." },
+            { "text": "Sam, why do you think you started hurting yourself?", "next": "repair-why", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "A 'why' question about self-harm, asked in front of family, is a cross-examination. Do not let the patient be cross-examined — including by you." }
+          ]
+        },
+        "repair-why": {
+          "phase": "hear",
+          "repair": true,
+          "lines": [
+            { "speaker": "narration", "text": "Sam turns her chair toward the wall." },
+            { "speaker": "Teresa", "text": "See?" }
+          ],
+          "cue": "The question landed as an interrogation. Repair it specifically.",
+          "choices": [
+            { "text": "That was the wrong question in the wrong place — I'm sorry, Sam. You don't owe anyone an explanation in this room. Would it be okay if you and I talked separately later? Right now, can we focus on what home could look like?", "next": "privacy", "scores": { "validation": 2, "structure": 2, "safety": 1, "nonblaming": 2 }, "feedback": "A named, specific apology repairs more than a vague one. Offering separate time later keeps the door open without demanding anything now." },
+            { "text": "Okay… let's move on.", "next": "privacy", "scores": { "validation": 0, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Moving on avoids further harm but leaves Sam alone with the rupture and Teresa's 'See?' unanswered." },
+            { "text": "Teresa, has she ever told you why?", "next": "privacy", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Asking Teresa to answer for Sam, in front of her, repeats the cross-examination by proxy and confirms that Sam is being talked about rather than with." }
+          ]
+        },
+        "privacy": {
+          "phase": "hear",
+          "lines": [
+            { "speaker": "Sam", "text": "She reads my phone. She took my door off." },
+            { "speaker": "Teresa", "text": "Because I'm scared!" }
+          ],
+          "choices": [
+            { "text": "Sam, thank you — that took something to say. It sounds like home has started to feel like there's no privacy at all. Teresa, it sounds like checking has been how you try to keep Sam safe when you don't know what else to do. You both want something that makes sense: Sam wants some privacy back, and Teresa wants to know Sam is safe. Could we look for a way to get some of both?", "next": "trust", "scores": { "validation": 2, "structure": 1, "safety": 1, "nonblaming": 2 }, "feedback": "Reflects the need underneath each position and reframes the conflict as a shared problem. Control as an attempt at safety, anger as fear: the translator role again." },
+            { "text": "Teresa, taking her door off does seem pretty extreme.", "next": "trust", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Siding with Sam against Teresa trades one blame for another and loses the guardian you need for the safety plan." },
+            { "text": "Sam, your grandmother does that because she loves you.", "next": "trust", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Probably true, and still dismissive: it tells Sam her complaint doesn't count. Validate the complaint and the motive together." }
+          ]
+        },
+        "trust": {
+          "phase": "plan",
+          "lines": [
+            { "speaker": "Teresa", "text": "So what am I supposed to do — just trust her?" }
+          ],
+          "cue": "This is the safety-planning moment. The detailed safety plan is built by the team with Sam; your job here is to frame the family's roles.",
+          "choices": [
+            { "text": "Not 'just trust' — let's make it concrete. The team will build a safety plan with Sam before discharge, and it will include what each of you does. Things families often agree on: which warning signs Sam will tell Teresa about, how Teresa checks in without searching, and keeping medicines and sharp objects locked away at home for a while. Sam, which of those feel possible to you?", "next": "response", "scores": { "validation": 1, "structure": 2, "safety": 2, "nonblaming": 2 }, "feedback": "Turns 'trust' into specific roles, introduces means safety as an ordinary household step, and asks Sam for her view. Details are finalized with the team and follow supervisor guidance." },
+            { "text": "Now that she's doing better, you'll need to start trusting her again.", "next": "response", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Skips the safety plan and asks Teresa for an act of faith. Doing better on the unit is not yet a plan for home." },
+            { "text": "Keep checking her phone and her room every day — that's the safest approach.", "next": "response", "scores": { "validation": 0, "structure": 1, "safety": 1, "nonblaming": 0 }, "feedback": "Surveillance is not a safety plan; it erodes the privacy Sam just named, and it isn't your recommendation to make alone. Collaborative roles work better than control." }
+          ]
+        },
+        "response": {
+          "phase": "plan",
+          "lines": [
+            { "speaker": "Sam", "text": "I'd tell her if it got bad. Maybe. If she didn't freak out." },
+            { "speaker": "Teresa", "text": "I don't freak out." },
+            { "speaker": "narration", "text": "A pause." },
+            { "speaker": "Teresa", "text": "Okay. I freak out." }
+          ],
+          "choices": [
+            { "text": "That's a real step, from both of you. Sam, it sounds like a calm first response would make it easier to tell Teresa. Teresa, it sounds like you're willing to work on that. That's exactly what family therapy after discharge can help with — I'd like to make sure it's in the plan.", "next": "close", "scores": { "validation": 2, "structure": 1, "safety": 1, "nonblaming": 2 }, "feedback": "Names what each person offered, frames the pattern as something to work on together, and links it to outpatient family work — the inpatient meeting plants a seed rather than harvesting one." },
+            { "text": "Teresa, you'll need to stop freaking out if you want her to talk to you.", "next": "close", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Puts the whole problem on Teresa just as she showed insight. Coach influence, not control, and keep the stance even-handed." },
+            { "text": "Great — so it sounds like we have a plan.", "next": "close", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "Premature closure: a 'maybe' is not yet a plan. Stay with the moment long enough to make it specific." }
+          ]
+        },
+        "close": {
+          "phase": "close",
+          "lines": [
+            { "speaker": "Teresa", "text": "Is she safe to come home on Friday?" },
+            { "speaker": "narration", "text": "Sam looks up for the first time." }
+          ],
+          "choices": [
+            { "text": "That decision is the team's, made together with both of you. Here's what I'll take back: Sam wants some privacy back, Teresa wants a way to know Sam is safe, and you both said you'd try a calmer way of telling each other when things get bad. Sam, I'd still like that time one-on-one with you before Friday. Next step: a meeting with the attending and the social worker later this week — would that work for you both?", "next": "end-heard", "scores": { "validation": 1, "structure": 2, "safety": 1, "nonblaming": 2 }, "feedback": "Honest about who decides, a summary in their words, separate time offered again, and a named next step. Sam looking up is the outcome you were working toward." },
+            { "text": "Yes, I think she's ready.", "next": "end-early-yes", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "The discharge decision isn't yours to announce, and a yes given to the guardian over Sam's head skips the plan you just started." },
+            { "text": "We'll let you know.", "next": "end-closed", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 1 }, "feedback": "No summary, no next step, and no acknowledgment of what Sam and Teresa managed today." }
+          ]
+        }
+      },
+      "endings": {
+        "end-heard": { "title": "Sam is in the room", "text": "Sam spoke several times, and the meeting ended with both of them named in the plan. The hardest material was saved for a space where Sam can actually talk." },
+        "end-early-yes": { "title": "An answer without a plan", "text": "Teresa leaves with a yes that nobody on the team has agreed to, and Sam leaves having been discussed rather than included. The safety roles are still unwritten." },
+        "end-closed": { "title": "Back to separate corners", "text": "The meeting ends where it began: Teresa uncertain, Sam silent. What they managed together today goes unnamed, and is easier to lose." }
+      }
+    }
+  ]
+}
+</script>
+<script id="fms-engine">
+/* Family Conversation Simulator — branching engine. Pure functions, no DOM, no storage, no
+   network: tests/family-meeting-sim.test.mjs evaluates this block on its own.
+   Scoring is deterministic. Each choice scores 0-2 on four axes; a run's score per axis is
+   earned / maximum reachable on the path actually taken (the sum, over the nodes visited,
+   of the best score any choice at that node offered). Bands describe, never grade.
+   Extension point (inert; voice/LLM delivery is decision-gated, D-F1-3): a future adapter
+   could render node.lines through another medium. Nothing here calls one. */
+var FMSEngine = (function () {
+  var AXES = ['validation', 'structure', 'safety', 'nonblaming'];
+  function has(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
+  function isEnding(sc, id) { return has(sc.endings, id); }
+  function newRun(sc) { return { scenarioId: sc.id, at: sc.start, steps: [], ended: null }; }
+  function choose(sc, run, index) {
+    if (run.ended) throw new Error('run already ended');
+    var node = sc.nodes[run.at];
+    if (!node) throw new Error('unknown node ' + run.at);
+    var c = node.choices[index];
+    if (!c) throw new Error('unknown choice ' + index + ' at ' + run.at);
+    var steps = run.steps.concat([{ node: run.at, choice: index }]);
+    if (isEnding(sc, c.next)) return { scenarioId: sc.id, at: null, steps: steps, ended: c.next };
+    return { scenarioId: sc.id, at: c.next, steps: steps, ended: null };
+  }
+  function rewind(sc, run, stepIndex) {
+    var s = run.steps[stepIndex];
+    if (!s) throw new Error('unknown step ' + stepIndex);
+    return { scenarioId: sc.id, at: s.node, steps: run.steps.slice(0, stepIndex), ended: null };
+  }
+  function total(choice) { var t = 0; AXES.forEach(function (a) { t += choice.scores[a]; }); return t; }
+  function strongest(node) {
+    var best = 0;
+    node.choices.forEach(function (c, i) { if (total(c) > total(node.choices[best])) best = i; });
+    return best;
+  }
+  function tally(sc, steps) {
+    var out = {};
+    AXES.forEach(function (a) { out[a] = { earned: 0, max: 0, pct: null }; });
+    steps.forEach(function (s) {
+      var node = sc.nodes[s.node], c = node.choices[s.choice];
+      AXES.forEach(function (a) {
+        out[a].earned += c.scores[a];
+        out[a].max += Math.max.apply(null, node.choices.map(function (x) { return x.scores[a]; }));
+      });
+    });
+    AXES.forEach(function (a) { if (out[a].max > 0) out[a].pct = Math.round(100 * out[a].earned / out[a].max); });
+    return out;
+  }
+  function band(pct) {
+    if (pct === null || pct === undefined) return 'untested';
+    if (pct >= 75) return 'often';
+    if (pct >= 40) return 'sometimes';
+    return 'rarely';
+  }
+  /* Deterministic display order, so the strongest option is not always first. Seeded by
+     scenario + node id; scores stay bound to the authored index. */
+  function displayOrder(scId, nodeId, n) {
+    var seed = 2166136261, key = scId + '/' + nodeId, i, order = [];
+    for (i = 0; i < key.length; i++) { seed ^= key.charCodeAt(i); seed = Math.imul(seed, 16777619) >>> 0; }
+    for (i = 0; i < n; i++) order.push(i);
+    for (i = n - 1; i > 0; i--) {
+      seed = Math.imul(seed ^ (seed >>> 15), 2246822507) >>> 0;
+      var j = seed % (i + 1), t = order[i]; order[i] = order[j]; order[j] = t;
+    }
+    return order;
+  }
+  /* Every complete path from start to an ending, as step lists. Throws on a cycle. */
+  function paths(sc) {
+    var out = [];
+    (function walk(at, steps, seen) {
+      if (seen[at]) throw new Error(sc.id + ': cycle through ' + at);
+      var node = sc.nodes[at], next = Object.assign({}, seen); next[at] = true;
+      node.choices.forEach(function (c, i) {
+        var s = steps.concat([{ node: at, choice: i }]);
+        if (isEnding(sc, c.next)) out.push({ steps: s, ending: c.next });
+        else walk(c.next, s, next);
+      });
+    })(sc.start, [], {});
+    return out;
+  }
+  function validate(data) {
+    var errs = [], ids = {};
+    if (!data || !Array.isArray(data.scenarios) || !data.scenarios.length) return ['no scenarios'];
+    data.scenarios.forEach(function (sc) {
+      var p = (sc && sc.id) || '(no id)', before = errs.length;
+      if (!sc || !sc.id || ids[sc.id]) { errs.push(p + ': missing or duplicate id'); return; }
+      ids[sc.id] = true;
+      if (!sc.nodes || !sc.endings) { errs.push(p + ': nodes or endings missing'); return; }
+      if (!has(sc.nodes, sc.start)) errs.push(p + ': start does not resolve');
+      Object.keys(sc.endings).forEach(function (k) {
+        if (has(sc.nodes, k)) errs.push(p + ': ' + k + ' is both a node and an ending');
+        if (!sc.endings[k].title || !sc.endings[k].text) errs.push(p + ': ending ' + k + ' needs title and text');
+      });
+      Object.keys(sc.nodes).forEach(function (nid) {
+        var n = sc.nodes[nid];
+        if (!Array.isArray(n.lines) || !n.lines.length) errs.push(p + '/' + nid + ': no lines');
+        if (!Array.isArray(n.choices) || n.choices.length < 3 || n.choices.length > 4) {
+          errs.push(p + '/' + nid + ': needs 3-4 choices'); return;
+        }
+        n.choices.forEach(function (c, i) {
+          var q = p + '/' + nid + '#' + i;
+          if (!c.text || !c.feedback) errs.push(q + ': text and feedback required');
+          if (!has(sc.nodes, c.next) && !isEnding(sc, c.next)) errs.push(q + ': next "' + c.next + '" does not resolve');
+          if (!c.scores) { errs.push(q + ': scores missing'); return; }
+          AXES.forEach(function (a) { var v = c.scores[a]; if (v !== 0 && v !== 1 && v !== 2) errs.push(q + ': ' + a + ' must be 0, 1 or 2'); });
+          Object.keys(c.scores).forEach(function (k) { if (AXES.indexOf(k) < 0) errs.push(q + ': unknown axis ' + k); });
+        });
+      });
+      if (errs.length > before) return;
+      var reached = {}, endings = {};
+      try {
+        paths(sc).forEach(function (pt) {
+          endings[pt.ending] = true;
+          pt.steps.forEach(function (s) { reached[s.node] = true; });
+        });
+      } catch (e) { errs.push(String(e.message || e)); return; }
+      Object.keys(sc.nodes).forEach(function (k) { if (!reached[k]) errs.push(p + ': node ' + k + ' unreachable'); });
+      Object.keys(sc.endings).forEach(function (k) { if (!endings[k]) errs.push(p + ': ending ' + k + ' unreachable'); });
+    });
+    return errs;
+  }
+  return { AXES: AXES, newRun: newRun, choose: choose, rewind: rewind, tally: tally, band: band,
+    strongest: strongest, total: total, displayOrder: displayOrder, paths: paths, validate: validate };
+})();
+</script>
+<script>
+(function () {
+  var app = document.getElementById('fms-app'), live = document.getElementById('fms-live');
+  var DATA = null, ERRS = [];
+  try { DATA = JSON.parse(document.getElementById('fms-scenarios').textContent); } catch (_) { DATA = null; }
+  ERRS = DATA ? FMSEngine.validate(DATA) : ['Scenario data could not be read.'];
+  var AXES = FMSEngine.AXES;
+  var state = { view: 'pick', sc: null, run: null, recorded: false, focus: null };
+  var BAND_TEXT = {
+    often: 'You made this move often on this run.',
+    sometimes: 'You made this move some of the time on this run.',
+    rarely: 'This move was mostly missing on this run.',
+    untested: 'This path offered no chance to show it.'
+  };
+  var LINKS = [
+    ['family_playbook.md', 'Family Meeting Playbook'],
+    ['family-systems.html', 'Family Systems Practice'],
+    ['collateral_workflow.md', 'Collateral: 10-Minute Workflow']
+  ];
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function loadStore() {
+    try { var s = JSON.parse(localStorage.getItem('cw_family_sim_v1') || '{}'); return (s && typeof s === 'object') ? s : {}; } catch (_) { return {}; }
+  }
+  function saveStore(s) { try { localStorage.setItem('cw_family_sim_v1', JSON.stringify(s)); } catch (_) {} }
+  function clearStore() { try { localStorage.removeItem('cw_family_sim_v1'); } catch (_) {} }
+  function recordRun(sc, t) {
+    var s = loadStore(); s.v = 1; s.scenarios = (s.scenarios && typeof s.scenarios === 'object') ? s.scenarios : {};
+    var r = s.scenarios[sc.id] || { runs: 0, best: {} };
+    r.runs = (r.runs || 0) + 1; r.last = today(); r.best = r.best || {};
+    AXES.forEach(function (a) { if (t[a].pct !== null) r.best[a] = Math.max(r.best[a] || 0, t[a].pct); });
+    s.scenarios[sc.id] = r; saveStore(s);
+  }
+  function axisLabel(a) { for (var i = 0; i < DATA.axes.length; i++) if (DATA.axes[i].id === a) return DATA.axes[i].label; return a; }
+  function axisAnchor(a) { for (var i = 0; i < DATA.axes.length; i++) if (DATA.axes[i].id === a) return DATA.axes[i].anchor; return ''; }
+  function byId(id) { for (var i = 0; i < DATA.scenarios.length; i++) if (DATA.scenarios[i].id === id) return DATA.scenarios[i]; return null; }
+  function pageHref(f) { return f.slice(-5) === '.html' ? '../index.html?tool=' + encodeURIComponent(f) : '../index.html?page=' + encodeURIComponent(f); }
+  function linksHtml() { return '<div class="links">' + LINKS.map(function (l) { return '<a href="' + pageHref(l[0]) + '">' + esc(l[1]) + '</a>'; }).join('') + '</div>'; }
+  function lineHtml(l) {
+    if (l.speaker === 'narration') return '<p class="line stage">' + esc(l.text) + '</p>';
+    return '<p class="line"><b>' + esc(l.speaker) + '</b>' + esc(l.text) + '</p>';
+  }
+
+  function renderPick() {
+    var store = loadStore(), rec = store.scenarios || {};
+    var cards = DATA.scenarios.map(function (sc) {
+      var r = rec[sc.id], prog = 'Not played yet';
+      if (r && r.runs) {
+        prog = 'Played ' + r.runs + (r.runs === 1 ? ' time' : ' times') + (r.last ? ' · last ' + esc(r.last) : '') + ' · best: ' +
+          AXES.map(function (a) { return esc(axisLabel(a)) + ' ' + (r.best && r.best[a] != null ? r.best[a] + '%' : '–'); }).join(' · ');
+      }
+      return '<li><button type="button" class="pick" data-act="open" data-id="' + esc(sc.id) + '"><strong>' + esc(sc.title) + '</strong><span>' + esc(sc.setting) + '</span><em>' + prog + '</em></button></li>';
+    }).join('');
+    app.innerHTML = '<section class="card" aria-labelledby="fms-pick-title"><h2 id="fms-pick-title" tabindex="-1">Choose a scenario</h2>' +
+      '<p class="meta">Each scenario takes about ten minutes and has six to eight decision points. Every rupture has a route back. Choices are scored on four skills; the debrief shows bars and feedback, never a pass or fail.</p>' +
+      '<ul class="picker" style="list-style:none;margin:0;padding:0">' + cards + '</ul>' +
+      '<div class="actions"><button type="button" class="btn secondary" data-act="clear">Clear my saved progress</button></div>' +
+      '<h3 style="margin-top:14px">Read alongside</h3>' + linksHtml() + '</section>';
+  }
+
+  function briefHtml(sc, first) {
+    var html = '<section class="card" aria-labelledby="fms-sc-title"><h2 id="fms-sc-title" tabindex="-1">' + esc(sc.title) + '</h2>' +
+      '<span class="pill">' + esc(sc.setting) + '</span><span class="pill">' + esc(sc.time) + '</span><span class="pill draft">Draft · faculty review pending</span>' +
+      '<details class="meta"' + (first ? ' open' : '') + '><summary>Your role, who is in the room, practice goals</summary>' +
+      '<p><b>Your role:</b> ' + esc(sc.learnerRole) + '</p><b>In the room</b><ul>' +
+      sc.participants.map(function (p) { return '<li><b>' + esc(p.name) + '</b> — ' + esc(p.role) + '. ' + esc(p.stance) + '</li>'; }).join('') +
+      '</ul><b>Practice goals</b><ul>' + sc.goals.map(function (g) { return '<li>' + esc(g) + '</li>'; }).join('') + '</ul>';
+    if (sc.note) {
+      html += '<p class="small">' + esc(sc.note) + (sc.noteLink ? ' <a href="' + pageHref(sc.noteLink.page) + '">' + esc(sc.noteLink.label) + '</a>' : '') + '</p>';
+    }
+    return html + '</details></section>';
+  }
+
+  function renderPlay() {
+    var sc = state.sc, run = state.run, node = sc.nodes[run.at];
+    var hist = run.steps.map(function (s, i) {
+      var n = sc.nodes[s.node];
+      return '<li><b>' + (i + 1) + '.</b> ' + n.lines.filter(function (l) { return l.speaker !== 'narration'; }).map(function (l) { return esc(l.speaker); }).join(' & ') +
+        ' → <b>You:</b> “' + esc(n.choices[s.choice].text) + '”</li>';
+    }).join('');
+    var order = FMSEngine.displayOrder(sc.id, run.at, node.choices.length);
+    var choices = order.map(function (idx, k) {
+      return '<li><button type="button" class="choice" data-act="choose" data-choice="' + idx + '">' +
+        '<span class="sr-only">Option ' + (k + 1) + ': </span>' + esc(node.choices[idx].text) + '</button></li>';
+    }).join('');
+    app.innerHTML = briefHtml(sc, run.steps.length === 0) +
+      (hist ? '<section class="card" aria-label="So far"><h3>So far</h3><ol class="history">' + hist + '</ol></section>' : '') +
+      '<section class="card" aria-labelledby="fms-moment"><p class="phase">' + esc(DATA.phases[node.phase] || '') + (node.repair ? ' · repair moment' : '') + '</p>' +
+      '<h3 id="fms-moment" tabindex="-1">Decision ' + (run.steps.length + 1) + '</h3>' +
+      '<div class="exchange' + (node.repair ? ' repair' : '') + '">' + node.lines.map(lineHtml).join('') +
+      (node.cue ? '<p class="cue"><b>Cue:</b> ' + esc(node.cue) + '</p>' : '') + '</div>' +
+      '<h3 id="fms-choose-label">What do you say?</h3><ul class="choices" role="group" aria-labelledby="fms-choose-label">' + choices + '</ul>' +
+      '<div class="actions"><button type="button" class="btn secondary" data-act="restart">Start this scenario over</button><button type="button" class="btn secondary" data-act="home">All scenarios</button></div></section>';
+  }
+
+  function renderDebrief() {
+    var sc = state.sc, run = state.run, t = FMSEngine.tally(sc, run.steps), end = sc.endings[run.ended];
+    var bars = AXES.map(function (a) {
+      var x = t[a], pct = x.pct === null ? 0 : x.pct;
+      return '<div class="axis"><div class="axis-head">' + esc(axisLabel(a)) + '<span>' +
+        (x.pct === null ? 'not tested on this path' : x.earned + ' of ' + x.max + ' available · ' + x.pct + '%') + '</span></div>' +
+        '<div class="track" aria-hidden="true"><i style="width:' + pct + '%"></i></div>' +
+        '<p class="anchor"><b>' + esc(BAND_TEXT[FMSEngine.band(x.pct)]) + '</b> ' + esc(axisAnchor(a)) + '</p></div>';
+    }).join('');
+    var steps = run.steps.map(function (s, i) {
+      var n = sc.nodes[s.node], c = n.choices[s.choice], best = FMSEngine.strongest(n), b = n.choices[best];
+      var alt = (best === s.choice || FMSEngine.total(b) === FMSEngine.total(c))
+        ? '<p class="small">You chose one of the strongest authored options here.</p>'
+        : '<p class="alt"><b>A stronger move here:</b> <span class="said">“' + esc(b.text) + '”</span> ' + esc(b.feedback) + '</p>';
+      return '<li class="step"><p class="phase">' + esc(DATA.phases[n.phase] || '') + (n.repair ? ' · repair moment' : '') + '</p>' +
+        n.lines.map(lineHtml).join('') +
+        '<p><b>You said:</b> <span class="said">“' + esc(c.text) + '”</span></p><p class="fb">' + esc(c.feedback) + '</p>' + alt +
+        '<button type="button" class="btn secondary" data-act="rewind" data-step="' + i + '">Try again from this moment</button></li>';
+    }).join('');
+    app.innerHTML = '<section class="card" aria-labelledby="fms-debrief-title"><h2 id="fms-debrief-title" tabindex="-1">Debrief: ' + esc(sc.title) + '</h2>' +
+      '<div class="ending"><b>' + esc(end.title) + '.</b> ' + esc(end.text) + '</div>' +
+      '<h3>Four skills on this run</h3>' + bars +
+      '<p class="small">Percentages compare your choices with the best option offered at each moment you actually reached. They describe one run of authored practice; they are not a grade, and many adequate responses exist outside these options.</p>' +
+      '<div class="actions"><button type="button" class="btn" data-act="restart">Play this scenario again</button><button type="button" class="btn secondary" data-act="home">All scenarios</button></div></section>' +
+      '<section class="card" aria-label="Moment by moment"><h3>Moment by moment</h3><ol style="list-style:none;margin:0;padding:0">' + steps + '</ol>' +
+      '<h3 style="margin-top:14px">Read alongside</h3>' + linksHtml() + '</section>';
+  }
+
+  function render() {
+    if (ERRS.length) {
+      app.innerHTML = '<div class="card" role="alert">The scenario data failed its checks, so the simulator will not run. ' + esc(ERRS.slice(0, 3).join('; ')) + '</div>';
+      return;
+    }
+    if (state.view === 'pick') renderPick();
+    else if (state.view === 'play') renderPlay();
+    else renderDebrief();
+    if (state.focus) { var el = document.getElementById(state.focus); if (el) el.focus(); state.focus = null; }
+  }
+  function say(msg) { live.textContent = ''; window.setTimeout(function () { live.textContent = msg; }, 30); }
+  function open(id) {
+    var sc = byId(id); if (!sc) return;
+    state.sc = sc; state.run = FMSEngine.newRun(sc); state.view = 'play'; state.recorded = false; state.focus = 'fms-sc-title';
+    render(); say('Scenario started: ' + sc.title + '. Decision 1.');
+  }
+  app.addEventListener('click', function (ev) {
+    var t = ev.target.closest && ev.target.closest('[data-act]'); if (!t) return;
+    var act = t.getAttribute('data-act');
+    if (act === 'open') { open(t.getAttribute('data-id')); return; }
+    if (act === 'home') { state.view = 'pick'; state.sc = null; state.run = null; state.focus = 'fms-pick-title'; render(); return; }
+    if (act === 'clear') { clearStore(); render(); say('Saved progress cleared.'); return; }
+    if (act === 'restart') { open(state.sc.id); return; }
+    if (act === 'choose') {
+      state.run = FMSEngine.choose(state.sc, state.run, Number(t.getAttribute('data-choice')));
+      if (state.run.ended) {
+        if (!state.recorded) { recordRun(state.sc, FMSEngine.tally(state.sc, state.run.steps)); state.recorded = true; }
+        state.view = 'debrief'; state.focus = 'fms-debrief-title'; render(); say('Scenario finished. Debrief shown.');
+      } else {
+        state.focus = 'fms-moment'; render(); say('Decision ' + (state.run.steps.length + 1) + '.');
+      }
+      return;
+    }
+    if (act === 'rewind') {
+      state.run = FMSEngine.rewind(state.sc, state.run, Number(t.getAttribute('data-step')));
+      state.view = 'play'; state.recorded = false; state.focus = 'fms-moment'; render();
+      say('Back at decision ' + (state.run.steps.length + 1) + '.');
+    }
+  });
+  var requested = '';
+  try { requested = new URLSearchParams(location.search).get('scenario') || ''; } catch (_) {}
+  if (!ERRS.length && requested && byId(requested)) open(requested); else render();
+})();
+</script>
+<!-- Static (non-JS) on purpose: crisis contacts must render even if the app script fails.
+     Build-injected from crisis_resources.json — do not hand-edit numbers here. The learner
+     rehearses safety-plan and means-safety roles in this tool, so it is a risk-work surface. -->
+<!-- crisis-block-html -->
+</body>
+</html>

@@ -49,7 +49,8 @@ REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 # ms3 was 23 until 2026-09-25, when the MS3-only orientation-video tool was retired.
 # 2026-09-30: +1 on both sites for pharmacy.html (the Psychiatric Pharmacy).
 # 2026-10-27: +1 on both sites for maine-law-navigator.html (the Maine Law Navigator).
-EXPECTED_TOOL_COUNTS = {"ms3": 24, "resident": 28}
+# 2026-10-27: +1 on both sites for family-meeting-sim.html (the Family Conversation Simulator).
+EXPECTED_TOOL_COUNTS = {"ms3": 25, "resident": 29}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 

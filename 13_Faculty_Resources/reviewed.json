@@ -1294,6 +1294,16 @@
     "contentHash": "5496f2b1858f14162913a063fb23753a698b489a",
     "clinicalHash": "a01969f13e1f6f41258397f9af261b4c913d7434"
   },
+  "family-meeting-sim.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "high"
+    },
+    "reason": "New Family Conversation Simulator (three draft fictional scenarios, safety-planning rehearsal) added 2026-10-27; awaiting faculty attestation.",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
+  },
   "rp-canon-quiz.html": {
     "status": "reviewed",
     "risk": {
