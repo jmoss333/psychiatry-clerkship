@@ -37,6 +37,7 @@ import {
 import {
   PharmacyActionError, loadMedicationSnapshot, medicationView, commitMedicationApproval,
 } from './pharmacy-actions.mjs';
+import { appAuthConfigured, githubHeaders, withGithubIdentity } from '../../github-app-auth.mjs';
 
 const DEFAULT_REPO = 'jmoss333/psychiatry-clerkship';
 // Attestations land on their own branch and reach the base branch through one
@@ -94,7 +95,6 @@ const MISSING_SOURCE_REASON = 'An attested source file is missing from the repos
 const JSON_INDENT = 2;
 
 const GITHUB_API = 'https://api.github.com';
-const GITHUB_API_VERSION = '2026-03-10';
 const MAX_POST_BYTES = 128 * 1024;
 const MAX_BANK_BYTES = 4 * 1024 * 1024;
 const GIT_OBJECT_ID_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i;
@@ -266,6 +266,7 @@ function requireRequest(request) {
 
 function requireServerSettings(env, fetchImpl, originPolicy) {
   const token = readEnv(env, 'GITHUB_TOKEN');
+  const appAuth = appAuthConfigured(env); // github-app-auth.mjs: App token replaces GITHUB_TOKEN
   const key = readEnv(env, 'FACULTY_ATTEST_PASSWORD');
   const repo = readEnv(env, 'GITHUB_REPO').trim() || DEFAULT_REPO;
   const branch = readEnv(env, 'GIT_BRANCH').trim() || DEFAULT_BRANCH;
@@ -276,7 +277,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
   const attester = attesterLabel(readEnv(env, 'ATTESTER_NAME'));
 
   if (!originPolicy.valid
-      || !token
+      || !(token || appAuth)
       || !key
       || typeof fetchImpl !== 'function'
       || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)
@@ -312,6 +313,7 @@ function requireServerSettings(env, fetchImpl, originPolicy) {
 
   return {
     token,
+    appAuth,
     key,
     repo,
     branch,
@@ -341,15 +343,6 @@ function githubStatusError(status) {
     default:
       return new GithubError('github_request_failed', 502, { retryable: status >= 500 });
   }
-}
-
-function githubHeaders(token, accept = 'application/vnd.github+json') {
-  return {
-    Authorization: `Bearer ${token}`,
-    Accept: accept,
-    'X-GitHub-Api-Version': GITHUB_API_VERSION,
-    'User-Agent': 'faculty-attest',
-  };
 }
 
 function encodedRepositoryPath(path) {
@@ -3547,7 +3540,8 @@ export function createHandler({
       if (!safeEqual(request.headers.get('x-faculty-key'), facultyKey)) {
         throw new HttpError('unauthorized', 401, 'Unauthorized.');
       }
-      const settings = requireServerSettings(env, fetchImpl, originPolicy);
+      const settings = await withGithubIdentity(requireServerSettings(env, fetchImpl, originPolicy), env,
+        fetchImpl, () => new HttpError('server_configuration', 500, 'The faculty service is not configured.'));
 
       const repository = createRepositoryGateway({ settings, fetchImpl, treeCache });
       // Evidence dispositions have their own branch. Never write main.

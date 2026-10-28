@@ -128,7 +128,9 @@ export function checkBuiltSearch(siteDir, buildDir) {
     const exactNames = [
       ['One Patient, Six Weeks','one-patient-six-weeks.html'],
       [`First-Episode Psychosis (Sep 7) — ${site === 'res' ? 'Resident' : 'MS3'}`,`cotw_20260907_fep_${site}.md`],
-      [`Catatonia [Aug 31] — ${site === 'res' ? 'Resident' : 'MS3'}?`,`cotw_20260831_catatonia_${site}.md`,['exp_consult.md']],
+      // The typed title carries the word "catatonia", the authored trigger of the catatonia
+      // protocol (#1087), so that protocol leads the established safety prefix.
+      [`Catatonia [Aug 31] — ${site === 'res' ? 'Resident' : 'MS3'}?`,`cotw_20260831_catatonia_${site}.md`,['catatonia.md','exp_consult.md']],
       ...(site === 'res' ? [['Post-Event Learning Huddle (2 min)','rp-post-event-huddle.html']] : []),
     ];
     for (const [query,ref,protocols = []] of exactNames) {

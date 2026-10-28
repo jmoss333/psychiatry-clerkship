@@ -232,14 +232,14 @@ class PublishedInventoryTests(unittest.TestCase):
         self.assertEqual(len(candidates), 154)
         self.assertEqual(len({n['source'] for n in document['notes']}), 22)
         inventory = cards._inventory(root)
-        self.assertEqual(len(inventory), 38)
+        self.assertEqual(len(inventory), 39)  # +maine_law.md 2026-10-27 (excluded)
         for row in crosswalk['coverageInventory']:
             page, sections = inventory[row['source']]
             self.assertEqual(row['page'], page['slug'])
             self.assertEqual(row['sections'], {k: len(v) for k, v in sections.items()})
             self.assertEqual(row['mappedNotes'], sum(n['source'] == row['source'] for n in document['notes']))
         self.assertEqual({row['source'] for row in crosswalk['coverageInventory']}, set(inventory))
-        self.assertEqual(sum('kind' not in e for e in document['exclusions']), 16)
+        self.assertEqual(sum('kind' not in e for e in document['exclusions']), 17)  # +maine_law.md 2026-10-27
         self.assertFalse(any(c['q'] in ('In one line?', 'Recall the key point:', '[…]') for c in candidates))
 
 

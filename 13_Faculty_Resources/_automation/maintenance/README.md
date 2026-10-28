@@ -45,6 +45,7 @@ days, the repository-supported ceiling. The existing CI smoke artifact remains 1
 | Rotation readiness | Daily 13:15 UTC, `15 13 * * *` | `maintenance-rotation-readiness.yml` | `maintenance-rotation-${{ github.run_id }}` — 90 days |
 | Link surveillance | Monday 06:00 UTC, `0 6 * * 1` | `surveillance-link-monitor.yml` | `surveillance-link-monitor-${{ github.run_id }}` — 90 days |
 | Citation surveillance | Monday 07:00 UTC, `0 7 * * 1` | `surveillance-citations.yml` | `surveillance-citation-monitor-${{ github.run_id }}` — 90 days |
+| Evidence watch (PubMed + openFDA) | Monday 08:00 UTC, `0 8 * * 1` | `surveillance-evidence-watch.yml` | `surveillance-evidence-watch-${{ github.run_id }}` — 90 days |
 | Guideline surveillance | First day monthly 06:00 UTC, `0 6 1 * *` | `surveillance-guideline.yml` | `surveillance-guideline-monitor-${{ github.run_id }}` — 90 days |
 | Resource intake | On demand only | `surveillance-resource-intake.yml` | `surveillance-resource-intake-${{ github.run_id }}` — 90 days |
 | Consolidated external deadman and conditional reviews | Daily 08:30 America/New_York; Monday rotation and first-Tuesday policy/evidence work inside the same run | Controller-managed Codex heartbeat; verify current status | Notify only when actionable; no repository artifact |

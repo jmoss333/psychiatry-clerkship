@@ -103,7 +103,9 @@ for (const site of ['ms3','res']) {
   });
   test(`${site}: recovering punctuated context does not invent or demote safety evidence`,()=>{
     for (const [query, protocols] of [
-      ['Ativan catatonia?', []],
+      // Since #1087 the kit has a catatonia protocol whose authored trigger is "catatonia", so
+      // the recovered word is an explicit trigger (allowed), not invented substring evidence.
+      ['Ativan catatonia?', ['catatonia.md']],
       ['lithium monitoring?', []],
       ['Ativan withdrawing from alcohol?', ['t_sud.md']],
     ]) {

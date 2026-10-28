@@ -200,7 +200,8 @@
       "refs": [
         "mse.html", "interview-circle.html", "sp-interview.html",
         "communication-practice.html", "diagnostic-reasoning.html",
-        "family-systems.html", "one-patient-six-weeks.html", "capacity.html",
+        "family-systems.html", "family-meeting-sim.html", "one-patient-six-weeks.html", "capacity.html",
+        "maine-law-navigator.html",
         "oral.html", "violence.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
         "pharmacy.html", "reflection.html", "shelf-mode.html", "review.html",
@@ -208,9 +209,9 @@
       ],
       "groups": [
         { "name": "Interview & present", "refs": ["mse.html", "interview-circle.html", "sp-interview.html", "communication-practice.html", "oral.html"] },
-        { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "capacity.html", "violence.html", "withdrawal.html"] },
+        { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "capacity.html", "maine-law-navigator.html", "violence.html", "withdrawal.html"] },
         { "name": "Medications", "refs": ["pharmacy.html", "interaction-cards.html", "decision-aids.html"] },
-        { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html"] },
+        { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html", "family-meeting-sim.html"] },
         { "name": "Practice & review", "refs": ["shelf-mode.html", "review.html", "question-bank-practice.html", "reflection.html"] }
       ]
     },
@@ -254,13 +255,13 @@
         "family_playbook.md", "psychotherapy.md", "brief_psychotherapy.md",
         "therapy_on_the_unit.md",
         "motivational_interviewing.md", "cultural_psychiatry.md",
-        "ethics_legal.md"
+        "ethics_legal.md", "maine_law.md"
       ],
       "groups": [
         { "name": "Start here & present", "refs": ["welcome.md", "orientation.md", "pg_interview.md", "pg_formulation.md", "case_formulation.md", "doc_oral.md"] },
         { "name": "Family, collateral & discharge", "refs": ["collateral_workflow.md", "exp_family.md", "family_modalities.md", "family_playbook.md"] },
         { "name": "Treatment & psychotherapy", "refs": ["exp_tx.md", "psychotherapy.md", "brief_psychotherapy.md", "therapy_on_the_unit.md", "motivational_interviewing.md"] },
-        { "name": "Culture, ethics & law", "refs": ["cultural_psychiatry.md", "ethics_legal.md"] }
+        { "name": "Culture, ethics & law", "refs": ["cultural_psychiatry.md", "ethics_legal.md", "maine_law.md"] }
       ]
     },
     {
@@ -470,8 +471,10 @@
     "communication-practice.html": "Say your first line in a hard clinical moment, then compare it with the authored options.",
     "diagnostic-reasoning.html": "Turn bedside data into a problem representation, a differential, and a supervised next step.",
     "family-systems.html": "Rehearse collateral calls, family meetings, discharge-role mapping, and high-emotion conversations.",
+    "family-meeting-sim.html": "Rehearse an angry parent, an ambivalent spouse and a silent teen, then debrief four conversation skills.",
     "one-patient-six-weeks.html": "Follow four patients through psychosis, mood, trauma, delirium, safety, and care transitions.",
     "capacity.html": "Walk the four abilities at the bedside with sample questions, then draft a structured capacity note.",
+    "maine-law-navigator.html": "Pick the question you face; see the Maine pathway, clock, pitfall and statute. Not legal advice.",
     "oral.html": "Gather what rounds need, then rehearse a three-minute presentation or a 60-second update.",
     "violence.html": "Static and dynamic risk factors, an imminent warning-signs checklist, and the FRST screen.",
     "screeners.html": "Score the PHQ-9 and GAD-7 with severity bands; a screen, not a diagnosis.",
@@ -526,7 +529,11 @@
         "ams", "sundowning", "waxing and waning", "inattentive", "not making sense",
         "pulled out iv", "pulled out her iv", "pulled out his iv", "pulled out their iv",
         "pulling out iv", "pulling out her iv", "pulling out his iv", "pulling out their iv",
-        "pulled her iv", "pulled his iv", "pulled their iv"] }
+        "pulled her iv", "pulled his iv", "pulled their iv"] },
+    { "ref": "catatonia.md", "sub": "Bush-Francis · vitals · hold antipsychotics",
+      "triggers": ["catatonia", "catatonic", "mute", "mutism", "not moving", "not talking",
+        "posturing", "waxy flexibility", "stupor", "stuporous", "bfcrs", "bush francis",
+        "bush-francis", "lorazepam challenge", "malignant catatonia"] }
   ],
   "appPathway": {
     "intro": "Choose the starting route that fits what you want to revisit. You can use either route.",
@@ -671,6 +678,8 @@
   "synonyms": {
     "first shift": "orientation welcome rotation",
     "first day": "orientation welcome rotation",
+    "blue paper": "maine 3863",
+    "blue papers": "maine 3863",
     "refuses medication": "capacity decisional",
     "refusing medication": "capacity decisional",
     "refuses meds": "capacity decisional",
@@ -709,7 +718,10 @@
     "pharm": "drug primer pharmacology"
   } ,
   "searchAliases": {
+    "maine_law.md": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
+    "maine-law-navigator.html": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "one-patient-six-weeks.html": ["one patient six weeks", "case journeys"],
+    "family-meeting-sim.html": ["family simulation", "angry parent", "ambivalent spouse", "silent teen", "discharge meeting"],
     "capacity.html": [
       "capacity",
       "decisional capacity",

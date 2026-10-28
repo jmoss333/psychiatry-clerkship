@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(779 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(782 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -555,6 +555,7 @@ the packet hooks into it, so both are recorded here. Everything marked **(packet
 | `.fd-care-search__tray` | Outside the results mount on purpose: typing repaints only results, so tray focus is never lost. |
 | `.fd-care-packet__item` | Wraps at phone width; the up/down/Remove buttons keep the 44px target (`.fd-care-search button`). Moving swaps within a category only, because the printed pages group by category. |
 | `[data-fd-care-packet-starter-panel]` | Explicit "Load Sanford starter" action. The note is its accessible description and explains any disabled state. Loading is atomic: all configured resources must be currently available, eligible and fit the packet. Existing resource order, page choices and copy mode stay intact; typed details or another unit prevent replacement. Success loads the current Sanford profile, remembers only its ID, opens the preview and moves focus to its heading. Approval is still checked independently. No automatic printing or new storage key. The controls are patched in place when only their availability changes. |
+| `[data-fd-care-packet-addon]` | Optional Sanford group after the starter: native "Add transport" and "Add housing help" buttons with separate accessible description notes. Uses existing packet button and hint styles; no new CSS classes. Each explicit action adds its complete current bundle or explains why it cannot: all rows must be present, eligible, within their directory review date, and fit the packet. Preserves resource order, copy/page choices, saved and typed unit details, and device preference. Repeated clicks deduplicate. Success opens the preview and focuses its heading, with a fresh independent approval check for any selected unit; it never loads a unit or prints automatically. Availability is patched in place. |
 | `.fd-care-packet__check` | Shared by the preview's copy-mode radios, page switches and separate planned-call confirmations. The 44px target is the whole `<label>` row; its input is 24px (the WCAG 2.5.8 minimum, so a fixed bar scrolled over it cannot leave an undersized target). The four general print-review confirmations were retired by the [October 16 decision](../../plans/2026-10-16-care-packet-streamlined-print.md); this shared control style remains. |
 | `.fd-care-packet__hint[data-fd-care-packet-reminder]` | Plain, nonblocking text: “Check these resources with the patient before sharing. Do not enter patient-identifying information.” It stores no confirmation and makes no review-complete claim. Print and Copy remain in the preview beside the reason an actual output requirement is unmet. The preview button's `aria-expanded` is patched in place so an existing control is not replaced while the user is tabbing. |
 | `.fd-care-packet__preview-toggle` | "Preview and print", shown only for a non-empty packet. A disclosure: constant label, `aria-expanded`, `aria-controls="fd-care-packet-preview"` (a region that is always rendered, `hidden` when closed). Never a dialog. |
@@ -1400,3 +1401,16 @@ The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
 Settings adds a Reading comfort section before Your data, using existing `.fd-set`, `.fd-seg`, `.fd-seg__btn`, `.fd-set__note` and `.fd-btn--ghost` classes. Each choice is a normal `aria-pressed` button; Reset reading comfort restores both Standard choices. A status note reports save success or failure; failure retains the prior choice.
 
 Reading roots carry non-action `data-fd-reader-size` / `data-fd-reader-spacing` markers. Larger/Largest set `--fd-reading-scale` to 1.15/1.3; Spacious sets `--fd-reading-leading` to 2. Standard keeps the existing typography, including the guide's existing scale and leading. Rules affect reading bodies, guide leads, section headings, examples, references, crisis blocks and both table views; tool roots carry no markers. No new class selectors or motion. The mounted reading stays intact, and the reading-place session preserves its heading and offset through reflow, including a transient signed gap above the first heading. Selecting an already painted choice never takes scroll ownership.
+
+## Usage notice footer (L8 D3, 2026-10-27)
+
+Rendered by `fdUsageNotice` (fd_shell.js) into `<footer id="fdUsageMount">`, a sibling after
+`.fd-main` inside `.fd-shell`, **only on builds that ship the usage emitter** — empty, and therefore
+hidden, everywhere else.
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-usage-foot` | `<footer id="fdUsageMount">` | `:empty` → `display:none`, so off builds keep their exact layout. Same max width as `.fd-main`; at ≤ 640px its bottom padding clears the fixed dock. Inerted by the safety pause. |
+| `.fd-usage-notice` | `<p>` | One muted line (`--fd-font-xs`, `--fd-text-mid`). |
+| `.fd-usage-notice__btn` | `<button data-fd-settings>` | Text-style link that opens Settings › Usage — the only opt-out writer stays the emitter. |
+
