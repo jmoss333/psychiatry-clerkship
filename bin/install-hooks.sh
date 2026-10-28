@@ -8,8 +8,10 @@
 #
 #   bash bin/install-hooks.sh
 #
-# The pre-push hook runs bin/verify.sh before every push and blocks the push on failure. Bypass
-# with `git push --no-verify` — which should appear in a PR body with a reason, never silently.
+# The pre-push hook runs bin/verify.sh --push (every check except the two site builds, which
+# CI and the deploy previews run on every PR — DECISION: prepush-builds-to-ci, 2026-10-18),
+# then Git LFS's media uploader. Either failure blocks the push; both receive the push refs.
+# Reinstall after changing this file.
 #
 # BOTH HOOKS FAIL CLOSED (2026-09-24). They used to open with
 #     TOP="$(git rev-parse --show-toplevel)"; [ -f "$TOP/bin/verify.sh" ] || exit 0
@@ -35,14 +37,13 @@ mkdir -p "$HOOK_DIR"                                  # worktrees have their own
 cat > "$HOOK_DIR/pre-push" <<'HOOK'
 #!/usr/bin/env bash
 # Installed by bin/install-hooks.sh — edit that file and re-run it; this is a copy.
-# Runs bin/verify.sh before every push. FAILS CLOSED: a work tree this hook cannot locate, or a
-# bin/verify.sh missing from a commit whose history carries one, blocks the push.
-# Bypass with --no-verify and say so in the PR.
+# Runs bin/verify.sh, then git lfs pre-push. FAILS CLOSED: a work tree this hook cannot locate,
+# a missing required gate, failed verification, or failed media upload blocks the push.
 set -uo pipefail
 GATE=bin/verify.sh
 block() {
   printf 'pre-push BLOCKED — %s\n' "$*" >&2
-  echo "  Fix it, or push with --no-verify and justify that in the PR." >&2
+  echo "  Fix the reported problem and retry the push." >&2
   exit 1
 }
 # 0 = the commit's history carries $GATE; 1 = it never did; 2 = git could not tell.
@@ -74,16 +75,21 @@ EOF
     esac
   done
   echo "pre-push: no $GATE, and no commit being pushed ever carried one (the branch predates the harness) — not gating." >&2
-  exit 0
+else
+  # Scrub only the verification subprocess: its fixtures must not inherit this repository,
+  # but Git LFS needs the original Git context for the checkout being pushed.
+  (
+    cd "$TOP" || exit 1
+    unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR \
+          GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH
+    echo "pre-push: running $GATE --push"
+    printf '%s\n' "$REFS" | bash "$TOP/$GATE" --push
+  ) || block "$GATE failed."
 fi
-cd "$TOP" || block "cannot enter $TOP"
-# Git exports GIT_DIR into hooks, and a test fixture that inherits it writes into THIS
-# repository (2026-08-20, 2026-09-24). verify.sh scrubs these itself; a branch whose verify.sh
-# predates that scrub does not, so the hook scrubs too.
-unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR \
-      GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH
-echo "pre-push: running $GATE"
-printf '%s\n' "$REFS" | bash "$TOP/$GATE" || block "$GATE failed."
+# Verification consumes stdin. Replay the entire ref list for LFS, preserving Git's remote
+# name and URL arguments. Even branches predating the verification harness can carry media.
+echo "pre-push: uploading Git LFS media"
+printf '%s\n' "$REFS" | git lfs pre-push "$@" || block "Git LFS media upload failed; check git-lfs is installed and the upload error above."
 HOOK
 chmod +x "$HOOK_DIR/pre-push"
 echo "installed: $HOOK_DIR/pre-push"

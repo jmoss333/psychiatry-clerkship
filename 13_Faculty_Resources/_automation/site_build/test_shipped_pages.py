@@ -7,6 +7,7 @@ those gates rely on and that a synthetic root can exercise directly -- determini
 the override rule, and that --check-build fails in BOTH directions.
 """
 
+import copy
 import json
 import os
 import shutil
@@ -23,6 +24,7 @@ sys.path.insert(0, str(HERE))
 
 import shipped_pages  # noqa: E402
 import teaching_dependencies  # noqa: E402
+from qbank_public import PUBLIC_NOTE  # noqa: E402
 sys.path.insert(0, str(HERE.parent))
 from attestation_hash import digest_from_tree, project_effective_ledger  # noqa: E402
 
@@ -232,6 +234,26 @@ class DeriveTests(unittest.TestCase):
             page = next(p for p in shipped_pages.derive(root)["pages"] if p["slug"] == "mse.html")
             self.assertNotIn("extraSources", page)
 
+    def test_injected_analytics_emitter_is_not_a_teaching_input(self):
+        """CLERKSHIP_ANALYTICS=on injects <script src="/analytics.js" defer> into every
+        built page. --check-build must pass (it failed on bfcrs.html, D1) and the
+        emitter must never become a teaching source of any tool."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = synthetic_root(tmp)
+            tag = '<script src="/analytics.js" defer></script>'
+            (root / "04_Assessment/mse.html").write_text(
+                '<html><head>' + tag + '</head><body></body></html>')
+            page = next(p for p in shipped_pages.derive(root)["pages"] if p["slug"] == "mse.html")
+            self.assertNotIn("extraSources", page)
+            manifest = json.loads((root / shipped_pages.MANIFEST_RELATIVE).read_text())
+            out = Path(tmp) / "out"
+            (out / "tools").mkdir(parents=True)
+            (out / "tools" / "mse.html").write_text(
+                '<html><head>' + tag + '</head><body></body></html>')
+            (out / "analytics.js").write_text("/* emitter */")
+            self.assertEqual(teaching_dependencies.discover(root, page, manifest, "ms3", out),
+                             set())
+
     def test_import_labels_and_download_names_are_not_module_or_teaching_loaders(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = synthetic_root(tmp)
@@ -344,6 +366,97 @@ class DeriveTests(unittest.TestCase):
             )
             with self.assertRaises(shipped_pages.ShippedPagesError):
                 shipped_pages.derive(root)
+
+
+class QuestionBankDependencyTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = synthetic_root(temporary.name)
+        approved = {
+            "id": "qb_anx_001", "status": "attested", "type": "sba",
+            "category": "anxiety", "competency": ["dx"], "difficulty": 2,
+            "pages": ["topic.md"], "stem": "Synthetic question?",
+            "options": [{"key": "A", "t": "First", "c": True}] + [
+                {"key": key, "t": key, "trap": {"name": "Trap", "note": "Reason"}}
+                for key in ("B", "C", "D")],
+            "why": "Synthetic explanation", "pearl": "Teaching point",
+            "evidence": "Synthetic evidence",
+        }
+        draft = dict(copy.deepcopy(approved), id="qb_anx_002", status="draft")
+        retired = dict(copy.deepcopy(approved), id="qb_anx_003", retired=True)
+        self.canonical = {"_note": "Faculty review notes", "version": 1,
+                          "items": [approved, draft, retired]}
+        self.public = {"_note": PUBLIC_NOTE, "version": 1, "items": [copy.deepcopy(approved)]}
+        self.bank = self.root / "question_bank.json"
+        self.bank.write_text(json.dumps(self.canonical))
+        self.source = self.root / "04_Assessment/mse.html"
+        self.source.write_text('<script>fetch("../question_bank.json")</script>')
+        self.page = {"slug": "mse.html", "source": "04_Assessment/mse.html"}
+        self.manifest = json.loads((self.root / shipped_pages.MANIFEST_RELATIVE).read_text())
+
+    def build(self, document, site="ms3"):
+        out = self.root / "_build" / site
+        (out / "tools").mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(self.source, out / "tools/mse.html")
+        (out / "question_bank.json").write_text(json.dumps(document, indent=2, sort_keys=True))
+        return out
+
+    def test_approved_projection_passes_and_keeps_canonical_teaching_dependency(self):
+        original = self.bank.read_bytes()
+        for site in ("ms3", "res"):
+            with self.subTest(site=site):
+                out = self.build(self.public, site)
+                self.assertEqual(teaching_dependencies.discover(
+                    self.root, self.page, self.manifest, site, out), {"question_bank.json"})
+                self.assertEqual(self.bank.read_bytes(), original)
+
+    def test_built_item_omission_leak_and_changed_content_fail(self):
+        omitted = copy.deepcopy(self.public)
+        omitted["items"] = []
+        changed = copy.deepcopy(self.public)
+        changed["items"][0]["stem"] = "Changed teaching question?"
+        missing = copy.deepcopy(self.public)
+        del missing["items"][0]["why"]
+        numeric_answer = copy.deepcopy(self.public)
+        numeric_answer["items"][0]["options"][0]["c"] = 1
+        editorial = copy.deepcopy(self.public)
+        editorial["items"][0]["reviewNotes"] = "Internal editorial note"
+        cases = {"omitted": omitted, "changed": changed, "missing": missing,
+                 "numeric answer": numeric_answer, "editorial field": editorial,
+                 "raw canonical copy": self.canonical}
+        for item in self.canonical["items"][1:]:
+            leaked = copy.deepcopy(self.public)
+            leaked["items"].append(copy.deepcopy(item))
+            cases[item["id"]] = leaked
+        for name, document in cases.items():
+            with self.subTest(case=name):
+                out = self.build(document)
+                with self.assertRaisesRegex(teaching_dependencies.DependencyError, "differs from"):
+                    teaching_dependencies.discover(self.root, self.page, self.manifest, "ms3", out)
+
+    def test_malformed_source_cannot_be_hidden_by_a_valid_public_bank(self):
+        out = self.build(self.public)
+        missing_status = copy.deepcopy(self.canonical)
+        del missing_status["items"][1]["status"]
+        unknown_status = copy.deepcopy(self.canonical)
+        unknown_status["items"][1]["status"] = "approved"
+        invalid_retired = copy.deepcopy(self.canonical)
+        invalid_retired["items"][1]["retired"] = "false"
+        for document in (missing_status, unknown_status, invalid_retired, {}, None):
+            with self.subTest(document=document):
+                self.bank.write_text(json.dumps(document))
+                with self.assertRaisesRegex(teaching_dependencies.DependencyError, "projection audit failed"):
+                    teaching_dependencies.discover(self.root, self.page, self.manifest, "ms3", out)
+        self.bank.write_text("{")
+        with self.assertRaisesRegex(teaching_dependencies.DependencyError, "projection audit failed"):
+            teaching_dependencies.discover(self.root, self.page, self.manifest, "ms3", out)
+
+    def test_invalid_built_json_fails(self):
+        out = self.build(self.public)
+        (out / "question_bank.json").write_text("{")
+        with self.assertRaisesRegex(teaching_dependencies.DependencyError, "projection audit failed"):
+            teaching_dependencies.discover(self.root, self.page, self.manifest, "ms3", out)
 
 
 class ModeTests(unittest.TestCase):

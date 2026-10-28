@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260903",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "contraindications": {
+      "hash": "531eac30fe18f2a8d5d39f340a5ab6fc7b5c0ce84d5d84b08ff7d898b9b9d6d9",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Prazosin hydrochloride capsules are contraindicated in patients with known sensitivity to quinazolines, prazosin, or any of the inert ingredients."
+    },
+    "warnings": {
+      "hash": "18799ac5bb32a280cc9f813078de337e9a6d325ad9e03e9b1664b00f0d6f24b2",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "e4852fc2-b763-40e2-b8bb-a3f6da5c72fe",
+  "version": "3"
+}

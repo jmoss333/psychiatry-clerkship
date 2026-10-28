@@ -18,6 +18,39 @@ workspace, the Interview Room served under the MS3 `/tools/` path, and offline b
 
 ## Running functional projects locally
 
+### Delayed-loading dialog focus
+
+`dialog-loading-focus.spec.js` and the `delayed dialog focus:` cases in
+`rotation-edition-v2.spec.js` run for both `nav-ms3` and `nav-res`. They hold a reading,
+review-status ledger, or Care directory response until a dialog is open, then release it.
+Assertions require the completion to appear in the DOM, preserve the exact focused control,
+and exercise actual keyboard input without a locator refocusing the control.
+
+The inventory covers Search; Settings; the Safety kit and all five protocol sheets; Capture;
+its nested patient-details warning and email review; the retained item-preview renderer;
+Care Quick Share; clear-packet confirmation; edition-switch confirmation; and the embedded
+Communication Practice case browser. The `interview-room` project also checks spoken consent,
+Chart, Step out, and both typed and spoken patient-information alerts inside each learner shell,
+using its existing provider-free fixtures. Shell and Interview Room dialogs run at 320px and 1280px; the embedded case
+browser is a phone-only control. A closed case browser is the positive control proving that a
+normal high-risk warning still receives focus. Existing `front-door.spec.js` cases also pin
+ordinary high-risk warning focus and route announcements.
+
+Optional Care and edition dialogs use their existing explicit opt-in fixtures. Their production
+flags do not change. The retained item-preview modifier has no current authored opener, so its
+test adds that modifier to a real search result. The nested patient-details alert belongs to the
+Capture modal rather than owning a separate focus trap. Browser-owned `confirm()` prompts suspend
+page JavaScript and are outside this asynchronous DOM-dialog inventory; the existing
+Communication Practice suite checks their accept/cancel behavior. Capture separately checks
+persistence-failure handling with an accepted confirmation. This is automated Chromium coverage,
+not physical iPhone keyboard or native VoiceOver evidence.
+
+Run the complete timing inventory with `npx playwright test dialog-loading-focus.spec.js
+rotation-edition-v2.spec.js --project=nav-ms3 --project=nav-res --grep 'delayed dialog focus:'
+--retries=0`, followed by `npx playwright test interview-room.spec.js --project=interview-room
+--grep 'delayed dialog focus:' --retries=0`. Set `MS3_BASE_URL` and `RES_BASE_URL` when using
+nondefault ports or hosted previews. Service workers must remain blocked for controlled-response tests.
+
 From the repository root:
 
 ```bash
@@ -68,6 +101,81 @@ SP_INTERVIEW_BASE_URL=http://127.0.0.1:4300/tools/ \
 
 The LFS browser project may skip locally when no deploy-preview URL is available. The sequential
 build gate's 105-real-file check is the authoritative local media evidence.
+
+## Verification after each production release
+
+The same consolidated receipt also runs `production-dialog-focus.config.js` against both exact
+production deploy permalinks: all 132 existing delayed-loading cases, one worker and zero retries.
+The dialog run has a 15-minute overall limit (medication journeys: 10 minutes), reserving time
+for failure reporting and artifact upload within the release job.
+The dialog section shows MS3/resident phone and desktop results next to medication-ranking changes.
+It requires every named case (66 per site), retains failed attempts and traces, and reports missing,
+skipped, duplicate or unexpected cases as incomplete coverage. Dialog failures make verification
+FAIL; incomplete or unbound evidence makes it UNKNOWN. This is a post-release verification result,
+not a deployment blocker or faculty approval. Root shell and tool-governance revisions are checked
+before and after the run; raw results and target checks are retained in the 90-day release artifact.
+
+These are controlled-response Chromium tests, including explicit optional-feature and provider
+fixtures. They do not prove physical iPhone keyboard, native VoiceOver, or real provider/microphone
+behavior. Older release receipts without dialog evidence remain historical records, not proof that
+dialog checks ran. Manual rechecks with the current verifier require the new dialog evidence too.
+
+The release train dispatches `production-release-verification.yml` after publishing a
+revision. Its focused `production-release.config.js` runs against the exact production
+deploy permalinks for both learner sites, checked against the requested `RELEASE_SHA`.
+It does not add another deployment or a scheduled browser crawl.
+
+Each site must report all three named journeys: Path/Care navigation, desktop medication
+search (1280 × 900), and phone medication search (320 × 844). The search journeys run
+126 cases apiece: generic/brand names and treatments, punctuation-sensitive context,
+safety-protocol priority, the capacity-tool exception, and literal/unknown filenames.
+Every positive name-audit query requires its expected reading in the top three;
+an unrelated nonempty result list fails.
+They open the monitoring reading and the withdrawal protocol, then repeat a contextual
+query and a safety query after reload. Across both sites this is 504 matrix checks plus
+8 reload checks. Deliberate misspellings remain expected misses; fuzzy drug-name correction
+is not claimed.
+
+The consolidated JSON and Markdown receipt also include an advisory medication-search
+ranking comparison. It matches queries by site, screen dimensions, phase, category, and
+exact query text. The baseline is the nearest earlier release in first-parent Git history
+with a retained receipt from a successful `main` verification run created in the last
+90 days. Same-release reruns, unrelated branches, and newer releases are excluded;
+rechecking an older release does not move it ahead of a nearer ancestor. Baseline release,
+verifier, run, artifact, and history-window identifiers are retained in the JSON.
+
+Missing or demoted safety protocols and protocols converted to ordinary reading actions
+appear first. Removed safety queries are labeled **coverage gaps**, separately from
+observed ranking regressions. Added/removed queries, changed expectations, and changed
+screen dimensions make the comparison partial. The Markdown shows at most 60 changed
+queries, with an explicit omitted count; the JSON retains every change and current snapshot.
+Unmet new or changed safety expectations are labeled separately from an observed drop
+in a safety result's position.
+
+Unavailable, expired, malformed, or incomplete history is labeled **comparison unavailable**,
+never “no changes.” Older receipts without medication observations cannot serve as a
+baseline. Discovery reads at most 300 runs in the retention window and reports unavailable
+if that bound prevents a complete scan. This report does not change the existing release
+verdict or search logic; medication and safety assertions remain the release checks.
+
+To run the same checks against already deployed revisions, supply both exact deploy
+permalinks and their full commit SHA:
+
+```bash
+cd tests/smoke
+MS3_BASE_URL="$MS3_DEPLOY_PERMALINK" \
+RES_BASE_URL="$RES_DEPLOY_PERMALINK" \
+RELEASE_SHA="$DEPLOYED_COMMIT_SHA" \
+  npx playwright test --config=production-release.config.js
+```
+
+The release receipt requires every named journey on **each** site. Missing, skipped,
+unknown, duplicated or substituted journeys cannot produce PASS; failures and flaky
+results produce FAIL. The uploaded Playwright report includes named query steps and
+`medication-search-results` JSON attachments with expected destinations and observed
+result order. Failure screenshots and traces remain in the existing 90-day release
+artifact. The consolidated Markdown receipt lists each journey and any missing one.
+This is technical search evidence; faculty review status remains separate.
 
 ## Visual baselines
 

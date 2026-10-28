@@ -158,14 +158,14 @@ test('reader body gives rendered long-form content a readable token-based type s
   // hard-coded value the type scale exists to retire — the test's own name says "token-based".
   // The floor below is what actually protects the reader: long-form body text stays >= 16px
   // whatever step the token points at.
-  const bodyToken = body.match(/font-size:\s*var\((--fd-font-[a-z0-9]+)\)/);
+  const bodyToken = body.match(/font-size:\s*calc\(var\((--fd-font-[a-z0-9]+)\) \* var\(--fd-reading-scale,1\)\)/);
   assert.ok(bodyToken, `article body must take its size from the type scale, got: ${body}`);
   const bodyPx = parseFloat(
     (block(warm, ':root').match(new RegExp(`${bodyToken[1]}\\s*:\\s*([\\d.]+)px`)) || [])[1],
   );
   assert.ok(bodyPx >= 16,
     `${bodyToken[1]} is ${bodyPx}px; long-form reading text must not drop below 16px`);
-  assert.match(body, /line-height:\s*1\.72/);
+  assert.match(body, /line-height:\s*var\(--fd-reading-leading,1\.72\)/);
   assert.match(body, /max-width:\s*62ch/);
   assert.match(body, /color:\s*var\(--fd-text\)/);
   for (const descendant of ['h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'blockquote']) {
@@ -211,7 +211,7 @@ test('red means safety: no terracotta, and danger only on the allowlisted surfac
   // Phase 2 of the one-thread redesign (2026-10-04) added three safety surfaces: the Library row's
   // 8px safety dot (.fd-kit__safety, already covered by fd-kit), the Search dialog's "Safety
   // protocols" group label and the leading protocol row's danger wash.
-  const SAFETY = /fd-safetybtn|fd-kit|fd-railkit|crisis|fd-result__dot\.is-safety|fd-searchpanel__group\.is-safety|fd-result\.is-first|fd-compass-safety|fd-sheet__failure|fd-feedback__hold|fd-app__error|fd-set__danger|fd-set__note--warn|fd-feedback__error|fd-feedback__delete/;
+  const SAFETY = /fd-safetybtn|fd-kit|fd-railkit|crisis|fd-result__dot\.is-safety|fd-searchpanel__group\.is-safety|fd-result\.is-first|fd-compass-safety|fd-sheet__failure|fd-feedback__hold|fd-app__error|fd-set__danger|fd-set__note--warn|fd-feedback__error|fd-feedback__delete|fd-tree|fd-script|fd-sheet--safety/;
   const offenders = [...bare.matchAll(/([^{}]+)\{([^{}]*--fd-danger[^{}]*)\}/g)]
     .map((m) => m[1].replace(/\s+/g, ' ').trim()).filter((sel) => !SAFETY.test(sel));
   assert.deepEqual(offenders, [], `danger painted outside a safety surface: ${offenders.join(' | ')}`);

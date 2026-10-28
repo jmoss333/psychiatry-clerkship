@@ -1,0 +1,39 @@
+{
+  "_comment": "TEST ONLY. Public candidate shapes with fictional 555 contacts and synthetic revisions. Never copy to real profiles. Independent authority fixtures must explicitly approve a matching revision; these fields never authorize output.",
+  "profile": {
+    "id": "fixture-unit",
+    "label": "Fixture unit (test only)",
+    "org": "Test Org",
+    "brandingApproved": true,
+    "unitName": "Fixture Unit 4 East",
+    "unitPhone": "(207) 555-0142",
+    "callbackProgram": true,
+    "usableThrough": "2099-12-31",
+    "unitPurpose": "questions about your discharge papers",
+    "unitHours": "Monday to Friday, 9 a.m. to 5 p.m.",
+    "callbackTeam": "Test follow-up team",
+    "callbackPhone": "(207) 555-0143",
+    "callbackHours": "Monday to Friday, 9 a.m. to 5 p.m.",
+    "callbackFallback": "follow the contact instructions in your After Visit Summary",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "expiresOn": "2100-01-01"
+  },
+  "expired": {
+    "id": "fixture-unit-expired",
+    "label": "Expired fixture unit (test only)",
+    "org": "Test Org",
+    "brandingApproved": true,
+    "unitName": "Fixture Unit 4 East",
+    "unitPhone": "(207) 555-0142",
+    "callbackProgram": true,
+    "usableThrough": "2020-01-01",
+    "unitPurpose": "questions about your discharge papers",
+    "unitHours": "Monday to Friday, 9 a.m. to 5 p.m.",
+    "callbackTeam": "Test follow-up team",
+    "callbackPhone": "(207) 555-0143",
+    "callbackHours": "Monday to Friday, 9 a.m. to 5 p.m.",
+    "callbackFallback": "follow the contact instructions in your After Visit Summary",
+    "revision": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "expiresOn": "2020-01-02"
+  }
+}

@@ -9,22 +9,9 @@
 // runs the REAL functions from both on ONE store and asserts they agree, across the three
 // servability cases (attested, draft with and without the opt-in, retired).
 //
-// The shell's retired/draft id lists are build-injected (build_deploy.py derives them from
-// question_bank.json); the derivation is reproduced here over the fixture bank, so a change to
-// either rule turns this red rather than drifting.
-//
-// The bank is a CONTROLLED FIXTURE, not question_bank.json. The first version picked a real
-// draft item out of the live file, so the day faculty attested the last draft, `pick()` would
-// have thrown and the root node suite -- which runs before both site builds -- would have failed
-// for governance work being finished (CLAUDE.md: a test may not depend on live governance
-// state). Both functions under test read only `id`, `retired` and `status`, so four synthetic
-// records cover every servability case whatever the live ledger says.
-//
-// Not covered, deliberately: a QB# card whose item was DELETED from question_bank.json rather
-// than retired. The shell is only told the retired and draft ids, so it would still count that
-// card while the bank drops it. Items are retired, not deleted (retired near-duplicates stay in
-// the file with `retired: true`); the last test pins that gap by name so it cannot pass silently
-// for a reason nobody wrote down.
+// The shell receives exactly the released IDs. Practice receives the approved-only
+// public bank. Historical opt-in flags and withdrawn IDs must not widen either set.
+// Fixtures are independent of faculty's live queue.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -61,14 +48,14 @@ function memStorage() {
 
 // build_deploy.py's derivation, verbatim in intent.
 const items = BANK.items || [];
-const RETIRED = items.filter((i) => i.retired).map((i) => i.id).sort();
-const DRAFT = items.filter((i) => !i.retired && i.status !== 'attested').map((i) => i.id).sort();
+const RELEASED = [ATTESTED, ATTESTED_2];
+const PUBLIC_BANK = {items: BANK.items.slice(0, 2)};
 
 // eslint-disable-next-line no-new-func
-const shellDue = new Function('localStorage', 'RETIRED_IDS', 'DRAFT_IDS', `
+const shellDue = new Function('localStorage', 'RELEASED_IDS', `
   ${slice(shell, '/* ---- qb servability (shell parity) ----', '/* ---- end qb servability ----')}
   ${slice(shell, 'function srsState(', '/* ---- end due breakdown ----')}
-  RETIRED_QB_IDS = RETIRED_IDS; DRAFT_QB_IDS = DRAFT_IDS;
+  RELEASED_QB_IDS = RELEASED_IDS;
   return dueBreakdown().qb.due;
 `);
 
@@ -99,30 +86,28 @@ function store(optIn) {
 
 test('Today and the practice bank count the same due cards: attested only by default', () => {
   const ls = store(false);
-  assert.equal(bankDue(BANK, ls), 1);
-  assert.equal(shellDue(ls, RETIRED, DRAFT), bankDue(BANK, ls));
+  assert.equal(bankDue(PUBLIC_BANK, ls), 1);
+  assert.equal(shellDue(ls, RELEASED), bankDue(PUBLIC_BANK, ls));
 });
 
-test('the draft opt-in moves both counts together', () => {
+test('historical draft opt-in cannot add unpublished questions to either count', () => {
   const ls = store(true);
-  assert.equal(bankDue(BANK, ls), 2);
-  assert.equal(shellDue(ls, RETIRED, DRAFT), bankDue(BANK, ls));
+  assert.equal(bankDue(PUBLIC_BANK, ls), 1);
+  assert.equal(shellDue(ls, RELEASED), bankDue(PUBLIC_BANK, ls));
 });
 
 test('a retired item is never due on either surface', () => {
   const ls = memStorage();
   ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards: { [`QB#${RETIRED_ID}`]: { due: past } } }));
   ls.setItem('cw_qb_drafts_v1', 'true');
-  assert.equal(bankDue(BANK, ls), 0);
-  assert.equal(shellDue(ls, RETIRED, DRAFT), 0);
+  assert.equal(bankDue(PUBLIC_BANK, ls), 0);
+  assert.equal(shellDue(ls, RELEASED), 0);
 });
 
-test('the one known gap is still the only one: a deleted item counts on Today, not in the bank', () => {
-  // If this starts failing because the shell learned the full id list, the gap is closed:
-  // delete this test and the paragraph at the top of the file that describes it.
+test('a deleted item is excluded from both Today and the practice bank', () => {
   const ls = memStorage();
   ls.setItem('cw_srs_v1', JSON.stringify({ v: 1, cards: { 'QB#qb_deleted_999': { due: past } } }));
   assert.ok(!items.some((i) => i.id === 'qb_deleted_999'), 'the fixture id must not exist in the bank');
-  assert.equal(bankDue(BANK, ls), 0);
-  assert.equal(shellDue(ls, RETIRED, DRAFT), 1);
+  assert.equal(bankDue(PUBLIC_BANK, ls), 0);
+  assert.equal(shellDue(ls, RELEASED), 0);
 });

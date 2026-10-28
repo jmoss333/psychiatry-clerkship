@@ -72,6 +72,10 @@ POLICY_PATTERNS = (
     "bin/refresh_*.py",
     "bin/pr_preflight.py",
     "docs/adr/*",
+    # The agent rulebook's topic pages (CLAUDE.md is their index since 2026-10-16). A rule
+    # moved out of CLAUDE.md must stay policy where it lands, or the split would have turned
+    # every rule into content the moment it was filed.
+    "docs/agent-guide/*",
     # The workflow contract validator. It pins what every scheduled workflow and every CI gate
     # step must literally contain; editing it changes what "CI passed" means, which is a
     # governance act even when no workflow file moves. Named explicitly rather than by a glob
@@ -183,6 +187,7 @@ def self_test():
     # classification
     ck("CLAUDE.md is policy", is_policy("CLAUDE.md"), True)
     ck("AGENTS.md is policy", is_policy("AGENTS.md"), True)
+    ck("agent-guide topic page is policy", is_policy("docs/agent-guide/gates.md"), True)
     ck("workflow is policy", is_policy(".github/workflows/ci.yml"), True)
     ck("verify.sh is policy", is_policy("bin/verify.sh"), True)
     ck("gate script is policy", is_policy("bin/check_vacuity.py"), True)

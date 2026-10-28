@@ -682,8 +682,8 @@ test('late data hydration refreshes Progress only while its root view is still m
 
 test('live Reader keeps topic practice, quiz, feedback, and page enhancement behavior delegated', () => {
   assert.match(source, /parseMarkdown:function\(markdown\)/);
-  // The reader passes the handheld flag (tests/practice-panel.test.mjs pins both call sites).
-  assert.match(source, /buildTpl\(meta,ref,\{open:fdHandheld\(\)\}\)/);
+  // The reader mounts the closed Ward panel (tests/practice-panel.test.mjs pins every topic).
+  assert.match(source, /buildTpl\(meta,ref\)/);
   assert.match(source, /makeCollapsible\(body\)/);
   assert.match(source, /enhanceTables\(body\)/);
   for (const selector of ["closest('.tyo')", "closest('.pgfb-b')", "closest('[data-tool]')"]) {

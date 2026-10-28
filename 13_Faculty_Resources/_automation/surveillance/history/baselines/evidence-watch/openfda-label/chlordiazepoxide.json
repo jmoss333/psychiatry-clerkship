@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260710",
+  "sections": {
+    "boxed_warning": {
+      "hash": "fff30c9a435137a666804dc68ff67c9752186ff8393b71e654dc4987e76dc088",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and death. Reserve concomitant prescribing of these drugs for patients for whom alternative treatment options are inadequate. Limit dosages and durations to the minimum required. Follow patients for signs and symptoms of respiratory depression and sedation (see WARNINGS and PRECAUTIONS ). The use of benzodiazepines, including chlordiazepoxide hydrochloride capsules, exposes users to risks of abuse, misuse, and addiction, which can lead to overdose or death. Abuse and misuse of benzodiazepines commonly involve concomitant use of other medications, alcohol, and/or illicit substances, which is associated with an increased frequency of serious adverse outcomes. Before prescribing chlordiazepoxide hydrochloride capsules and throughout treatment, assess each patient\u2019s risk for abuse, misuse, and addiction (see WARNINGS ). The continued use of benzodiazepines, including chlordiazepoxide hydrochloride capsules, may lead to clinically significant physical dependence. The risks of dependence and withdrawal increase with longer treatment duration and higher daily dose. Abrupt discontinuation or rapid dosage reduction of chlordiazepoxide hydrochloride capsules after continued use may precipitate acute withdrawal reactions, which can be life-threatening. To reduce the risk of withdrawal reactions, use a gradual taper to discontinue chlordiazepoxide hydrochloride capsules or reduce the dosage (see DOSAGE AND ADMINISTRATION and WARNINGS )."
+    },
+    "contraindications": {
+      "hash": "da84a810a6d72cd30619498e0322a175c920ccfdc8df0996cfa1bab1e1a0490e",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Chlordiazepoxide HCl capsules are contraindicated in patients with known hypersensitivity to the drug."
+    },
+    "warnings": {
+      "hash": "7e652589ada080ed8b0fb1a86a7dc01deb0bb07b90d4a6eff2921691393bfaa9",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "9aba3135-00ff-47ba-b926-55eb16b361bf",
+  "version": "14"
+}

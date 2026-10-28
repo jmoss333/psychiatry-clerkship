@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260417",
+  "sections": {
+    "boxed_warning": {
+      "hash": "752bedef5cc174f838aad6e0e402759bba153efbfce705c2ecaf462def2970b4",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: DEPRESSION AND SUICIDAL IDEATION AND BEHAVIOR IN PATIENTS WITH HUNTINGTON\u2019S DISEASE VMAT2 inhibitors, including INGREZZA and INGREZZA SPRINKLE, can increase the risk of depression and suicidal thoughts and behavior in patients with Huntington\u2019s disease. Anyone considering the use of INGREZZA or INGREZZA SPRINKLE must balance the risks of depression and suicidal ideation and behavior with the clinical need for treatment of chorea. Closely monitor patients for the emergence or worsening of depression, suicidal ideation, or unusual changes in behavior. Inform patients, their caregivers, and families of the risk of depression and suicidal ideation and behavior and instruct them to report behaviors of concern promptly to the treating physician. Particular caution should be exercised in treating patients with a history of depression or prior suicide attempts or ideation, which are increased in frequency in patients with Huntington\u2019s disease [see Warnings and Precautions ( 5.1 )]. WARNING: DEPRESSION AND SUICIDAL IDEATION AND BEHAVIOR IN PATIENTS WITH HUNTINGTON\u2019S DISEASE See full prescribing information for complete boxed warning. \u2022 Increases the risk of depression and suicidal thoughts and behavior in patients with Huntington\u2019s disease ( 5.1 ) \u2022 Balance risks of depression, and suicidal ideation and behavior with the clinical need for treatment of chorea when considering the use of INGREZZA or INGREZZA SPRINKLE ( 5.1 ) \u2022 Monitor patients for the emergence or worsening of depression, suicidal ideation, or unusual changes in behavior ( 5.1 ) \u2022 Inform patients, caregivers, and families of the risk of depression and suicidal ideation and behavior and instruct them to report behaviors of concern promptly to the treating physician ( 5.1 ) \u2022 Exercise caution when treating patients with a history of depression or prior suicide attempts or ideation ( 5.1 )"
+    },
+    "contraindications": {
+      "hash": "f957b71ed109c04172d664a4207f8e2fd0fc617f926c38efb3ae7a8a4ed069d2",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS INGREZZA and INGREZZA SPRINKLE are contraindicated in patients with a history of hypersensitivity to valbenazine or any components of INGREZZA or INGREZZA SPRINKLE. Rash, urticaria, and reactions consistent with angioedema (e.g., swelling of the face, lips, and mouth) have been reported with use of INGREZZA [see Warnings and Precautions ( 5.2 ) and Adverse Reactions ( 6.2 )]. Known hypersensitivity to valbenazine or any components of INGREZZA or INGREZZA SPRINKLE. ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "d9fcab32c4041e8cf979c01f49a9954c3e839950571a5294fe66ca546de61b18",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "4c970164-cafb-421f-9eb5-c226ef0a3417",
+  "version": "34"
+}

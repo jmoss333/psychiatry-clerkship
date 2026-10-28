@@ -31,9 +31,18 @@ import { fileURLToPath } from 'node:url';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const script = path.join(repo, 'bin', 'what_needs_josh.py');
 
+// The whole-script runs below put a `gh` that always fails first on PATH: the GitHub rows then
+// take their real failure path (`unknown`) and the suite never reaches GitHub. Without it every
+// run made one REST call per open PR -- inside the pre-push hook.
+const offlineBin = fs.mkdtempSync(path.join(os.tmpdir(), 'wnj-gh-'));
+fs.writeFileSync(path.join(offlineBin, 'gh'), '#!/bin/sh\necho "gh: offline in tests" >&2\nexit 1\n',
+  { mode: 0o755 });
+test.after(() => fs.rmSync(offlineBin, { recursive: true, force: true }));
+
 function run(args = []) {
   const proc = spawnSync('python3', [script, ...args], {
     cwd: repo, encoding: 'utf8', timeout: 120_000,
+    env: { ...process.env, PATH: `${offlineBin}${path.delimiter}${process.env.PATH}` },
   });
   return proc;
 }
@@ -367,4 +376,84 @@ test('label-drift: demoting a card to pending does not retire a drift it owed (C
   const tmp = driftFixture({ drifts: [{ ...driftRow('lithium'), cardReviewedOn: null }] });
   assert.equal(measureDrift(tmp).summary, 'waiting 1 2');
   fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+// ── the GitHub rows: REST through `gh api`, never GraphQL ──────────────────────────────────────
+// `gh pr list` / `gh issue list` are GraphQL underneath and a Claude Code session is refused
+// GraphQL (HTTP 403), so both rows read `unknown` in every cloud session until 2026-10-18.
+// Stubbed `_gh_json` only: no test here reaches GitHub.
+
+test('merge-decisions: only a non-draft PR whose REST mergeable_state is clean is waiting', () => {
+  // #1 reads `unknown` first, as GitHub answers while it computes, and settles on the re-read.
+  const out = py(`
+calls = []
+pulls = [{"number": 1, "draft": False}, {"number": 2, "draft": True},
+         {"number": 3, "draft": False}, {"number": 4, "draft": False}]
+states = {1: ["unknown", "clean"], 3: ["blocked"], 4: ["dirty"]}
+def fake(args):
+    calls.append(args)
+    if "/pulls?" in args[1]:
+        return pulls
+    return {"mergeable_state": states[int(args[1].rsplit("/", 1)[1])].pop(0)}
+J._gh_json = fake
+J.MERGE_STATE_WAIT_S = 0
+print(J.measure_merge_decisions())
+print(all(a[0] == "api" and a[1].startswith("repos/{owner}/{repo}/") for a in calls))
+print(any(a[1].endswith("/pulls/2") for a in calls))`);
+  assert.deepEqual(out.split('\n'), ['(1, 4)', 'True', 'False'],
+    'one clean PR of four open; every call is REST on repos/{owner}/{repo}; a draft is never probed');
+});
+
+test('merge-decisions: a mergeability GitHub never finishes computing is unknown, not not-ready', () => {
+  const out = py(`
+J._gh_json = lambda args: ([{"number": 7, "draft": False}] if "/pulls?" in args[1]
+                           else {"mergeable_state": "unknown"})
+J.MERGE_STATE_WAIT_S = 0
+print(J.evaluate({"measure": J.measure_merge_decisions})[0])`);
+  assert.equal(out, 'unknown');
+});
+
+test('stale-priorities: a pull request on the REST issues list is not an issue', () => {
+  const out = py(`
+import datetime as dt
+def ago(days):
+    return (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%SZ")
+L = lambda name: [{"name": name}]
+issues = [
+    {"number": 1, "updated_at": ago(30), "labels": L("P1")},
+    {"number": 2, "updated_at": ago(2), "labels": L("P0")},
+    {"number": 3, "updated_at": ago(30), "labels": L("priority:P0")},
+    {"number": 4, "updated_at": ago(30), "labels": L("P1"), "pull_request": {"url": "u"}},
+    {"number": 5, "updated_at": ago(30), "labels": L("maintenance")},
+]
+J._gh_json = lambda args: issues
+print(J.measure_stale_review_issues())`);
+  assert.equal(out, '(2, 3)', 'idle P1 and idle priority:P0 count; the fresh P0 is urgent but not stale');
+});
+
+test('a REST list is read whole, page by page, without --paginate', () => {
+  // --paginate follows GitHub's Link header to repositories/<numeric id>/..., which the Claude
+  // Code proxy refuses; explicit page= keeps every request on repos/{owner}/{repo}.
+  const out = py(`
+import re
+J.PAGE_SIZE = 2
+pages = {1: [{"n": 1}, {"n": 2}], 2: [{"n": 3}, {"n": 4}], 3: [{"n": 5}]}
+seen = []
+def fake(args):
+    seen.append(args)
+    return pages[int(re.search(r"&page=(\\d+)$", args[1]).group(1))]
+J._gh_json = fake
+print(len(J._gh_rest_list("repos/{owner}/{repo}/issues?state=open")))
+print(all(a == ["api", "repos/{owner}/{repo}/issues?state=open&per_page=2&page=%d" % (i + 1)]
+          for i, a in enumerate(seen)))`);
+  assert.deepEqual(out.split('\n'), ['5', 'True']);
+});
+
+test('a REST list longer than MAX_PAGES is unknown, never the prefix it read', () => {
+  const out = py(`
+J.PAGE_SIZE = 1
+J.MAX_PAGES = 3
+J._gh_json = lambda args: [{"n": 1}]
+print(J.evaluate({"measure": J.measure_merge_decisions})[0])`);
+  assert.equal(out, 'unknown');
 });

@@ -1108,6 +1108,32 @@ class TestServiceWorkerEmission(unittest.TestCase):
         self.assertEqual(v1, v2)
         self.assertNotIn("/tool-governance.json", pre2)
 
+    def test_every_precache_url_resolves_to_a_servable_file(self):
+        """Regression for the 2026-10-16 P0: /_headers was precached, Netlify serves it
+        as 404, cache.addAll() rejected and the worker never installed on either site.
+        Every PRECACHE URL must map to a real file in the built site that Netlify will
+        actually serve -- never a Netlify control file and never a dot-path."""
+        d = self._site()
+        open(os.path.join(d, "_headers"), "w").write("/*\n  X-Frame-Options: DENY\n")
+        open(os.path.join(d, "_redirects"), "w").write("/old /new 301\n")
+        open(os.path.join(d, "netlify.toml"), "w").write("[build]\n")
+        os.makedirs(os.path.join(d, ".cache"))
+        open(os.path.join(d, ".cache", "x.json"), "w").write("{}")
+        open(os.path.join(d, ".DS_Store"), "w").write("x")
+        common.emit_service_worker(d)
+        sw = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        pre = json.loads(sw.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        for reserved in ("/_headers", "/_redirects", "/netlify.toml", "/.cache/x.json",
+                         "/.DS_Store"):
+            self.assertNotIn(reserved, pre)
+        self.assertTrue(pre, "precache list should not be empty")
+        for url in pre:
+            rel = "index.html" if url == "/" else url[1:]
+            self.assertTrue(os.path.isfile(os.path.join(d, rel)),
+                            "precache URL does not resolve in the built site: " + url)
+            self.assertNotIn(rel, common.SW_NETLIFY_RESERVED_ROOT_NAMES)
+            self.assertFalse(any(s.startswith(".") for s in rel.split("/")), url)
+
     def test_template_anchor_repeated_fails_loudly(self):
         """A future template edit that repeats a substitution anchor (e.g. two
         `VERSION='__VERSION__';` lines) must fail loudly rather than silently
@@ -1350,6 +1376,144 @@ class TestPreviewHeaders(unittest.TestCase):
             apply_at, -1, "resident_section.py must apply the deploy-preview CSP widening (#430)"
         )
         self.assertLess(copytree_at, apply_at)
+
+
+class DraftTreesFlagTest(unittest.TestCase):
+    """Safety-drawer draft trees render only on a deploy preview (2026-10-10 spec §4.7)."""
+    SHELL = "a\nvar FD_DRAFT_TREES=false;\nb"
+
+    def test_a_deploy_preview_turns_the_flag_on(self):
+        self.assertIn("var FD_DRAFT_TREES=true;",
+                      common.apply_draft_trees_flag(self.SHELL, "deploy-preview"))
+
+    def test_production_and_branch_deploys_stay_byte_identical(self):
+        for context in ("production", "branch-deploy", "dev", ""):
+            self.assertEqual(common.apply_draft_trees_flag(self.SHELL, context), self.SHELL, context)
+
+    def test_a_missing_or_duplicated_needle_fails_the_build(self):
+        for text in ("no needle here", self.SHELL + self.SHELL):
+            with self.assertRaises(ValueError):
+                common.apply_draft_trees_flag(text, "production")
+
+    def test_the_real_shell_carries_the_needle_exactly_once(self):
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+        with open(path, encoding="utf-8") as fh:
+            self.assertEqual(fh.read().count(common.DRAFT_TREES_NEEDLE), 1)
+
+
+class TestOutcomesFlag(unittest.TestCase):
+    """CLERKSHIP_OUTCOMES (L8 outcomes design, DRAFT): default off, fail closed."""
+
+    PAGE = ("<html><head><title>t</title></head><body><script>"
+            "function cwOutcomeTally(evt){}</script></body></html>")
+
+    def _page(self, text):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        p = os.path.join(d, "tool.html")
+        with open(p, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        return d, p
+
+    def test_default_is_off_and_production_takes_the_default(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CLERKSHIP_OUTCOMES", None)
+            self.assertEqual(common.outcomes_mode(), "off")
+            self.assertFalse(common.outcomes_enabled())
+        # The build reads the env, never a hard-coded True.
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_deploy.py"),
+                   encoding="utf-8").read()
+        self.assertIn("_OUTCOMES = common.outcomes_enabled()", src)
+        self.assertIn("inject_outcomes=_OUTCOMES", src)
+
+    def test_invalid_value_raises(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_OUTCOMES": "maybe"}):
+            with self.assertRaises(ValueError):
+                common.outcomes_mode()
+
+    def test_on_value(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_OUTCOMES": " ON "}):
+            self.assertTrue(common.outcomes_enabled())
+
+    def test_disabled_never_stamps(self):
+        d, p = self._page(self.PAGE)
+        self.assertFalse(common.apply_outcomes_flag(p))
+        self.assertFalse(common.apply_outcomes_flag(p, enabled=False))
+        self.assertEqual(common.outcomes_flag_leaks(d), [])
+
+    def test_enabled_stamps_once_and_only_tally_pages(self):
+        d, p = self._page(self.PAGE)
+        self.assertTrue(common.apply_outcomes_flag(p, enabled=True))
+        self.assertFalse(common.apply_outcomes_flag(p, enabled=True))
+        text = open(p, encoding="utf-8").read()
+        self.assertEqual(text.count(common.OUTCOMES_FLAG_TAG), 1)
+        self.assertEqual(common.outcomes_flag_leaks(d), ["tool.html"])
+        _, q = self._page("<html><head></head><body>no tally</body></html>")
+        self.assertFalse(common.apply_outcomes_flag(q, enabled=True))
+
+    def test_tally_marker_follows_calib_log_marker(self):
+        keys = list(common.SNIPPET_MARKERS)
+        self.assertLess(keys.index("/*__CALIB_LOG__*/"), keys.index("/*__OUTCOME_TALLY__*/"))
+
+    def test_injected_calib_log_carries_the_tally(self):
+        _, p = self._page("<html><head></head><body><script>/*__CALIB_LOG__*/</script></body></html>")
+        common.inject_shared_snippets(p)
+        text = open(p, encoding="utf-8").read()
+        self.assertIn("function calibLog(", text)
+        self.assertIn("function cwOutcomeTally(", text)
+        self.assertNotIn("/*__OUTCOME_TALLY__*/", text)
+        self.assertNotIn(common.OUTCOMES_FLAG_TAG, text)
+
+
+class TestPrePostFlag(unittest.TestCase):
+    """CLERKSHIP_PREPOST (L8 outcomes design, DRAFT): default off, fail closed."""
+
+    SHELL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+
+    def test_default_is_off_and_production_takes_the_default(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CLERKSHIP_PREPOST", None)
+            self.assertEqual(common.prepost_mode(), "off")
+            self.assertFalse(common.prepost_enabled())
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_deploy.py"),
+                   encoding="utf-8").read()
+        self.assertIn("_PREPOST=common.prepost_enabled()", src)
+        self.assertIn("common.apply_prepost_marker(_spa_t,_PREPOST)", src)
+
+    def test_invalid_value_raises(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_PREPOST": "yes"}):
+            with self.assertRaises(ValueError):
+                common.prepost_mode()
+
+    def test_the_real_shell_carries_the_marker_once_and_is_not_a_shared_snippet(self):
+        with open(self.SHELL_PATH, encoding="utf-8") as fh:
+            self.assertEqual(fh.read().count(common.PREPOST_MARKER), 1)
+        self.assertNotIn(common.PREPOST_MARKER, common.SNIPPET_MARKERS)
+
+    def test_off_expands_to_nothing_on_expands_to_the_snippet(self):
+        with open(self.SHELL_PATH, encoding="utf-8") as fh:
+            shell = fh.read()
+        off = common.apply_prepost_marker(shell)
+        self.assertNotIn(common.PREPOST_MARKER, off)
+        self.assertNotIn(common.PREPOST_SIGNATURE, off)
+        self.assertNotIn("cw_prepost_v1", off)
+        on = common.apply_prepost_marker(shell, enabled=True)
+        self.assertEqual(on.count(common.PREPOST_SIGNATURE), 1)
+        self.assertIn("function fdPrepostHandleClick(", on)
+
+    def test_missing_or_duplicated_marker_fails_closed(self):
+        for text in ("no marker", common.PREPOST_MARKER * 2):
+            with self.assertRaises(ValueError):
+                common.apply_prepost_marker(text)
+
+    def test_snippet_never_transmits(self):
+        with open(common.PREPOST_SNIPPET, encoding="utf-8") as fh:
+            body = fh.read()
+        for forbidden in ("sendBeacon", "XMLHttpRequest", "cwAnalytics", "method:'POST'",
+                          'method:"POST"', "sessionStorage", "document.cookie"):
+            self.assertNotIn(forbidden, body)
+        # Its only network call is the same-origin GET of the forms file.
+        self.assertEqual(re.findall(r"fetch\(([^)]*)\)", body), ["'prepost_forms.json'"])
 
 
 

@@ -23,7 +23,7 @@ concurrency:
 jobs:
   verify-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 105
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -31,11 +31,11 @@ jobs:
           lfs: false
           ref: ${{ github.sha }}
 
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.11"
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22"
 
@@ -93,7 +93,23 @@ jobs:
         run: |
           set +e
           cd tests/smoke
-          npx playwright test --config=production-release.config.js
+          npx playwright test --config=production-release.config.js --global-timeout=600000
+          code=$?
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Run production dialog-focus regression checks
+        id: dialogs
+        env:
+          MS3_BASE_URL: ${{ steps.core.outputs.ms3_url }}
+          RES_BASE_URL: ${{ steps.core.outputs.res_url }}
+          RELEASE_SHA: ${{ steps.release.outputs.release_sha }}
+          RELEASE_DIALOG_REPORT: ${{ runner.temp }}/production-release-dialogs.json
+          RELEASE_DIALOG_TARGETS: ${{ runner.temp }}/production-dialog-targets.json
+        run: |
+          set +e
+          cd tests/smoke
+          npx playwright test --config=production-dialog-focus.config.js --retries=0 --workers=1 --global-timeout=900000
           code=$?
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
@@ -101,11 +117,15 @@ jobs:
       - name: Build consolidated release receipt
         id: receipt
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
           python3 13_Faculty_Resources/_automation/maintenance/production_release_receipt.py finalize \
             --core "$RUNNER_TEMP/production-release-core.json" \
             --journeys "$RUNNER_TEMP/production-release-journeys.json" \
+            --dialogs "$RUNNER_TEMP/production-release-dialogs.json" \
+            --dialog-targets "$RUNNER_TEMP/production-dialog-targets.json" \
             --release-sha "${{ steps.release.outputs.release_sha }}" \
             --repository "$GITHUB_REPOSITORY" \
             --trigger "$GITHUB_EVENT_NAME" \
@@ -122,16 +142,19 @@ jobs:
       - name: Upload production release receipt
         id: upload
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: production-release-${{ steps.release.outputs.release_sha }}-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/production-release-core.json
             ${{ runner.temp }}/production-release-journeys.json
+            ${{ runner.temp }}/production-release-dialogs.json
+            ${{ runner.temp }}/production-dialog-targets.json
             ${{ runner.temp }}/production-release-receipt.json
             ${{ runner.temp }}/production-release-receipt.md
             ${{ runner.temp }}/production-release-receipt.json.sha256
             tests/smoke/test-results/production-release-artifacts/
+            tests/smoke/test-results/production-dialog-artifacts/
           if-no-files-found: error
           retention-days: 90
 

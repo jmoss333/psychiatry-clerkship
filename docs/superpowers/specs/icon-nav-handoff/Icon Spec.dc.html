@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Icon spec and glyph sheet</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--olive:#8b7040;--danger:#a34132;--dwash:#fbefec;--line:#ebe5da;--line2:#ddd3c6}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--olive:#c0a06a;--danger:#d97a68;--dwash:#3a231f;--line:#3a332c;--line2:#4a4139}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s14{width:14px;height:14px;stroke-width:2.1}.s16{width:16px;height:16px;stroke-width:2}.s18{width:18px;height:18px;stroke-width:1.8}.s22{width:22px;height:22px;stroke-width:1.6}.s24{width:24px;height:24px;stroke-width:1.5}.s48{width:48px;height:48px;stroke-width:1.25}.s96{width:96px;height:96px;stroke-width:1.25}
+.bold.s16{stroke-width:3.4}.bold.s18{stroke-width:3.2}.bold.s24{stroke-width:2.6}
+td,th{text-align:left;vertical-align:top}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 1440px; min-height: 2900px; box-sizing: border-box; padding: 96px 120px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; font-size: 15px; line-height: 1.55; display: flex; flex-direction: column; gap: 64px;">
+
+  <header style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="font-size: 14px; color: var(--mid);">System</div>
+    <h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 48px; line-height: 1.1;">Icon spec</h1>
+    <p style="margin: 0; font-size: 18px; color: var(--mid); max-width: 860px;">One 24-unit grid, one compound stroke path per glyph, colour always inherited. The stroke width is set per rendered size so a 16 px tab icon and a 24 px heading icon draw the same ~1.4 px line.</p>
+  </header>
+
+  <section style="display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 48px; align-items: start;">
+    <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 32px; display: flex; flex-direction: column; gap: 20px; align-items: center;">
+      <div style="position: relative; width: 288px; height: 288px; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 12px 12px; border: 1px solid var(--line2); display: flex; align-items: center; justify-content: center; color: var(--tealdeep);">
+        <div style="position: absolute; inset: 24px; border: 1px dashed var(--line2);"></div>
+        <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 288px; height: 288px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;"><path d="{{i.path}}"></path></svg>
+      </div>
+      <div style="font-size: 13px; color: var(--mid); text-align: center;">24 × 24 grid · 2-unit live-area margin (dashed) · round caps and joins · no fills · <code>stroke="currentColor"</code></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 600;">Sizes, mapped to tokens that already exist</h2>
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead><tr style="background: var(--bg); color: var(--mid);"><th style="padding: 12px 16px; font-weight: 600;">Render</th><th style="padding: 12px 16px; font-weight: 600;">Site A token</th><th style="padding: 12px 16px; font-weight: 600;">Site B (parallel)</th><th style="padding: 12px 16px; font-weight: 600;">Stroke (units → px)</th><th style="padding: 12px 16px; font-weight: 600;">Used for</th></tr></thead>
+          <tbody>
+            <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 16px;"><div style="display: flex; gap: 10px; align-items: center;"><svg class="ic s14" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.external}}"></path></svg>14</div></td><td style="padding: 12px 16px; color: var(--mid);">— (inline with 13–14 px text)</td><td style="padding: 12px 16px; color: var(--mid);"><code>--rc-icon-xs</code> (alias, see note)</td><td style="padding: 12px 16px; color: var(--mid);">2.1 → 1.23</td><td style="padding: 12px 16px; color: var(--mid);">Trailing external / chevron marks in meta lines</td></tr>
+            <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 16px;"><div style="display: flex; gap: 10px; align-items: center;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.library}}"></path></svg>16</div></td><td style="padding: 12px 16px; color: var(--mid);"><code>--fd-glyph-sm</code></td><td style="padding: 12px 16px; color: var(--mid);"><code>--rc-icon-sm</code></td><td style="padding: 12px 16px; color: var(--mid);">2.0 → 1.33</td><td style="padding: 12px 16px; color: var(--mid);">Desktop tabs, index items, chips, badges, header buttons</td></tr>
+            <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 16px;"><div style="display: flex; gap: 10px; align-items: center;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.reading}}"></path></svg>18</div></td><td style="padding: 12px 16px; color: var(--mid);"><code>--fd-glyph-md</code></td><td style="padding: 12px 16px; color: var(--mid);"><code>--rc-icon-md</code></td><td style="padding: 12px 16px; color: var(--mid);">1.8 → 1.35</td><td style="padding: 12px 16px; color: var(--mid);">Content-type column on rows, card icons, Home intents</td></tr>
+            <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 16px;"><div style="display: flex; gap: 10px; align-items: center;"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.today}}"></path></svg>22</div></td><td style="padding: 12px 16px; color: var(--mid);"><code>--fd-glyph-lg</code></td><td style="padding: 12px 16px; color: var(--mid);"><code>--rc-icon-lg</code></td><td style="padding: 12px 16px; color: var(--mid);">1.6 → 1.47</td><td style="padding: 12px 16px; color: var(--mid);">Phone dock / bottom tabs (icon above label)</td></tr>
+            <tr style="border-top: 1px solid var(--line);"><td style="padding: 12px 16px;"><div style="display: flex; gap: 10px; align-items: center;"><svg class="ic s48" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.recovery}}"></path></svg>48</div></td><td style="padding: 12px 16px; color: var(--mid);">—</td><td style="padding: 12px 16px; color: var(--mid);">—</td><td style="padding: 12px 16px; color: var(--mid);">1.25 → 2.5</td><td style="padding: 12px 16px; color: var(--mid);">Optional empty-state line art only</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size: 13px; color: var(--dim);">Site B has no icon-size tokens today. <strong>Decision:</strong> add four size aliases (<code>--rc-icon-xs/sm/md/lg</code> = 14/16/18/22) to <code>rc-tokens.css</code>. They are sizes, not colours, so the "no new colours" rule holds, but they're flagged because <code>rc-tokens.css</code> is shared.</div>
+    </div>
+  </section>
+
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 600;">Colour: three roles, nothing else</h2>
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 24px;">
+        <div style="display: flex; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line);"><span style="color: var(--mid);"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.library}}"></path></svg></span><div><div style="font-weight: 600;">Default · <code>currentColor</code> = text-mid</div><div style="font-size: 13px; color: var(--mid);">A: <code>--fd-text-mid</code> #64574b / #bcb0a2 · B: <code>--rc-text-mid</code>. Never text-dim or <code>--rc-text-light</code> (fails 3:1 in some places).</div></div></div>
+        <div style="display: flex; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line);"><span style="color: var(--tealdeep);"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.library}}"></path></svg></span><div><div style="font-weight: 600;">Active / current = teal-deep</div><div style="font-size: 13px; color: var(--mid);">A: <code>--fd-teal-deep</code> · B: <code>--rc-accent-dark</code>. It follows the label's colour; it is never set on the icon alone.</div></div></div>
+        <div style="display: flex; gap: 16px; align-items: center; padding: 14px 0;"><span style="color: var(--danger);"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.crisis}}"></path></svg></span><div><div style="font-weight: 600;">Safety / crisis = danger, only</div><div style="font-size: 13px; color: var(--mid);">A: <code>--fd-danger</code> (✚ redrawn as <code>safety</code>) · B: <code>--rc-danger</code> (life-buoy). No other icon is ever red.</div></div></div>
+      </div>
+      <div style="font-size: 13px; color: var(--dim);">Site B category badges are the single exception. There the icon takes the badge's existing category token (8 roles; Family → <code>--rc-cat-family-strong</code> on <code>--rc-cat-family-light</code>, 6.46:1). Forced-colors: icons inherit <code>CanvasText</code> / <code>Highlight</code>, with no <code>forced-color-adjust</code> override.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 600;">Icon + label spacing and optical alignment</h2>
+      <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 40px;">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--tealdeep); outline: 1px dashed var(--line2); outline-offset: 6px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.library}}"></path></svg>Library</div>
+          <div style="font-size: 13px; color: var(--mid);">Beside: gap 6 px at 16 px (0.375em), 8 px at 18 px. Icon is vertically centred on the label's x-height plus half its cap height: nudge <code>translateY(-0.5px)</code> beside Inter 14–15 px.</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 40px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; font-weight: 500; color: var(--tealdeep); outline: 1px dashed var(--line2); outline-offset: 6px; width: 64px;"><svg class="ic s22" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.today}}"></path></svg>Today</div>
+          <div style="font-size: 13px; color: var(--mid);">Above (phone dock): 22 px icon, 3 px gap, 12 px label, 64 px bar, items 52 px (the two-line clamp moves to an inner label span). The wash pill wraps icon and label together.</div>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 40px;">
+          <div style="display: flex; align-items: flex-start; gap: 12px; outline: 1px dashed var(--line2); outline-offset: 6px; width: 260px;"><span style="color: var(--mid); padding-top: 3px;"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.deck}}"></path></svg></span><div><div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 18px; line-height: 1.3;">Anki Flashcard Decks</div><div style="font-size: 13px; color: var(--mid);">Flashcard deck · 2 min</div></div></div>
+          <div style="font-size: 13px; color: var(--mid);">Beside a serif title (Source Serif 4 / Georgia, 17–18 px): align the icon to the title's <em>first line</em>, not the block (padding-top 3 px), in a fixed 18 px column with a 12 px gap.</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: var(--dim);">Motion: none. Icons do not animate; only the existing colour transitions (120–180 ms) apply, and those are removed under <code>prefers-reduced-motion</code>.</div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <h2 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 600;">Glyph sheet: the complete vendored subset</h2>
+      <div style="font-size: 13px; color: var(--mid);">{{count}} glyphs · registry name · upstream name · source</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{glyphs}}" as="g" hint-placeholder-count="54">
+        <div style="background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; color: {{g.color}};">
+          <div style="display: flex; align-items: flex-end; gap: 14px;"><svg class="ic s24 {{g.weight}}" viewBox="0 0 24 24" aria-hidden="true"><path d="{{g.d}}"></path></svg><svg class="ic s16 {{g.weight}}" viewBox="0 0 24 24" aria-hidden="true"><path d="{{g.d}}"></path></svg></div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--text);">{{g.name}}</div>
+          <div style="font-size: 12px; color: var(--mid); text-align: center;">{{g.src}}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size: 13px; color: var(--dim);">Red appears in only two cells: <code>safety</code> (Site A only) and <code>crisis</code>. <code>crisisOld</code> is shown for comparison and is not shipped in patient views. Lucide paths were transcribed for this reference; re-copy them from the pinned release when vendoring (see <code>icons/SOURCES.md</code>).</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":2900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var W = window.WFIcons;
+    var src = W ? W.sources() : [];
+    var all = W ? W.all() : {};
+    var glyphs = src.map(function (s) {
+      var red = s.name === 'safety' || s.name === 'crisis';
+      return {
+        name: s.name,
+        d: all[s.name],
+        src: s.sourceName + ' · ' + s.source,
+        weight: s.name === 'safety' ? 'bold' : '',
+        color: red ? 'var(--danger)' : (s.name === 'crisisOld' ? 'var(--dim)' : 'var(--mid)')
+      };
+    });
+    return { i: all, glyphs: glyphs, count: glyphs.length, theme: this.props.theme === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

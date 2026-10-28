@@ -927,18 +927,18 @@ class PreparationInventoryTests(unittest.TestCase):
 
     def test_baseline_without_preparation_retains_exact_current_counts(self):
         with patch.object(governance, "load_shipped_pages", return_value={"pages": []}):
-            self.assertEqual(governance.expected_tool_count(ROOT, "ms3"), 23)
-            self.assertEqual(governance.expected_tool_count(ROOT, "resident"), 27)
-            for site, wrong in (("ms3", 24), ("ms3", 22), ("resident", 26), ("resident", 28)):
+            self.assertEqual(governance.expected_tool_count(ROOT, "ms3"), 25)
+            self.assertEqual(governance.expected_tool_count(ROOT, "resident"), 29)
+            for site, wrong in (("ms3", 26), ("ms3", 24), ("resident", 28), ("resident", 30)):
                 with self.subTest(site=site, wrong=wrong), self.assertRaises(governance.GovernanceError):
                     governance.validate_expected_tool_count(site, wrong, root=ROOT)
 
     def test_declared_preparation_adds_exactly_one_ms3_tool(self):
         with patch.object(governance, "load_shipped_pages", return_value={"pages": [dict(self.PREP)]}):
-            self.assertEqual(governance.expected_tool_count(ROOT, "ms3"), 24)
-            self.assertEqual(governance.expected_tool_count(ROOT, "resident"), 27)
-            governance.validate_expected_tool_count("ms3", 24, root=ROOT)
-            for count in (23, 25):
+            self.assertEqual(governance.expected_tool_count(ROOT, "ms3"), 26)
+            self.assertEqual(governance.expected_tool_count(ROOT, "resident"), 29)
+            governance.validate_expected_tool_count("ms3", 26, root=ROOT)
+            for count in (25, 27):
                 with self.subTest(count=count), self.assertRaises(governance.GovernanceError):
                     governance.validate_expected_tool_count("ms3", count, root=ROOT)
 
@@ -975,7 +975,7 @@ class PreparationInventoryTests(unittest.TestCase):
         with (patch.object(governance, "load_shipped_pages", return_value=document),
               patch.object(governance, "_tool_entries", return_value=entries[:-1]),
               patch.object(governance, "load_effective_ledger", return_value=(ledger, {"stale": {}}))):
-            with self.assertRaisesRegex(governance.GovernanceError, "item count must equal 24"):
+            with self.assertRaisesRegex(governance.GovernanceError, "item count must equal 26"):
                 governance.build_governance_document(ROOT, "ms3", enforce_expected_count=True)
 
 if __name__ == "__main__":
