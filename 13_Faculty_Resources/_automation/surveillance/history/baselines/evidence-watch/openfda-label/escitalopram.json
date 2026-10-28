@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20231001",
+  "sections": {
+    "boxed_warning": {
+      "hash": "0a0ccbedfe49d88518571eb49726dfef77ed8a84b22ee24106ec39de0bd6c953",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior s in pediatric and young adult patients in short-term studies . Closely monitor all antidepressant-treated patients for clinical worsening, and for emergence of suicidal thoughts and behaviors [see Warnings and Precautions ( 5.1 )] . Lexapro is not approved for use in pediatric patients less than 7 years of age [ s ee Use in Specific Populations ( 8.4 )] . WARNING: SUICIDAL THOUGHTS AN D BEHAVIORS See full prescribing information for complete boxed warning. Increased risk of suicidal thoughts and behavior in pediatric and you ng adult patients taking antidepressants . Closely monitor all antidepressant-treated patients for clinical worsening and emergence of suicidal thoughts and behaviors ( 5.1 ). Lexapro is not approved for use in pediatric patients less than 7 years of age ( 8.4 ) ."
+    },
+    "contraindications": {
+      "hash": "7be595d40de395ca9d7511a14ea80f39acd95c7b120fb4290dbf5a88f02d8ec7",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Lexapro is contraindicated in patients: taking MAOIs with Lexapro or within 14 days of stopping treatment with Lexapro because of an increased risk of serotonin syndrome. The use of Lexapro within 14 days of stopping an MAOI intended to treat psychiatric disorders is also contraindicated [see Dosage and Administration ( 2.7 ) and Warnings and Precautions ( 5.2 )] . Starting Lexapro in a patient who is being treated with MAOIs such as linezolid or intravenous methylene blue is also contraindicated because of an increased risk of serotonin syndrome [ see Dosage and Administration ( 2.6 ) and Warnings and Precautions ( 5.2 ) ]. taking pimozide [see Drug Interactions ( 7 ) ] . with a hypersensitivity to escitalopram or citalopram or any of the inactive ingredients in Lexapro. Do not use MAOIs intended to treat psychiatric disorders with Lexapro or within 14 days of stopping treatment with Lexapro. Do not use Lexapro within 14 days of stopping an MAOI intended to treat psychiatric disorders. In addition, do not start Lexapro in a patient who is being treated with linezolid or intravenous methylene blue ( 4 ) Concomitant use of pimozide ( 4 ) Known hypersensitivity to escitalopram or citalopram or any of the inactive ingredients ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "fe9d018f82bf9e2d70c2f422a50d7dc989e6bad8fc865e5315ff2ecd1bb670c6",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "13bb8267-1cab-43e5-acae-55a4d957630a",
+  "version": "45"
+}

@@ -123,8 +123,8 @@ export function labelEvidence(snapshot, record) {
 }
 
 function requireMode(settings) {
-  if (settings.ledger || settings.branch !== 'attest/pending' || settings.baseBranch !== 'main' || !settings.isolated) {
-    refuse('unsupported_mode', 'Medication review requires the existing attest/pending delivery branch. Ledger and direct-write modes are not supported.', 409);
+  if (settings.branch !== 'attest/pending' || settings.baseBranch !== 'main' || !settings.isolated) {
+    refuse('unsupported_mode', 'Medication review requires the existing attest/pending delivery branch. Direct-write mode is not supported.', 409);
   }
 }
 

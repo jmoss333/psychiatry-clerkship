@@ -88,6 +88,33 @@ function run(cwd, ...args) {
   return { code: r.status, out: r.stdout, err: r.stderr };
 }
 
+// A tiny timeout alone is not an incomplete-sweep fixture: every submitted job can finish
+// before wait() starts on a busy runner. Hold peer examinations until the timed wait returns,
+// then release them so the real report still finishes its own checkout and shuts down normally.
+function budgetCut(cwd, ...args) {
+  const launcher = `import importlib.util, sys, threading
+spec = importlib.util.spec_from_file_location('coordination', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+release = threading.Event()
+examine, wait = module.examine, module.wait
+def held_examine(repo, worktree, base):
+    if not worktree['self']: release.wait()
+    return examine(repo, worktree, base)
+def timed_wait(futures, timeout=None):
+    if timeout is None: release.set()
+    try: return wait(futures, timeout=timeout)
+    finally: release.set()
+module.examine, module.wait = held_examine, timed_wait
+sys.argv = sys.argv[1:]
+try: raise SystemExit(module.main())
+finally: release.set()
+`;
+  const r = spawnSync('python3', ['-c', launcher, SCRIPT, '--budget', '0.000001', ...args],
+    { cwd, encoding: 'utf8', env: ENV, timeout: 30000 });
+  return { code: r.status, out: r.stdout, err: r.stderr };
+}
+
 function report(cwd, ...args) {
   const r = run(cwd, '--json', ...args);
   assert.ok(r.out.startsWith('{'), r.err || r.out);
@@ -165,29 +192,61 @@ test('--check: 0 clean, 1 on overlap or risk, 2 when it could not check everythi
   assert.equal(run(busy.self, '--check').code, 1);
   assert.equal(run(busy.self).code, 0, 'report mode never blocks');
 
-  // A budget too small to finish: says PARTIAL, still examines this checkout, and --check
-  // refuses to call a partial sweep clean.
-  const cut = report(busy.self, '--budget', '0.000001');
-  assert.equal(cut.data.partial, true);
-  assert.ok(cut.data.worktrees_examined < 7);
-  assert.deepEqual(cut.data.self.changed, ['shared.txt']);
-  assert.match(run(busy.self, '--budget', '0.000001').out, /PARTIAL — examined \d\/7/);
-  assert.equal(run(busy.self, '--budget', '0.000001', '--check').code, 2);
+  // Peers are still pending at the timeout: says PARTIAL, still examines this checkout,
+  // and --check refuses to call the incomplete sweep clean.
+  const cut = budgetCut(busy.self, '--json', '--check');
+  assert.equal(cut.code, 2, cut.out + cut.err);
+  const partial = JSON.parse(cut.out);
+  assert.equal(partial.partial, true);
+  assert.equal(partial.worktrees_examined, 1);
+  assert.deepEqual(partial.self.changed, ['shared.txt']);
+  const partialReport = budgetCut(busy.self);
+  assert.equal(partialReport.code, 0, partialReport.err);
+  assert.match(partialReport.out, /PARTIAL — examined 1\/7/);
 
   const nobase = run(busy.self, '--base', 'origin/does-not-exist');
   assert.equal(nobase.code, 2);
   assert.match(nobase.out, /UNKNOWN — base origin\/does-not-exist does not resolve/);
 });
 
-// A stand-in `gh` on PATH: answers `pr list --state open|merged` from files, or fails.
-function fakeGh(t, dir, { open, merged, fail = false }) {
+// A stand-in `gh` on PATH that speaks only the REST calls (`gh api repos/.../pulls...`), paged
+// by the request's own per_page/page, or fails. Any other subcommand -- `gh pr list`, which is
+// GraphQL and refused in Claude Code sessions -- exits 1, so a regression to it reads as
+// "not checked" and fails the tests below. `open` rows carry their `files` (paths); `merged`
+// and `closed` are closed PRs with and without `merged_at`.
+function fakeGh(t, dir, { open = [], merged = [], closed = [], fail = false, failFiles = false }) {
   const bin = path.join(dir, 'fake-gh-bin');
   fs.mkdirSync(bin);
-  fs.writeFileSync(path.join(bin, 'open.json'), JSON.stringify(open ?? []));
-  fs.writeFileSync(path.join(bin, 'merged.json'), JSON.stringify(merged ?? []));
+  const fixture = {
+    failFiles,
+    open: open.map((p) => ({ number: p.number, title: p.title, draft: p.isDraft,
+      head: { ref: p.headRefName } })),
+    files: Object.fromEntries(open.map((p) => [p.number,
+      (p.files || []).map((f) => ({ filename: f.path }))])),
+    closed: [
+      ...merged.map((p) => ({ head: { ref: p.headRefName, sha: p.headRefOid },
+        merged_at: '2026-10-01T00:00:00Z' })),
+      ...closed.map((p) => ({ head: { ref: p.headRefName, sha: p.headRefOid }, merged_at: null })),
+    ],
+  };
+  fs.writeFileSync(path.join(bin, 'fixture.json'), JSON.stringify(fixture));
   fs.writeFileSync(path.join(bin, 'gh'), fail ? '#!/bin/sh\nexit 1\n' : [
-    '#!/bin/sh',
-    `case "$*" in *"--state open"*) cat "${bin}/open.json";; *) cat "${bin}/merged.json";; esac`,
+    '#!/usr/bin/env python3',
+    'import json, re, sys',
+    `fx = json.load(open(${JSON.stringify(path.join(bin, 'fixture.json'))}))`,
+    'a = sys.argv[1:]',
+    'if len(a) != 2 or a[0] != "api" or not a[1].startswith("repos/{owner}/{repo}/pulls"):',
+    '    sys.exit(1)',
+    'per = int(re.search(r"[?&]per_page=(\\d+)", a[1]).group(1))',
+    'page = int(re.search(r"[?&]page=(\\d+)", a[1]).group(1))',
+    'm = re.search(r"/pulls/(\\d+)/files", a[1])',
+    'if m:',
+    '    if fx["failFiles"]: sys.exit(1)',
+    '    rows = fx["files"].get(m.group(1), [])',
+    'elif "state=open" in a[1]: rows = fx["open"]',
+    'elif "state=closed" in a[1]: rows = fx["closed"]',
+    'else: sys.exit(1)',
+    'print(json.dumps(rows[(page - 1) * per:page * per]))',
     '',
   ].join('\n'), { mode: 0o755 });
   return { ...ENV, PATH: `${bin}${path.delimiter}${process.env.PATH}` };
@@ -209,8 +268,12 @@ test('--prs: open PRs overlap (never this branch\'s own), merged PR heads count 
       { number: 901, title: 'this branch', headRefName: 'feat/self', isDraft: false,
         files: [{ path: 'shared.txt' }] },
     ],
-    // The base moved on after the merge, so only the PR record can say this landed.
-    merged: [{ headRefName: 'feat/stale', headRefOid: staleHead }],
+    // The base moved on after the merge, so only the PR record can say this landed. A full
+    // page of newer merges puts it on page 2: a reader that stops at page 1 misses it.
+    merged: [
+      ...Array.from({ length: 100 }, (_, i) => ({ headRefName: `old/${i}`, headRefOid: '0'.repeat(40) })),
+      { headRefName: 'feat/stale', headRefOid: staleHead },
+    ],
   });
   const data = reportWith(env, fx.self, '--prs');
   assert.equal(data.prs_checked, true);
@@ -220,6 +283,12 @@ test('--prs: open PRs overlap (never this branch\'s own), merged PR heads count 
   assert.deepEqual(data.at_risk.map((w) => w.branch), ['feat/abandoned']);
   // Control: without --prs the same branch is at risk — the PR record is what excused it.
   assert.ok(reportWith(env, fx.self).at_risk.some((w) => w.branch === 'feat/stale'));
+  // The REST list is of CLOSED PRs: one closed without merging landed nothing.
+  const unmergedDir = path.join(fx.dir, 'unmerged');
+  fs.mkdirSync(unmergedDir);
+  const unmerged = fakeGh(t, unmergedDir, { closed: [{ headRefName: 'feat/stale', headRefOid: staleHead }] });
+  assert.ok(reportWith(unmerged, fx.self, '--prs').at_risk.some((w) => w.branch === 'feat/stale'),
+    'a closed, unmerged PR must not excuse unpushed work');
 });
 
 test('--prs with a failing gh reports "not checked", never an empty PR list', (t) => {
@@ -231,4 +300,16 @@ test('--prs with a failing gh reports "not checked", never an empty PR list', (t
   const opts = { cwd: fx.self, encoding: 'utf8', env };
   const text = spawnSync('python3', [SCRIPT, '--prs'], opts).stdout;
   assert.match(text, /open PRs NOT checked/);
+});
+
+test('--prs with one open PR\'s files unreadable is "not checked", never a shorter overlap list', (t) => {
+  const fx = fixture(t, { minimal: true });
+  const env = fakeGh(t, fx.dir, {
+    failFiles: true,
+    open: [{ number: 900, title: 'another', headRefName: 'feat/elsewhere', isDraft: false,
+      files: [{ path: 'shared.txt' }] }],
+  });
+  const data = reportWith(env, fx.self, '--prs');
+  assert.equal(data.prs_checked, false);
+  assert.equal(data.merged_prs_checked, true, 'the merged-PR read is independent of it');
 });

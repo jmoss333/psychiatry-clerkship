@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260624",
+  "sections": {
+    "boxed_warning": {
+      "hash": "c3a5a273c0fe749c88e4dac62287423a38dc03e7c01f73f307ccb297e8ad1f29",
+      "present": true,
+      "rems": false,
+      "text": "SUICIDALITY AND ANTIDEPRESSANT DRUGS Antidepressants increased the risk compared to placebo of suicidal thinking and behavior (suicidality) in children, adolescents, and young adults in short-term studies of major depressive disorder (MDD) and other psychiatric disorders. Anyone considering the use of fluvoxamine maleate extended-release capsules or any other antidepressant in a child, adolescent, or young adult must balance this risk with the clinical need. Short-term studies did not show an increase in the risk of suicidality with antidepressants compared to placebo in adults beyond age 24; there was a reduction in risk with antidepressants compared to placebo in adults aged 65 and older. Depression and certain other psychiatric disorders are themselves associated with increases in the risk of suicide. Patients of all ages who are started on antidepressant therapy should be monitored appropriately and observed closely for clinical worsening, suicidality, or unusual changes in behavior. Families and caregivers should be advised of the need for close observation and communication with the prescriber. ( See WARNINGS AND PRECAUTIONS-Clinical Worsening and Suicide Risk [ 5.1 ] and USE IN SPECIFIC POPULATIONS-Pediatric Use [ 8.4 ] .) WARNING: SUICIDALITY and ANTIDEPRESSANTS See full prescribing information for complete boxed warning. Increased risk of suicidal thinking and behavior in children, adolescents, and young adults taking antidepressants for major depressive disorder and other psychiatric disorders ( 5.1 ) ."
+    },
+    "contraindications": {
+      "hash": "e00a1a99ef4832541495e86ea05a4c948bef83552ddcb4cc1b14294567cb546c",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Coadministration of thioridazine, tizanidine, pimozide, alosetron, or ramelteon with fluvoxamine maleate extended-release capsules is contraindicated (see WARNINGS AND PRECAUTIONS [ 5.4 - 5.8 ] ). Coadministration of thioridazine, tizanidine, pimozide, alosetron, or ramelteon ( 4 ). Serotonin Syndrome and MAOIs: Do not use MAOIs intended to treat psychiatric disorders with fluvoxamine maleate extended-release capsules or within 14 days of stopping treatment with fluvoxamine maleate extended-release capsules. Do not use fluvoxamine maleate extended-release capsules within 14 days of stopping an MAOI intended to treat psychiatric disorders. In addition, do not start fluvoxamine maleate extended-release capsules in a patient who is being treated with linezolid or intravenous methylene blue ( 4.1 ). 4.1 Monoamine Oxidase Inhibitors (MAOIs) The use of MAOIs intended to treat psychiatric disorders with fluvoxamine maleate extended-release capsules or within 14 days of stopping treatment with fluvoxamine maleate extended-release capsules are contraindicated because of an increased risk of serotonin syndrome. The use of fluvoxamine maleate extended-release capsules within 14 days of stopping an MAOI intended to treat psychiatric disorders is also contraindicated (see DOSAGE AND ADMINISTRATION [ 2.5 ] and WARNINGS AND PRECAUTIONS [ 5.2 ] ) . Starting fluvoxamine maleate extended-release capsules in a patient who is being treated with MAOIs such as linezolid or intravenous methylene blue is also contraindicated because of an increased risk of serotonin syndrome (see DOSAGE AND ADMINISTRATION [ 2.6 ] and WARNINGS AND PRECAUTIONS [ 5.2 ])."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "5b3c70e5750c1cebce27be8c6bbb527549bc8ed859de563b0dcc27d809f5ed74",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "d492230c-f56a-4759-ba86-7090b9f44063",
+  "version": "27"
+}

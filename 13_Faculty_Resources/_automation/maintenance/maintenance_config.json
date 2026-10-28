@@ -23,6 +23,10 @@
   },
   "operationalDocs": [
     {
+      "path": "docs/OPERATIONS.md",
+      "maxAgeDays": 90
+    },
+    {
       "path": "13_Faculty_Resources/_automation/maintenance/README.md",
       "maxAgeDays": 90
     },

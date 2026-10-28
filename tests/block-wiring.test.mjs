@@ -91,6 +91,16 @@ test('the shell picks exactly one primary and hands the faces to the renderer on
   const build = read(`${BUILD}/build_deploy.py`);
   assert.match(build, /_case_needle="var FD_CASE_ARC=null;"/);
   assert.match(build, /frontdoor_catalog\._inline_json\(_case_arc\)/);
+  // The newest Case of the Week is handed in raw (fd_today.js fdNewCase owns the week window), from
+  // the same build-injected needle pattern; the resident build swaps in its own edition.
+  assert.match(today, /live\.newCase=FD_COTW_NEWEST;/);
+  once(shell, 'var FD_COTW_NEWEST=null;', 'spa_index.html');
+  assert.match(build, /_cotw_newest_needle="var FD_COTW_NEWEST=null;"/);
+  assert.match(build, /_archive\.newest\(_archive_data,"ms3"\)/);
+  const resident = read(`${BUILD}/resident_section.py`);
+  assert.match(resident, /_archive\.newest\(_archive_res_data,"ms3"\)/, 'the resident build matches the exact MS3 value...');
+  assert.match(resident, /_archive\.newest\(_archive_res_data,"res"\)/, '...and swaps in its own edition');
+  assert.ok(resident.indexOf('FD_COTW_NEWEST') < resident.lastIndexOf('open(OUT+"/index.html","w",encoding="utf-8").write(ix)'), 'before the resident index is written');
   assert.match(today.replace(/\/\*[\s\S]*?\*\//g, ''), /return fdToday\(FD_INDEX,live\);\s*\}\s*$/, 'one render call, nothing patched after it');
   for (const kind of ['block', 'due', 'resume', 'read']) assert.match(today, new RegExp(`${kind}:\\{mark:`), `${kind} carries a status mark`);
   assert.match(today, /mark:'plus',count:captureSummary\?captureSummary\.total:undefined/);

@@ -19,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // +1 (2026-09-23): Fixed-choice Care navigator (fd_care_navigator.js).
 // +1 (2026-09-23): Patient resource pack renderer (fd_care_pack.js).
 // +1 (2026-09-23): Verified offline readiness model (fd_offline.js).
-const EXPECTED_MARKER_COUNT = 46; // +1 2026-10-16: /*__OUTCOME_TALLY__*/ (draft outcome counters, nested in calib_log.js) // +1: live care profile approval // +1 2026-10-10: /*__FD_TREE__*/ (safety decision trees); +1 2026-10-12: /*__FD_CARE_SEARCH__*/; +1 2026-10-12: /*__FD_CARE_PACKET__*/; +1 2026-10-12: /*__FD_CARE_PACKET_SHEET__*/ (the packet's payload is a verified needle, not a marker)
+const EXPECTED_MARKER_COUNT = 47; // +1 2026-10-16: /*__OUTCOME_TALLY__*/ (draft outcome counters, nested in calib_log.js); +1 2026-10-17: /*__FD_TOOL_PINS__*/ (local learner tool refs); +1: live care profile approval // +1 2026-10-10: /*__FD_TREE__*/ (safety decision trees); +1 2026-10-12: /*__FD_CARE_SEARCH__*/; +1 2026-10-12: /*__FD_CARE_PACKET__*/; +1 2026-10-12: /*__FD_CARE_PACKET_SHEET__*/ (the packet's payload is a verified needle, not a marker)
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(

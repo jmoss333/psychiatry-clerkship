@@ -1008,6 +1008,32 @@ class TestServiceWorkerEmission(unittest.TestCase):
         self.assertEqual(v1, v2)
         self.assertNotIn("/tool-governance.json", pre2)
 
+    def test_every_precache_url_resolves_to_a_servable_file(self):
+        """Regression for the 2026-10-16 P0: /_headers was precached, Netlify serves it
+        as 404, cache.addAll() rejected and the worker never installed on either site.
+        Every PRECACHE URL must map to a real file in the built site that Netlify will
+        actually serve -- never a Netlify control file and never a dot-path."""
+        d = self._site()
+        open(os.path.join(d, "_headers"), "w").write("/*\n  X-Frame-Options: DENY\n")
+        open(os.path.join(d, "_redirects"), "w").write("/old /new 301\n")
+        open(os.path.join(d, "netlify.toml"), "w").write("[build]\n")
+        os.makedirs(os.path.join(d, ".cache"))
+        open(os.path.join(d, ".cache", "x.json"), "w").write("{}")
+        open(os.path.join(d, ".DS_Store"), "w").write("x")
+        common.emit_service_worker(d)
+        sw = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        pre = json.loads(sw.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        for reserved in ("/_headers", "/_redirects", "/netlify.toml", "/.cache/x.json",
+                         "/.DS_Store"):
+            self.assertNotIn(reserved, pre)
+        self.assertTrue(pre, "precache list should not be empty")
+        for url in pre:
+            rel = "index.html" if url == "/" else url[1:]
+            self.assertTrue(os.path.isfile(os.path.join(d, rel)),
+                            "precache URL does not resolve in the built site: " + url)
+            self.assertNotIn(rel, common.SW_NETLIFY_RESERVED_ROOT_NAMES)
+            self.assertFalse(any(s.startswith(".") for s in rel.split("/")), url)
+
     def test_template_anchor_repeated_fails_loudly(self):
         """A future template edit that repeats a substitution anchor (e.g. two
         `VERSION='__VERSION__';` lines) must fail loudly rather than silently
@@ -1337,6 +1363,57 @@ class TestOutcomesFlag(unittest.TestCase):
         self.assertIn("function cwOutcomeTally(", text)
         self.assertNotIn("/*__OUTCOME_TALLY__*/", text)
         self.assertNotIn(common.OUTCOMES_FLAG_TAG, text)
+
+
+class TestPrePostFlag(unittest.TestCase):
+    """CLERKSHIP_PREPOST (L8 outcomes design, DRAFT): default off, fail closed."""
+
+    SHELL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+
+    def test_default_is_off_and_production_takes_the_default(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CLERKSHIP_PREPOST", None)
+            self.assertEqual(common.prepost_mode(), "off")
+            self.assertFalse(common.prepost_enabled())
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_deploy.py"),
+                   encoding="utf-8").read()
+        self.assertIn("_PREPOST=common.prepost_enabled()", src)
+        self.assertIn("common.apply_prepost_marker(_spa_t,_PREPOST)", src)
+
+    def test_invalid_value_raises(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_PREPOST": "yes"}):
+            with self.assertRaises(ValueError):
+                common.prepost_mode()
+
+    def test_the_real_shell_carries_the_marker_once_and_is_not_a_shared_snippet(self):
+        with open(self.SHELL_PATH, encoding="utf-8") as fh:
+            self.assertEqual(fh.read().count(common.PREPOST_MARKER), 1)
+        self.assertNotIn(common.PREPOST_MARKER, common.SNIPPET_MARKERS)
+
+    def test_off_expands_to_nothing_on_expands_to_the_snippet(self):
+        with open(self.SHELL_PATH, encoding="utf-8") as fh:
+            shell = fh.read()
+        off = common.apply_prepost_marker(shell)
+        self.assertNotIn(common.PREPOST_MARKER, off)
+        self.assertNotIn(common.PREPOST_SIGNATURE, off)
+        self.assertNotIn("cw_prepost_v1", off)
+        on = common.apply_prepost_marker(shell, enabled=True)
+        self.assertEqual(on.count(common.PREPOST_SIGNATURE), 1)
+        self.assertIn("function fdPrepostHandleClick(", on)
+
+    def test_missing_or_duplicated_marker_fails_closed(self):
+        for text in ("no marker", common.PREPOST_MARKER * 2):
+            with self.assertRaises(ValueError):
+                common.apply_prepost_marker(text)
+
+    def test_snippet_never_transmits(self):
+        with open(common.PREPOST_SNIPPET, encoding="utf-8") as fh:
+            body = fh.read()
+        for forbidden in ("sendBeacon", "XMLHttpRequest", "cwAnalytics", "method:'POST'",
+                          'method:"POST"', "sessionStorage", "document.cookie"):
+            self.assertNotIn(forbidden, body)
+        # Its only network call is the same-origin GET of the forms file.
+        self.assertEqual(re.findall(r"fetch\(([^)]*)\)", body), ["'prepost_forms.json'"])
 
 
 

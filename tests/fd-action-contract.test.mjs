@@ -20,11 +20,11 @@ const F = make();
 // They are handled inside the directory controller (fd_care_search.js delegating to fd_care_packet.js),
 // like the data-care-directory-* controls beside them -- never through fd_wire's dispatcher, which would
 // turn every keystroke-free tray click into a route/history action. Behind FD_CARE_PACKET_ENABLED.
-const CARE_PACKET_ATTRS = ['data-fd-care-packet-callback', 'data-fd-care-packet-callback-panel', 'data-fd-care-packet', 'data-fd-care-packet-all', 'data-fd-care-packet-card-note', 'data-fd-care-packet-card-print', 'data-fd-care-packet-clear', 'data-fd-care-packet-controls', 'data-fd-care-packet-copy', 'data-fd-care-packet-down', 'data-fd-care-packet-fallback', 'data-fd-care-packet-hint', 'data-fd-care-packet-ineligible', 'data-fd-care-packet-ineligible-count', 'data-fd-care-packet-insert', 'data-fd-care-packet-item', 'data-fd-care-packet-mode', 'data-fd-care-packet-modenote', 'data-fd-care-packet-page', 'data-fd-care-packet-pages', 'data-fd-care-packet-preview', 'data-fd-care-packet-preview-toggle', 'data-fd-care-packet-print', 'data-fd-care-packet-profile', 'data-fd-care-packet-profile-load', 'data-fd-care-packet-profile-forget', 'data-fd-care-packet-profile-memory', 'data-fd-care-packet-profile-none', 'data-fd-care-packet-profile-select', 'data-fd-care-packet-profile-status', 'data-fd-care-packet-profile-unlink', 'data-fd-care-packet-readback', 'data-fd-care-packet-reminder', 'data-fd-care-packet-remove', 'data-fd-care-packet-stale', 'data-fd-care-packet-starter', 'data-fd-care-packet-starter-note', 'data-fd-care-packet-starter-panel', 'data-fd-care-packet-summary', 'data-fd-care-packet-tray', 'data-fd-care-packet-unit-field', 'data-fd-care-packet-up'];
+const CARE_PACKET_ATTRS = ['data-fd-care-packet-addon', 'data-fd-care-packet-callback', 'data-fd-care-packet-callback-panel', 'data-fd-care-packet', 'data-fd-care-packet-all', 'data-fd-care-packet-card-note', 'data-fd-care-packet-card-print', 'data-fd-care-packet-clear', 'data-fd-care-packet-controls', 'data-fd-care-packet-copy', 'data-fd-care-packet-down', 'data-fd-care-packet-fallback', 'data-fd-care-packet-hint', 'data-fd-care-packet-ineligible', 'data-fd-care-packet-ineligible-count', 'data-fd-care-packet-insert', 'data-fd-care-packet-item', 'data-fd-care-packet-mode', 'data-fd-care-packet-modenote', 'data-fd-care-packet-page', 'data-fd-care-packet-pages', 'data-fd-care-packet-preview', 'data-fd-care-packet-preview-toggle', 'data-fd-care-packet-print', 'data-fd-care-packet-profile', 'data-fd-care-packet-profile-load', 'data-fd-care-packet-profile-forget', 'data-fd-care-packet-profile-memory', 'data-fd-care-packet-profile-none', 'data-fd-care-packet-profile-select', 'data-fd-care-packet-profile-status', 'data-fd-care-packet-profile-unlink', 'data-fd-care-packet-readback', 'data-fd-care-packet-reminder', 'data-fd-care-packet-remove', 'data-fd-care-packet-stale', 'data-fd-care-packet-starter', 'data-fd-care-packet-starter-note', 'data-fd-care-packet-starter-panel', 'data-fd-care-packet-summary', 'data-fd-care-packet-tray', 'data-fd-care-packet-unit-field', 'data-fd-care-packet-up'];
 // The printable sheet's own structure markers (fd_care_packet_sheet.js). They label units, pages and crisis lines for the
 // measurer, the tests and assistive technology; none is clicked, so none belongs to the controller.
 const PACKET_SHEET_ATTRS = ['data-fd-packet-card', 'data-fd-packet-crisis', 'data-fd-packet-draft', 'data-fd-packet-insert', 'data-fd-packet-page', 'data-fd-packet-res', 'data-fd-packet-unit'];
-const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status', 'data-fd-mark', 'data-fd-count', ...CARE_PACKET_ATTRS, ...PACKET_SHEET_ATTRS]);
+const NON_ACTION_ATTRS = new Set(['data-fd-care-builder', 'data-fd-fallback', 'data-fd-dock-source', 'data-fd-dock-label', 'data-fd-reader-size', 'data-fd-reader-spacing', 'data-fd-reading-resume', 'data-fd-reading-status', 'data-fd-care-copy-status', 'data-fd-care-pack-origin', 'data-fd-offline-entry', 'data-fd-offline-card', 'data-fd-offline-label', 'data-fd-offline-refresh-status', 'data-fd-mark', 'data-fd-count', ...CARE_PACKET_ATTRS, ...PACKET_SHEET_ATTRS]);
 const AUX_ACTION_ATTRS = new Set(['data-fd-local-toggle']);
 
 function emittedAttributes() {
@@ -58,7 +58,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     'data-fd-care-pack', 'data-fd-care-pack-clear', 'data-fd-care-pack-print',
     'data-fd-care-share', 'data-fd-care-share-close', 'data-fd-change-week',
     'data-fd-clear-ask', 'data-fd-clear-cancel', 'data-fd-clear-confirm', 'data-fd-close-nudge',
-    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-escalate', 'data-fd-escalate-close',
+    'data-fd-close-search', 'data-fd-close-sheet', 'data-fd-continuity-show', 'data-fd-escalate', 'data-fd-escalate-close',
     'data-fd-exam-date', 'data-fd-expand-tool',
     'data-fd-feedback-cancel', 'data-fd-feedback-confirm', 'data-fd-feedback-delete', 'data-fd-feedback-edit',
     'data-fd-feedback-open', 'data-fd-feedback-save',
@@ -66,9 +66,9 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     // and 'data-fd-search-query' (rides on a data-fd-search control to seed the dialog) joined on
     // 2026-10-04 with the Library's filter field (one-thread redesign, Phase 2).
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-details', 'data-fd-library-filter', 'data-fd-library-filter-clear',
-    'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
-    'data-fd-progress', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-expand', 'data-fd-search-query', 'data-fd-settings',
-    'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle',
+    'data-fd-library-task', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
+    'data-fd-progress', 'data-fd-reading-place-remove', 'data-fd-reading-places-clear', 'data-fd-reading-reset', 'data-fd-reading-size', 'data-fd-reading-spacing', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-expand', 'data-fd-search-query', 'data-fd-settings',
+    'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle', 'data-fd-tool-pin', 'data-fd-tool-pins-clear',
     'data-fd-tree-answer', 'data-fd-tree-back', 'data-fd-tree-restart',
     'data-fd-view-week', 'data-fd-week',
   ]);
@@ -181,6 +181,14 @@ test('FD_WIRE is registered, injected last, and activated as the sole shell cont
 test('Library view has a distinct registered semantic', () => {
   assert.equal(F.semantic('data-fd-library-view'), 'choose Library view');
   assert.match(wire, /\[data-fd-library-view\]/);
+});
+
+test('Library task has a distinct registered semantic and delegated click action', () => {
+  assert.ok(F.handled.includes('data-fd-library-task'));
+  assert.equal(F.semantic('data-fd-library-task'), 'choose Library task');
+  assert.notEqual(F.semantic('data-fd-library-task'), F.semantic('data-fd-library-view'));
+  assert.notEqual(F.semantic('data-fd-library-task'), F.semantic('data-fd-kit-section'));
+  assert.match(wire, /\[data-fd-library-task\]/);
 });
 
 test('APP actions are distinct, registered, and injected before the controller', () => {

@@ -655,6 +655,7 @@
   <div id="fdCaptureMount"></div>
   <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
+  <footer id="fdUsageMount" class="fd-usage-foot"></footer>
   <div id="governanceMount"></div>
   <div id="fdOverlayMount"></div>
   <template id="fdCrisisTemplate"><!-- crisis-block-html --></template>
@@ -702,6 +703,11 @@
      Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
      resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
   var FD_MEDIA=null;
+  /* The newest Case of the Week (cotw_archive_block.newest), READ-ONLY, for Today's "new this
+     week" row (fd_today.js fdNewCase). Same verified-needle injection as FD_MEDIA, and the
+     resident build swaps in its own edition. {slug, title, date}: the renderer shows it only for
+     the week after `date`, so null, a malformed value or an older edition renders nothing. */
+  var FD_COTW_NEWEST=null;
   /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
      click, consumed by the next mount of that ref, never stored. */
   var fdMediaArrival=null;
@@ -1632,7 +1638,7 @@
   /* ---- capture sheet: own dialog, own focus trap ----
      Deliberately NOT reusing .tl-sheet — visual-regression.spec.js Shift+Tab-cycles that sheet and
      asserts its last .tl-sheet__item is focused, so joining its tab order breaks it. */
-  var capSheet=null, capBackdrop=null, capInvoker=null;
+  var capSheet=null, capBackdrop=null, capInvoker=null, capReturnToSearch=null;
   function capFocusables(){
     if(!capSheet)return [];
     var all=capSheet.querySelectorAll('button,textarea,[href],input,select,[tabindex]:not([tabindex="-1"])'), out=[];
@@ -1648,7 +1654,7 @@
     if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   }
-  function capClose(){
+  function capClose(skipSearchReturn){
     if(capEmailSheet)capEmailClose();
     if(capBackdrop&&capBackdrop.parentNode)capBackdrop.parentNode.removeChild(capBackdrop);
     if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
@@ -1656,6 +1662,14 @@
     document.removeEventListener('keydown',capKeydown,true);
     var opens=document.querySelectorAll('.capture-open,[data-capture-open]');
     for(var i=0;i<opens.length;i++)opens[i].setAttribute('aria-expanded','false');
+    /* Search's draft stays in memory only. Recreate its dialog after Capture is gone so its
+       input owns focus again; raw search text never becomes a question or a stored draft. */
+    var returnToSearch=capReturnToSearch; capReturnToSearch=null;
+    if(!skipSearchReturn&&returnToSearch){
+      capInvoker=null;
+      returnToSearch();
+      return;
+    }
     /* The global launcher remains mounted, while a Today-card launcher can be recreated by a
        capture refresh. Resolve that semantic equivalent before falling back to the main region. */
     var inv=capInvoker; capInvoker=null;
@@ -1902,8 +1916,9 @@
     try{ specialRefresh(); }
     finally{ capFocusEditor(); }
   }
-  function capOpen(invoker,onAction){
+  function capOpen(invoker,onAction,onReturnToSearch){
     if(capSheet)return;
+    capReturnToSearch=typeof onReturnToSearch==='function'?onReturnToSearch:null;
     if(typeof fdController!=='undefined'&&fdController&&fdController.externalModalOpened)
       fdController.externalModalOpened();
     capInvoker=invoker||null;
@@ -2003,8 +2018,11 @@
   }
   /* SI===null means "failed" OR "not yet resolved". Refresh the guarded Today surface after
      the index settles so captures can gain matches without a reload. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
+  /* One request serves both readers: this matcher and the Front Door command search's page-text
+     tier, which takes the same parsed index from cwSearchIndexPromise rather than fetching again. */
+  var SI_PROMISE=fetch('search-index.json').then(function(r){return r.json()}); SI_PROMISE.then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
     .catch(function(){ SI=null; VOCAB=[]; });
+  try{ window.cwSearchIndexPromise=SI_PROMISE; }catch(_){}
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
   /* Length normalisation: the BM25 pivot (1-b) + b*(L/avgLen), b = 0.5. Without it
@@ -2167,6 +2185,8 @@
   /*__FD_STATE__*/
 
   /*__FD_READING_PLACE__*/
+
+  /*__FD_TOOL_PINS__*/
 
   /*__FD_CAPTURE_EMAIL__*/
 
@@ -2332,6 +2352,7 @@
         h+='</div>';
       }
     }
+    if(typeof fdPrepostSectionHtml==='function')h+=fdPrepostSectionHtml();
     h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for this site evaluation — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
     h+='</div>'; return h;
   };
@@ -2462,6 +2483,9 @@
        is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(FD_INDEX); if(!plan){ renderPretestResults(null); return; } try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
   function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; if(!fdActivePathValid(FD_INDEX)){ root.innerHTML=fdPathFallback('plan'); return; } currentItem={f:'__placement_results__',t:'Your formative placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(),duration=fdPathWeekCount(FD_INDEX)+'-week'; var h='<h1>Your formative placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized '+duration+' plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the formative placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
   function renderStoredPlan(){ if(!fdActivePathValid(FD_INDEX)){ if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML='<article class="fd-reader fd-progress-reader">'+fdPathFallback('plan')+'</article>'; } return; } var plan=fdLoadPlan(FD_INDEX),duration=fdPathWeekCount(FD_INDEX)+'-week'; if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your '+duration+' plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your '+duration+' plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the formative placement</span><span class="sec">↻</span></button></div></div></article>'; }
+  /* Pre/post knowledge check (DRAFT): expands to frontdoor/fd_prepost.js only when the build
+     runs with CLERKSHIP_PREPOST=on (default off); otherwise to nothing. */
+  /*__FD_PREPOST__*/
   /* ===== Governed Front Door live shell ===== */
   var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var FD_INDEX=FD_CANONICAL_INDEX;
@@ -2491,10 +2515,22 @@
   var fdCaptureMount=fdEditionRuntimeElement(fdDocument,'fdCaptureMount');
   var fdDockMount=fdEditionRuntimeElement(fdDocument,'fdDockMount');
   var fdOverlayMount=fdEditionRuntimeElement(fdDocument,'fdOverlayMount');
+  var fdUsageMount=fdEditionRuntimeElement(fdDocument,'fdUsageMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
   var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
   var fdController=null;
+  /* search-index.json for the command search's page-text tier: the SAME parsed object the ＋Ask
+     matcher requested (cwSearchIndexPromise, set where it fetches), so no second request. A failed
+     or missing load leaves it null and title/summary search works exactly as before. */
+  var fdBodyIndex=null;
+  try{
+    var fdBodyPromise=window.cwSearchIndexPromise;
+    if(fdBodyPromise&&typeof fdBodyPromise.then==='function'){
+      fdBodyPromise.then(function(d){ fdBodyIndex=(d&&d.postings&&Array.isArray(d.docs))?d:null; },
+        function(){ fdBodyIndex=null; });
+    }
+  }catch(_){ fdBodyIndex=null; }
   var fdActiveEditionSnapshot=null;
   var fdCatalogSnapshot=null;
   var fdEditionBootKeys=null;
@@ -2578,6 +2614,7 @@
        the list on the device. Guarded like the usage emitter below: a surface built without the
        store renders no notes rather than failing. */
     out.feedbackLog=typeof fdFeedbackRead==='function'?fdFeedbackRead():[];
+    out.toolPins=typeof fdToolPinsRead==='function'?fdToolPinsRead(FD_INDEX):[];
     /* The Usage section, and the one key on this state that is legitimately null: null means
        CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
        then renders no section at all rather than describing collection that is not happening.
@@ -2734,6 +2771,10 @@
     live.alsoRows=rows;
     live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
     live.caseWeek=fdWeekCaseStep(FD_INDEX,FD_CASE_ARC,weekN);
+    /* The newest case, handed in raw: fdNewCase (fd_today.js) decides from live.nowMs and the
+       registry date whether Today announces it this week. Build data, not a device store, so it
+       is shown in a faculty preview too. */
+    live.newCase=FD_COTW_NEWEST;
     return fdToday(FD_INDEX,live);
   }
 
@@ -2832,7 +2873,7 @@
        and filter are the controller's visit-only memory; the case arc and pairings are the
        build-injected READ-ONLY registries behind "Case week N", "Where it is used" and "Practice
        with"; the audience keeps pairings scoped to one site inside it. */
-    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
+    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,libraryTask:state.libraryTask,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE,readingPlaces:fdReadingPlaces(fdLoad().readingPlaces),done:live.done,toolPins:live.toolPins,continuityNotice:state.continuityNotice}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
     if(state.tab==='care') return fdSurface('care',function(){
       return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
     });
@@ -2856,7 +2897,7 @@
      live regions, #fdOverlayMount and #fdNudgeMount are never inerted. fdSyncSafetyPause runs
      FIRST in fdRender and fdRenderTransient so the release lands before a resource mounts: an
      inert #content silently refuses the pending-high notice its focus. */
-  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount'];
+  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount','fdUsageMount'];
   var fdSafetyPaused=false;
   function fdPauseMedia(doc){
     var media=(doc&&doc.querySelectorAll)?doc.querySelectorAll('audio,video'):[];
@@ -2888,7 +2929,13 @@
 
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
-    if(state.searchOpen)overlays+=fdSurface('search',function(){ return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live); });
+    if(state.searchOpen)overlays+=fdSurface('search',function(){
+      /* Page-text evidence (fd_search.js fdSearchBodyScores): the same search-index.json the
+         ＋Ask matcher reads. Absent until it loads, and search then ranks exactly as before. */
+      live.bodyIndex=fdBodyIndex;
+      live.facultyPreview=!!facultyPreviewRequest;
+      return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live);
+    });
     if(state.sheet)overlays+=fdSurface('sheet',function(){ return fdSheet(FD_INDEX,FD_TOPIC_META,live); });
     if(state.careShareId)overlays+=fdSurface('care-share',function(){
       return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
@@ -3093,6 +3140,20 @@
     }else fdCareDirectory.leave();
   }
 
+  /* L8 D3 usage notice: rendered from the emitter's presence, never from a stored key. Empty on
+     every build that left the emitter out (fdUsageNotice returns ''), and .fd-usage-foot:empty is
+     display:none, so off builds look exactly as before. Re-rendered with the overlays so the
+     sentence follows a Settings > Usage change at once. */
+  function fdRenderUsageNotice(){
+    if(!fdUsageMount)return;
+    var an=window.cwAnalytics
+      ?{optedIn:window.cwAnalytics.enabled(),
+        privacySignal:(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)}
+      :null;
+    var html=typeof fdUsageNotice==='function'?fdUsageNotice(an):'';
+    if(fdUsageMount.innerHTML!==html)fdUsageMount.innerHTML=html;
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdSyncSafetyPause(state);
@@ -3104,6 +3165,7 @@
     fdRenderCapture(state);
     fdRenderDock(state,!!hydrate);
     fdRenderOverlays(state);
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
     fdMountCareDirectory(state);
@@ -3166,6 +3228,7 @@
     if(surfaces.layout)fdPatchToolLayout(state);
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     fdUpdateCareNavigatorStatus(state);
     if(surfaces.base||surfaces.completion)fdMountCareDirectory(state);
     fdSyncOfflineVisit(state);
@@ -3265,18 +3328,11 @@
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
             var arrivalSearch=options.search===undefined?location.search:options.search;
             if(!returning)fdGuideBookmark=null;
-            if(guide.leads){
-              /* A page whose sections come from bold leads read with a saved place before it had
-                 a guide; it keeps one. An explicit passage or a return from practice still decides
-                 where it opens, so the saved place only saves on those arrivals. */
-              var passage=new URLSearchParams(arrivalSearch||'');
-              installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
-            }else{
-              var statusNode=contentEl.querySelector('[data-fd-reading-status]');
-              var topNode=contentEl.querySelector('[data-fd-reading-top]');
-              if(statusNode)statusNode.remove();
-              if(topNode)topNode.remove();
-            }
+            /* Every reading guide keeps a saved place. An explicit passage or a return from
+               practice still decides where it opens, so the saved place only saves on those
+               arrivals. With no passage, guide.arrive is inert and the saved place restores. */
+            var passage=new URLSearchParams(arrivalSearch||'');
+            installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
             /* Initial resources mount behind the edition startup gate. Their promise must
                settle before focus/scroll can reach the now-visible DOM. Guard the next frame
                so an abandoned load cannot steal focus from the next route. */
@@ -3377,7 +3433,7 @@
       }else if(capSheet)capAnnounce('Could not finish this question on this device. Try again.');
       return;
     }
-    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
+    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose(true);fdOpenRef(ref);return;}
   }
 
   function fdRefreshLocalCompletion(identity,kind,id){
@@ -3414,9 +3470,19 @@
     el=target.closest&&target.closest('[data-media-side]');
     if(el){event.preventDefault();fdMediaSwitch(el);return;}
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
+    if(el){
+      event.preventDefault();
+      if(facultyPreviewRequest)return;
+      var returnToSearch=null;
+      if(el.closest('.fd-search')){
+        returnToSearch=fdController.suspendSearch();
+      }
+      capOpen(el,fdCaptureAction,returnToSearch);
+      return;
+    }
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
+    if(typeof fdPrepostHandleClick==='function'&&fdPrepostHandleClick(target,event))return;
     el=target.closest&&target.closest('.pt-opt');
     if(el){event.preventDefault();var qi=el.getAttribute('data-qi');ptAnswers[qi]=el.getAttribute('data-key');var siblings=contentEl.querySelectorAll('.pt-opt[data-qi="'+qi+'"]');for(var i=0;i<siblings.length;i++)siblings[i].classList.remove('sel');el.classList.add('sel');updatePtCount();return;}
     el=target.closest&&target.closest('.pgfb-b');
