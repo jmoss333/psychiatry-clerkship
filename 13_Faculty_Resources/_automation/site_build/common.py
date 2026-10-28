@@ -870,6 +870,7 @@ SNIPPET_MARKERS = {
     "/*__FD_TOOL_PINS__*/": "frontdoor/fd_tool_pins.js",
     "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_ICONS__*/": "frontdoor/fd_icons.js",
     "/*__FD_OFFLINE__*/": "frontdoor/fd_offline.js",
     "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
     "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
@@ -1117,6 +1118,14 @@ def page_contract_failures(out_dir):
             missing.append("favicon link")
         if not is_index and "<!--ifn-->" not in t:
             missing.append("in-iframe link interceptor")
+        # Icon sprite (icon_sprite.py): the shell index carries exactly one, expanded; no page
+        # may ship the raw marker. fdIcon() output points at its symbols, so a missing sprite
+        # would draw nothing rather than fail loudly.
+        if "<!--fd-icon-sprite-->" in t:
+            missing.append("unexpanded icon sprite marker <!--fd-icon-sprite-->")
+        if is_index and t.count('id="fd-icon-sprite"') != 1:
+            missing.append("exactly one icon sprite (id=\"fd-icon-sprite\"), found %d"
+                           % t.count('id="fd-icon-sprite"'))
         for marker in SNIPPET_MARKERS:
             if marker in t:
                 missing.append("unexpanded shared-snippet marker %s" % marker)
