@@ -1,0 +1,539 @@
+{
+  "schemaVersion": 1,
+  "reviewStatus": "pending-faculty-review",
+  "purpose": "Realistic learner phrasings per intent, run through the same regex compilation the offline simulator and sp.mjs deriveState use. `required` phrasings must all be recognised for their intent (a recall floor that may only rise); `proposed` phrasings are reported, never failed, until faculty decide the vocabulary; `mustNot` entries pin precision (a phrasing that must NOT be credited for the named intents, flags included); `interview` is a full ordinary interview that must leave no checklist row `missed`; `gateScenarios` pin the D14 boundary across phrasings rather than one sentence. Written 2026-10-21 from the Interview Room audit: before this corpus, 77 of 183 realistic Dana phrasings were unrecognised and a discharge-planning question opened the suicide-plan disclosure.",
+  "cases": {
+    "sp_depression_gated_si_001": {
+      "required": {
+        "greeting_agenda": [
+          "Hi Dana, I'm Sam, a third-year medical student working with the team. I'd like to spend a few minutes hearing how things have been for you — would that be alright?",
+          "Good morning. I'm one of the students on the psychiatry service. Is now an okay time to talk?",
+          "Hello, I'm Alex. I work with Dr. Moss. I know you spoke with someone last night; I'd like to go over a few things with you if you're up for it.",
+          "Hi, I'm a med student on the team. How are you feeling about being here?",
+          "I'm Jordan, I'm a student doctor. We've got about fifteen minutes. What matters most to you to cover?"
+        ],
+        "open_invite": [
+          "Can you walk me through what led up to coming in last night?",
+          "What's been going on for you lately?",
+          "How did you end up here?",
+          "Help me understand what the last couple of months have been like.",
+          "Where would you like to start?",
+          "Can you tell me what happened?",
+          "What was it your husband was worried about?"
+        ],
+        "reflection": [
+          "That sounds exhausting.",
+          "It sounds like you've been carrying a lot on your own.",
+          "So you've been feeling like a burden to Tom.",
+          "That must be really hard.",
+          "That must have been really hard to carry alone.",
+          "You're tired of everyone making it into a big deal.",
+          "It seems like getting out of bed has become a huge effort.",
+          "I hear you. That's a lot.",
+          "You felt like he overreacted."
+        ],
+        "mood": [
+          "How has your mood been?",
+          "How have you been feeling emotionally over the past few weeks?",
+          "Have you been feeling down or depressed?",
+          "If you had to describe how you've been feeling most days, what word would you use?",
+          "Have you felt sad or hopeless recently?",
+          "How are your spirits?",
+          "On a scale of one to ten, where would you put how you've been feeling?"
+        ],
+        "anhedonia": [
+          "Are there things you used to enjoy that don't feel the same anymore?",
+          "Have you lost interest in things?",
+          "What do you do for fun?",
+          "Do you still look forward to anything?",
+          "Has anything felt good lately?",
+          "Have you been doing the things you normally like to do?"
+        ],
+        "sleep": [
+          "How have you been sleeping?",
+          "Tell me about your sleep.",
+          "Are you waking up early in the morning?",
+          "How many hours a night are you getting?",
+          "Do you have trouble falling asleep or staying asleep?",
+          "What are your nights like?"
+        ],
+        "appetite": [
+          "How's your appetite?",
+          "Have you been eating?",
+          "Any change in your weight?",
+          "Have you noticed your clothes fitting differently?",
+          "Are you skipping meals?",
+          "Has food tasted different lately?"
+        ],
+        "energy": [
+          "How's your energy?",
+          "Do you feel tired all the time?",
+          "Has it been hard to get through the day?",
+          "Do you feel worn out?",
+          "Is it hard to get moving in the morning?",
+          "How much effort does it take to do normal things, like showering?"
+        ],
+        "concentration": [
+          "Have you had trouble concentrating?",
+          "Can you focus on things like reading or TV?",
+          "Has your thinking felt slower?",
+          "Do you find yourself losing your train of thought?",
+          "Have you been forgetting things?",
+          "Is it hard to keep your mind on one thing?"
+        ],
+        "guilt": [
+          "Do you feel guilty about anything?",
+          "Have you been feeling like a burden?",
+          "Do you ever feel worthless?",
+          "Have you been hard on yourself?",
+          "Do you blame yourself for what's happening?",
+          "Do you feel like you've let people down?",
+          "How do you feel about yourself these days?"
+        ],
+        "si_direct": [
+          "Have you had thoughts of killing yourself?",
+          "Have you thought about suicide?",
+          "Have you had any thoughts of ending your life?",
+          "Have you been having suicidal thoughts?",
+          "Have you thought about ending it all?",
+          "Have you had any thoughts about killing yourself or ending your life?",
+          "Have you ever thought that you'd be better off dead, or thought about killing yourself?"
+        ],
+        "si_passive": [
+          "Have you ever wished you were dead?",
+          "Do you ever wish you could go to sleep and not wake up?",
+          "Have you had thoughts that life isn't worth living?",
+          "Have you had thoughts of death or dying?",
+          "Do you ever feel like you'd be better off dead?",
+          "Do you ever feel like there's no point in going on?",
+          "Have you wished you weren't here?",
+          "Have you had thoughts about not wanting to be alive?",
+          "Do you ever wish you wouldn't wake up?",
+          "Have you been thinking that things would be easier if you weren't around?",
+          "Have you had thoughts about not wanting to be here anymore?"
+        ],
+        "si_euphemism": [
+          "Have you had any thoughts of hurting yourself?",
+          "Have you thought about harming yourself?",
+          "Have you been having any dark thoughts?",
+          "Any thoughts of self-harm?",
+          "Have you thought about doing something to yourself?",
+          "Do you ever feel like you just want to disappear?",
+          "Any thoughts of doing anything drastic?"
+        ],
+        "si_plan": [
+          "Have you thought about how you would do it?",
+          "Do you have a plan?",
+          "Have you made any plans?",
+          "Have you thought about a specific way?",
+          "When you think about the pills, how far has that gone?",
+          "Have you thought about when or where?",
+          "Have you planned anything out?",
+          "Is there a particular method you've thought about?",
+          "Have you thought about how to kill yourself?",
+          "Have you thought about how to do it?",
+          "Have you thought about when you would do it?"
+        ],
+        "si_means": [
+          "Do you have access to those pills?",
+          "Are the sleeping pills still in the house?",
+          "Is there anything at home you could use to hurt yourself?",
+          "Are there any guns in the home?",
+          "Do you have the means to do it?",
+          "Where are the pills kept?",
+          "Could you get to them if you wanted to?",
+          "Are there firearms or weapons at home?"
+        ],
+        "si_intent_protective": [
+          "What has kept you from acting on these thoughts?",
+          "What stops you?",
+          "What keeps you going?",
+          "Do you intend to act on these thoughts?",
+          "How close have you come?",
+          "Is there anything that makes you want to stay alive?",
+          "What are your reasons for living?",
+          "Who would miss you?",
+          "Do you want to die, or do you want the pain to stop?",
+          "What's kept the bottle closed?"
+        ],
+        "si_behavior": [
+          "Have you ever tried to kill yourself?",
+          "Have you ever made an attempt on your life?",
+          "Have you ever hurt yourself before?",
+          "Have you ever acted on these thoughts?",
+          "Have you done anything to prepare?",
+          "Have you ever taken steps toward it, like getting the pills out?",
+          "Have you written a note or given anything away?",
+          "Any previous attempts?",
+          "Have you ever done anything to end your life in the past?",
+          "Has anything like this ever gone further than a thought?"
+        ],
+        "psychosis_screen": [
+          "Have you been hearing voices?",
+          "Do you ever hear or see things other people don't?",
+          "Have you felt like people are watching you or out to get you?",
+          "Has your mind been playing tricks on you?",
+          "Any unusual experiences, like hearing things when no one is there?",
+          "Do you ever feel like your thoughts aren't your own?",
+          "Do you ever feel like people are talking about you?"
+        ],
+        "substance": [
+          "Do you drink alcohol?",
+          "How much do you drink in a typical week?",
+          "Any drug use?",
+          "Do you use anything to help you sleep or cope, like alcohol or cannabis?",
+          "Are you using any substances?",
+          "Do you smoke or use marijuana?",
+          "What about alcohol or anything else?"
+        ],
+        "meds_medical": [
+          "Are you taking any medications?",
+          "Do you have any medical problems?",
+          "Have you had your thyroid checked?",
+          "Any health conditions I should know about?",
+          "Are you on any prescriptions?",
+          "Have you seen your primary care doctor recently?",
+          "Any medical issues, like thyroid problems or anemia?",
+          "Do you take anything regularly?"
+        ],
+        "prior_episodes": [
+          "Have you ever felt like this before?",
+          "Is this the first time you've felt this way?",
+          "Have you ever been treated for depression?",
+          "Have you ever seen a therapist or counselor?",
+          "Have you had episodes like this in the past?",
+          "Have you been on antidepressants before?",
+          "Has this happened before?",
+          "Have you ever been hospitalized for anything psychiatric?"
+        ],
+        "work_stressor": [
+          "Tell me about work.",
+          "What do you do for a living?",
+          "Did anything change around the time this started?",
+          "Has anything stressful happened recently?",
+          "What was going on a couple of months ago when this started?",
+          "Are you working right now?",
+          "What happened two months ago?",
+          "Has there been any big change in your life lately?"
+        ],
+        "family_social": [
+          "Who do you have at home?",
+          "How are things with your husband?",
+          "Who do you lean on?",
+          "Tell me about your family.",
+          "Do you have people you can talk to?",
+          "Who's in your life?",
+          "Are you close with anyone?",
+          "What's your relationship like with Tom?"
+        ],
+        "summary_close": [
+          "Let me make sure I've got this right.",
+          "So to summarize what you've told me...",
+          "Is there anything else you'd like me to know?",
+          "Let me tell you what I'm hearing.",
+          "Before we finish, is there anything I missed?",
+          "I'm going to share this with the team and we'll come back to talk about next steps.",
+          "Let me recap what we've covered.",
+          "So if I'm understanding you right, the last two months have been heavy, you lost your job, and you've had thoughts of not waking up.",
+          "Thank you for telling me all of this. I'll be back this afternoon."
+        ],
+        "judgmental": [
+          "You should just snap out of it, other people have it worse.",
+          "You should think about what this is doing to your kids.",
+          "You should know that lots of people go through this.",
+          "It makes sense that you'd feel that way. At least you came in."
+        ],
+        "premature_reassurance": [
+          "Don't worry, everything will be fine.",
+          "Everything is going to be okay.",
+          "Don't worry about it."
+        ]
+      },
+      "proposed": {
+        "si_direct": [
+          "Sometimes when people feel this low they think about taking their own life. Has that happened to you?"
+        ],
+        "si_euphemism": [
+          "Are you safe?",
+          "Have you been feeling safe at home?"
+        ],
+        "psychosis_screen": [
+          "Have you had any experiences that were hard to explain?"
+        ]
+      },
+      "mustNot": [
+        { "text": "Hi Dana, I'm Sam, a third-year medical student. I'd like to spend a few minutes hearing how things have been for you.", "intents": ["psychosis_screen"] },
+        { "text": "I want to hear a bit about the last few things that happened before you came in.", "intents": ["psychosis_screen"] },
+        { "text": "Let me hear about the things that matter most to you.", "intents": ["psychosis_screen"] },
+        { "text": "I can see that things have been hard.", "intents": ["psychosis_screen"] },
+        { "text": "Don't worry about taking your time — there's no rush.", "intents": ["premature_reassurance"] },
+        { "text": "I don't want to worry you, but I need to ask some difficult questions.", "intents": ["premature_reassurance"] },
+        { "text": "You should feel free to stop me if a question is too much.", "intents": ["judgmental"] },
+        { "text": "You should know that I'll be sharing this with the team.", "intents": ["judgmental"] },
+        { "text": "At least for now, let's focus on how you've been sleeping.", "intents": ["judgmental", "concentration"] },
+        { "text": "I want to focus on your sleep for a minute.", "intents": ["concentration"] },
+        { "text": "Do you have a plan for when you leave the hospital?", "intents": ["si_plan"] },
+        { "text": "What is your plan for after discharge?", "intents": ["si_plan"] },
+        { "text": "Have you thought about where you'd stay after discharge?", "intents": ["si_plan"] },
+        { "text": "Are you planning anything for the weekend?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how you'd tell your sister?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how to tell your sister?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you'd like to go home?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you want to leave?", "intents": ["si_plan"] },
+        { "text": "Have you thought about where you'd go after discharge?", "intents": ["si_plan"] },
+        { "text": "You mentioned not wanting to be here in the hospital. Can you tell me more?", "intents": ["si_passive", "si_direct"] },
+        { "text": "You mentioned not wanting to live here with your mother — can you say more about that?", "intents": ["si_passive", "si_direct"] },
+        { "text": "I imagine you've wished you weren't here on the unit.", "intents": ["si_passive", "si_direct"] },
+        { "text": "Are the sleeping pills still in the house?", "intents": ["sleep"] },
+        { "text": "What happened after you lost your job?", "intents": ["psychosis_screen"] },
+        { "text": "Did you get any sleep last night on the unit?", "intents": ["judgmental", "premature_reassurance", "ooc_attempt"] },
+        { "text": "What's the point you're trying to make when you say that?", "intents": ["si_euphemism", "si_passive"] },
+        { "text": "Who is Ellie?", "intents": ["judgmental", "premature_reassurance"] }
+      ],
+      "interview": {
+        "turns": [
+          "Hi Dana, I'm Sam, a third-year medical student working with the team. I'd like to spend a few minutes hearing how things have been for you — would that be alright?",
+          "Can you walk me through what led up to coming in last night?",
+          "That sounds exhausting.",
+          "How has your mood been most days?",
+          "Are there things you used to enjoy that don't feel the same anymore?",
+          "How have you been sleeping?",
+          "How's your appetite?",
+          "How's your energy?",
+          "Have you had trouble concentrating?",
+          "Do you feel like you've let people down?",
+          "Has anything stressful happened recently, at work or at home?",
+          "That must have been really hard to carry alone.",
+          "Have you had thoughts of killing yourself?",
+          "Have you thought about how you would do it?",
+          "Are the sleeping pills still in the house?",
+          "What has kept you from acting on these thoughts?",
+          "Have you ever done anything to end your life in the past?",
+          "Do you ever hear or see things other people don't?",
+          "How much do you drink in a typical week?",
+          "Do you have any medical problems or take any medications?",
+          "Has this happened before?",
+          "Who do you lean on?",
+          "So if I'm understanding you right, the last two months have been heavy, you lost your job, and you've had thoughts of not waking up. Thank you for telling me. I'll be back this afternoon with the team."
+        ],
+        "noMissedRows": true,
+        "minRapport": 1,
+        "mustUnlock": ["si_active", "si_plan_detail", "si_means_detail", "si_protective_detail", "si_behavior_detail"]
+      }
+    },
+    "sp_mania_redirect_001": {
+      "required": {
+        "redirect_structure": [
+          "I want to hear about Thursday, but first can we go back to your sleep?",
+          "Hold that thought — I'll come back to it. How many hours have you been sleeping?",
+          "Let's take these one at a time.",
+          "Before the meeting, I need to understand this past week.",
+          "I'm going to slow us down for a second.",
+          "Can we stay with the roommate for a moment?",
+          "Let's start with the sleep and then get to the meeting."
+        ],
+        "judgmental": [
+          "You need to calm down, okay?",
+          "You should be honest with me — have you had thoughts of killing yourself?"
+        ],
+        "argue_grandiosity": [
+          "That's not realistic — you can't possibly fix campus irrigation."
+        ]
+      },
+      "proposed": {},
+      "mustNot": [
+        { "text": "There's no way that could have been easy for you.", "intents": ["argue_grandiosity"] },
+        { "text": "I can't possibly keep up with you — slow down for me.", "intents": ["argue_grandiosity"] },
+        { "text": "I'd like to hear a bit about the last few things that happened this week.", "intents": ["psychosis_screen"] }
+      ]
+    },
+    "sp_psychosis_paranoid_001": {
+      "required": {
+        "command_content": [
+          "Do the voices ever tell you to do things?",
+          "Have the voices told you to hurt yourself or anyone else?",
+          "Do they ever give you instructions?",
+          "Have you ever felt you had to do what the voices say?",
+          "Do the voices ever tell you to do anything?",
+          "When you hear them, do they ask you to act?",
+          "Have you been told to do something by the voices?",
+          "Do the voices command you?"
+        ],
+        "transparency": [
+          "You don't have to answer anything you don't want to.",
+          "We can stop any time you need.",
+          "You're in control of what you share here.",
+          "Only tell me what you're comfortable with.",
+          "If anything feels like too much, just say so and we'll slow down."
+        ],
+        "hallucinations_screen": [
+          "Have you been hearing anything — like sounds or voices — that other people don't seem to?",
+          "Do you ever hear things when no one is there?"
+        ],
+        "challenge_delusion": [
+          "No one is poisoning you — that's not real."
+        ],
+        "collude_delusion": [
+          "You're right, they really are after you — we need to stop them."
+        ]
+      },
+      "proposed": {},
+      "mustNot": [
+        { "text": "That's not true of everyone here — some of the staff are quite kind.", "intents": ["challenge_delusion"] },
+        { "text": "You're right that it's frightening.", "intents": ["collude_delusion"] },
+        { "text": "I'd like to spend a few minutes hearing how things have been for you.", "intents": ["hallucinations_screen"] }
+      ]
+    },
+    "sp_alcohol_ambivalence_001": {
+      "required": {
+        "explore_benefits": [
+          "What does drinking do for you?",
+          "What's the upside of a few drinks at night?",
+          "What do you get from drinking — what does it give you?"
+        ],
+        "explore_costs": [
+          "What's the not-so-good side of it?",
+          "Has drinking caused any problems for you?",
+          "What worries you about it, if anything?",
+          "And what's the downside — what does it cost you?"
+        ],
+        "values": [
+          "What do you care most about right now?",
+          "Where does drinking fit with the kind of person you want to be?",
+          "What matters most to you right now — what do you want to protect?"
+        ],
+        "next_step": [
+          "What, if anything, would you want to do differently?",
+          "Where does that leave you — what small change, if any, might you try?"
+        ],
+        "autonomy_support": [
+          "Nobody can make this decision for you.",
+          "It's your call.",
+          "It's up to you what happens next; I'm not here to tell you what to do."
+        ]
+      },
+      "proposed": {},
+      "mustNot": []
+    },
+    "sp_depression_followup_001": {
+      "required": {
+        "si_plan": [
+          "Have you made any plan to end your life?",
+          "Have you thought about how you would do it?",
+          "Have you thought about how to kill yourself?",
+          "Have you thought about when you would do it?"
+        ],
+        "si_behavior": [
+          "Have you done anything since you left to act on those thoughts?",
+          "Has anything gone further than a thought since you got home?"
+        ],
+        "si_intent_protective": [
+          "What keeps you going on those nights?"
+        ],
+        "means_check": [
+          "Did Tom take his sleeping pills to work like he said?"
+        ]
+      },
+      "proposed": {},
+      "mustNot": [
+        { "text": "Do you have a plan for when you leave the hospital?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you'd like to go home?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how to tell your sister?", "intents": ["si_plan"] },
+        { "text": "Did Tom take his sleeping pills to work like he said?", "intents": ["sleep"] },
+        { "text": "Don't worry about taking your time with the form.", "intents": ["premature_reassurance"] }
+      ]
+    }
+  },
+  "gateScenarios": [
+    {
+      "id": "d14-discharge-when-you-leave",
+      "case": "sp_depression_gated_si_001",
+      "reference": "D14: an ordinary discharge-plan question must not reveal suicide-plan detail; before 2026-10-21 only the corpus wording was tested",
+      "turns": ["Have you had thoughts of killing yourself?", "Do you have a plan for when you leave the hospital?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "d14-discharge-after-you-leave",
+      "case": "sp_depression_gated_si_001",
+      "reference": "D14",
+      "turns": ["Have you had thoughts of killing yourself?", "What's the plan for after you leave?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "d14-discharge-getting-home",
+      "case": "sp_depression_gated_si_001",
+      "reference": "D14",
+      "turns": ["Have you had thoughts of killing yourself?", "Do you have a plan for getting home, and who will be there?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "plan-question-still-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the other half of D14: a real plan question after the screen must still reach the detail gate",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about how you would do it?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "means-question-in-ordinary-words-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "a means question in ordinary words reaches the means detail gate",
+      "turns": ["Have you had thoughts of killing yourself?", "Are the sleeping pills still in the house?"],
+      "mustUnlock": ["si_active", "si_means_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": ["sleep"]
+    },
+    {
+      "id": "discharge-plan-alone-opens-nothing",
+      "case": "sp_depression_gated_si_001",
+      "reference": "no screen, no gate",
+      "turns": ["Do you have a plan for when you leave the hospital?"],
+      "mustUnlock": [],
+      "mustNotUnlock": ["si_active", "si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "method-question-to-infinitive-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the explicit method question in its infinitive form must reach the plan detail gate (Codex review of #1119, 2026-10-28: the first `thought about how` exclusion rejected every `how to …`)",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about how to kill yourself?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "d14-discharge-when-youd-like-to-go-home",
+      "case": "sp_depression_gated_si_001",
+      "reference": "D14 in the timing wording: a discharge-timing question after the screen must not open plan detail (Codex review of #1119, 2026-10-28)",
+      "turns": ["Have you thought about suicide?", "Have you thought about when you'd like to go home?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "timing-question-still-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the other half: a real timing question after the screen still reaches plan detail",
+      "turns": ["Have you thought about suicide?", "Have you thought about when you would do it?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "hospital-complaint-is-not-a-death-wish",
+      "case": "sp_depression_gated_si_001",
+      "reference": "wanting to leave the hospital is not passive suicidal ideation and must not open the gated disclosure (Codex review of #1119, 2026-10-28)",
+      "turns": ["You mentioned not wanting to be here in the hospital. Can you tell me more?"],
+      "mustUnlock": [],
+      "mustNotUnlock": ["si_active", "si_plan_detail"],
+      "mustNotCover": ["si_passive", "si_direct"]
+    }
+  ]
+}
