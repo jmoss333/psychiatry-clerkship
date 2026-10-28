@@ -1294,6 +1294,16 @@
     "contentHash": "5496f2b1858f14162913a063fb23753a698b489a",
     "clinicalHash": "a01969f13e1f6f41258397f9af261b4c913d7434"
   },
+  "family-meeting-sim.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "high"
+    },
+    "reason": "New Family Conversation Simulator (three draft fictional scenarios, safety-planning rehearsal) added 2026-10-27; awaiting faculty attestation.",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
+  },
   "rp-canon-quiz.html": {
     "status": "reviewed",
     "risk": {
@@ -1537,6 +1547,26 @@
     },
     "reason": "New Case of the Week (Suicide risk assessment & safety planning, resident) added 2026-10-12; awaiting faculty attestation.",
     "at": "2026-10-12",
+    "by": "Pending faculty review"
+  },
+  "maine_law.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "legal",
+      "level": "high"
+    },
+    "reason": "New Maine law & capacity statute page added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
+  },
+  "maine-law-navigator.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "legal",
+      "level": "high"
+    },
+    "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
     "by": "Pending faculty review"
   }
 }

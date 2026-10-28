@@ -591,7 +591,7 @@
     "tldr": "Mutism, immobility, posturing, or waxy flexibility — recognize catatonia, do a lorazepam challenge, and hold antipsychotics.",
     "points": [
       "Use the Bush-Francis signs; describe motor findings objectively.",
-      "The lorazepam challenge is both diagnostic and therapeutic.",
+      "The lorazepam challenge both supports the diagnosis and starts treatment.",
       "ECT is definitive, especially for malignant catatonia."
     ],
     "cant": "Antipsychotics can precipitate malignant catatonia / NMS — exclude those before giving one.",
@@ -659,7 +659,7 @@
       "say": "The stillness and speech change can be part of a treatable motor syndrome, so we are going to assess it carefully.",
       "collateral": "Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.",
       "rounds": "Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.",
-      "exam": "Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.",
+      "exam": "Lorazepam challenge supports the diagnosis and is therapeutic; antipsychotics can worsen malignant catatonia/NMS.",
       "actions": [
         {
           "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
@@ -683,7 +683,7 @@
       "Name the signs with the Bush-Francis screen: mutism, stupor, staring, posturing, waxy flexibility, negativism, echophenomena",
       "Vitals first: fever, rigidity, or autonomic instability suggests malignant catatonia, which overlaps with NMS and is a medical emergency",
       "Hold antipsychotics until catatonia is excluded or has responded; raise it with the team before one is given",
-      "Lorazepam challenge per institutional protocol and your supervisor: diagnostic and the start of treatment",
+      "Lorazepam challenge per institutional protocol and your supervisor: supports the diagnosis and starts treatment",
       "Escalate: ECT for severe, malignant, or benzodiazepine-refractory catatonia, without delay if deteriorating"
     ],
     "safetyDoc": "the Bush-Francis signs observed, vitals, recent antipsychotic exposure, and the lorazepam-challenge plan or response.",
@@ -781,7 +781,7 @@
           "title": "Catatonic signs, vitals stable: assess and plan",
           "tone": "first",
           "act": [
-            "Tell the team now. A lorazepam challenge per institutional protocol is diagnostic and starts treatment.",
+            "Tell the team now. A lorazepam challenge per institutional protocol supports the diagnosis and starts treatment.",
             "Score the full Bush-Francis scale so severity can be tracked over time.",
             "Look for the driver: med list, vitals, CK and basic labs, EEG if nonconvulsive status is possible.",
             "Track intake, mobility, and complications of immobility."
@@ -2749,7 +2749,11 @@
       "diefenbach-2025",
       "shank-2026",
       "stanley-brown-2012-safety-planning",
-      "franklin-2017-suicide-risk-meta-analysis"
+      "franklin-2017-suicide-risk-meta-analysis",
+      "bostwick-2016-suicide-attempt-lethality",
+      "chung-2017-postdischarge-suicide",
+      "posner-2011-cssrs",
+      "liu-2020-passive-suicidal-ideation"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2856,7 +2860,7 @@
             },
             {
               "label": "Only a wish to be dead",
-              "next": "plan"
+              "next": "passive"
             },
             {
               "label": "No to both",
@@ -2881,7 +2885,7 @@
         },
         {
           "id": "acute",
-          "ask": "Is any acute risk factor present right now?",
+          "ask": "Is any acute risk factor present right now, a suicide attempt in the past year, or a psychiatric discharge in the past 3 months?",
           "hint": "Intoxication or withdrawal, severe agitation, psychosis or command hallucinations, severe insomnia, new access to lethal means, or unwilling to work on safety.",
           "options": [
             {
@@ -2891,6 +2895,25 @@
             {
               "label": "No",
               "next": "thoughts"
+            }
+          ]
+        },
+        {
+          "id": "passive",
+          "ask": "Only a wish to be dead: any preparation, an attempt in the past year, a discharge in the past 3 months, or an acute risk factor?",
+          "hint": "Ask about steps taken, intoxication or withdrawal, psychosis, severe insomnia, and new access to lethal means. Recheck for active thoughts.",
+          "options": [
+            {
+              "label": "Preparation or steps taken",
+              "next": "high"
+            },
+            {
+              "label": "Recent attempt, discharge, or acute factor",
+              "next": "high-acute"
+            },
+            {
+              "label": "None of these",
+              "next": "passive-only"
             }
           ]
         },
@@ -2944,11 +2967,23 @@
         },
         {
           "id": "thoughts",
-          "title": "Thoughts without plan or acute factors: still report",
+          "title": "Active thoughts, no plan or acute factor: report before encounter ends",
           "tone": "first",
           "act": [
-            "Tell your team before this encounter ends. You do not decide their risk.",
-            "Ask about lethal means, firearms first, and any past attempt.",
+            "Tell your team now, before this encounter ends. Don't hold it for rounds. You do not decide their risk.",
+            "Ask about lethal means, firearms first, and past attempts. An attempt in the past year or a discharge in the past 3 months: escalate now.",
+            "Write down their exact words and the reasons for living they named."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "passive-only",
+          "title": "Wish to be dead, no active thoughts: report this shift",
+          "tone": "first",
+          "act": [
+            "Tell your team this shift, before the patient leaves your care. The team completes the full risk assessment; you do not decide their risk.",
+            "Ask about lethal means, firearms first, and past attempts. Any steps, an attempt in the past year, or a discharge in the past 3 months: escalate now.",
+            "Recheck for active thoughts. If the wish becomes thoughts of killing themselves, tell the team before this encounter ends.",
             "Write down their exact words and the reasons for living they named."
           ],
           "escalate": "soon"
@@ -2985,12 +3020,12 @@
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         },
         "soon": {
-          "label": "Ask them to see the patient today",
+          "label": "Ask them to see the patient this shift",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
           "situation": "I want to report a safety concern from my interview: [their exact words, or what prompted my concern].",
           "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
           "assessment": "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]. I'm not the one who decides their risk.",
-          "recommendation": "Can you assess them today — when? Is there anything I should do first?",
+          "recommendation": "Can you assess them this shift — when? Is there anything I should do first?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         }
       }
@@ -5663,7 +5698,10 @@
     "evidenceIds": [
       "clozapine-rems",
       "fda-drug-safety",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "cipriani-2013-lithium-suicide",
+      "katz-2022-lithium-va",
+      "wang-2025-lithium-suicidality"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -6490,6 +6528,20 @@
       "Interview a new patient",
       "Present on rounds",
       "Write a progress note"
+    ],
+    "safetyLevel": "moderate"
+  },
+  "maine_law.md": {
+    "read": 8,
+    "tldr": "Before you act, name the Maine pathway and its clock: the blue paper (34-B §3863), the 24-hour second opinion, the 3-day court filing, and who decides when capacity is lost. Educational summary; not legal advice.",
+    "points": [
+      "An emergency admission (§3863) is not a commitment; without a staff practitioner's second-opinion certificate within 24 hours, the person must be discharged.",
+      "Commitment does not authorize treatment over objection; that needs a separate court order under §3864(7-A).",
+      "A minor may consent to treatment for substance use disorder or emotional or psychological problems (22 §1502), but informal admission under 18 needs a parent or guardian (§3831(3))."
+    ],
+    "relatedTools": [
+      "maine-law-navigator.html",
+      "capacity.html"
     ],
     "safetyLevel": "moderate"
   }

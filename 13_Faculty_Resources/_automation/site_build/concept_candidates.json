@@ -2044,6 +2044,11 @@
       "source": "14_Tracks/Resident/systems_medlegal.md",
       "title": "Inpatient Systems & Med-Legal",
       "reason": "Outside the initial shared legacy Concepts scope; audience-specific teaching requires a separately reviewed card map. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "03_Core_Topics/Ethics_Legal/maine_law_capacity_navigator.md",
+      "title": "Maine Law & Capacity: Statute Navigator",
+      "reason": "New legal page added 2026-10-27, pending attestation; statute-derived recall cards need a separately reviewed card map. Exclusion DECIDED: owner decision D-F7-8, 2026-10-27."
     }
   ]
 }
