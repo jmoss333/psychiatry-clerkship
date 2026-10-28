@@ -86,6 +86,34 @@ function fdDock(state){
   return out;
 }
 
+/* Usage notice (L8 D3, decided 2026-10-27): a one-line footer that discloses the aggregate usage
+   counter -- and ONLY where the counter shipped. `an` is the same state fdSheetSettingsBody reads
+   for its Usage section: null when CLERKSHIP_ANALYTICS left the emitter out of this build (every
+   build today), in which case this returns '' and the footer mount stays empty and hidden. A notice
+   about collection that is not happening is worse than silence (fd_sheet.js, Usage).
+   The control is the existing data-fd-settings action: opting out happens in Settings > Usage,
+   whose On/Off pair delegates to the emitter. No second writer of the opt-out exists here.
+   Three true sentences for three device states: counted; excluded by the learner; excluded by
+   the browser's DNT/GPC (which this panel cannot change, so it gets no "Opt out" label). */
+function fdUsageNotice(an){
+  if(!an) return '';
+  var lead='This site counts page and tool use in aggregate to improve the curriculum: '+
+    'no accounts, no cookies, no individual tracking.';
+  var tail, label;
+  if(an.privacySignal){
+    tail=' Your browser asks sites not to measure usage, so this device is not counted.';
+    label='Usage settings';
+  } else if(an.optedIn===true){
+    tail='';
+    label='Opt out';
+  } else {
+    tail=' This device is not counted.';
+    label='Usage settings';
+  }
+  return '<p class="fd-usage-notice">'+lead+tail+' <button type="button" '+
+    'class="fd-usage-notice__btn" data-fd-settings>'+label+'</button></p>';
+}
+
 /* Header actions (one-thread redesign, Phase 1, owner decision D4): the week pill is gone. The
    week is set from Today ("Change week" on the eyebrow), Path ("Set as my week") and first-run
    setup -- never from a control that sat on every screen regardless of what the screen was about.
