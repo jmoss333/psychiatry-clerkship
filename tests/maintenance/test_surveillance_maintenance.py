@@ -233,7 +233,7 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
                 block,
                 f"{path.name} passes --out-dir; the production default is no longer exercised",
             )
-        self.assertEqual(len(callers), 4, f"expected 4 surveillance callers, got {callers}")
+        self.assertEqual(len(callers), 5, f"expected 5 surveillance callers, got {callers}")
 
     def test_sync_completes_end_to_end_on_the_production_flag_set(self):
         """The two pins above read the parsed value and the workflow files; neither RUNS the
@@ -1348,13 +1348,14 @@ class SurveillanceMaintenanceTests(unittest.TestCase):
         workflows = {
             "surveillance-link-monitor.yml": "0 6 * * 1",
             "surveillance-citations.yml": "0 7 * * 1",
+            "surveillance-evidence-watch.yml": "0 8 * * 1",
             "surveillance-guideline.yml": "0 6 1 * *",
             "surveillance-resource-intake.yml": None,
         }
         pins = {
             "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
-            "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
-            "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+            "actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0",
+            "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
         }
         for filename, cron in workflows.items():
             with self.subTest(workflow=filename):
