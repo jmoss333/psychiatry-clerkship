@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Franklin et al. · 2017 · Psychological Bulletin",
-     "sourceId": "franklin-2017-suicide-risk-meta-analysis",
+     "t": "Modini et al. · 2026 · Australas Psychiatry",
+     "sourceId": "modini-large-2026",
      "key": "A"
     },
     {
-     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
-     "sourceId": "lieberman-2005-catie",
+     "t": "Posner et al. · 2011 · The American journal of psychiatry",
+     "sourceId": "posner-2011-cssrs",
      "key": "B"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Appelbaum et al. · 1988 · The New England Journal of Medicine",
-     "sourceId": "appelbaum-grisso-1988-capacity",
+     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
+     "sourceId": "brodsky-2025",
      "key": "A"
     },
     {
-     "t": "Ferguson et al. · 2022 · Archives of suicide research : official journal of the International Academy for Suicide Research",
-     "sourceId": "ferguson-2021-safety-planning-review",
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-psychopharm-agitation-2012",
      "key": "B"
     },
     {

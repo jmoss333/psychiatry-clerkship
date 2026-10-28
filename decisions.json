@@ -337,6 +337,80 @@
       "rationaleRef": "docs/adr/ADR-003-attestation-ledger.md (Status and Removal sections); review decision §6-a chosen 2026-10-18 in a Cowork session",
       "note": "Built dark on 2026-09-25 and never activated. Two integrity mechanisms with one switched off was design debt: a code path production never ran, a scheduled function invoked every ten minutes to return immediately, a signing-key runbook nobody had followed, and the largest single topic in the agent rulebook. The forgeable console identity the ledger would have fixed cryptographically is closed instead by a GitHub App identity plus a ruleset on attest/pending (review R4). Phase 1 removed the build overlay, the ledger-publish schedule, bin/ledger.mjs, bin/ledger_keygen.mjs and 13_Faculty_Resources/ledger/; phase 2 removes the console's ATTEST_LEDGER mode and its tests in its own PR with the console suites run in full. Kept: the question bank's manifest line is hashed without item status (signing a question must never drift the question tools), and an agent never mints a signing key or writes a signatures branch. Revisit only if an institutional sponsor requires cryptographic signatures; the design doc stays in docs/superpowers/specs.",
       "governs": []
+    },
+    {
+      "id": "console-identity-github-app",
+      "title": "The faculty console's GitHub identity is a GitHub App installed on this repository alone, not a person's token; a ruleset on attest/pending with the App as its only bypass actor is what makes the console identity non-forgeable",
+      "status": "active",
+      "decided": "2026-10-18",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "docs/adr/ADR-004-console-identity-github-app.md; architecture review item R4, chosen 2026-10-18 in a Cowork session (GitHub App over a machine user)",
+      "note": "Commits still name faculty@clerkship.local, so CONSOLE_IDENTITY and gate L4 are unchanged; what changes is who can hold the credential. With none of GITHUB_APP_ID, GITHUB_APP_INSTALLATION_ID, GITHUB_APP_PRIVATE_KEY set the console uses GITHUB_TOKEN as before; with some but not all, or a key that does not parse, or an exchange GitHub refuses, every request fails server_configuration before any repository call — a half-configured identity must never fall back to the personal token it replaces. The read-only functions and the rolling-PR sweep keep GITHUB_TOKEN (no pushes). Activation is the owner's: create and install the App, set the three variables, prove one sign-off, then the ruleset (attest/pending and attest/evidence-review; Restrict updates + creations; bypass = the App) and pin it in bin/check_ruleset_drift.py. The proof is a human push to attest/pending being refused, not a Verified badge.",
+      "governs": [
+        "faculty-console/github-app-auth.mjs"
+      ]
+    },
+    {
+      "id": "public-repo-no-per-person-records",
+      "title": "Placement rule: learner-facing content and tools live in this public library; any record about an individual person (learner, faculty member, patient) lives only in ClerkshipOS or an institutional system, never in this repository",
+      "status": "active",
+      "decided": "2026-10-27",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "F-wave plan 2026-10-26 (owner's planning document, kept outside the repo) §9 code D-X-1 and §11 decision record; recommendation accepted by the owner 2026-10-27 ('fw rec')",
+      "note": "F-wave code D-X-1. The repository is public, so everything committed is world-readable. Learner-facing pages and tools ship from here, attested through reviewed.json. Per-person records — EPA observations, evaluations, rosters, token-to-student maps, consent or pre/post pairing records, free-text comments about a person — are stored only in an institutional system or in ClerkshipOS (private, RLS/Auth scaffolding); which of the two is a separate decision (D-F6-1: institutional system first). What this repo may hold instead: synthetic fixtures labelled as such, device-local demo state under literal cw_* keys, and suppressed cohort aggregates (see director-dashboard-aggregate-only). ClerkshipOS itself is untouched this wave (D-X-2).",
+      "governs": []
+    },
+    {
+      "id": "netlify-functions-stateless-existing-backend",
+      "title": "A Netlify function on an existing site counts as existing backend only if it stores nothing per person; any function that writes or retains a per-person record is a new backend and needs its own owner decision",
+      "status": "active",
+      "decided": "2026-10-27",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "F-wave plan 2026-10-26 (owner's planning document, kept outside the repo) §9 code D-X-4 and §11 decision record; recommendation accepted by the owner 2026-10-27 ('fw rec')",
+      "note": "F-wave code D-X-4. 'Stores nothing per person' means no write or retention, in any store the function can reach (Blobs, a database, a repository branch, logs kept on purpose), of a value keyed to or describing an identifiable individual. Reading committed files, returning suppressed aggregates, and incrementing the metrics site's allowlisted integer counters (analytics-allowlist) qualify. This is what permits the F8 read-only aggregate function on the metrics site (D-F8-2). It does not relax the no-new-secrets, no-new-paid-service, no-new-site and no-env-change rules; a function that needs any of those is a new decision regardless of what it stores.",
+      "governs": []
+    },
+    {
+      "id": "director-dashboard-aggregate-only",
+      "title": "Scope record: the clerkship director dashboard and the L8 outcomes feed show and export cohort-level aggregates only — no student identifiers, small-cell suppression below n=5 (with complementary suppression and no differencing across nested thresholds), and no per-person storage",
+      "status": "active",
+      "decided": "2026-10-27",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "F-wave plan 2026-10-26 (owner's planning document, kept outside the repo) §4 and §9 codes D-F8-1 and D-F8-6, §11 decision record, accepted by the owner 2026-10-27 ('fw rec'); input contract _prototypes/director-dashboard/DATA_CONTRACT.md (PR #1137)",
+      "note": "F-wave codes D-F8-1 (aggregate-only scope) and D-F8-6 (nested-threshold leak). Scope, all of it binding on any producer, endpoint or renderer of the dashboard or the L8 feed: (1) UNIT. Cohort level only — site x rotation block, or site x ISO week. No per-learner row, view, drill-down or export. The finest time grain anywhere is the ISO week. (2) NO IDENTIFIERS. No names, emails, student, study or roster IDs, tokens, IP addresses, user agents, session ids, item ids, answers, individual scores, free text, or timestamps finer than the ISO week. Field sets are closed: an unknown field is a rejection, not a warning. (3) SMALL-CELL SUPPRESSION. Threshold 5, a floor that may be raised and never lowered. (a) Any displayed count below the threshold, zero included, renders as '<5'. (b) Complementary suppression: in any row or set whose total is shown, if exactly one cell is suppressed the next-smallest cell is suppressed too, so the hidden cell cannot be recovered by subtraction. (c) A share is suppressed when its numerator or denominator is below the threshold; when fewer than the threshold fall outside the numerator only a lower bound is shown, so 'all but two' is never readable. (d) No nested-threshold differencing (D-F8-6): for nested or cumulative series (for example answered >=5 contains >=10 contains >=20), no published value may let a reader derive, by subtracting any other published value, a count from 1 to threshold-1; apply complementary suppression along the chain. This gap must be closed in the renderer and the endpoint before any real feed is connected. (e) Suppression runs at source — the read-only endpoint returns only suppressed aggregates (D-F8-2) — and again at render; the renderer never relies on the source having done it. (4) NO PER-PERSON STORAGE. Neither the dashboard, the metrics site nor any function in this repo stores a per-person record (public-repo-no-per-person-records, netlify-functions-stateless-existing-backend). The only stored data are the metrics site's integer counters per site x ISO week x allowlisted key (analytics-allowlist). The rotation calendar comes from a committed file holding block start dates only (D-F8-3), never derived from learner data. (5) WIDENING IS A NEW DECISION. Any new counter family — including the per-category counter for a weak-topics panel, deferred by D-F8-5 — widens what a learner's browser sends and needs its own decision. EPA data enters only as epa-aggregates-only-n5-per-block allows. (6) REAL DATA. No real feed until the L8 D1–D3 owner actions (D-F8-4); until then fixtures are synthetic, flagged _synthetic, under a MOCK banner. Designed for data minimisation; not claimed to satisfy FERPA or any other regime — compliance review pending. Enforcement today is the unshipped prototype's DD.validateFeed() and tests/director-dashboard.test.mjs; DECISION markers are added there when those files are next edited.",
+      "governs": []
+    },
+    {
+      "id": "faculty-comments-no-llm",
+      "title": "No language model reads, summarises, rewrites, scores or drafts from faculty free-text comments about learners",
+      "status": "active",
+      "decided": "2026-10-27",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "F-wave plan 2026-10-26 (owner's planning document, kept outside the repo) §3.5 and §9 code D-F6-4, §11 decision record; recommendation accepted by the owner 2026-10-27 ('fw rec')",
+      "note": "F-wave code D-F6-4. Covers EPA micro-assessment comments, evaluation narratives and any other faculty-authored text about an identifiable learner, wherever it is stored and whichever model or vendor. A draft evaluation assembled from micro-assessments is built by deterministic templating from structured ratings, with comments quoted verbatim or not at all. The EPA demo (PR #1139, _prototypes/epa-micro/) calls no model. Lifting this needs a new owner decision and the institution's agreement.",
+      "governs": []
+    },
+    {
+      "id": "epa-aggregates-only-n5-per-block",
+      "title": "EPA micro-assessment data reaches the director dashboard and the L8 export only as per-rotation-block aggregates covering at least 5 learners — never as per-learner rows",
+      "status": "active",
+      "decided": "2026-10-27",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "F-wave plan 2026-10-26 (owner's planning document, kept outside the repo) §3 and §9 code D-F6-5, §11 decision record; recommendation accepted by the owner 2026-10-27 ('fw rec')",
+      "note": "F-wave code D-F6-5. Aggregation happens inside the system that holds the per-person EPA records (institutional system first, ClerkshipOS only if none — D-F6-1), never in this repo. The unit is one rotation block on one site; a block with fewer than 5 distinct learners contributing is suppressed whole, and every count, share and nested series within a published block follows the suppression rules of director-dashboard-aggregate-only. Pooling blocks to reach 5 is permitted; splitting a block below it is not. No learner identifier, token or comment travels with the aggregate (faculty-comments-no-llm, public-repo-no-per-person-records).",
+      "governs": []
+    },
+    {
+      "id": "evidence-watch-no-ai-summaries",
+      "title": "The evidence watcher calls no language model: findings carry source metadata and section diffs only, with no AI-written summary and no model API key",
+      "status": "active",
+      "decided": "2026-10-27",
+      "decidedBy": "Joshua Moss, MD",
+      "rationaleRef": "F-wave plan 2026-10-26 (owner's planning document, kept outside the repo) §6.5 and §9 code D-F10-3, §11 decision record; recommendation accepted by the owner 2026-10-27 ('fw rec'); 13_Faculty_Resources/_automation/surveillance/config/evidence_watch.yaml (PR #1140)",
+      "note": "F-wave code D-F10-3, decided for this wave. The job runs on GITHUB_TOKEN alone; adding an ANTHROPIC_API_KEY (or any model key) secret, or a summarisation step, is a new owner decision. The companion severity rules D-F10-1 (openFDA boxed-warning / REMS / contraindication change = P0) and D-F10-2 (PubMed P1 allowlist) were decided the same day and are recorded where they are configured, in evidence_watch.yaml.",
+      "governs": [
+        "13_Faculty_Resources/_automation/surveillance/config/evidence_watch.yaml"
+      ]
     }
   ]
 }

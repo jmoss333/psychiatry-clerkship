@@ -123,4 +123,30 @@ for (const site of ['ms3', 'res']) {
     }
     assert.deepEqual(moved, []);
   });
+
+  // D-F7-7 (owner decision, 2026-10-27): "blue paper" is a phrase synonym that steers to the Maine
+  // law page and navigator ("maine 3863") -- the alias only, scoped so safety pages still rank
+  // first. The alias test above compares with and without aliases but keeps the synonyms map, so
+  // this pins the synonym itself: removing the blue-paper keys must leave every protocol row of
+  // every benchmark phrase, crisis phrasing, item-first term and alias phrase exactly where it was.
+  test(`${site}: the blue-paper synonym (D-F7-7) moves no safety protocol`, () => {
+    const BLUE = ['blue paper', 'blue papers'];
+    const syn = p.curriculum.synonyms || {};
+    for (const k of BLUE) assert.equal(syn[k], 'maine 3863', `synonym "${k}" (D-F7-7) is present`);
+    const without = Object.fromEntries(Object.entries(syn).filter(([k]) => !BLUE.includes(k)));
+    const queries = new Set([
+      ...fixture.served.filter((r) => r.sites.includes(site)).map((r) => r.query),
+      ...fixture.crisis.map((r) => r.query), ...fixture.itemFirst,
+      ...Object.values(p.curriculum.searchAliases || {}).flat(),
+    ]);
+    const moved = [];
+    for (const q of queries) {
+      const a = protocolRows(F.fdSearchResults(index, q, syn, {}));
+      const b = protocolRows(F.fdSearchResults(index, q, without, {}));
+      if (a !== b) moved.push(`"${q}": [${b}] -> [${a}]`);
+    }
+    assert.deepEqual(moved, []);
+    const top = results('blue paper').slice(0, 2).map((r) => r.item.ref).sort();
+    assert.deepEqual(top, ['maine-law-navigator.html', 'maine_law.md'], 'blue paper opens on the Maine pair');
+  });
 }

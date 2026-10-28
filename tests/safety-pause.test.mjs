@@ -7,7 +7,7 @@ import test from 'node:test';
 const shell = readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/spa_index.html', import.meta.url), 'utf8');
 const BEGIN = '/* ---- safety pause (begin) ----';
 const END = '/* ---- safety pause (end) ---- */';
-const MOUNTS = ['fdChromeMount', 'fdCaptureMount', 'fdDockMount', 'content', 'governanceMount'];
+const MOUNTS = ['fdChromeMount', 'fdCaptureMount', 'fdDockMount', 'content', 'governanceMount', 'fdUsageMount'];
 const SPARED = ['routeStatus', 'careNavigatorStatus', 'fdOverlayMount', 'fdNudgeMount'];
 
 function fakeEl() {
@@ -33,7 +33,7 @@ function harness() {
   return { api, els, posted, pageMedia, frameMedia };
 }
 
-test('opening a safety sheet inerts exactly the five mounts', () => {
+test('opening a safety sheet inerts exactly the six mounts (L8 D3 added the usage footer)', () => {
   const h = harness();
   h.api.fdSyncSafetyPause({ sheet: 'kit' });
   for (const id of MOUNTS) assert.equal(h.els[id].attrs.inert, '', id);
