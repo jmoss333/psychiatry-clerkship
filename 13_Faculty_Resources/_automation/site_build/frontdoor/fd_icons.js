@@ -4,7 +4,7 @@
    site_build/vendor/lucide-static-1.54.0.icons.json with its LICENSE beside it, and drawn ONCE per
    page as a hidden <symbol> sprite that icon_sprite.py injects into the shell at build time. This
    helper only points at a symbol; it carries no path data, so there is one copy of each glyph.
-   No runtime CDN, no icon font, no dependency on ReConnect (C0 D-set: each repo vendors its own).
+   No runtime CDN, no icon font, no cross-repo dependency (C0 D-set: each repo vendors its own).
 
    Pure: state in, string out. No DOM, no storage, no clock. ES5 only (build-injected snippet).
    Injected via the FD_ICONS marker, after the FD_DATA join layer whose fdEsc it reuses.
