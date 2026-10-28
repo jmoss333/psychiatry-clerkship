@@ -98,8 +98,10 @@ def norm(s: str) -> str:
     s = re.sub(r"(?<![A-Za-z])[A-Za-z]{1,2}\s*=\s*", "= ", s)
     s = re.sub(r"\s*=\s*", " = ", s)          # uniform spacing around "="
     # The same artifact before an inequality: the italic "p < 0.0001" comes back as
-    # "< 0.0001" (driessen-2023, 2026-10-18). Same collapse, on both sides.
-    s = re.sub(r"(?<![A-Za-z])[A-Za-z]{1,2}\s*([<>≤≥])\s*", r"\1 ", s)
+    # "< 0.0001" (driessen-2023, 2026-10-18). Same collapse, on both sides -- but only
+    # for an italic statistic symbol, never any short word: prose puts "or", "to", "of"
+    # before an inequality ("20 mm Hg or ≥ 25"), and deleting one is an edit.
+    s = re.sub(r"(?<![A-Za-z])[pPnNtFrRzZdgbBUHMk]\s*([<>≤≥])\s*", r"\1 ", s)
     s = re.sub(r"\s*([<>≤≥])\s*", r" \1 ", s)
     s = re.sub(r"\s+", " ", s)
     return s
@@ -459,6 +461,14 @@ def self_test() -> int:
                                "95% CI -0.61 to -0.37, p < 0.05] and for >2 years rather "
                                "than <1 year (B = -0.68, p = 0.03).")), lbl_cache, zero)
     expect("a changed threshold after '<' is still a finding", rc == 1 and "0 clean" in out)
+    # ...but only a statistic symbol is forgiven: deleting a short WORD before an
+    # inequality (here "or") is a curator's edit (Codex review of #1109, NMS criteria).
+    nms_abs = ("A blood pressure elevation of at least 25% above baseline was required. "
+               "Fluctuation was defined as ≥ 20 mm Hg (diastolic) or ≥ 25 mm Hg (systolic) "
+               "change within 24 hours.")
+    rc, out = run(_fx(nms=("8", "Fluctuation was defined as ≥ 20 mm Hg (diastolic) ≥ 25 mm Hg "
+                               "(systolic) change within 24 hours.")), {"8": nms_abs}, zero)
+    expect("a short word deleted before '≥' is still a finding", rc == 1 and "0 clean" in out)
 
     # 7. a fall is a note naming the lowering command, never a failure
     rc, out = run(_fx(clean=("1", _FX_S1)), _FX_CACHE, dict(zero, rows_flagged=2, sentences_edited=3))
