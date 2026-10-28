@@ -1301,6 +1301,57 @@ class DraftTreesFlagTest(unittest.TestCase):
             self.assertEqual(fh.read().count(common.DRAFT_TREES_NEEDLE), 1)
 
 
+class TestPrePostFlag(unittest.TestCase):
+    """CLERKSHIP_PREPOST (L8 outcomes design, DRAFT): default off, fail closed."""
+
+    SHELL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spa_index.html")
+
+    def test_default_is_off_and_production_takes_the_default(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CLERKSHIP_PREPOST", None)
+            self.assertEqual(common.prepost_mode(), "off")
+            self.assertFalse(common.prepost_enabled())
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_deploy.py"),
+                   encoding="utf-8").read()
+        self.assertIn("_PREPOST=common.prepost_enabled()", src)
+        self.assertIn("common.apply_prepost_marker(_spa_t,_PREPOST)", src)
+
+    def test_invalid_value_raises(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_PREPOST": "yes"}):
+            with self.assertRaises(ValueError):
+                common.prepost_mode()
+
+    def test_the_real_shell_carries_the_marker_once_and_is_not_a_shared_snippet(self):
+        with open(self.SHELL_PATH, encoding="utf-8") as fh:
+            self.assertEqual(fh.read().count(common.PREPOST_MARKER), 1)
+        self.assertNotIn(common.PREPOST_MARKER, common.SNIPPET_MARKERS)
+
+    def test_off_expands_to_nothing_on_expands_to_the_snippet(self):
+        with open(self.SHELL_PATH, encoding="utf-8") as fh:
+            shell = fh.read()
+        off = common.apply_prepost_marker(shell)
+        self.assertNotIn(common.PREPOST_MARKER, off)
+        self.assertNotIn(common.PREPOST_SIGNATURE, off)
+        self.assertNotIn("cw_prepost_v1", off)
+        on = common.apply_prepost_marker(shell, enabled=True)
+        self.assertEqual(on.count(common.PREPOST_SIGNATURE), 1)
+        self.assertIn("function fdPrepostHandleClick(", on)
+
+    def test_missing_or_duplicated_marker_fails_closed(self):
+        for text in ("no marker", common.PREPOST_MARKER * 2):
+            with self.assertRaises(ValueError):
+                common.apply_prepost_marker(text)
+
+    def test_snippet_never_transmits(self):
+        with open(common.PREPOST_SNIPPET, encoding="utf-8") as fh:
+            body = fh.read()
+        for forbidden in ("sendBeacon", "XMLHttpRequest", "cwAnalytics", "method:'POST'",
+                          'method:"POST"', "sessionStorage", "document.cookie"):
+            self.assertNotIn(forbidden, body)
+        # Its only network call is the same-origin GET of the forms file.
+        self.assertEqual(re.findall(r"fetch\(([^)]*)\)", body), ["'prepost_forms.json'"])
+
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
