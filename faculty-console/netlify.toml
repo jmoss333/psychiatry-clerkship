@@ -36,16 +36,10 @@
 [build.environment]
   NODE_VERSION = "24"
 
-# Attestation ledger publisher (ADR-003): every 10 minutes, rebuild a learner site whose
-# served ledger-receipt.json is behind the ledger head once sign-offs have gone quiet.
-# Returns immediately while ATTEST_LEDGER is not "on".
-[functions."ledger-publish"]
-  schedule = "*/10 * * * *"
-
 # Rolling attestation PR sweep: every 15 minutes, if attest/pending carries signatures main
 # does not, make sure the rolling PR is open with auto-merge (merge commit) armed. The
 # console's own post-write PR call is best-effort and silent; on 2026-09-28 it left the
-# Interview Room re-attestation stranded for hours. Returns immediately in ledger mode.
+# Interview Room re-attestation stranded for hours.
 [functions."rolling-pr-sweep"]
   schedule = "*/15 * * * *"
 

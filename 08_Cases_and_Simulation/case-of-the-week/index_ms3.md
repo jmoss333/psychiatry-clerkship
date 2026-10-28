@@ -4,22 +4,9 @@
 
 **What this is.** A rotating weekly psychiatry teaching case, written at the MS3 / USMLE Step 2 CK level. Each case is a short, de-identified synthetic vignette with guided discussion questions (each paired with a teaching point), a ranked differential, a workup-and-management ladder, and anchoring citations. They're built for a ~20–30 minute small-group discussion — no pre-reading required — but also read well as solo review.
 
-**How to use it.** Pick the current week from the sidebar under **Case of the Week**. Work the stem first, commit to an answer for each discussion question before reading its teaching point, then check your differential and management against the model. Safety content is oriented to recognition, escalation, and safety planning.
+**How to use it.** Pick a case from the list below — the newest case is first, and every case is grouped under its topic. Work the stem first, commit to an answer for each discussion question before reading its teaching point, then check your differential and management against the model. Safety content is oriented to recognition, escalation, and safety planning.
 
-**This term's line-up (most recent first):**
-
-- **Serotonin Syndrome vs. Neuroleptic Malignant Syndrome** (Sep 14) — same fever, very different exam: clonus and hyperreflexia vs. lead-pipe rigidity, the Hunter criteria, the hidden serotonergics (linezolid, tramadol), and why the treatments diverge.
-- **Catatonia — Recognition, Workup & Treatment** (Aug 31) — the patient who stops moving: spotting the signs at the bedside, the BFCRS screen, the lorazepam challenge, and recognizing when it becomes an emergency.
-- **Borderline Personality Disorder — Presentation & Management** (Aug 27) — reading the pattern, not the moment: BPD vs. bipolar, chronic vs. acute-on-chronic risk, psychotherapy as the definitive treatment, and naming the diagnosis without flinching.
-- **Panic Disorder — Recognition, Differential & First-Line Treatment** (Aug 10) — panic attack vs. panic disorder, the must-not-miss mimics, why repeating a negative workup backfires, and SSRI + CBT.
-- **Lithium — Monitoring, Toxicity & Interactions** (Aug 3) — why the level rises when the dose doesn't, level-vs-exam dissociation, and the dialysis criteria.
-- **Opioid Use Disorder — Intoxication, Withdrawal & MOUD** (Jul 27) — the two toxidromes, naloxone, COWS, and starting medication treatment in the building.
-- **Alcohol Withdrawal & Delirium Tremens** (Jul 26) — the withdrawal timeline, predicting severe withdrawal, and first-line management.
-- **Suicide Risk Assessment & Safety Planning** (Jul 23) — structured assessment, the limits of risk scores, and collaborative safety planning.
-- **MDD — Treatment Selection & Augmentation** (Jul 20) — switch vs. augment vs. optimize when an antidepressant isn't working.
-- **Bipolar Mania — Recognition & Acute Management** (Jul 20) — spotting a manic episode and choosing first-line acute treatment.
-- **Acute Agitation & Delirium in the ED** (Jul 13) — treat the driver, de-escalate before PRN, PRN before restraint.
-- **Serotonin Syndrome vs. NMS** (Jul 9) — telling the two hyperthermic toxidromes apart and managing each.
+<!-- cotw-archive -->
 
 New cases are added weekly. A matching resident-level version of each case lives on the MMC resident site.
 

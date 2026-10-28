@@ -1072,7 +1072,35 @@ class ProfileSafetyContract(Base):
         for field in ("unitPurpose", "unitHours", "callbackTeam", "callbackHours", "callbackFallback"):
             for bad in (" ", "<b>Help</b>", "{{unitPhone}}", "help\u0007", "take 5 mg", "Call " + registered(3)):
                 self.assertErrorMentions(run_profiles([profile(**{field: bad})]), field)
-        self.assertErrorMentions(run_profiles([profile(unitHours="24/7")]), "unitHours", "availability")
+
+    def test_verified_all_day_staffed_hours_are_allowed_in_both_hours_fields(self):
+        for field in ("unitHours", "callbackHours"):
+            for hours in ("24/7", "24 hours a day, 7 days a week"):
+                with self.subTest(field=field, hours=hours):
+                    self.assertClean(run_profiles([profile(**{field: hours})]))
+
+    def test_all_day_hours_still_require_the_applicable_verification(self):
+        for field, group in (("unitHours", "contact"), ("callbackHours", "callback")):
+            with self.subTest(field=field, group=group):
+                p = profile(**{field: "24/7"})
+                p["verification"] = [entry for entry in p["verification"] if entry["field"] != group]
+                self.assertErrorMentions(run_profiles([p]), "verification", group)
+
+    def test_all_day_availability_is_still_refused_outside_staffed_hours(self):
+        for field in ("label", "org", "unitName", "unitPurpose", "callbackTeam", "callbackFallback"):
+            for value in ("24/7", "24 hours a day"):
+                with self.subTest(field=field, value=value):
+                    self.assertErrorMentions(run_profiles([profile(**{field: value})]), field, "availability")
+
+    def test_all_day_hours_keep_the_other_patient_text_guards(self):
+        cases = (("24/7; call 207-555-0100", "phone"), ("24/7; take 5 mg", "dose"),
+                 ("<b>24/7</b>", "markup"), ("24/7 {{unitName}}", "brace"),
+                 ("24/7\u0007", "control"), ("24/7; call " + registered(3), "crisis"),
+                 ("24/7; Verification due", "metadata"))
+        for field in ("unitHours", "callbackHours"):
+            for value, needle in cases:
+                with self.subTest(field=field, value=value):
+                    self.assertErrorMentions(run_profiles([profile(**{field: value})]), field, needle)
 
     def test_verification_evidence_is_not_blank_and_cannot_claim_approval(self):
         p = profile()
@@ -1243,7 +1271,7 @@ class ProductionDefaults(Base):
         doc = json.loads(validator.PROFILES.read_text(encoding="utf-8"))
         report = validator.check_profiles(doc, profiles_schema(),
                                           json.loads(validator.CRISIS.read_text(encoding="utf-8")),
-                                          json.loads(validator.DATA.read_text(encoding="utf-8")), TODAY)
+                                          json.loads(validator.DATA.read_text(encoding="utf-8")), date.today())
         self.assertEqual([], report.errors)
         text = validator.PROFILES.read_text(encoding="utf-8")
         self.assertNotRegex(text, r"555\D{0,3}01\d\d", "555-01xx is the reserved fictional range")
@@ -1280,7 +1308,7 @@ class ProductionDefaults(Base):
     def test_the_real_crisis_block_resolves_to_both_required_numbers(self):
         report = validator.check(json.loads(validator.DATA.read_text(encoding="utf-8")),
                                  json.loads(validator.SCHEMA.read_text(encoding="utf-8")),
-                                 json.loads(validator.CRISIS.read_text(encoding="utf-8")), TODAY)
+                                 json.loads(validator.CRISIS.read_text(encoding="utf-8")), date.today())
         self.assertEqual([], report.errors)
         self.assertIn("lifeline_988", report.stats["crisisResolved"])
         self.assertIn("maine_crisis_line", report.stats["crisisResolved"])

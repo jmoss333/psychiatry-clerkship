@@ -104,6 +104,22 @@ build gate's 105-real-file check is the authoritative local media evidence.
 
 ## Verification after each production release
 
+The same consolidated receipt also runs `production-dialog-focus.config.js` against both exact
+production deploy permalinks: all 132 existing delayed-loading cases, one worker and zero retries.
+The dialog run has a 15-minute overall limit (medication journeys: 10 minutes), reserving time
+for failure reporting and artifact upload within the release job.
+The dialog section shows MS3/resident phone and desktop results next to medication-ranking changes.
+It requires every named case (66 per site), retains failed attempts and traces, and reports missing,
+skipped, duplicate or unexpected cases as incomplete coverage. Dialog failures make verification
+FAIL; incomplete or unbound evidence makes it UNKNOWN. This is a post-release verification result,
+not a deployment blocker or faculty approval. Root shell and tool-governance revisions are checked
+before and after the run; raw results and target checks are retained in the 90-day release artifact.
+
+These are controlled-response Chromium tests, including explicit optional-feature and provider
+fixtures. They do not prove physical iPhone keyboard, native VoiceOver, or real provider/microphone
+behavior. Older release receipts without dialog evidence remain historical records, not proof that
+dialog checks ran. Manual rechecks with the current verifier require the new dialog evidence too.
+
 The release train dispatches `production-release-verification.yml` after publishing a
 revision. Its focused `production-release.config.js` runs against the exact production
 deploy permalinks for both learner sites, checked against the requested `RELEASE_SHA`.

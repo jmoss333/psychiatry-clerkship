@@ -878,8 +878,8 @@
       "reason": "Citation markers removed from tested face; revision advanced; evidence links moved to reveal. FACULTY REVIEW REQUIRED",
       "oldFront": "[…] is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
       "oldBack": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
-      "newFront": "[…] is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.",
-      "newBack": "Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it."
+      "newFront": "[…] is the mood stabilizer with the best maintenance evidence — use it, and monitor it. Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides than with placebo, based on few events. More recent randomized evidence is mixed. The VA trial adding it to usual care found no reduction in repeated suicide-related events. An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts. Teach a meaningful but uncertain anti-suicidal signal, not certain suicide prevention.",
+      "newBack": "Lithium is the mood stabilizer with the best maintenance evidence — use it, and monitor it. Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides than with placebo, based on few events. More recent randomized evidence is mixed. The VA trial adding it to usual care found no reduction in repeated suicide-related events. An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts. Teach a meaningful but uncertain anti-suicidal signal, not certain suicide prevention."
     },
     {
       "oldGuid": "e3~Pw!MgSZ",
@@ -1983,6 +1983,15 @@
         "pearl": 8
       },
       "mappedNotes": 9
+    },
+    {
+      "source": "03_Core_Topics/Ethics_Legal/maine_law_capacity_navigator.md",
+      "page": "maine_law.md",
+      "sections": {
+        "summary": 1,
+        "pearl": 0
+      },
+      "mappedNotes": 0
     },
     {
       "source": "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md",

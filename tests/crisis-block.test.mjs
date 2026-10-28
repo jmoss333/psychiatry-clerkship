@@ -74,6 +74,8 @@ const markedSources = new Map([
   ['_prototypes/sp-interview/sp-interview.html', HTML],
   ['02_Clinical_Skills/Communication_Practice/communication-practice.html', HTML],
   ['06_Family_and_Relational/family-systems-practice.html', HTML],
+  // rehearses safety-plan roles and means-safety counseling with families (2026-10-27)
+  ['08_Cases_and_Simulation/family-meeting-sim/family-meeting-sim.html', HTML],
   ['08_Cases_and_Simulation/one-patient-six-weeks.html', HTML],
   // the MSE module's Safety stage rehearses the same elicitation ladders as pg_interview.md
   ['02_Clinical_Skills/Mental_Status_Exam/mental-status-exam-module.html', HTML],

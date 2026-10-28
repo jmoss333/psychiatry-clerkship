@@ -1,5 +1,5 @@
 // Contract for the Search renderer -- synonym expansion, protocol-first ranking, the cap-at-8
-// safety contract, and the ⌘K overlay markup. Evaluates the real snippet body via new Function,
+// default view, explicit expansion, and the ⌘K overlay markup. Evaluates the real snippet body via new Function,
 // following tests/fd-library.test.mjs, tests/fd-reader.test.mjs. Concatenated in the same
 // dependency order inject_shared_snippets() uses on the built page: phase_policy.js ->
 // fd_state.js -> fd_data.js (the join layer fd_search.js's fdBuildIndex comes from) ->
@@ -91,7 +91,7 @@ test('care-intent searches surface the matching ReConnect resource without forwa
   const html = F.fdSearchOverlay(REAL_INDEX, 'housing help', SYN, {});
   const row = html.match(/<a class="fd-result is-care"[^>]*>[\s\S]*?<\/a>/)?.[0] || '';
   assert.match(row, /data-care-resource="resource-finder"/);
-  assert.match(row, /ReConnect · external care resource/);
+  assert.match(row, /External care resource/);
   assert.doesNotMatch(row, />Reading</);
   assert.match(row, /href="https:\/\/reconnect-tools\.netlify\.app\/tools\/reconnect-resource-finder-v7\.html"/);
   assert.match(row, /target="_blank" rel="noopener noreferrer"/);
@@ -100,7 +100,7 @@ test('care-intent searches surface the matching ReConnect resource without forwa
   // Phase 2 of the one-thread redesign: care results sit under their own group label; the footer
   // sentence is the spec's.
   assert.match(html, /<p class="fd-searchpanel__group is-care">Patient care resources<\/p><a class="fd-result is-care"/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
 });
 
 test('care suggestions never outrank an explicit safety trigger', () => {
@@ -149,6 +149,46 @@ test('matches via summary alone (word appears in tldr, not title or ref)', () =>
     '"orientation" only appears in welcome.md’s tldr');
 });
 
+// ---- the three item tiers: exact title, then alias, then score (2026-10-17) -------------------
+
+test('a one-word alias ranks its page first for the bare word, but never above another page\'s exact title', () => {
+  // Diagnosis aliases (curriculum.searchAliases, 2026-10-17): "psychosis" names the psychosis
+  // guide. Before the aliases, the week page outranked it ("Week 2 — Mood, Psychosis & Pharm").
+  const bare = F.fdSearchResults(REAL_INDEX, 'psychosis', SYN, {}).filter((x) => x.kind === 'item');
+  assert.equal(bare[0]?.item.ref, 't_psychosis.md');
+  // The same word sits inside a Case-of-the-Week title. Typing that whole title must open that
+  // page, not the alias target -- the exact tier sits above the alias tier.
+  const cotw = REAL_INDEX.byRef['cotw_20260907_fep_ms3.md'] && 'cotw_20260907_fep_ms3.md';
+  if (cotw) {
+    const title = REAL_INDEX.byRef[cotw].searchTitle || REAL_INDEX.byRef[cotw].title;
+    const exact = F.fdSearchResults(REAL_INDEX, title, SYN, {}).filter((x) => x.kind === 'item');
+    assert.equal(exact[0]?.item.ref, cotw, title);
+    assert.equal(exact[1]?.item.ref, 't_psychosis.md', 'the alias target follows the exact title');
+  }
+});
+
+test('an exact title that is not an alias never displaces the safety prefix (haystack protocol stays first)', () => {
+  // frontdoor-search-gate.mjs pins the same shape against the built shell: the Catatonia case
+  // page is the first ITEM for its own title, and the protocol rows keep the top: since #1087 the
+  // catatonia protocol (trigger "catatonia") leads, then Consult Questions (matched on
+  // "catatonia"). The exact tier may not jump a protocol.
+  const cotw = 'cotw_20260831_catatonia_ms3.md';
+  if (!REAL_INDEX.byRef[cotw]) return;
+  const rows = F.fdSearchResults(REAL_INDEX, 'Catatonia [Aug 31] — MS3?', SYN, {});
+  assert.equal(rows[0]?.kind, 'protocol');
+  assert.equal(rows[0]?.item.ref, 'catatonia.md');
+  assert.equal(rows[1]?.kind, 'protocol');
+  assert.equal(rows[1]?.item.ref, 'exp_consult.md');
+  assert.equal(rows.find((r) => r.kind === 'item')?.item.ref, cotw);
+});
+
+test('exact-title tier does not fire on a partial title, so #429 alias-over-topic-word ordering holds', () => {
+  // "capacity" is a recorded alias of capacity.html; the Consult Questions sheet merely carries
+  // the word in its title. The alias still leads (#429) because a partial title is not exact.
+  const r = F.fdSearchResults(REAL_INDEX, 'capacity', SYN, {}).filter((x) => x.kind === 'item');
+  assert.equal(r[0]?.item.ref, 'capacity.html');
+});
+
 // ---- protocol/item dedup (repo-specific: safetyKit refs are ALSO regular week items) ----------
 
 test('a ref that is both a safety-kit protocol and a regular item is returned only once', () => {
@@ -160,22 +200,29 @@ test('a ref that is both a safety-kit protocol and a regular item is returned on
 
 // ---- empty-query defaults ------------------------------------------------------------------
 
-test('empty query with no week set: 5 protocols then the 3 pinned reference tools, capped exactly at 8', () => {
+// The kit has 6 protocols since #1087 (catatonia.md). The cap of 8 is unchanged, so the pinned
+// tools that follow are cut from the tail: 6 protocols + 2 pinned with no week set, and
+// 6 protocols + next-unread + 1 pinned with a week set. KIT_N pins the kit size itself.
+const KIT_N = 6;
+
+test('empty query with no week set: every protocol (6) then the pinned reference tools, capped exactly at 8', () => {
+  assert.equal(REAL_CUR.safetyKit.length, KIT_N, 'kit size changed: re-derive the default slots below');
   const r = F.fdSearchResults(REAL_INDEX, '', SYN, {});
   assert.equal(r.length, 8);
-  for (let i = 0; i < 5; i++) assert.equal(r[i].kind, 'protocol', `result ${i} should be a protocol`);
-  assert.deepEqual(r.slice(0, 5).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
-  assert.deepEqual(r.slice(5).map((x) => x.item.ref), ['mse.html', 'withdrawal.html', 'pg_interview.md']);
+  for (let i = 0; i < KIT_N; i++) assert.equal(r[i].kind, 'protocol', `result ${i} should be a protocol`);
+  assert.deepEqual(r.slice(0, KIT_N).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
+  assert.deepEqual(r.slice(KIT_N).map((x) => x.item.ref), ['mse.html', 'withdrawal.html'],
+    'the cap drops the LAST pinned tool (pg_interview.md)');
 });
 
 test('empty query with a week set: next-unread item slots in after the protocols; the cap still drops the tail', () => {
   const r = F.fdSearchResults(REAL_INDEX, '', SYN, { week: 1, done: {} });
-  assert.equal(r.length, 8, 'cap holds: 5 protocols + next-unread + 3 pinned = 9 raw candidates');
-  assert.deepEqual(r.slice(0, 5).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
-  assert.equal(r[5].item.ref, 'welcome.md', 'first item in week 1, nothing done yet');
-  assert.equal(r[5].kind, 'item');
-  assert.deepEqual(r.slice(6).map((x) => x.item.ref), ['mse.html', 'withdrawal.html'],
-    'the cap drops the LAST pinned tool (pg_interview.md), matching the prototype’s own slice(0,8) behaviour');
+  assert.equal(r.length, 8, 'cap holds: 6 protocols + next-unread + 3 pinned = 10 raw candidates');
+  assert.deepEqual(r.slice(0, KIT_N).map((x) => x.item.ref), REAL_CUR.safetyKit.map((k) => k.ref));
+  assert.equal(r[KIT_N].item.ref, 'welcome.md', 'first item in week 1, nothing done yet');
+  assert.equal(r[KIT_N].kind, 'item');
+  assert.deepEqual(r.slice(KIT_N + 1).map((x) => x.item.ref), ['mse.html'],
+    'the cap drops the LAST two pinned tools, matching the prototype’s own slice(0,8) behaviour');
 });
 
 test('empty query never throws on a missing index (undefined defaults like every sibling renderer)', () => {
@@ -190,10 +237,11 @@ test('renders the panel skeleton with input, Close button, grouped results and t
   assert.match(html, /<div class="fd-searchpanel">/);
   assert.match(html, /<input type="text" class="fd-searchpanel__input" value=""/);
   assert.match(html, /<button type="button" class="fd-searchpanel__esc" data-fd-close-search(?:\s[^>]*)?>Close<\/button>/);
-  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
-  // Defaults: the five protocols lead, then the pinned tools and the pocket guide, each under its group label.
+  assert.match(html, /<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text\. Not here\? <strong>＋ Ask a question<\/strong> saves it for supervision\.<\/div>/);
+  // Defaults: the six protocols lead, then the two pinned tools the cap leaves, each under its
+  // group label (the pocket guide, a Page, is the pinned item the cap drops since #1087).
   const groups = [...html.matchAll(/<p class="fd-searchpanel__group(?: (is-[a-z]+))?">([^<]+)<\/p>/g)].map((m) => m[2]);
-  assert.deepEqual(groups, ['Safety protocols', 'Tools', 'Pages']);
+  assert.deepEqual(groups, ['Safety protocols', 'Tools']);
   assert.match(html, /<p class="fd-searchpanel__group is-safety">Safety protocols<\/p><button type="button" class="fd-result is-first" data-fd-safety="/,
     'the leading protocol sits on the danger wash');
 });
@@ -318,6 +366,48 @@ test('no-results empty state only replaces results for a non-empty query that ma
 test('empty query never shows the no-results state (defaults always populate it)', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, '', SYN, {});
   assert.doesNotMatch(html, /fd-searchpanel__empty/);
+});
+
+test('a zero-match search offers recovery without turning the query into a question draft', () => {
+  const html = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, {});
+  assert.match(html, /role="group" aria-label="Search recovery"/);
+  assert.match(html, /data-fd-search=""[^>]*>Edit search<\/button>/);
+  assert.match(html, /data-fd-tab="library"[^>]*>Browse the Library<\/button>/);
+  assert.equal((html.match(/>Browse the Library<\/button>/g) || []).length, 1);
+  assert.match(html, /data-capture-open=""[^>]*>Save a question for supervision<\/button>/);
+  assert.doesNotMatch(html, /data-cap-prefill|data-search-query/);
+  assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, '', SYN, {}), /aria-label="Search recovery"/);
+  assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, 'suicide', SYN, {}), /aria-label="Search recovery"/);
+});
+
+test('related search terms use the curated alternatives, capped at three after results', () => {
+  const groups = readJson('../13_Faculty_Resources/_automation/site_build/data/search-synonyms.v1.json').groups.map(g => g.terms);
+  const index = { ...REAL_INDEX, synonymGroups: groups };
+  const html = F.fdSearchOverlay(index, 'QTc', SYN, {});
+  assert.match(html, /role="group" aria-label="Related search terms"/);
+  const buttons = [...html.matchAll(/data-fd-search="" data-fd-search-query="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(buttons, ['qt prolongation', 'prolonged qt', 'qtc prolongation']);
+  assert.ok(html.indexOf('aria-label="Related search terms"') > html.lastIndexOf('class="fd-result'));
+  const safety = F.fdSearchOverlay(index, 'suicide qtc', SYN, {searchExpanded:true});
+  assert.ok(safety.indexOf('data-fd-safety="pg_suicide.md"') < safety.indexOf('aria-label="Related search terms"'));
+  assert.match(safety, /data-fd-search-query="suicide qt prolongation"/);
+  const action = F.fdDispatch({'data-fd-search':'','data-fd-search-query':buttons[0]}, {search:''}, {searchOpen:true,searchExpanded:true,query:'qtc'});
+  assert.equal(action.patch.query, 'qt prolongation');
+  assert.equal(action.patch.searchExpanded, false);
+  assert.equal(action.route, null);
+  assert.equal(action.effect.type, 'focus-search');
+  for (const query of ['', 'zzzzqqq', 'nmsx']) {
+    assert.doesNotMatch(F.fdSearchOverlay(index, query, SYN, {}), /aria-label="Related search terms"/);
+  }
+  assert.doesNotMatch(F.fdSearchOverlay(REAL_INDEX, 'qtc', SYN, {}), /aria-label="Related search terms"/);
+});
+
+test('search recovery respects app navigation and faculty preview boundaries', () => {
+  const app = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, { appMode: true });
+  assert.doesNotMatch(app, /data-fd-tab="library"/);
+  const preview = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, { facultyPreview: true });
+  assert.doesNotMatch(preview, /data-capture-open/);
+  assert.match(preview, />Edit search<\/button>/);
 });
 
 test('the search overlay is a labelled modal dialog and its close control is named', () => {
@@ -797,3 +887,105 @@ test('the Playbook remains discoverable on both audiences after Care gains direc
       `${site}: searching "${query}" must put the Family Meeting Playbook first`);
   }
 });
+
+// An independently countable corpus makes a silently capped "all" result list observable.
+function overflowIndex(count) {
+  const byRef = {};
+  for (let n = 1; n <= count; n++) {
+    const ref = `quasar-${String(n).padStart(2, '0')}.md`;
+    byRef[ref] = { ref, title: 'Quasar reference', summary: '', kind: 'read', minutes: 3 };
+  }
+  return { byRef, weeks: [], columns: [], kit: [] };
+}
+const ELEVEN_MATCH_REFS = [
+  'quasar-01.md', 'quasar-02.md', 'quasar-03.md', 'quasar-04.md', 'quasar-05.md',
+  'quasar-06.md', 'quasar-07.md', 'quasar-08.md', 'quasar-09.md', 'quasar-10.md', 'quasar-11.md',
+];
+
+test('Show all matches exposes every match in ranked order while the default remains eight', () => {
+  const index = overflowIndex(11);
+  const refs = (state) => F.fdSearchResults(index, 'quasar', {}, state).map((row) => row.item.ref);
+  assert.deepEqual(refs({}), ELEVEN_MATCH_REFS.slice(0, 8));
+  assert.deepEqual(refs({ searchExpanded: true }), ELEVEN_MATCH_REFS);
+  assert.deepEqual(refs({ searchExpanded: false }), ELEVEN_MATCH_REFS.slice(0, 8));
+  assert.deepEqual(refs({ searchExpanded: 'true' }), ELEVEN_MATCH_REFS.slice(0, 8),
+    'only the explicit boolean opt-in expands the default view');
+});
+
+test('overflow search tells learners how many matches exist and exposes an accessible reversible toggle', () => {
+  const index = overflowIndex(11);
+  for (const [expanded, count, label, summary] of [
+    [false, 8, 'Show all matches', 'Showing the top 8 of 11 matches'],
+    [true, 11, 'Show top 8', 'Showing all 11 matches'],
+  ]) {
+    const html = F.fdSearchOverlay(index, 'quasar', {}, { searchExpanded: expanded });
+    assert.ok(html.includes(summary), summary);
+    const toggle = html.match(/<button\b[^>]*data-fd-search-expand=""[^>]*>[\s\S]*?<\/button>/)?.[0];
+    assert.ok(toggle, 'the same delegated control must exist before and after expansion');
+    assert.match(toggle, new RegExp(`aria-expanded="${expanded}"`));
+    assert.match(toggle, /aria-controls="fd-search-results"/);
+    assert.ok(toggle.includes(label), label);
+    assert.match(html, /id="fd-search-results"/);
+    const visible = [...html.matchAll(/class="fd-result[^\"]*" data-fd-open="([^\"]+)"/g)]
+      .map((match) => match[1]);
+    assert.deepEqual(visible, ELEVEN_MATCH_REFS.slice(0, count),
+      'the visible count must describe actual rows, including the previously hidden tail');
+  }
+});
+
+test('searches with eight or fewer matches never offer an empty expansion action', () => {
+  for (const count of [1, 8]) {
+    for (const searchExpanded of [false, true]) {
+      const index = overflowIndex(count);
+      const html = F.fdSearchOverlay(index, 'quasar', {}, { searchExpanded });
+      assert.equal(F.fdSearchResults(index, 'quasar', {}, { searchExpanded }).length, count);
+      assert.equal((html.match(/class="fd-result(?:\s|\")/g) || []).length, count);
+      assert.doesNotMatch(html, /data-fd-search-expand/);
+    }
+  }
+  const empty = F.fdSearchOverlay(overflowIndex(11), 'no-such-resource', {}, { searchExpanded: true });
+  assert.match(empty, /Nothing for/);
+  assert.doesNotMatch(empty, /data-fd-search-expand/);
+});
+
+test('clearing an expanded query retains the bounded useful defaults and removes the toggle', () => {
+  const expected = ['pg_suicide.md', 'agitation.md', 'exp_consult.md', 't_sud.md', 'delirium.md', 'catatonia.md'];
+  for (const query of ['', '   ']) {
+    const results = F.fdSearchResults(REAL_INDEX, query, SYN, { searchExpanded: true, week: 1, done: {} });
+    assert.equal(results.length, 8);
+    assert.deepEqual(results.slice(0, 6).map((row) => row.item.ref), expected);
+    assert.deepEqual(results.slice(6).map((row) => row.item.ref), ['welcome.md', 'mse.html']);
+    const html = F.fdSearchOverlay(REAL_INDEX, query, SYN, { searchExpanded: true, week: 1, done: {} });
+    assert.doesNotMatch(html, /data-fd-search-expand|Showing (?:the top|all) .*matches/);
+  }
+});
+
+for (const site of ['ms3', 'resident']) {
+  const projection = SITE_PROJECTIONS[site];
+  const projectedIndex = F.fdBuildIndex(projection.curriculum, REAL_META, REAL_TOOLS, projection.manifest);
+  test(`[${site}] expanded search retains the original top eight and reveals additional real resources`, () => {
+    const synonyms = projection.curriculum.synonyms;
+    const compact = F.fdSearchResults(projectedIndex, 'treatment', synonyms, {});
+    const expanded = F.fdSearchResults(projectedIndex, 'treatment', synonyms, { searchExpanded: true });
+    assert.equal(compact.length, 8, 'this real audience query exercises overflow');
+    assert.ok(expanded.length > 8, 'Show all must reveal additional audience-visible resources');
+    assert.deepEqual(expanded.slice(0, 8), compact, 'expansion changes the limit, never the ranking');
+    const refs = expanded.map((row) => row.item.ref || row.item.id);
+    assert.equal(new Set(refs).size, refs.length, 'protocols also in the curriculum stay deduplicated');
+  });
+
+  test(`[${site}] expanded search preserves crisis priority and the curated tool exception`, () => {
+    for (const [query, ref, kind] of [
+      ['patient is suicidal', 'pg_suicide.md', 'protocol'],
+      ['confused patient', 'delirium.md', 'protocol'],
+      ['patient refuses medication', 'capacity.html', 'item'],
+    ]) {
+      const rows = F.fdSearchResults(projectedIndex, query, projection.curriculum.synonyms, { searchExpanded: true });
+      assert.equal(rows[0].item.ref, ref, `${site}: ${query}`);
+      assert.equal(rows[0].kind, kind, `${site}: ${query}`);
+      const html = F.fdSearchOverlay(projectedIndex, query, projection.curriculum.synonyms, { searchExpanded: true });
+      const first = html.match(/class="fd-result[^\"]*" data-fd-(?:open|safety)="([^\"]+)"/)?.[1];
+      assert.equal(first, ref, 'the first visible result must remain the one Enter opens');
+    }
+  });
+}

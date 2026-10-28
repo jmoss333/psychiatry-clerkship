@@ -16,6 +16,12 @@ Git, browser URLs or logs. This implementation creates no credentials or approva
 If either secret or the production context is absent, the service stays unavailable.
 Credential possession identifies the enrolled owner; this is not institutional SSO.
 
+If the public service reports `authority-unavailable`, the private function logs may
+contain `care-profile-startup`, a fixed startup stage, and fixed configuration-failure
+labels. These logs never include credential values or caught exception text. Check the
+named setting, then deploy again to load saved environment changes. The diagnostic
+does not relax approval requirements or expose setup details in the public response.
+
 The service uses the existing `GITHUB_TOKEN` only to read the candidate file from one
 immutable `main` commit. It never writes the repository, reviewed.json, or the existing
 attestation ledger. Missing candidate files and malformed profiles fail closed. The
@@ -335,7 +341,8 @@ If the console uses a different origin, update the learner site's exact `frame-a
 ### 3. Set environment variables (Netlify → Site config → Environment variables)
 | Variable | Value |
 |---|---|
-| `GITHUB_TOKEN` | the fine-grained PAT from step 1 |
+| `GITHUB_TOKEN` | the fine-grained PAT from step 1 — the attestation writer until the three App variables below exist; the read-only panels keep using it afterwards |
+| `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, `GITHUB_APP_PRIVATE_KEY` | *(ADR-004)* the console's own identity. Set all three (production secrets; the PEM pasted whole) and attestations are written with an installation token minted from the App's key; set none and `GITHUB_TOKEN` writes them. Set some, or a key that does not parse, and every request is `server_configuration` — on purpose |
 | `FACULTY_ATTEST_PASSWORD` | a strong shared faculty key |
 | `GITHUB_REPO` | `jmoss333/psychiatry-clerkship` *(optional; this is the default)* |
 | `GIT_BRANCH` | `attest/pending` *(optional; default)* — the branch attestations commit to |
@@ -348,25 +355,28 @@ If the console uses a different origin, update the learner site's exact `frame-a
 
 Deploy. Open the site, enter the key, and you're attesting.
 
-### Ledger mode — sign-offs without a pull request (ADR-003)
+### Ledger mode (ADR-003) — removed 2026-10-18
 
-With `ATTEST_LEDGER=on` the console stops using `GIT_BRANCH` and the rolling PR entirely. A
-sign-off (or a reopen) becomes one Ed25519-signed line appended to `ledger/events.jsonl` on the
-`attestations` branch, hashed against the page **as it stands on `main`**, and the learner sites
-pick it up on their next build (the scheduled `ledger-publish` function asks for one about ten
-minutes after sign-offs go quiet; **Publish now** asks at once). Nothing is ever written to
-`main`, so nothing ever needs merging. In ledger mode the console signs questions but does not
-edit their wording — that arrives through a content PR.
+The signed-ledger route (`ATTEST_LEDGER=on`) was built dark and removed by decision
+`attestation-ledger-removed`; `docs/adr/ADR-003-attestation-ledger.md` keeps the design and the
+reasons. Phase 1 removed the build overlay, the `ledger-publish` schedule, the keygen and the
+`13_Faculty_Resources/ledger/` folder; phase 2 removed the console's own ledger mode. The console
+no longer reads `ATTEST_LEDGER`, `LEDGER_BRANCH`, `LEDGER_SIGNING_KEY` or `LEDGER_BUILD_HOOKS`;
+any of them still set in the Netlify environment is ignored and can be deleted. The rolling-PR
+route below is the only route.
 
-| Variable | Value |
-|---|---|
-| `ATTEST_LEDGER` | `on` to enable; anything else keeps the rolling-PR route below |
-| `LEDGER_SIGNING_KEY` | **set only by `node bin/ledger_keygen.mjs --install`** — a production-only Netlify secret |
-| `LEDGER_BUILD_HOOKS` | `ms3=<build hook URL>,res=<build hook URL>` (secret) |
-| `LEDGER_BRANCH` | optional; default `attestations` |
+### Who the console is to GitHub (ADR-004)
 
-Turning it on is a five-step runbook: `13_Faculty_Resources/ledger/ACTIVATION.md`. The design, its
-invariants and its honest limits: `docs/superpowers/specs/2026-09-25-attestation-ledger-design.md`.
+Commits are made as `Faculty Attestation Console <faculty@clerkship.local>` either way. What the
+three `GITHUB_APP_*` variables change is the *credential* behind them: a GitHub App installed on
+this repository alone, whose private key exists only in this site's environment
+(`faculty-console/github-app-auth.mjs`). Once the owner adds the `attest/pending` ruleset that
+lists the App as its only bypass actor, nobody else — not the owner, not a session — can push
+that branch, and GitHub's **Update branch** button on the rolling PR is refused for people; it
+is not needed, because `main` does not require branches to be up to date. A rolling PR with a
+`reviewed.json` conflict is resolved by the owner adding themselves to the bypass list for the
+duration (`docs/OPERATIONS.md` §6). `docs/adr/ADR-004-console-identity-github-app.md` has the
+activation steps and the proof.
 
 ### Why attestations do not commit to `main`
 

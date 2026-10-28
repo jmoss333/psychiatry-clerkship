@@ -1,8 +1,68 @@
-# Care packet: remaining review and recovered progress
+# Care packet: review record and owner-directed activation
 
-**As of October 14, 2026: implementation merged; G-B closed; G-C and G-D open.**
-The feature flag remains off and the real unit-profile list remains empty. This record
-preserves completed work and observations; it does not approve patient use or activation.
+**As of October 15, 2026: implementation merged; G-B closed; G-C closed by owner
+waiver of remaining review; private setup and exact profile approval verified;
+authorized activation awaiting merge, publication and production verification.**
+The feature flag remains off on main revision
+`6b721c35b1e5fe01888cb6900245e836f44213fd` and is on in the separate activation
+branch. The Sanford Behavioral Health Unit 2 candidate records the owner's supplied
+and verified facts and now has independent production approval. The owner's latest
+direction supersedes the earlier instruction to keep G-C open and the flag off;
+the completed profile approval is separately evidenced below.
+
+## Latest owner direction
+
+In **Finish carer packet work**, thread `01a13a7d-fbda-72c0-8926-17fd260957e3`,
+the owner first clarified that approval applied to the updated plan, retaining G-C open
+and the flag off. Later on October 14, the owner directed: "i want this live on the site
+by the morniing", followed by "no more review needed". Record this as the owner's waiver
+of the remaining G-C review and authorization to proceed toward activation for the
+morning of October 15, America/New_York. Do not request the waived reviews again or
+record unperformed checks as passed.
+
+Activation is authorized; learner publication is not complete. Private owner enrollment,
+storage access and approval matching the real unit candidate are complete and verified
+as recorded below. The initial launch uses no organization branding and no
+optional callback program; no institutional branding permission or callback facts are
+inferred. Do not invent contact facts, verification evidence, credentials or approvals,
+or bypass the existing output guard to meet the requested date.
+
+## October 15: real unit candidate supplied by the owner
+
+The owner supplied these facts in the same chat and confirmed that he verified them:
+
+| Field | Owner-confirmed value |
+| --- | --- |
+| Unit | Sanford Behavioral Health Unit 2 |
+| Phone | 207-490-7702 |
+| Staffed hours | 24/7 |
+| Purpose | Non-urgent calls, medication refill difficulties, and follow-up questions within 30 days |
+
+Candidate `sanford-bhu-2` records identity and contact confirmation by faculty owner
+Joshua Moss, MD, on October 15, 2026. The verification method was not specified; do not
+claim a telephone call or directory check. No callback program or branding is inferred.
+The 30-day purpose describes routine incoming calls, not a promise that the unit will
+place a callback. The existing crisis-line boundary stays in the printed contact text.
+
+The inserts payload's `generatedAt` moves to October 15 to include this candidate;
+existing insert `verifiedDate` values are unchanged. The candidate's actual-check
+dates yield expiry at the start of January 13, 2027, America/New_York. Approval cannot
+extend that date. The owner subsequently authorized the exact candidate through the
+existing profile screen after it reached main and the production service was configured;
+the independent status evidence is recorded under G-D below.
+
+The Python validator incorrectly applied a name-specific availability restriction to
+the hours fields, rejecting the owner's `24/7` value. The correction permits availability
+phrases in hours only while retaining the phone, dose, markup and other text checks.
+It does not bypass independent profile approval or enable the feature flag.
+
+The production entrypoints also discarded Netlify's handler context while the service
+expected a `CONTEXT` environment value. The correction forwards the documented
+`context.deploy.context` and gives it precedence over any environment value; missing
+context and preview, branch or development deployments stay denied. Synthetic adapter
+tests distinguish reaching owner authentication in production from denial before storage
+in other contexts. This contract correction is not proof that the live service is
+configured or that a real unit approval exists.
 
 ## Implementation history and evidence
 
@@ -47,14 +107,15 @@ staff review, native accessibility testing or activation approval.
 
 The owner then separately confirmed: "Both packets' printed QR codes scan correctly."
 Record that as a pass for scanning from both printed samples. These fictional example.org
-destinations do not establish real service-link or contact validity. The owner explicitly
-instructed that the flag stay off and G-C stay open.
+destinations do not establish real service-link or contact validity. At that stage the
+owner explicitly instructed that the flag stay off and G-C stay open; the later direction
+above supersedes it.
 
 On October 14 the owner reported: "A ward nurse reviewed both packets today; both pass
 with no changes." Record the reviewer role as ward nurse, review date as October 14,
 2026, both samples as passed, and requested changes as none. This is the owner's report
 of the nurse's review; no peer-specialist or accessibility review is implied. The owner
-again explicitly retained the flag-off and G-C-open instructions.
+again explicitly retained the flag-off and G-C-open instructions at that stage.
 
 | Check | Recorded result |
 | --- | --- |
@@ -72,7 +133,7 @@ again explicitly retained the flag-off and G-C-open instructions.
 No repeated review of the passed rows is needed unless the sample or print conditions change.
 All five default pages and all seven long-packet pages have passed the owner's page
 inspection, QR scanning has passed for both printed samples, and a ward nurse has passed
-both packets with no changes. The next G-C step is a peer specialist's paper review.
+both packets with no changes. The owner subsequently waived the remaining G-C review.
 
 ## The two review samples
 
@@ -94,45 +155,22 @@ supersedes its initial statement that physical review had not started.
 These frozen PDFs test physical printing, not the ward browser's live print flow or
 real service-contact validity. The optional wallet card is not in either sample.
 
-## Remaining G-C evidence
+## G-C closure: remaining review waived by owner
 
-- Record actual printer model/settings when available. Page inspection and paper QR
-  scanning have passed for both samples; do not repeat them unless the samples or print
-  conditions change, or infer actual settings from the requested settings.
-- Have one peer specialist read both paper packets and record role, date, concerns and
-  disposition. The ward-nurse review is complete; no peer-specialist review is recorded yet.
-- Exercise the native browser print dialog and return-to-app behavior on the ward setup;
-  frozen PDFs do not establish either. Use `?tab=care` in an isolated test build with
-  the flag enabled only by test interception and the existing fictional profile and
-  simulated authority fixtures, never by changing the source flag or real authority.
-  Check the separate single-sided wallet card if it is to be used. Duplex remains
-  unapproved unless separately tested.
-- Observe native screen-reader announcements and keyboard focus, and record actual
-  browser/device coverage. Automated accessibility checks do not replace this evidence;
-  Safari, Firefox and phone printing remain unproven in the current record.
+G-C is closed by the owner's October 14 direction above. The completed observations
+remain recorded as passes; the following evidence remains unavailable and its collection
+is waived for this launch:
 
-Once observations are complete, reconcile any defects and present a concrete G-C closure
-recommendation. Paper acceptance alone does not close G-C. Keep its state open until an
-explicit closure decision is recorded.
+- Actual printer model and settings. Requested settings are not proof of settings used.
+- Peer-specialist paper review of either sample.
+- Native ward-browser print dialog, return-to-app and separate single-sided wallet-card
+  observations. Frozen PDFs do not establish these behaviors.
+- Native screen-reader and keyboard observations, and actual Safari, Firefox and phone
+  print coverage. Automated checks do not establish native coverage.
 
-### Next guided step: peer-specialist paper review
-
-Give one peer specialist both printed, fictional review packets, retaining their
-"Not for patient use" labels. Invite feedback from the perspective of someone using
-the packet after leaving the unit, focusing on:
-
-- Whether the wording feels respectful, clear and manageable during a stressful transition.
-- Whether the first action and relevant routine or urgent-help contact are easy to find.
-- Whether the amount of information, wording or layout feels confusing or overwhelming.
-- Whether instructions assume access to a phone, internet, transportation or support
-  that could make them difficult to follow.
-
-These prompts guide the existing peer review; they introduce no new score or threshold.
-Record the reviewer's role, review date, pass or needs changes for each packet, and the
-page/section and suggested revision for each concern. No patient details or personal
-history are needed. This records the peer specialist's review only; it does not close
-G-C or approve activation. Native accessibility and live-browser print reviews remain
-pending regardless of the peer-review result.
+The waiver is an owner decision, not a technical test result. Duplex remains untested;
+do not describe it as validated. No additional peer-specialist walkthrough or G-C
+approval request is required under the latest direction.
 
 ## Contact verification: two separate contracts
 
@@ -171,43 +209,98 @@ The [validator](../../../13_Faculty_Resources/_automation/validate_care_inserts.
 [payload builder](../../../13_Faculty_Resources/_automation/site_build/care_inserts_payload.py)
 enforce these distinct rules.
 
-## G-D remains a separate activation decision
+## G-D: activation authorized, setup and profile approval complete, publication pending
 
-Before proposing activation, complete the owner-side authority enrollment and isolated
-production storage setup described in [the faculty-console README](../../../faculty-console/README.md),
-verify that previews cannot access it, and supply and independently approve a real unit
-profile backed by actual contact/operational verification. No credentials or approval
-records were inspected or created during this progress recovery.
+The owner has authorized activation. Owner-side authority enrollment and isolated
+production storage setup described in
+[the faculty-console README](../../../faculty-console/README.md) are complete, and
+the real unit profile has independent owner approval. Production-only Functions
+configuration and the existing runtime denial for preview, branch and development
+contexts remain in place. The live status evidence below establishes approval;
+learner publication and the real production packet still require verification.
 
-The candidate needs verified purpose, unit name, phone and staffed hours. Record callback
+The candidate above supplies purpose, unit name, phone and staffed hours. Record callback
 team, return number, hours and fallback only when a real callback program applies.
 The patient's agreed day/time window and deadline stay handwritten or in the After Visit
 Summary; they are not profile data. The app retains only transient confirmations.
 The implementation supports `callbackProgram: false` with its four text fields empty
 and the callback page off; do not invent program facts to fill those fields.
 
-Obtain the applicable MaineHealth site/branding decision before launch. The implementation
-supports an approved unbranded profile (`brandingApproved: false`, `org: null`), but
-that technical option does not waive institutional permission or owner launch decisions.
+The approved profile is unbranded (`brandingApproved: false`, `org: null`) for this
+initial launch. The implementation supports this option; it does not assert institutional
+branding permission. Any later branded profile needs the applicable branding decision.
 ReConnect app inclusion remains outside this work pending the applicable approval.
 
-After G-C is explicitly closed in writing and a current real profile has independent
-approval, present G-D for the owner's explicit activation decision. Only that decision
-authorizes a separate source edit enabling the flag. Adding profile data, passing tests,
-merging this record or closing G-C does not itself authorize activation. The feature
-stays off; existing clinical copy, defaults and approval rules remain intact.
+The required real profile and authority are now usable, satisfying the prerequisite
+for the owner's authorized source-flag edit. The separate activation branch enables
+the flag; main remains off until that change merges. Do not request another general
+activation approval. Existing clinical copy, defaults and approval rules remain intact.
+
+October 14 activation preparation found the public production profile-status service
+returning HTTP 503 `authority-unavailable` and the candidate list empty. This does not
+identify which configuration or storage dependency is missing. No credential, store,
+real profile or approval was created during that check.
+
+Subsequent launch preparation, on the owner's authority, created the empty Netlify
+project `clerkship-care-profile-store`, site ID `4b4d23f6-8637-4999-a5b2-367800802be6`,
+in the existing team. No repository connection or application code was added to it.
+On the existing faculty-console project, site ID `295ae8dd-412c-47ad-aac3-7e7cd4b3110d`,
+the agent installed `CARE_PROFILE_STORE_SITE_ID` and an independent random
+`CARE_PROFILE_SIGNING_SECRET`. A subsequent metadata read confirmed both are scoped
+only to Functions in production, with the signing value marked secret. No secret
+value is recorded in this document, Git or chat output.
+
+The owner privately added `CARE_PROFILE_OWNER_KEY` and `CARE_PROFILE_STORE_TOKEN`
+as production-only Functions secrets on the faculty-console project. The owner key
+remains privately held; the storage token provides access to the isolated storage
+project. The October 14 command-line Netlify login was expired and the
+in-app project tab required sign-in; the connected Netlify service performed the
+preparation above. On October 15 the owner requested Chrome, where the project opened
+with an existing signed-in session. No login credential or token was extracted or
+reused. After the owner saved the final credential change, the console was redeployed
+and the owner used its existing `/care-profiles.html` screen to approve the exact
+candidate on main. This setup did not reopen G-C or require another general activation
+decision.
+
+The console's published deployment `6ad0d5f949b0d54e96b63123` comes from
+`6b721c35b1e5fe01888cb6900245e836f44213fd` and was published at
+`2026-10-15T13:33:14.333Z`. After the owner reported approval, real status requests
+with each learner origin (`https://une-ms3-psychiatry.netlify.app` and
+`https://mmc-psychiatry-residents-sanford.netlify.app`) returned HTTP 200,
+`ok: true`, `status: approved`, and approver Joshua Moss, MD. The respective
+`checkedAt` values were `2026-10-15T15:22:33.463Z` (MS3) and
+`2026-10-15T15:22:34.434Z` (resident). These are status-check times; the public
+response does not establish the approval creation time.
+
+The approved profile is `sanford-bhu-2`, with exact revision
+`bbe0a2d48f060fcb8fdb63d4d0d6c97fc92d838cc58f2c7fc1352bd3d81523bb`.
+GitHub identifies `dd58ed43dfa16fdd772d66ca6a4b64af61a28d44` as the current profile
+file's last change commit. The live approval matches the current candidate and
+expires on `2027-01-13` at the start of that day in America/New_York. No credential
+value or private authority record is included in this evidence.
+
+Publish through the existing production release train after the activation commit's
+required checks pass. The October 15 morning train published the current main revision
+without packet activation; the flag was still off. Use the existing publish-now workflow
+once the activation commit is eligible. Verify both learner sites
+serve that exact release and exercise the real packet controls without test interception
+before describing the packet as live. A normal Care-navigation smoke test alone does
+not establish packet activation.
 
 ## Record delivery and separate preservation work
 
-Use the existing [PR #1055](https://github.com/jmoss333/psychiatry-clerkship/pull/1055)
-to land this documentation after all checks pass; do not open a duplicate. Before this
-correction, its head was `c89740284547fe1e45cc69f9abe94d5c5070bf38` with four documentation
-commits, including nurse acceptance. That is a historical snapshot, not the final PR
-head or a current check result; consult the PR for its latest revision, checks and merge.
-Mergeability alone does not establish passing checks.
+[PR #1055](https://github.com/jmoss333/psychiatry-clerkship/pull/1055) merged the corrected
+review record at `f13b8b8cd9deba3a8c520b32e5088b46d1f69de5` on October 14 at 8:31 PM
+America/New_York, after its required checks passed. Its final head was
+`66159b3cfb06ab8094328525d96a8f2d7a9f9e33`. The owner-directed activation update is
+subsequent work; #1055 itself did not enable the packet.
 
-Repository cleanup is a separate operation, not a prerequisite for the remaining human
-review or authorization supplied by this plan. At the October 14 audit, remote main was
+[PR #1059](https://github.com/jmoss333/psychiatry-clerkship/pull/1059) merged the owner's
+waiver and initial authority setup record at `eb0cb049e3db1bf6ffae638813c4b6f1f4d0dcbc`
+on October 14 at 10:37 PM America/New_York. It also did not activate the packet.
+
+Repository cleanup is a separate operation, not a prerequisite for activation setup.
+At the October 14 audit, remote main was
 `24a62138754faf21cece39f3279b3be816bfc0ad` and the primary checkout was
 `59518403fdeb2ac7e7b5e5333ba43379d8c8e4ac`: 0 ahead and 161 behind, with 235 untracked
 files. Five untracked paths overlapped paths newly tracked on main:

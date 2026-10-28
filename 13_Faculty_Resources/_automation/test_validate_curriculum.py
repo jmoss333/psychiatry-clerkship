@@ -70,6 +70,7 @@ MANIFEST = {
         ["src/exp_consult.md", "exp_consult.md", "Capacity"],
         ["src/t_sud.md", "t_sud.md", "Withdrawal"],
         ["src/delirium.md", "delirium.md", "Delirium"],
+        ["src/catatonia.md", "catatonia.md", "Catatonia"],
     ] + WEEK_ROWS,
 }
 # Derived, not restated: a row added above must not need a second edit here.
@@ -109,6 +110,7 @@ SAFETY_REFS = (
     "exp_consult.md",
     "t_sud.md",
     "delirium.md",
+    "catatonia.md",
 )
 PRACTICE_IDS = (
     "training-briefing",
@@ -589,6 +591,73 @@ class ValidateCurriculumTest(unittest.TestCase):
                 result = _run(c, root)
                 self.assertEqual(result.returncode, 1, repr(bad_value))
                 self.assertIn("libraryHints", result.stdout)
+
+    def test_column_groups_must_partition_the_column_exactly(self):
+        # Sub-groups (Library re-cut, 2026-10-17) render a column as named sub-lists in the
+        # only browse surface, so they must cover every ref once: a ref in no group would
+        # vanish, one in two groups would render twice, an unknown ref would be a dead row.
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            tools = cur["libraryColumns"][0]
+            tools["refs"] = ["mse.html", "rp-canon-quiz.html"]
+            cur["libraryExclude"] = [e for e in cur["libraryExclude"]
+                                     if e["ref"] != "rp-canon-quiz.html"]
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank.",
+                                   "rp-canon-quiz.html": "Drill the landmark-paper decks."}
+            tools["groups"] = [{"name": "Write-ups", "refs": ["mse.html"]},
+                               {"name": "Drills", "refs": ["rp-canon-quiz.html"]}]
+            c, root = _write(tmp, cur)
+            ok = _run(c, root)
+            self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
+
+            cases = {
+                "in no group": [{"name": "Write-ups", "refs": ["mse.html"]},
+                                {"name": "Drills", "refs": ["mse.html"]}],
+                "is in two groups": [{"name": "Write-ups", "refs": ["mse.html", "rp-canon-quiz.html"]},
+                                     {"name": "Drills", "refs": ["rp-canon-quiz.html"]}],
+                "is not in the column's refs": [{"name": "Write-ups", "refs": ["mse.html"]},
+                                                {"name": "Drills", "refs": ["rp-canon-quiz.html", "welcome.md"]}],
+                "duplicate group name": [{"name": "Write-ups", "refs": ["mse.html"]},
+                                         {"name": "Write-ups", "refs": ["rp-canon-quiz.html"]}],
+                "must be a non-empty list": [{"name": "Write-ups", "refs": ["mse.html", "rp-canon-quiz.html"]},
+                                             {"name": "Drills", "refs": []}],
+                "at least two": [{"name": "Everything", "refs": ["mse.html", "rp-canon-quiz.html"]}],
+            }
+            for needle, groups in cases.items():
+                tools["groups"] = groups
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+                self.assertEqual(result.returncode, 1, needle + "\n" + result.stdout + result.stderr)
+                self.assertIn(needle, result.stdout, needle)
+
+    def test_a_site_addition_into_a_grouped_column_names_its_group(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cur = _curriculum([])
+            safety = cur["libraryColumns"][2]
+            safety["groups"] = [{"name": "Suicide risk", "refs": ["pg_suicide.md"]},
+                                {"name": "Acute presentations", "refs": list(SAFETY_REFS[1:])}]
+            cur["libraryHints"] = {"mse.html": "Draft a written exam from a descriptor bank.",
+                                   "rp-canon-quiz.html": "Drill the landmark-paper decks."}
+            # Flat column (Tools): a `group` is a mistake.
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": "Tools", "group": "Anything", "refs": ["rp-canon-quiz.html"]}]
+            c, root = _write(tmp, cur)
+            flat = _run(c, root)
+            self.assertEqual(flat.returncode, 1, flat.stdout + flat.stderr)
+            self.assertIn("has no groups", flat.stdout)
+            # Grouped column: the group is required and must exist.
+            for addition in ({"column": safety["name"], "refs": ["rp-canon-quiz.html"]},
+                             {"column": safety["name"], "group": "Nope", "refs": ["rp-canon-quiz.html"]}):
+                cur["siteLibrary"]["resident"]["additions"] = [addition]
+                c, root = _write(tmp, cur)
+                result = _run(c, root)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("must name one of its groups", result.stdout)
+            cur["siteLibrary"]["resident"]["additions"] = [
+                {"column": safety["name"], "group": "Acute presentations", "refs": ["rp-canon-quiz.html"]}]
+            c, root = _write(tmp, cur)
+            ok = _run(c, root)
+            self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
 
     def test_a_site_addition_tool_needs_a_hint_too(self):
         # rp-* tools reach the resident Library through siteLibrary additions, not the shared
@@ -1575,7 +1644,7 @@ class SafetyKitTest(unittest.TestCase):
     def test_rejects_the_wrong_number_of_protocols(self):
         r = self._run(lambda c: c.__setitem__("safetyKit", c["safetyKit"][:-1]))
         self.assertEqual(r.returncode, 1)
-        self.assertIn("exactly 5", r.stdout)
+        self.assertIn("exactly 6", r.stdout)
 
     def test_rejects_a_duplicate_protocol_ref(self):
         r = self._run(lambda c: c["safetyKit"].__setitem__(1, c["safetyKit"][0]))
@@ -1587,7 +1656,7 @@ class SafetyKitTest(unittest.TestCase):
             cur["safetyKit"][4] = {"ref": "welcome.md", "sub": "Not a protocol"}
         r = self._run(replace_ref)
         self.assertEqual(r.returncode, 1)
-        self.assertIn("current five", r.stdout)
+        self.assertIn("current kit protocols", r.stdout)
 
     def test_rejects_a_non_high_safety_protocol(self):
         meta = _topic_meta()

@@ -11,6 +11,8 @@ MAINTENANCE = REPO_ROOT / "13_Faculty_Resources" / "_automation" / "maintenance"
 sys.path.insert(0, str(MAINTENANCE))
 
 import production_release_receipt as receipt  # noqa: E402
+from test_dialog_focus_report import fixture as dialog_fixture
+import dialog_focus_report
 
 
 SHA = "970d615056e880ead5722c69f1b12dad40714e33"
@@ -322,6 +324,19 @@ class JourneyAndReceiptTests(unittest.TestCase):
         )
         self.assertEqual(combined["status"], "FAIL")
 
+    def test_dialog_failures_and_missing_evidence_prevent_a_green_receipt(self):
+        core, report, proof = dialog_fixture(SHA)
+        core.update(repository=REPOSITORY, ci={"status": "PASS"}, servedRevision={"status": "PASS"}, staticCanary={"status": "PASS"})
+        core["deployments"]["status"] = "PASS"
+        journeys = receipt.summarize_playwright(self._playwright_report())
+        missing = receipt.build_receipt(core, journeys, trigger="workflow_dispatch")
+        self.assertEqual(missing["status"], "UNKNOWN")
+        report["suites"][0]["specs"][0]["tests"][0]["results"][0]["status"] = "failed"
+        failed = receipt.build_receipt(core, journeys, trigger="workflow_dispatch",
+                                       dialog_focus=dialog_focus_report.summarize(core, report, proof))
+        self.assertEqual(failed["status"], "FAIL")
+        self.assertNotEqual(missing["evidenceSha256"], failed["evidenceSha256"])
+
     def test_markdown_names_ids_links_and_the_evidence_boundary(self):
         core = {
             "schemaVersion": 1,
@@ -343,6 +358,7 @@ class JourneyAndReceiptTests(unittest.TestCase):
             core,
             receipt.summarize_playwright(self._playwright_report()),
             trigger="push",
+            dialog_focus=dialog_focus_report.summarize(*dialog_fixture(SHA)),
             generated_at="2026-09-23T20:05:00+00:00",
         )
         markdown = receipt.render_markdown(combined)
@@ -497,14 +513,19 @@ class CliArtifactTests(unittest.TestCase):
                 "repository": REPOSITORY,
                 "collectedAt": "2026-09-23T20:04:00+00:00",
                 "ci": {"status": "PASS", "runId": 100},
-                "deployments": {"status": "PASS", "sites": []},
+                "deployments": {"status": "PASS", **dialog_fixture(SHA)[0]["deployments"]},
                 "servedRevision": {"status": "PASS", "sites": {"ms3": SHA, "res": SHA}},
                 "staticCanary": {"status": "PASS", "sites": []},
             }), encoding="utf-8")
             journey_path.write_text(json.dumps(JourneyAndReceiptTests._playwright_report()), encoding="utf-8")
 
+            _, dialog_report, dialog_targets = dialog_fixture(SHA)
+            dialog_path, target_path = root / "dialogs.json", root / "targets.json"
+            dialog_path.write_text(json.dumps(dialog_report))
+            target_path.write_text(json.dumps(dialog_targets))
             exit_code = receipt.main([
                 "finalize",
+                "--dialogs", str(dialog_path), "--dialog-targets", str(target_path),
                 "--core", str(core_path),
                 "--journeys", str(journey_path),
                 "--trigger", "workflow_dispatch",
@@ -517,6 +538,8 @@ class CliArtifactTests(unittest.TestCase):
             written = json.loads(json_path.read_text(encoding="utf-8"))
             self.assertEqual(written["status"], "PASS")
             # Old reports without query attachments must not claim stable rankings.
+            self.assertEqual(written["evidence"]["dialogFocus"]["passed"], 132)
+            self.assertIn("Dialog-focus regression results", markdown_path.read_text())
             self.assertIn("medicationSearchRanking", written)
             self.assertEqual(written["medicationSearchRanking"]["status"], "CURRENT_UNAVAILABLE")
             self.assertIn("Medication-search ranking changes", markdown_path.read_text(encoding="utf-8"))

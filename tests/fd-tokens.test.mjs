@@ -158,14 +158,14 @@ test('reader body gives rendered long-form content a readable token-based type s
   // hard-coded value the type scale exists to retire — the test's own name says "token-based".
   // The floor below is what actually protects the reader: long-form body text stays >= 16px
   // whatever step the token points at.
-  const bodyToken = body.match(/font-size:\s*var\((--fd-font-[a-z0-9]+)\)/);
+  const bodyToken = body.match(/font-size:\s*calc\(var\((--fd-font-[a-z0-9]+)\) \* var\(--fd-reading-scale,1\)\)/);
   assert.ok(bodyToken, `article body must take its size from the type scale, got: ${body}`);
   const bodyPx = parseFloat(
     (block(warm, ':root').match(new RegExp(`${bodyToken[1]}\\s*:\\s*([\\d.]+)px`)) || [])[1],
   );
   assert.ok(bodyPx >= 16,
     `${bodyToken[1]} is ${bodyPx}px; long-form reading text must not drop below 16px`);
-  assert.match(body, /line-height:\s*1\.72/);
+  assert.match(body, /line-height:\s*var\(--fd-reading-leading,1\.72\)/);
   assert.match(body, /max-width:\s*62ch/);
   assert.match(body, /color:\s*var\(--fd-text\)/);
   for (const descendant of ['h2', 'h3', 'ul', 'ol', 'li', 'a', 'code', 'blockquote']) {

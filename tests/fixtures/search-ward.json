@@ -1,5 +1,5 @@
 {
-  "description": "Ward-language search benchmark, 2026-09-24 (review task #3, first PR). 'served' are phrases a learner types on the unit and the page that answers them. 'crisis' phrasings must open on the named safety protocol, except those marked 'accidental', which must still reach it. 'itemFirst' medication and ward terms must not open on a protocol that matched by accident. 'protocolOutrankingAliases' are the ONLY alias phrases allowed to rank above a safety protocol, each a recorded decision (#429 and earlier); a new alias that moves a protocol fails until faculty add it here. 'deferred' are known gaps, with the reason each is not fixed yet. No phrase anywhere may carry a dose.",
+  "description": "Ward-language search benchmark, 2026-09-24 (review task #3, first PR). 'served' are phrases a learner types on the unit and the page that answers them. 'crisis' phrasings must open on the named safety protocol, except those marked 'accidental', which must still reach it. 'itemFirst' medication and ward terms must not open on a protocol that matched by accident. 'protocolOutrankingAliases' are the ONLY alias phrases allowed to rank above a safety protocol, each a recorded decision (#429 and earlier); a new alias that moves a protocol fails until faculty add it here. 'deferred' are known gaps, with the reason each is not fixed yet. No phrase anywhere may carry a dose. 'protocolOutrankingNotes' carries the decision note for an entry where one was recorded (ref -> phrase -> note); rp-post-event-huddle.html is resident-only, so its entry applies on the resident site.",
   "served": [
     {
       "query": "haldol",
@@ -335,8 +335,20 @@
     {
       "query": "blue paper",
       "acceptable": [
-        "ethics_legal.md",
-        "systems_medlegal.md"
+        "maine_law.md",
+        "maine-law-navigator.html"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "blue papers",
+      "acceptable": [
+        "maine_law.md",
+        "maine-law-navigator.html"
       ],
       "maxRank": 1,
       "sites": [
@@ -443,6 +455,171 @@
         "ms3",
         "res"
       ]
+    },
+    {
+      "query": "psychotherapy",
+      "acceptable": [
+        "psychotherapy.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "psychosis",
+      "acceptable": [
+        "t_psychosis.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "schizophrenia",
+      "acceptable": [
+        "t_psychosis.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "depression",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "bipolar",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "mania",
+      "acceptable": [
+        "t_mood.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "borderline",
+      "acceptable": [
+        "t_personality.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "personality disorder",
+      "acceptable": [
+        "t_personality.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "panic",
+      "acceptable": [
+        "t_anxiety.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "adhd",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "autism",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "adolescent",
+      "acceptable": [
+        "t_neurodev.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "pregnancy",
+      "acceptable": [
+        "t_perinatal.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "postpartum",
+      "acceptable": [
+        "t_perinatal.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "elderly",
+      "acceptable": [
+        "t_geri.md"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
     }
   ],
   "crisis": [
@@ -485,6 +662,14 @@
     {
       "query": "patient wants to leave ama",
       "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "blue paper suicidal",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "blue paper pt is violent",
+      "protocol": "agitation.md"
     }
   ],
   "itemFirst": [
@@ -541,6 +726,9 @@
     "motivational_interviewing.md": [
       "mi"
     ],
+    "catatonia.md": [
+      "catatonia"
+    ],
     "bfcrs.html": [
       "bush francis catatonia rating scale"
     ],
@@ -552,7 +740,33 @@
     ],
     "suicide.md": [
       "stanley brown safety plan"
+    ],
+    "t_psychosis.md": [
+      "psychotic"
+    ],
+    "ethics_legal.md": [
+      "involuntary hold"
+    ],
+    "systems_medlegal.md": [
+      "involuntary hold"
+    ],
+    "rp-post-event-huddle.html": [
+      "post event debrief"
     ]
+  },
+  "protocolOutrankingNotes": {
+    "t_psychosis.md": {
+      "psychotic": "Accepted by Josh 2026-10-21 (K1a): alias page ranks above catatonia protocol for this query."
+    },
+    "ethics_legal.md": {
+      "involuntary hold": "Accepted by Josh 2026-10-21 (K1a): alias page ranks above catatonia protocol for this query."
+    },
+    "systems_medlegal.md": {
+      "involuntary hold": "Accepted by Josh 2026-10-21 (K1a): alias page ranks above catatonia protocol for this query."
+    },
+    "rp-post-event-huddle.html": {
+      "post event debrief": "Accepted by Josh 2026-10-21 (K1a): alias page ranks above catatonia protocol for this query."
+    }
   },
   "deferred": [
     {

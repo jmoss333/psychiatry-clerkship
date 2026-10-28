@@ -15,11 +15,9 @@
    ---- Ranking is a safety contract, not a preference (task-8-brief.md) ----
    Protocols (index.kit) are matched and ranked FIRST, ahead of ordinary items, so a student
    typing "suicide" mid-shift gets the C-SSRS protocol sheet before a topic page that merely
-   mentions suicide. Results are capped at 8 total, protocols included in that cap -- ported
-   from the prototype's own [...protoMatches, ...pool].slice(0, 8), which means an over-full
-   result set silently drops from the END of the list, not evenly. This module preserves that
-   same "drop the tail" behaviour deliberately: what matters is that the protocol never gets
-   pushed out (it is always concatenated first), not that every non-critical extra fits.
+   mentions suicide. The initial view shows the top 8 results. A learner may reveal all
+   matches for a typed query; expansion changes only the visible count, never the ranking.
+   Empty-query suggestions remain capped at 8 and have no expansion control.
 
    ---- Dedup the prototype didn't need (repo-specific) ----
    The prototype's ITEMS and PROTOCOLS/KIT were disjoint id spaces, so a query could never match
@@ -217,6 +215,142 @@ function fdSearchHaystack(item){
   return (item.title+' '+item.ref+' '+item.summary).toLowerCase();
 }
 
+/* ---- The one bidirectional synonym list (C2, 2026-10-17) ------------------------------------
+   idx.synonymGroups comes from site_build/data/search-synonyms.v1.json: each group is a list of
+   normalised phrasings for one thing ("qtc", "qt prolongation", ...). A typed query that contains
+   a group term is ALSO scored as each alternative query with that term swapped for another member
+   of its group -- in both directions, which the older one-way `synonyms` map could not express
+   ("nms" found Toxidromes; "neuroleptic malignant" did not). Alternatives are phrases, not loose
+   words, so "decision making capacity" cannot widen into every page that says "making".
+
+   Alternatives feed ORDINARY page matches only. They never enter the safety-protocol pass, so a
+   group can neither create nor reorder a protocol row (the crisis contract above keeps its own
+   trigger vocabulary), and they never create an exact-title match. Their score is discounted by
+   FD_SEARCH_ALT_WEIGHT so the words the learner actually typed still win a tie. */
+var FD_SEARCH_ALT_WEIGHT=0.9;
+var FD_SEARCH_MAX_ALTERNATIVES=12;
+function fdSearchAlternatives(query, groups){
+  var base=fdSearchNormalize(query), padded=' '+base+' ', out=[], seen={}, list=groups||[];
+  seen[base]=true;
+  for(var g=0;g<list.length;g++){
+    var terms=list[g]||[], hit=null;
+    /* Longest term first: "qtc prolongation" must swap as a whole, not as "qtc" + a stray word. */
+    var ordered=terms.slice().sort(function(a,b){
+      return (b.length-a.length)||(a<b?-1:(a>b?1:0));
+    });
+    for(var t=0;t<ordered.length;t++){
+      if(ordered[t]&&padded.indexOf(' '+ordered[t]+' ')!==-1){ hit=ordered[t]; break; }
+    }
+    if(!hit) continue;
+    for(var u=0;u<terms.length;u++){
+      if(!terms[u]||terms[u]===hit) continue;
+      var alt=padded.replace(' '+hit+' ',' '+terms[u]+' ').trim();
+      if(!seen[alt]){ seen[alt]=true; out.push(alt); }
+    }
+  }
+  return out.slice(0,FD_SEARCH_MAX_ALTERNATIVES);
+}
+
+/* ---- Page-text hits (C2, 2026-10-17) ----------------------------------------------------------
+   Both sites already download search-index.json -- an inverted index over every shipped page's
+   title, headings and body text (common.py build_search_index) -- but until now only the ＋Ask
+   matcher read it, so this search matched titles and summaries alone: "QTc" returned one page
+   while fourteen discuss it. The shell hands that index in as state.bodyIndex; without it (not yet
+   loaded, offline before first fetch, every unit test that predates this) search behaves exactly
+   as it did.
+
+   Scoring mirrors the shell's ＋Ask scorer (spa_index.html runSearch) so the two cannot drift
+   into different ideas of relevance: tf divided by the same BM25 length pivot (b = 0.5,
+   LEN_NORM_B there), times idf. Two deliberate differences, both toward precision: the words of
+   a phrase must ALL occur on the page (a page carrying only "first" or only "episode" is not a
+   first-episode-psychosis page; partial matches count at a quarter), and a prefix variant needs
+   five typed characters ("catatoni" finds catatonic, "lith" does not fan out).
+
+   Blending, with titles and summaries weighted higher. The text score is normalised to the best
+   page for this query and contributes at most FD_SEARCH_BODY_WEIGHT -- below a single title word
+   (12) and below a summary phrase (10) in fdSearchScore -- so text evidence orders pages that
+   already match and adds pages that only the text mentions, but cannot lift a passing mention
+   above a page whose title or summary names the topic. Text-only pages also need at least
+   FD_SEARCH_BODY_FLOOR of the best page's evidence, and at most FD_SEARCH_BODY_MAX of them are
+   added. Safety-kit pages are never added from text: protocol rows come only from the trigger and
+   haystack routes above, and a kit page appearing as a plain item would contradict its protocol
+   row (the dedup note at the top of this file). */
+var FD_SEARCH_BODY_WEIGHT=8;
+var FD_SEARCH_BODY_FLOOR=0.25;
+var FD_SEARCH_BODY_MAX=10;
+var FD_SEARCH_BODY_PREFIX=5;
+var FD_SEARCH_BODY_PARTIAL=0.25;
+var FD_SEARCH_BODY_LEN_B=0.5;
+var FD_SEARCH_BODY_STOP={
+  'a':1,'an':1,'and':1,'are':1,'as':1,'at':1,'be':1,'by':1,'for':1,'from':1,'has':1,'in':1,
+  'is':1,'it':1,'of':1,'on':1,'or':1,'that':1,'the':1,'to':1,'was':1,'with':1,'you':1,'your':1
+};
+function fdSearchBodyTokens(text){
+  var words=fdSearchNormalize(text).split(' '), out=[];
+  for(var i=0;i<words.length;i++){
+    if(words[i].length>=2&&!FD_SEARCH_BODY_STOP[words[i]]) out.push(words[i]);
+  }
+  return out;
+}
+/* Sorted vocabulary + slug -> doc id, computed once per index object and kept beside it. */
+function fdSearchBodyPrep(si){
+  if(!si||typeof si!=='object'||!si.postings||!Array.isArray(si.docs)) return null;
+  if(si.__fdPrep) return si.__fdPrep;
+  var byF={};
+  for(var i=0;i<si.docs.length;i++){ if(si.docs[i]&&si.docs[i].f) byF[si.docs[i].f]=i; }
+  var prep={vocab:Object.keys(si.postings).sort(), byF:byF};
+  try{ Object.defineProperty(si,'__fdPrep',{value:prep,enumerable:false}); }catch(_){ si.__fdPrep=prep; }
+  return prep;
+}
+function fdSearchBodyVariants(si, prep, term){
+  var out={};
+  if(si.postings[term]) out[term]=1;
+  if(term.length>=FD_SEARCH_BODY_PREFIX){
+    var v=prep.vocab, lo=0, hi=v.length;
+    while(lo<hi){ var mid=(lo+hi)>>1; if(v[mid]<term) lo=mid+1; else hi=mid; }
+    for(var k=lo;k<v.length&&v[k].indexOf(term)===0;k++){ if(!out[v[k]]) out[v[k]]=0.5; }
+  }
+  return out;
+}
+function fdSearchBodyPhrase(si, prep, tokens, weight, acc){
+  if(!tokens.length) return;
+  var sum={}, cover={}, avg=si.avgLen||0;
+  for(var t=0;t<tokens.length;t++){
+    var variants=fdSearchBodyVariants(si, prep, tokens[t]), hit={};
+    for(var v in variants){
+      var post=si.postings[v]||[], idf=Math.log(1+(si.n||1)/((si.df&&si.df[v])||1));
+      for(var p=0;p<post.length;p++){
+        var id=post[p][0], doc=si.docs[id], L=doc&&doc.L||0;
+        var norm=(avg>0&&L>0)?((1-FD_SEARCH_BODY_LEN_B)+FD_SEARCH_BODY_LEN_B*(L/avg)):1;
+        sum[id]=(sum[id]||0)+(post[p][1]/norm)*idf*variants[v];
+        hit[id]=1;
+      }
+    }
+    for(var h in hit) cover[h]=(cover[h]||0)+1;
+  }
+  for(var d in sum){
+    var s=sum[d]*weight*(cover[d]===tokens.length?1:FD_SEARCH_BODY_PARTIAL*cover[d]/tokens.length);
+    if(!(acc[d]>=s)) acc[d]=s;
+  }
+}
+/* -> { ref: {norm: 0..1, rank: 0-based} } for this query, or {} without an index. */
+function fdSearchBodyScores(si, query, alternatives){
+  var prep=fdSearchBodyPrep(si), out={};
+  if(!prep) return out;
+  var acc={}, alts=alternatives||[];
+  fdSearchBodyPhrase(si, prep, fdSearchBodyTokens(query), 1, acc);
+  for(var a=0;a<alts.length;a++) fdSearchBodyPhrase(si, prep, fdSearchBodyTokens(alts[a]), FD_SEARCH_ALT_WEIGHT, acc);
+  var ids=[], best=0;
+  for(var id in acc){ if(acc[id]>0){ ids.push(id); if(acc[id]>best) best=acc[id]; } }
+  if(!(best>0)) return out;
+  ids.sort(function(x,y){
+    var fx=si.docs[x].f, fy=si.docs[y].f;
+    return (acc[y]-acc[x])||(fx<fy?-1:(fx>fy?1:0));
+  });
+  for(var r=0;r<ids.length;r++) out[si.docs[ids[r]].f]={norm:acc[ids[r]]/best, rank:r};
+  return out;
+}
+
 /* Crisis routing for the protocol pass. Triggers are matched against the SPACE-PADDED raw query
    rather than the word list, which buys whole-word/phrase matching without a regex: " diet and
    nutrition " does not contain " die ", and a multi-word trigger can be authored the way a
@@ -266,7 +400,7 @@ function fdSearchNextUnread(index, state){
   return null;
 }
 
-function fdSearchResults(index, query, synonyms, state){
+function fdSearchMatches(index, query, synonyms, state){
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var kit=idx.kit||[];
   var rawQuery=String(query||'').trim().toLowerCase();
@@ -380,7 +514,7 @@ function fdSearchResults(index, query, synonyms, state){
   var careResults=[], care=idx.careResources||[];
   for(var ci=0;ci<care.length;ci++){
     if(fdSearchCareHit(care[ci],normalizedQuery)){
-      careResults.push({item:care[ci],kind:'care',meta:'ReConnect · external care resource'});
+      careResults.push({item:care[ci],kind:'care',meta:'External care resource'});
     }
   }
 
@@ -394,22 +528,58 @@ function fdSearchResults(index, query, synonyms, state){
      matches and score for compound names. Only literal phrases can recover an authored
      safety trigger above; these expanded words never feed the protocol haystack. */
   var readingWords=fdSearchContentWords(fdExpandQuery(readingQuery, synonyms).split(/\s+/));
-  var itemResults=[];
+  /* Synonym-group alternatives and page-text evidence (see the two notes above fdSearchAlternatives
+     and fdSearchBodyScores). Both are ordinary-item evidence only; neither touches protoResults. */
+  /* A typed file name ("t_mood.md") asks for that file: no synonym swaps and no page-text tier,
+     whose tokens ("mood", "md") would otherwise match every page that links another page. */
+  var literalFile=readingQuery===rawQuery&&/\.(md|html)\b/.test(rawQuery);
+  var alternatives=literalFile?[]:fdSearchAlternatives(readingQuery, idx.synonymGroups);
+  var altWords=[];
+  for(var aw=0;aw<alternatives.length;aw++){
+    altWords.push(fdSearchContentWords(fdExpandQuery(alternatives[aw], synonyms).split(/\s+/)));
+  }
+  var body=literalFile?{}:fdSearchBodyScores(state&&state.bodyIndex, readingQuery, alternatives);
+  var kitRefs={};
+  for(var kr=0;kr<kit.length;kr++){ if(kit[kr].item) kitRefs[kit[kr].item.ref]=true; }
+  var itemResults=[], bodyOnly=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
     var aliasHit=fdSearchAliasHit(it, rawQuery);
     var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
-    if(aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
-       fdSearchHits(searchHay, readingQuery, readingWords)){
+    var literal=aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
+       fdSearchHits(searchHay, readingQuery, readingWords);
+    var score=literal?Math.max(fdSearchScore(it, rawQuery, contentWords), fdSearchScore(it, readingQuery, readingWords)):0;
+    var altHit=false, altAlias=false;
+    for(var ai=0;ai<alternatives.length;ai++){
+      var thisAlias=fdSearchAliasHit(it, alternatives[ai]);
+      if(thisAlias||fdSearchHits(searchHay, alternatives[ai], altWords[ai])){
+        altHit=true;
+        if(thisAlias) altAlias=true;
+        score=Math.max(score, FD_SEARCH_ALT_WEIGHT*fdSearchScore(it, alternatives[ai], altWords[ai]));
+      }
+    }
+    var text=body[it.ref], textScore=text?FD_SEARCH_BODY_WEIGHT*text.norm:0;
+    if(literal||altHit){
+      /* An alias reached only through a synonym group ("neuroleptic malignant" -> "nms" ->
+         Toxidromes) earns the alias SCORE, discounted, but never the alias TIER: only an alias
+         the learner typed may outrank a haystack-matched safety protocol (#429, and the held
+         placements in tests/fixtures/search-ward.json's `deferred` -- "neuroleptic malignant
+         syndrome" must not move the Substance Use protocol). */
+      var aliasBonus=aliasHit?120:(altAlias?FD_SEARCH_ALT_WEIGHT*120:0);
       itemResults.push({
         item: it, kind:'item', meta: fdSearchItemMeta(it),
-        _score: Math.max(fdSearchScore(it, rawQuery, contentWords), fdSearchScore(it, readingQuery, readingWords))+
-          (aliasHit?120:0)+(medicationMatch===2?90:0), _alias: !!aliasHit
+        _score: score+textScore+aliasBonus+(medicationMatch===2?90:0), _alias: !!aliasHit
       });
+    } else if(text&&text.norm>=FD_SEARCH_BODY_FLOOR&&!kitRefs[it.ref]){
+      bodyOnly.push({ item: it, kind:'item', meta: fdSearchItemMeta(it), body:true, _score: textScore, _alias:false });
     }
   }
+  bodyOnly.sort(function(a,b){
+    return (b._score-a._score)||(a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
+  });
+  itemResults=itemResults.concat(bodyOnly.slice(0,FD_SEARCH_BODY_MAX));
   /* Ties break on ref rather than on Array.prototype.sort stability, which ES5 does not
      guarantee: on an engine that reorders equal scores the tail of the list would shuffle and
      the cap-at-8 would drop a different page in different browsers. Protocols are concatenated
@@ -419,9 +589,28 @@ function fdSearchResults(index, query, synonyms, state){
     return (b._score-a._score) ||
       (a.item.ref<b.item.ref?-1:(a.item.ref>b.item.ref?1:0));
   });
-  var aliasItems=[], rest=[];
+  /* Item tiers, by position. ALIAS: a recorded faculty statement that a phrasing means a
+     resource (#429) -- it outranks a protocol that merely carries the topic word in its title.
+     EXACT: the learner typed a resource's whole name (normalised like the title: punctuation,
+     dates and audience suffix stripped), the strongest statement a query can make about what
+     it wants. Then everything else by score.
+     The exact tier exists because of the diagnosis aliases added 2026-10-17: a one-word alias
+     ("psychosis" -> the psychosis guide) also sits inside other pages' titles ("First-Episode
+     Psychosis (Sep 7)"), and with aliases as the only tier the guide hijacked that page's own
+     exact title -- tests/search-discovery.test.mjs's generated title variants are the pin.
+     Ordering (see the return below), with the safety prefix always intact:
+       - an exact item that is ALSO an alias hit keeps the alias privilege and leads the alias
+         tier ("decisional capacity" -> the capacity tool, above the consult sheet, #429);
+       - an exact item that is NOT an alias ("Catatonia [Aug 31] -- MS3?") follows the haystack
+         protocols -- a named resource never displaces the safety prefix
+         (frontdoor-search-gate.mjs) -- and precedes every other alias item;
+       - with no exact item the order is unchanged: alias, haystack protocols, rest. */
+  var exactQuery=fdSearchNormalize(rawQuery), exactReading=fdSearchNormalize(readingQuery);
+  var exactAlias=[], exactOnly=[], aliasItems=[], rest=[];
   for(var s=0;s<itemResults.length;s++){
-    (itemResults[s]._alias?aliasItems:rest).push(itemResults[s]);
+    var exactTitle=fdSearchNormalize(itemResults[s].item.searchTitle||itemResults[s].item.title||'');
+    var isExact=!!exactTitle&&(exactTitle===exactQuery||exactTitle===exactReading);
+    (isExact?(itemResults[s]._alias?exactAlias:exactOnly):(itemResults[s]._alias?aliasItems:rest)).push(itemResults[s]);
     delete itemResults[s]._score; delete itemResults[s]._alias;
   }
   /* Haystack-matched protocols rank among themselves by the same score as items (with the same
@@ -438,7 +627,15 @@ function fdSearchResults(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  return protoResults.concat(careResults, aliasItems, hayProtocols, rest).slice(0,8);
+  if(exactOnly.length) return protoResults.concat(careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest);
+  return protoResults.concat(careResults, exactAlias, aliasItems, hayProtocols, rest);
+}
+
+/* Keep one matching/ranking pass for both the honest total and the visible rows. The keyboard
+   shortcut uses this same order, so revealing the tail cannot change what Enter opens. */
+function fdSearchResults(index, query, synonyms, state){
+  var matches=fdSearchMatches(index, query, synonyms, state);
+  return state&&state.searchExpanded===true?matches:matches.slice(0,8);
 }
 
 /* ---- Result rows and groups (one-thread redesign, Phase 2; spec section 6) ----------------
@@ -481,6 +678,8 @@ function fdSearchRowMeta(r, ctx){
 function fdSearchResultRow(r, ctx){
   var it=r.item, c=ctx||{};
   var meta=fdSearchRowMeta(r,c);
+  /* A page found only by its text says so, so the row does not read like a title match. */
+  if(r.body) meta=meta?meta+' · mentioned in the text':'Mentioned in the text';
   if(r.kind==='care'){
     return '<a class="fd-result is-care" data-care-resource="'+fdEsc(it.id)+'" href="'+fdEsc(it.url)+'" target="_blank" rel="noopener noreferrer">'+
       '<span class="fd-result__dot is-care"></span><span class="fd-result__title">'+fdEsc(it.title)+'</span>'+
@@ -539,7 +738,13 @@ function fdSearchGroupedRows(results, index){
 function fdSearchOverlay(index, query, synonyms, state){
   var q=String(query||'');
   var trimmed=q.trim();
-  var results=fdSearchResults(index, q, synonyms, state);
+  var matches=fdSearchMatches(index, q, synonyms, state);
+  var expanded=!!(trimmed&&state&&state.searchExpanded===true);
+  var results=expanded?matches:matches.slice(0,8);
+  var overflow=!!trimmed&&matches.length>8;
+  var count=overflow
+    ?(expanded?'Showing all '+matches.length+' matches':'Showing the top 8 of '+matches.length+' matches')
+    :matches.length+' match'+(matches.length===1?'':'es');
 
   var out='<div class="fd-search" role="dialog" aria-modal="true" aria-label="Search">';
   out+='<div class="fd-searchpanel">';
@@ -551,7 +756,7 @@ function fdSearchOverlay(index, query, synonyms, state){
     'aria-label="Search resources" placeholder="Symptom, drug, tool, or task…">';
   out+='<button type="button" class="fd-searchpanel__esc" data-fd-close-search aria-label="Close search">Close</button>';
   out+='</div>';
-  if(!(state&&state.appMode===true)){
+  if(!(state&&state.appMode===true)&&(!trimmed||matches.length)){
     out+='<div class="fd-searchpanel__browse">'+
       '<button type="button" class="fd-btn" data-fd-tab="library">Browse the Library</button></div>';
   }
@@ -559,22 +764,47 @@ function fdSearchOverlay(index, query, synonyms, state){
      observe, so the region announces its own size. aria-label carries the count rather than a
      visually-hidden node: the panel is rebuilt wholesale on each render, and an attribute cannot
      drift out of sync with the rows the way a separate element can. */
-  out+='<div class="fd-searchpanel__body" role="region" aria-live="polite" '+
-    'aria-label="'+results.length+' result'+(results.length===1?'':'s')+'">';
+  out+='<div class="fd-searchpanel__body" id="fd-search-results" role="region" aria-live="polite" '+
+    'aria-label="'+(overflow?count:results.length+' result'+(results.length===1?'':'s'))+'">';
+  if(trimmed){
+    out+='<div class="fd-searchpanel__summary"><p>'+count+'</p>';
+    if(overflow){
+      out+='<button type="button" class="fd-btn" data-fd-search-expand="" '+
+        'aria-expanded="'+expanded+'" aria-controls="fd-search-results">'+
+        (expanded?'Show top 8':'Show all matches')+'</button>';
+    }
+    out+='</div>';
+  }
   /* Empty-state only replaces the results when the user actually typed something and it matched
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */
   if(trimmed&&!results.length){
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
+    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
+      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search="">Edit search</button>';
+    if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>';
+    if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
+    out+='</div>';
   } else {
     if(/\bcalculator\b/i.test(q)&&!results.some(function(r){
       return /\bcalculator\b/i.test(fdSearchHaystack(r.item));
     })) out+='<p class="fd-searchpanel__empty">No matching calculator found. Related teaching resources:</p>';
     out+=fdSearchGroupedRows(results,index);
   }
+  /* Reuse the matching vocabulary; suggestions never precede or reorder safety rows. */
+  var related=trimmed?fdSearchAlternatives(q,index.synonymGroups).slice(0,3):[];
+  if(related.length){
+    out+='<div class="fd-searchpanel__related" role="group" aria-label="Related search terms">'+
+      '<p>Related search terms</p>';
+    for(var r=0;r<related.length;r++){
+      out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-search="" data-fd-search-query="'+
+        fdEsc(related[r])+'">'+fdEsc(related[r])+'</button>';
+    }
+    out+='</div>';
+  }
   out+='</div>';
-  out+='<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, and related terms. Not here? <strong>＋ Ask a question</strong> saves it for supervision.</div>';
+  out+='<div class="fd-searchpanel__foot">Searches page and tool titles, summaries, related terms, and page text. Not here? <strong>＋ Ask a question</strong> saves it for supervision.</div>';
   out+='</div>';
   out+='</div>';
   return out;

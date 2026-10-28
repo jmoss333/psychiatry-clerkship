@@ -171,15 +171,49 @@ export function authorityStoreOptions(env) {
     && typeof env.CARE_PROFILE_STORE_TOKEN==='string' && env.CARE_PROFILE_STORE_TOKEN.length>=32);
   return {name:'care-profile-authority-v1',siteID:env.CARE_PROFILE_STORE_SITE_ID,token:env.CARE_PROFILE_STORE_TOKEN,consistency:'strong'};
 }
+// Diagnostics are private fixed labels, never environment values or exception text.
+// Keep the enforcement above unchanged; these labels only explain a refused startup.
+function startupFailureReasons(env,stage) {
+  const credential=(value,name)=>typeof value!=='string' || !value.length?[name+'-missing']:value.length<32?[name+'-too-short']:[];
+  if(stage==='configuration')return [
+    ...(env.CONTEXT==='production'?[]:['context-not-production']),
+    ...credential(env.CARE_PROFILE_OWNER_KEY,'owner-key'),
+    ...credential(env.CARE_PROFILE_SIGNING_SECRET,'signing-secret'),
+    ...(secretEqual(env.CARE_PROFILE_OWNER_KEY,env.CARE_PROFILE_SIGNING_SECRET)?['owner-signing-key-reused']:[]),
+    ...(secretEqual(env.CARE_PROFILE_OWNER_KEY,env.FACULTY_ATTEST_PASSWORD)?['owner-faculty-key-reused']:[]),
+  ];
+  if(stage==='store-configuration') {
+    const uuid=value=>typeof value==='string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
+    return [
+      ...(uuid(env.SITE_ID)?[]:['console-site-id-invalid']),
+      ...(uuid(env.CARE_PROFILE_STORE_SITE_ID)?[]:['store-site-id-invalid']),
+      ...(uuid(env.SITE_ID) && uuid(env.CARE_PROFILE_STORE_SITE_ID) && env.SITE_ID.toLowerCase()===env.CARE_PROFILE_STORE_SITE_ID.toLowerCase()?['store-site-not-isolated']:[]),
+      ...credential(env.CARE_PROFILE_STORE_TOKEN,'store-token'),
+    ];
+  }
+  return [];
+}
 export async function productionHandlers(env=process.env) {
   // Do not even open the production store from a preview or unconfigured deploy.
-  configured(env);
-  const options=authorityStoreOptions(env);
-  const {getStore}=await import('@netlify/blobs');
-  const store=getStore(options);
-  return createCareProfileHandlers({env,store,readCandidates:githubCandidates({env})});
+  let stage='configuration';
+  try {
+    configured(env);
+    stage='store-configuration';
+    const options=authorityStoreOptions(env);
+    stage='dependency-import';
+    const {getStore}=await import('@netlify/blobs');
+    stage='store-open';
+    const store=getStore(options);
+    stage='handler-creation';
+    return createCareProfileHandlers({env,store,readCandidates:githubCandidates({env})});
+  } catch(error) {
+    console.error('care-profile-startup',stage,...startupFailureReasons(env,stage));
+    throw error;
+  }
 }
-export async function routeProduction(request,route) {
-  try{return await (await productionHandlers())[route](request);}
+export async function routeProduction(request,route,context) {
+  // Netlify exposes runtime deploy context on the handler, not in the build-only
+  // CONTEXT environment variable. Never fall back to an environment claim.
+  try{return await (await productionHandlers({...process.env,CONTEXT:context?.deploy?.context}))[route](request);}
   catch{return json({ok:false,status:'authority-unavailable',profileId:null,revision:null,expiresOn:null,checkedAt:null,approver:null,profile:null},503);}
 }

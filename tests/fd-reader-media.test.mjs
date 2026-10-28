@@ -192,7 +192,7 @@ test('family actions: capture prefilled with titles and authors only, and the Fa
   assert.doesNotMatch(section(render(media({ 't_mood.md': entry({ practiceRef: undefined }) }))), /fd-beyond__practice/);
   // The capture dialog takes the prefill as a draft only: Save is still the learner's.
   assert.match(spa, /var prefill=invoker&&invoker\.getAttribute&&invoker\.getAttribute\('data-cap-prefill'\);\s*if\(ta&&prefill&&!ta\.value\)ta\.value=String\(prefill\)\.slice\(0,280\);/);
-  const capOpen = spa.match(/function capOpen\(invoker,onAction\)\{[\s\S]*?\n {2}\}/)[0];
+  const capOpen = spa.match(/function capOpen\(invoker,onAction,onReturnToSearch\)\{[\s\S]*?\n {2}\}/)[0];
   assert.doesNotMatch(capOpen.slice(capOpen.indexOf('data-cap-prefill')), /^[\s\S]{0,200}capAdd\(/, 'the prefill never saves');
   assert.match(capOpen, /class="cap-warn"/, 'the existing no-patient-details warning is still shown');
 });

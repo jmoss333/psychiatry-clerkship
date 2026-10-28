@@ -111,8 +111,10 @@ test('the live controller restores only connected dialog invokers', () => {
 
 test('search and sheet are labelled modal dialogs', () => {
   assert.match(fdSearch, /class="fd-search" role="dialog" aria-modal="true" aria-label="Search"/);
+  // Resource Details adds its own conditional class; safety styling and the labelled modal
+  // contract still belong to the same aside for every sheet variant.
   assert.match(fdSheet,
-    /class="fd-sheet'\+\(safety\?' fd-sheet--safety':''\)\+'" role="dialog" aria-modal="true" aria-label="'\+fdEsc\(title\)\+'"/);
+    /class="fd-sheet'\+\(safety\?' fd-sheet--safety':''\)\+\(resourcePreview\?' fd-sheet--resource':''\)\+'" role="dialog" aria-modal="true" aria-label="'\+fdEsc\(title\)\+'"/);
 });
 
 test('nested dialog keyboard order traps focus, closes search first, then restores once', () => {

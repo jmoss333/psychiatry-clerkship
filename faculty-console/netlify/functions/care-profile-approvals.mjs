@@ -1,2 +1,2 @@
 import {routeProduction} from '../../care-profile-service.mjs';
-export default async function handler(request) {return routeProduction(request,'approvals');}
+export default async function handler(request,context) {return routeProduction(request,'approvals',context);}
