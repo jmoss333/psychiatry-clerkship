@@ -22,7 +22,7 @@ def fixture(sha=SHA):
     for site in ["ms3", "res"]:
         for width in [320, 1280]:
             for name in ["search", "settings", "safety kit", "protocol pg_suicide.md", "protocol agitation.md",
-                         "protocol exp_consult.md", "protocol t_sud.md", "protocol delirium.md", "capture",
+                         "protocol exp_consult.md", "protocol t_sud.md", "protocol delirium.md", "protocol catatonia.md", "capture",
                          "email review", "patient-details warning", "retained item preview"]:
                 for source in ["reading and guide arrival", "high-risk ledger arrival"]:
                     add("dialog-loading-focus.spec.js", "nav-" + site, f"{name} / {source} / {width}px")
@@ -44,15 +44,25 @@ def fixture(sha=SHA):
 
 
 class DialogFocusReportTests(unittest.TestCase):
-    def test_full_inventory_has_66_per_site_and_phone_desktop_counts(self):
+    def test_full_inventory_has_70_per_site_and_phone_desktop_counts(self):
         summary = dialogs.summarize(*fixture())
         self.assertEqual(summary["status"], "PASS")
-        self.assertEqual(summary["expected"], 132)
-        self.assertEqual(summary["passed"], 132)
+        self.assertEqual(summary["expected"], 140)
+        self.assertEqual(summary["passed"], 140)
         for site in ["ms3", "res"]:
-            self.assertEqual(summary["sites"][site]["passed"], 66)
-            self.assertEqual(summary["sites"][site]["screens"]["phone"]["passed"], 34)
-            self.assertEqual(summary["sites"][site]["screens"]["desktop"]["passed"], 32)
+            self.assertEqual(summary["sites"][site]["passed"], 70)
+            self.assertEqual(summary["sites"][site]["screens"]["phone"]["passed"], 36)
+            self.assertEqual(summary["sites"][site]["screens"]["desktop"]["passed"], 34)
+
+    def test_missing_catatonia_case_is_named_and_cannot_pass(self):
+        core, report, proof = fixture()
+        title = "delayed dialog focus: protocol catatonia.md / reading and guide arrival / 320px"
+        report["suites"][0]["specs"] = [s for s in report["suites"][0]["specs"] if not (
+            s["title"] == title and s["tests"][0]["projectName"] == "nav-ms3")]
+        summary = dialogs.summarize(core, report, proof)
+        self.assertEqual(summary["status"], "UNKNOWN")
+        self.assertTrue(any(r["title"] == title and r["project"] == "nav-ms3" and r["state"] == "missing"
+                            for r in summary["findings"]))
 
     def test_missing_duplicate_unexpected_skipped_or_wrong_file_is_not_a_pass(self):
         for mutation in [
@@ -99,7 +109,7 @@ class DialogFocusReportTests(unittest.TestCase):
         summary = dialogs.summarize(core, report, proof)
         self.assertEqual(summary["status"], "FAIL")
         self.assertEqual(summary["sites"]["ms3"]["failed"], 1)
-        self.assertEqual(summary["sites"]["res"]["passed"], 66)
+        self.assertEqual(summary["sites"]["res"]["passed"], 70)
         self.assertIn("focus left search", summary["findings"][0]["errors"])
         self.assertEqual(summary["findings"][0]["attachments"][0]["name"], "trace")
 

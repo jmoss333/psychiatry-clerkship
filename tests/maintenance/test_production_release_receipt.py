@@ -538,7 +538,7 @@ class CliArtifactTests(unittest.TestCase):
             written = json.loads(json_path.read_text(encoding="utf-8"))
             self.assertEqual(written["status"], "PASS")
             # Old reports without query attachments must not claim stable rankings.
-            self.assertEqual(written["evidence"]["dialogFocus"]["passed"], 132)
+            self.assertEqual(written["evidence"]["dialogFocus"]["passed"], 140)
             self.assertIn("Dialog-focus regression results", markdown_path.read_text())
             self.assertIn("medicationSearchRanking", written)
             self.assertEqual(written["medicationSearchRanking"]["status"], "CURRENT_UNAVAILABLE")

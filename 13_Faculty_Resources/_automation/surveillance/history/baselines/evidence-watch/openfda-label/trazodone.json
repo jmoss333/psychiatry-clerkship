@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260908",
+  "sections": {
+    "boxed_warning": {
+      "hash": "ada69d72fb5aee00033f589e5a9f6f1994b2897e0eb2c7f471077606fca31bec",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and for emergence of suicidal thoughts and behaviors [see Warnings and Precautions (5.1) ]. Trazodone hydrochloride tablets are not approved for use in pediatric patients [see Use in Specific Populations (8.4) ]. WARNING: SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients ( 5.1 ) Closely monitor for clinical worsening and emergence of suicidal thoughts and behaviors ( 5.1 ) Trazodone hydrochloride tablets are not approved for use in pediatric patients ( 8.4 )"
+    },
+    "contraindications": {
+      "hash": "16a3e6d8623b21a78505afaae14d57f954db069a7f1e6c544ff8336f7e99ca89",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Trazodone hydrochloride tablets are contraindicated in: Patients taking, or within 14 days of stopping, monoamine oxidase inhibitors (MAOIs), including MAOIs such as linezolid or intravenous methylene blue, because of an increased risk of serotonin syndrome [see Warnings and Precautions (5.2) , Drug Interactions (7.1) ]. Concomitant use of monoamine oxidase inhibitors (MAOIs), or use within 14 days of stopping MAOIs ( 4 )."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "0e4f44ad8c74b29d7fd5f203c6ac182a841913b76247f4f44f1721f34ec358f3",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "fa7afa93-b98c-4dc7-bbb8-ab6a058427b9",
+  "version": "3"
+}
