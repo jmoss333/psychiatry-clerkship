@@ -3055,7 +3055,7 @@
         "retrievedAt": "2026-10-12",
         "pmid": "22193671",
         "doi": "10.1176/appi.ajp.2011.10111704",
-        "sourceSpan": "Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency."
+        "sourceSpan": "The Columbia-Suicide Severity Rating Scale (C-SSRS) was designed to quantify the severity of suicidal ideation and behavior. Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency. Participants with the two highest levels of ideation severity (intent or intent with plan) at baseline had higher odds for attempting suicide during the study."
       },
       "claims": [
         {
@@ -3068,6 +3068,18 @@
           "usedBy": [
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        },
+        {
+          "claimId": "cssrs-ideation-severity-levels",
+          "claimText": "The C-SSRS was designed to quantify the severity of suicidal ideation; participants at the two highest levels of ideation severity (intent or intent with plan) had higher odds of a later suicide attempt.",
+          "claimTerms": [
+            "designed to quantify the severity of suicidal ideation",
+            "two highest levels of ideation severity"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "pg_suicide"
           ]
         }
       ]
@@ -3288,6 +3300,32 @@
           "usedBy": [
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "liu-2020-passive-suicidal-ideation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-26",
+        "pmid": "31907085",
+        "doi": "10.1017/S003329171900391X",
+        "sourceSpan": "Passive ideation was strongly associated with sexual minority status, psychiatric comorbidity, psychological characteristics implicated in risk, and suicide attempts. Preliminary evidence exists for a large association with suicide deaths. The effect sizes for individual correlates of passive and active ideation were largely equivalent and mostly non-significant in head-to-head comparisons."
+      },
+      "claims": [
+        {
+          "claimId": "passive-ideation-clinical-weight",
+          "claimText": "Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths; in head-to-head comparisons the effect sizes for correlates of passive and active ideation were largely equivalent and mostly did not differ significantly.",
+          "claimTerms": [
+            "suicide attempts",
+            "Preliminary evidence exists for a large association with suicide deaths",
+            "largely equivalent"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "pg_suicide"
           ]
         }
       ]

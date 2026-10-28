@@ -34,6 +34,7 @@ MANAGED_JOB_LABELS = {
     "link-source-monitor",
     "citation-monitor",
     "resource-intake",
+    "evidence-watch",
 }
 MANAGED_SEVERITY_LABELS = set(L.SEVERITY_ORDER)
 
@@ -179,7 +180,7 @@ def build_parser():
     ap.add_argument("--findings", required=True, help="JSON array of findings")
     ap.add_argument("--job", required=True,
                     choices=["guideline-surveillance", "link-source-monitor",
-                             "citation-monitor", "resource-intake"])
+                             "citation-monitor", "resource-intake", "evidence-watch"])
     ap.add_argument("--checked-sources", required=True,
                     help="JSON array of source IDs the collector actually checked")
     ap.add_argument("--issues-out", required=True,
