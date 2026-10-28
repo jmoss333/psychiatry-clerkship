@@ -32,6 +32,11 @@
    "Family Systems Practice"
   ],
   [
+   "08_Cases_and_Simulation/family-meeting-sim/family-meeting-sim.html",
+   "family-meeting-sim.html",
+   "Family Conversation Simulator"
+  ],
+  [
    "08_Cases_and_Simulation/one-patient-six-weeks.html",
    "one-patient-six-weeks.html",
    "Case Journeys"
@@ -40,6 +45,11 @@
    "04_Acute_and_Safety/Decisional_Capacity/decisional-capacity-module.html",
    "capacity.html",
    "Decisional Capacity"
+  ],
+  [
+   "03_Core_Topics/Ethics_Legal/maine-law-navigator.html",
+   "maine-law-navigator.html",
+   "Maine Law Navigator"
   ],
   [
    "02_Clinical_Skills/Oral_Presentations/oral-presentation-module.html",
@@ -296,6 +306,11 @@
    "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md",
    "ethics_legal.md",
    "Ethics & the Law: Confidentiality, Tarasoff, Reporting"
+  ],
+  [
+   "03_Core_Topics/Ethics_Legal/maine_law_capacity_navigator.md",
+   "maine_law.md",
+   "Maine Law & Capacity: Statute Navigator"
   ],
   [
    "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",

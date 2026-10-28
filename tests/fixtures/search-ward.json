@@ -335,8 +335,20 @@
     {
       "query": "blue paper",
       "acceptable": [
-        "ethics_legal.md",
-        "systems_medlegal.md"
+        "maine_law.md",
+        "maine-law-navigator.html"
+      ],
+      "maxRank": 1,
+      "sites": [
+        "ms3",
+        "res"
+      ]
+    },
+    {
+      "query": "blue papers",
+      "acceptable": [
+        "maine_law.md",
+        "maine-law-navigator.html"
       ],
       "maxRank": 1,
       "sites": [
@@ -650,6 +662,14 @@
     {
       "query": "patient wants to leave ama",
       "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "blue paper suicidal",
+      "protocol": "pg_suicide.md"
+    },
+    {
+      "query": "blue paper pt is violent",
+      "protocol": "agitation.md"
     }
   ],
   "itemFirst": [
