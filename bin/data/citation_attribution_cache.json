@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-10-12",
+  "refreshedAt": "2026-10-22",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -959,6 +959,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "34519947"
+    },
+    "10.1007/s11606-020-05641-4": {
+      "title": "A Quasi-Experimental Analysis of Lethal Means Assessment and Risk for Subsequent Suicide Attempts and Deaths",
+      "container": "J GEN INTERN MED",
+      "containerAlt": [
+        "J GEN INTERN MED",
+        "J Gen Intern Med",
+        "Journal of General Internal Medicine",
+        "Journal of general internal medicine"
+      ],
+      "year": 2020,
+      "authors": [
+        "Boggs",
+        "Beck",
+        "Ritzwoller",
+        "Battaglia",
+        "Anderson",
+        "Lindrooth"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "32040838"
     },
     "10.1007/s11606-025-09499-2": {
       "title": "Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Risks Outweigh Benefits",
@@ -2627,6 +2650,31 @@
       "resolvedAt": "2026-09-27",
       "pmid": "39321364"
     },
+    "10.1056/nejmsa1916744": {
+      "title": "Handgun Ownership and Suicide in California",
+      "container": "N Engl J Med",
+      "containerAlt": [
+        "N Engl J Med",
+        "New England Journal of Medicine",
+        "The New England journal of medicine"
+      ],
+      "year": 2020,
+      "authors": [
+        "Studdert",
+        "Zhang",
+        "Swanson",
+        "Prince",
+        "Rodden",
+        "Holsinger",
+        "Spittal",
+        "Wintemute",
+        "Miller"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "32492303"
+    },
     "10.1080/00332747.2022.2062660": {
       "title": "Meta-Analysis of the Effect of Psychotherapy in an Inpatient Setting: Examining the Moderating Role of Diagnosis and Therapeutic Approach",
       "container": "Psychiatry",
@@ -3711,6 +3759,27 @@
       "resolvedAt": "2026-09-27",
       "pmid": "26481174"
     },
+    "10.1176/appi.ajp.2016.15070854": {
+      "title": "Suicide Attempt as a Risk Factor for Completed Suicide: Even More Lethal Than We Knew",
+      "container": "AJP",
+      "containerAlt": [
+        "AJP",
+        "Am J Psychiatry",
+        "American Journal of Psychiatry",
+        "The American journal of psychiatry"
+      ],
+      "year": 2016,
+      "authors": [
+        "Bostwick",
+        "Pabbati",
+        "Geske",
+        "McKean"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "27523496"
+    },
     "10.1176/appi.ajp.2020.177901": {
       "title": "The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia",
       "container": "AJP",
@@ -4660,6 +4729,25 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "40096692"
+    },
+    "10.7326/m13-1301": {
+      "title": "The Accessibility of Firearms and Risk for Suicide and Homicide Victimization Among Household Members",
+      "container": "Ann Intern Med",
+      "containerAlt": [
+        "Ann Intern Med",
+        "Annals of Internal Medicine",
+        "Annals of internal medicine"
+      ],
+      "year": 2014,
+      "authors": [
+        "Anglemyer",
+        "Horvath",
+        "Rutherford"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "24592495"
     },
     "10.7326/m19-0687": {
       "title": "Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines",

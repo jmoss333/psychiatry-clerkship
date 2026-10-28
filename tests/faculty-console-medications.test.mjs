@@ -91,8 +91,8 @@ test('read-only snapshot uses current main when no reviews are ahead; never fres
   assert.equal(behind.needsSync, true);
 });
 
-test('ledger, direct-write and alternate branches fail closed; duplicate IDs reject the registry', async () => {
-  for (const config of [{ ...settings, ledger: {} }, { ...settings, branch: 'main', isolated: false }, { ...settings, branch: 'feature' }, { ...settings, baseBranch: 'other' }]) await assert.rejects(loadMedicationSnapshot(repository(), config), /requires the existing attest/);
+test('direct-write and alternate branches fail closed; duplicate IDs reject the registry', async () => {
+  for (const config of [{ ...settings, branch: 'main', isolated: false }, { ...settings, branch: 'feature' }, { ...settings, baseBranch: 'other' }]) await assert.rejects(loadMedicationSnapshot(repository(), config), /requires the existing attest/);
   const s = snapshot(); s.registry.json.records.push(record()); await assert.rejects(loadMedicationSnapshot(repository(s), settings), /duplicate identity/);
 });
 

@@ -31,9 +31,9 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   `13_Faculty_Resources/reviewed.json`, `CLAUDE.md`, `AGENTS.md`, `decisions.json`,
   `standards.json`, `instrument_rights.json`, `vocabulary.json`, `.gitattributes`,
   `reviewed.schema.json`, and `_automation/`'s `attestation_hash.py`, `surface_governance.py`,
-  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`,
-  `site_build/ledger_overlay.mjs` (the attestation ledger's build-side reader), and everything
-  under `13_Faculty_Resources/ledger/` (its public keys);
+  `validate_attestation_consistency.py`, `validate_curriculum.py`, `validate_topic_meta.py`
+  (the ledger overlay and `13_Faculty_Resources/ledger/` were governance too until the ledger
+  was removed on 2026-10-18);
   everything under `.claude/` (skills, hooks, subagents, settings), `.github/` **in full** — not
   only `workflows/`: an action, a template or CODEOWNERS decides how work is reviewed too —
   `bin/` (every gate and audit tool, this one and `verify.sh` included), `faculty-console/`
@@ -137,7 +137,10 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   because #672 was authored by one identity and committed by another — the only identity that may
   author one. L4 asks git, not the ledger's `by` field, which any writer can type; it is still
   forgeable with `git commit --author`, but that is deliberate fraud with a name on it, not the
-  drift this gate exists to stop. **Sync `attest/pending` with a MERGE, never GitHub's "Update
+  drift this gate exists to stop — and ADR-004 closes it on the owner's side: the console
+  authenticates as a GitHub App (`faculty-console/github-app-auth.mjs`), and a ruleset on
+  `attest/pending` with the App as its only bypass actor makes the key, not the email, the
+  guarantee. **Sync `attest/pending` with a MERGE, never GitHub's "Update
   branch → Rebase branch".** A rebase rewrites the *committer* on every commit it replays, so
   every console attestation on the rolling PR comes back committed by `jmoss333`/`GitHub` and
   L4 reddens the one branch that is allowed to promote — with a diff that looks untouched. The

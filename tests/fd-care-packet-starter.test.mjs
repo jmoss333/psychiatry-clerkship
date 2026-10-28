@@ -19,12 +19,14 @@ const FIXTURE = JSON.parse(readFileSync(path.join(REPO, 'tests/fixtures/care-uni
 const PROFILE = FIXTURE.profile;
 const PAYLOAD = { ...JSON.parse(built.stdout), unitProfiles: [PROFILE] };
 const STARTER = { profile: PROFILE.id, ids: ['a1', 'a2', 'a3'] };
+const ADDONS = { transport: { ids: ['a4', 'a5'] }, housing: { ids: ['a6', 'a7'] } };
 const KEY = 'cw_care_unit_profile_v1';
 const SESSION_KEY = 'fd_care_packet_v1';
 const NOW = Date.UTC(2026, 9, 16, 12);
 const source = read('fd_data.js') + readFileSync(path.join(BUILD, 'vendor/qrcode-generator-1.4.4.js'), 'utf8') +
-  read('fd_care_pack.js') + read('fd_care_profile.js') + read('fd_care_packet.js') + read('fd_care_packet_sheet.js');
+  read('fd_care_pack.js') + read('fd_care_profile.js') + read('fd_care_search.js') + read('fd_care_packet.js') + read('fd_care_packet_sheet.js');
 const P = new Function('FD_CARE_INSERTS', source + `;return {create:fdCreateCarePacket,blank:fdCarePacketBlank,
+  addon:typeof fdCarePacketAddon==='function'?fdCarePacketAddon:null,
   starter:typeof fdCarePacketStarter==='function'?fdCarePacketStarter:null};`)(PAYLOAD);
 const data = { categories: [{ id: 'aftercare', label: 'Aftercare' }], records: Array.from({ length: 14 }, (_, i) => ({
   id: 'a' + i, category: 'aftercare', name: 'Fictional support ' + i, description: 'Counseling.', details: 'Adults', area: 'York',
@@ -47,7 +49,7 @@ const make = (t, options = {}) => {
   if (options.remembered) local.setItem(KEY, options.remembered);
   local.setItem('cw_unrelated', 'keep');
   const c = P.create({ storage: session, profileStorage: local, payload: options.payload === undefined ? PAYLOAD : options.payload,
-    starter: options.starter === undefined ? STARTER : options.starter, sheet: { now: NOW },
+    starter: options.starter === undefined ? STARTER : options.starter, addons: options.addons === undefined ? ADDONS : options.addons, sheet: { now: NOW },
     authorizeProfile: profile => { checks.push(profile); return options.authorize ? options.authorize(profile) : profileReceipt(profile, NOW); } });
   c.mount(null, { textContent: '' }, () => options.data === undefined ? data : options.data, null, view);
   t.after(() => c.leave());
@@ -62,6 +64,14 @@ const plan = (state, directory = data, payload = PAYLOAD, starter = STARTER) => 
   return P.starter(state, directory, payload, starter);
 };
 const saved = session => JSON.parse(session.getItem(SESSION_KEY));
+const addon = (state, directory = data, config = ADDONS.transport, payload = PAYLOAD, now = NOW) => {
+  assert.equal(typeof P.addon, 'function', 'add-ons validate the complete selection before changing state');
+  return P.addon(state, directory, payload, config, now);
+};
+const add = (c, key = 'transport') => {
+  assert.equal(typeof c.startAddon, 'function', 'the controller exposes explicit add-on actions');
+  return c.startAddon(key);
+};
 const rejected = (state, directory, payload, starter) => {
   const before = clone(state);
   const result = plan(state, directory, payload, starter);
@@ -209,4 +219,97 @@ test('starter selection cannot carry prior approval through a later revocation',
   assert.equal(c.copy().code, 'UNIT_UNCONFIRMED');
   assert.equal(local.getItem(KEY), PROFILE.id, 'a preference is retained but never treated as approval');
   assert.doesNotMatch(view.pages.innerHTML, /Fixture Unit 4 East|555-0142/, 'revoked unit details leave patient output');
+});
+
+test('an add-on appends only missing resources while keeping unit, order, copy and page choices', () => {
+  const state = { ...P.blank(), ids: ['a8', 'a5'], mode: 'final', inserts: { safety: true, notes: false },
+    unit: { name: 'Another ward', phone: '(207) 555-0101', profile: '' } };
+  const before = clone(state), result = addon(state);
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.result.state, { ...state, ids: ['a8', 'a5', 'a4'] });
+  assert.equal(result.result.added, 1);
+  assert.equal(result.result.already, 1);
+  assert.deepEqual(state, before);
+});
+
+test('invalid, missing, ineligible or over-capacity add-ons never apply a partial selection', () => {
+  const base = { ...P.blank(), ids: ['a5'] }, before = clone(base);
+  const invalid = [null, {}, [], { ids: [] }, { ids: ['a4', 'a4'] }, { ids: ['a4', null] },
+    { ids: ['a4', ''] }, { ids: ['a4', 'x'.repeat(121)] }, { ids: 'a4' }];
+  for (const config of invalid) assert.equal(addon(base, data, config).ok, false);
+  for (const directory of [null, {}, { ...data, partial: true },
+    { ...data, records: data.records.filter(row => row.id !== 'a4') },
+    { ...data, records: data.records.map(row => row.id === 'a5' ? { ...row, contactHref: '', website: '' } : row) }]) {
+    const result = addon(base, directory);
+    assert.equal(result.ok, false);
+    assert.ok(result.reason.length);
+  }
+  assert.equal(addon(base, data, ADDONS.transport, null).ok, false);
+  assert.equal(addon({ ...base, ids: data.records.filter(row => !['a4', 'a5', 'a13'].includes(row.id)).map(row => row.id) }).ok, false);
+  assert.deepEqual(base, before);
+});
+
+test('add-ons hold overdue, unverified, future or malformed dates even for selected resources', () => {
+  for (const fields of [{ reviewAfter: '2026-10-16' }, { reviewAfter: '2026-10-15' }, { reviewAfter: '' },
+    { reviewAfter: '2027-02-30' }, { verifiedDate: '2026-10-17' }, { verifiedDate: '' },
+    { verifiedDate: '2026-02-30' }, { verificationRequired: true }, { verificationRequired: undefined }]) {
+    const directory = { ...data, records: data.records.map(row => row.id === 'a5' ? { ...row, ...fields } : row) };
+    for (const ids of [[], ['a5']]) assert.equal(addon({ ...P.blank(), ids }, directory).ok, false, JSON.stringify(fields));
+  }
+  assert.equal(addon(P.blank(), data, ADDONS.transport, PAYLOAD, NaN).ok, false);
+  assert.equal(addon(P.blank(), data).ok, true);
+});
+
+test('add-ons are separate explicit actions, do not select a unit, and are repeatable without duplicates', t => {
+  const { c, session, local, checks } = make(t);
+  const beforeLocal = [...local.map];
+  assert.deepEqual(c.ids(), []);
+  assert.equal(add(c), true);
+  assert.deepEqual(c.ids(), ['a4', 'a5']);
+  assert.deepEqual(saved(session).unit, P.blank().unit);
+  assert.equal(c.previewOpen(), true);
+  assert.equal(checks.length, 0);
+  assert.equal(add(c), true);
+  assert.equal(add(c, 'housing'), true);
+  assert.deepEqual(c.ids(), ['a4', 'a5', 'a6', 'a7']);
+  assert.deepEqual([...local.map], beforeLocal);
+  assert.notEqual(c.print().code, 'NO_DOCUMENT', 'choosing resources alone cannot authorize patient output');
+});
+
+test('add-ons preserve uncommitted unit typing and never write it as a selection side effect', t => {
+  const { c, session, local } = make(t, { state: { ...P.blank(), ids: ['a8'] } });
+  const input = { value: 'Draft ward', hasAttribute: key => key === 'data-fd-care-packet-unit-field',
+    getAttribute: key => key === 'data-fd-care-packet-unit-field' ? 'name' : null };
+  c.handleInput(input);
+  const beforeLocal = [...local.map];
+  assert.equal(add(c), true);
+  assert.equal(saved(session).unit.name, '');
+  c.handleChange(input);
+  assert.equal(saved(session).unit.name, 'Draft ward');
+  assert.deepEqual([...local.map], beforeLocal);
+});
+
+test('unknown or unavailable add-ons leave packet, preference and preview untouched', t => {
+  for (const key of ['unknown', '__proto__', 'constructor', 'transport']) {
+    const { c, session, local, checks } = make(t, { state: { ...P.blank(), ids: ['a8'] }, data: { ...data, partial: true } });
+    const beforeSession = [...session.map], beforeLocal = [...local.map];
+    assert.equal(add(c, key), false);
+    assert.deepEqual([...session.map], beforeSession);
+    assert.deepEqual([...local.map], beforeLocal);
+    assert.equal(c.previewOpen(), false);
+    assert.equal(checks.length, 0);
+  }
+});
+
+test('an add-on rechecks current approval and cannot carry a revoked unit into output', t => {
+  let approved = true;
+  const { c, checks } = make(t, { authorize: profile => approved ? profileReceipt(profile, NOW) : { ok: false, status: 'revoked' } });
+  assert.equal(start(c), true);
+  assert.equal(c.print().code, 'NO_DOCUMENT');
+  approved = false;
+  const previousChecks = checks.length;
+  assert.equal(add(c), true);
+  assert.ok(checks.length > previousChecks);
+  assert.equal(c.print().code, 'UNIT_UNCONFIRMED');
+  assert.equal(c.copy().code, 'UNIT_UNCONFIRMED');
 });

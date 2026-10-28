@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "disclaimer": "SYNTHETIC FIXTURE for tests/maintenance/test_evidence_watch.py. Modelled on the 2025 elimination of the clozapine REMS (REMS ended 2025-06-13). Not a verbatim FDA label; contains no dosing.",
+    "results": {
+      "skip": 0,
+      "limit": 1,
+      "total": 1
+    }
+  },
+  "results": [
+    {
+      "set_id": "90876802-0e3a-44c9-9ff7-1754dfbe736a",
+      "id": "synthetic-41",
+      "version": "41",
+      "effective_time": "20250827",
+      "openfda": {
+        "generic_name": [
+          "CLOZAPINE"
+        ]
+      },
+      "boxed_warning": [
+        "WARNING: SEVERE NEUTROPENIA; ORTHOSTATIC HYPOTENSION, BRADYCARDIA, SYNCOPE; SEIZURES; MYOCARDITIS, PERICARDITIS, AND CARDIOMYOPATHY; INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS. Severe Neutropenia: Clozapine can cause severe neutropenia, which can lead to serious infection and death. Obtain a baseline absolute neutrophil count (ANC) before starting treatment and monitor ANC regularly during treatment."
+      ],
+      "contraindications": [
+        "Known serious hypersensitivity to clozapine or any other component of the product."
+      ],
+      "warnings_and_cautions": [
+        "Severe Neutropenia: monitor ANC as described in the prescribing information. Orthostatic hypotension, bradycardia and syncope: titrate gradually. Seizures: use caution in patients with a history of seizures."
+      ]
+    }
+  ]
+}
