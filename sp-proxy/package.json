@@ -13,6 +13,6 @@
     "@netlify/blobs": "11.1.6"
   },
   "devDependencies": {
-    "@netlify/zip-it-and-ship-it": "16.5.0"
+    "@netlify/zip-it-and-ship-it": "16.6.0"
   }
 }
