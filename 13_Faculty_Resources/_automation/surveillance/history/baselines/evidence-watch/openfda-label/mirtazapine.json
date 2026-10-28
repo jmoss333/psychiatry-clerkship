@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20250806",
+  "sections": {
+    "boxed_warning": {
+      "hash": "3252cb7e5d62b828473356f7dc4df09e25e3bd781a27a8cdf0fd5d10c568f0fd",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and for emergence of suicidal thoughts and behaviors [see Warnings and Precautions (5.1) ] . REMERON/REMERONSolTab is not approved for use in pediatric patients [see Use in Specific Populations (8.4) ]. WARNING: SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Increased risk of suicidal thoughts and behavior in pediatric and young adult patients taking antidepressants. Closely monitor all antidepressant-treated patients for clinical worsening and emergence of suicidal thoughts and behaviors. REMERON/REMERONSolTab is not approved for use in pediatric patients. ( 5.1 , 8.4 )"
+    },
+    "contraindications": {
+      "hash": "cb48f6439f09e802827a1b8b28b0bec9f0c005583719fcf03a9b9c5a67a1e7a4",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS REMERON/REMERONSolTab is contraindicated in patients: Taking, or within 14 days of stopping, MAOIs (including the MAOIs linezolid and intravenous methylene blue) because of an increased risk of serotonin syndrome [see Warnings and Precautions (5.3) , Drug Interactions (7) ] . With a known hypersensitivity to mirtazapine or to any of the excipients in REMERON/REMERONSolTab . Severe skin reactions, including drug reaction with eosinophilia and systemic symptoms (DRESS), Stevens-Johnson syndrome, bullous dermatitis, erythema multiforme and toxic epidermal necrolysis have been reported following the use of REMERON/REMERONSolTab [see Warnings and Precautions (5.6) , Adverse Reactions (6.2) ]. Concomitant use of monoamine oxidase inhibitors (MAOIs) or use within 14 days of stopping MAOIs. ( 2.4 , 4 , 7 ) Known hypersensitivity to mirtazapine or any of the excipients in REMERON/REMERONSolTab. ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "fe98439e48f80c7ab39dedd8db1806ac873b7669c70af3a19502b0b641efe530",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "98ad1917-a094-44f5-a28f-a64a8cfcd887",
+  "version": "8"
+}

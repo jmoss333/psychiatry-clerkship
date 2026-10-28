@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260211",
+  "sections": {
+    "boxed_warning": {
+      "hash": "201706d5e84060ae7193c02bb8d68eaeb000b75a467b089f314090aeae6ebbd1",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Analyses of seventeen placebo-controlled trials (modal duration of 10 weeks), largely in patients taking atypical antipsychotic drugs, revealed a risk of death in drug-treated patients of between 1.6 to 1.7 times the risk of death in placebo-treated patients. Over the course of a typical 10-week controlled trial, the rate of death in drug-treated patients was about 4.5%, compared to a rate of about 2.6% in the placebo group. Although the causes of death were varied, most of the deaths appeared to be either cardiovascular (e.g., heart failure, sudden death) or infectious (e.g., pneumonia) in nature. Observational studies suggest that, similar to atypical antipsychotic drugs, treatment with conventional antipsychotic drugs may increase mortality. The extent to which the findings of increased mortality in observational studies may be attributed to the antipsychotic drug as opposed to some characteristic(s) of the patients is not clear. ZYPREXA (olanzapine) is not approved for the treatment of patients with dementia-related psychosis [see Warnings and Precautions ( 5.1 ), Use in Specific Populations ( 8.5 ), and Patient Counseling Information ( 17 )] . When using ZYPREXA and fluoxetine in combination, also refer to the Boxed Warning section of the package insert for Symbyax. WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS See full prescribing information for complete boxed warning. Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. ZYPREXA is not approved for the treatment of patients with dementia-related psychosis. ( 5.1 , 8.5 , 17 ) When using ZYPREXA and fluoxetine in combination, also refer to the Boxed Warning section of the package insert for Symbyax."
+    },
+    "contraindications": {
+      "hash": "26b987b3f69b42738d5cb5bdb47fe9f7e4ed37229bb08b083fcdbc581476b983",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS None with ZYPREXA monotherapy. When using ZYPREXA and fluoxetine in combination, also refer to the Contraindications section of the package insert for Symbyax. For specific information about the contraindications of lithium or valproate, refer to the Contraindications section of the package inserts for these other products. None with ZYPREXA monotherapy. ( 4 ) When using ZYPREXA and fluoxetine in combination, also refer to the Contraindications section of the package insert for Symbyax \u00ae . ( 4 ) When using ZYPREXA in combination with lithium or valproate, refer to the Contraindications section of the package inserts for those products. ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "19283747155d4b4abc32f657d9af1ed06137033281cac2f02f1a2e1f093472ed",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "b418946a-1ab4-4d89-a012-d94fc361a3c4",
+  "version": "68"
+}

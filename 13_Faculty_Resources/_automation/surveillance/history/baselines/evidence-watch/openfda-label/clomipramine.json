@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20241126",
+  "sections": {
+    "boxed_warning": {
+      "hash": "6069fdf05ff96443527c641561f1019dbb947c273464c53fc91c805c115c14ac",
+      "present": true,
+      "rems": false,
+      "text": "Suicidality and Antidepressant Drugs Antidepressants increased the risk compared to placebo of suicidal thinking and behavior (suicidality) in children, adolescents, and young adults in short-term studies of major depressive disorder (MDD) and other psychiatric disorders. Anyone considering the use of clomipramine hydrochloride or any other antidepressant in a child, adolescent, or young adult must balance this risk with the clinical need. Short-term studies did not show an increase in the risk of suicidality with antidepressants compared to placebo in adults beyond age 24; there was a reduction in risk with antidepressants compared to placebo in adults aged 65 and older. Depression and certain other psychiatric disorders are themselves associated with increases in the risk of suicide. Patients of all ages who are started on antidepressant therapy should be monitored appropriately and observed closely for clinical worsening, suicidality, or unusual changes in behavior. Families and caregivers should be advised of the need for close observation and communication with the prescriber. Clomipramine hydrochloride is not approved for use in pediatric patients except for patients with obsessive compulsive disorder (OCD) ( see WARNINGS, Clinical Worsening and Suicide Risk ; PRECAUTIONS, Information for Patients ; and PRECAUTIONS, Pediatric Use )."
+    },
+    "contraindications": {
+      "hash": "ff44b741fd96ebf62da74b7fa85ce39b12a135e2fbccdf95239436fdbd471d79",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Anafranil is contraindicated in patients with a history of hypersensitivity to Anafranil or other tricyclic antidepressants. Monoamine Oxidase Inhibitors (MAOIs) The use of MAOIs intended to treat psychiatric disorders with Anafranil or within 14 days of stopping treatment with Anafranil is contraindicated because of an increased risk of serotonin syndrome. The use of Anafranil within 14 days of stopping an MAOI intended to treat psychiatric disorders is also contraindicated ( see WARNINGS and DOSAGE AND ADMINISTRATION ). Starting Anafranil in a patient who is being treated with linezolid or intravenous methylene blue is also contraindicated because of an increased risk of serotonin syndrome ( see WARNINGS and DOSAGE AND ADMINISTRATION ). Myocardial Infarction Anafranil is contraindicated during the acute recovery period after a myocardial infarction."
+    },
+    "warnings": {
+      "hash": "f8eb4ba1d39cf9325066ab39fa3b946928c2e8fa7313efcb5f4768e8ed108b63",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "4074b555-7635-41a9-809d-fae3b3610059",
+  "version": "22"
+}

@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260908",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "contraindications": {
+      "hash": "9edfdd38544ea7ce86ec3c7e89d267f0984483e791c9b764dec8f7808f79b994",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Propranolol is contraindicated in 1) cardiogenic shock; 2) sinus bradycardia and greater than first-degree block; 3) bronchial asthma; and 4) in patients with known hypersensitivity to propranolol hydrochloride."
+    },
+    "warnings": {
+      "hash": "b3f8f2df73cdfb7ad8f13288e45b7fd1d08ee5c74bb84a5135da3732db404353",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "5affa0ea-db84-86fd-e063-6294a90a4d16",
+  "version": "1"
+}
