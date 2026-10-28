@@ -775,7 +775,6 @@ test('release status says what learners see, lists merged work that is not live,
         unread: [],
         complete: true,
       },
-      ledgerMode: false,
       gaps: ["main's required checks: GitHub answered 403"],
       headline: { tone: 'attention', text: '2 merged changes (1 faculty sign-off) are not live for learners yet.' },
     } : { state: 'unavailable' });
@@ -2906,7 +2905,7 @@ test.describe('phone client', () => {
     await page.route('**/api/attest?view=changes', route => fulfillJson(route, 200, { view: 'changes', groups: [], unexplained: [], unchecked: [], pages: {} }));
     await page.route('**/api/attest', async (route, request) => {
       if (request.method() !== 'POST') return route.fallback();
-      await fulfillJson(route, 200, { ok: true, updated: 1, commit: 'https://github.example/commit/no-rows', ledger: { seq: 7 } });
+      await fulfillJson(route, 200, { ok: true, updated: 1, commit: 'https://github.example/commit/no-rows' });
     });
     await unlockPhone(page);
     await page.getByRole('link', { name: /Synthetic mental status exam tool/ }).click();
@@ -3615,7 +3614,6 @@ async function routeReleaseStatus(page, { servedMs3 }) {
         failedRuns: [],
         week: null,
       },
-      ledgerMode: false,
       gaps: [],
       headline: { tone: 'waiting', text: '1 merged change is not live for learners yet.' },
     });

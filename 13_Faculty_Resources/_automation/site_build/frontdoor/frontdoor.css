@@ -541,6 +541,10 @@
   font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;
 }
 .fd-chip.is-tool{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+/* Depth chips on Everything rows (fd_library.js fdDepthChip): a pocket card in the olive wash, a
+ * short module in the plain chip; a guide, the common case, carries none. */
+.fd-chip.is-card{background:var(--fd-olive-wash);color:var(--fd-olive-deep)}
+.fd-chip.is-module{background:var(--fd-chip);color:var(--fd-text-mid)}
 
 /* The setup face of the Now card (no week set): kicker "30-second setup", serif title, the one
  * button "Set rotation week". The daily pick (.fd-pick) retired from Today on 2026-10-04; the
@@ -663,7 +667,7 @@
 /* The phone's Learning activity & review link; the rail carries the desktop one. */
 .fd-today__record{margin:var(--fd-space-9) 0 0}
 
-/* Patient-care launchpad: one stable destination for external ReConnect resources. The paired
+/* Patient-care launchpad: one stable destination for external care resources. The paired
  * columns separate support from education, while the olive rule keeps this distinct from
  * red Safety actions and teal in-library tools. */
 .fd-care-page{max-width:calc(var(--fd-space-10) * 24);animation:fdFadeUp var(--fd-dur-fast) var(--fd-ease-standard)}
@@ -1248,6 +1252,9 @@
  * entrance animation: the list repaints on every keystroke of the filter. */
 .fd-library{animation:none}
 .fd-library__head{margin:0 0 var(--fd-space-8)}
+.fd-library__titlebar{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-3)}
+.fd-library__titlebar .fd-library__h1{margin-bottom:0}
+.fd-library__continuity{flex:none;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-3);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
 .fd-library__h1{margin:0 0 var(--fd-space-2);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-4xl);line-height:1.15;letter-spacing:-.01em;color:var(--fd-text)}
 .fd-library__lede{margin:0;font-size:var(--fd-font-base);color:var(--fd-text-mid)}
 .fd-library__controls{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-6) var(--fd-space-7);margin:0 0 var(--fd-space-5)}
@@ -1258,6 +1265,11 @@
 .fd-library__view:hover{color:var(--fd-text)}
 .fd-library__view.is-active{background:var(--fd-surface);color:var(--fd-teal-deep);font-weight:700;box-shadow:var(--fd-shadow-sm)}
 /* The count span is a flex item, so its leading space must be kept explicitly. */
+.fd-library__tasks{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-library__tasks>span{margin-right:var(--fd-space-2)}
+.fd-library__task{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-weight:600;cursor:pointer}
+.fd-library__task:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep)}
+.fd-library__task.is-active{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 .fd-library__view-count{font-weight:inherit;white-space:pre}
 /* Filter field: one bordered box holding the glyph, the input and either the "/" chip (desktop,
  * no query) or Clear (any width, with a query). The input itself has no border, so the box is
@@ -1283,6 +1295,13 @@
 .fd-kit__group-count{color:var(--fd-text-mid);font-weight:700}
 .fd-kit__chevron{margin-left:auto;transform:rotate(-90deg);transition:transform .18s var(--fd-ease-standard)}
 .fd-kit__group[open] > summary .fd-kit__chevron{transform:none}
+/* Sub-group headings inside a grouped column (curriculum.libraryColumns[].groups; fd_library.js
+ * fdLibraryGroup, Library re-cut 2026-10-17): plain headings between the rows, never disclosure,
+ * so nothing the inventory tests count as reachable is ever hidden. Small caps-weight eyebrow in
+ * the dim ink, a hair above the first row of its run. */
+.fd-kit__subhead{margin:var(--fd-space-7) 0 var(--fd-space-1);font-family:inherit;font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-kit__subhead:first-of-type{margin-top:var(--fd-space-4)}
+.fd-kit__subcount{font-weight:600;letter-spacing:0;text-transform:none}
 /* Rows (both views). The wrapper carries the row's rule and the selected state; the button inside
  * is the whole row (name first, then badge, summary, meta), and Essentials adds a desktop-only
  * Preview control beside it. */
@@ -1305,6 +1324,20 @@
 .fd-kit__peek{display:none}
 .fd-library__details{display:inline-flex;align-items:center;justify-content:center;align-self:center;min-height:var(--fd-target-touch);margin-left:var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
 .fd-library__details:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+.fd-library__pin{grid-column:2;justify-self:end;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);margin:0 0 var(--fd-space-3) var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
+.fd-library__pin[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+.fd-continuity{margin-top:var(--fd-space-10);padding-top:var(--fd-space-8);border-top:1px solid var(--fd-line-strong)}
+.fd-continuity__title{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:var(--fd-font-section);line-height:1.3;scroll-margin-top:100px}
+.fd-continuity__intro,.fd-continuity__group p{color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
+.fd-continuity__columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:var(--fd-space-8)}
+.fd-continuity__group{min-width:0}
+.fd-continuity__group h3{font-size:var(--fd-font-base);margin:var(--fd-space-5) 0}
+.fd-continuity__row{display:flex;align-items:center;gap:var(--fd-space-3);border-bottom:1px solid var(--fd-line)}
+.fd-continuity__open{flex:1;min-width:0;min-height:var(--fd-target-touch);padding:var(--fd-space-3) 0;border:0;background:transparent;text-align:left;font:inherit;color:var(--fd-text);cursor:pointer;overflow-wrap:anywhere}
+.fd-continuity__open .governance-badge{display:block;width:fit-content;max-width:100%;white-space:normal}
+.fd-continuity__remove,.fd-continuity__clear{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-3);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
+.fd-continuity__notice{color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fd-continuity__notice:empty{margin:0}
 /* Zero results and the filtered footer. */
 .fd-library__empty{max-width:560px;padding:var(--fd-space-10) 0 var(--fd-space-4);border-top:1px solid var(--fd-line-strong)}
 .fd-library__empty-h{margin:0 0 var(--fd-space-4);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:600;font-size:calc(var(--fd-font-xl) + 1px);line-height:1.3;color:var(--fd-text)}
@@ -1366,7 +1399,11 @@
 .fd-article__meta{font-size:var(--fd-font-xs);font-weight:600;color:var(--fd-text-dim)}
 .fd-article__h1{margin:0 0 14px;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-3xl);line-height:1.22;letter-spacing:.2px;color:var(--fd-text)}
 .fd-article__lead{margin:0 0 18px;font-size:var(--fd-font-lg);line-height:1.72;color:var(--fd-text);max-width:62ch}
-.fd-article__body{font-size:var(--fd-font-lg);line-height:1.72;max-width:62ch;color:var(--fd-text)}
+/* Comfort affects readings only; no animation or tool-frame typography changes. */
+.fd-reader:not(.fd-reader--tool)[data-fd-reader-size="larger"]{--fd-reading-scale:1.15}
+.fd-reader:not(.fd-reader--tool)[data-fd-reader-size="largest"]{--fd-reading-scale:1.3}
+.fd-reader:not(.fd-reader--tool)[data-fd-reader-spacing="spacious"]{--fd-reading-leading:2}
+.fd-article__body{font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.72);max-width:62ch;color:var(--fd-text)}
 /* The 62ch measure above is a reading rule. A tool page's body is the mounted <iframe>, not prose,
  * so it is lifted there -- see the .fd-reader--tool note on .fd-article. Kept immediately after the
  * base rule it overrides (specificity, not order, decides the cascade here; tests/fd-tokens.test.mjs
@@ -1394,8 +1431,8 @@
    frame's scroll-into-view targets below the header. Surfaced at ≤390px once .fd-shell stopped
    breaking position:sticky (2026-10-04); in-page readers set their own scroll-margin-top. */
 html:has(.fd-reader--tool){scroll-padding-top:112px}
-.fd-article__body h2{margin:30px 0 12px;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:var(--fd-font-2xl);line-height:1.3;color:var(--fd-text)}
-.fd-article__body h3{margin:24px 0 10px;font-size:var(--fd-font-xl);line-height:1.4;color:var(--fd-text)}
+.fd-article__body h2{margin:30px 0 12px;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1));line-height:1.3;color:var(--fd-text)}
+.fd-article__body h3{margin:24px 0 10px;font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));line-height:1.4;color:var(--fd-text)}
 .fd-article__body ul{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body ol{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body li{margin:6px 0}
@@ -1609,6 +1646,12 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-searchpanel__foot{padding:var(--fd-space-6) var(--fd-space-7);border-top:1px solid var(--fd-line);background:var(--fd-callout);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
 .fd-searchpanel__foot strong{color:var(--fd-text)}
 .fd-searchpanel__empty{padding:22px;text-align:center;font-size:var(--fd-font-md);color:var(--fd-text-dim)}
+.fd-searchpanel__recovery{display:flex;flex-direction:column;gap:var(--fd-space-3);padding:0 var(--fd-space-5) var(--fd-space-6)}
+.fd-searchpanel__recovery .fd-btn{min-height:var(--fd-target-touch);white-space:normal;text-align:left;justify-content:flex-start}
+.fd-searchpanel__related{display:flex;flex-wrap:wrap;gap:var(--fd-space-2);padding:var(--fd-space-4) var(--fd-space-5)}
+.fd-searchpanel__related p{width:100%;margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fd-searchpanel__related .fd-btn{min-height:var(--fd-target-touch);max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left}
+
 
 /* Result rows: an 8px mark column and the text. Protocols: filled danger dot and the kit's cue
  * line; pages: an outlined dot; tools: teal dot and the hint. The leading protocol of a crisis
@@ -2188,24 +2231,24 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   line-height:1.15;letter-spacing:-.025em;margin-bottom:var(--fd-space-8);overflow-wrap:break-word;
 }
 .fd-reader--guide .fd-article__lead{
-  font-size:var(--fd-guide-body-size);line-height:1.75;color:var(--fd-text-mid);
+  font-size:calc(var(--fd-guide-body-size) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);color:var(--fd-text-mid);
   max-width:none;padding-bottom:var(--fd-space-9);border-bottom:1px solid var(--fd-line-strong);
   margin-bottom:var(--fd-space-9);
 }
 .fd-reader--guide .fd-article__lead:empty{display:none}
 .fd-reader--guide .fd-article__body{
-  max-width:none;font-size:var(--fd-guide-body-size);line-height:1.75;overflow-wrap:break-word;
+  max-width:none;font-size:calc(var(--fd-guide-body-size) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);overflow-wrap:break-word;
 }
 .fd-reader--guide .fd-article__body p{margin-top:0;margin-bottom:var(--fd-space-8)}
 .fd-reader--guide .fd-article__body h2{
-  font-size:var(--fd-guide-section-size);line-height:1.3;letter-spacing:-.015em;
+  font-size:calc(var(--fd-guide-section-size) * var(--fd-reading-scale,1));line-height:1.3;letter-spacing:-.015em;
   margin-top:0;margin-bottom:var(--fd-space-8);scroll-margin-top:140px;
 }
 /* A promoted bold lead (fd_guide.js) stays the authored paragraph; it only gains a landing offset. */
 .fd-reader--guide .fd-article__body .fd-guide-lead{scroll-margin-top:140px}
 .fd-reader--guide .fd-article__body h3{
   font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;
-  font-size:var(--fd-font-xl);line-height:1.4;margin-top:var(--fd-space-10);margin-bottom:var(--fd-space-6);
+  font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));line-height:1.4;margin-top:var(--fd-space-10);margin-bottom:var(--fd-space-6);
 }
 .fd-reader--guide .fd-article__body li{margin-top:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
 .fd-reader--guide .fd-article__body a{overflow-wrap:anywhere;text-underline-offset:.2em}
@@ -2235,17 +2278,17 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 .fd-reader--guide .fd-article__body .fd-guide-example{
   padding:var(--fd-space-8) var(--fd-space-9);border-left:3px solid var(--fd-teal);
-  background:var(--fd-teal-wash);font-size:var(--fd-font-lg);line-height:1.75;
+  background:var(--fd-teal-wash);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);
 }
 .fd-reader--guide .fd-article__body .fd-guide-references{
   padding-top:var(--fd-space-10);border-top:1px solid var(--fd-line-strong);
-  font-size:var(--fd-font-md);line-height:1.7;overflow-wrap:anywhere;
+  font-size:calc(var(--fd-font-md) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.7);overflow-wrap:anywhere;
 }
 .fd-reader--guide .fd-article__body .fd-guide-references li{margin-bottom:var(--fd-space-7)}
 .fd-reader--guide .fd-article__body .governance-notice{margin-bottom:var(--fd-space-9)}
 .fd-reader--guide .fd-article__body blockquote:has(.crisis-block-hook){
   padding:var(--fd-space-8) var(--fd-space-9);border-left:3px solid var(--fd-danger);
-  background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-lg);line-height:1.75;
+  background:var(--fd-danger-wash);color:var(--fd-text);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);
 }
 .fd-reader--guide .fd-guide-margin{
   grid-column:1;grid-row:1/span 2;min-width:0;position:sticky;top:112px;
@@ -2311,20 +2354,20 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 .fd-reader--guide .fd-article__body .table-scroll{max-width:100%;margin:var(--fd-space-9) 0}
 .fd-reader--guide .fd-article__body .table-scroll-viewport{border-radius:var(--fd-radius-xs);border-color:var(--fd-line-strong)}
-.fd-reader--guide .fd-article__body table{font-size:var(--fd-font-base);line-height:1.6;border-spacing:0}
+.fd-reader--guide .fd-article__body table{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.6);border-spacing:0}
 .fd-reader--guide .fd-article__body .table-scroll table{width:100%;min-width:100%}
 .fd-reader--guide .fd-article__body :is(th,td){
   vertical-align:top;text-align:left;padding:var(--fd-space-6) var(--fd-space-7);border-color:var(--fd-line-strong);
 }
-.fd-reader--guide .fd-article__body thead th{color:var(--fd-teal-deep);background:var(--fd-teal-wash);font-size:var(--fd-font-sm)}
+.fd-reader--guide .fd-article__body thead th{color:var(--fd-teal-deep);background:var(--fd-teal-wash);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
 .fd-reader--guide .fd-article__body tbody tr:nth-child(even)>*{background:var(--fd-callout)}
 .fd-reader--guide .fd-guide-table-rows{border-top:1px solid var(--fd-line-strong)}
 .fd-reader--guide .fd-guide-table-rows dl{
   margin:0;padding:var(--fd-space-8) 0;border-bottom:1px solid var(--fd-line-strong);
-  font-size:var(--fd-font-lg);line-height:1.7;
+  font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.7);
 }
 .fd-reader--guide .fd-guide-table-rows dt{
-  margin-top:var(--fd-space-7);font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-mid);
+  margin-top:var(--fd-space-7);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));font-weight:700;color:var(--fd-text-mid);
 }
 .fd-reader--guide .fd-guide-table-rows dt:first-child{margin-top:0}
 .fd-reader--guide .fd-guide-table-rows dd{margin:var(--fd-space-2) 0 0;overflow-wrap:anywhere}
@@ -2459,8 +2502,12 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @media (max-width:640px){
   /* Leave room for a pending-review notice and wrapped titles above the dock.
    * Compact the spaces between sections, not the text or 44px touch controls. */
-  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-4)}
+  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-2)}
+  .fd-library__controls{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__tasks{gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__task{padding-inline:var(--fd-space-2)}
   .fd-library__body{row-gap:var(--fd-space-4)}
+  .fd-kit__reading{padding-block:var(--fd-space-4)}
 }
 
 @media print{
@@ -2589,6 +2636,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-alsolist .fd-continue__body{flex:1 1 200px}
 .fd-alsolist .fd-continue__kicker{flex:1 0 100%;order:-1;color:var(--fd-text-dim)}
 .fd-alsolist .fd-continue__segs{display:none}
+/* The Case-of-the-Week announcement (fd_today.js fdNewCaseRow): an Also-today face that only ever
+ * renders flat, in the week a case ships -- the same parts as the faces above (a kicker above the
+ * title like the demoted Continue's, title 15/600, trailing "Open →" 14/700 teal-deep with a 44px
+ * target) and no card chrome to strip, because it is born inside .fd-alsolist. */
+.fd-newcase{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--fd-space-5);row-gap:var(--fd-space-1);width:100%;margin:0;padding:0;border:0;background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
+.fd-newcase__kicker{flex:1 0 100%;order:-1;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-dim)}
+.fd-newcase__title{flex:1 1 200px;min-width:0;font-size:var(--fd-font-base);font-weight:600;line-height:1.4}
+.fd-newcase__action{flex:0 0 auto;display:inline-flex;align-items:center;min-height:var(--fd-target-touch);font-size:var(--fd-font-md);font-weight:700;color:var(--fd-teal-deep);white-space:nowrap}
 .fd-alsolist .fd-continue__meta{display:flex;gap:var(--fd-space-4)}
 .fd-alsolist .fd-block{padding:var(--fd-space-2) 0 0}
 .fd-continue__title .fd-chip{margin-left:var(--fd-space-4);vertical-align:middle}
@@ -2705,4 +2760,20 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   body.fd-packet-printing{background:Canvas !important;color:CanvasText !important}
   body.fd-packet-printing>:not(#fdPacketPrint){display:none !important}
   body.fd-packet-printing #fdPacketPrint{display:block;margin:0;padding:0}
+}
+
+/* Reading choices retain a full target with either a touch or a mouse pointer. */
+.fd-set [data-fd-reading-size],.fd-set [data-fd-reading-spacing],.fd-set [data-fd-reading-reset]{min-height:var(--fd-target-touch)}
+
+.fd-reader:not(.fd-reader--tool):not(.fd-reader--guide) .fd-article__body table{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,inherit)}
+
+/* L8 D3 usage notice (fd_shell.js fdUsageNotice). Empty -- every build without the usage emitter --
+   means not rendered at all, so off builds keep their exact layout. On phones the fixed dock covers
+   the bottom of the page, so the footer clears it the same way .fd-main does. */
+.fd-usage-foot:empty{display:none}
+.fd-usage-foot{width:100%;max-width:1200px;margin:0 auto;padding:0 var(--fd-space-8) var(--fd-space-8)}
+.fd-usage-notice{margin:0;font-size:var(--fd-font-xs);color:var(--fd-text-mid);line-height:1.5}
+.fd-usage-notice__btn{border:0;background:none;padding:0;font:inherit;color:var(--fd-teal-deep);text-decoration:underline;cursor:pointer;min-height:24px}
+@media (max-width:640px){
+  .fd-usage-foot{padding:0 20px calc(88px + env(safe-area-inset-bottom))}
 }

@@ -61,7 +61,7 @@ const FIX_CUR = {
       url: 'https://reconnect-tools.netlify.app/tools/reconnect-resource-finder-v7.html',
       searchTerms: ['community resources', 'housing help', 'transportation help'] },
     { id: 'meeting-calendar', title: 'Find a recovery meeting',
-      description: 'Current recovery-meeting options from ReConnect.',
+      description: 'Current recovery-meeting options.',
       group: 'support',
       url: 'https://reconnect-tools.netlify.app/tools/recovery-meeting-calendar.html',
       searchTerms: ['recovery meeting', 'aa meeting', 'na meeting'] },
@@ -357,7 +357,9 @@ test('every real library column item resolves', () => {
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
   // therapy_reading_room.md) placed in the Clinical-skills and Evidence-&-exam columns.
   // 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
-  assert.equal(placed, 84, 'expected the 84 pages curriculum.json places');
+  // 86 = 84 + maine_law.md and maine-law-navigator.html (2026-10-27).
+  // 87 = 86 + family-meeting-sim.html (2026-10-27).
+  assert.equal(placed, 87, 'expected the 87 pages curriculum.json places');
 });
 
 // The kit is curriculum.json's safetyKit list, attested or not: fd_data.js never filters it by
@@ -372,7 +374,7 @@ test('every real library column item resolves', () => {
 // until it is decided, an unattested kit protocol is reported here as a diagnostic, never hidden.
 test('all five real kit items carry safety steps, and each one is attested exactly when its facultyReview says so', (t) => {
   const idx = F.fdBuildIndex(realMs3Projection(), META, TOOLS, MAN);
-  assert.equal(idx.kit.length, 5);
+  assert.equal(idx.kit.length, 6);
   for (const k of idx.kit) {
     assert.equal(k.item.attested, META[k.item.ref]?.facultyReview?.status === 'reviewed',
       `${k.item.ref}: attested must follow its own facultyReview block`);
@@ -461,7 +463,9 @@ for site,key in [('ms3','ms3'),('res','resident')]:
 print(json.dumps(out))
 `], { cwd: ROOT, encoding: 'utf8' }));
 
-for (const [site, expectedKit, expectedFull] of [['ms3', 31, 85], ['res', 35, 94]]) {
+// res Everything 94 -> 90 (C2, 2026-10-17): four MS3-track pages are siteLibrary.resident.exclusions.
+// +2 on both sites (2026-10-27): maine_law.md and maine-law-navigator.html; +1 family-meeting-sim.html.
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 88], ['res', 35, 93]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

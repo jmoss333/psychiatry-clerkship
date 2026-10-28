@@ -772,7 +772,7 @@ test('copy text: crisis lines first by official name, then each listing, raw (ne
     assert.equal(t.text.includes(value), false, 'the unit is not copied into a medical record field: ' + value);
   }
   assert.doesNotMatch(t.text, /Not a medical record/, 'text that is going INTO the record cannot say it is not part of it');
-  assert.match(t.text, /ReConnect community directory on 2026-10-12/);
+  assert.match(t.text, /community resource directory on 2026-10-12/);
   assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PROFILED, approvedOptions()).ok, false, 'a Review draft never goes into the record');
   assert.equal(S.text(stateOf(records, { mode: 'review' }), dataOf(records), PROFILED, approvedOptions()).code, 'NOT_FINAL');
   const hidden = S.text(finalState([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), dataOf([row(0, { name: 'A' + RLO + 'B' + ZWSP + 'C' })]), PROFILED, approvedOptions()).text;
@@ -784,7 +784,7 @@ test('the footer prints the directory copy date and the OLDEST helpline check da
   const records = eight();
   const r = S.sheet(finalState(records), dataOf(records, { generatedAt: '2026-09-30T08:00:00Z' }), PROFILED, approvedOptions());
   const text = textOf(r.html);
-  assert.match(text, /ReConnect community directory on 2026-09-30/);
+  assert.match(text, /community resource directory on 2026-09-30/);
   assert.match(text, /Call ahead to confirm hours, cost and availability/);
   assert.match(text, /Not a medical record/);
   assert.match(text, new RegExp('Helpline numbers checked against official sources, as of ' + PAYLOAD.checkedOn + '\\.'));

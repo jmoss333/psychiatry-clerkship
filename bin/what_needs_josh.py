@@ -32,6 +32,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -238,6 +239,20 @@ def describe_label_drift():
     return "Re-review against the new label: %s" % text
 
 
+# The GitHub rows read the REST API through `gh api`, never `gh pr list` / `gh issue list`:
+# those are GraphQL underneath, and a Claude Code session is refused GraphQL outright (HTTP
+# 403), so both rows read `unknown` in every cloud session until 2026-10-18. `{owner}/{repo}`
+# is filled in by gh from the checkout's remote.
+REPO_API = "repos/{owner}/{repo}"
+PAGE_SIZE = 100
+MAX_PAGES = 20
+# GitHub computes a PR's mergeability lazily: the first read after a push commonly answers
+# `unknown` and starts the computation. Measured 2026-10-18: 6 of 7 open PRs read `unknown`
+# on the first pass and every one had settled on the second.
+MERGE_STATE_TRIES = 4
+MERGE_STATE_WAIT_S = 2.0
+
+
 def _gh_json(args):
     out = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=60)
     if out.returncode != 0:
@@ -245,16 +260,55 @@ def _gh_json(args):
     return json.loads(out.stdout or "null")
 
 
+def _gh_rest_list(path):
+    """Every element of a REST list endpoint, read page by page.
+
+    Pages are requested explicitly rather than with `gh api --paginate`: that follows
+    GitHub's `Link` header, which names `repositories/<numeric id>/...`, and the Claude
+    Code proxy refuses numeric-ID paths. A list longer than MAX_PAGES pages raises rather
+    than returning the part it read -- a prefix reported as the whole list is a smaller
+    number that looks like progress.
+    """
+    sep = "&" if "?" in path else "?"
+    rows = []
+    for page in range(1, MAX_PAGES + 1):
+        batch = _gh_json(["api", "%s%sper_page=%d&page=%d" % (path, sep, PAGE_SIZE, page)])
+        if not isinstance(batch, list):
+            raise RuntimeError("%s did not answer with a list" % path)
+        rows.extend(batch)
+        if len(batch) < PAGE_SIZE:
+            return rows
+    raise RuntimeError("%s has more than %d rows -- not read whole" % (path, MAX_PAGES * PAGE_SIZE))
+
+
+def _merge_state(number):
+    """REST `mergeable_state` of one PR; re-read while GitHub is still computing it.
+
+    A state still `unknown` after MERGE_STATE_TRIES reads raises, so the row reports
+    `unknown` -- counting that PR as not-ready would be a measurement failure read as
+    a fact about the PR.
+    """
+    for attempt in range(MERGE_STATE_TRIES):
+        pr = _gh_json(["api", "%s/pulls/%d" % (REPO_API, number)]) or {}
+        state = pr.get("mergeable_state")
+        if state and state != "unknown":
+            return state
+        if attempt + 1 < MERGE_STATE_TRIES:
+            time.sleep(MERGE_STATE_WAIT_S)
+    raise RuntimeError("GitHub is still computing mergeability for #%d -- re-run in a minute"
+                       % number)
+
+
 def measure_merge_decisions():
     """Open pull requests that are green and waiting on a yes.
 
     Not drafts (still being written) and not conflicting (someone has work to do
     first) -- only the ones where the sole remaining step is the author's call.
+    REST `mergeable_state == "clean"` is GraphQL's `mergeStateStatus == CLEAN`.
     """
-    rows = _gh_json(["pr", "list", "--state", "open", "--limit", "60",
-                     "--json", "number,isDraft,mergeStateStatus"]) or []
+    rows = _gh_rest_list(REPO_API + "/pulls?state=open")
     waiting = [r for r in rows
-               if not r["isDraft"] and r.get("mergeStateStatus") == "CLEAN"]
+               if not r["draft"] and _merge_state(r["number"]) == "clean"]
     return len(waiting), len(rows)
 
 
@@ -264,15 +318,17 @@ def measure_stale_review_issues():
     Ranked here rather than in the agent queue because triage is a judgement about
     clinical priority, and an unattended agent closing a P0 is the failure mode.
     """
-    rows = _gh_json(["issue", "list", "--state", "open", "--limit", "100",
-                     "--json", "number,updatedAt,labels"]) or []
+    # The REST issues list carries pull requests too; `gh issue list` did not.
+    rows = [r for r in _gh_rest_list(REPO_API + "/issues?state=open")
+            if "pull_request" not in r]
     import datetime as dt
     now = dt.datetime.now(dt.timezone.utc)
     def idle_days(row):
-        stamp = dt.datetime.fromisoformat(row["updatedAt"].replace("Z", "+00:00"))
+        stamp = dt.datetime.fromisoformat(row["updated_at"].replace("Z", "+00:00"))
         return (now - stamp).days
     urgent = [r for r in rows
-              if any(l["name"] in ("P0", "P1", "priority:P1") for l in r["labels"])]
+              if any(l["name"] in ("P0", "P1", "priority:P0", "priority:P1")
+                     for l in r["labels"])]
     return len([r for r in urgent if idle_days(r) >= 21]), len(urgent)
 
 

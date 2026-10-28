@@ -1008,6 +1008,32 @@ class TestServiceWorkerEmission(unittest.TestCase):
         self.assertEqual(v1, v2)
         self.assertNotIn("/tool-governance.json", pre2)
 
+    def test_every_precache_url_resolves_to_a_servable_file(self):
+        """Regression for the 2026-10-16 P0: /_headers was precached, Netlify serves it
+        as 404, cache.addAll() rejected and the worker never installed on either site.
+        Every PRECACHE URL must map to a real file in the built site that Netlify will
+        actually serve -- never a Netlify control file and never a dot-path."""
+        d = self._site()
+        open(os.path.join(d, "_headers"), "w").write("/*\n  X-Frame-Options: DENY\n")
+        open(os.path.join(d, "_redirects"), "w").write("/old /new 301\n")
+        open(os.path.join(d, "netlify.toml"), "w").write("[build]\n")
+        os.makedirs(os.path.join(d, ".cache"))
+        open(os.path.join(d, ".cache", "x.json"), "w").write("{}")
+        open(os.path.join(d, ".DS_Store"), "w").write("x")
+        common.emit_service_worker(d)
+        sw = open(os.path.join(d, "sw.js"), encoding="utf-8").read()
+        pre = json.loads(sw.split("/*__PRECACHE_START__*/")[1].split("/*__PRECACHE_END__*/")[0])
+        for reserved in ("/_headers", "/_redirects", "/netlify.toml", "/.cache/x.json",
+                         "/.DS_Store"):
+            self.assertNotIn(reserved, pre)
+        self.assertTrue(pre, "precache list should not be empty")
+        for url in pre:
+            rel = "index.html" if url == "/" else url[1:]
+            self.assertTrue(os.path.isfile(os.path.join(d, rel)),
+                            "precache URL does not resolve in the built site: " + url)
+            self.assertNotIn(rel, common.SW_NETLIFY_RESERVED_ROOT_NAMES)
+            self.assertFalse(any(s.startswith(".") for s in rel.split("/")), url)
+
     def test_template_anchor_repeated_fails_loudly(self):
         """A future template edit that repeats a substitution anchor (e.g. two
         `VERSION='__VERSION__';` lines) must fail loudly rather than silently

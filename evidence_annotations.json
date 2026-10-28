@@ -180,7 +180,9 @@
           "direction": "negative",
           "usedBy": [
             "T3",
-            "safety-planning-practice-tool"
+            "safety-planning-practice-tool",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ],
           "retractedClaim": "v1 said 'the strongest causal lever in suicide prevention' - retracted 2026-08-21."
         }
@@ -208,7 +210,9 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "therapy_reading_room"
+            "therapy_reading_room",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ]
         }
       ]
@@ -1989,7 +1993,8 @@
           "direction": "positive",
           "usedBy": [
             "T3",
-            "sp-interview"
+            "sp-interview",
+            "pg_suicide"
           ]
         }
       ]
@@ -2117,7 +2122,9 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "exp_family"
+            "exp_family",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ]
         }
       ]
@@ -3048,7 +3055,7 @@
         "retrievedAt": "2026-10-12",
         "pmid": "22193671",
         "doi": "10.1176/appi.ajp.2011.10111704",
-        "sourceSpan": "Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency."
+        "sourceSpan": "The Columbia-Suicide Severity Rating Scale (C-SSRS) was designed to quantify the severity of suicidal ideation and behavior. Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency. Participants with the two highest levels of ideation severity (intent or intent with plan) at baseline had higher odds for attempting suicide during the study."
       },
       "claims": [
         {
@@ -3061,6 +3068,18 @@
           "usedBy": [
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        },
+        {
+          "claimId": "cssrs-ideation-severity-levels",
+          "claimText": "The C-SSRS was designed to quantify the severity of suicidal ideation; participants at the two highest levels of ideation severity (intent or intent with plan) had higher odds of a later suicide attempt.",
+          "claimTerms": [
+            "designed to quantify the severity of suicidal ideation",
+            "two highest levels of ideation severity"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "pg_suicide"
           ]
         }
       ]
@@ -3217,6 +3236,96 @@
           "direction": "mixed",
           "usedBy": [
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bostwick-2016-suicide-attempt-lethality",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-10-21",
+        "pmid": "27523496",
+        "doi": "10.1176/appi.ajp.2016.15070854",
+        "sourceSpan": "During the study period, 81/1,490 enrollees (5.4%) died by suicide. Of the 81, 48 (59.3%) perished on index attempt; 27 of the surviving 33 index attempt survivors (81.8%) killed themselves within a year. Males were disproportionately represented: 62/81 (11.2% of men, 76.5% of suicides) compared with 19/81 (2.0% of women, 23.5% of suicides). Of dead index attempters, 72.9% used guns, yielding an odds ratio for gunshot death, compared with all other methods, of 140 (95% CI=60-325)."
+      },
+      "claims": [
+        {
+          "claimId": "recent-attempt-acute-risk",
+          "claimText": "In a community cohort of 1,490 people with a first medically treated suicide attempt, 81 died by suicide, 48 on the index attempt; of the 33 who survived it and later died by suicide, 27 did so within a year.",
+          "claimTerms": [
+            "killed themselves within a year",
+            "perished on index attempt"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "pg_suicide"
+          ]
+        },
+        {
+          "claimId": "cotw-first-attempt-lethality-guns",
+          "claimText": "Of the 81 suicide deaths in the cohort, 48 (59.3%) occurred on the index attempt, and 72.9% of those 48 index-attempt deaths were by gunshot (odds ratio for gunshot death versus all other methods on the index attempt 140); the denominator is the 48 deaths on the index attempt, not all 81 suicides.",
+          "claimTerms": [
+            "perished on index attempt",
+            "72.9% used guns"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "anglemyer-2014-firearm-access-suicide",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-22",
+        "pmid": "24592495",
+        "doi": "10.7326/M13-1301",
+        "sourceSpan": "Potential methodological reasons for differences in effects through subgroup analyses were explored.Data were pooled from 16 [not 15] observational studies that assessed he odds of suicide or homicide, yielding pooled ORs of 3.24(95% CI, 2.41 to 4.40) and 2.00 (CI, 1.56 to 3.02) [not 1.94 (CI, .44 to 2.93)], respectively [corrected], respectively. When only studies that used interviews to determine firearm accessibility were considered, the pooled OR for suicide was 3.14 (CI, 2.29 to 4.43). Firearm accessibility was determined by survey interviews in most studies; misclassification of accessibility may have occurred."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-firearm-access-suicide-odds",
+          "claimText": "Pooled across 16 observational studies, firearm access was associated with suicide (pooled OR 3.24, 95% CI 2.41 to 4.40); access was mostly determined by survey interviews and misclassification may have occurred.",
+          "claimTerms": [
+            "pooled ORs of 3.24",
+            "observational studies",
+            "misclassification of accessibility may have occurred"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "liu-2020-passive-suicidal-ideation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-26",
+        "pmid": "31907085",
+        "doi": "10.1017/S003329171900391X",
+        "sourceSpan": "Passive ideation was strongly associated with sexual minority status, psychiatric comorbidity, psychological characteristics implicated in risk, and suicide attempts. Preliminary evidence exists for a large association with suicide deaths. The effect sizes for individual correlates of passive and active ideation were largely equivalent and mostly non-significant in head-to-head comparisons."
+      },
+      "claims": [
+        {
+          "claimId": "passive-ideation-clinical-weight",
+          "claimText": "Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths; in head-to-head comparisons the effect sizes for correlates of passive and active ideation were largely equivalent and mostly did not differ significantly.",
+          "claimTerms": [
+            "suicide attempts",
+            "Preliminary evidence exists for a large association with suicide deaths",
+            "largely equivalent"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "pg_suicide"
           ]
         }
       ]
