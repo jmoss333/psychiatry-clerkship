@@ -250,6 +250,16 @@ _pretest=qbank_public.pretest_pool(_qb_public)
 with open(OUT+"/pretest_pool.json","w",encoding="utf-8") as _fh:
     json.dump(_pretest,_fh,ensure_ascii=False)
 print("pretest pool:",len(_pretest["items"]),"of",len(qbank_public.PRETEST_CATEGORIES),"categories")
+# Pre/post knowledge check (DRAFT, L8 outcomes design) -- CLERKSHIP_PREPOST, default off.
+# Off: no forms file and the shell marker expands to nothing (see the needle block below).
+_PREPOST=common.prepost_enabled()
+if _PREPOST:
+    _prepost=qbank_public.prepost_forms(_qb_public)
+    with open(OUT+"/prepost_forms.json","w",encoding="utf-8") as _fh:
+        json.dump(_prepost,_fh,ensure_ascii=False)
+    print("pre/post forms: shipped, %d + %d items"%(len(_prepost["forms"]["A"]),len(_prepost["forms"]["B"])))
+else:
+    print("pre/post forms: off (CLERKSHIP_PREPOST=%s)"%common.prepost_mode())
 
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
@@ -322,6 +332,9 @@ _archive_data=_archive.load(LIB)
 _CRISIS_REQUIRED_TOOLS={
     "cssrs.html","sp-interview.html","communication-practice.html",
     "family-systems.html","one-patient-six-weeks.html",
+    # Family Conversation Simulator: the learner rehearses safety-plan roles and means-safety
+    # counseling with families (discharge and adolescent scenarios) — risk work.
+    "family-meeting-sim.html",
     # PHQ-9 item 9 is itself a suicide-risk screen (the tool escalates on it) — risk work.
     "screeners.html",
     # FRST one-pager: the learner screens imminent-violence warning signs, and its sibling
@@ -489,10 +502,10 @@ nav=[
  {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md")]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
- {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
+ {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md"),_md("Maine Law & Capacity: Statute Navigator","maine_law.md"),_tool("maine-law-navigator.html","Maine Law Navigator")]},
  {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_tool("interaction-cards.html","Interaction Cards — One Action"),_tool("pharmacy.html","Psychiatric Pharmacy"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
  {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_md("Therapy on the Unit","therapy_on_the_unit.md"),_tool("reflection.html","Reflection & Identity")]},
- {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
+ {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_tool("family-meeting-sim.html","Family Conversation Simulator"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","Case Journeys"),_tool("prepare-for-tomorrow.html","Prepare for tomorrow"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
@@ -574,6 +587,10 @@ for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
+# Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms
+# outcome_tally.js only; it sends nothing unless the emitter above also ships.
+_OUTCOMES = common.outcomes_enabled()
+print("outcome counters:", "armed (CLERKSHIP_OUTCOMES=on)" if _OUTCOMES else "off (CLERKSHIP_OUTCOMES=%s)" % common.outcomes_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -635,6 +652,14 @@ for _needle,_ids,_label in ((
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
         raise SystemExit(1)
     _spa_t=_spa_t.replace(_needle,"var %s=%s;"%(_label,json.dumps(_ids)))
+try:
+    _spa_t=common.apply_prepost_marker(_spa_t,_PREPOST)
+except ValueError as _e:
+    print("BUILD ABORTED — %s"%_e)
+    raise SystemExit(1)
+if not _PREPOST and (common.PREPOST_SIGNATURE in _spa_t or os.path.exists(OUT+"/prepost_forms.json")):
+    print("BUILD ABORTED — CLERKSHIP_PREPOST=off but the pre/post check is present")
+    raise SystemExit(1)
 # The longitudinal case ("One Patient, Six Weeks"), READ-ONLY, for Today's "On the unit this
 # week" (one-thread redesign, Phase 1). Injected rather than fetched so the section exists at
 # first render: a runtime fetch made Today's DOM churn after boot and two loads of the same page
@@ -758,7 +783,8 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3,
+                            inject_outcomes=_OUTCOMES)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -769,6 +795,13 @@ for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.h
 # artifact and receives its own final-marker postcondition below.
 _crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
 print("crisis block injected: shell index")
+
+# Icon sprite (C1, icons & wayfinding): the vendored Lucide subset as one hidden <symbol> sprite,
+# so fdIcon()'s <use href="#ic-NAME"> resolves. Verified replacement of the one marker comment;
+# hidden, 0x0, aria-hidden, and referenced by nothing yet, so it changes no rendered pixel. The
+# resident build inherits it with this index; common.assert_page_contract requires exactly one.
+import icon_sprite as _icon_sprite
+print("icon sprite injected: shell index, %d glyph(s)"%_icon_sprite.inject_sprite_file(OUT+"/index.html"))
 
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
@@ -821,6 +854,16 @@ if not _ANALYTICS_MS3:
         raise SystemExit(
             "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
             "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
+
+# Outcome-counter fail-closed postcondition: an off build carries no CW_OUTCOMES stamp
+# anywhere. The resident build is a copy of this tree, so this also covers it.
+if not _OUTCOMES:
+    _outcomes_leaked = common.outcomes_flag_leaks(OUT)
+    if _outcomes_leaked:
+        raise SystemExit(
+            "outcome counters: CLERKSHIP_OUTCOMES=%s but the CW_OUTCOMES stamp is present: %s"
+            % (common.outcomes_mode(), ", ".join(_outcomes_leaked))
         )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------

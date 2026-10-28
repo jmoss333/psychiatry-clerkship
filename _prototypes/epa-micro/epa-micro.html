@@ -1,0 +1,623 @@
+<!doctype html>
+<!-- UNSHIPPED PROTOTYPE (F6). EPA micro-assessment DEMO: synthetic roster, device-local only.
+     Not registered in site_manifest.json, site_extras.py or the faculty console. No network. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EPA micro-assessment — DEMO (synthetic data)</title>
+<style>
+  :root { --ink:#2b2b2b; --muted:#6b6259; --line:#e3dcd3; --bg:#fbf8f4; --accent:#9a4f2f; --on:#f3e3d9; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); }
+  .demo { position:sticky; top:0; z-index:5; background:#7a1f1f; color:#fff; padding:12px 16px; text-align:center;
+          font-weight:800; font-size:1.05rem; letter-spacing:.02em; }
+  .demo small { display:block; font-weight:400; font-size:.85rem; opacity:.92; }
+  main { max-width:860px; margin:0 auto; padding:14px; }
+  nav { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 14px; }
+  nav button, .chip, .btn { font:inherit; border:1px solid var(--line); background:#fff; border-radius:18px; padding:6px 12px; cursor:pointer; }
+  nav button[aria-pressed="true"], .chip[aria-pressed="true"] { background:var(--on); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  section.view { display:none; } section.view.on { display:block; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; text-align:center; }
+  .card svg { width:132px; height:132px; display:block; margin:6px auto; }
+  .tok { font-family:ui-monospace,Menlo,monospace; font-size:.85rem; }
+  h2 { font-size:1.1rem; margin:.4rem 0; } h3 { font-size:.95rem; margin:.9rem 0 .3rem; color:var(--muted); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .muted { color:var(--muted); font-size:.88rem; }
+  .warn { background:#fff1f0; border:1px solid #e0a39c; border-radius:8px; padding:8px 12px; margin:8px 0; }
+  .ok { background:#eef6ee; border:1px solid #a9c9a9; border-radius:8px; padding:8px 12px; margin:8px 0; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; background:#fff; }
+  th, td { border-bottom:1px solid var(--line); padding:4px 6px; text-align:left; vertical-align:top; }
+  .lvl { display:inline-block; height:9px; background:var(--accent); border-radius:4px; vertical-align:middle; }
+  pre { white-space:pre-wrap; background:#fff; border:1px solid var(--line); border-radius:8px; padding:12px; font-size:.88rem; }
+  input[type=text] { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; width:13em; }
+</style>
+</head>
+<body>
+<div class="demo" role="note" id="demo-banner">DEMO — synthetic data, do not enter real student information
+  <small>Fictional students (Student A–F) and pseudonymous tokens only. Stored on this device only; nothing is sent anywhere.
+  This is not the official evaluation.</small></div>
+<main>
+  <nav aria-label="Demo views">
+    <button type="button" data-view="scan" aria-pressed="true">1 · Scan badge</button>
+    <button type="button" data-view="capture" aria-pressed="false">2 · Capture</button>
+    <button type="button" data-view="timeline" aria-pressed="false">3 · Timeline</button>
+    <button type="button" data-view="draft" aria-pressed="false">4 · Draft eval</button>
+  </nav>
+
+  <section class="view on" id="view-scan">
+    <h2>Badge cards (synthetic)</h2>
+    <p class="muted">Each fictional student carries a card with an opaque token. In a real deployment the QR would open the
+      institution's capture page with the token in the URL fragment; here, tap "Simulate scan". QR codes are drawn on this
+      device by an inline encoder — no library, no network.</p>
+    <div class="cards" id="cards"></div>
+    <h3>No camera? Type the token printed under the QR</h3>
+    <label for="token-input" class="muted">Token</label>
+    <input type="text" id="token-input" pattern="[Ee][Pp][Aa]-[Dd][Ee][Mm][Oo]-[A-Za-z0-9]{4}" maxlength="13"
+      autocomplete="off" spellcheck="false" placeholder="EPA-DEMO-XXXX" aria-describedby="token-help">
+    <button type="button" class="btn" id="token-go">Open</button>
+    <div id="token-help" class="muted">Tokens only. Never type a student's name, email or ID.</div>
+    <div id="token-msg"></div>
+  </section>
+
+  <section class="view" id="view-capture">
+    <h2>One-tap feedback <span class="muted" id="cap-who"></span></h2>
+    <div id="cap-none" class="muted">Scan a badge first.</div>
+    <div id="cap-form" hidden>
+      <h3>Observer (synthetic)</h3><div class="chips" id="chips-faculty"></div>
+      <h3>Core EPA observed</h3><div class="chips" id="chips-epa"></div>
+      <h3>Supervision level (illustrative 1–5 scale)</h3><div class="chips" id="chips-level"></div>
+      <h3>One strength</h3><div class="chips" id="chips-strength"></div>
+      <h3>One next step</h3><div class="chips" id="chips-next"></div>
+      <p><button type="button" class="btn primary" id="cap-save" disabled>Save observation</button>
+        <span class="muted">Recorded to the day. No free text, so no patient details can be entered.</span></p>
+      <div id="cap-msg"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-timeline">
+    <h2>Competency timeline</h2>
+    <label class="muted">Student <select id="tl-student"></select></label>
+    <div id="tl-body"></div>
+  </section>
+
+  <section class="view" id="view-draft">
+    <h2>Draft end-of-clerkship narrative (template, no AI)</h2>
+    <label class="muted">Student <select id="dr-student"></select></label>
+    <pre id="dr-text"></pre>
+    <button type="button" class="btn" id="dr-copy">Copy draft</button> <span id="dr-msg" class="muted"></span>
+  </section>
+
+  <h3>Demo data</h3>
+  <p><button type="button" class="btn" id="seed">Load sample observations</button>
+     <button type="button" class="btn" id="wipe">Wipe demo data</button>
+     <span class="muted" id="store-msg"></span></p>
+  <p class="muted" id="epa-attribution"></p>
+</main>
+
+<script type="application/json" id="epa-roster">
+{
+  "_synthetic": true,
+  "_note": "Fictional students for the demo. Labels are letters, never realistic names. Tokens are opaque and carry no identity.",
+  "students": [
+    { "label": "Student A", "token": "EPA-DEMO-A7K3" },
+    { "label": "Student B", "token": "EPA-DEMO-B2QX" },
+    { "label": "Student C", "token": "EPA-DEMO-C9M4" },
+    { "label": "Student D", "token": "EPA-DEMO-D5RW" },
+    { "label": "Student E", "token": "EPA-DEMO-E8TJ" },
+    { "label": "Student F", "token": "EPA-DEMO-F3NV" }
+  ],
+  "faculty": ["Faculty 1", "Faculty 2", "Faculty 3"]
+}
+</script>
+
+<script id="epa-qr">
+/* Minimal QR Code encoder (ISO/IEC 18004): byte mode, error-correction level M, versions 1–3
+   (up to 42 bytes; one RS block). Written for this demo so it needs no dependency or network.
+   At authoring time (2026-10-27) every roster token's matrix, under all eight masks, was decoded
+   back to its token by OpenCV's QR detector; tests/epa-micro.test.mjs pins those matrices, checks
+   the Reed–Solomon bytes against an independent implementation and reads the payload back. */
+var EPAQR = (function () {
+  'use strict';
+  var DATA_CW = [0, 16, 28, 44];
+  var ECC_CW = [0, 10, 16, 26];
+  function gfMul(x, y) {
+    var z = 0;
+    for (var i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11d); z ^= ((y >>> i) & 1) * x; }
+    return z & 0xff;
+  }
+  function rsDivisor(degree) {
+    var r = []; for (var i = 0; i < degree - 1; i++) r.push(0); r.push(1);
+    var root = 1;
+    for (var k = 0; k < degree; k++) {
+      for (var j = 0; j < r.length; j++) { r[j] = gfMul(r[j], root); if (j + 1 < r.length) r[j] ^= r[j + 1]; }
+      root = gfMul(root, 0x02);
+    }
+    return r;
+  }
+  function rsRemainder(data, div) {
+    var r = div.map(function () { return 0; });
+    data.forEach(function (b) {
+      var f = b ^ r.shift(); r.push(0);
+      div.forEach(function (c, i) { r[i] ^= gfMul(c, f); });
+    });
+    return r;
+  }
+  function maskHit(m, x, y) {
+    switch (m) {
+      case 0: return (x + y) % 2 === 0;
+      case 1: return y % 2 === 0;
+      case 2: return x % 3 === 0;
+      case 3: return (x + y) % 3 === 0;
+      case 4: return (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0;
+      case 5: return (x * y) % 2 + (x * y) % 3 === 0;
+      case 6: return ((x * y) % 2 + (x * y) % 3) % 2 === 0;
+      default: return ((x + y) % 2 + (x * y) % 3) % 2 === 0;
+    }
+  }
+  function codewords(text) {
+    var bytes = [];
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      if (c < 32 || c > 126) throw new Error('printable ASCII only');
+      bytes.push(c);
+    }
+    var ver = 1;
+    while (ver <= 3 && 12 + 8 * bytes.length > DATA_CW[ver] * 8) ver++;
+    if (ver > 3) throw new Error('text too long for this demo encoder');
+    var bits = [];
+    function put(v, n) { for (var k = n - 1; k >= 0; k--) bits.push((v >>> k) & 1); }
+    put(4, 4); put(bytes.length, 8); bytes.forEach(function (b) { put(b, 8); });
+    var cap = DATA_CW[ver] * 8;
+    put(0, Math.min(4, cap - bits.length));
+    put(0, (8 - bits.length % 8) % 8);
+    for (var pad = 0xec; bits.length < cap; pad ^= 0xec ^ 0x11) put(pad, 8);
+    var data = [];
+    for (var b = 0; b < bits.length; b += 8) { var v = 0; for (var q = 0; q < 8; q++) v = (v << 1) | bits[b + q]; data.push(v); }
+    return { version: ver, data: data, ecc: rsRemainder(data, rsDivisor(ECC_CW[ver])) };
+  }
+  function encode(text, opts) {
+    var cw = codewords(text), ver = cw.version, all = cw.data.concat(cw.ecc);
+    var size = 17 + 4 * ver, mod = [], fn = [];
+    for (var y = 0; y < size; y++) { mod.push([]); fn.push([]); for (var x = 0; x < size; x++) { mod[y].push(false); fn[y].push(false); } }
+    function setF(x, y, dark) { mod[y][x] = dark; fn[y][x] = true; }
+    for (var t = 0; t < size; t++) { setF(6, t, t % 2 === 0); setF(t, 6, t % 2 === 0); }
+    [[3, 3], [size - 4, 3], [3, size - 4]].forEach(function (p) {
+      for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++) {
+        var xx = p[0] + dx, yy = p[1] + dy, d = Math.max(Math.abs(dx), Math.abs(dy));
+        if (xx >= 0 && xx < size && yy >= 0 && yy < size) setF(xx, yy, d !== 2 && d !== 4);
+      }
+    });
+    if (ver >= 2) {
+      var ac = size - 7;
+      for (var ay = -2; ay <= 2; ay++) for (var ax = -2; ax <= 2; ax++) setF(ac + ax, ac + ay, Math.max(Math.abs(ax), Math.abs(ay)) !== 1);
+    }
+    function drawFormat(mask) {
+      var dataBits = (0 << 3) | mask; // level M = 00
+      var rem = dataBits;
+      for (var k = 0; k < 10; k++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+      var f = ((dataBits << 10) | rem) ^ 0x5412;
+      function bit(i) { return ((f >>> i) & 1) !== 0; }
+      for (var i = 0; i <= 5; i++) setF(8, i, bit(i));
+      setF(8, 7, bit(6)); setF(8, 8, bit(7)); setF(7, 8, bit(8));
+      for (i = 9; i < 15; i++) setF(14 - i, 8, bit(i));
+      for (i = 0; i < 8; i++) setF(size - 1 - i, 8, bit(i));
+      for (i = 8; i < 15; i++) setF(8, size - 15 + i, bit(i));
+      setF(8, size - 8, true);
+    }
+    drawFormat(0);
+    var n = 0;
+    for (var right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (var vert = 0; vert < size; vert++) for (var j = 0; j < 2; j++) {
+        var cx = right - j, upward = ((right + 1) & 2) === 0, cy = upward ? size - 1 - vert : vert;
+        if (!fn[cy][cx] && n < all.length * 8) { mod[cy][cx] = ((all[n >>> 3] >>> (7 - (n & 7))) & 1) === 1; n++; }
+      }
+    }
+    function applyMask(m) {
+      for (var yy = 0; yy < size; yy++) for (var xx = 0; xx < size; xx++) if (!fn[yy][xx] && maskHit(m, xx, yy)) mod[yy][xx] = !mod[yy][xx];
+    }
+    function penalty() {
+      var res = 0;
+      function addHist(len, h) { if (h[0] === 0) len += size; h.pop(); h.unshift(len); }
+      function count(h) {
+        var k = h[1], core = k > 0 && h[2] === k && h[3] === k * 3 && h[4] === k && h[5] === k;
+        return (core && h[0] >= k * 4 && h[6] >= k ? 1 : 0) + (core && h[6] >= k * 4 && h[0] >= k ? 1 : 0);
+      }
+      function line(get) {
+        var color = false, run = 0, h = [0, 0, 0, 0, 0, 0, 0], r = 0;
+        for (var i2 = 0; i2 < size; i2++) {
+          if (get(i2) === color) { run++; if (run === 5) r += 3; else if (run > 5) r++; }
+          else { addHist(run, h); if (!color) r += count(h) * 40; color = get(i2); run = 1; }
+        }
+        if (color) { addHist(run, h); run = 0; }
+        run += size; addHist(run, h);
+        return r + count(h) * 40;
+      }
+      for (var a = 0; a < size; a++) {
+        res += line(function (i3) { return mod[a][i3]; });
+        res += line(function (i3) { return mod[i3][a]; });
+      }
+      var dark = 0;
+      for (var yy = 0; yy < size; yy++) for (var xx = 0; xx < size; xx++) {
+        if (mod[yy][xx]) dark++;
+        if (yy < size - 1 && xx < size - 1) {
+          var c0 = mod[yy][xx];
+          if (c0 === mod[yy][xx + 1] && c0 === mod[yy + 1][xx] && c0 === mod[yy + 1][xx + 1]) res += 3;
+        }
+      }
+      var total = size * size;
+      return res + (Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
+    }
+    var mask = opts && typeof opts.mask === 'number' ? opts.mask : -1;
+    if (mask < 0) {
+      var best = Infinity;
+      for (var m = 0; m < 8; m++) {
+        applyMask(m); drawFormat(m);
+        var p = penalty();
+        if (p < best) { best = p; mask = m; }
+        applyMask(m);
+      }
+    }
+    applyMask(mask); drawFormat(mask);
+    return { version: ver, mask: mask, size: size, modules: mod };
+  }
+  function toSvg(text) {
+    var q = encode(text), s = q.size, quiet = 4, d = '';
+    for (var y = 0; y < s; y++) for (var x = 0; x < s; x++) if (q.modules[y][x]) d += 'M' + (x + quiet) + ',' + (y + quiet) + 'h1v1h-1z';
+    var w = s + 2 * quiet;
+    return '<svg viewBox="0 0 ' + w + ' ' + w + '" role="img" aria-label="QR code for token ' + text +
+      '" shape-rendering="crispEdges"><rect width="' + w + '" height="' + w + '" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+  }
+  return { encode: encode, codewords: codewords, toSvg: toSvg };
+})();
+</script>
+
+<script id="epa-engine">
+/* Pure demo engine: roster, token guard, observations, timeline, template draft. No DOM, no
+   storage, no network. tests/epa-micro.test.mjs runs this block in a vm sandbox. */
+var EPA = (function () {
+  'use strict';
+  // AAMC Core Entrustable Professional Activities for Entering Residency (2014) — titles only,
+  // quoted with attribution. D-F6-6: a real deployment uses the school's official form and scale.
+  var EPAS = [
+    'Gather a history and perform a physical examination',
+    'Prioritize a differential diagnosis following a clinical encounter',
+    'Recommend and interpret common diagnostic and screening tests',
+    'Enter and discuss orders and prescriptions',
+    'Document a clinical encounter in the patient record',
+    'Provide an oral presentation of a clinical encounter',
+    'Form clinical questions and retrieve evidence to advance patient care',
+    'Give or receive a patient handover to transition care responsibility',
+    'Collaborate as a member of an interprofessional team',
+    'Recognize a patient requiring urgent or emergent care and initiate evaluation and management',
+    'Obtain informed consent for tests and/or procedures',
+    'Perform general procedures of a physician',
+    'Identify system failures and contribute to a culture of safety and improvement'
+  ];
+  var ATTRIBUTION = 'EPA titles: Association of American Medical Colleges, Core Entrustable Professional Activities ' +
+    'for Entering Residency (2014). The 1–5 supervision scale here is illustrative only; a real deployment uses the ' +
+    'school\'s official form and scale (decision D-F6-6).';
+  var LEVELS = [
+    'Observed only',
+    'Did it with me alongside',
+    'Did it; I checked everything',
+    'Did it; I checked key findings',
+    'Ready for distant supervision'
+  ];
+  var STRENGTHS = [
+    'Organized, concise presentation', 'Thorough collateral gathering', 'Clear risk-assessment reasoning',
+    'Warm, nonjudgmental rapport', 'Precise documentation', 'Answered a question with evidence',
+    'Clean, complete handoff', 'Worked well with the team'
+  ];
+  var NEXT_STEPS = [
+    'Commit to a leading diagnosis', 'Prioritize the problem list', 'Tighten the oral presentation',
+    'Name the safety plan explicitly', 'Include pertinent negatives', 'Close the loop with the team',
+    'Ask a focused clinical question', 'Check understanding with the patient'
+  ];
+  var TOKEN_RE = /^EPA-DEMO-[A-Z0-9]{4}$/;
+
+  function roster(json) { return json; }
+
+  // Input guard: the only free input is the token field. Anything that looks like a name or an
+  // email is refused with a reminder, before the token check.
+  function checkToken(raw, rosterJson) {
+    var s = String(raw == null ? '' : raw).trim();
+    if (!s) return { ok: false, reason: 'empty', message: 'Enter the token printed under the QR code.' };
+    if (/@/.test(s) || /[A-Za-z]{2,}\s+[A-Za-z]{2,}/.test(s) || (/^[A-Za-z'’-]{2,}$/.test(s) && !/^EPA/i.test(s))) {
+      return { ok: false, reason: 'looks-like-identity',
+        message: 'That looks like a name or an email. This demo accepts only the pseudonymous token on the card — never enter real student information.' };
+    }
+    if (/^\d{5,}$/.test(s)) {
+      return { ok: false, reason: 'looks-like-identity', message: 'That looks like an ID number. Use the token on the card only.' };
+    }
+    var t = s.toUpperCase();
+    if (!TOKEN_RE.test(t)) return { ok: false, reason: 'format', message: 'Tokens look like EPA-DEMO-XXXX.' };
+    var st = rosterJson.students.filter(function (x) { return x.token === t; })[0];
+    if (!st) return { ok: false, reason: 'unknown', message: 'No demo student carries that token.' };
+    return { ok: true, token: t, label: st.label };
+  }
+
+  function isDay(s) { return /^\d{4}-\d{2}-\d{2}$/.test(s); }
+  // Observation = {token, faculty, epa (1-13), level (1-5), strength, next, day}. Nothing else.
+  function makeObservation(o, rosterJson) {
+    var errs = [];
+    if (!rosterJson.students.some(function (s) { return s.token === o.token; })) errs.push('token');
+    if (rosterJson.faculty.indexOf(o.faculty) < 0) errs.push('faculty');
+    if (!(o.epa >= 1 && o.epa <= EPAS.length && Math.floor(o.epa) === o.epa)) errs.push('epa');
+    if (!(o.level >= 1 && o.level <= LEVELS.length && Math.floor(o.level) === o.level)) errs.push('level');
+    if (STRENGTHS.indexOf(o.strength) < 0) errs.push('strength');
+    if (NEXT_STEPS.indexOf(o.next) < 0) errs.push('next');
+    if (!isDay(o.day)) errs.push('day');
+    if (errs.length) return { ok: false, errors: errs };
+    return { ok: true, obs: { token: o.token, faculty: o.faculty, epa: o.epa, level: o.level,
+      strength: o.strength, next: o.next, day: o.day } };
+  }
+
+  function tally(list) {
+    var m = {};
+    list.forEach(function (k) { m[k] = (m[k] || 0) + 1; });
+    return Object.keys(m).map(function (k) { return { item: k, n: m[k] }; })
+      .sort(function (a, b) { return b.n - a.n || (a.item < b.item ? -1 : 1); });
+  }
+
+  function timeline(all, token) {
+    var obs = all.filter(function (o) { return o.token === token; })
+      .map(function (o, i) { return { o: o, i: i }; })
+      .sort(function (a, b) { return a.o.day < b.o.day ? -1 : a.o.day > b.o.day ? 1 : a.i - b.i; })
+      .map(function (x) { return x.o; });
+    var byEpa = {};
+    obs.forEach(function (o) { (byEpa[o.epa] = byEpa[o.epa] || []).push(o); });
+    var epas = Object.keys(byEpa).map(Number).sort(function (a, b) { return a - b; }).map(function (e) {
+      var levels = byEpa[e].map(function (o) { return o.level; });
+      return { epa: e, title: EPAS[e - 1], n: levels.length, first: levels[0], latest: levels[levels.length - 1],
+        min: Math.min.apply(null, levels), max: Math.max.apply(null, levels), levels: levels };
+    });
+    var observers = {};
+    obs.forEach(function (o) { observers[o.faculty] = true; });
+    var notYet = [];
+    for (var e = 1; e <= EPAS.length; e++) if (!byEpa[e]) notYet.push(e);
+    return { token: token, observations: obs, count: obs.length, observers: Object.keys(observers).length,
+      firstDay: obs.length ? obs[0].day : null, lastDay: obs.length ? obs[obs.length - 1].day : null,
+      epas: epas, notYetObserved: notYet,
+      strengths: tally(obs.map(function (o) { return o.strength; })),
+      nextSteps: tally(obs.map(function (o) { return o.next; })) };
+  }
+
+  function list(items) {
+    if (items.length <= 1) return items.join('');
+    return items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
+  }
+
+  // Template-only narrative: every sentence is a fixed frame filled from the timeline's counts and
+  // chips. No model, no paraphrase, no free text from anyone.
+  function draftEval(all, token, rosterJson, today) {
+    var st = rosterJson.students.filter(function (s) { return s.token === token; })[0];
+    var tl = timeline(all, token);
+    var who = st ? st.label : token;
+    var out = [];
+    out.push('DRAFT — generated from synthetic demo observations' + (today ? ' on ' + today : '') + '.');
+    out.push('Not the official evaluation. The evaluating faculty member must review, edit and submit in the school\'s official system.');
+    out.push('');
+    out.push('Learner: ' + who + ' (token ' + token + ')');
+    if (!tl.count) { out.push('No observations recorded yet.'); return out.join('\n'); }
+    out.push('Observations: ' + tl.count + ' across ' + tl.epas.length + ' Core EPA' + (tl.epas.length === 1 ? '' : 's') +
+      ' by ' + tl.observers + ' observer' + (tl.observers === 1 ? '' : 's') + ', ' + tl.firstDay + ' to ' + tl.lastDay + '.');
+    out.push('');
+    out.push('Supervision level by EPA (latest; range; number of observations):');
+    tl.epas.forEach(function (e) {
+      out.push('- EPA ' + e.epa + ' ' + e.title + ': latest ' + e.latest + ' (' + LEVELS[e.latest - 1] + '); range ' +
+        e.min + '–' + e.max + '; n=' + e.n);
+    });
+    out.push('');
+    var top = tl.epas.slice().sort(function (a, b) { return b.n - a.n || a.epa - b.epa; })[0];
+    var rose = tl.epas.filter(function (e) { return e.n >= 2 && e.latest > e.first; });
+    var fell = tl.epas.filter(function (e) { return e.n >= 2 && e.latest < e.first; });
+    var s = [];
+    s.push('Across ' + tl.count + ' observations, ' + who + ' was most often observed on EPA ' + top.epa + ' (' + top.title.toLowerCase() + ').');
+    if (rose.length) s.push('Supervision level rose over the rotation on ' + list(rose.map(function (e) { return 'EPA ' + e.epa + ' (' + e.first + ' to ' + e.latest + ')'; })) + '.');
+    if (fell.length) s.push('It was lower at the latest observation than the first on ' + list(fell.map(function (e) { return 'EPA ' + e.epa; })) + '; worth discussing directly.');
+    if (!rose.length && !fell.length) s.push('No EPA has two or more observations showing a change in supervision level yet.');
+    s.push('Observers most often noted: ' + list(tl.strengths.slice(0, 3).map(function (x) { return x.item.toLowerCase() + ' (' + x.n + ')'; })) + '.');
+    s.push('The most frequent suggested next steps were: ' + list(tl.nextSteps.slice(0, 3).map(function (x) { return x.item.toLowerCase() + ' (' + x.n + ')'; })) + '.');
+    if (tl.observers < 2) s.push('Only one observer has recorded feedback so far; seek a second perspective before summarising.');
+    out.push('Narrative (template): ' + s.join(' '));
+    out.push('');
+    out.push('Not yet observed: ' + (tl.notYetObserved.length ? tl.notYetObserved.map(function (e) { return 'EPA ' + e; }).join(', ') : 'none') + '.');
+    out.push('');
+    out.push(ATTRIBUTION);
+    return out.join('\n');
+  }
+
+  // Deterministic synthetic observations for the demo (seeded LCG; same seed, same data).
+  function seedDemo(rosterJson, seed, startDay) {
+    var x = seed >>> 0 || 1;
+    function rnd() { x = (Math.imul(x, 1103515245) + 12345) >>> 0; return x / 4294967296; }
+    function pick(a) { return a[Math.floor(rnd() * a.length)]; }
+    var t0 = Date.parse((startDay || '2026-09-07') + 'T00:00:00Z');
+    var obs = [];
+    rosterJson.students.forEach(function (st, si) {
+      var n = 5 + Math.floor(rnd() * 6);
+      var core = [1, 2, 5, 6, 9, 10];
+      for (var k = 0; k < n; k++) {
+        var dayIndex = Math.floor((k / n) * 40) + Math.floor(rnd() * 3);
+        var day = new Date(t0 + dayIndex * 86400000).toISOString().slice(0, 10);
+        var epa = rnd() < 0.8 ? pick(core) : 1 + Math.floor(rnd() * EPAS.length);
+        var level = Math.min(5, Math.max(1, 1 + Math.floor((k / n) * 3) + (rnd() < 0.3 ? 1 : 0) + (si % 2)));
+        obs.push({ token: st.token, faculty: pick(rosterJson.faculty), epa: epa, level: level,
+          strength: pick(STRENGTHS), next: pick(NEXT_STEPS), day: day });
+      }
+    });
+    return obs;
+  }
+
+  return { EPAS: EPAS, LEVELS: LEVELS, STRENGTHS: STRENGTHS, NEXT_STEPS: NEXT_STEPS, ATTRIBUTION: ATTRIBUTION,
+    TOKEN_RE: TOKEN_RE, checkToken: checkToken, makeObservation: makeObservation, timeline: timeline,
+    draftEval: draftEval, seedDemo: seedDemo, roster: roster };
+})();
+</script>
+
+<script id="epa-ui">
+(function () {
+  'use strict';
+  var STORE_KEY = 'cw_epa_demo_v1';
+  var ROSTER = JSON.parse(document.getElementById('epa-roster').textContent);
+  var memory = [];        // fallback when storage is unavailable (private mode, file:// policies)
+  var persisted = true;
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function loadAll() {
+    try {
+      var raw = window.localStorage.getItem('cw_epa_demo_v1');
+      var parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter(function (o) { return EPA.makeObservation(o, ROSTER).ok; }) : [];
+    } catch (e) { persisted = false; return memory.slice(); }
+  }
+  function saveAll(list) {
+    memory = list.slice();
+    try { window.localStorage.setItem('cw_epa_demo_v1', JSON.stringify(list)); persisted = true; }
+    catch (e) { persisted = false; }
+    $('store-msg').textContent = persisted ? list.length + ' demo observation(s) on this device (key ' + STORE_KEY + ').'
+      : list.length + ' demo observation(s) held in memory only — this browser blocked device storage.';
+  }
+  function wipe() {
+    memory = [];
+    try { window.localStorage.removeItem('cw_epa_demo_v1'); } catch (e) { /* nothing stored */ }
+    saveAll([]);
+  }
+
+  var current = null; // { token, label }
+  var pick = { faculty: null, epa: null, level: null, strength: null, next: null };
+
+  function show(view) {
+    Array.prototype.forEach.call(document.querySelectorAll('section.view'), function (s) { s.classList.toggle('on', s.id === 'view-' + view); });
+    Array.prototype.forEach.call(document.querySelectorAll('nav button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-view') === view)); });
+    if (view === 'timeline') renderTimeline();
+    if (view === 'draft') renderDraft();
+  }
+  function chips(id, items, field, labelFn) {
+    $(id).innerHTML = items.map(function (it, i) {
+      var val = field === 'epa' || field === 'level' ? i + 1 : it;
+      return '<button type="button" class="chip" aria-pressed="false" data-field="' + field + '" data-val="' + esc(val) + '">' + esc(labelFn ? labelFn(it, i) : it) + '</button>';
+    }).join('');
+  }
+  function openCapture(tok) {
+    current = tok;
+    pick = { faculty: pick.faculty, epa: null, level: null, strength: null, next: null };
+    $('cap-who').textContent = '· ' + tok.label + ' (' + tok.token + ')';
+    $('cap-none').hidden = true; $('cap-form').hidden = false; $('cap-msg').innerHTML = '';
+    Array.prototype.forEach.call(document.querySelectorAll('#cap-form .chip'), function (c) {
+      c.setAttribute('aria-pressed', String(c.getAttribute('data-field') === 'faculty' && c.getAttribute('data-val') === pick.faculty));
+    });
+    updateSave();
+    show('capture');
+  }
+  function updateSave() {
+    $('cap-save').disabled = !(current && pick.faculty && pick.epa && pick.level && pick.strength && pick.next);
+  }
+  function renderCards() {
+    $('cards').innerHTML = ROSTER.students.map(function (s) {
+      return '<div class="card"><b>' + esc(s.label) + '</b>' + EPAQR.toSvg(s.token) + '<div class="tok">' + esc(s.token) +
+        '</div><button type="button" class="btn" data-scan="' + esc(s.token) + '">Simulate scan</button></div>';
+    }).join('');
+  }
+  function studentOptions(id) {
+    var prev = $(id).value;
+    $(id).innerHTML = ROSTER.students.map(function (s) { return '<option value="' + esc(s.token) + '">' + esc(s.label) + '</option>'; }).join('');
+    if (prev) $(id).value = prev; else if (current) $(id).value = current.token;
+  }
+  function renderTimeline() {
+    studentOptions('tl-student');
+    var tl = EPA.timeline(loadAll(), $('tl-student').value);
+    if (!tl.count) { $('tl-body').innerHTML = '<p class="muted">No observations yet. Capture one, or load sample observations.</p>'; return; }
+    var rows = tl.observations.map(function (o) {
+      return '<tr><td>' + esc(o.day) + '</td><td>EPA ' + o.epa + '</td><td><span class="lvl" style="width:' + (o.level * 14) + 'px"></span> ' + o.level +
+        '</td><td>' + esc(o.strength) + '</td><td>' + esc(o.next) + '</td><td>' + esc(o.faculty) + '</td></tr>';
+    }).join('');
+    var sum = tl.epas.map(function (e) {
+      return '<tr><td>EPA ' + e.epa + ' · ' + esc(e.title) + '</td><td>' + e.n + '</td><td>' + e.levels.join(' → ') + '</td></tr>';
+    }).join('');
+    $('tl-body').innerHTML = '<p>' + tl.count + ' observations · ' + tl.observers + ' observer(s) · ' + esc(tl.firstDay) + ' to ' + esc(tl.lastDay) + '</p>' +
+      '<h3>By EPA</h3><table><tr><th>EPA</th><th>n</th><th>Supervision level over time</th></tr>' + sum + '</table>' +
+      '<h3>By day</h3><table><tr><th>Day</th><th>EPA</th><th>Level</th><th>Strength</th><th>Next step</th><th>Observer</th></tr>' + rows + '</table>' +
+      '<p class="muted">Not yet observed: ' + (tl.notYetObserved.map(function (e) { return 'EPA ' + e; }).join(', ') || 'none') + '</p>';
+  }
+  function renderDraft() {
+    studentOptions('dr-student');
+    $('dr-text').textContent = EPA.draftEval(loadAll(), $('dr-student').value, ROSTER, today());
+    $('dr-msg').textContent = '';
+  }
+
+  document.addEventListener('click', function (ev) {
+    var t = ev.target;
+    if (!t || !t.getAttribute) return;
+    if (t.getAttribute('data-view')) show(t.getAttribute('data-view'));
+    if (t.getAttribute('data-scan')) {
+      var r = EPA.checkToken(t.getAttribute('data-scan'), ROSTER);
+      if (r.ok) openCapture(r);
+    }
+    if (t.getAttribute('data-field')) {
+      var f = t.getAttribute('data-field'), v = t.getAttribute('data-val');
+      pick[f] = f === 'epa' || f === 'level' ? Number(v) : v;
+      Array.prototype.forEach.call(document.querySelectorAll('.chip[data-field="' + f + '"]'), function (c) { c.setAttribute('aria-pressed', String(c === t)); });
+      updateSave();
+    }
+  });
+  $('token-go').addEventListener('click', function () {
+    var r = EPA.checkToken($('token-input').value, ROSTER);
+    if (!r.ok) {
+      $('token-msg').innerHTML = '<div class="warn">' + esc(r.message) + '</div>';
+      if (r.reason === 'looks-like-identity') $('token-input').value = '';
+      return;
+    }
+    $('token-msg').innerHTML = '';
+    $('token-input').value = '';
+    openCapture(r);
+  });
+  $('cap-save').addEventListener('click', function () {
+    var made = EPA.makeObservation({ token: current.token, faculty: pick.faculty, epa: pick.epa, level: pick.level,
+      strength: pick.strength, next: pick.next, day: today() }, ROSTER);
+    if (!made.ok) { $('cap-msg').innerHTML = '<div class="warn">Incomplete: ' + esc(made.errors.join(', ')) + '</div>'; return; }
+    var all = loadAll(); all.push(made.obs); saveAll(all);
+    $('cap-msg').innerHTML = '<div class="ok">Saved for ' + esc(current.label) + ' (demo, this device only).</div>';
+    var keepFaculty = pick.faculty;
+    pick = { faculty: keepFaculty, epa: null, level: null, strength: null, next: null };
+    Array.prototype.forEach.call(document.querySelectorAll('#cap-form .chip'), function (c) {
+      if (c.getAttribute('data-field') !== 'faculty') c.setAttribute('aria-pressed', 'false');
+    });
+    updateSave();
+  });
+  $('tl-student').addEventListener('change', renderTimeline);
+  $('dr-student').addEventListener('change', renderDraft);
+  $('dr-copy').addEventListener('click', function () {
+    var text = $('dr-text').textContent;
+    var done = function (ok) { $('dr-msg').textContent = ok ? 'Copied.' : 'Copy blocked by the browser — select the text instead.'; };
+    try { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); }); }
+    catch (e) { done(false); }
+  });
+  $('seed').addEventListener('click', function () { saveAll(EPA.seedDemo(ROSTER, 20261027, '2026-09-07')); show('timeline'); });
+  $('wipe').addEventListener('click', function () { wipe(); show('scan'); });
+
+  chips('chips-faculty', ROSTER.faculty, 'faculty');
+  chips('chips-epa', EPA.EPAS, 'epa', function (t, i) { return (i + 1) + ' · ' + t; });
+  chips('chips-level', EPA.LEVELS, 'level', function (t, i) { return (i + 1) + ' · ' + t; });
+  chips('chips-strength', EPA.STRENGTHS, 'strength');
+  chips('chips-next', EPA.NEXT_STEPS, 'next');
+  $('epa-attribution').textContent = EPA.ATTRIBUTION;
+  renderCards();
+  saveAll(loadAll());
+  // A real QR would carry the token in the URL fragment (#t=...); honour it the same way here.
+  var m = /[#&]t=([A-Za-z0-9-]{1,20})/.exec(window.location.hash || '');
+  if (m) { var r0 = EPA.checkToken(m[1], ROSTER); if (r0.ok) openCapture(r0); }
+})();
+</script>
+</body>
+</html>

@@ -645,6 +645,7 @@
 </style>
 </head>
 <body>
+<!--fd-icon-sprite-->
 <a class="skip-link" href="#content">Skip to content</a>
 <div id="fdApp" class="fd-shell" aria-busy="true" inert>
   <button type="button" class="skip-safety" data-fd-safety>Safety protocols</button>
@@ -655,6 +656,7 @@
   <div id="fdCaptureMount"></div>
   <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
+  <footer id="fdUsageMount" class="fd-usage-foot"></footer>
   <div id="governanceMount"></div>
   <div id="fdOverlayMount"></div>
   <template id="fdCrisisTemplate"><!-- crisis-block-html --></template>
@@ -2200,6 +2202,8 @@
 
   /*__FD_DATA__*/
 
+  /*__FD_ICONS__*/
+
   /*__FD_OFFLINE__*/
 
   /*__FD_EDITION_CATALOG__*/
@@ -2351,6 +2355,7 @@
         h+='</div>';
       }
     }
+    if(typeof fdPrepostSectionHtml==='function')h+=fdPrepostSectionHtml();
     h+='<div class="hm-sec"><h2>Help evaluate this site <span style="font-weight:400;color:var(--text-light)">· optional</span></h2><div class="sub" style="margin:0 0 8px">Export your anonymous learning activity for this site evaluation — no name and no patient information, only what you reviewed and answered on this site.</div><button class="hm-li" data-act="studyexport"><span class="t">Export my anonymous progress</span><span class="sec">Export ↓</span></button><div id="studyMsg" class="hm-empty" style="margin-top:6px"></div></div>';
     h+='</div>'; return h;
   };
@@ -2481,6 +2486,9 @@
        is still fully recorded in cw_pretest_v1 for the plan. */ try{localStorage.setItem('cw_qb_v1',JSON.stringify(qb));}catch(_){ } try{localStorage.setItem('cw_pretest_v1',JSON.stringify({takenAt:new Date().toISOString(),answers:answers,byCat:byCat}));}catch(_){ } var plan=buildPlan(FD_INDEX); if(!plan){ renderPretestResults(null); return; } try{localStorage.setItem('cw_plan_v1',JSON.stringify(plan));}catch(_){ } renderPretestResults(plan); }
   function renderPretestResults(plan){ var root=document.getElementById('ptRoot'); if(!root)return; if(!fdActivePathValid(FD_INDEX)){ root.innerHTML=fdPathFallback('plan'); return; } currentItem={f:'__placement_results__',t:'Your formative placement',k:'special'};setLearnerTitle(currentItem);var mb=masteryByBlueprint(),duration=fdPathWeekCount(FD_INDEX)+'-week'; var h='<h1>Your formative placement</h1><p class="sub">A starting estimate from your answers — it refines as you practice. Weak areas are flagged in your plan below.</p>'; h+='<div class="hm-sec"><h2>Mastery by blueprint</h2>'+masteryBarsHtml(mb)+'</div>'; h+='<div class="hm-sec"><h2>Your personalized '+duration+' plan</h2>'+renderPlanCards(plan)+'</div>'; h+='<div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the formative placement</span><span class="sec">↻</span></button></div>'; root.innerHTML=h; }
   function renderStoredPlan(){ if(!fdActivePathValid(FD_INDEX)){ if(contentEl){ contentEl.className='fd-main'; contentEl.innerHTML='<article class="fd-reader fd-progress-reader">'+fdPathFallback('plan')+'</article>'; } return; } var plan=fdLoadPlan(FD_INDEX),duration=fdPathWeekCount(FD_INDEX)+'-week'; if(!plan){ startPretest(); return; } currentItem={f:'__plan__',t:'Your '+duration+' plan',k:'special'};setLearnerTitle(currentItem);if(contentEl){ contentEl.className='fd-main'; } contentEl.innerHTML='<article class="fd-reader fd-progress-reader"><button type="button" class="fd-reader__back" data-progress-action="progress">‹ Progress</button><div class="hm" id="planRoot"><h1>Your '+duration+' plan</h1><p class="sub">Personalized from your placement — the week order is fixed; your weak areas are flagged to hit first.</p><div class="hm-sec">'+renderPlanCards(plan)+'</div><div class="hm-sec"><button class="hm-li" data-pt="pretest" style="border-bottom:none"><span class="t">Retake the formative placement</span><span class="sec">↻</span></button></div></div></article>'; }
+  /* Pre/post knowledge check (DRAFT): expands to frontdoor/fd_prepost.js only when the build
+     runs with CLERKSHIP_PREPOST=on (default off); otherwise to nothing. */
+  /*__FD_PREPOST__*/
   /* ===== Governed Front Door live shell ===== */
   var FD_CANONICAL_INDEX=fdBuildIndex(FD_CURRICULUM,FD_TOPIC_META,FD_TOOL_REGISTRY,FD_SITE_MANIFEST);
   var FD_INDEX=FD_CANONICAL_INDEX;
@@ -2510,6 +2518,7 @@
   var fdCaptureMount=fdEditionRuntimeElement(fdDocument,'fdCaptureMount');
   var fdDockMount=fdEditionRuntimeElement(fdDocument,'fdDockMount');
   var fdOverlayMount=fdEditionRuntimeElement(fdDocument,'fdOverlayMount');
+  var fdUsageMount=fdEditionRuntimeElement(fdDocument,'fdUsageMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
   var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
@@ -2891,7 +2900,7 @@
      live regions, #fdOverlayMount and #fdNudgeMount are never inerted. fdSyncSafetyPause runs
      FIRST in fdRender and fdRenderTransient so the release lands before a resource mounts: an
      inert #content silently refuses the pending-high notice its focus. */
-  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount'];
+  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount','fdUsageMount'];
   var fdSafetyPaused=false;
   function fdPauseMedia(doc){
     var media=(doc&&doc.querySelectorAll)?doc.querySelectorAll('audio,video'):[];
@@ -3134,6 +3143,20 @@
     }else fdCareDirectory.leave();
   }
 
+  /* L8 D3 usage notice: rendered from the emitter's presence, never from a stored key. Empty on
+     every build that left the emitter out (fdUsageNotice returns ''), and .fd-usage-foot:empty is
+     display:none, so off builds look exactly as before. Re-rendered with the overlays so the
+     sentence follows a Settings > Usage change at once. */
+  function fdRenderUsageNotice(){
+    if(!fdUsageMount)return;
+    var an=window.cwAnalytics
+      ?{optedIn:window.cwAnalytics.enabled(),
+        privacySignal:(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)}
+      :null;
+    var html=typeof fdUsageNotice==='function'?fdUsageNotice(an):'';
+    if(fdUsageMount.innerHTML!==html)fdUsageMount.innerHTML=html;
+  }
+
   function fdRender(state,detail){
     var app=state.screen==='app',hydrate=detail&&detail.kind==='hydrate';
     fdSyncSafetyPause(state);
@@ -3145,6 +3168,7 @@
     fdRenderCapture(state);
     fdRenderDock(state,!!hydrate);
     fdRenderOverlays(state);
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
     fdMountCareDirectory(state);
@@ -3207,6 +3231,7 @@
     if(surfaces.layout)fdPatchToolLayout(state);
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     fdUpdateCareNavigatorStatus(state);
     if(surfaces.base||surfaces.completion)fdMountCareDirectory(state);
     fdSyncOfflineVisit(state);
@@ -3460,6 +3485,7 @@
     }
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
+    if(typeof fdPrepostHandleClick==='function'&&fdPrepostHandleClick(target,event))return;
     el=target.closest&&target.closest('.pt-opt');
     if(el){event.preventDefault();var qi=el.getAttribute('data-qi');ptAnswers[qi]=el.getAttribute('data-key');var siblings=contentEl.querySelectorAll('.pt-opt[data-qi="'+qi+'"]');for(var i=0;i<siblings.length;i++)siblings[i].classList.remove('sel');el.classList.add('sel');updatePtCount();return;}
     el=target.closest&&target.closest('.pgfb-b');

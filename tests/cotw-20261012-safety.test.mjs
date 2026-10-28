@@ -12,8 +12,8 @@ const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const json = (file) => JSON.parse(read(file));
 const ledgerPath = '13_Faculty_Resources/reviewed.json';
 const cases = [
-  { site: 'ms3', level: 'MS3', slug: 'cotw_20261012_safety_ms3.md', references: 6 },
-  { site: 'res', level: 'Resident', slug: 'cotw_20261012_safety_res.md', references: 9 },
+  { site: 'ms3', level: 'MS3', slug: 'cotw_20261012_safety_ms3.md', references: 10 },
+  { site: 'res', level: 'Resident', slug: 'cotw_20261012_safety_res.md', references: 14 },
 ];
 
 function assertClinicalHigh(row) {

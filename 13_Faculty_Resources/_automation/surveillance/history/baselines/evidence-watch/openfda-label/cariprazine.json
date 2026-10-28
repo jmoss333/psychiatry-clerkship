@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20251218",
+  "sections": {
+    "boxed_warning": {
+      "hash": "91eefc65d5d25a68d8a739868c8755120a6b78abe1eed02fd9b5ee104418952f",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS and SUICIDAL THOUGHTS AND BEHAVIORS Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. VRAYLAR is not approved for the treatment of patients with dementia-related psychosis [see Warnings and Precautions ( 5.1 )]. Suicidal Thoughts and Behaviors Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and for the emergence of suicidal thoughts and behaviors [see Warnings and Precautions ( 5.2 )] . WARNING : INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS and SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. VRAYLAR is not approved for the treatment of patients with dementia-related psychosis. ( 5.1 ) Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients. Closely monitor all antidepressant-treated patients for clinical worsening and emergence of suicidal thoughts and behaviors. ( 5.2 )"
+    },
+    "contraindications": {
+      "hash": "bb21b34cb3f4af85af01cd1ffa7990a39b9a88329cb3fa1b7932f83ff663675c",
+      "present": true,
+      "rems": false,
+      "text": "4 . CONTRAINDICATIONS VRAYLAR is contraindicated in patients with history of a hypersensitivity reaction to cariprazine. Reactions have ranged from rash, pruritus, urticaria, and reactions suggestive of angioedema (e.g., swollen tongue, lip swelling, face edema, pharyngeal edema, and swelling face). Known hypersensitivity to VRAYLAR ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "4c7f6af200b787e74fc333ff19997142557b7bc2f5a298dca01f91a7676a02cf",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "4b5f7c65-aa2d-452a-b3db-bc85c06ff12f",
+  "version": "32"
+}

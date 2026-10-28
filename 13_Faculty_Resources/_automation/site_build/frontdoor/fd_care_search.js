@@ -16,6 +16,11 @@ function fdCareDirectoryDate(value){
   var date=new Date(value+'T00:00:00Z');
   return isFinite(date.getTime())&&date.toISOString().slice(0,10)===value?value:'';
 }
+/* Curated shortcuts use a current-directory verdict; packet rendering does not reinterpret review metadata. */
+function fdCareDirectoryCurrent(row,today){
+  var verified=row&&fdCareDirectoryDate(row.verifiedDate),due=row&&fdCareDirectoryDate(row.reviewAfter);
+  return !!(fdCareDirectoryDate(today)&&verified&&verified<=today&&due&&due>today&&row.verificationRequired===false);
+}
 function fdCareDirectoryValidate(raw){
   if(!raw||raw.schemaVersion!==1||!Array.isArray(raw.records)||raw.records.length>15000||
       !Array.isArray(raw.categories)||!Array.isArray(raw.regionOptions)||typeof raw.generatedAt!=='string'||

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-12",
+  "updated": "2026-10-18",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -180,7 +180,9 @@
           "direction": "negative",
           "usedBy": [
             "T3",
-            "safety-planning-practice-tool"
+            "safety-planning-practice-tool",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ],
           "retractedClaim": "v1 said 'the strongest causal lever in suicide prevention' - retracted 2026-08-21."
         }
@@ -208,7 +210,9 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "therapy_reading_room"
+            "therapy_reading_room",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ]
         }
       ]
@@ -218,10 +222,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "42492146",
         "doi": "10.1016/j.cpr.2026.102783",
-        "sourceSpan": "We included 105 trials (13,933 patients), including 40 with low risk of bias. The standardized mean difference (SMD) of BA for adult outpatients compared with control conditions was 0.67 (95% confidence interval [CI]: 0.54 to 0.80; k = 61) with high heterogeneity. This remained significant in most sensitivity analyses, and at 12 months after randomization. We found no significant difference between BA and other therapies (k = 27; SMD = 0.04; 95% CI: -0.10 to 0.18). Self-guided BA was also effective (k = 15; SMD = 0.36; 95% CI: 0.20 to 0.51)."
+        "sourceSpan": "We included 105 trials (13,933 patients), including 40 with low risk of bias. The standardized mean difference (SMD) of BA for adult outpatients compared with control conditions was 0.67 (95% confidence interval [CI]: 0.54 to 0.80; k = 61) with high heterogeneity (I2 = 71%; 95% CI: 63% to 78%) and a broad 95% prediction interval (PI; -0.11 to 1.46). This remained significant in most sensitivity analyses, and at 12 months after randomization. We found no significant difference between BA and other therapies (k = 27; SMD = 0.04; 95% CI: -0.10 to 0.18). Self-guided BA was also effective (k = 15; SMD = 0.36; 95% CI: 0.20 to 0.51), as was BA in institutional settings (k = 10; SMD = 0.36; 95% CI: 0.17 to 0.55)."
       },
       "claims": [
         {
@@ -324,10 +328,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "21154340",
         "doi": "10.1002/14651858.cd000088.pub3",
-        "sourceSpan": "This 2009-10 update adds 21 additional studies, with a total of 53 randomised controlled trials included. Family intervention may decrease the frequency of relapse (n = 2981, 32 RCTs, RR 0.55 CI 0.5 to 0.6, NNT 7 CI 6 to 8), although some small but negative studies might not have been identified by the search. Family intervention may also reduce hospital admission (n = 481, 8 RCTs, RR 0.78 CI 0.6 to 1.0, NNT 8 CI 6 to 13)."
+        "sourceSpan": "This 2009-10 update adds 21 additional studies, with a total of 53 randomised controlled trials included. Family intervention may decrease the frequency of relapse (n = 2981, 32 RCTs, RR 0.55 CI 0.5 to 0.6, NNT 7 CI 6 to 8), although some small but negative studies might not have been identified by the search. Family intervention may also reduce hospital admission (n = 481, 8 RCTs, RR 0.78 CI 0.6 to 1.0, NNT 8 CI 6 to 13) and encourage compliance with medication (n = 695, 10 RCTs, RR 0.60 CI 0.5 to 0.7, NNT 6 CI 5 to 9) but it does not obviously affect the tendency of individuals/families to leave care (n = 733, 10 RCTs, RR 0.74 CI 0.5 to 1.0)."
       },
       "claims": [
         {
@@ -450,10 +454,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "30520019",
         "doi": "10.1111/acps.12995",
-        "sourceSpan": "The meta-analysis of 19 available comparisons resulted in a moderate pooled effect size showing a small and statistically significant benefit of the psychotherapeutic intervention over control conditions (g = 0.24, P < 0.001, I2 = 0%). This corresponds to a number needed to treat of 7.4. The effects of the interventions were stable over 12-month follow-up (g = 0.21, P < 0.01, I2 = 30%). Comparisons with waitlist or non-standardized control treatments tended to be associated with larger effect sizes than standardized control treatments. This meta-analysis provides evidence for a small but sustained effect of inpatient psychotherapy in patients with major depressive disorders."
+        "sourceSpan": "The meta-analysis of 19 available comparisons resulted in a moderate pooled effect size showing a small and statistically significant benefit of the psychotherapeutic intervention over control conditions (g = 0.24, P < 0.001, I2 = 0%). This corresponds to a number needed to treat of 7.4. The effects of the interventions were stable over 12-month follow-up (g = 0.21, P < 0.01, I2 = 30%). Comparisons with waitlist or non-standardized control treatments tended to be associated with larger effect sizes than standardized control treatments. Despite some limitations (small number of studies), this meta-analysis provides evidence for a small but sustained effect of inpatient psychotherapy in patients with major depressive disorders."
       },
       "claims": [
         {
@@ -525,10 +529,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "34264703",
         "doi": "10.1037/ccp0000654",
-        "sourceSpan": "A total of 45 studies with 3,382 participants were included. There was no evidence of a difference in effectiveness between CR, BA, and CBT. All three interventions were superior to CAU; SMD 0.57, 95% confidence interval [CI 0.08-1.07]; 0.52 [0.34-0.71]; 0.44 [0.28-0.60], respectively. No difference in tolerability was found."
+        "sourceSpan": "A total of 45 studies with 3,382 participants were included. There was no evidence of a difference in effectiveness between CR, BA, and CBT. All three interventions were superior to CAU; SMD 0.57, 95% confidence interval [CI 0.08-1.07]; 0.52 [0.34-0.71]; 0.44 [0.28-0.60], respectively and WL 1.20 [0.69-1.70]; 1.15 [0.90-1.40]; 1.07 [0.87-1.26]. No difference in tolerability was found (risk ratio [RR] vs. CAU: 1.01 [0.04-22.81], 0.84 [0.63-1.11], and 0.96 [0.76-1.21], respectively)."
       },
       "claims": [
         {
@@ -828,10 +832,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "39798118",
         "doi": "10.1080/15504263.2024.2434218",
-        "sourceSpan": "8 RCTs were included in this review. The patients who underwent MI interventions showed an improvement in functioning, psychiatric symptoms, medication compliance and substance use, although without statistical significance. The number of relapses, total days in relapse and alcohol binge days showed a significant improvement in favor of the intervention group. Although there was a clear improvement in most of these outcomes, most studies failed to detect significant results. A significant clinical outcome of MI application was found in lower relapse occurrence and alcohol abuse."
+        "sourceSpan": "8 RCTs were included in this review. The patients who underwent MI interventions showed an improvement in functioning, psychiatric symptoms, medication compliance and substance use, although without statistical significance. The number of relapses, total days in relapse and alcohol binge days showed a significant improvement in favor of the intervention group (.002, Bellack et al., 2006;.006, Haddock et al., 2003; and.02). Although there was a clear improvement in most of these outcomes, most studies failed to detect significant results. A significant clinical outcome of MI application was found in lower relapse occurrence and alcohol abuse."
       },
       "claims": [
         {
@@ -853,10 +857,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "41267566",
         "doi": "10.1027/0227-5910/a001031",
-        "sourceSpan": "27 papers (n = 1 systematic review, n = 2 mixed methods, n = 8 qualitative, n = 5 quantitative, n = 11 discussion papers) were eligible for inclusion, primarily published in the past five years, mostly from the United States. The majority focus on children/young people, at the selective or indicated level. Lived experience leadership is lacking, and most do not explore suicide-specific outcomes. Limitations: The results may not represent global trauma-informed suicide prevention strategies, and the paper does not evaluate the effectiveness of these approaches."
+        "sourceSpan": "27 papers (n = 1 systematic review, n = 2 mixed methods, n = 8 qualitative, n = 5 quantitative, n = 11 discussion papers) were eligible for inclusion, primarily published in the past five years, mostly from the United States. The majority focus on children/young people, at the selective or indicated level. Lived experience leadership is lacking, and most do not explore suicide-specific outcomes. The results may not represent global trauma-informed suicide prevention strategies, and the paper does not evaluate the effectiveness of these approaches."
       },
       "claims": [
         {
@@ -1157,10 +1161,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "36404677",
         "doi": "10.1017/S0033291722003270",
-        "sourceSpan": "Data were obtained for all seven trials identified (100%, n = 482, combined: n = 238, antidepressants: n = 244). Adding STPP to antidepressants was more efficacious for patients with high rather than low baseline depression levels [B = -0.49, 95% confidence interval (CI) -0.61 to -0.37, p < 0.0001] and for patients with a depressive episode duration of >2 years rather than <1 year (B = -0.68, 95% CI -1.31 to -0.05, p = 0.03) and than 1-2 years (B = -0.86, 95% CI -1.66 to -0.06, p = 0.04). These findings need validation but suggest that depression severity and episode duration are factors to consider when adding STPP to antidepressants."
+        "sourceSpan": "Data were obtained for all seven trials identified (100%, n = 482, combined: n = 238, antidepressants: n = 244). Adding STPP to antidepressants was more efficacious for patients with high rather than low baseline depression levels [B = -0.49, 95% confidence interval (CI) -0.61 to -0.37, p < 0.0001] and for patients with a depressive episode duration of >2 years rather than <1 year (B = -0.68, 95% CI -1.31 to -0.05, p = 0.03) and than 1-2 years (B = -0.86, 95% CI -1.66 to -0.06, p = 0.04). These findings need validation but suggest that depression severity and episode duration are factors to consider when adding STPP to antidepressants and might contribute to personalizing treatment selection for depression."
       },
       "claims": [
         {
@@ -1232,10 +1236,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "38934489",
         "doi": "10.1111/sltb.13108",
-        "sourceSpan": "Individuals with a suicide-related concern following discharge from an inpatient psychiatric hospitalization (n = 27), sending CCs on days 2 and 7 post-discharge (phase 3). Phase 3 participants demonstrated reductions in depressive symptoms at day-7 post-discharge (-6.4% mean score on Hopkins-Symptom-Checklist, -9.0% mean score on Entrapment-Scale). Most participants agreed that CC messages helped them feel more connected to the hospital and encouraged help-seeking behavior post-discharge. This study supports the use of an iterative process, including patient feedback, to improve CC messages and provides further pilot evidence that CC can have beneficial effects."
+        "sourceSpan": "We piloted these messages among individuals with a suicide-related concern following discharge from an inpatient psychiatric hospitalization (n = 27), sending CCs on days 2 and 7 post-discharge (phase 3). Phase 3 participants demonstrated reductions in depressive symptoms at day-7 post-discharge (-6.4% mean score on Hopkins-Symptom-Checklist, -9.0% mean score on Entrapment-Scale). Most participants agreed that CC messages helped them feel more connected to the hospital and encouraged help-seeking behavior post-discharge. This study supports the use of an iterative process, including patient feedback, to improve CC messages and provides further pilot evidence that CC can have beneficial effects."
       },
       "claims": [
         {
@@ -1282,10 +1286,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "40325843",
         "doi": "10.1002/cpp.70080",
-        "sourceSpan": "Dropout rates ranged from 10.4% to 58%, depending on treatment modality and patient characteristics. Younger age, comorbid substance use disorders, emotional dysregulation, distress tolerance difficulties were significant predictors of dropout. Conversely, strong therapeutic alliances, mindfulness-based skills and engagement in phone coaching were associated with improved retention."
+        "sourceSpan": "Dropout rates ranged from 10.4% to 58%, depending on treatment modality and patient characteristics. Younger age, comorbid substance use disorders, emotional dysregulation, distress tolerance difficulties, childhood emotional abuse, therapist turnover and low motivation were significant predictors of dropout. Conversely, strong therapeutic alliances, mindfulness-based skills and engagement in phone coaching were associated with improved retention."
       },
       "claims": [
         {
@@ -1332,10 +1336,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-23",
+        "retrievedAt": "2026-10-18",
         "pmid": "39098267",
         "doi": "10.1016/j.cpr.2024.102469",
-        "sourceSpan": "Thirty-seven papers were included, generating two overarching themes; 'Working on the edge' and 'Being ready, willing, and able to build an alliance in the context of suicidal experiences'. Clinical implications emphasise the need to improve training, supervision, and support for therapists. Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety."
+        "sourceSpan": "Thirty-seven papers were included, generating two overarching themes; 'Working on the edge' and 'Being ready, willing, and able to build an alliance in the context of suicidal experiences'. Clinical implications emphasise the need to improve training, supervision, and support for therapists to equip them with the additional skills required in navigating the intricacies of the therapeutic alliance with clients who have suicidal experiences. Flexibly interweaving risk assessment into therapeutic conversation was beneficial to the alliance with suicidal clients and enhanced their safety."
       },
       "claims": [
         {
@@ -1973,10 +1977,10 @@
       "verifiedAgainst": {
         "spanType": "abstract",
         "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
-        "retrievedAt": "2026-08-24",
+        "retrievedAt": "2026-10-18",
         "pmid": "28564699",
         "doi": "10.1001/jamapsychiatry.2017.1044",
-        "sourceSpan": "A total of 100 studies reported 183 patient samples. The pooled estimate postdischarge suicide rate was 484 suicides per 100 000 person-years (95% CI, 422-555 suicides per 100 000 person-years; prediction interval, 89-2641), with high between-sample heterogeneity (I2 = 98%). The suicide rate was highest within 3 months after discharge (1132; 95% CI, 874-1467) and among patients admitted with suicidal ideas or behaviors (2078; 95% CI, 1512-2856). Pooled suicide rates per 100 000 patients-years were 277 for studies with follow-up periods longer than 10 years. The immediate postdischarge period is a time of marked risk, but rates of suicide remain high for many years after discharge."
+        "sourceSpan": "A total of 100 studies reported 183 patient samples (50 samples of females, 49 of males, and 84 of mixed sex; 129 of adults or unspecified patients, 20 of adolescents, 19 of older patients, and 15 from long-term or forensic discharge facilities), including a total of 17 857 suicides during 4 725 445 person-years. The pooled estimate postdischarge suicide rate was 484 suicides per 100 000 person-years (95% CI, 422-555 suicides per 100 000 person-years; prediction interval, 89-2641), with high between-sample heterogeneity (I2 = 98%). The suicide rate was highest within 3 months after discharge (1132; 95% CI, 874-1467) and among patients admitted with suicidal ideas or behaviors (2078; 95% CI, 1512-2856). Pooled suicide rates per 100 000 patients-years were 654 for studies with follow-up periods of 3 months to 1 year, 494 for studies with follow-up periods of 1 to 5 years, 366 for studies with follow-up periods of 5 to 10 years, and 277 for studies with follow-up periods longer than 10 years. The immediate postdischarge period is a time of marked risk, but rates of suicide remain high for many years after discharge."
       },
       "claims": [
         {
@@ -1989,7 +1993,8 @@
           "direction": "positive",
           "usedBy": [
             "T3",
-            "sp-interview"
+            "sp-interview",
+            "pg_suicide"
           ]
         }
       ]
@@ -2117,7 +2122,9 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "exp_family"
+            "exp_family",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
           ]
         }
       ]
@@ -3049,7 +3056,7 @@
         "retrievedAt": "2026-10-12",
         "pmid": "22193671",
         "doi": "10.1176/appi.ajp.2011.10111704",
-        "sourceSpan": "Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency."
+        "sourceSpan": "The Columbia-Suicide Severity Rating Scale (C-SSRS) was designed to quantify the severity of suicidal ideation and behavior. Both the ideation and behavior subscales were sensitive to change over time. The intensity of ideation subscale demonstrated moderate to strong internal consistency. Participants with the two highest levels of ideation severity (intent or intent with plan) at baseline had higher odds for attempting suicide during the study."
       },
       "claims": [
         {
@@ -3062,6 +3069,18 @@
           "usedBy": [
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        },
+        {
+          "claimId": "cssrs-ideation-severity-levels",
+          "claimText": "The C-SSRS was designed to quantify the severity of suicidal ideation; participants at the two highest levels of ideation severity (intent or intent with plan) had higher odds of a later suicide attempt.",
+          "claimTerms": [
+            "designed to quantify the severity of suicidal ideation",
+            "two highest levels of ideation severity"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "pg_suicide"
           ]
         }
       ]
@@ -3218,6 +3237,96 @@
           "direction": "mixed",
           "usedBy": [
             "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bostwick-2016-suicide-attempt-lethality",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&rettype=abstract",
+        "retrievedAt": "2026-10-21",
+        "pmid": "27523496",
+        "doi": "10.1176/appi.ajp.2016.15070854",
+        "sourceSpan": "During the study period, 81/1,490 enrollees (5.4%) died by suicide. Of the 81, 48 (59.3%) perished on index attempt; 27 of the surviving 33 index attempt survivors (81.8%) killed themselves within a year. Males were disproportionately represented: 62/81 (11.2% of men, 76.5% of suicides) compared with 19/81 (2.0% of women, 23.5% of suicides). Of dead index attempters, 72.9% used guns, yielding an odds ratio for gunshot death, compared with all other methods, of 140 (95% CI=60-325)."
+      },
+      "claims": [
+        {
+          "claimId": "recent-attempt-acute-risk",
+          "claimText": "In a community cohort of 1,490 people with a first medically treated suicide attempt, 81 died by suicide, 48 on the index attempt; of the 33 who survived it and later died by suicide, 27 did so within a year.",
+          "claimTerms": [
+            "killed themselves within a year",
+            "perished on index attempt"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "pg_suicide"
+          ]
+        },
+        {
+          "claimId": "cotw-first-attempt-lethality-guns",
+          "claimText": "Of the 81 suicide deaths in the cohort, 48 (59.3%) occurred on the index attempt, and 72.9% of those 48 index-attempt deaths were by gunshot (odds ratio for gunshot death versus all other methods on the index attempt 140); the denominator is the 48 deaths on the index attempt, not all 81 suicides.",
+          "claimTerms": [
+            "perished on index attempt",
+            "72.9% used guns"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "anglemyer-2014-firearm-access-suicide",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-22",
+        "pmid": "24592495",
+        "doi": "10.7326/M13-1301",
+        "sourceSpan": "Potential methodological reasons for differences in effects through subgroup analyses were explored.Data were pooled from 16 [not 15] observational studies that assessed he odds of suicide or homicide, yielding pooled ORs of 3.24(95% CI, 2.41 to 4.40) and 2.00 (CI, 1.56 to 3.02) [not 1.94 (CI, .44 to 2.93)], respectively [corrected], respectively. When only studies that used interviews to determine firearm accessibility were considered, the pooled OR for suicide was 3.14 (CI, 2.29 to 4.43). Firearm accessibility was determined by survey interviews in most studies; misclassification of accessibility may have occurred."
+      },
+      "claims": [
+        {
+          "claimId": "cotw-firearm-access-suicide-odds",
+          "claimText": "Pooled across 16 observational studies, firearm access was associated with suicide (pooled OR 3.24, 95% CI 2.41 to 4.40); access was mostly determined by survey interviews and misclassification may have occurred.",
+          "claimTerms": [
+            "pooled ORs of 3.24",
+            "observational studies",
+            "misclassification of accessibility may have occurred"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_MS3.md",
+            "08_Cases_and_Simulation/case-of-the-week/2026-10-12_suicide-risk-assessment-safety-planning_Resident.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "liu-2020-passive-suicidal-ideation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-26",
+        "pmid": "31907085",
+        "doi": "10.1017/S003329171900391X",
+        "sourceSpan": "Passive ideation was strongly associated with sexual minority status, psychiatric comorbidity, psychological characteristics implicated in risk, and suicide attempts. Preliminary evidence exists for a large association with suicide deaths. The effect sizes for individual correlates of passive and active ideation were largely equivalent and mostly non-significant in head-to-head comparisons."
+      },
+      "claims": [
+        {
+          "claimId": "passive-ideation-clinical-weight",
+          "claimText": "Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths; in head-to-head comparisons the effect sizes for correlates of passive and active ideation were largely equivalent and mostly did not differ significantly.",
+          "claimTerms": [
+            "suicide attempts",
+            "Preliminary evidence exists for a large association with suicide deaths",
+            "largely equivalent"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "pg_suicide"
           ]
         }
       ]

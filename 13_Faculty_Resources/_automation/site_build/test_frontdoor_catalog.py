@@ -688,12 +688,14 @@ class FrontdoorCatalogTest(unittest.TestCase):
         # until 2026-09-04 while the real file had 83/92 — the pin had drifted by two
         # on each site and nothing said so, because this whole suite ran in neither
         # ci.yml nor bin/verify.sh. Both now run it; that is the other half of this fix.
-        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 85)  # +pharmacy.html 2026-09-30
+        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 88)  # +pharmacy.html 2026-09-30; +2 Maine law 2026-10-27; +family-meeting-sim.html 2026-10-27
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         # 94 as of 2026-09-30: +pharmacy.html in both sites' "Interactive tools" column.
         # 90 as of 2026-10-17 (C2): orientation, osce, shelf, reading_map are MS3-track pages,
         # curriculum.siteLibrary.resident.exclusions -- reachable by link, out of Library and search.
-        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 90)
+        # 92 as of 2026-10-27: +maine_law.md and +maine-law-navigator.html on both sites.
+        # 93 as of 2026-10-27: +family-meeting-sim.html on both sites.
+        self.assertEqual(sum(len(column["refs"]) for column in resident["curriculum"]["libraryColumns"]), 93)
         for site, payload, count in (("ms3", ms3, 31), ("resident", resident, 35)):
             selection = payload["curriculum"]["essentials"]
             essential_refs = [ref for section in selection for ref in section["refs"]]

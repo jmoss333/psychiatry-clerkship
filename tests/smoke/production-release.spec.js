@@ -177,8 +177,18 @@ for (const [device, viewport] of [
         await input.fill('Ativan alcohol-withdrawal');
         await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 't_sud.md');
         await expect(input).toBeFocused();
+        // Since C2 (#1091): the first Enter keeps the results on screen and moves focus to the
+        // first row (the Substance Use protocol); nothing opens yet. The second Enter opens it.
+        await page.keyboard.press('Enter');
+        await expect(dialog).toBeVisible();
+        await expect(dialog.locator('.fd-result').first()).toBeFocused();
         await page.keyboard.press('Enter');
         const safety = page.getByRole('dialog', { name: 'Substance Use', exact: true });
+        // Search's first Enter moves to the ranked result; activation takes a second Enter.
+        const firstSafety = dialog.locator('.fd-result').first();
+        await expect(firstSafety).toBeFocused();
+        await expect(safety).toHaveCount(0);
+        await firstSafety.press('Enter');
         await expect(safety).toBeVisible();
         await expect(dialog).toHaveCount(0);
         await safety.getByRole('button', { name: 'Close side sheet', exact: true }).click();
