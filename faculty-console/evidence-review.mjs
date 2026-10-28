@@ -6,12 +6,18 @@ let key='',state,loadVersion=0,draftVersion=0;
 const openContexts=new Set();
 const dirtyForms=new Set();
 const resumeKey='cw_evidence_last_packet';
-let resumeButton;
+let resumeButton,resumeSource;
 function lastPacket(){try{const value=localStorage.getItem(resumeKey);return /^[a-f0-9]{64}$/.test(value||'')?value:null;}catch{return null;}}
+function updateResumeControl(){
+ if(!resumeButton||!resumeSource)return;
+ const revision=lastPacket(),packet=state?.packets.find(p=>p.revision===revision);
+ resumeButton.hidden=resumeSource.hidden=!revision;
+ resumeSource.textContent=revision?(packet?.sourceName||'Saved packet unavailable'):'';
+}
 function rememberPacket(revision){
  if(!/^[a-f0-9]{64}$/.test(revision))return;
  try{localStorage.setItem(resumeKey,revision);}catch{/* Review remains available when storage is blocked. */}
- if(resumeButton)resumeButton.hidden=!lastPacket();
+ updateResumeControl();
 }
 async function resumeReview(){
  const revision=lastPacket();if(!revision){status.textContent='No saved packet is available on this browser.';return;}
@@ -78,7 +84,8 @@ function lazyPanel(parent,label,params,renderDetails,context,id){
 function render(){
  const context=state;
  inbox.replaceChildren();const reload=node('button','Reload evidence');reload.onclick=()=>load().catch(e=>status.textContent=e.message);inbox.append(reload);
- resumeButton=node('button','Resume review');resumeButton.type='button';resumeButton.hidden=!lastPacket();resumeButton.onclick=()=>resumeReview().catch(e=>status.textContent=e.message);inbox.append(resumeButton);
+ resumeButton=node('button','Resume review');resumeButton.type='button';resumeButton.onclick=()=>resumeReview().catch(e=>status.textContent=e.message);
+ resumeSource=node('span');resumeSource.id='evidence-resume-source';resumeSource.style.overflowWrap='anywhere';resumeButton.setAttribute('aria-describedby',resumeSource.id);inbox.append(resumeButton,resumeSource);updateResumeControl();
  for(const failure of state.failures)inbox.append(node('p',`${failure.sourceId}: ${failure.reason}`,'failure'));
  if(!state.packets.length)inbox.append(node('p','No source-change packets yet. This does not establish clinical currency.'));
  lazyPanel(inbox,'Open audit history',{section:'history'},(panel,data)=>{

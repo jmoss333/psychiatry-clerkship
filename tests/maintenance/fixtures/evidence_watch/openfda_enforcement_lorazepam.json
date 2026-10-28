@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "disclaimer": "SYNTHETIC FIXTURE; recall numbers are placeholders."
+  },
+  "results": [
+    {
+      "recall_number": "D-0001-2099",
+      "classification": "Class I",
+      "status": "Ongoing",
+      "report_date": "20251020",
+      "product_description": "Lorazepam injection, synthetic fixture product",
+      "reason_for_recall": "Presence of particulate matter (synthetic)."
+    },
+    {
+      "recall_number": "D-0002-2099",
+      "classification": "Class II",
+      "status": "Ongoing",
+      "report_date": "20251021",
+      "product_description": "Lorazepam tablets, synthetic fixture product",
+      "reason_for_recall": "Failed dissolution specification (synthetic)."
+    }
+  ]
+}

@@ -8,6 +8,9 @@ function calibLog(evt){
   try{
     var S={qb:['guess','likely','certain'],rev:['Again','Hard','Good','Easy']};
     if(!evt || !S[evt.s] || S[evt.s].indexOf(evt.p)<0) return;
+    /* Aggregate outcome counters (outcome_tally.js). Inert unless the CLERKSHIP_OUTCOMES and
+       CLERKSHIP_ANALYTICS build gates are both on; never touches this ledger. */
+    if(typeof cwOutcomeTally==='function') cwOutcomeTally(evt);
     var d=null;
     try{ d=JSON.parse(localStorage.getItem('cw_calib_v1')||'null'); }catch(_e){ d=null; }
     if(!d || d.v!==1 || !Array.isArray(d.qb) || !Array.isArray(d.rev)) d={v:1,qb:[],rev:[]};
@@ -25,3 +28,4 @@ function calibRead(){
   return {v:1,qb:[],rev:[]};
 }
 function calibClear(){ try{ localStorage.removeItem('cw_calib_v1'); }catch(_){ } }
+/*__OUTCOME_TALLY__*/
