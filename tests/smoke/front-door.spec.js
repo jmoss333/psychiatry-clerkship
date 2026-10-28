@@ -45,8 +45,7 @@ async function readingReady(page, ref = READING_REF) {
   await expect(reader.locator('.fd-article__body h3')).toHaveCount(3);
   await expect(reader.locator('[data-fd-reading-status]')).toHaveCount(1);
   await expect(reader).not.toHaveClass(/fd-reader--guide/);
-  // DOM readiness can precede the 8px entrance transform. Settle geometry
-  // before capturing a reading place or changing viewport; keep offset bounds.
+  // Settle fonts and entrance effects before measuring a reading place.
   await reader.evaluate(async el => {
     await document.fonts.ready;
     const animations = [];
@@ -77,6 +76,179 @@ async function openHeaderSearch(page) {
   await expect(pill).toBeInViewport();
   await pill.click();
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
+}
+
+test('search recovery edits and browses with usable targets at phone and desktop widths', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('zzzzqqq');
+    const recovery = search.getByRole('group', { name: 'Search recovery', exact: true });
+    await expect(recovery).toBeVisible();
+    for (const button of await recovery.getByRole('button').all()) {
+      const box = await button.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await recovery.getByRole('button', { name: 'Edit search', exact: true }).click();
+    await expect(input).toBeFocused();
+    await expect(input).toHaveValue('zzzzqqq');
+    await input.fill('suicide');
+    await expect(recovery).toHaveCount(0);
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await input.fill('zzzzqqq');
+    await recovery.getByRole('button', { name: 'Browse the Library', exact: true }).click();
+    await expect(search).toHaveCount(0);
+    await expect(page.locator('.fd-library')).toBeVisible();
+  }
+});
+
+test('related search terms update the transient query with safety first on phone and desktop', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  for (const width of [320, 390, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('suicide qtc');
+    const related = search.getByRole('group', { name: 'Related search terms', exact: true });
+    await expect(related.getByRole('button')).toHaveCount(3);
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    const expand = search.getByRole('button', { name: 'Show all matches', exact: true });
+    if (await expand.count()) await expand.click();
+    const term = related.getByRole('button', { name: 'suicide qt prolongation', exact: true });
+    await term.scrollIntoViewIfNeeded();
+    const box = await term.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await term.focus();
+    await term.press('Enter');
+    await expect(input).toHaveValue('suicide qt prolongation');
+    await expect(input).toBeFocused();
+    await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveCount(0);
+    expect(await page.evaluate(() => Object.values(localStorage).join('\n'))).not.toContain('suicide qt prolongation');
+    await input.fill('zzzzqqq');
+    await expect(related).toHaveCount(0);
+    await input.press('Escape');
+  }
+  await expectHealthy(page);
+});
+
+test('search recovery Capture starts blank, returns to the query and saves only an explicit question', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=today');
+  const questions = () => page.evaluate(() => localStorage.getItem('cw_capture_v1'));
+  const before = await questions();
+  await openHeaderSearch(page);
+  const search = page.getByRole('dialog', { name: 'Search', exact: true });
+  const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+  await input.fill('zzzzqqq');
+  const ask = search.getByRole('button', { name: 'Save a question for supervision', exact: true });
+  await ask.click();
+  const capture = page.getByRole('dialog', { name: 'Capture a question', exact: true });
+  const editor = capture.getByRole('textbox', { name: 'Your question, no patient identifiers', exact: true });
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('[role="dialog"][aria-modal="true"]:visible')).toHaveCount(1);
+  await expect(editor).toHaveValue('');
+  await expect(editor).toBeFocused();
+  expect(await questions()).toBe(before);
+  expect(await page.evaluate(() => Object.values(localStorage).join('\n'))).not.toContain('zzzzqqq');
+  await editor.press('Escape');
+  await expect(capture).toHaveCount(0);
+  await expect(input).toHaveValue('zzzzqqq');
+  await expect(input).toBeFocused();
+  expect(await questions()).toBe(before);
+  await input.press('Escape');
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('.fd-header .fd-searchbtn:visible')).toBeFocused();
+  await openHeaderSearch(page);
+  await expect(input).toHaveValue('');
+  await input.fill('zzzzqqq');
+  await ask.click();
+  await expect(editor).toHaveValue('');
+  await editor.fill('How do I describe the mental status exam?');
+  await capture.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(capture.getByText('Saved on this device', { exact: true })).toBeVisible();
+  const saved = JSON.parse(await questions());
+  expect(saved.items.map(item => item.text)).toEqual(['How do I describe the mental status exam?']);
+  expect(await questions()).not.toContain('zzzzqqq');
+  await capture.getByRole('button', { name: 'Open now', exact: true }).click();
+  await expect(capture).toHaveCount(0);
+  await expect(search).toHaveCount(0);
+  await expect(page.locator('.fd-reader')).toBeVisible();
+  await expectHealthy(page);
+});
+
+for (const scenario of [
+  { name: 'safety result', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true },
+  { name: 'reading result', query: 'Medication Monitoring & Labs', ref: 'med_monitoring.md' },
+  { name: 'pending-high reading', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true, pending: true },
+  { name: 'guide passage arrival', query: 'Ativan alcohol-withdrawal', ref: 't_sud.md', safety: true, guide: true },
+]) {
+  test(`phone search: Enter survives late reading completion — ${scenario.name}`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await seedApp(page, testInfo);
+    await pinGovernance(page, READING_REF, scenario.pending
+      ? { status: 'pending', riskLevel: 'high' }
+      : { status: 'reviewed', riskLevel: 'low' });
+    let releaseReading, requested = false;
+    const held = new Promise(resolve => { releaseReading = resolve; });
+    await page.route(`**/content/${READING_REF}`, async route => {
+      requested = true;
+      await held;
+      await route.fulfill({ contentType: 'text/markdown', body: scenario.guide
+        ? '# Study notes\n\n## Mood\n\nMood passage for testing navigation.\n\n## Next section\n\nMore study notes.'
+        : '# Study notes\n\n### Delayed reading\n\nA synthetic passage for testing navigation.' });
+    });
+    try {
+      await page.goto('/?tab=today');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill('mood');
+      const reading = search.locator(`[data-fd-open="${READING_REF}"]`);
+      await reading.click();
+      await expect.poll(() => requested).toBe(true);
+      await openHeaderSearch(page);
+      await input.fill(scenario.query);
+      await expect(search.locator('.fd-result').first()).toHaveAttribute(
+        scenario.safety ? 'data-fd-safety' : 'data-fd-open', scenario.ref);
+      await expect(input).toBeFocused();
+
+      releaseReading();
+      await expect(page.locator('#routeStatus')).toHaveText('Mood loaded');
+      // The guide/reading-place arrival runs on the next frame, after the load announcement.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      if (scenario.pending) await expect(page.locator('.governance-notice.pending-high')).toBeVisible();
+      if (scenario.guide) {
+        await expect(page.getByLabel('Find in this guide', { exact: true })).toHaveValue('mood');
+        await expect(page.locator('.fd-guide-arrival')).toContainText('1 matching passage in this guide.');
+      }
+      await expect(input).toBeFocused();
+      // locator.press() would refocus the field and conceal a stolen-focus regression.
+      await page.keyboard.press('Enter');
+      // C2 (2026-10-17): Enter in the field shows the list -- focus lands on the first row and
+      // nothing opens; a second Enter opens the row the learner can now see.
+      await expect(search).toHaveCount(1);
+      await expect(search.locator('.fd-result').first()).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(search).toHaveCount(0);
+      if (scenario.safety) await expect(page.getByRole('dialog', { name: 'Substance Use', exact: true })).toBeVisible();
+      else await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', scenario.ref);
+      await expectHealthy(page);
+    } finally {
+      releaseReading();
+    }
+  });
 }
 
 async function expectReadingAnchor(page, index, ref = READING_REF) {
@@ -119,19 +291,72 @@ test('reading place: reload and phone reflow restore the second heading; Start a
   await expect(reader.locator('[data-fd-reading-top]')).toBeVisible();
   await reader.locator('[data-fd-reading-top]').click();
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.reload();
   await readingReady(page);
+  // Native restoration may preserve the position, or startup may reset to document top.
+  // Neither route may drift downward or create a new bookmark.
+  const firstReloadY = await page.evaluate(() => window.scrollY);
+  expect(firstReloadY).toBeLessThanOrEqual(clearedY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   await page.reload();
   await readingReady(page);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(firstReloadY + 0.5);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await scrollReadingTo(page, 2);
   await expect.poll(async () => (await readingPlaces(page))[READING_REF]?.heading).toBe(
     await reader.locator('.fd-article__body h3').nth(2).getAttribute('id'));
   await expectHealthy(page);
+});
+
+test('reading place: a font-delayed native reload cannot recreate a cleared bookmark', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}`);
+  await readingReady(page);
+  await scrollReadingTo(page, 1);
+  await expectReadingAnchor(page, 1);
+  await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+  await page.reload();
+  await readingReady(page);
+  await page.locator('[data-fd-reading-top]').click();
+  await expect.poll(async () => (await readingPlaces(page))[READING_REF]).toBeUndefined();
+  const clearedY = await page.evaluate(() => window.scrollY);
+  let releaseFont, fontRequested = false;
+  const heldFont = new Promise(resolve => { releaseFont = resolve; });
+  await page.route('**/fonts/*.woff2', async route => {
+    const response = await routeFetchWithRetry(route);
+    fontRequested = true;
+    await heldFont;
+    await route.fulfill({ response });
+  });
+  try {
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.fd-article__body h3')).toHaveCount(3);
+    await expect(page.locator('#fdApp')).not.toHaveAttribute('inert');
+    await expect.poll(() => fontRequested).toBe(true);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    expect(await page.evaluate(() => document.readyState)).toBe('interactive');
+    expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+    releaseFont();
+    await page.waitForLoadState('load');
+    await readingReady(page);
+    // Let native restoration and the reader's arrival frame complete, then flush any pending
+    // save synchronously. No arbitrary debounce sleep and no change to native restoration.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.dispatchEvent(new Event('pagehide')); resolve();
+    }))));
+    expect(await page.evaluate(() => history.scrollRestoration)).toBe('auto');
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(clearedY + 0.5);
+    expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
+    await expectHealthy(page);
+  } finally {
+    releaseFont();
+  }
 });
 
 test('reading place: a removed heading opens at top and deletes only that reading', async ({ page }, testInfo) => {
@@ -206,6 +431,8 @@ test('reading place: returning to the fresh position cancels an abandoned pendin
   await page.waitForTimeout(400);
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   await page.setViewportSize(PHONE);
+  // This next move is after resize, not during its one-frame restore window.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   expect((await readingPlaces(page))[READING_REF]).toBeUndefined();
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
@@ -332,7 +559,7 @@ test('reading place: Settings erase survives reload and pagehide', async ({ page
   await expectHealthy(page);
 });
 
-test('reading place: guest, guide, tool, and faculty preview cannot claim a saved ordinary reading', async ({ page }, testInfo) => {
+test('reading place: learner guides save positions; guest, tool, and faculty preview stay excluded', async ({ page }, testInfo) => {
   await controlledReading(page);
   await page.goto(`/?page=${READING_REF}`);
   const guest = await readingReady(page);
@@ -345,7 +572,7 @@ test('reading place: guest, guide, tool, and faculty preview cannot claim a save
   }, audience(testInfo).role);
   await page.goto('/?page=orientation.md');
   await expect(page.locator('.fd-reader--guide')).toBeVisible();
-  await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
+  await expect(page.locator('[data-fd-reading-status]')).toHaveText(READING_SUCCESS);
   await page.goto('/?tool=question-bank-practice.html');
   await expect(page.locator('.fd-reader--tool')).toBeVisible();
   await expect(page.locator('[data-fd-reading-status]')).toHaveCount(0);
@@ -382,7 +609,7 @@ function audience(testInfo) {
   const resident = isResidentProject(testInfo.project.name);
   return {
     role: resident ? 'pgy1' : 'student',
-    libraryCount: resident ? 94 : 85,  // +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
+    libraryCount: resident ? 93 : 88,  // +1 both: family-meeting-sim.html (2026-10-27); +2 both: maine_law.md, maine-law-navigator.html (2026-10-27); res -4 (C2, 2026-10-17): MS3-track pages excluded; +therapy_on_the_unit.md, +therapy_reading_room.md (WP-T3); res +rp-post-event-huddle.html (2026-09-04); +pharmacy.html both (2026-09-30)
     residentRef: resident ? 'rp-agitation.html' : null,
     weekCount: resident ? 4 : 6,
     pathHeading: resident ? 'Your 4-week path' : 'Suggested learning plan',
@@ -1149,6 +1376,15 @@ test('legacy completion objects survive Reader previous/next and browser history
   await expectHealthy(page);
 });
 
+// C2 (2026-10-17): Enter in the search field shows the results -- focus moves to the first row
+// and nothing opens; a second Enter opens the row the learner can now see.
+async function enterShowsThenOpens(page, input) {
+  await input.press('Enter');
+  await expect(page.locator('.fd-search')).toHaveCount(1);
+  await expect(page.locator('.fd-searchpanel__body .fd-result').first()).toBeFocused();
+  await page.keyboard.press('Enter');
+}
+
 test('command-K and slash search restore focus on dismissal and open results directly', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/');
@@ -1170,7 +1406,7 @@ test('command-K and slash search restore focus on dismissal and open results dir
   await expect(page.locator('.fd-result')).not.toHaveCount(0);
   const firstRef = await page.locator('.fd-result').first().getAttribute('data-fd-open');
   expect(firstRef).toBeTruthy();
-  await input.press('Enter');
+  await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toHaveCount(0);
@@ -1227,7 +1463,7 @@ test('Enter on a punctuated exact resource name opens that resource, not a spuri
     const input = page.getByRole('textbox', { name:'Search resources', exact:true });
     await input.fill(query);
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', ref);
-    await input.press('Enter');
+    await enterShowsThenOpens(page, input);
     await expect(page.locator('.fd-search')).toHaveCount(0);
     await expect(page.locator('.fd-sheet')).toHaveCount(0);
     await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
@@ -1245,9 +1481,12 @@ test('dated title variants retain safety priority and open the first ordinary re
   await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
   const input = page.getByRole('textbox', { name:'Search resources', exact:true });
   await input.fill(query);
-  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'exp_consult.md');
+  // Since #1087 the title's word "catatonia" is the catatonia protocol's authored trigger, so it
+  // leads the safety prefix, followed by Consult Questions (the frontdoor-search-gate.mjs shape).
+  await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+  await expect(page.locator('.fd-result').nth(1)).toHaveAttribute('data-fd-safety', 'exp_consult.md');
   await expect(page.locator('.fd-result[data-fd-open]').first()).toHaveAttribute('data-fd-open', ref);
-  await input.press('Enter');
+  await enterShowsThenOpens(page, input);
   await expect(page.locator('.fd-search')).toHaveCount(0);
   await expect(page.locator('.fd-sheet')).toBeVisible();
   await page.locator('.fd-sheet__close').click();
@@ -3036,6 +3275,53 @@ test('One Thing First A2: cw_last names an undone week read that is not the Cont
   await expectHealthy(page);
 });
 
+// ---- "New this week": the Case-of-the-Week announcement row (2026-10-17) -----------------------
+// FD_COTW_NEWEST is build-injected per site (cotw_archive_block.newest); fd_today.js shows the row
+// only from the registry date through the six days after it. FROZEN_NOW (2026-08-17) is before
+// every edition that will ever be newest, so every other Today assertion in this file is untouched;
+// this test moves the clock onto the edition's own date and back.
+test('Today announces the newest Case of the Week only in the week it ships, as an Also-today row that opens the case', async ({ page }, testInfo) => {
+  const twin = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
+  await seedApp(page, testInfo, { storage: { cw_capture_v1: OTF.capture } });
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  const newest = await page.evaluate(() => (typeof FD_COTW_NEWEST === 'object' ? FD_COTW_NEWEST : null));
+  expect(newest, 'the served shell embeds the newest edition').toBeTruthy();
+  expect(newest.slug).toMatch(new RegExp(`^cotw_\\d{8}_[a-z0-9]+_${twin}\\.md$`));
+  expect(newest.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  await expect(page.locator('.fd-newcase')).toHaveCount(0);
+  // On the registry date the row is in "Also today", before saved questions, and never the primary.
+  const [y, m, d] = newest.date.split('-').map(Number);
+  await page.clock.setFixedTime(new Date(y, m - 1, d, 12, 0, 0));
+  await page.reload();
+  await otfExpectOnePrimary(page);
+  const row = page.locator('.fd-alsolist .fd-also__row:has(> .fd-newcase)');
+  await expect(row).toHaveCount(1);
+  await expect(row).toHaveAttribute('data-fd-mark', 'ring');
+  await expect(row.locator('.fd-newcase')).toHaveAttribute('data-fd-open', newest.slug);
+  await expect(row.locator('.fd-newcase__kicker')).toHaveText('New this week · Case of the Week');
+  await expect(row.locator('.fd-newcase__title')).toHaveText(newest.title);
+  // A case still awaiting faculty review carries the compact pending mark; a reviewed one does not.
+  const ledger = await (await requestGetWithRetry(page.request, '/governance.json')).json();
+  const pending = !!(ledger.items[newest.slug] && ledger.items[newest.slug].status === 'pending');
+  await expect(row.locator('.fd-kit__pending')).toHaveCount(pending ? 1 : 0);
+  await expect(page.locator('.fd-primary .fd-newcase, .fd-now .fd-newcase')).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('.fd-alsolist .fd-also__row > *:first-child')].map(el => el.className.split(' ')[0])))
+    .toEqual(['fd-study-planner', 'fd-newcase', 'fd-capture']);
+  await otfExpectPrimaryIsFirstFocusable(page);
+  await row.locator('.fd-newcase').click();
+  // The slug is data, not a pattern: compare the query parameter rather than building a RegExp from it.
+  await page.waitForURL((url) => url.searchParams.get('page') === newest.slug);
+  await expect(page.locator('.fd-article__h1')).toBeVisible();
+  await expectHealthy(page);
+  // Day eight: gone on its own.
+  await page.clock.setFixedTime(new Date(y, m - 1, d + 7, 12, 0, 0));
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  await expect(page.locator('.fd-newcase')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
 test('One Thing First D2: the Today shortcuts are unchanged with a primary present', async ({ page }, testInfo) => {
   await seedApp(page, testInfo, { storage: { cw_srs_v1: OTF.srs } });
   await page.goto('/');
@@ -3283,10 +3569,16 @@ test('a returning learner can leave rotation mode: browse clears the rotation, s
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).role)).toBe(site.role);
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBe('2026-08-17');
 
-  // Now leave rotation mode.
+  // Leave an ordinary task-filtered Library visit, then choose a fresh browse entrance.
+  await page.locator('[data-fd-tab="library"]:visible').click();
+  await page.locator('[data-fd-library-task="interview"]').click();
+  await expect(page.locator('[data-fd-library-task="interview"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-fd-tab="today"]:visible').click();
   await changeWeek.click();
   await page.locator('[data-fd-week="0"]').click();
   await expect(page.locator('.fd-library')).toBeVisible();
+  await expect(page.locator('[data-fd-library-task="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.fd-collink[data-fd-open]')).toHaveCount(site.libraryCount);
   await expect(page.locator('[data-fd-change-week]')).toHaveCount(0, 'the Library carries no week control');
   expect(await page.evaluate(() => localStorage.getItem('cw_rotation_start'))).toBeNull();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('cw_frontdoor_v1')).browsing)).toBe(true);
@@ -3501,8 +3793,11 @@ test('Patient care resources is a safe, responsive fourth destination and search
   const input = page.locator('.fd-searchpanel__input');
   await input.fill('housing help');
   await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', 'resource-finder');
-  const popupPromise = page.waitForEvent('popup');
   await input.press('Enter');
+  // C2: Enter shows the list (focus on the first row, the care link); the next Enter follows it.
+  await expect(page.locator('.fd-result').first()).toBeFocused();
+  const popupPromise = page.waitForEvent('popup');
+  await page.keyboard.press('Enter');
   const popup = await popupPromise;
   await expect.poll(() => popup.url()).toBe(expectedUrls[0]);
   await popup.close();
@@ -3867,7 +4162,171 @@ test('one-thread Phase 3 reader: one status line, folded practice row, Next in t
   const thread = page.getByRole('navigation', { name: 'Next in this thread' });
   await expect(thread).toBeVisible();
   expect(await thread.locator('.fd-nextthread__row').count()).toBeGreaterThanOrEqual(1);
-  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(3);
+  // <= 4 since C2 (2026-10-17): a topic page also names its newest Case of the Week.
+  expect(await thread.locator('.fd-nextthread__row').count()).toBeLessThanOrEqual(4);
+  await expectHealthy(page);
+});
+
+// "Beyond this page" (README_MEDIA.md M2). The live media map is a DRAFT, so the built shell
+// inlines no pages and the block renders nowhere -- the first test pins that. The rest serve an
+// APPROVED fixture index by rewriting the inlined FD_MEDIA value on the document response (the
+// map file is never touched). Fixture items are real library entries; the guidance lines are
+// read from the site's own topic_meta.json, never retyped.
+async function serveApprovedMedia(page, testInfo) {
+  const meta = await (await requestGetWithRetry(page.request, '/topic_meta.json')).json();
+  const site = isResidentProject(testInfo.project.name) ? 'res' : 'ms3';
+  const fixture = {
+    version: 1, site, status: 'approved',
+    pages: {
+      't_mood.md': {
+        page: 't_mood.md', sites: ['ms3', 'res'],
+        guidance: {
+          familySay: meta['book_library.md'].clinicalWorkflow.say,
+          familySafety: meta['book_library.md'].clinicalWorkflow.safety,
+          listenSafety: meta['podcast_library.md'].clinicalWorkflow.safety,
+        },
+        listen: [
+          { n: 25, title: 'The History and Nuances of Bipolar Illness', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=vBeB6V-KA70' },
+          { n: 201, title: 'Psychotic Depression', category: 'Mood & bipolar; suicide', url: 'https://www.youtube.com/watch?v=OoXGcXxvojQ' },
+        ],
+        listenAll: { ref: 'podcast_library.md', category: 'Mood & bipolar; suicide', anchor: 'mood-bipolar-suicide' },
+        family: [
+          { isbn: '9781608822195', title: 'Loving Someone with Bipolar Disorder', author: 'Julie Fast & John Preston',
+            description: 'Family guide to understanding and supporting someone with bipolar disorder—covers symptoms, treatment, and daily living.',
+            category: 'Mood, bipolar & depression', anchor: 'mood-bipolar-depression' },
+        ],
+        familyAll: { ref: 'book_library.md', category: 'Mood, bipolar & depression', anchor: 'mood-bipolar-depression' },
+        practiceRef: 'family-systems.html',
+      },
+    },
+  };
+  await page.route(/\/(?:\?[^/]*)?$/, async route => {
+    const response = await routeFetchWithRetry(route);
+    const original = await response.text();
+    const inlined = original.match(/var FD_MEDIA=\{[^;]*\};/g) || [];
+    expect(inlined, 'exactly one inlined media index').toHaveLength(1);
+    await route.fulfill({ response, body: original.replace(inlined[0], `var FD_MEDIA=${JSON.stringify(fixture)};`) });
+  });
+  return { meta, fixture };
+}
+
+test('Beyond this page: the draft map renders the block nowhere', async ({ page }, testInfo) => {
+  await seedApp(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Next in this thread' })).toBeVisible();
+  await expect(page.locator('.fd-beyond')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
+test('Beyond this page: after Next in this thread, keyboard switch, verbatim guidance, nothing stored', async ({ page }, testInfo) => {
+  await page.setViewportSize(DESKTOP);
+  await seedApp(page, testInfo);
+  const { meta } = await serveApprovedMedia(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  const block = page.getByRole('region', { name: 'Beyond this page' });
+  await expect(block).toBeVisible();
+  const order = await page.evaluate(() => {
+    const at = (sel) => [...document.querySelectorAll('.fd-article *')].indexOf(document.querySelector(sel));
+    return { thread: at('.fd-nextthread'), beyond: at('.fd-beyond'), footer: at('.fd-prevnext') };
+  });
+  expect(order.thread).toBeLessThan(order.beyond);
+  if (order.footer >= 0) expect(order.beyond).toBeLessThan(order.footer);
+  const before = await page.evaluate(() => JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
+
+  const forYou = block.getByRole('button', { name: 'For you · listen' });
+  const forFamily = block.getByRole('button', { name: 'For the family · read' });
+  await expect(forYou).toHaveAttribute('aria-pressed', 'true');
+  await expect(block.locator('#fd-beyond-family')).toBeHidden();
+  await expect(block.getByRole('link', { name: 'Episode 25 on YouTube (opens in a new tab)' })).toHaveAttribute('target', '_blank');
+  await expect(block.locator('.fd-beyond__note')).toHaveText(meta['podcast_library.md'].clinicalWorkflow.safety);
+  await forFamily.focus();
+  await page.keyboard.press('Enter');
+  await expect(forFamily).toHaveAttribute('aria-pressed', 'true');
+  await expect(block.locator('#fd-beyond-listen')).toBeHidden();
+  await expect(block.locator('#fd-beyond-family .fd-beyond__card').first()).toBeFocused();
+  await expect(block.locator('.fd-beyond__offer')).toHaveText(`How to offer it: ${meta['book_library.md'].clinicalWorkflow.say}`);
+  await expect(block.locator('.fd-beyond__safety')).toHaveText(meta['book_library.md'].clinicalWorkflow.safety);
+  await expect(block.locator('a[href*="amazon"]')).toHaveCount(0);
+  await forYou.focus();
+  await page.keyboard.press(' ');
+  await expect(block.locator('#fd-beyond-listen .fd-beyond__card').first()).toBeFocused();
+
+  // Bring to family meeting only PREPARES the existing capture dialog: title and author as a draft,
+  // the no-patient-details warning shown, Save still the learner's step. Opening it marks nothing
+  // read, assigned or done -- completion (cw_progress_v1) and the capture store (cw_capture_v1) are
+  // unchanged. (cw_frontdoor_v1 legitimately moves: the reading place saves the scroll position.)
+  const progressBefore = await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]);
+  const doneBefore = await page.locator('.fd-article__actions [data-fd-toggle]').getAttribute('aria-pressed');
+  await forFamily.click();
+  await block.getByRole('button', { name: '＋ Bring to family meeting' }).click();
+  await expect(page.locator('#capText')).toHaveValue('Loving Someone with Bipolar Disorder — Julie Fast & John Preston');
+  await expect(page.locator('.cap-warn')).toBeVisible();
+  await expect(page.locator('#capSave')).toBeVisible();
+  await expect(page.locator('.cap-sheet')).not.toContainText(/assigned|completed|marked (as )?read/i);
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]),
+    'opening the dialog changes no progress state').toEqual(progressBefore);
+  await page.locator('#capCancel').click();
+  await expect(page.locator('.fd-article__actions [data-fd-toggle]')).toHaveAttribute('aria-pressed', doneBefore || 'false');
+  expect(await page.evaluate(() => [localStorage.getItem('cw_progress_v1'), localStorage.getItem('cw_capture_v1')]),
+    'cancelling stores nothing').toEqual(progressBefore);
+  const after = await page.evaluate(() => JSON.stringify(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])));
+  expect(after.includes('Loving Someone'), 'no draft or capture stored').toBe(false);
+  expect(after.includes('fd-beyond') || after.includes('media'), 'no new persisted key').toBe(false);
+  expect(before.length).toBeGreaterThan(0);
+
+  await page.goto('/');
+  await expect(page.locator('.fd-beyond')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
+test('Beyond this page: no horizontal overflow at 320px or at 200% text, 44px targets', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 320, height: 720 });
+  await seedApp(page, testInfo);
+  await serveApprovedMedia(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  const block = page.locator('.fd-beyond');
+  await expect(block).toBeVisible();
+  const fits = () => block.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { block: el.scrollWidth <= el.clientWidth + 1, page: document.documentElement.scrollWidth <= window.innerWidth + 1, right: r.right <= window.innerWidth + 1 };
+  });
+  expect(await fits()).toEqual({ block: true, page: true, right: true });
+  for (const target of await block.locator('.fd-beyond__opt, .fd-beyond__link, .fd-beyond__all a').all()) {
+    if (!(await target.isVisible())) continue;
+    expect((await target.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  }
+  const sw = await block.locator('.fd-beyond__switch').boundingBox();
+  const bx = await block.boundingBox();
+  expect(Math.round(sw.width), 'the switch is full width on a phone').toBeGreaterThanOrEqual(Math.floor(bx.width) - 1);
+  await page.addStyleTag({ content: 'html{font-size:200% !important} .fd-beyond{font-size:200%}' });
+  await block.locator('.fd-beyond__opt[data-media-side="family"]').click();
+  expect(await fits()).toEqual({ block: true, page: true, right: true });
+  await expectHealthy(page);
+});
+
+test('Beyond this page: a Book Library link opens at the category, and Back returns to the reading at the same scroll', async ({ page }, testInfo) => {
+  await page.setViewportSize(DESKTOP);
+  await seedApp(page, testInfo);
+  await serveApprovedMedia(page, testInfo);
+  await page.goto('/?page=t_mood.md');
+  const block = page.locator('.fd-beyond');
+  await block.locator('.fd-beyond__opt[data-media-side="family"]').click();
+  const link = block.getByRole('link', { name: 'In the Book Library' });
+  await link.scrollIntoViewIfNeeded();
+  const origin = await page.evaluate(() => window.scrollY);
+  expect(origin).toBeGreaterThan(200);
+  await link.click();
+  await expect(page).toHaveURL(/[?&]page=book_library\.md/);
+  const heading = page.locator('.fd-article__body h2', { hasText: 'Mood, bipolar & depression' });
+  await expect(heading).toBeFocused();
+  await expect(heading).toBeInViewport();
+  await page.goBack();
+  await expect(page).toHaveURL(/[?&]page=t_mood\.md/);
+  await expect(page.locator('.fd-beyond')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 })
+    .toBeGreaterThan(origin - 80);
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(origin + 80);
   await expectHealthy(page);
 });
 
@@ -3931,6 +4390,84 @@ test('returning from a Library resource restores the list position and focuses t
 // Library (one-thread redesign, Phase 2 -- spec docs/superpowers/specs/one-thread-handoff/README.md
 // section 2 and its Phase 2 acceptance block). Exercises the rendered controls against the actual
 // audience payload; governance branches use controlled fixtures (#729), never the live ledger.
+test('medication search: names reach readings while clinical context keeps its destination', async ({ page }, info) => {
+  await seedApp(page, info);
+  await page.setViewportSize(PHONE);
+  await page.goto('/?tab=library');
+  await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  for (const query of ['Wellbutrin XL', 'LAMICTAL?', 'Suboxone', 'Ativan']) {
+    await input.fill(query);
+    await expect(dialog.locator('[data-fd-open="psychopharm_primer.md"]')).toBeVisible();
+  }
+  await input.fill('Ativan catatonia');
+  // catatonia.md is a safety-kit protocol since #1087: it leads as its protocol row and is never
+  // double-listed as a plain item.
+  await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+  await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toHaveCount(0);
+  await input.fill('Spravato');
+  await expect(dialog.locator('[data-fd-open="ect_neuromodulation.md"]')).toBeVisible();
+  await input.fill('Ativan withdrawing from alcohol');
+  await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 't_sud.md');
+  await input.fill('Wellbutrin');
+  await dialog.locator('[data-fd-open="psychopharm_primer.md"]').click();
+  await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'psychopharm_primer.md');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(PHONE.width);
+  await expectHealthy(page);
+});
+
+for (const [device, viewport] of [['phone', PHONE], ['desktop', DESKTOP]]) {
+  test(`medication search: punctuated context finds and opens the specific reading on ${device}`, async ({ page }, info) => {
+    await seedApp(page, info);
+    await page.setViewportSize(viewport);
+    await page.goto('/?tab=library');
+    await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    const input = dialog.getByRole('textbox', { name: 'Search resources' });
+    for (const [query, ref] of [
+      ['patient-suicidal', 'pg_suicide.md'],
+      ['lithium suicide-risk', 'pg_suicide.md'],
+      ['Ativan alcohol-withdrawal', 't_sud.md'],
+      ['Ativan pulled-out-iv', 'agitation.md'],
+      ['CIWA-Ar', 't_sud.md'],
+      ['patient-si', 'pg_suicide.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', ref);
+      await expect(dialog.locator(`[data-fd-safety="${ref}"]`)).toHaveCount(1);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toHaveCount(0);
+    }
+    await input.fill('patient-refuses-medication');
+    await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 'capacity.html');
+    await expect(dialog.locator('[data-fd-safety="exp_consult.md"]')).toBeVisible();
+    // catatonia.md is a safety-kit protocol since #1087: punctuated context recovers its authored
+    // trigger, so it leads as the protocol row (ahead of any primer) and is not double-listed.
+    for (const query of ['Ativan catatonia?', 'lorazepam (catatonia)']) {
+      await input.fill(query);
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'catatonia.md');
+      await expect(dialog.locator('[data-fd-safety="catatonia.md"]')).toHaveCount(1);
+      await expect(dialog.locator('[data-fd-open="catatonia.md"]')).toHaveCount(0);
+    }
+    for (const [query, ref] of [
+      ['lithium/monitoring', 'med_monitoring.md'],
+      ['lithium—monitoring', 'med_monitoring.md'],
+      ['lithium monitoring?', 'med_monitoring.md'],
+    ]) {
+      await input.fill(query);
+      await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toBeVisible();
+      const refs = await dialog.locator('.fd-result').evaluateAll(rows => rows.map(row => row.getAttribute('data-fd-open')));
+      expect(refs.indexOf(ref), query).toBeLessThan(3);
+      const primer = refs.indexOf('psychopharm_primer.md');
+      if (primer >= 0) expect(refs.indexOf(ref), query).toBeLessThan(primer);
+    }
+    await dialog.locator('[data-fd-open="med_monitoring.md"]').click();
+    await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', 'med_monitoring.md');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+    await expectHealthy(page);
+  });
+}
+
 test.describe('Essentials Phase 2', () => {
   const rows = page => page.locator('.fd-kit .fd-kit__reading[data-fd-open], .fd-library:not(.fd-kit) .fd-collink[data-fd-open]');
   const full = page => page.locator('[data-fd-library-view="full"]');
@@ -4165,7 +4702,7 @@ test.describe('Essentials Phase 2', () => {
     const input = dialog.getByRole('textbox', { name: 'Search resources' });
     await expect(input).toHaveValue('milieu rules');
     await expect(input).toBeFocused();
-    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.');
+    await expect(dialog.locator('.fd-searchpanel__foot')).toHaveText('Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.');
     await input.fill('delirium');
     const labels = dialog.locator('.fd-searchpanel__group');
     await expect(labels.first()).toHaveText('Safety protocols');
@@ -4231,9 +4768,9 @@ test.describe('Essentials Phase 2', () => {
       await page.locator('.fd-kit__peek[data-fd-kit-tool="t_mood.md"]').click();
       await expect(page.locator('.fd-kit__tool-preview .governance-badge')).toHaveText('Pending review · High risk');
     }
-    await expect(page.locator('.fd-kit__review')).toContainText(/^Faculty re-review in progress — \d+ of \d+ readings changed since they were last attested ·/);
+    await expect(page.locator('.fd-kit__review summary')).toHaveText(/^Faculty re-review · \d+ of \d+ readings$/);
     await page.locator('.fd-kit__review summary').click();
-    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings are marked pending review. Open a reading to see its full review notice.');
+    await expect(page.locator('.fd-kit__review p')).toHaveText('These readings changed since they were last attested and are marked pending review. Open a reading to see its full review notice.');
     await expectHealthy(page);
   });
   test('summaries are byte-identical to topic_meta and the desktop preview pane follows the selected row', async ({ page }, info) => {
@@ -4398,10 +4935,28 @@ test.describe('Essentials Phase 2', () => {
   });
   test('responsive: targets, no horizontal overflow at 320/390/641/1280 and at 200% text, reduced motion, and actual evidence', async ({ page }, info) => {
     await seedApp(page, info);
-    await serveNothingPending(page);
+    // Always exercise the re-review notice, independent of the live faculty queue: every live pending
+    // row is first served as reviewed (main's serveNothingPending contract), then exactly one
+    // page -- the primer -- is served pending, so the notice is deterministic.
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'document' || new URL(route.request().url()).pathname !== '/') return route.continue();
+      const response = await routeFetchWithRetry(route), body = await response.text();
+      const prefix = 'var FD_SITE_MANIFEST=', start = body.indexOf(prefix) + prefix.length;
+      expect(start).toBeGreaterThan(prefix.length);
+      const end = body.indexOf(';\n', start), manifest = JSON.parse(body.slice(start, end));
+      for (const list of [manifest.md || [], manifest.tools || []]) {
+        for (const entry of list) if (entry[3] && entry[3].status === 'pending') entry[3] = { ...entry[3], status: 'reviewed' };
+      }
+      const primer = manifest.md.find(entry => entry[1] === 'psychopharm_primer.md');
+      expect(primer).toBeTruthy();
+      primer[3] = { status: 'pending', riskKind: 'clinical', riskLevel: 'high' };
+      await route.fulfill({ response, body: body.slice(0, start) + JSON.stringify(manifest) + body.slice(end) });
+    });
     for (const width of [320, 390, 641, 1280]) {
       await page.setViewportSize({width, height: 844}); await page.goto('/?tab=library');
       await expect(page.locator('.fd-kit__reading').first()).toBeVisible();
+      await expect(page.locator('.fd-kit__review summary')).toBeVisible();
+      await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       const desktop = width >= 1000;
       await expect(page.locator('.fd-kit__tool-preview')).toBeVisible({ visible: desktop });
@@ -4422,7 +4977,7 @@ test.describe('Essentials Phase 2', () => {
           expect(first.y + first.height, 'the first reading is whole on the first phone screen, above the dock').toBeLessThanOrEqual(dock.y);
         }
       }
-      const controls = '.fd-kit__reading, .fd-library__view, .fd-library__filter, .fd-kit__group > summary, [data-fd-kit-section], .fd-kit__peek:visible, .fd-kit__preview-open:visible';
+      const controls = '.fd-kit__reading, .fd-library__view, .fd-library__task, .fd-library__filter, .fd-kit__group > summary, [data-fd-kit-section], .fd-kit__peek:visible, .fd-kit__preview-open:visible';
       for (const control of await page.locator(controls).all()) {
         if (!(await control.evaluate(el => el.matches('.fd-library__filter')))) { await control.focus(); await expect(control).toBeFocused(); }
         const box = await control.boundingBox();
@@ -4490,6 +5045,9 @@ test.describe('Essentials Phase 2', () => {
     await input.fill('Dissociative');
     await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', 't_dissociative.md');
     await input.press('Enter');
+    // C2: the first Enter focuses the top result; the second opens it.
+    await expect(page.locator('.fd-result').first()).toBeFocused();
+    await page.keyboard.press('Enter');
     await readyReader(page, 't_dissociative.md');
     expect(new URL(page.url()).searchParams.get('page')).toBe('t_dissociative.md');
     await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
@@ -4712,9 +5270,14 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
       && meta[f].shelfBlueprint.includes(cat));
     const mood = pick('mood'), psychosis = pick('psychosis');
     if (!mood || !psychosis) throw new Error('topic_meta.json serves no mood or psychosis blueprint page; the fixture needs both');
+    // The shell accepts history only for published questions. Keep performance
+    // controlled, but use released IDs so this measures layout after filtering.
+    const bank = await (await requestGetWithRetry(page.request, '/question_bank.json')).json();
+    const ids = bank.items.map(q => q.id);
+    expect(new Set(ids).size, 'the fixture needs 15 distinct published question IDs').toBeGreaterThanOrEqual(15);
     const qb = {};
-    for (let i = 0; i < 12; i++) qb[`fixture-mood-${i}`] = { correct: true, pages: [mood], confidence: 'certain' };
-    for (let i = 0; i < 3; i++) qb[`fixture-psych-${i}`] = { correct: i < 1, pages: [psychosis], confidence: 'guess' };
+    for (let i = 0; i < 12; i++) qb[ids[i]] = { correct: true, pages: [mood], confidence: 'certain' };
+    for (let i = 0; i < 3; i++) qb[ids[i + 12]] = { correct: i < 1, pages: [psychosis], confidence: 'guess' };
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
     await seedApp(page, testInfo, { storage: {
       cw_qb_v1: qb,
@@ -4725,7 +5288,9 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 800 }, { name: '
     const mastery = page.locator('.hm-sec', { hasText: 'Mastery by blueprint' });
     await expect(mastery.locator('.pc', { hasText: /· few$/ })).toHaveCount(1);
     await expect(mastery.locator('.pc', { hasText: /^not started$/ }).first()).toBeVisible();
-    await expect(page.locator('.hm-sec', { hasText: 'Confidence calibration' }).locator('.pc', { hasText: /^\d+% · \d+$/ }).first()).toBeVisible();
+    const calibration = page.locator('.hm-sec', { hasText: 'Confidence calibration' });
+    await expect(calibration.locator('.pc', { hasText: /^100% · 12$/ })).toBeVisible();
+    await expect(calibration.locator('.pc', { hasText: /^33% · 3$/ })).toBeVisible();
     await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => null))));
 
     const report = await page.locator('.hm-bars').evaluateAll(sections => sections.map(bars => {
@@ -5877,3 +6442,128 @@ for (const width of [320, 390, 1280]) {
     await expectHealthy(page);
   });
 }
+
+
+test('reading comfort preserves section, keyboard focus and saved preferences without remounting', async ({ page }, testInfo) => {
+  await page.setViewportSize(PHONE);
+  await seedApp(page,testInfo);
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}&tab=library`);
+  const reader=await readingReady(page),original=await reader.elementHandle();
+  const body=reader.locator('.fd-article__body');
+  const font=()=>body.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  const base=await font();
+  await scrollReadingTo(page,1,85);
+  await expect.poll(async()=>((await readingPlaces(page))[READING_REF]||{}).offset).toBeCloseTo(85,0);
+  const place=(await readingPlaces(page))[READING_REF],url=page.url();
+  const anchorTop=()=>reader.locator('.fd-article__body h3').nth(1).evaluate(el=>el.getBoundingClientRect().top);
+  const beforeSize=await anchorTop();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  const size=settings.getByRole('group',{name:'Reading text size',exact:true});
+  const spacing=settings.getByRole('group',{name:'Reading line spacing',exact:true});
+  const larger=size.getByRole('button',{name:'Larger',exact:true});
+  await larger.focus();await larger.press('Enter');
+  await expect(larger).toHaveAttribute('aria-pressed','true');
+  await expect(larger).toBeFocused();
+  await expect.poll(font).toBeCloseTo(base*1.15,1);
+  // Scroll destinations round to a device pixel while heading layout can be fractional.
+  // Compare actual positions per change, rather than an unrepresentable requested -85px.
+  await expect.poll(async()=>Math.abs((await anchorTop())-beforeSize)).toBeLessThanOrEqual(1);
+  const beforeSpacing=await anchorTop();
+  await spacing.getByRole('button',{name:'Spacious',exact:true}).click();
+  await expect.poll(()=>body.evaluate(el=>parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(2,1);
+  expect(await reader.evaluate((el,original)=>el===original,original)).toBe(true);
+  expect(page.url()).toBe(url);
+  expect((await readingPlaces(page))[READING_REF].heading).toBe(place.heading);
+  await expect.poll(async()=>Math.abs((await anchorTop())-beforeSpacing)).toBeLessThanOrEqual(1);
+  await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  await page.evaluate(()=>sessionStorage.setItem('__fd_test_preserve_seed','1'));
+  await page.reload();await readingReady(page);
+  await expect(reader).toHaveAttribute('data-fd-reader-size','larger');
+  await expect(reader).toHaveAttribute('data-fd-reader-spacing','spacious');
+  await expect.poll(font).toBeCloseTo(base*1.15,1);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await settings.getByRole('button',{name:'Reset reading comfort',exact:true}).click();
+  await expect(size.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(spacing.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect.poll(font).toBeCloseTo(base,1);
+  await page.evaluate(()=>{const write=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='cw_frontdoor_v1')throw new DOMException('Blocked','QuotaExceededError');return write.call(this,key,value);};});
+  await size.getByRole('button',{name:'Largest',exact:true}).click();
+  await expect(size.getByRole('button',{name:'Standard',exact:true})).toHaveAttribute('aria-pressed','true');
+  await expect(settings.getByRole('status')).toContainText('Could not save');
+  await expect.poll(font).toBeCloseTo(base,1);
+  await expectHealthy(page);
+});
+
+test('reading comfort fits phone, desktop and 200 percent CSS zoom with reduced motion', async ({ page },testInfo) => {
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await seedApp(page,testInfo,{state:{readingComfort:{size:'largest',spacing:'spacious'}}});
+  await controlledReading(page);
+  await page.goto(`/?page=${READING_REF}&tab=library`);
+  const reader=await readingReady(page);
+  await expect(reader).toHaveAttribute('data-fd-reader-size','largest');
+  for(const width of [320,390,1280]) {
+    await page.setViewportSize({width,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.getByRole('button',{name:'Settings',exact:true}).click();
+    const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+    for(const button of await settings.locator('[data-fd-reading-size],[data-fd-reading-spacing],[data-fd-reading-reset]').all()) {
+      const box=await button.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(44);expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    await settings.screenshot({path:testInfo.outputPath(`comfort-settings-${width}.png`)});
+    await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  }
+  await page.evaluate(()=>{document.documentElement.style.zoom='2';});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await expect(reader.locator('.fd-article__body')).toBeVisible();
+  await page.screenshot({path:testInfo.outputPath('comfort-css-zoom-200.png')});
+  await page.evaluate(()=>{document.documentElement.style.zoom='';sessionStorage.setItem('__fd_test_preserve_seed','1');});
+  await page.goto('/?page=orientation.md');
+  const guide=page.locator('.fd-reader--guide');
+  await expect(guide).toBeVisible();
+  const guideBody=guide.locator('.fd-article__body');
+  const largeFont=await guideBody.evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  await settings.getByRole('button',{name:'Reset reading comfort',exact:true}).click();
+  await expect.poll(()=>guideBody.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(largeFont/1.3,1);
+  await settings.getByRole('button',{name:'Close side sheet',exact:true}).click();
+  await page.goto('/?tool=mse.html');
+  const tool=page.locator('.fd-reader--tool');
+  await expect(tool).toBeVisible();
+  const frame=page.frameLocator('iframe.toolframe').locator('body');
+  await expect(frame).toBeVisible();const toolFont=await frame.evaluate(el=>getComputedStyle(el).fontSize);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await settings.getByRole('group',{name:'Reading text size',exact:true}).getByRole('button',{name:'Largest',exact:true}).click();
+  await expect(tool).not.toHaveAttribute('data-fd-reader-size');
+  expect(await frame.evaluate(el=>getComputedStyle(el).fontSize)).toBe(toolFont);
+  await expectHealthy(page);
+});
+
+
+test('reading comfort scales guide example, references, crisis text and both table views', async ({ page },testInfo) => {
+  await page.setViewportSize(PHONE);await seedApp(page,testInfo);
+  const ref='pg_formulation.md';
+  await pinGovernance(page,ref,{status:'reviewed',riskLevel:'low'});
+  await page.route(`**/content/${ref}`,route=>route.fulfill({contentType:'text/markdown',body:
+    '# Study note\n\n## Example\n\nA synthetic teaching example.\n\n> <span class="crisis-block-hook">A synthetic safety note.</span>\n\n## References\n\n- A synthetic reference.\n\n## Comparison\n\n| Item | Detail |\n| --- | --- |\n| First | A synthetic explanation. |\n'}));
+  await page.goto(`/?page=${ref}`);
+  const guide=page.locator('.fd-reader--guide');await expect(guide).toBeVisible();
+  const expand=guide.getByRole('button',{name:'Expand all',exact:true});if(await expand.count())await expand.click();
+  await guide.getByRole('button',{name:'Read by row',exact:true}).click();
+  const selectors=['.fd-guide-example p','.fd-guide-references li','blockquote:has(.crisis-block-hook)','table th','table td','.fd-guide-table-rows dt','.fd-guide-table-rows dd'];
+  const sizes=async()=>Promise.all(selectors.map(selector=>guide.locator(selector).first().evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),leading:parseFloat(getComputedStyle(el).lineHeight)/parseFloat(getComputedStyle(el).fontSize)}))));
+  const before=await sizes();
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  const settings=page.getByRole('dialog',{name:'Settings',exact:true});
+  await settings.getByRole('group',{name:'Reading text size',exact:true}).getByRole('button',{name:'Largest',exact:true}).click();
+  await settings.getByRole('group',{name:'Reading line spacing',exact:true}).getByRole('button',{name:'Spacious',exact:true}).click();
+  const after=await sizes();
+  for(let i=0;i<selectors.length;i++) {
+    expect(after[i].font,selectors[i]).toBeCloseTo(before[i].font*1.3,1);
+    expect(after[i].leading,selectors[i]).toBeCloseTo(2,1);
+  }
+  await expectHealthy(page);
+});

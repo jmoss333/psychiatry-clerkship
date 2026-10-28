@@ -1090,6 +1090,50 @@ test('full-group artifact remains a usable exact learner link when QR capacity i
   }
 });
 
+for (const width of [320, 1280]) {
+  test(`delayed dialog focus: optional edition switch / high-risk ledger arrival / ${width}px`, async ({ page, browser, baseURL }, testInfo) => {
+    test.slow();
+    const audience = rotationEditionAudience(testInfo.project.name);
+    const first = await buildCuratorArtifact(page, 'compact');
+    const second = await buildSecondCompactArtifact(page, first.projection);
+    const learner = await newLearnerPage(browser, baseURL, audience);
+    let release;
+    try {
+      await learner.page.setViewportSize({ width, height: 844 });
+      await gotoFreshEditionDocument(learner.page, first.link);
+      await expectLearnerEdition(learner.page, first, audience);
+      const ledger = await (await learner.page.request.get('/governance.json')).json();
+      expect(ledger.items['t_mood.md']).toBeTruthy();
+      ledger.items['t_mood.md'] = { ...ledger.items['t_mood.md'], status: 'pending', riskLevel: 'high' };
+      const held = new Promise(resolve => { release = resolve; });
+      await learner.page.route('**/governance.json', async route => { await held; await route.fulfill({ json: ledger }); });
+      const target = new URL(second.link);
+      target.searchParams.set('page', 't_mood.md');
+      // DOMContentLoaded allows the controlled ledger to remain pending while the native
+      // switch dialog and the real reader mount. A full load wait would deadlock the fixture.
+      await learner.page.goto(new URL('/404.html', target.origin).href);
+      await learner.page.goto(target.href, { waitUntil: 'domcontentloaded' });
+      const dialog = learner.page.locator('dialog.fd-edition-switch');
+      const keep = dialog.getByRole('button', { name: 'Keep current edition', exact: true });
+      await expect(keep).toBeFocused();
+      release();
+      await expect(learner.page.locator('.governance-notice.pending-high')).toBeVisible();
+      await learner.page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await expect(keep).toBeFocused();
+      await learner.page.keyboard.press('Tab');
+      await expect(dialog.getByRole('button', { name: 'Switch edition', exact: true })).toBeFocused();
+      await learner.page.keyboard.press('Shift+Tab');
+      await expect(keep).toBeFocused();
+      await learner.page.keyboard.press('Enter');
+      await expect(dialog).toHaveCount(0);
+      expect(await learner.page.evaluate(key => JSON.parse(localStorage.getItem(key)), rotationEditionStorageKeys(audience).edition)).toEqual(first.envelope);
+    } finally {
+      if (release) release();
+      await learner.context.close();
+    }
+  });
+}
+
 test('switching to a second compact edition preserves core/manual history and scopes local state', async ({ page, browser, baseURL }, testInfo) => {
   test.slow();
   const audience = rotationEditionAudience(testInfo.project.name);

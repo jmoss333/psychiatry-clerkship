@@ -1,0 +1,574 @@
+#!/usr/bin/env python3
+"""Resolve media_map.json into the Reader's "Beyond this page" index.
+
+Spec: docs/superpowers/specs/one-thread-handoff/README_MEDIA.md (M1). The map at the repo
+root stores KEYS ONLY -- podcast episode numbers and book ISBNs. Every title, author,
+description, link and guidance line a learner sees is read here, at build time, from the two
+attested library pages and their topic_meta.json records, which this module never writes:
+
+  12_Media/psychiatry_psychotherapy_podcast_library.md   (podcast_library.md)
+  07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md   (book_library.md)
+
+So the map cannot carry a title, an author, a link or a timestamp of its own, and a key the
+libraries do not hold cannot render: it fails the build with a message naming the key.
+
+What makes an episode ELIGIBLE ("verified"). The spec's rule is "only lines carrying
+[▶ YouTube](https://www.youtube.com/watch?v=…)". Two more checks are made from the library
+alone, because a "▶ YouTube" line can still point at the wrong video:
+  - the video id is used by exactly ONE episode line (3473f69c recorded two lines that reuse
+    another episode's video: 234 -> 239's, 247 -> 231's; both lines of each pair fail), and
+  - when the line also carries its Apple Podcasts link, the episode number leading that link's
+    slug equals the line's own episode number (the Apple links were joined by feed id, not by
+    title, so they are an independent witness to which episode a line is).
+"▶ episode audio" and "▶ search channel" lines are never eligible.
+
+Books are eligible when their ISBN-13 is in the book library and its check digit is valid.
+
+A key listed under the map's "unverified" (an item that failed verification end to end, e.g. an
+ISBN no catalogue resolved) is never eligible, even though the library holds it: withholding is
+binding until a curator removes the entry.
+
+Draft is invisible. A map whose status is not exactly "approved" is VALIDATED in full -- a bad
+key still fails the build -- but the emitted index has no pages, so nothing renders anywhere.
+Only Dr. Moss flips status to "approved" (a content PR with no code).
+
+Activation is signature-bound (Dr. Moss, 2026-10-06). An approved entry's COMPLETE resolved
+recommendation -- picks, titles, authors, descriptions, links, the guidance lines it shows and
+its site scope -- is written to media_resolved/<slug>.json (`--write`), and shipped_pages.py
+lists that file as the anchor page's extraSource, so it is hashed into that page's signature and
+shown in the faculty console's bank review. The build renders only what those files hold: a
+missing, stale or orphaned file aborts it. Per-page by construction -- an upstream edit reopens
+only the pages whose rendered recommendation it changes. Curator notes (why/gap), dates, status
+and governance fields are never written to the file, so editing a note or signing a page never
+invalidates a signature. An entry may carry "sites" (a subset of where its anchor ships) to keep
+a pick off a site.
+
+Pure and offline: no network, no clock. Same inputs, byte-identical output.
+"""
+
+import json
+import os
+import re
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+if HERE not in sys.path:  # so an importer from outside site_build/ still resolves it
+    sys.path.insert(0, HERE)
+
+import shipped_pages  # noqa: E402
+
+MAP_PATH = "media_map.json"
+PODCAST_PATH = "12_Media/psychiatry_psychotherapy_podcast_library.md"
+BOOK_PATH = "07_Evidence_and_Reading/Book_Summaries/ms3_book_library.md"
+TOPIC_META_PATH = "topic_meta.json"
+PODCAST_SLUG = "podcast_library.md"
+BOOK_SLUG = "book_library.md"
+# The family side's practice link (README_MEDIA.md: "from book_library.md.relatedTools").
+PRACTICE_TOOL = "family-systems.html"
+# Medication workstream (README_MEDIA.md rule 6): never pick from this podcast category and
+# never anchor on a page whose source lives under the psychopharmacology tree.
+MEDICATION_CATEGORY = "Psychopharmacology"
+MEDICATION_SOURCE_PREFIX = "05_Psychopharmacology/"
+MAX_PER_SIDE = 2
+INDEX_VERSION = 1
+APPROVED = "approved"
+MAP_KEYS = {"_note", "status", "draftedAt", "weeks", "excluded", "unverified"}
+WEEK_KEYS = {"week", "anchor", "pairing", "podcastCategory", "listen", "family", "gap", "sites"}
+# Signature-bound activation. One generated file per approved anchor page holds the COMPLETE
+# resolved recommendation that page renders (picks, titles, authors, descriptions, links and the
+# guidance lines), and shipped_pages.py lists it as that page's extraSource, so it is hashed into
+# the page's signature. Any upstream change that alters what the page shows -- a library line, a
+# guidance string in topic_meta, a pick -- changes that file's bytes and reopens that page's
+# review, and only that page's. Curator notes (why/gap), dates, status and every governance field
+# are deliberately absent, so neither editing a note nor signing a page invalidates a signature.
+RESOLVED_DIR = "media_resolved"
+RESOLVED_NOTE = ("GENERATED by 13_Faculty_Resources/_automation/site_build/media_index.py --write "
+                 "from media_map.json, the podcast and book libraries and topic_meta.json; do not "
+                 "hand-edit. Bound into this page's signature: any change here reopens its review.")
+
+_PODCAST_HEADING = re.compile(r"^## (?P<name>.+?)\s+\((?P<count>\d+)\)\s*$")
+_BOOK_HEADING = re.compile(r"^## (?P<name>.+?)\s*$")
+_EPISODE = re.compile(
+    r"^- Episode (?P<n>\d+): (?P<title>.+?) — \[▶ (?P<kind>[^\]]+)\]\((?P<url>[^)\s]+)\)"
+    r"(?: · \[Apple Podcasts\]\((?P<apple>[^)\s]+)\))?\s*$"
+)
+_YOUTUBE = re.compile(r"^https://www\.youtube\.com/watch\?v=(?P<id>[A-Za-z0-9_-]{11})$")
+_APPLE_NUMBER = re.compile(r"/podcast/0*(?P<n>\d+)-")
+_BOOK = re.compile(
+    r"^- \*\*\[(?P<title>.+?)\]\((?P<url>[^)\s]+)\)\*\* — (?P<rest>.+?)\s+ISBN (?P<isbn>\d{13})\s*$"
+)
+
+
+class MediaMapError(Exception):
+    """A media_map.json key the libraries cannot honour. The message names the key."""
+
+
+def heading_anchor(name):
+    """The category anchor: the Reader's heading-slug rule (fd_reading_place.js
+    fdReadingHeadingIds: lower-case, every run of non [a-z0-9] -> '-', trimmed). The Reader's
+    own DOM id adds a fingerprint over the heading's textContent, which makeCollapsible()
+    prefixes with its chevron, so the link carries the bare slug and the shell resolves it
+    against each heading's label (spa_index.html fdMediaArrive)."""
+    slug = re.sub(r"[^a-z0-9]+", "-", str(name).lower()).strip("-")
+    return slug or "section"
+
+
+def isbn13_valid(isbn):
+    if not re.fullmatch(r"\d{13}", str(isbn)):
+        return False
+    total = sum(int(c) * (1 if i % 2 == 0 else 3) for i, c in enumerate(isbn))
+    return total % 10 == 0
+
+
+def _split_author(rest):
+    """`<author>. <description>` -> (author, description). The author ends at the first ". "
+    that does not follow a single-letter initial ("Natalie Y. Gutiérrez") or "et al" -- an
+    "et al." stays with the author, whose own period it is. No boundary: the whole text minus
+    one trailing period is the author and there is no description."""
+    for match in re.finditer(r"\.\s+", rest):
+        before = rest[: match.start()]
+        last = before.split(" ")[-1] if before else ""
+        if re.fullmatch(r"[A-Z]", last):
+            continue
+        if last == "al":
+            return before + ".", rest[match.end():].strip()
+        return before, rest[match.end():].strip()
+    text = rest.strip()
+    if text.endswith(".") and not text.endswith(" al."):
+        text = text[:-1]
+    return text, ""
+
+
+def parse_podcast_library(text):
+    """{episode number: {n, title, category, anchor, url, verified, kind}}.
+
+    A malformed "- Episode" line raises: a line the parser cannot read is a line it would
+    otherwise silently drop from the eligible set (SILENT_SHRINK_CHECKLIST)."""
+    episodes, category, video_uses = {}, None, {}
+    for line in text.splitlines():
+        heading = _PODCAST_HEADING.match(line)
+        if heading:
+            category = heading.group("name")
+            continue
+        if not line.startswith("- Episode"):
+            continue
+        match = _EPISODE.match(line)
+        if not match:
+            raise MediaMapError("podcast library: unreadable episode line: %r" % line[:90])
+        if category is None:
+            raise MediaMapError("podcast library: episode before any category heading")
+        n = int(match.group("n"))
+        if n in episodes:
+            raise MediaMapError("podcast library: episode %d listed twice" % n)
+        url = match.group("url")
+        youtube = _YOUTUBE.match(url) if match.group("kind") == "YouTube" else None
+        apple = match.group("apple")
+        apple_n = _APPLE_NUMBER.search(apple) if apple else None
+        episodes[n] = {
+            "n": n,
+            "title": match.group("title"),
+            "category": category,
+            "anchor": heading_anchor(category),
+            "url": url,
+            "kind": match.group("kind"),
+            "_video": youtube.group("id") if youtube else None,
+            "_appleAgrees": (apple_n is None) or int(apple_n.group("n")) == n,
+        }
+        if youtube:
+            video_uses[youtube.group("id")] = video_uses.get(youtube.group("id"), 0) + 1
+    for episode in episodes.values():
+        video = episode.pop("_video")
+        agrees = episode.pop("_appleAgrees")
+        episode["verified"] = bool(video) and video_uses.get(video) == 1 and agrees
+    return episodes
+
+
+def parse_book_library(text):
+    """{isbn: {isbn, title, author, description, category, anchor}}."""
+    books, category = {}, None
+    for line in text.splitlines():
+        heading = _BOOK_HEADING.match(line)
+        if heading and not line.startswith("### "):
+            category = heading.group("name")
+            continue
+        if not line.startswith("- **["):
+            continue
+        match = _BOOK.match(line)
+        if not match:
+            raise MediaMapError("book library: unreadable book line: %r" % line[:90])
+        if category is None:
+            raise MediaMapError("book library: book before any category heading")
+        isbn = match.group("isbn")
+        if isbn in books:
+            raise MediaMapError("book library: ISBN %s listed twice" % isbn)
+        author, description = _split_author(match.group("rest"))
+        books[isbn] = {
+            "isbn": isbn,
+            "title": match.group("title"),
+            "author": author,
+            "description": description,
+            "category": category,
+            "anchor": heading_anchor(category),
+            "isbnValid": isbn13_valid(isbn),
+        }
+    return books
+
+
+def _guidance(topic_meta):
+    """The four verbatim strings (README_MEDIA.md rule 5) -- read, never retyped."""
+    out = {}
+    for key, slug, field in (
+        ("familySay", BOOK_SLUG, "say"),
+        ("familySafety", BOOK_SLUG, "safety"),
+        ("listenSay", PODCAST_SLUG, "say"),
+        ("listenSafety", PODCAST_SLUG, "safety"),
+    ):
+        record = topic_meta.get(slug) if isinstance(topic_meta, dict) else None
+        workflow = record.get("clinicalWorkflow") if isinstance(record, dict) else None
+        value = workflow.get(field) if isinstance(workflow, dict) else None
+        if not isinstance(value, str) or not value.strip():
+            raise MediaMapError("topic_meta.json: %s clinicalWorkflow.%s is missing" % (slug, field))
+        out[key] = value
+    return out
+
+
+def validate(media_map, episodes, books, shipped):
+    """Every failure as one message naming its key. [] means valid."""
+    errors = []
+    if not isinstance(media_map, dict):
+        return ["media_map.json: must be a JSON object"]
+    for key in sorted(set(media_map) - MAP_KEYS):
+        errors.append("media_map.json: unknown top-level key %r" % key)
+    status = media_map.get("status")
+    if status not in ("draft", APPROVED):
+        errors.append("media_map.json: status must be \"draft\" or \"approved\", not %r" % (status,))
+    weeks = media_map.get("weeks")
+    if not isinstance(weeks, list):
+        return errors + ["media_map.json: weeks must be a list"]
+    pages = {page["slug"]: page for page in shipped["pages"]}
+    # Items a curator or verifier WITHHELD (media_map.json "unverified"): a real-looking key that
+    # failed verification end to end. Listing one there makes it unpickable until the entry is
+    # removed, so withholding is binding rather than a note a later edit can walk past.
+    withheld_isbns, withheld_episodes = set(), set()
+    unverified = media_map.get("unverified")
+    if unverified is not None:
+        items = unverified.get("items") if isinstance(unverified, dict) else None
+        if not isinstance(items, list):
+            errors.append("media_map.json: unverified.items must be a list")
+            items = []
+        for item in items:
+            if isinstance(item, dict) and isinstance(item.get("isbn"), str):
+                withheld_isbns.add(item["isbn"])
+            elif isinstance(item, dict) and isinstance(item.get("episode"), int):
+                withheld_episodes.add(item["episode"])
+            else:
+                errors.append("media_map.json: unverified item %r names no isbn or episode" % (item,))
+    seen_anchors = {}
+    for index, week in enumerate(weeks):
+        where = "media_map.json weeks[%d]" % index
+        if not isinstance(week, dict):
+            errors.append("%s: must be an object" % where)
+            continue
+        for key in sorted(set(week) - WEEK_KEYS):
+            errors.append("%s: unknown key %r" % (where, key))
+        anchor = week.get("anchor")
+        where = "%s (anchor %s)" % (where, anchor)
+        if not isinstance(anchor, str) or anchor not in pages:
+            errors.append("%s: anchor is not a shipped page" % where)
+        else:
+            if anchor in seen_anchors:
+                errors.append("%s: anchor already mapped by weeks[%d]" % (where, seen_anchors[anchor]))
+            seen_anchors[anchor] = index
+            source = str(pages[anchor].get("source") or "")
+            if source.startswith(MEDICATION_SOURCE_PREFIX):
+                errors.append("%s: anchor is a medication-workstream page" % where)
+            if "sites" in week:
+                scope = week["sites"]
+                anchor_sites = set(pages[anchor].get("sites") or [])
+                if (not isinstance(scope, list) or not scope
+                        or not all(isinstance(s, str) for s in scope) or len(set(scope)) != len(scope)):
+                    errors.append("%s: sites must be a non-empty list of distinct site names" % where)
+                elif not set(scope) <= anchor_sites:
+                    errors.append("%s: sites %r is not a subset of where the anchor ships %r"
+                                  % (where, scope, sorted(anchor_sites)))
+        category = week.get("podcastCategory")
+        listen = week.get("listen", [])
+        family = week.get("family", [])
+        if not isinstance(listen, list) or not isinstance(family, list):
+            errors.append("%s: listen and family must be lists" % where)
+            continue
+        if len(listen) > MAX_PER_SIDE:
+            errors.append("%s: listen has %d items (at most %d)" % (where, len(listen), MAX_PER_SIDE))
+        if len(family) > MAX_PER_SIDE:
+            errors.append("%s: family has %d items (at most %d)" % (where, len(family), MAX_PER_SIDE))
+        if listen:
+            categories = {e["category"] for e in episodes.values()}
+            if category not in categories:
+                errors.append("%s: podcastCategory %r is not a podcast library category" % (where, category))
+        seen = set()
+        for pick in listen:
+            n = pick.get("episode") if isinstance(pick, dict) else None
+            if not isinstance(n, int) or isinstance(n, bool):
+                errors.append("%s: listen item %r has no integer episode" % (where, pick))
+                continue
+            if n in seen:
+                errors.append("%s: episode %d picked twice" % (where, n))
+            seen.add(n)
+            episode = episodes.get(n)
+            if n in withheld_episodes:
+                errors.append("%s: episode %d is withheld under unverified" % (where, n))
+            elif episode is None:
+                errors.append("%s: episode %d is not in the podcast library" % (where, n))
+            elif not episode["verified"]:
+                errors.append("%s: episode %d has no verified YouTube link (%s)"
+                              % (where, n, episode["kind"]))
+            elif episode["category"] == MEDICATION_CATEGORY:
+                errors.append("%s: episode %d is a medication-workstream episode" % (where, n))
+        seen = set()
+        for pick in family:
+            isbn = pick.get("isbn") if isinstance(pick, dict) else None
+            if not isinstance(isbn, str):
+                errors.append("%s: family item %r has no ISBN string" % (where, pick))
+                continue
+            if isbn in seen:
+                errors.append("%s: ISBN %s picked twice" % (where, isbn))
+            seen.add(isbn)
+            book = books.get(isbn)
+            if isbn in withheld_isbns:
+                errors.append("%s: ISBN %s is withheld under unverified" % (where, isbn))
+            elif book is None:
+                errors.append("%s: ISBN %s is not in the book library" % (where, isbn))
+            elif not book["isbnValid"]:
+                errors.append("%s: ISBN %s fails its ISBN-13 check digit" % (where, isbn))
+    return errors
+
+
+def _public_episode(episode):
+    return {key: episode[key] for key in ("n", "title", "category", "url")}
+
+
+def _public_book(book):
+    return {key: book[key] for key in ("isbn", "title", "author", "description", "category", "anchor")}
+
+
+def _renders(week):
+    """An entry renders only when it picks something; an empty one is skipped, never padded."""
+    return bool(week.get("listen")) or bool(week.get("family"))
+
+
+def _entry_sites(week, pages):
+    return sorted(week.get("sites") or pages[week["anchor"]].get("sites") or [])
+
+
+def resolved_records(media_map, episodes, books, topic_meta, shipped):
+    """{anchor: the complete resolved recommendation that page renders} for an APPROVED map.
+
+    Site-independent by construction: an entry renders identically on every site in its
+    `sites`, so one record (and one signed file) per page is the whole truth. {} for a draft.
+    Raises MediaMapError listing every validation failure."""
+    errors = validate(media_map, episodes, books, shipped)
+    if errors:
+        raise MediaMapError("\n".join(errors))
+    if media_map["status"] != APPROVED:
+        return {}
+    pages = {page["slug"]: page for page in shipped["pages"]}
+    guidance = _guidance(topic_meta)
+    book_meta = topic_meta.get(BOOK_SLUG) if isinstance(topic_meta, dict) else {}
+    related = (book_meta or {}).get("relatedTools") or []
+    practice_page = pages.get(PRACTICE_TOOL)
+    out = {}
+    for week in media_map["weeks"]:
+        if not _renders(week):
+            continue
+        anchor = week["anchor"]
+        sites = _entry_sites(week, pages)
+        record = {"page": anchor, "sites": sites}
+        listen = [_public_episode(episodes[p["episode"]]) for p in week.get("listen", [])]
+        family = [_public_book(books[p["isbn"]]) for p in week.get("family", [])]
+        shown = {}
+        if listen:
+            category = week["podcastCategory"]
+            record["listen"] = listen
+            record["listenAll"] = {"ref": PODCAST_SLUG, "category": category,
+                                   "anchor": heading_anchor(category)}
+            shown["listenSafety"] = guidance["listenSafety"]
+        if family:
+            record["family"] = family
+            record["familyAll"] = {"ref": BOOK_SLUG, "category": family[0]["category"],
+                                   "anchor": family[0]["anchor"]}
+            shown["familySay"] = guidance["familySay"]
+            shown["familySafety"] = guidance["familySafety"]
+            # The practice link renders only where it works: the tool must be one the book
+            # library names AND ship on every site this entry renders on.
+            if (PRACTICE_TOOL in related and practice_page
+                    and set(sites) <= set(practice_page.get("sites") or [])):
+                record["practiceRef"] = PRACTICE_TOOL
+        record["guidance"] = shown
+        out[anchor] = record
+    return out
+
+
+def resolve(media_map, episodes, books, topic_meta, shipped, site):
+    """The index one site serves: every approved record whose entry renders on `site`."""
+    records = resolved_records(media_map, episodes, books, topic_meta, shipped)
+    index = {"version": INDEX_VERSION, "site": site, "status": media_map["status"], "pages": {}}
+    for anchor, record in records.items():
+        if site in record["sites"]:
+            index["pages"][anchor] = record
+    return index
+
+
+def resolved_path(anchor):
+    return "%s/%s.json" % (RESOLVED_DIR, anchor)
+
+
+def bound_sources(lib_root):
+    """{anchor: resolved file path} that the anchor's signature must cover -- read from the map
+    ALONE (no libraries), so shipped_pages.py can call it cheaply. {} while the map is a draft
+    or absent. The same rule as resolved_records: approved, and the entry picks something."""
+    path = os.path.join(os.fspath(lib_root), MAP_PATH)
+    if not os.path.exists(path):
+        return {}
+    try:
+        media_map = json.loads(_read(lib_root, MAP_PATH))
+    except (OSError, ValueError) as error:
+        raise MediaMapError("media_map.json: cannot read: %s" % error)
+    if not isinstance(media_map, dict) or media_map.get("status") != APPROVED:
+        return {}
+    out = {}
+    for week in media_map.get("weeks") or []:
+        if isinstance(week, dict) and isinstance(week.get("anchor"), str) and _renders(week):
+            out[week["anchor"]] = resolved_path(week["anchor"])
+    return out
+
+
+def serialize_record(record):
+    body = dict(record)
+    body["_note"] = RESOLVED_NOTE
+    return json.dumps(body, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+
+
+def expected_files(lib_root):
+    """{relative path: exact bytes} the resolved directory must hold for the live inputs."""
+    media_map, episodes, books, topic_meta, shipped = load_inputs(lib_root)
+    records = resolved_records(media_map, episodes, books, topic_meta, shipped)
+    return {resolved_path(anchor): serialize_record(record) for anchor, record in records.items()}
+
+
+def _present_files(lib_root):
+    folder = os.path.join(os.fspath(lib_root), RESOLVED_DIR)
+    if not os.path.isdir(folder):
+        return {}
+    out = {}
+    for name in sorted(os.listdir(folder)):
+        if name.endswith(".json"):
+            out["%s/%s" % (RESOLVED_DIR, name)] = _read(lib_root, "%s/%s" % (RESOLVED_DIR, name))
+    return out
+
+
+def check_resolved(lib_root):
+    """Every way the committed resolved files disagree with the live inputs. [] = in step."""
+    expected, present = expected_files(lib_root), _present_files(lib_root)
+    problems = []
+    for rel in sorted(set(expected) - set(present)):
+        problems.append("%s is missing (an approved page renders it)" % rel)
+    for rel in sorted(set(present) - set(expected)):
+        problems.append("%s is not rendered by any approved entry (stale)" % rel)
+    for rel in sorted(set(expected) & set(present)):
+        if expected[rel] != present[rel]:
+            problems.append("%s is out of date with the libraries, topic_meta.json or the map" % rel)
+    bound = bound_sources(lib_root)
+    if set(bound.values()) != set(expected):
+        problems.append("bound sources %r disagree with the resolved records %r"
+                        % (sorted(bound.values()), sorted(expected)))
+    return problems
+
+
+def write_resolved(lib_root):
+    """Bring media_resolved/ in step: write what an approved map renders, remove what it no
+    longer renders (generated files only). Returns the paths changed."""
+    expected, present = expected_files(lib_root), _present_files(lib_root)
+    changed = []
+    folder = os.path.join(os.fspath(lib_root), RESOLVED_DIR)
+    for rel, data in sorted(expected.items()):
+        if present.get(rel) != data:
+            os.makedirs(folder, exist_ok=True)
+            with open(os.path.join(os.fspath(lib_root), rel), "w", encoding="utf-8") as fh:
+                fh.write(data)
+            changed.append(rel)
+    for rel in sorted(set(present) - set(expected)):
+        os.remove(os.path.join(os.fspath(lib_root), rel))
+        changed.append(rel)
+    return changed
+
+
+def _read(lib_root, rel):
+    with open(os.path.join(os.fspath(lib_root), rel), encoding="utf-8") as fh:
+        return fh.read()
+
+
+def load_inputs(lib_root, map_path=None):
+    """(map, episodes, books, topic_meta, shipped) from the live tree."""
+    try:
+        media_map = json.loads(_read(lib_root, map_path or MAP_PATH))
+    except (OSError, ValueError) as error:
+        raise MediaMapError("media_map.json: cannot read: %s" % error)
+    episodes = parse_podcast_library(_read(lib_root, PODCAST_PATH))
+    books = parse_book_library(_read(lib_root, BOOK_PATH))
+    topic_meta = json.loads(_read(lib_root, TOPIC_META_PATH))
+    shipped = shipped_pages.load_shipped_pages(lib_root)
+    return media_map, episodes, books, topic_meta, shipped
+
+
+def build_for_site(lib_root, site):
+    media_map, episodes, books, topic_meta, shipped = load_inputs(lib_root)
+    return resolve(media_map, episodes, books, topic_meta, shipped, site)
+
+
+def serialize(index):
+    return json.dumps(index, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+
+
+def build_or_abort(lib_root, site):
+    """For the build scripts: the index, or BUILD ABORTED with every named failure -- including
+    an approved recommendation whose signed file is missing or out of date, so nothing renders
+    that its page's signature does not cover."""
+    try:
+        index = build_for_site(lib_root, site)
+        problems = check_resolved(lib_root)
+    except (MediaMapError, shipped_pages.ShippedPagesError) as error:
+        print("BUILD ABORTED — media_map.json does not resolve against the libraries:")
+        for line in str(error).splitlines():
+            print("   - " + line)
+        raise SystemExit(1)
+    if problems:
+        print("BUILD ABORTED — the signed media recommendations are out of step:")
+        for line in problems:
+            print("   - " + line)
+        print("   Regenerate with `python3 13_Faculty_Resources/_automation/site_build/media_index.py "
+              "--write` and `shipped_pages.py --write`; each changed page then awaits re-signature.")
+        raise SystemExit(1)
+    return index
+
+
+def main(argv=None):
+    """`media_index.py` validates the live map for both sites; `--check` also fails on a stale
+    resolved file; `--write` regenerates media_resolved/."""
+    argv = list(argv or [])
+    lib = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+    if "--write" in argv:
+        try:
+            changed = write_resolved(lib)
+        except MediaMapError as error:
+            print("media_index --write: %s" % error)
+            return 1
+        print("media_resolved: %d file(s) changed%s" % (len(changed), (": " + ", ".join(changed)) if changed else ""))
+        return 0
+    for site in ("ms3", "res"):
+        index = build_or_abort(lib, site)
+        print("media index %s: status=%s, %d page(s) render" % (site, index["status"], len(index["pages"])))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

@@ -1,0 +1,41 @@
+{
+  "_note": "The ONE bidirectional synonym list for learner search (C2, 2026-10-17). Each group lists phrasings a learner may type for the same thing; searching any term also searches every other term in its group, in both directions, at a slightly lower weight than the words actually typed. Terms are lowercase with punctuation written as spaces (\"first-episode psychosis\" is \"first episode psychosis\"; the search normalises what the learner types the same way). Keep this list CONSERVATIVE and reviewable: a group is a statement that the phrases are interchangeable for finding pages, never a clinical claim, never a dose, and never a crisis route -- groups widen ordinary page matches only and never create or reorder a safety-protocol row (the safety kit keeps its own trigger vocabulary in curriculum.json). Loaded and validated at build time by site_build/search_synonyms.py, which fails the build on a malformed group; pinned by tests/search-synonyms.test.mjs and the golden queries in tests/fixtures/search-golden.json.",
+  "version": 1,
+  "groups": [
+    {
+      "id": "qtc",
+      "terms": ["qtc", "qt prolongation", "prolonged qt", "qtc prolongation", "qt interval", "long qt"],
+      "why": "'QT prolongation' returned nothing and 'QTc' one page although 14-18 pages per site discuss the corrected QT."
+    },
+    {
+      "id": "nms",
+      "terms": ["nms", "neuroleptic malignant syndrome", "neuroleptic malignant"],
+      "why": "The abbreviation found the toxidromes page; the spelled-out name did not (the old map ran one way only)."
+    },
+    {
+      "id": "alcohol-withdrawal",
+      "terms": ["ciwa", "ciwa ar", "alcohol withdrawal", "etoh withdrawal"],
+      "why": "The CIWA-Ar tool surfaced only for 'CIWA', not for 'alcohol withdrawal'."
+    },
+    {
+      "id": "eps",
+      "terms": ["eps", "extrapyramidal", "extrapyramidal symptoms", "extrapyramidal side effects"],
+      "why": "Abbreviation and spelled-out form should find the same monitoring pages."
+    },
+    {
+      "id": "si",
+      "terms": ["si", "suicidal ideation"],
+      "why": "Ward shorthand. Ordinary pages only: the suicide protocol is routed by its own safety-kit triggers, which this list never touches."
+    },
+    {
+      "id": "capacity",
+      "terms": ["capacity", "decision making capacity", "decisional capacity"],
+      "why": "Three names learners use for the same assessment."
+    },
+    {
+      "id": "fep",
+      "terms": ["fep", "first episode psychosis"],
+      "why": "The abbreviation found one case; the guide and the full-name pages were missed."
+    }
+  ]
+}

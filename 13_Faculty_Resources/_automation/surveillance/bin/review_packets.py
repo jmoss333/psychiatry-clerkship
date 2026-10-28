@@ -6,6 +6,7 @@ from pathlib import Path
 import jsonschema
 from question_impact import revision
 from fda_heading_noise import generated_heading_ids_only
+from aacap_cookie_noise import cookie_hostname_only
 
 
 def bold_only_change(before, after):
@@ -31,7 +32,8 @@ def formatting_only_change(prior, row):
     if not prior:
         return False
     generated_ids = generated_heading_ids_only(prior, row)
-    if not generated_ids and not bold_only_change(prior.get('text'), row.get('text')):
+    cookie_hostname = cookie_hostname_only(prior, row)
+    if not generated_ids and not cookie_hostname and not bold_only_change(prior.get('text'), row.get('text')):
         return False
     old_review, review = prior.get('passage_review', {}), row.get('passage_review', {})
     if any(r.get('status') == 'unavailable' for r in (old_review, review)):
@@ -41,6 +43,11 @@ def formatting_only_change(prior, row):
         return False
     if generated_ids and (not old or old != new):
         return False
+    if cookie_hostname:
+        if old != new:
+            return False
+        if not old and any(r.get('status') != 'not-configured' for r in (old_review, review)):
+            return False
     for key in old:
         a, b = old[key], new[key]
         if not isinstance(a, dict) or not isinstance(b, dict):

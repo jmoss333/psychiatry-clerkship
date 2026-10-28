@@ -1,0 +1,378 @@
+{
+  "_note": "Topic hubs — the one place that lists every surface this library has on one clinical problem. Registration data for site_build/topic_hub_block.py, which renders a collapsed 'Everything on this topic' block onto each hub page at build time (both sites; the source page is never edited, so attestation hashes do not move). `siblings` are the hand-curated readings and references at other depths (pocket card, short module, official form, deeper references); everything else in the block — Case of the Week editions, reasoning cases, family scenarios, drills, question-bank counts — is derived from the registries by `cotwTopics` and by each registry's own linkedPages/pages fields. A sibling that the page's practice panel already shows (topic_meta.relatedTools, tool_registry.relatedPages, cta tool links) is dropped at render time, so listing it here is harmless. The renderer fails the build on a ref that does not ship or a cotwTopic no case carries. Faculty decision pending on the hub table: see docs/superpowers/specs/2026-10-17-topic-hubs-design.md.",
+  "version": 1,
+  "heading": "Everything on this topic",
+  "roles": {
+    "card": "Pocket card",
+    "guide": "Related guide",
+    "module": "Short module",
+    "reference": "Official form & training",
+    "tool": "Tool",
+    "resident": "Deeper reference",
+    "numbers": "Numbers & thresholds"
+  },
+  "hubs": [
+    {
+      "ref": "suicide.md",
+      "topic": "Suicide risk & safety planning",
+      "siblings": [
+        {
+          "ref": "pg_suicide.md",
+          "role": "card"
+        },
+        {
+          "ref": "cssrs.html",
+          "role": "reference"
+        },
+        {
+          "ref": "ethics_legal.md",
+          "role": "guide"
+        }
+      ],
+      "cotwTopics": [
+        "safety",
+        "suiciderisk"
+      ]
+    },
+    {
+      "ref": "violence.md",
+      "topic": "Violence risk",
+      "siblings": [
+        {
+          "ref": "agitation.md",
+          "role": "guide"
+        },
+        {
+          "ref": "ethics_legal.md",
+          "role": "guide"
+        },
+        {
+          "ref": "systems_medlegal.md",
+          "role": "resident"
+        }
+      ],
+      "cotwTopics": []
+    },
+    {
+      "ref": "agitation.md",
+      "topic": "Agitation & restraint",
+      "siblings": [
+        {
+          "ref": "delirium.md",
+          "role": "guide"
+        },
+        {
+          "ref": "violence.md",
+          "role": "guide"
+        },
+        {
+          "ref": "protocol_library.md",
+          "role": "guide"
+        },
+        {
+          "ref": "rp-agitation.html",
+          "role": "tool"
+        }
+      ],
+      "cotwTopics": [
+        "agitation"
+      ]
+    },
+    {
+      "ref": "delirium.md",
+      "topic": "Delirium",
+      "siblings": [
+        {
+          "ref": "exp_consult.md",
+          "role": "module"
+        },
+        {
+          "ref": "medical_workup.md",
+          "role": "guide"
+        },
+        {
+          "ref": "t_neurocog.md",
+          "role": "guide"
+        },
+        {
+          "ref": "cl_reference.md",
+          "role": "numbers"
+        }
+      ],
+      "cotwTopics": [
+        "agitation"
+      ]
+    },
+    {
+      "ref": "catatonia.md",
+      "topic": "Catatonia",
+      "siblings": [
+        {
+          "ref": "bfcrs.html",
+          "role": "reference"
+        },
+        {
+          "ref": "exp_consult.md",
+          "role": "module"
+        },
+        {
+          "ref": "ect_neuromodulation.md",
+          "role": "guide"
+        },
+        {
+          "ref": "cl_reference.md",
+          "role": "numbers"
+        }
+      ],
+      "cotwTopics": [
+        "catatonia"
+      ]
+    },
+    {
+      "ref": "toxidromes.md",
+      "topic": "Hyperthermia & toxidromes",
+      "siblings": [
+        {
+          "ref": "med_monitoring.md",
+          "role": "guide"
+        },
+        {
+          "ref": "interaction-cards.html",
+          "role": "tool"
+        },
+        {
+          "ref": "cl_reference.md",
+          "role": "numbers"
+        }
+      ],
+      "cotwTopics": [
+        "ssnms"
+      ]
+    },
+    {
+      "ref": "t_sud.md",
+      "topic": "Substance use & withdrawal",
+      "siblings": [
+        {
+          "ref": "withdrawal.html",
+          "role": "reference"
+        },
+        {
+          "ref": "exp_consult.md",
+          "role": "module"
+        },
+        {
+          "ref": "motivational_interviewing.md",
+          "role": "guide"
+        },
+        {
+          "ref": "protocol_library.md",
+          "role": "guide"
+        }
+      ],
+      "cotwTopics": [
+        "etohwd",
+        "oud"
+      ]
+    },
+    {
+      "ref": "t_mood.md",
+      "topic": "Mood disorders",
+      "siblings": [
+        {
+          "ref": "psychopharm_primer.md",
+          "role": "guide"
+        },
+        {
+          "ref": "med_monitoring.md",
+          "role": "guide"
+        },
+        {
+          "ref": "ect_neuromodulation.md",
+          "role": "guide"
+        },
+        {
+          "ref": "exp_tx.md",
+          "role": "module"
+        }
+      ],
+      "cotwTopics": [
+        "mdd",
+        "mddaug",
+        "bipolar",
+        "mania",
+        "lithium"
+      ]
+    },
+    {
+      "ref": "t_psychosis.md",
+      "topic": "Psychotic disorders",
+      "siblings": [
+        {
+          "ref": "psychopharm_primer.md",
+          "role": "guide"
+        },
+        {
+          "ref": "med_monitoring.md",
+          "role": "guide"
+        },
+        {
+          "ref": "nutrition_metabolic.md",
+          "role": "guide"
+        },
+        {
+          "ref": "exp_tx.md",
+          "role": "module"
+        }
+      ],
+      "cotwTopics": [
+        "fep"
+      ]
+    },
+    {
+      "ref": "t_personality.md",
+      "topic": "Personality disorders",
+      "siblings": [
+        {
+          "ref": "brief_psychotherapy.md",
+          "role": "guide"
+        },
+        {
+          "ref": "psychotherapy.md",
+          "role": "guide"
+        },
+        {
+          "ref": "therapy_on_the_unit.md",
+          "role": "guide"
+        }
+      ],
+      "cotwTopics": [
+        "bpd"
+      ]
+    },
+    {
+      "ref": "t_anxiety.md",
+      "topic": "Anxiety, trauma & OCD",
+      "siblings": [
+        {
+          "ref": "psychotherapy.md",
+          "role": "guide"
+        },
+        {
+          "ref": "brief_psychotherapy.md",
+          "role": "guide"
+        },
+        {
+          "ref": "medical_workup.md",
+          "role": "guide"
+        }
+      ],
+      "cotwTopics": [
+        "panic"
+      ]
+    },
+    {
+      "ref": "t_neurocog.md",
+      "topic": "Neurocognitive disorders",
+      "siblings": [
+        {
+          "ref": "delirium.md",
+          "role": "guide"
+        },
+        {
+          "ref": "t_geri.md",
+          "role": "guide"
+        },
+        {
+          "ref": "medical_workup.md",
+          "role": "guide"
+        }
+      ],
+      "cotwTopics": []
+    },
+    {
+      "ref": "psychopharm_primer.md",
+      "topic": "Psychopharmacology",
+      "siblings": [
+        {
+          "ref": "med_monitoring.md",
+          "role": "guide"
+        },
+        {
+          "ref": "pharmacy.html",
+          "role": "tool"
+        },
+        {
+          "ref": "ect_neuromodulation.md",
+          "role": "guide"
+        },
+        {
+          "ref": "exp_tx.md",
+          "role": "module"
+        },
+        {
+          "ref": "adv_psychopharm.md",
+          "role": "resident"
+        }
+      ],
+      "cotwTopics": [
+        "lithium",
+        "mdd",
+        "mddaug",
+        "ssnms"
+      ]
+    },
+    {
+      "ref": "ethics_legal.md",
+      "topic": "Ethics, law & capacity",
+      "siblings": [
+        {
+          "ref": "capacity.html",
+          "role": "tool"
+        },
+        {
+          "ref": "exp_consult.md",
+          "role": "module"
+        },
+        {
+          "ref": "systems_medlegal.md",
+          "role": "resident"
+        },
+        {
+          "ref": "cl_reference.md",
+          "role": "numbers"
+        }
+      ],
+      "cotwTopics": []
+    },
+    {
+      "ref": "psychotherapy.md",
+      "topic": "Psychotherapies",
+      "siblings": [
+        {
+          "ref": "brief_psychotherapy.md",
+          "role": "guide"
+        },
+        {
+          "ref": "therapy_on_the_unit.md",
+          "role": "guide"
+        },
+        {
+          "ref": "motivational_interviewing.md",
+          "role": "guide"
+        },
+        {
+          "ref": "family_modalities.md",
+          "role": "guide"
+        },
+        {
+          "ref": "therapy_reading_room.md",
+          "role": "guide"
+        }
+      ],
+      "cotwTopics": [
+        "bpd"
+      ]
+    }
+  ]
+}

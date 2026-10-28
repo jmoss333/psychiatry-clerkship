@@ -1,6 +1,6 @@
 # Surveillance status
 
-_Generated 2026-10-05T07:36:22+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
+_Generated 2026-10-12T07:39:27+00:00._ See `REVIEW_RULES.md` for severity + SLAs.
 _Issue truth: **live**._
 
 ## Summary
@@ -9,7 +9,7 @@ _Issue truth: **live**._
 - **Pages needing re-review:** 30
 - **Stale sources:** 1
 
-- **Citation checks:** 687 DOI/PMID IDs tracked  •  latest check 2026-10-05  •  1 stale
+- **Citation checks:** 696 DOI/PMID IDs tracked  •  latest check 2026-10-12  •  1 stale
 
 - **Citation P1s:** 733 total  •  233 touch live teaching pages  •  500 archive/import-only
 
@@ -22,12 +22,12 @@ _Issue truth: **live**._
 
 - **[spravato-rems]** Content changed at Spravato (esketamine) REMS  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/927))
   - affects: `03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md`, `05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md`, `05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md`, `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md`, `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md`, `13_Faculty_Resources/Handoffs/library_review_2026-07-01.md`, `14_Tracks/Resident/adv_psychopharmacology.md`, `14_Tracks/Resident/canon_200.md`
-- **[link:localhost:4200]** Broken link (no response) on 13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md: http://localhost:4200/?tool=prepare-for-tomorrow.html  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/984))
-  - affects: `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`
-- **[link:127.0.0.1:4300]** Broken link (no response) on 13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md: http://127.0.0.1:4300/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/985))
-  - affects: `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`
 - **[link:lcme.org]** Broken link (404) on 13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md: https://lcme.org/wp-content/uploads/2025/05/2026-27-Functions-and-Structure_2025-05-21.docx  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/986))
   - affects: `13_Faculty_Resources/Handoffs/curriculum_architecture_remediation_2026-09-24.md`
+- **[link:127.0.0.1:4300]** Broken link (no response) on 13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md: http://127.0.0.1:4300/14_Tracks/MS3/Student_Ready_Pack/09_prepare_for_tomorrow/prepare-for-tomorrow.html  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/985))
+  - affects: `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`
+- **[link:localhost:4200]** Broken link (no response) on 13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md: http://localhost:4200/?tool=prepare-for-tomorrow.html  ([issue](https://github.com/jmoss333/psychiatry-clerkship/issues/984))
+  - affects: `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md`
 
 ## Citation triage
 
@@ -74,7 +74,7 @@ _Issue truth: **live**._
 | `07_Evidence_and_Reading/Landmark_Trials/reading_order_by_week.md` | 2026-10-01 | — never attested — |
 | `07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md` | 2026-10-01 | 2026-09-26 |
 | `13_Faculty_Resources/Handoffs/MASTER_attestation_ledger_2026-07-01.md` | 2026-10-01 | — never attested — |
-| `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md` | 2026-10-05 | — never attested — |
+| `13_Faculty_Resources/Handoffs/PREPARE_FOR_TOMORROW_REVIEW.md` | 2026-10-12 | — never attested — |
 | `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` | 2026-10-01 | — never attested — |
 | `13_Faculty_Resources/Handoffs/Tier3_attestation_sheet_2026-07-01.md` | 2026-10-01 | — never attested — |
 | `13_Faculty_Resources/Handoffs/codex_qbank_spec_2026-06-29.md` | 2026-10-01 | — never attested — |
@@ -89,15 +89,15 @@ _Issue truth: **live**._
 
 | Source | Last checked | Age (days) | Status |
 |---|---|---|---|
-| `aacap-parameters` | 2026-10-05 | 0 | ok |
-| `apa-practice-guidelines` | 2026-10-05 | 0 | ok |
-| `clozapine-rems` | 2026-10-05 | 0 | ok |
-| `dsm-5-tr` | 2026-10-01 | 4 | ok |
-| `fda-drug-safety` | 2026-10-05 | 0 | ok |
-| `link-monitor` | 2026-10-05 | 0 | ok |
-| `link:www.samhsa.gov` | 2026-07-13 | 84 | ⚠ stale |
-| `samhsa-guidelines` | 2026-10-05 | 0 | ok |
-| `spravato-rems` | 2026-10-05 | 0 | ok |
-| `uspstf-mental-health` | 2026-10-05 | 0 | ok |
+| `aacap-parameters` | 2026-10-12 | 0 | ok |
+| `apa-practice-guidelines` | 2026-10-12 | 0 | ok |
+| `clozapine-rems` | 2026-10-12 | 0 | ok |
+| `dsm-5-tr` | 2026-10-01 | 11 | ok |
+| `fda-drug-safety` | 2026-10-12 | 0 | ok |
+| `link-monitor` | 2026-10-12 | 0 | ok |
+| `link:www.samhsa.gov` | 2026-07-13 | 91 | ⚠ stale |
+| `samhsa-guidelines` | 2026-10-12 | 0 | ok |
+| `spravato-rems` | 2026-10-12 | 0 | ok |
+| `uspstf-mental-health` | 2026-10-12 | 0 | ok |
 
 DOI/PMID freshness is summarized above so this table stays focused on authoritative source-registry targets.

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "id": "sanford-bhu-2",
+      "label": "Sanford Behavioral Health Unit 2",
+      "org": null,
+      "brandingApproved": false,
+      "unitName": "Sanford Behavioral Health Unit 2",
+      "unitPhone": "207-490-7702",
+      "unitPurpose": "non-urgent calls, medication refill difficulties, and follow-up questions within 30 days",
+      "unitHours": "24/7",
+      "callbackProgram": false,
+      "callbackTeam": "",
+      "callbackPhone": "",
+      "callbackHours": "",
+      "callbackFallback": "",
+      "verification": [
+        {
+          "field": "identity",
+          "checkedOn": "2026-10-15",
+          "checkedBy": "Faculty owner Joshua Moss MD",
+          "evidence": "Owner Joshua Moss, MD supplied the unit identity and confirmed verification in the October 15, 2026 chat. Verification method was not specified."
+        },
+        {
+          "field": "contact",
+          "checkedOn": "2026-10-15",
+          "checkedBy": "Faculty owner Joshua Moss MD",
+          "evidence": "Owner Joshua Moss, MD supplied the unit phone, staffed hours and permitted non-urgent purposes and confirmed verification in the October 15, 2026 chat. Verification method was not specified."
+        }
+      ]
+    }
+  ]
+}

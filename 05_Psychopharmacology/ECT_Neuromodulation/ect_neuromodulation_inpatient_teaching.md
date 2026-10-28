@@ -20,7 +20,7 @@
 
 ## Rapid-acting and light-based options
 
-- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** with in-office monitoring; watch dissociation, sedation, and blood-pressure spikes.
+- **Esketamine (intranasal) and IV ketamine** — glutamatergic (NMDA) agents with **rapid antidepressant effects** in treatment-resistant depression, including in patients presenting with acute suicidal ideation — but note the limit: the pivotal trials showed rapid improvement in *depressive symptoms*, not a demonstrated effect on suicidality itself, and the label states that effectiveness in preventing suicide or reducing suicidal ideation has not been demonstrated (Zarate 2006 established the IV signal). Esketamine is delivered under a **REMS** in a certified healthcare setting with at least 2 hours of on-site monitoring (including pulse oximetry); watch dissociation, sedation, respiratory depression, and blood-pressure spikes.
 - **Bright light therapy** — first-line for **seasonal** depression, and — per a 2024 *JAMA Psychiatry* meta-analysis — an **effective *adjunctive* treatment for *nonseasonal* depression** as well (roughly doubling remission odds). Cheap and well-tolerated; screen for bipolar (can precipitate switch) and eye disease.
 
 **What the student does** —

@@ -27,6 +27,10 @@ OUT=os.environ.get("OUT_DIR", os.path.join(ROOT,"mmc-resident-deploy"))
 _ANALYTICS_RES = common.analytics_enabled_for("res")
 
 if os.path.exists(OUT): shutil.rmtree(OUT)
+# DECISION: two-audience-copy-accepted (decisions.json, 2026-10-16) — the copy-and-patch build
+# below IS the accepted limitation; audience-as-data is deferred until a third learner audience
+# is scheduled. Read docs/superpowers/specs/2026-10-17-audience-as-data-deferral.md before
+# changing it, and ask the owner.
 common.copytree_with_virtiofs_retry(MS3, OUT)   # full polished/dark/motion MS3 build
 _copied_governance=os.path.join(OUT,"tool-governance.json")
 if os.path.exists(_copied_governance): os.remove(_copied_governance)
@@ -111,16 +115,50 @@ import pairings_block as _pairings
 _pair_res_data=_pairings.resolve(_pairings.load(LIB), LIB)
 _pair_res_done=set()
 
+# ---- TOPIC HUB BLOCK on the resident side ------------------------------------------
+# Unlike the two blocks above, this one is NOT a no-op on inherited pages: the copytree
+# brings every hub page across with the MS3 rendering already in place, and that rendering
+# links MS3 Case-of-the-Week twins (cotw_*_ms3.md, deleted from this build above) and omits
+# resident-only siblings. inject_markdown() recognises an existing block and REPLACES it
+# with the resident one, so the sweep below is the step that makes the hub correct here.
+# Runs BEFORE the strip/contrast passes for the same reason the other two do.
+import topic_hub_block as _hub
+_hub_res_data=_hub.resolve(_hub.load(LIB))
+_hub_res_done=set()
+
+# ---- CASE-OF-THE-WEEK ARCHIVE on the resident index ---------------------------------
+# RES_EXTRA writes cotw_index.md fresh from index_resident.md (its marker unconsumed), so this
+# is the pass that renders the resident archive -- resident twins, resident `tldr_res` lines.
+import cotw_archive_block as _archive
+_archive_res_data=_archive.load(LIB)
+_archive_res_done=False
+
 for _md_path in sorted(glob.glob(OUT+"/content/*.md")):
     _t=open(_md_path,encoding="utf-8").read()
     _t,_did=_crisis.inject_markdown(_t,_crisis_res_data)
     _t,_pdid=_pairings.inject_markdown(_t,_pair_res_data,os.path.basename(_md_path),"res")
-    if _did or _pdid:
+    _t,_hdid=_hub.inject_markdown(_t,_hub_res_data,os.path.basename(_md_path),"res")
+    _t,_adid=_archive.inject_markdown(_t,_archive_res_data,os.path.basename(_md_path),"res")
+    if _did or _pdid or _hdid or _adid:
         open(_md_path,"w",encoding="utf-8").write(_t)
     if _did: _crisis_res_done.add(os.path.basename(_md_path))
     if _pdid: _pair_res_done.add(os.path.basename(_md_path))
+    if _hdid: _hub_res_done.add(os.path.basename(_md_path))
+    if _adid: _archive.assert_complete(_t,_archive_res_data,"res"); _archive_res_done=True
 if _pair_res_done:
     print("pairing block injected (resident-only pages):",len(_pair_res_done))
+# Every hub this site ships must carry the RESIDENT rendering: a hub page that kept the
+# inherited MS3 block would link Case-of-the-Week pages this build deleted.
+_hub_res_gap=sorted(set(_hub.hubs_for_site(_hub_res_data,"res"))-_hub_res_done)
+if _hub_res_gap:
+    print("BUILD ABORTED — topic hub block not rendered for the resident site on:")
+    for _g in _hub_res_gap: print("   -",_g)
+    raise SystemExit(1)
+print("topic hub block injected (resident rendering):",len(_hub_res_done),"hub page(s)")
+if not _archive_res_done:
+    print("BUILD ABORTED — Case-of-the-Week archive not rendered on the resident cotw_index.md (marker missing from index_resident.md?)")
+    raise SystemExit(1)
+print("case-of-the-week archive injected on the resident cotw_index.md")
 
 # Resident-only safety surfaces that must carry the block, same contract build_deploy.py
 # enforces for MS3: a marker deleted, a page renamed, or a source dropped from RES_EXTRA
@@ -231,6 +269,36 @@ if _missing_shell or _stale_shell:
     for needle in _missing_shell: print("   - missing:",repr(needle))
     for needle in _stale_shell: print("   - stale:",repr(needle))
     raise SystemExit(1)
+# The aftercare packet's payload was injected into the MS3 shell this build copied (build_deploy.py). The
+# rebrand above only rewrites text, but a resident shell that lost or doubled it would ship a packet that
+# refuses to print, so the postcondition is asserted here too rather than assumed.
+import care_inserts_payload
+try:
+    care_inserts_payload.assert_injected(ix)
+except care_inserts_payload.PayloadError as _care_error:
+    print("BUILD ABORTED — resident aftercare packet payload: %s"%_care_error)
+    raise SystemExit(1)
+# "Beyond this page" (README_MEDIA.md M1): the copied index.html carries the MS3 media index,
+# inlined by build_deploy.py. Swap in the resident one -- an anchor that does not ship here is
+# skipped -- by matching that exact inlined value, so a drifted needle aborts the build rather
+# than shipping MS3 picks to residents.
+import media_index as _media_index
+_media_ms3_inline="var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_index.build_or_abort(LIB,"ms3"))
+_media_res=_media_index.build_or_abort(LIB,"res")
+if ix.count(_media_ms3_inline)!=1:
+    print("BUILD ABORTED — the MS3 FD_MEDIA value is missing or duplicated in the copied index.html")
+    raise SystemExit(1)
+ix=ix.replace(_media_ms3_inline,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_res))
+open(OUT+"/media_index.json","w",encoding="utf-8").write(_media_index.serialize(_media_res))
+print("media index (res): status=%s, %d page(s) render"%(_media_res["status"],len(_media_res["pages"])))
+# Today's "new this week" case row: the copied index.html carries the MS3 edition (build_deploy.py,
+# FD_COTW_NEWEST). Swap in the resident edition by matching that exact inlined value, so a drifted
+# needle aborts the build rather than announcing an MS3 page to residents.
+_cotw_ms3_inline="var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_res_data,"ms3"))
+if ix.count(_cotw_ms3_inline)!=1:
+    print("BUILD ABORTED — the MS3 FD_COTW_NEWEST value is missing or duplicated in the copied index.html")
+    raise SystemExit(1)
+ix=ix.replace(_cotw_ms3_inline,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_res_data,"res")))
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----
@@ -293,10 +361,10 @@ nav=[
    {"t":"Supervision, EPAs & Teaching","f":"supervision_teaching.md","k":"md"}]},
  {"section":"Start the Encounter","items":[{"t":"Interview & MSE","f":"pg_interview.md","k":"md"},{"t":"Mental Status Exam","f":"mse.html","k":"tool"},{"t":"The Interview Circle","f":"interview-circle.html","k":"tool"},{"t":"The Interview Room — AI Standardized Patient","f":"sp-interview.html","k":"tool"},{"t":"Screeners: PHQ-9 & GAD-7","f":"screeners.html","k":"tool"}]},
  {"section":"Understand the Problem","items":[{"t":"Differential Dx Scaffolds","f":"ddx.md","k":"md"},{"t":"Diagnostic Reasoning Workbench","f":"diagnostic-reasoning.html","k":"tool"},{"t":"Formulation & DDx","f":"pg_formulation.md","k":"md"},{"t":"Case Formulation","f":"case_formulation.md","k":"md"},{"t":"Medical Workup & Mimics","f":"medical_workup.md","k":"md"},{"t":"Mood","f":"t_mood.md","k":"md"},{"t":"Psychosis","f":"t_psychosis.md","k":"md"},{"t":"Anxiety/Trauma/OCD","f":"t_anxiety.md","k":"md"},{"t":"Personality","f":"t_personality.md","k":"md"},{"t":"Substance Use","f":"t_sud.md","k":"md"},{"t":"Geriatric","f":"t_geri.md","k":"md"},{"t":"Perinatal","f":"t_perinatal.md","k":"md"},{"t":"Neurodevelopmental Disorders","f":"t_neurodev.md","k":"md"},{"t":"Eating Disorders","f":"t_eating.md","k":"md"}]},
- {"section":"Assess Safety and Acuity","pinned":True,"items":[{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Suicide Risk & Safety Planning","f":"suicide.md","k":"md"},{"t":"Columbia C-SSRS — Official Form & Training","f":"cssrs.html","k":"tool"},{"t":"Violence Risk","f":"violence.md","k":"md"},{"t":"Violence Risk (FRST)","f":"violence.html","k":"tool"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"},{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training","f":"bfcrs.html","k":"tool"},{"t":"Hyperthermia & Toxidromes","f":"toxidromes.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Withdrawal: COWS Tool · CIWA-Ar Official Form & Training","f":"withdrawal.html","k":"tool"},{"t":"Decisional Capacity","f":"capacity.html","k":"tool"},{"t":"Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","f":"exp_consult.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"}]},
+ {"section":"Assess Safety and Acuity","pinned":True,"items":[{"t":"Suicide Risk & Safety","f":"pg_suicide.md","k":"md"},{"t":"Suicide Risk & Safety Planning","f":"suicide.md","k":"md"},{"t":"Columbia C-SSRS — Official Form & Training","f":"cssrs.html","k":"tool"},{"t":"Violence Risk","f":"violence.md","k":"md"},{"t":"Violence Risk (FRST)","f":"violence.html","k":"tool"},{"t":"Agitation & Restraint","f":"agitation.md","k":"md"},{"t":"Agitation Ladder — PRN Trainer","f":"rp-agitation.html","k":"tool"},{"t":"Catatonia","f":"catatonia.md","k":"md"},{"t":"Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training","f":"bfcrs.html","k":"tool"},{"t":"Hyperthermia & Toxidromes","f":"toxidromes.md","k":"md"},{"t":"Delirium","f":"delirium.md","k":"md"},{"t":"Withdrawal: COWS Tool · CIWA-Ar Official Form & Training","f":"withdrawal.html","k":"tool"},{"t":"Decisional Capacity","f":"capacity.html","k":"tool"},{"t":"Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","f":"exp_consult.md","k":"md"},{"t":"C-L: Emergencies, Tox & Capacity (Numbers)","f":"cl_reference.md","k":"md"},{"t":"Inpatient Systems & Med-Legal","f":"systems_medlegal.md","k":"md"},{"t":"Maine Law & Capacity: Statute Navigator","f":"maine_law.md","k":"md"},{"t":"Maine Law Navigator","f":"maine-law-navigator.html","k":"tool"}]},
  {"section":"Make a Plan","items":[{"t":"Psychopharmacology Primer","f":"psychopharm_primer.md","k":"md"},{"t":"Advanced Psychopharmacology","f":"adv_psychopharm.md","k":"md"},{"t":"Medication Monitoring & Labs","f":"med_monitoring.md","k":"md"},{"t":"Protocol Library","f":"protocol_library.md","k":"md"},{"t":"Algorithms & Decision Aids","f":"decision-aids.html","k":"tool"},{"t":"Interaction Cards — One Action","f":"interaction-cards.html","k":"tool"},{"t":"Psychiatric Pharmacy","f":"pharmacy.html","k":"tool"},{"t":"Nutrition & Metabolic Health","f":"nutrition_metabolic.md","k":"md"}]},
  {"section":"Communicate with Patients","items":[{"t":"What Do You Say Next?","f":"communication-practice.html","k":"tool"},{"t":"Psychotherapies at a Glance","f":"psychotherapy.md","k":"md"},{"t":"Motivational Interviewing","f":"motivational_interviewing.md","k":"md"},{"t":"Brief Psychotherapy on the Unit","f":"brief_psychotherapy.md","k":"md"},{"t":"Therapy on the Unit","f":"therapy_on_the_unit.md","k":"md"},{"t":"Five Good Minutes — Brief Psych Coach","f":"rp-brief-psych.html","k":"tool"},{"t":"Reflection & Identity","f":"reflection.html","k":"tool"}]},
- {"section":"Work with Family and Systems","items":[{"t":"Family Systems Practice","f":"family-systems.html","k":"tool"},{"t":"I Need Collateral: 10-Minute Workflow","f":"collateral_workflow.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"}]},
+ {"section":"Work with Family and Systems","items":[{"t":"Family Systems Practice","f":"family-systems.html","k":"tool"},{"t":"Family Conversation Simulator","f":"family-meeting-sim.html","k":"tool"},{"t":"I Need Collateral: 10-Minute Workflow","f":"collateral_workflow.md","k":"md"},{"t":"Family & Discharge","f":"exp_family.md","k":"md"},{"t":"Family Meeting Playbook (90-min)","f":"family_playbook.md","k":"md"},{"t":"Family Therapy Modalities","f":"family_modalities.md","k":"md"}]},
  {"section":"Present and Work with the Team","items":[{"t":"Documentation & Oral Presentation","f":"doc_oral.md","k":"md"},{"t":"Treatment Team Rounding Prep","f":"oral.html","k":"tool"},{"t":"High-Yield Rounds Questions","f":"rounds_questions.md","k":"md"},{"t":"Post-Event Learning Huddle (2 min)","f":"rp-post-event-huddle.html","k":"tool"}]},
  {"section":"Practice and Exam Prep","items":[{"t":"Practice Questions — Question Bank","f":"question-bank-practice.html","k":"tool"},{"t":"Case Journeys","f":"one-patient-six-weeks.html","k":"tool"},{"t":"Daily Review (Spaced Repetition)","f":"review.html","k":"tool"},{"t":"Board-Style Question Bank","f":"shelf-mode.html","k":"tool","hidden":True},{"t":"Canon Quiz — 200-Paper Spine","f":"rp-canon-quiz.html","k":"tool"},{"t":"Rapid Review — Buzzwords","f":"rapid_review.md","k":"md"},{"t":"Landmark Trials — Listen & Test","f":"landmark_trials.md","k":"md"},{"t":"Anki Flashcard Decks","f":"anki.md","k":"md"}]},
  {"section":"Case of the Week","items":[{"t":"Index — All Cases","f":"cotw_index.md","k":"md"}]+[{"t":w["label"],"f":_cotw_slug(w,"res"),"k":"md"} for w in _cotw_weeks]},

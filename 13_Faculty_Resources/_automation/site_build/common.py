@@ -217,6 +217,7 @@ _TOOLKW_MS3 = {
     "communication-practice.html": "what do you say next communication practice branching dialogue rapid spoken drill say it out loud rehearsal timer 20 second suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills",
     "diagnostic-reasoning.html": "diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
     "family-systems.html": "family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
+    "family-meeting-sim.html": "family meeting simulator simulation rehearsal angry parent ambivalent spouse silent teen adolescent guardian discharge meeting validation agenda safety planning means safety non-blaming repair",
     "one-patient-six-weeks.html": "one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection",
     # #429 — intent mapping for medication refusal, SUBMITTED FOR FACULTY REVIEW.
     # This string is both the tool's only indexed body AND its search snippet (`snip`,
@@ -863,6 +864,7 @@ SNIPPET_MARKERS = {
     "/*__CONCEPT_RECALL__*/": "concept_recall.js",
     "/*__FD_STATE__*/": "frontdoor/fd_state.js",
     "/*__FD_READING_PLACE__*/": "frontdoor/fd_reading_place.js",
+    "/*__FD_TOOL_PINS__*/": "frontdoor/fd_tool_pins.js",
     "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
     "/*__FD_OFFLINE__*/": "frontdoor/fd_offline.js",
@@ -883,6 +885,9 @@ SNIPPET_MARKERS = {
     "/*__FD_LIBRARY__*/": "frontdoor/fd_library.js",
     "/*__FD_CARE_NAVIGATOR__*/": "frontdoor/fd_care_navigator.js",
     "/*__FD_CARE_PACK__*/": "frontdoor/fd_care_pack.js",
+    "/*__FD_CARE_PROFILE__*/": "frontdoor/fd_care_profile.js",
+    "/*__FD_CARE_PACKET__*/": "frontdoor/fd_care_packet.js",
+    "/*__FD_CARE_PACKET_SHEET__*/": "frontdoor/fd_care_packet_sheet.js",
     "/*__FD_CARE_SEARCH__*/": "frontdoor/fd_care_search.js",
     "/*__FD_CARE__*/": "frontdoor/fd_care.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
@@ -1072,6 +1077,13 @@ def assert_page_contract(out_dir, label=""):
 SW_EXCLUDE_PREFIXES = ("audio/", "audio_oe/", "media/", "anki/")
 SW_EXCLUDE_EXTS = (".mp4", ".vtt", ".m4a", ".mp3", ".wav")
 SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html", "tool-governance.json"}
+# Netlify control files at the publish root are CONSUMED by Netlify at deploy time and
+# never served: a GET for /_headers or /_redirects returns 404. One unservable PRECACHE
+# entry makes `cache.addAll()` reject, so the install event fails and the worker never
+# installs on either site (offline mode silently dead; 2026-10-16 review, P0). Dot-paths
+# are excluded for the same reason (Netlify does not reliably serve hidden files).
+# check-static-site.mjs (section 7c) HARD-fails if any of these reappear in sw.js.
+SW_NETLIFY_RESERVED_ROOT_NAMES = {"_headers", "_redirects", "netlify.toml"}
 SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
 SW_TEMPLATE_NAME = "sw_template.js"
 _SW_VERSION_ANCHOR = "VERSION='__VERSION__';"
@@ -1103,6 +1115,10 @@ def _sw_precache_url(rel_posix):
 def _sw_is_excluded(rel_posix):
     if rel_posix in SW_EXCLUDE_NAMES:
         return True
+    if rel_posix in SW_NETLIFY_RESERVED_ROOT_NAMES:
+        return True
+    if any(segment.startswith(".") for segment in rel_posix.split("/")):
+        return True
     if any(rel_posix.startswith(prefix) for prefix in SW_EXCLUDE_PREFIXES):
         return True
     if rel_posix.lower().endswith(SW_EXCLUDE_EXTS):
@@ -1130,9 +1146,9 @@ def inject_concept_digest(out_dir, expected):
 
 
 def inject_review_qb_inventory(out_dir, items):
-    """Embed the complete current QB ID set for local-only Daily Review restores."""
-    if not isinstance(items, list) or not items:
-        raise ValueError("review question-bank inventory is empty")
+    """Embed the complete released QB ID set for local-only Daily Review restores."""
+    if not isinstance(items, list):
+        raise ValueError("review question-bank inventory is not an array")
     inventory = []
     seen = set()
     for item in items:
@@ -1197,8 +1213,10 @@ def emit_service_worker(out_dir, kill=None):
 
     - Precached set = every shipped file EXCEPT media (by prefix + extension,
       never precached — Range semantics belong to the network), sw.js /
-      robots.txt / 404.html, and tool-governance.json (embeds the git
-      revision, so it churns every commit — see module docstring).
+      robots.txt / 404.html, tool-governance.json (embeds the git
+      revision, so it churns every commit — see module docstring), Netlify
+      control files (_headers / _redirects / netlify.toml — consumed, never
+      served, so one 404 would abort install) and dot-paths.
     - `index.html` maps to `"/"` — sw.js must never precache-key `/index.html`,
       or a navigation request for `/` won't hit the cached entry offline.
     - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,

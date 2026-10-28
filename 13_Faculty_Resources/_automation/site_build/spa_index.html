@@ -152,9 +152,15 @@
   #content.toolmode .governance-notice{margin:0;border-radius:0}
   /* .58rem computed to 9.28px -- the smallest type anywhere in the product, carrying its most
      safety-relevant signal ("Pending review · High risk"). .68rem (10.9px) is still clearly
-     subordinate to the row it annotates without falling under the legibility floor. */
-  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:var(--fd-font-2xs);font-weight:800;line-height:1.35;color:var(--warning);background:var(--warning-light);vertical-align:middle;margin-left:5px}
-  .governance-badge.high{color:var(--danger);background:var(--danger-light)}
+     subordinate to the row it annotates without falling under the legibility floor.
+     Colours are the OPAQUE front-door wash/ink pairs, gated in both themes by
+     tests/fd-contrast.test.mjs (fd-olive-deep/fd-olive-wash, fd-danger-dark/fd-danger-wash).
+     The old dark --danger-light/--warning-light were 16% alpha, so the badge took on whatever
+     row it sat in: in dark mode the high badge measured 3.96:1 on the rose first search result
+     and 3.71:1 on a hovered row (axe, #1008, 2026-10-12). An opaque ground makes the ratio
+     independent of the row: dark 6.10 (high) / 7.64 (pending), light 6.79 / 5.67. */
+  .governance-badge{display:inline-block;flex:0 0 auto;border:1px solid currentColor;border-radius:999px;padding:1px 6px;font-size:var(--fd-font-2xs);font-weight:800;line-height:1.35;color:var(--fd-olive-deep);background:var(--fd-olive-wash);vertical-align:middle;margin-left:5px}
+  .governance-badge.high{color:var(--fd-danger-dark);background:var(--fd-danger-wash)}
   .navitem.on .governance-badge{color:var(--text);background:var(--surface)}
   .md-body{max-width:820px;margin:0 auto;padding:26px 28px 60px}
   .md-body h1{font-family:var(--font-head);color:var(--primary);font-size:var(--fd-font-3xl);margin:.2em 0 .4em}
@@ -649,6 +655,7 @@
   <div id="fdCaptureMount"></div>
   <div id="fdDockMount"></div>
   <main id="content" class="fd-main" tabindex="-1"><div class="skel" role="status" aria-label="Loading"><div class="bar title"></div><div class="bar"></div><div class="bar short"></div><div class="bar"></div></div></main>
+  <footer id="fdUsageMount" class="fd-usage-foot"></footer>
   <div id="governanceMount"></div>
   <div id="fdOverlayMount"></div>
   <template id="fdCrisisTemplate"><!-- crisis-block-html --></template>
@@ -677,7 +684,7 @@
   fetch('topic_meta.json').then(function(r){return r.ok?r.json():{}}).then(function(d){ TOPIC_META=d||{}; srsDropPhantomTopics(); try{ specialRefresh(); }catch(_){ } }).catch(function(){});
   /* The longitudinal case (Case Journeys, "One Patient, Six Weeks"), READ-ONLY, for Today's "On the
      unit this week" (one-thread redesign, Phase 1). Build-injected by build_deploy.py through the
-     same verified-needle mechanism as RETIRED_QB_IDS (the resident build inherits it), so the
+     same verified-needle mechanism as RELEASED_QB_IDS (the resident build inherits it), so the
      section is there at FIRST render and Today's DOM never churns after boot -- a runtime fetch
      made the core render signature differ between two loads of the same page. A missing or
      malformed file injects null and fdWeekCaseStep renders no section. Nothing here writes to the
@@ -688,6 +695,22 @@
      reason: the Library renders at first paint from what is already on the page. Nothing here
      writes to the file; the week pages' pairing blocks are built from it separately. */
   var FD_PAIRINGS=null;
+  /* The aftercare packet's standard inserts and the crisis contacts they reference (care_inserts_payload.py).
+     Same verified-needle injection as FD_PAIRINGS, and the resident build inherits it. Inert data: only the
+     flag-gated packet reads it. Null means the payload never arrived, and the packet then refuses to print. */
+  var FD_CARE_INSERTS=null;
+  /* The "Beyond this page" media index (media_index.py over media_map.json), READ-ONLY, for the
+     Reader's optional podcast/book block. Same verified-needle injection as FD_PAIRINGS; the
+     resident build swaps in its own value. A draft map inlines {pages:{}}, so nothing renders. */
+  var FD_MEDIA=null;
+  /* The newest Case of the Week (cotw_archive_block.newest), READ-ONLY, for Today's "new this
+     week" row (fd_today.js fdNewCase). Same verified-needle injection as FD_MEDIA, and the
+     resident build swaps in its own edition. {slug, title, date}: the renderer shows it only for
+     the week after `date`, so null, a malformed value or an older edition renders nothing. */
+  var FD_COTW_NEWEST=null;
+  /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
+     click, consumed by the next mount of that ref, never stored. */
+  var fdMediaArrival=null;
   var SEC_SEQ=0;
   function makeCollapsible(body){
     if(!body) return;
@@ -864,6 +887,7 @@
      silently refused — nothing thrown, nothing moved — while #fdApp still carries the edition
      startup gate's `inert`, which on a cold route is still set when the resource mounts. */
   function focusPendingHighNotice(){
+    if(!fdPageFocusAllowed())return false;
     var notice=contentEl.querySelector('.governance-notice.pending-high');
     if(!notice)return false;
     try{ notice.focus(); }catch(_){ }
@@ -1315,6 +1339,29 @@
     return item;
   }
   var activeRouteIdentity='',pendingRouteFocus=false;
+  /* Custom overlays mount only while open; native dialogs stay mounted after closing.
+     A late reading/ledger/guide completion must also respect dialogs inside our tool frames:
+     the native dialog makes its own document inert, not this parent document. */
+  function fdPageFocusAllowed(){
+    function hasDialog(doc){
+      if(doc.querySelector('[role="dialog"][aria-modal="true"],dialog[open]'))return true;
+      /* Interview Room information alerts mount without aria-modal. Hidden alerts must
+         not prevent an ordinary warning from receiving focus. */
+      var alerts=doc.querySelectorAll('[role="alertdialog"]');
+      for(var a=0;a<alerts.length;a++){
+        if(alerts[a].getClientRects().length&&doc.defaultView.getComputedStyle(alerts[a]).visibility==='visible')return true;
+      }
+      return false;
+    }
+    if(hasDialog(document))return false;
+    var frames=document.querySelectorAll('iframe.toolframe');
+    for(var i=0;i<frames.length;i++){
+      /* Only same-origin tool documents are readable. An unloaded or external frame must
+         not throw or suppress an ordinary page warning. Never inspect an external window. */
+      try{var doc=frames[i].contentDocument;if(doc&&hasDialog(doc))return false;}catch(_){}
+    }
+    return true;
+  }
   function fdRouteIdentity(ref){
     var route='';
     try{route=(location.pathname||'/')+(location.search||'');}catch(_){route='';}
@@ -1346,7 +1393,10 @@
       activeRouteIdentity=routeIdentity;
     }
     if(pendingRouteFocus&&routeIdentity===activeRouteIdentity){
-      try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } }
+      if(fdPageFocusAllowed()){
+        try{ contentEl.focus({preventScroll:true}); }catch(_){ try{ contentEl.focus(); }catch(__){ } }
+      }
+      /* Closing a dialog restores its invoker; do not replay this superseded focus take. */
       pendingRouteFocus=false;
     }
   }
@@ -1393,6 +1443,23 @@
   }
   /* Faculty preview deliberately keeps its audited preflight/status/query path. Normal learner
      navigation never calls this function; fdOpenResource owns the mounted reader instead. */
+  /* "Beyond this page" in the faculty preview (Dr. Moss, 2026-10-06: show the actual
+     recommendations in page context before re-signing). The preview renders a page through this
+     legacy show(), not the Reader, so without this the block a signature now covers (its
+     media_resolved file) would be invisible exactly where faculty review the page. Same renderer,
+     same inlined data as the learner Reader; appended after the body, as on the Reader, and after
+     makeCollapsible so it is never folded into the last section. Draft map: renders nothing. */
+  /* fd_reader.js lives inside the Front Door script's closure, which this script cannot see, so
+     that script hands the renderer across through this one global (set right after the Reader is
+     injected). Null until then, and the preview simply shows no block. */
+  var fdMediaPreviewHtml=null;
+  function fdFacultyPreviewMedia(ref){
+    if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
+    var html=fdMediaPreviewHtml(ref);
+    if(!html)return;
+    var holder=document.createElement('div'); holder.innerHTML=html;
+    if(holder.firstChild)contentEl.appendChild(holder.firstChild);
+  }
   function show(item, btn, opts){
     if(!facultyPreviewMatchesItem(item,opts)){showFacultyPreviewLockNotice();return false;}
     if(facultyPreviewRequest&&currentItem&&currentItem.k==='tool'&&item.k==='tool'&&currentItem.f===item.f)return true;
@@ -1415,7 +1482,7 @@
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
-      makeCollapsible(contentEl); enhanceTables(contentEl); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
+      makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
   }
@@ -1571,7 +1638,7 @@
   /* ---- capture sheet: own dialog, own focus trap ----
      Deliberately NOT reusing .tl-sheet — visual-regression.spec.js Shift+Tab-cycles that sheet and
      asserts its last .tl-sheet__item is focused, so joining its tab order breaks it. */
-  var capSheet=null, capBackdrop=null, capInvoker=null;
+  var capSheet=null, capBackdrop=null, capInvoker=null, capReturnToSearch=null;
   function capFocusables(){
     if(!capSheet)return [];
     var all=capSheet.querySelectorAll('button,textarea,[href],input,select,[tabindex]:not([tabindex="-1"])'), out=[];
@@ -1587,7 +1654,7 @@
     if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
   }
-  function capClose(){
+  function capClose(skipSearchReturn){
     if(capEmailSheet)capEmailClose();
     if(capBackdrop&&capBackdrop.parentNode)capBackdrop.parentNode.removeChild(capBackdrop);
     if(capSheet&&capSheet.parentNode)capSheet.parentNode.removeChild(capSheet);
@@ -1595,6 +1662,14 @@
     document.removeEventListener('keydown',capKeydown,true);
     var opens=document.querySelectorAll('.capture-open,[data-capture-open]');
     for(var i=0;i<opens.length;i++)opens[i].setAttribute('aria-expanded','false');
+    /* Search's draft stays in memory only. Recreate its dialog after Capture is gone so its
+       input owns focus again; raw search text never becomes a question or a stored draft. */
+    var returnToSearch=capReturnToSearch; capReturnToSearch=null;
+    if(!skipSearchReturn&&returnToSearch){
+      capInvoker=null;
+      returnToSearch();
+      return;
+    }
     /* The global launcher remains mounted, while a Today-card launcher can be recreated by a
        capture refresh. Resolve that semantic equivalent before falling back to the main region. */
     var inv=capInvoker; capInvoker=null;
@@ -1841,8 +1916,9 @@
     try{ specialRefresh(); }
     finally{ capFocusEditor(); }
   }
-  function capOpen(invoker,onAction){
+  function capOpen(invoker,onAction,onReturnToSearch){
     if(capSheet)return;
+    capReturnToSearch=typeof onReturnToSearch==='function'?onReturnToSearch:null;
     if(typeof fdController!=='undefined'&&fdController&&fdController.externalModalOpened)
       fdController.externalModalOpened();
     capInvoker=invoker||null;
@@ -1874,7 +1950,13 @@
     capRenderBody();
     if(invoker)invoker.setAttribute('aria-expanded','true');
     document.addEventListener('keydown',capKeydown,true);
-    var ta=capSheet.querySelector('#capText'); if(ta){ try{ ta.focus(); }catch(_){ } }
+    var ta=capSheet.querySelector('#capText');
+    /* "Bring to family meeting" (Reader, Beyond this page) opens this same dialog with the book
+       titles and authors as a starting draft -- titles only, never patient details, and nothing
+       is stored until the learner presses Save (which still runs the PHI interstitial). */
+    var prefill=invoker&&invoker.getAttribute&&invoker.getAttribute('data-cap-prefill');
+    if(ta&&prefill&&!ta.value)ta.value=String(prefill).slice(0,280);
+    if(ta){ try{ ta.focus(); }catch(_){ } }
     capSheet.addEventListener('click',function(e){
       var t=e.target;
       if(t.id==='capEmailSelect'){capEmailOpen(t);return;}
@@ -1936,8 +2018,11 @@
   }
   /* SI===null means "failed" OR "not yet resolved". Refresh the guarded Today surface after
      the index settles so captures can gain matches without a reload. */
-  fetch('search-index.json').then(function(r){return r.json()}).then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
+  /* One request serves both readers: this matcher and the Front Door command search's page-text
+     tier, which takes the same parsed index from cwSearchIndexPromise rather than fetching again. */
+  var SI_PROMISE=fetch('search-index.json').then(function(r){return r.json()}); SI_PROMISE.then(function(d){ SI=d; VOCAB=Object.keys(d.postings).sort(); specialRefresh(); capRefreshNext(); })
     .catch(function(){ SI=null; VOCAB=[]; });
+  try{ window.cwSearchIndexPromise=SI_PROMISE; }catch(_){}
 
   function idf(t){ return Math.log(1 + SI.n/((SI.df[t]||1))); }
   /* Length normalisation: the BM25 pivot (1-b) + b*(L/avgLen), b = 0.5. Without it
@@ -1993,22 +2078,12 @@
   /* ---- helpers reading existing storage ---- */
   function LS(k){ try{ return localStorage.getItem(k); }catch(_){ return null; } }
   /* ---- qb servability (shell parity) ----
-     Which bank records/cards the shell may count, matching question-bank-practice.html's
-     activeItems(): retired items are never servable; un-attested drafts are servable only
-     while the learner's cw_qb_drafts_v1 opt-in is set (WP-37 attested-only default).
-     Both id lists are BUILD-INJECTED from question_bank.json (the source literals stay
-     empty; build_deploy.py hard-fails if either needle is missing or duplicated, and
-     check-static-site.mjs §6c cross-checks the built output). The resident shell inherits
-     the injected lists (it rebrands the MS3-built index.html). Counting a record the
-     practice tool will not serve re-opens the "Due today counts cards nothing can serve"
-     defect class. */
-  var RETIRED_QB_IDS=[];
-  function isRetiredQb(id){ return RETIRED_QB_IDS.indexOf(id)>=0; }
-  var DRAFT_QB_IDS=[];
-  function isDraftQb(id){ return DRAFT_QB_IDS.indexOf(id)>=0; }
-  function qbDraftsIncluded(){ try{ return localStorage.getItem('cw_qb_drafts_v1')==='true'; }catch(_){ return false; } }
-  /* id is the bank item id (no QB# prefix). */
-  function qbRecordServable(id){ if(isRetiredQb(id))return false; if(!qbDraftsIncluded()&&isDraftQb(id))return false; return true; }
+     Only IDs in this build's approved public question bank may count toward due
+     or confidently-wrong practice. Missing, withdrawn and old draft IDs stay in
+     local history but cannot become due work. The build verifies this allowlist
+     against question_bank.json; a historical draft opt-in cannot widen it. */
+  var RELEASED_QB_IDS=[];
+  function qbRecordServable(id){ return RELEASED_QB_IDS.indexOf(id)>=0; }
   /* ---- end qb servability ---- */
   /*__CONCEPT_RECALL__*/
   var conceptDueState={status:'checking',releasedIds:null};
@@ -2111,6 +2186,8 @@
 
   /*__FD_READING_PLACE__*/
 
+  /*__FD_TOOL_PINS__*/
+
   /*__FD_CAPTURE_EMAIL__*/
 
   var FD_CURRICULUM={};
@@ -2156,11 +2233,22 @@
 
   /*__FD_CARE_PACK__*/
 
+  /*__FD_CARE_PACKET__*/
+  /*__FD_CARE_PROFILE__*/
+
+  /*__FD_CARE_PACKET_SHEET__*/
+
   /*__FD_CARE_SEARCH__*/
 
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
+  /* The faculty preview's "Beyond this page" (fdFacultyPreviewMedia, first script): the same
+     renderer and the same inlined index the learner Reader uses, read at call time. */
+  fdMediaPreviewHtml=function(ref){
+    if(typeof fdReaderMedia!=='function'||typeof FD_MEDIA==='undefined')return '';
+    return fdReaderMedia(FD_MEDIA,ref,typeof FD_INDEX!=='undefined'&&fdReaderIsSafetyPage(FD_INDEX,ref));
+  };
 
   /*__FD_GUIDE__*/
 
@@ -2185,7 +2273,7 @@
      for the confidently-wrong count, which intentionally reads cw_qb_v1 — same predicate as
      question-bank-practice.html's certWrongItems() (certWrong===true). Retired-item parity
      with certWrongItems() (which filters through activeItems()) is closed via the
-     build-injected RETIRED_QB_IDS — both counters skip since-retired records. */
+     build-injected RELEASED_QB_IDS — both counters skip unpublished records. */
   function renderCalibPanel(){
     var ledger=(typeof calibRead==='function')?calibRead():{qb:[],rev:[]};
     var qbEvents=ledger.qb||[];
@@ -2423,10 +2511,22 @@
   var fdCaptureMount=fdEditionRuntimeElement(fdDocument,'fdCaptureMount');
   var fdDockMount=fdEditionRuntimeElement(fdDocument,'fdDockMount');
   var fdOverlayMount=fdEditionRuntimeElement(fdDocument,'fdOverlayMount');
+  var fdUsageMount=fdEditionRuntimeElement(fdDocument,'fdUsageMount');
   var fdCrisisTemplate=document.getElementById('fdCrisisTemplate');
   var fdCrisisHtml=fdCrisisTemplate?fdCrisisTemplate.innerHTML:'';
   var fdNudgeMount=fdEditionRuntimeElement(fdDocument,'fdNudgeMount');
   var fdController=null;
+  /* search-index.json for the command search's page-text tier: the SAME parsed object the ＋Ask
+     matcher requested (cwSearchIndexPromise, set where it fetches), so no second request. A failed
+     or missing load leaves it null and title/summary search works exactly as before. */
+  var fdBodyIndex=null;
+  try{
+    var fdBodyPromise=window.cwSearchIndexPromise;
+    if(fdBodyPromise&&typeof fdBodyPromise.then==='function'){
+      fdBodyPromise.then(function(d){ fdBodyIndex=(d&&d.postings&&Array.isArray(d.docs))?d:null; },
+        function(){ fdBodyIndex=null; });
+    }
+  }catch(_){ fdBodyIndex=null; }
   var fdActiveEditionSnapshot=null;
   var fdCatalogSnapshot=null;
   var fdEditionBootKeys=null;
@@ -2503,12 +2603,14 @@
        registries the Library already uses -- by reference, never copied into any store. */
     out.thread={caseArc:typeof FD_CASE_ARC!=='undefined'?FD_CASE_ARC:null,
       pairings:typeof FD_PAIRINGS!=='undefined'?FD_PAIRINGS:null,
+      media:typeof FD_MEDIA!=='undefined'?FD_MEDIA:null,
       audience:typeof FD_AUDIENCE!=='undefined'?FD_AUDIENCE:''};
     /* Supervisor feedback notes: read fresh on every render, the store staying their single home
        (fd_state.js). The controller writes it above the render, so the list a save repaints is
        the list on the device. Guarded like the usage emitter below: a surface built without the
        store renders no notes rather than failing. */
     out.feedbackLog=typeof fdFeedbackRead==='function'?fdFeedbackRead():[];
+    out.toolPins=typeof fdToolPinsRead==='function'?fdToolPinsRead(FD_INDEX):[];
     /* The Usage section, and the one key on this state that is legitimately null: null means
        CLERKSHIP_ANALYTICS left the emitter out of this build entirely, and fdSheetSettingsBody
        then renders no section at all rather than describing collection that is not happening.
@@ -2665,6 +2767,10 @@
     live.alsoRows=rows;
     live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
     live.caseWeek=fdWeekCaseStep(FD_INDEX,FD_CASE_ARC,weekN);
+    /* The newest case, handed in raw: fdNewCase (fd_today.js) decides from live.nowMs and the
+       registry date whether Today announces it this week. Build data, not a device store, so it
+       is shown in a faculty preview too. */
+    live.newCase=FD_COTW_NEWEST;
     return fdToday(FD_INDEX,live);
   }
 
@@ -2763,7 +2869,7 @@
        and filter are the controller's visit-only memory; the case arc and pairings are the
        build-injected READ-ONLY registries behind "Case week N", "Where it is used" and "Practice
        with"; the audience keeps pairings scoped to one site inside it. */
-    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
+    if(state.tab==='library') return fdSurface('library',function(){ var libOpts={kitSection:state.kitSection,kitToolPreview:state.kitToolPreview,filter:state.libraryFilter,libraryTask:state.libraryTask,week:live.week,caseArc:FD_CASE_ARC,pairings:FD_PAIRINGS,audience:FD_AUDIENCE,readingPlaces:fdReadingPlaces(fdLoad().readingPlaces),done:live.done,toolPins:live.toolPins,continuityNotice:state.continuityNotice}; return state.libraryView==='full'?fdLibrary(FD_INDEX,libOpts):fdEssentials(FD_INDEX,libOpts); });
     if(state.tab==='care') return fdSurface('care',function(){
       return fdCare(FD_INDEX,state.careIntentId||'',state.carePackIds||[],fdCrisisHtml);
     });
@@ -2787,7 +2893,7 @@
      live regions, #fdOverlayMount and #fdNudgeMount are never inerted. fdSyncSafetyPause runs
      FIRST in fdRender and fdRenderTransient so the release lands before a resource mounts: an
      inert #content silently refuses the pending-high notice its focus. */
-  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount'];
+  var FD_SAFETY_INERT_IDS=['fdChromeMount','fdCaptureMount','fdDockMount','content','governanceMount','fdUsageMount'];
   var fdSafetyPaused=false;
   function fdPauseMedia(doc){
     var media=(doc&&doc.querySelectorAll)?doc.querySelectorAll('audio,video'):[];
@@ -2819,7 +2925,13 @@
 
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
-    if(state.searchOpen)overlays+=fdSurface('search',function(){ return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live); });
+    if(state.searchOpen)overlays+=fdSurface('search',function(){
+      /* Page-text evidence (fd_search.js fdSearchBodyScores): the same search-index.json the
+         ＋Ask matcher reads. Absent until it loads, and search then ranks exactly as before. */
+      live.bodyIndex=fdBodyIndex;
+      live.facultyPreview=!!facultyPreviewRequest;
+      return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live);
+    });
     if(state.sheet)overlays+=fdSurface('sheet',function(){ return fdSheet(FD_INDEX,FD_TOPIC_META,live); });
     if(state.careShareId)overlays+=fdSurface('care-share',function(){
       return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
@@ -3015,11 +3127,27 @@
     if(retained&&replacement)replacement.parentNode.replaceChild(retained,replacement);
   }
 
-  var fdCareDirectory=fdCreateCareDirectory();
+  /* The aftercare packet exists only while its source gate is on; off, the directory behaves exactly as before. */
+  var fdCarePacket=(typeof fdCarePacketEnabled==='function'&&fdCarePacketEnabled())?fdCreateCarePacket():null;
+  var fdCareDirectory=fdCreateCareDirectory(fdCarePacket);
   function fdMountCareDirectory(state){
     if(state.screen==='app'&&state.tab==='care'&&!state.openId&&contentEl){
       fdCareDirectory.mount(contentEl.querySelector('[data-care-directory]'),document.getElementById('careDirectoryStatus'));
     }else fdCareDirectory.leave();
+  }
+
+  /* L8 D3 usage notice: rendered from the emitter's presence, never from a stored key. Empty on
+     every build that left the emitter out (fdUsageNotice returns ''), and .fd-usage-foot:empty is
+     display:none, so off builds look exactly as before. Re-rendered with the overlays so the
+     sentence follows a Settings > Usage change at once. */
+  function fdRenderUsageNotice(){
+    if(!fdUsageMount)return;
+    var an=window.cwAnalytics
+      ?{optedIn:window.cwAnalytics.enabled(),
+        privacySignal:(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)}
+      :null;
+    var html=typeof fdUsageNotice==='function'?fdUsageNotice(an):'';
+    if(fdUsageMount.innerHTML!==html)fdUsageMount.innerHTML=html;
   }
 
   function fdRender(state,detail){
@@ -3033,6 +3161,7 @@
     fdRenderCapture(state);
     fdRenderDock(state,!!hydrate);
     fdRenderOverlays(state);
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
     fdMountCareDirectory(state);
@@ -3095,6 +3224,7 @@
     if(surfaces.layout)fdPatchToolLayout(state);
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     fdUpdateCareNavigatorStatus(state);
     if(surfaces.base||surfaces.completion)fdMountCareDirectory(state);
     fdSyncOfflineVisit(state);
@@ -3174,13 +3304,16 @@
               canFocusOnRestore:function(){
                 return fdReadingFocusAllowed(readState(),{
                   ref:ref,currentRef:currentItem&&currentItem.f,
-                  facultyPreview:!!facultyPreviewRequest,externalModal:!!capSheet,
+                  facultyPreview:!!facultyPreviewRequest,externalModal:!fdPageFocusAllowed(),
                   pendingHigh:!!contentEl.querySelector('.governance-notice.pending-high'),
                   readerConnected:document.documentElement.contains(mountedReader)
                 });
               }
             });
           };
+          /* A "Beyond this page" library link decides where its page opens: the category it
+             named (scrolled to below, after the reading place's own arrival). */
+          var mediaArrival=fdTakeMediaArrival(ref);
           fdGuideSession=fdGuideMount(body,{
             ref:ref,
             isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
@@ -3191,18 +3324,11 @@
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
             var arrivalSearch=options.search===undefined?location.search:options.search;
             if(!returning)fdGuideBookmark=null;
-            if(guide.leads){
-              /* A page whose sections come from bold leads read with a saved place before it had
-                 a guide; it keeps one. An explicit passage or a return from practice still decides
-                 where it opens, so the saved place only saves on those arrivals. */
-              var passage=new URLSearchParams(arrivalSearch||'');
-              installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
-            }else{
-              var statusNode=contentEl.querySelector('[data-fd-reading-status]');
-              var topNode=contentEl.querySelector('[data-fd-reading-top]');
-              if(statusNode)statusNode.remove();
-              if(topNode)topNode.remove();
-            }
+            /* Every reading guide keeps a saved place. An explicit passage or a return from
+               practice still decides where it opens, so the saved place only saves on those
+               arrivals. With no passage, guide.arrive is inert and the saved place restores. */
+            var passage=new URLSearchParams(arrivalSearch||'');
+            installReadingPlace(!(returning||passage.has('guideSection')||passage.has('guideFind')));
             /* Initial resources mount behind the edition startup gate. Their promise must
                settle before focus/scroll can reach the now-visible DOM. Guard the next frame
                so an abandoned load cannot steal focus from the next route. */
@@ -3212,11 +3338,25 @@
               if(fdGuideSession!==guide||!document.documentElement.contains(body)||
                   !currentItem||currentItem.f!==ref)return;
               focusGovernanceNotice({fromHistory:!!options.fromHistory});
-              var canFocus=!contentEl.querySelector('.governance-notice.pending-high');
+              var canFocus=fdPageFocusAllowed()&&!contentEl.querySelector('.governance-notice.pending-high');
               if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
               else guide.arrive(arrivalSearch,canFocus);
             });
           }else installReadingPlace(true);
+          if(mediaArrival){
+            /* Two frames: after the reading place's own arrival frame (which may restore a saved
+               place), so the category the learner asked for wins; reading on from it saves the
+               new place as usual. A heading that no longer slugs to the anchor leaves the page
+               where the reader put it. */
+            requestAnimationFrame(function(){ requestAnimationFrame(function(){
+              if(!currentItem||currentItem.f!==ref||!document.documentElement.contains(body)||!fdPageFocusAllowed())return;
+              var heading=fdMediaHeadingFor(body,mediaArrival.anchor);
+              if(!heading)return;
+              heading.scrollIntoView({block:'start'});
+              heading.setAttribute('tabindex','-1');
+              try{ heading.focus({preventScroll:true}); }catch(_){ heading.focus(); }
+            }); });
+          }
           fdGuideReturning=false;
         }else if(!facultyPreviewRequest&&fdGuideBookmark&&fdIsTool(ref)){
           var toolbar=contentEl.querySelector('.fd-reader__toolbar');
@@ -3289,7 +3429,7 @@
       }else if(capSheet)capAnnounce('Could not finish this question on this device. Try again.');
       return;
     }
-    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose();fdOpenRef(ref);return;}
+    if(el.hasAttribute('data-cap-open')&&ref){if(capSheet)capClose(true);fdOpenRef(ref);return;}
   }
 
   function fdRefreshLocalCompletion(identity,kind,id){
@@ -3323,8 +3463,19 @@
         fdRefreshLocalCompletion(localIdentity,localKind,localId);
       return;
     }
+    el=target.closest&&target.closest('[data-media-side]');
+    if(el){event.preventDefault();fdMediaSwitch(el);return;}
     el=target.closest&&target.closest('[data-capture-open]');
-    if(el){event.preventDefault();if(!facultyPreviewRequest)capOpen(el,fdCaptureAction);return;}
+    if(el){
+      event.preventDefault();
+      if(facultyPreviewRequest)return;
+      var returnToSearch=null;
+      if(el.closest('.fd-search')){
+        returnToSearch=fdController.suspendSearch();
+      }
+      capOpen(el,fdCaptureAction,returnToSearch);
+      return;
+    }
     el=target.closest&&target.closest('[data-cap-open],[data-cap-review],[data-cap-route],[data-cap-drop],[data-cap-copy]');
     if(el){event.preventDefault();fdCaptureAction(el);return;}
     el=target.closest&&target.closest('.pt-opt');
@@ -3375,8 +3526,47 @@
       var url;try{url=new URL(el.getAttribute('href'),location.href);}catch(_){return;}
       if(url.origin!==location.origin||url.pathname!==location.pathname)return;
       var ref=url.searchParams.get('page')||url.searchParams.get('tool');
-      if(ref){event.preventDefault();fdOpenRef(ref,url.search);}
+      if(ref){
+        event.preventDefault();
+        var mediaAnchor=el.getAttribute('data-media-anchor');
+        fdMediaArrival=mediaAnchor?{ref:ref,anchor:mediaAnchor}:null;
+        fdOpenRef(ref,url.search);
+      }
     }
+  }
+
+  /* "Beyond this page" audience switch: flips the two buttons and panels in place and moves focus
+     to the first card of the shown side. Transient by design -- no controller state, no URL, no
+     storage -- so a re-render returns to "For you". */
+  function fdMediaSwitch(button){
+    var section=button.closest&&button.closest('.fd-beyond');
+    if(!section)return;
+    var side=button.getAttribute('data-media-side');
+    var buttons=section.querySelectorAll('[data-media-side]'), panels=section.querySelectorAll('[data-media-panel]'), i, shown=null;
+    for(i=0;i<buttons.length;i++)buttons[i].setAttribute('aria-pressed',buttons[i].getAttribute('data-media-side')===side?'true':'false');
+    for(i=0;i<panels.length;i++){
+      var on=panels[i].getAttribute('data-media-panel')===side;
+      panels[i].hidden=!on;
+      if(on)shown=panels[i];
+    }
+    var card=shown&&shown.querySelector('.fd-beyond__card');
+    if(card){ try{ card.focus({preventScroll:false}); }catch(_){ card.focus(); } }
+  }
+  /* The heading a "Beyond this page" library link names: the first body h2 whose label slugs to
+     the anchor under the Reader's heading-slug rule (fd_reading_place.js; media_index.py
+     heading_anchor is the build twin). makeCollapsible's chevron is not part of the label. */
+  function fdMediaHeadingFor(body,anchor){
+    var heads=body?body.querySelectorAll('h2'):[], i, label;
+    for(i=0;i<heads.length;i++){
+      label=String(heads[i].textContent||'').replace(/^[\s▸]+/,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+      if(label&&label===anchor)return heads[i];
+    }
+    return null;
+  }
+  /* Take the arrival for THIS mount, or null. A different ref clears it: it is one click's intent. */
+  function fdTakeMediaArrival(ref){
+    var arrival=fdMediaArrival; fdMediaArrival=null;
+    return arrival&&arrival.ref===ref?arrival:null;
   }
 
   function fdAuxMessage(event){
