@@ -1,0 +1,185 @@
+<!doctype html>
+<!-- UNSHIPPED PROTOTYPE (F8). Not registered in site_manifest.json, site_extras.py or the faculty
+     console. Reads an aggregate-only feed (DATA_CONTRACT.md); the committed feed is SYNTHETIC. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clerkship director dashboard — prototype (MOCK DATA)</title>
+<style>
+  :root { --ink:#2b2b2b; --muted:#6b6259; --line:#e3dcd3; --bg:#fbf8f4; --accent:#9a4f2f;
+          --ok:#3f6b3f; --warn:#8a5a00; --sup:#efe9e1; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--ink);
+         background:var(--bg); }
+  .mock { position:sticky; top:0; z-index:5; background:#7a1f1f; color:#fff; padding:10px 16px;
+          font-weight:700; letter-spacing:.02em; text-align:center; }
+  .mock small { display:block; font-weight:400; opacity:.9; }
+  main { max-width:1100px; margin:0 auto; padding:16px; }
+  h1 { font-size:1.4rem; margin:.6rem 0 .2rem; }
+  h2 { font-size:1.1rem; margin:0 0 .4rem; }
+  .sub { color:var(--muted); margin:0 0 1rem; }
+  .controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:12px 0 16px; }
+  .controls label { font-size:.9rem; color:var(--muted); }
+  select { font:inherit; padding:4px 6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(480px,1fr)); gap:16px; }
+  section.panel { background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; }
+  th, td { border-bottom:1px solid var(--line); padding:4px 6px; text-align:right; }
+  th:first-child, td:first-child { text-align:left; }
+  td.sup { background:var(--sup); color:var(--muted); font-style:italic; }
+  .note { font-size:.82rem; color:var(--muted); margin:.5rem 0 0; }
+  .tag { display:inline-block; font-size:.72rem; padding:1px 6px; border-radius:10px;
+         background:#f3e3d9; color:var(--accent); margin-left:6px; vertical-align:middle; }
+  .bar { height:10px; background:var(--line); border-radius:5px; position:relative; min-width:120px; }
+  .bar > span { position:absolute; left:0; top:0; bottom:0; background:var(--accent); border-radius:5px; }
+  .bar > i { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--ink); }
+  .met { color:var(--ok); font-weight:600; } .unmet { color:var(--warn); font-weight:600; }
+  .errors { background:#fff1f0; border:1px solid #e0a39c; padding:10px 14px; border-radius:8px; }
+  .claims td, .claims th { text-align:left; vertical-align:top; }
+</style>
+</head>
+<body>
+<div class="mock" role="note" id="mock-banner">MOCK DATA — no learner data has been collected
+  <small>Unshipped prototype. Every number on this page is synthetic. Cohort-level aggregates only;
+  suppressed cells are shown as "—" (fewer than 5 visits, or withheld so a small cell cannot be
+  recovered by subtraction; the two are deliberately not distinguished).</small></div>
+<main>
+  <h1>Clerkship director dashboard <span class="tag">prototype</span></h1>
+  <p class="sub" id="feed-label">Loading feed…</p>
+  <div class="controls">
+    <label>Site <select id="sel-site"><option value="ms3">MS3 (UNE)</option><option value="res">Residents (MMC)</option></select></label>
+    <label>Block <select id="sel-block"></select></label>
+    <label>Load another aggregate feed (JSON, stays on this device) <input type="file" id="feed-file" accept="application/json,.json"></label>
+  </div>
+  <div id="errors"></div>
+  <div class="grid">
+    <section class="panel" id="panel-reach"></section>
+    <section class="panel" id="panel-funnel"></section>
+    <section class="panel" id="panel-bands"></section>
+    <section class="panel" id="panel-topics"></section>
+    <section class="panel" id="panel-feasibility"></section>
+    <section class="panel" id="panel-claims">
+      <h2>What these numbers can and cannot claim</h2>
+      <table class="claims">
+        <tr><th>Can claim (cohort-level, descriptive)</th><th>Cannot claim</th></tr>
+        <tr><td>Reach: rotation weeks with use; which surfaces were used</td><td>Anything about an individual learner</td></tr>
+        <tr><td>Engagement depth: share of visits in each practice tier</td><td>That engagement predicts performance</td></tr>
+        <tr><td>Feasibility bars for the evaluation (consent, pairing, faculty time)</td><td>Learning from accuracy bands (learners choose their own items)</td></tr>
+        <tr><td>Counts are visits, not learners</td><td>That the library caused any change (no control group)</td></tr>
+      </table>
+      <p class="note">Adapted from the claims boundary in the L8 clerkship-outcomes design (§7).</p>
+    </section>
+  </div>
+</main>
+
+<!-- The ONE aggregation + suppression engine, shared with the metrics site's read-only function.
+     Classic script (works from file:// and from a local server rooted at the repository). -->
+<script src="../../metrics/aggregate/cohort_aggregate.js"></script>
+
+<script id="dd-ui">
+(function () {
+  'use strict';
+  // UI only: it formats CohortAggregate.publish(feed). A suppressed cell reaches this code as
+  // { shown: false } with no value, so nothing here can display a hidden number.
+  var CA = window.CohortAggregate;
+  var FEED = '../../metrics/aggregate/synthetic_feed.json';
+  var pub = null;
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function td(c) { return c.shown ? '<td>' + c.n + '</td>' : '<td class="sup" title="suppressed">—</td>'; }
+  function sh(s) { return s.shown ? '<td>' + esc(s.text) + '</td>' : '<td class="sup" title="suppressed">—</td>'; }
+  function site() { return pub.sites[$('sel-site').value]; }
+
+  function fillBlocks() {
+    var S = site(), opts = ['<option value="all">All blocks (pooled)</option>'];
+    (S ? S.blocks : []).forEach(function (b) {
+      opts.push('<option value="' + esc(b.id) + '">' + esc(b.id) + ' · starts ' + esc(b.start) + ' · ' + b.weeks + ' wk</option>');
+    });
+    $('sel-block').innerHTML = opts.join('');
+  }
+  function render() {
+    var S = site();
+    var ids = ['panel-reach', 'panel-funnel', 'panel-bands', 'panel-topics', 'panel-feasibility'];
+    if (!S) { ids.forEach(function (id) { $(id).innerHTML = '<p>No rotation blocks for this site in the feed.</p>'; }); return; }
+    var G = S.groups[$('sel-block').value || 'all'], t = pub.suppressionThreshold;
+    var legend = '— = suppressed (fewer than ' + t + ' visits, or withheld so a small cell cannot be recovered by subtraction).';
+
+    $('panel-reach').innerHTML = '<h2>Reach and reading pattern by rotation week</h2>' +
+      '<table><tr><th>Rotation week</th><th>Reading views</th><th>Other tool opens</th></tr>' +
+      G.reach.map(function (x) { return '<tr><td>Week ' + x.rw + '</td>' + td(x.reads) + td(x.tools) + '</tr>'; }).join('') +
+      '</table><p class="note">Block-weeks with ≥' + t + ' visits in shown cells: ' + G.activeWeeks + ' of ' + G.blockWeeks +
+      '. Share of reading views in the final (pre-shelf) week: ' + (G.finalWeekReadShare.shown ? esc(G.finalWeekReadShare.text) : 'suppressed') +
+      '. Question bank and Daily Review opens are counted in the funnel, not here. Visits, not learners. ' + legend + '</p>';
+
+    function funnelRows(name, F) {
+      if (F.withheld) return '<tr><td><b>' + name + '</b></td><td colspan="2">withheld — the counters are inconsistent</td></tr>';
+      return '<tr><td><b>' + name + '</b> opens</td>' + td(F.opens) + '<td></td></tr>' +
+        F.tiers.map(function (x) { return '<tr><td>&nbsp;&nbsp;' + esc(x.label) + '</td>' + td(x.count) + sh(x.share) + '</tr>'; }).join('');
+    }
+    $('panel-funnel').innerHTML = '<h2>Retrieval-practice funnel</h2><table><tr><th>Tier</th><th>Visits</th><th>Share of opens</th></tr>' +
+      funnelRows('Question bank', G.funnel.qbank) + funnelRows('Daily Review', G.funnel.review) +
+      '</table><p class="note">Tiers are disjoint and add up to the opens: cumulative thresholds (≥5, ≥10, ≥20) are never shown, because nested thresholds can be subtracted (D-F8-6). Keys from the draft outcome counters (PR #1076, flag off). ' + legend + '</p>';
+
+    $('panel-bands').innerHTML = '<h2>First-10-answer accuracy-band mix</h2><table><tr><th>Rotation week</th>' +
+      CA.BAND_LABELS.map(function (l) { return '<th>' + esc(l) + '</th>'; }).join('') + '<th>Visits with 10 answers</th></tr>' +
+      G.bands.map(function (x) { return '<tr><td>Week ' + x.rw + '</td>' + x.cells.map(td).join('') + td(x.total) + '</tr>'; }).join('') +
+      '</table><p class="note">Learners choose their own items: this is not a knowledge measure. ' + legend + '</p>';
+
+    $('panel-topics').innerHTML = '<h2>Weak topics by category <span class="tag">proposed feed</span></h2>' +
+      (G.topics.length ? '<table><tr><th>Category</th><th>Visits with 10 answers</th><th>Share &lt;50% correct</th></tr>' +
+        G.topics.map(function (x) { return '<tr><td>' + esc(x.category) + '</td>' + td(x.total) + sh(x.lowShare) + '</tr>'; }).join('') + '</table>'
+        : '<p>No category counters in this feed.</p>') +
+      '<p class="note">No producer emits per-category counters today — PR #1076 deliberately sends no category. Showing this panel on real data needs a new allowlisted key family (a decision; see DATA_CONTRACT.md).</p>';
+
+    var fe = S.feasibility;
+    function bar(label, part) {
+      var v = part.rate.state === 'ok' ? part.rate.value : part.rate.state === 'bounded' ? part.rate.lower : 0;
+      var met = CA.meetsBar(part.rate, part.bar);
+      return '<tr><td>' + label + '</td><td><div class="bar"><span style="width:' + Math.round(v * 100) + '%"></span><i style="left:' + Math.round(part.bar * 100) + '%"></i></div></td>' +
+        '<td' + (part.rate.state === 'suppressed' ? ' class="sup"' : '') + '>' + esc(part.rate.text) + '</td><td class="' + (met === true ? 'met' : met === false ? 'unmet' : '') + '">' + (met === true ? 'met' : met === false ? 'not met' : '—') + ' (bar ' + Math.round(part.bar * 100) + '%)</td></tr>';
+    }
+    $('panel-feasibility').innerHTML = '<h2>Evaluation feasibility (pooled, ' + fe.blocks + ' block' + (fe.blocks === 1 ? '' : 's') + ')</h2>' +
+      (fe.blocks ? '<table><tr><th>Bar</th><th></th><th>Value</th><th>Status</th></tr>' + bar('Consented', fe.consent) + bar('Paired pre/post', fe.paired) +
+        '<tr><td>Faculty support per block</td><td></td><td>' + fe.facultyHoursPerBlock.toFixed(1) + ' h</td><td class="' + (fe.facultyHoursPerBlock <= fe.facultyHoursBar ? 'met' : 'unmet') + '">bar ≤' + fe.facultyHoursBar + ' h</td></tr>' +
+        '<tr><td>Privacy incidents</td><td></td><td>' + fe.privacyIncidents + '</td><td class="' + (fe.privacyIncidents === 0 ? 'met' : 'unmet') + '">bar 0</td></tr></table>'
+        : '<p>No pre/post aggregates for this site.</p>') +
+      '<p class="note">Bars pre-registered in the L8 design (§6.2). Pre/post aggregates would come from the honest broker (PR #1077), never from the site.</p>';
+  }
+  function use(data, label) {
+    var next;
+    try { next = CA.publish(data); }
+    catch (err) {
+      var errs = err && err.errors ? err.errors : ['could not aggregate this feed'];
+      $('errors').innerHTML = '<div class="errors"><b>Feed rejected — nothing rendered.</b><ul>' +
+        errs.slice(0, 20).map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul></div>';
+      return;
+    }
+    $('errors').innerHTML = '';
+    pub = next;
+    $('feed-label').textContent = (pub._synthetic ? 'SYNTHETIC feed' : 'Aggregate feed') + ' · ' + label +
+      (pub.generatedOn ? ' · generated ' + pub.generatedOn : '') + ' · suppression threshold n<' + pub.suppressionThreshold;
+    fillBlocks();
+    render();
+  }
+  $('sel-site').addEventListener('change', function () { if (pub) { fillBlocks(); render(); } });
+  $('sel-block').addEventListener('change', function () { if (pub) render(); });
+  $('feed-file').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { use(JSON.parse(reader.result), file.name); }
+      catch (err) { $('errors').innerHTML = '<div class="errors">Not valid JSON.</div>'; }
+    };
+    reader.readAsText(file);
+  });
+  fetch(FEED).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (d) { use(d, 'synthetic_feed.json'); })
+    .catch(function () {
+      $('feed-label').textContent = 'Could not load the synthetic feed (browsers block file:// reads). Serve the repository root locally, or choose metrics/aggregate/synthetic_feed.json with the file picker.';
+    });
+})();
+</script>
+</body>
+</html>

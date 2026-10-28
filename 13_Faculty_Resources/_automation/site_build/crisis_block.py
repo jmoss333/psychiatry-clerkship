@@ -65,7 +65,13 @@ def _line(resource):
 def render_markdown(data):
     """Render the block as markdown for content pages."""
     out = ['> <div class="%s" hidden></div>' % HOOK_CLASS, ">"]
-    out.append("> ### %s" % HEADING)
+    # A heading at level 2, drawn at the h3 size the block has always had. The marker usually sits
+    # right under the page's # title, and "### " there skipped a level (axe heading-order, measured
+    # 2026-10-07 on t_mood.md: h1 -> h3). Level 2 is correct wherever the marker sits, because an
+    # h2 can never skip one. aria-level carries the level so the rendering -- and every visual
+    # baseline that shows this block -- stays byte-identical; tests/a11y-heading-level.test.mjs
+    # and tests/smoke/a11y-axe.spec.js pin it.
+    out.append('> <h3 aria-level="2">%s</h3>' % HEADING)
     out.append(">")
     out.append("> %s" % data["unitEscalationNote"])
     out.append(">")

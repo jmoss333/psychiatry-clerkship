@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20241204",
+  "sections": {
+    "boxed_warning": {
+      "hash": "bc6be249535fd6818e7943c37991e154123c273f01a7c21fb2e64458604b6cd0",
+      "present": true,
+      "rems": false,
+      "text": "Suicidality and Antidepressant Drugs Antidepressants increased the risk compared to placebo of suicidal thinking and behavior (suicidality) in children, adolescents, and young adults in short-term studies of major depressive disorder (MDD) and other psychiatric disorders. Anyone considering the use of nortriptyline hydrochloride or any other antidepressant in a child, adolescent, or young adult must balance this risk with the clinical need. Short-term studies did not show an increase in the risk of suicidality with antidepressants compared to placebo in adults beyond age 24; there was a reduction in risk with antidepressants compared to placebo in adults aged 65 and older. Depression and certain other psychiatric disorders are themselves associated with increases in the risk of suicide. Patients of all ages who are started on antidepressant therapy should be monitored appropriately and observed closely for clinical worsening, suicidality, or unusual changes in behavior. Families and caregivers should be advised of the need for close observation and communication with the prescriber. Nortriptyline hydrochloride is not approved for use in pediatric patients ( see WARNINGS, Clinical Worsening and Suicide Risk ; PRECAUTIONS, Information for Patients ; and PRECAUTIONS, Pediatric Use )."
+    },
+    "contraindications": {
+      "hash": "5cb168064401fc36e95b0d4ecf74baac4b9c4aa6928064daca90b2cc3960b66c",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Monoamine Oxidase Inhibitors (MAOIs) The use of MAOIs intended to treat psychiatric disorders with Pamelor or within 14 days of stopping treatment with Pamelor is contraindicated because of an increased risk of serotonin syndrome. The use of Pamelor within 14 days of stopping an MAOI intended to treat psychiatric disorders is also contraindicated ( see WARNINGS and DOSAGE AND ADMINISTRATION ). Starting Pamelor in a patient who is being treated with MAOIs such as linezolid or intravenous methylene blue is also contraindicated because of an increased risk of serotonin syndrome ( see WARNINGS and DOSAGE AND ADMINISTRATION ). Hypersensitivity to Tricyclic Antidepressants Cross-sensitivity between Pamelor and other dibenzazepines is a possibility. Myocardial Infarction Pamelor is contraindicated during the acute recovery period after myocardial infarction."
+    },
+    "warnings": {
+      "hash": "186b6a127c83d6badf3209302b5f32e70e55702ba52e591fe17426b2a59f0be2",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "e17dc299-f52d-414d-ab6e-e809bd6f8acb",
+  "version": "24"
+}

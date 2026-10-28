@@ -7,13 +7,14 @@ content. Design rationale: `ADR-001-curriculum-surveillance.md`. For the combine
 operations matrix, alert semantics, and pause procedure, see the
 [scheduled maintenance runbook](../maintenance/README.md).
 
-## The four jobs
+## The five jobs
 
 | Job | UTC cadence | Artifact (90 days) | What it does |
 |---|---|---|---|
 | `link-source-monitor` | Monday 06:00, `0 6 * * 1` | `surveillance-link-monitor-${{ github.run_id }}` | Verifies outbound links in Markdown/HTML (404, redirect, TLS) |
 | `citation-monitor` | Monday 07:00, `0 7 * * 1` | `surveillance-citation-monitor-${{ github.run_id }}` | Verifies registry source URLs plus DOI/PMID identifiers |
 | `guideline-surveillance` | First day monthly 06:00, `0 6 1 * *` | `surveillance-guideline-monitor-${{ github.run_id }}` | Detects changes at scoped authoritative sources |
+| `evidence-watch` | Monday 08:00, `0 8 * * 1` | `surveillance-evidence-watch-${{ github.run_id }}` | New PubMed guidelines/meta-analyses and openFDA label/recall changes for taught medications and topics (keyless; see [Evidence watch](#evidence-watch)) |
 | `resource-intake` | On demand; no cron | `surveillance-resource-intake-${{ github.run_id }}` | Gathers candidate resources against strict filters |
 
 GitHub cron is UTC and becomes active only from the default branch. A branch-local
@@ -35,10 +36,12 @@ _automation/surveillance/
 │   ├── report_branch.py           ← hydrate/publish the protected rolling report branch
 │   ├── open_update_pr.py          ← actionable delta → attestation-routed PR (Phase 1)
 │   ├── lib_ai_draft.py            ← ADVISORY AI-drafted edit for a PR (Phase 2; needs ANTHROPIC_API_KEY)
-│   └── run_citation_check.py      ← live source-URL + DOI/PMID validity → findings (Phase 2)
+│   ├── run_citation_check.py      ← live source-URL + DOI/PMID validity → findings (Phase 2)
+│   └── run_evidence_watch.py      ← keyless PubMed + openFDA → findings (evidence-watch)
 ├── apify/                         ← paste-into-console input examples (3)
 ├── config/
 │   ├── source_registry.yaml       ← SINGLE SOURCE OF TRUTH for all 3 jobs
+│   ├── evidence_watch.yaml        ← evidence-watch items, P0/P1/P2 policy (D-F10-1/2)
 │   ├── finding.schema.json        ← normalized output every job emits
 │   └── citation_index.json        ← curriculum file → sources it depends on
 └── history/                       ← dated datasets (git-native audit trail)
@@ -48,10 +51,12 @@ _automation/surveillance/
     ├── resource_intake_YYYY-MM-DD.{csv,json}
     ├── digest_YYYY-MM.md          ← batched P2 items
     ├── baselines/<source_id>.json ← guideline baselines (hash; +text for full_text sources)
+    ├── baselines/evidence-watch/  ← seen PMIDs per item, label section hashes, seen recalls
     └── last_run.json              ← per-source last_checked stamps
 
 .github/workflows/  →  surveillance-link-monitor.yml (weekly),
                        surveillance-citations.yml (weekly),
+                       surveillance-evidence-watch.yml (weekly),
                        surveillance-guideline.yml (monthly),
                        surveillance-resource-intake.yml (manual)
 ```
@@ -77,7 +82,7 @@ only `config/dismissed.json` permanently suppresses a reviewed finding. Live sta
 closed issues from the active queue. If a finding requires a clinical change, faculty decide
 the edit and re-attestation, then close the issue manually.
 
-Wiring pattern: **collector → GitHub Action → one rolling review PR**. The four
+Wiring pattern: **collector → GitHub Action → one rolling review PR**. The five
 workflows share the `surveillance-inbox` concurrency group. They hydrate prior generated
 state, collect and sync, upload 90-day run artifacts, then publish only `history/**`,
 `STATUS.md`, and `status.html` to `automation/surveillance-inbox`. They never push
@@ -140,12 +145,13 @@ for an event.
 - The Apify-backed guideline/intake work sits in the free/near-free tier at this
   volume. Set a monthly compute-unit cap + alert; `resource-intake` is the only job
   that can grow — it is manual-triggered and capped at `max_candidates_per_run: 25`.
-- Secrets: `APIFY_TOKEN` and the built-in `GITHUB_TOKEN`. Workflows grant only
+- Secrets: `APIFY_TOKEN` and the built-in `GITHUB_TOKEN`. `evidence-watch` uses
+  `GITHUB_TOKEN` only — PubMed E-utilities and openFDA are queried keyless. Workflows grant only
   contents, issues, and pull-request write access for the report/issue review loop.
 
 ## Running it
 
-Implemented by four workflows in `.github/workflows/`. Scheduled runs begin only after
+Implemented by five workflows in `.github/workflows/`. Scheduled runs begin only after
 the workflow files reach the default branch. To configure the external collectors:
 
 1. **Set repo secret** (Settings → Secrets and variables → Actions): `APIFY_TOKEN`.
@@ -161,6 +167,32 @@ the workflow files reach the default branch. To configure the external collector
 5. **First link run** reports outbound-link failures found in repository Markdown and HTML.
 6. Schedules then run automatically: weekly links and citations, monthly guidelines;
    resource intake remains manual.
+
+## Evidence watch
+
+`bin/run_evidence_watch.py`, weekly via `surveillance-evidence-watch.yml` (F10). It watches
+the **literature and the FDA label**, which the guideline job (pages) and the citation job
+(links) do not. The motivating miss: the clozapine REMS ended in 2025 and nothing here would
+have surfaced the label change; `tests/maintenance/test_evidence_watch.py` replays that
+event from a synthetic openFDA fixture and asserts it files as **P0**.
+
+- **Items** are derived at run time: one per `pharmacy.json` record (label pinned by its
+  `dailymedSetId`) plus the curated `topics` in `config/evidence_watch.yaml`.
+- **PubMed** (keyless, ≤3 req/s): `esearch` over the last `reldate` days of Entrez dates,
+  filtered to guideline / meta-analysis / systematic-review publication types; `esummary`
+  for title, journal and DOI. Issues quote titles and identifiers only, never abstracts.
+- **openFDA** (keyless): the pinned label's watched sections are hashed against
+  `history/baselines/evidence-watch/openfda-label/<id>.json`; the first look establishes a
+  baseline and reports nothing. Recalls come from `drug/enforcement`.
+- **Severity is config** (`evidence_watch.yaml`), pending owner decisions: D-F10-1
+  (boxed warning / contraindication / REMS-language change = P0), D-F10-2 (PubMed P1
+  allowlist; everything else P2 digest), D-F10-3 (no AI summaries — none are made).
+- **Affected pages** are every shipped source (`shipped_pages.json`) that mentions an
+  item's terms, plus `pharmacy.json` for drug items. Mapping only reads.
+- An API the runner cannot reach becomes one `environment` finding per channel (digest,
+  never silent); `examination.json` in the run artifact lists what was examined per item.
+
+Offline check: `python3 -m unittest tests.maintenance.test_evidence_watch -v`.
 
 ## Local operator runs
 

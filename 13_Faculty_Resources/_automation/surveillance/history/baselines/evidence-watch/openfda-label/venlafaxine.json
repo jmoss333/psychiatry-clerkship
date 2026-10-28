@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20230815",
+  "sections": {
+    "boxed_warning": {
+      "hash": "95bd227b23957a984bd22b266e9495432613a414c90928bd70b30c3b7625c348",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and emergence of suicidal thoughts and behaviors [see Warnings and Precautions (5.1) ] . Effexor XR is not approved for use in pediatric patients [see Use in Specific Populations (8.4) ] . WARNING: SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. \u2022 Increased risk of suicidal thoughts and behavior in pediatric patients and young adults taking antidepressants. Closely monitor all antidepressant-treated patients for clinical worsening and emergence of suicidal thoughts and behaviors ( 5.1 ). \u2022 Effexor XR is not approved for use in pediatric patients ( 8.4 )."
+    },
+    "contraindications": {
+      "hash": "606f8bf3a324ce51dd126b0f291a98a7154b7ccf2c9ab47f21b8b55fb2a9a2e2",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Effexor XR is contraindicated in patients: \u2022 with known hypersensitivity to venlafaxine hydrochloride, desvenlafaxine succinate or to any excipients in the formulation [see Adverse Reactions (6.2) ] . \u2022 taking, or within 14 days of stopping, MAOIs (including the MAOIs linezolid and intravenous methylene blue) because of the risk of serotonin syndrome [see Dosage and Administration (2.11) , Warnings and Precautions (5.2) , and Drug Interactions (7.1) ] . \u2022 Hypersensitivity to venlafaxine hydrochloride, desvenlafaxine succinate, or any excipients in the Effexor XR formulation ( 4 ). \u2022 Concomitant use of monoaminoxidase inhibitors (MAOIs) or within 14 days of discontinuing an MAOI ( 4 , 5.2 , 7.1 )."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "2c3da4e1e3064d38d58a011c7aa511922aa6e0a13a393ff741fd1740c650615b",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "c848a5d8-ba94-4c84-80e3-0bf35fb8e32e",
+  "version": "7"
+}

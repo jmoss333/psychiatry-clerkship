@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20250205",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e257fb1b149fb92d219b2faadfd84182f2ee9b1085cb9306d5eeffabd88c46ac",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: ABUSE, MISUSE, AND ADDICTION Ritalin has a high potential for abuse and misuse, which can lead to the development of a substance use disorder, including addiction. Misuse and abuse of CNS stimulants, including Ritalin, can result in overdose and death [see Overdosage ( 10 )] , and this risk is increased with higher doses or unapproved methods of administration, such as snorting or injection. Before prescribing Ritalin, assess each patient\u2019s risk for abuse, misuse, and addiction. Educate patients and their families about these risks, proper storage of the drug, and proper disposal of any unused drug. Throughout Ritalin treatment, reassess each patient\u2019s risk of abuse, misuse, and addiction and frequently monitor for signs and symptoms of abuse, misuse, and addiction [see Warnings and Precautions ( 5.1 ) and Drug Abuse and Dependence ( 9.2 )]. WARNING: ABUSE, MISUSE, AND ADDICTION See full prescribing information for complete boxed warning. Ritalin has a high potential for abuse and misuse, which can lead to the development of a substance use disorder, including addiction. Misuse and abuse of CNS stimulants, including Ritalin, can result in overdose and death ( 5.1 , 9.2 , 10 ): \u2022 Before prescribing Ritalin, assess each patient\u2019s risk for abuse, misuse, and addiction. \u2022 Educate patients and their families about these risks, proper storage of the drug, and proper disposal of any unused drug. \u2022 Throughout treatment, reassess each patient\u2019s risk and frequently monitor for signs and symptoms of abuse, misuse, and addiction."
+    },
+    "contraindications": {
+      "hash": "c94d9b759865433c5b9afb7cae63cafd98cd46dc04b5612d771b256618de4eaf",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS \u2022 Hypersensitivity to methylphenidate or other components of Ritalin. Hypersensitivity reactions, such as angioedema and anaphylactic reactions, have been reported in patients treated with methylphenidate [see Adverse Reactions ( 6 )] . \u2022 Concomitant treatment with monoamine oxidase inhibitors (MAOIs), or within 14 days following discontinuation of treatment with an MAOI, because of the risk of hypertensive crises [see Drug Interactions ( 7.1 )] . \u2022 Known hypersensitivity to methylphenidate or other product components of Ritalin ( 4 ). \u2022 Concurrent treatment with a monoamine oxidase inhibitor (MAOI), or use of an MAOI within the preceding 14 days ( 4 )."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "799e92215f71da48d27892979a8269e5e037c4403d5f04d1ab3500a8c7520a77",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "d6fb2750-cdab-4749-ba0d-7534840a5892",
+  "version": "3"
+}

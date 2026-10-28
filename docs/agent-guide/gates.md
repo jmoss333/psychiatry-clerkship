@@ -26,6 +26,20 @@ bash bin/verify.sh            # --quick for the fast subset
 cd tests/smoke && npm ci && npx playwright test
 ```
 
+### Heavy local runs go through `~/bin/heavy-test` — [judgment]
+- **Run the Playwright smoke suite, `bin/verify-smoke.sh` and a full `bin/verify.sh` as
+  `~/bin/heavy-test -- <command>`** — e.g. `cd tests/smoke && ~/bin/heavy-test -- npx playwright
+  test --project=prototypes`. This Mac also hosts both self-hosted runners (`mac-jm-clerkship`,
+  `mac-jm-rps`); on 2026-10-25 local agent suites pushed load past 30 and CI browser jobs timed
+  out and flaked. The wrapper (host-side, not in this repo) takes a machine-wide `lockf` lock so
+  one heavy run goes at a time across Claude and Codex, waits while a CI job is running (a
+  `Runner.Worker` process exists; no tokens read), and caps Playwright workers — it exports
+  `PW_WORKERS`, which `tests/smoke/playwright.config.js` honours, and appends `--workers` to a
+  direct `playwright test`. `--no-wait` fails fast (exit 75); `heavy-test --status` prints load,
+  runner and lock state. If detection fails it still runs, at one worker. `node --test` on a
+  single file and `verify.sh --quick` don't need it. Never edit, restart or re-register a runner
+  to get around it.
+
 ### What CI runs on every PR — [gate: .github/workflows/ci.yml]
 - CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → governance/policy separation →
   citation attribution → media/topic_meta/longitudinal validators → build+QA gate (ms3 & res) →

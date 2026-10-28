@@ -193,6 +193,66 @@ function registration(options = {}) {
   return { context, reg };
 }
 
+function waitingRegistration(search = '', controlled = true) {
+  const posts = [], toasts = [], handlers = new Map();
+  const waiting = { state: 'installed', postMessage(message) { posts.push(message.type); } };
+  const reg = { waiting, addEventListener(name, handler) { handlers.set(name, handler); } };
+  const document = {
+    createElement() { return { children: [], handlers: new Map(), setAttribute() {},
+      addEventListener(name, handler) { this.handlers.set(name, handler); },
+      appendChild(child) { this.children.push(child); } }; },
+    body: { appendChild(node) { toasts.push(node); node.parentNode = this; },
+      removeChild(node) { toasts.splice(toasts.indexOf(node), 1); node.parentNode = null; } },
+  };
+  vm.runInNewContext(registerSource, { Promise, URLSearchParams, document,
+    location: { search, reload() {} }, navigator: { serviceWorker: {
+      controller: controlled ? {} : null, register: () => Promise.resolve(reg), addEventListener() {},
+    } } });
+  return { posts, toasts, reg, handlers };
+}
+
+test('an already waiting update offers Refresh on a later page load without activating itself', async () => {
+  const h = waitingRegistration();
+  await Promise.resolve();
+  assert.equal(h.toasts.length, 1, 'a worker installed before registration still needs an update notice');
+  assert.deepEqual(h.posts, [], 'reading must not reload before the learner chooses Refresh');
+  const refresh = h.toasts[0].children.find(child => child.textContent === 'Refresh');
+  refresh.handlers.get('click')();
+  assert.deepEqual(h.posts, ['SKIP_WAITING']);
+});
+
+test('an already waiting update can be dismissed for this page load', async () => {
+  const h = waitingRegistration();
+  await Promise.resolve();
+  assert.equal(h.toasts.length, 1);
+  h.toasts[0].children.find(child => child.textContent === 'Later').handlers.get('click')();
+  assert.equal(h.toasts.length, 0);
+  assert.deepEqual(h.posts, []);
+});
+
+test('a repeated install notification does not duplicate or re-open the same update notice', async () => {
+  const h = waitingRegistration();
+  await Promise.resolve();
+  let statechange;
+  h.reg.installing = h.reg.waiting;
+  h.reg.waiting.addEventListener = (name, handler) => { if (name === 'statechange') statechange = handler; };
+  h.handlers.get('updatefound')();
+  statechange();
+  assert.equal(h.toasts.length, 1);
+  h.toasts[0].children.find(child => child.textContent === 'Later').handlers.get('click')();
+  statechange();
+  assert.equal(h.toasts.length, 0, 'Later should last until the next page load');
+});
+
+for (const [name, search, controlled] of [
+  ['active tool', '?tool=mse.html', true], ['first installation', '', false],
+]) test(`an already waiting update preserves ${name}`, async () => {
+  const h = waitingRegistration(search, controlled);
+  await Promise.resolve();
+  assert.equal(h.toasts.length, 0);
+  assert.deepEqual(h.posts, []);
+});
+
 test('registration API reports unsupported, unregistered, and fulfilled update accurately', async () => {
   const unsupported = registration({ unsupported: true });
   assert.equal(unsupported.context.clerkshipSWRegistration(), null);

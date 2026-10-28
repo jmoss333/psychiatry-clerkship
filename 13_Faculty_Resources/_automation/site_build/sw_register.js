@@ -44,22 +44,30 @@ function registerClerkshipSW(){
     navigator.serviceWorker.register('/sw.js').then(function(reg){
       clerkshipSWReg=reg;
       clerkshipSWNotify();
+      var noticedWorker=null;
+      function offerUpdate(w){
+        if(!w || w===noticedWorker || !navigator.serviceWorker.controller) return;
+        if(new URLSearchParams(location.search).get('tool')) return;
+        noticedWorker=w;
+        var t=document.createElement('div');
+        t.className='sw-toast';
+        t.setAttribute('role','status');
+        t.innerHTML='Updated content available · ';
+        var b=document.createElement('button'); b.type='button'; b.textContent='Refresh';
+        b.addEventListener('click', function(){ w.postMessage({type:'SKIP_WAITING'}); });
+        var x=document.createElement('button'); x.type='button'; x.textContent='Later';
+        x.setAttribute('aria-label','Dismiss update notice');
+        x.addEventListener('click', function(){ if(t.parentNode) t.parentNode.removeChild(t); });
+        t.appendChild(b); t.appendChild(x); document.body.appendChild(t);
+      }
+      /* A previous tab may have installed this update before this load registered.
+         Navigation is network-first but assets stay in the active worker's cache. */
+      offerUpdate(reg.waiting);
       reg.addEventListener('updatefound', function(){
         var w=reg.installing; if(!w) return;
         w.addEventListener('statechange', function(){
           if(w.state==='installed')clerkshipSWNotify();
-          if(w.state!=='installed' || !navigator.serviceWorker.controller) return;
-          if(new URLSearchParams(location.search).get('tool')) return;
-          var t=document.createElement('div');
-          t.className='sw-toast';
-          t.setAttribute('role','status');
-          t.innerHTML='Updated content available · ';
-          var b=document.createElement('button'); b.type='button'; b.textContent='Refresh';
-          b.addEventListener('click', function(){ w.postMessage({type:'SKIP_WAITING'}); });
-          var x=document.createElement('button'); x.type='button'; x.textContent='Later';
-          x.setAttribute('aria-label','Dismiss update notice');
-          x.addEventListener('click', function(){ if(t.parentNode) t.parentNode.removeChild(t); });
-          t.appendChild(b); t.appendChild(x); document.body.appendChild(t);
+          if(w.state==='installed')offerUpdate(w);
         });
       });
       var reloaded=false;

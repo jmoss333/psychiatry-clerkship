@@ -15,7 +15,8 @@ faculty ruled. When one implies the other, each links the other.
 |---|---|---|---|
 | ADR-001 | Curriculum surveillance: scheduled monitors (citations, links, guidelines, resource intake) file findings as issues; humans action them | Accepted, live | `13_Faculty_Resources/_automation/surveillance/ADR-001-curriculum-surveillance.md` |
 | ADR-002 | `shipped_pages.json` is the single derived source of "what ships"; every producer feeds it and the build checks it against real output | Accepted, live (PR #522; reader migration complete 2026-09-06) | `13_Faculty_Resources/_automation/site_build/ADR-002-shipped-pages-single-source.md` |
-| ADR-003 | Attestation ledger: Ed25519-signed, hash-chained sign-offs on an orphan branch, projected into each build | **Superseded 2026-10-18** — built dark, never activated, removed (decision `attestation-ledger-removed`; phase 2 pending) | `docs/adr/ADR-003-attestation-ledger.md` |
+| ADR-003 | Attestation ledger: Ed25519-signed, hash-chained sign-offs on an orphan branch, projected into each build | **Superseded 2026-10-18** — built dark, never activated, removed in two phases the same day (decision `attestation-ledger-removed`) | `docs/adr/ADR-003-attestation-ledger.md` |
+| ADR-004 | The faculty console authenticates as a GitHub App; a ruleset on the attestation branch makes the App's key, not the commit email, the guarantee behind L4 | Accepted 2026-10-26 — code live and inert until the owner sets the three `GITHUB_APP_*` variables; ruleset after the first proven sign-off | `docs/adr/ADR-004-console-identity-github-app.md` |
 
 ## Decisions that function as ADRs but were recorded as specs or rulings
 

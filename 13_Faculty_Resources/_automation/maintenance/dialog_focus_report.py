@@ -16,7 +16,7 @@ def inventory():
     for site in SITES:
         for width in (320, 1280):
             for name in ("search", "settings", "safety kit", "protocol pg_suicide.md", "protocol agitation.md",
-                         "protocol exp_consult.md", "protocol t_sud.md", "protocol delirium.md", "capture",
+                         "protocol exp_consult.md", "protocol t_sud.md", "protocol delirium.md", "protocol catatonia.md", "capture",
                          "email review", "patient-details warning", "retained item preview"):
                 for source in ("reading and guide arrival", "high-risk ledger arrival"):
                     add("dialog-loading-focus.spec.js", "nav-" + site, f"{name} / {source} / {width}px", site, width)
