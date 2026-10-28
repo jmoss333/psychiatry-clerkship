@@ -109,7 +109,8 @@
           "Have you wished you weren't here?",
           "Have you had thoughts about not wanting to be alive?",
           "Do you ever wish you wouldn't wake up?",
-          "Have you been thinking that things would be easier if you weren't around?"
+          "Have you been thinking that things would be easier if you weren't around?",
+          "Have you had thoughts about not wanting to be here anymore?"
         ],
         "si_euphemism": [
           "Have you had any thoughts of hurting yourself?",
@@ -128,7 +129,10 @@
           "When you think about the pills, how far has that gone?",
           "Have you thought about when or where?",
           "Have you planned anything out?",
-          "Is there a particular method you've thought about?"
+          "Is there a particular method you've thought about?",
+          "Have you thought about how to kill yourself?",
+          "Have you thought about how to do it?",
+          "Have you thought about when you would do it?"
         ],
         "si_means": [
           "Do you have access to those pills?",
@@ -273,6 +277,13 @@
         { "text": "Have you thought about where you'd stay after discharge?", "intents": ["si_plan"] },
         { "text": "Are you planning anything for the weekend?", "intents": ["si_plan"] },
         { "text": "Have you thought about how you'd tell your sister?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how to tell your sister?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you'd like to go home?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you want to leave?", "intents": ["si_plan"] },
+        { "text": "Have you thought about where you'd go after discharge?", "intents": ["si_plan"] },
+        { "text": "You mentioned not wanting to be here in the hospital. Can you tell me more?", "intents": ["si_passive", "si_direct"] },
+        { "text": "You mentioned not wanting to live here with your mother — can you say more about that?", "intents": ["si_passive", "si_direct"] },
+        { "text": "I imagine you've wished you weren't here on the unit.", "intents": ["si_passive", "si_direct"] },
         { "text": "Are the sleeping pills still in the house?", "intents": ["sleep"] },
         { "text": "What happened after you lost your job?", "intents": ["psychosis_screen"] },
         { "text": "Did you get any sleep last night on the unit?", "intents": ["judgmental", "premature_reassurance", "ooc_attempt"] },
@@ -408,7 +419,9 @@
       "required": {
         "si_plan": [
           "Have you made any plan to end your life?",
-          "Have you thought about how you would do it?"
+          "Have you thought about how you would do it?",
+          "Have you thought about how to kill yourself?",
+          "Have you thought about when you would do it?"
         ],
         "si_behavior": [
           "Have you done anything since you left to act on those thoughts?",
@@ -424,6 +437,8 @@
       "proposed": {},
       "mustNot": [
         { "text": "Do you have a plan for when you leave the hospital?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you'd like to go home?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how to tell your sister?", "intents": ["si_plan"] },
         { "text": "Did Tom take his sleeping pills to work like he said?", "intents": ["sleep"] },
         { "text": "Don't worry about taking your time with the form.", "intents": ["premature_reassurance"] }
       ]
@@ -483,6 +498,42 @@
       "mustUnlock": [],
       "mustNotUnlock": ["si_active", "si_plan_detail"],
       "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "method-question-to-infinitive-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the explicit method question in its infinitive form must reach the plan detail gate (Codex review of #1119, 2026-10-28: the first `thought about how` exclusion rejected every `how to …`)",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about how to kill yourself?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "d14-discharge-when-youd-like-to-go-home",
+      "case": "sp_depression_gated_si_001",
+      "reference": "D14 in the timing wording: a discharge-timing question after the screen must not open plan detail (Codex review of #1119, 2026-10-28)",
+      "turns": ["Have you thought about suicide?", "Have you thought about when you'd like to go home?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "timing-question-still-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the other half: a real timing question after the screen still reaches plan detail",
+      "turns": ["Have you thought about suicide?", "Have you thought about when you would do it?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "hospital-complaint-is-not-a-death-wish",
+      "case": "sp_depression_gated_si_001",
+      "reference": "wanting to leave the hospital is not passive suicidal ideation and must not open the gated disclosure (Codex review of #1119, 2026-10-28)",
+      "turns": ["You mentioned not wanting to be here in the hospital. Can you tell me more?"],
+      "mustUnlock": [],
+      "mustNotUnlock": ["si_active", "si_plan_detail"],
+      "mustNotCover": ["si_passive", "si_direct"]
     }
   ]
 }
