@@ -227,12 +227,22 @@ var COWS_SERIES={
     if(d.points<0) return 'Falling '+n+' in '+span+' — what does a falling score oblige you to do?';
     return 'Plateau — unchanged over '+span+'.';
   },
-  /* The eight OBSERVED items are the objective signs; ASKED and ASKED/OBSERVED items are not. */
+  /* An objective sign is a selected rung the examiner saw or measured. The eight OBSERVED items
+     are the only candidates (ASKED and ASKED/OBSERVED items never count), but membership is not
+     enough: the spec marks a patient-reported rung inside an observed item with the words
+     "reported only" (Sweating 1), and that rung must not turn the gate on. The rung is looked up
+     in the item's own ladder, so an illegal value counts for nothing. */
+  isObjectiveRung:function(item,rung){
+    return item.tag==='OBSERVED' && !!rung && rung.v>0 && !/reported only/i.test(rung.a||'');
+  },
   objective:function(items,values){
     var names=[],max=0;
     for(var i=0;i<items.length;i++){
       var it=items[i]; if(it.tag!=='OBSERVED') continue; max++;
-      if(parseInt(values[it.k]||0,10)>0) names.push(it.b);
+      var val=parseInt(values[it.k]||0,10); if(!(val>0)) continue;
+      var rung=null, ladder=it.vals||[];
+      for(var j=0;j<ladder.length;j++){ if(ladder[j].v===val){ rung=ladder[j]; break; } }
+      if(COWS_SERIES.isObjectiveRung(it,rung)) names.push(it.b);
     }
     return {count:names.length,max:max,names:names};
   },
@@ -250,11 +260,22 @@ var COWS_SERIES={
   }
 };
 /* COWS_SERIES_HELPERS_END */
-/* Storage wrappers: the only two places the key is read or written. Literal key on purpose —
+/* COWS_STORAGE_BEGIN — the only two places the key is read or written. Literal key on purpose:
    check-static-site.mjs §5 verifies the cw_* namespace from the literal and reports a computed
-   key as unverifiable. */
-function loadSeries(){try{return COWS_SERIES.prune(JSON.parse(localStorage.getItem('cw_cows_series_v1')||'[]'),Date.now());}catch(_){return [];}}
+   key as unverifiable. tests/cows-series.test.mjs executes this block against a fake store. */
+function loadSeries(){
+  /* The seven-day promise is kept on read, not only on the next write: a point that has expired
+     leaves storage the moment the page loads, and the key goes with it when nothing remains. A
+     value that no longer parses can never be read again, so it is removed rather than kept. */
+  try{
+    var raw=localStorage.getItem('cw_cows_series_v1'); if(raw===null) return [];
+    var kept=COWS_SERIES.prune(JSON.parse(raw),Date.now());
+    saveSeries(kept);
+    return kept;
+  }catch(_){ try{ localStorage.removeItem('cw_cows_series_v1'); }catch(__){} return []; }
+}
 function saveSeries(entries){try{if(entries.length)localStorage.setItem('cw_cows_series_v1',JSON.stringify(entries));else localStorage.removeItem('cw_cows_series_v1');}catch(_){}}
+/* COWS_STORAGE_END */
 function fmtWhen(iso,nowMs){
   var d=new Date(iso); var hm=d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   return d.toDateString()===new Date(nowMs).toDateString()?hm:(d.toLocaleDateString([],{month:'short',day:'numeric'})+' '+hm);
@@ -337,7 +358,7 @@ function Scale(props){
       e('div',{className:'objective'},
         e('div',{className:'eyebrow'},'Objective signs scored'),
         e('div',{className:'objcount'}, obj.count+' of '+obj.max),
-        e('div',{className:'objnames'}, obj.names.length? obj.names.join(' · ') : 'none yet — the eight OBSERVED items are the signs you can see, not the ones you ask about'),
+        e('div',{className:'objnames'}, obj.names.length? obj.names.join(' · ') : 'none yet — the eight OBSERVED items are the signs you can see, not the ones you ask about; a rung the patient only reports is not a sign'),
         e('div',{className:'gate'+(gate?' met':'')},
           e('b',null,'Gate check — '),'COWS ≥ 8 with at least one objective sign: ',e('b',null, gate?'met':'not met'),
           e('span',{className:'gatenote'},'Teaching, not an order. This is the ASAM 2023 wording for people using high-potency synthetic opioids (Weimer et al., J Addict Med 2023, PMID 37934520); the threshold your team starts on is in its protocol.'))

@@ -10,7 +10,11 @@
 //   · the page still has no field a person could type an identifier into;
 //   · Δ per hour is computed correctly across midnight (the spec's fixture, WP-21 acceptance);
 //   · the objective-sign count uses exactly the eight OBSERVED items — ASKED and ASKED/OBSERVED
-//     items never count, because the gate line is "COWS ≥ 8 with one objective sign";
+//     items never count, because the gate line is "COWS ≥ 8 with one objective sign" — and
+//     within those items only a rung the examiner saw or measured counts: the spec's "reported
+//     only" rung (Sweating 1) does not turn the gate on (Codex P2 on #1115, 2026-10-28);
+//   · the retention promise is kept on read: an expired point leaves storage when the page
+//     loads, and the key goes with it when nothing remains (Codex P2 on #1115, 2026-10-28);
 //   · the note line names what a resident charts and nothing else.
 //
 // Trust model: the helpers block is executed straight out of the tracked html, the same way
@@ -41,6 +45,22 @@ function cowsItems() {
   assert.ok(m, 'COWS array not found');
   // eslint-disable-next-line no-new-func
   return new Function(`${m[0]}\nreturn COWS;`)();
+}
+
+// The storage wrappers, run against a fake store and a fixed clock. `Date` is shadowed with an
+// object that keeps the real parse (prune needs it) and pins now().
+function storage(store, nowMs) {
+  const m = html.match(/\/\* COWS_STORAGE_BEGIN[\s\S]*?\*\/\n([\s\S]*?)\/\* COWS_STORAGE_END \*\//);
+  assert.ok(m, 'COWS storage block not found — locate it by its sentinels, not by line');
+  const localStorage = {
+    getItem: (k) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v); },
+    removeItem: (k) => { delete store[k]; },
+  };
+  const FakeDate = { now: () => nowMs, parse: Date.parse };
+  // eslint-disable-next-line no-new-func
+  return new Function('localStorage', 'Date', 'COWS_SERIES',
+    `${m[1]}\nreturn { loadSeries, saveSeries };`)(localStorage, FakeDate, helpers());
 }
 
 // ---------- storage discipline ----------
@@ -121,6 +141,41 @@ test('prune drops stale, malformed, future and out-of-range entries and sorts as
     'a point just outside seven days is dropped');
 });
 
+test('loading the series writes the pruned result back, and removes the key when nothing remains', () => {
+  const now = Date.parse('2026-10-28T12:00:00Z');
+  const fresh = { t: new Date(now - DAY).toISOString(), total: 9, items: { pulse: 2 } };
+  const stale = { t: new Date(now - 8 * DAY).toISOString(), total: 14, items: { tremor: 4 } };
+
+  // Mixed: the stale point leaves storage on load, not on the next write.
+  let store = { cw_cows_series_v1: JSON.stringify([stale, fresh]) };
+  let got = storage(store, now).loadSeries();
+  assert.deepEqual(got.map((x) => x.total), [9]);
+  assert.deepEqual(JSON.parse(store.cw_cows_series_v1), [fresh], 'storage holds only what survived prune');
+
+  // All expired: the key goes too — the banner promises the series clears itself after 7 days.
+  store = { cw_cows_series_v1: JSON.stringify([stale]) };
+  got = storage(store, now).loadSeries();
+  assert.deepEqual(got, []);
+  assert.ok(!('cw_cows_series_v1' in store), 'no key is left behind for an empty series');
+
+  // A value that no longer parses can never be read again, so it is removed rather than kept.
+  store = { cw_cows_series_v1: '{not json' };
+  assert.deepEqual(storage(store, now).loadSeries(), []);
+  assert.ok(!('cw_cows_series_v1' in store), 'a corrupt value is removed');
+
+  // Nothing stored: nothing is written.
+  store = {};
+  assert.deepEqual(storage(store, now).loadSeries(), []);
+  assert.deepEqual(Object.keys(store), [], 'a first visit writes nothing');
+
+  // saveSeries: an empty series removes the key; a non-empty one writes it under the literal key.
+  const S = storage(store, now);
+  S.saveSeries([fresh]);
+  assert.deepEqual(Object.keys(store), ['cw_cows_series_v1']);
+  S.saveSeries([]);
+  assert.deepEqual(Object.keys(store), []);
+});
+
 // ---------- Δ per hour, across midnight (WP-21 acceptance) ----------
 
 test('delta per hour is computed across a spanning-midnight fixture', () => {
@@ -162,6 +217,38 @@ test('exactly the eight OBSERVED items are objective signs', () => {
   const some = H.objective(items, { pulse: 2, tremor: 2, aches: 4, anx: 1 });
   assert.equal(some.count, 2);
   assert.deepEqual(some.names, ['Resting pulse rate', 'Tremor']);
+});
+
+test('within an OBSERVED item, only a rung the examiner saw or measured is an objective sign', () => {
+  const H = helpers();
+  const items = cowsItems();
+  const sweat = items.find((i) => i.k === 'sweat');
+  assert.match(sweat.vals.find((r) => r.v === 1).a, /reported only/,
+    'the spec still marks Sweating 1 as patient-reported — if this wording moves, re-derive the rule');
+
+  // The reviewer's fixture: Sweating 1 + aches 4 + GI 3 is a total of 8 with no sign observed.
+  const fixture = { sweat: 1, aches: 4, gi: 3 };
+  const obj = H.objective(items, fixture);
+  assert.deepEqual(obj, { count: 0, max: 8, names: [] }, 'a reported-only rung is not a sign');
+  assert.equal(H.gateMet(8, obj.count), false);
+  assert.match(H.noteLine(items, fixture, 'Mild'),
+    /^COWS 8 \(Mild\) — Bone or joint aches 4, GI upset 3, Sweating 1; objective signs 0\/8; COWS ≥ 8 with ≥ 1 objective sign: not met\./);
+
+  // One rung up, the same item is visibly flushed or damp, and it counts.
+  assert.deepEqual(H.objective(items, { sweat: 2, aches: 4, gi: 3 }).names, ['Sweating']);
+
+  // The rule enumerated: Sweating 1 is the only reported-only rung among the eight OBSERVED items.
+  const subjective = [];
+  for (const it of items.filter((i) => i.tag === 'OBSERVED')) {
+    for (const rung of it.vals) if (rung.v > 0 && !H.isObjectiveRung(it, rung)) subjective.push(`${it.k}:${rung.v}`);
+  }
+  assert.deepEqual(subjective, ['sweat:1']);
+  assert.equal(H.isObjectiveRung(items.find((i) => i.k === 'anx'), { v: 2, a: 'evident on observation' }), false,
+    'an ASKED/OBSERVED item never counts, whatever its rung says');
+
+  // A value the ladder does not offer counts for nothing.
+  assert.equal(H.objective(items, { pulse: 3 }).count, 0, 'pulse has no rung 3');
+  assert.equal(H.objective(items, { goose: 3 }).count, 1, 'piloerection detectable is a sign');
 });
 
 test('the gate is COWS ≥ 8 with at least one objective sign', () => {
