@@ -1301,6 +1301,70 @@ class DraftTreesFlagTest(unittest.TestCase):
             self.assertEqual(fh.read().count(common.DRAFT_TREES_NEEDLE), 1)
 
 
+class TestOutcomesFlag(unittest.TestCase):
+    """CLERKSHIP_OUTCOMES (L8 outcomes design, DRAFT): default off, fail closed."""
+
+    PAGE = ("<html><head><title>t</title></head><body><script>"
+            "function cwOutcomeTally(evt){}</script></body></html>")
+
+    def _page(self, text):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        p = os.path.join(d, "tool.html")
+        with open(p, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        return d, p
+
+    def test_default_is_off_and_production_takes_the_default(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("CLERKSHIP_OUTCOMES", None)
+            self.assertEqual(common.outcomes_mode(), "off")
+            self.assertFalse(common.outcomes_enabled())
+        # The build reads the env, never a hard-coded True.
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_deploy.py"),
+                   encoding="utf-8").read()
+        self.assertIn("_OUTCOMES = common.outcomes_enabled()", src)
+        self.assertIn("inject_outcomes=_OUTCOMES", src)
+
+    def test_invalid_value_raises(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_OUTCOMES": "maybe"}):
+            with self.assertRaises(ValueError):
+                common.outcomes_mode()
+
+    def test_on_value(self):
+        with mock.patch.dict(os.environ, {"CLERKSHIP_OUTCOMES": " ON "}):
+            self.assertTrue(common.outcomes_enabled())
+
+    def test_disabled_never_stamps(self):
+        d, p = self._page(self.PAGE)
+        self.assertFalse(common.apply_outcomes_flag(p))
+        self.assertFalse(common.apply_outcomes_flag(p, enabled=False))
+        self.assertEqual(common.outcomes_flag_leaks(d), [])
+
+    def test_enabled_stamps_once_and_only_tally_pages(self):
+        d, p = self._page(self.PAGE)
+        self.assertTrue(common.apply_outcomes_flag(p, enabled=True))
+        self.assertFalse(common.apply_outcomes_flag(p, enabled=True))
+        text = open(p, encoding="utf-8").read()
+        self.assertEqual(text.count(common.OUTCOMES_FLAG_TAG), 1)
+        self.assertEqual(common.outcomes_flag_leaks(d), ["tool.html"])
+        _, q = self._page("<html><head></head><body>no tally</body></html>")
+        self.assertFalse(common.apply_outcomes_flag(q, enabled=True))
+
+    def test_tally_marker_follows_calib_log_marker(self):
+        keys = list(common.SNIPPET_MARKERS)
+        self.assertLess(keys.index("/*__CALIB_LOG__*/"), keys.index("/*__OUTCOME_TALLY__*/"))
+
+    def test_injected_calib_log_carries_the_tally(self):
+        _, p = self._page("<html><head></head><body><script>/*__CALIB_LOG__*/</script></body></html>")
+        common.inject_shared_snippets(p)
+        text = open(p, encoding="utf-8").read()
+        self.assertIn("function calibLog(", text)
+        self.assertIn("function cwOutcomeTally(", text)
+        self.assertNotIn("/*__OUTCOME_TALLY__*/", text)
+        self.assertNotIn(common.OUTCOMES_FLAG_TAG, text)
+
+
 class TestPrePostFlag(unittest.TestCase):
     """CLERKSHIP_PREPOST (L8 outcomes design, DRAFT): default off, fail closed."""
 

@@ -2,7 +2,9 @@
   "version": 1,
   "_note": "Hand-edited: tool step lists ONLY. Page keys derive from shipped_pages.json. Regenerate the bundled allowlist: python3 13_Faculty_Resources/_automation/site_build/analytics_events.py --write",
   "tools": {
+    "daily-review": ["graded-1", "graded-10", "graded-25"],
     "interview-room": ["open", "first-turn", "five-turns", "wrapped"],
+    "qbank": ["answered-5", "answered-10", "answered-20", "first10-lt50", "first10-50to79", "first10-80up"],
     "reasoning-workbench": ["open", "step1", "step2", "step3", "done"]
   }
 }

@@ -587,6 +587,10 @@ for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
+# Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms
+# outcome_tally.js only; it sends nothing unless the emitter above also ships.
+_OUTCOMES = common.outcomes_enabled()
+print("outcome counters:", "armed (CLERKSHIP_OUTCOMES=on)" if _OUTCOMES else "off (CLERKSHIP_OUTCOMES=%s)" % common.outcomes_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -779,7 +783,8 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3,
+                            inject_outcomes=_OUTCOMES)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -842,6 +847,16 @@ if not _ANALYTICS_MS3:
         raise SystemExit(
             "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
             "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
+
+# Outcome-counter fail-closed postcondition: an off build carries no CW_OUTCOMES stamp
+# anywhere. The resident build is a copy of this tree, so this also covers it.
+if not _OUTCOMES:
+    _outcomes_leaked = common.outcomes_flag_leaks(OUT)
+    if _outcomes_leaked:
+        raise SystemExit(
+            "outcome counters: CLERKSHIP_OUTCOMES=%s but the CW_OUTCOMES stamp is present: %s"
+            % (common.outcomes_mode(), ", ".join(_outcomes_leaked))
         )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------
