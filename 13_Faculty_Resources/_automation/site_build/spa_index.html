@@ -3161,7 +3161,7 @@
     fdRenderCapture(state);
     fdRenderDock(state,!!hydrate);
     fdRenderOverlays(state);
-    fdRenderUsageNotice();
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
     fdMountCareDirectory(state);
@@ -3224,7 +3224,7 @@
     if(surfaces.layout)fdPatchToolLayout(state);
     if(surfaces.base||surfaces.completion)fdRenderDock(state,true);
     fdRenderOverlays(state);
-    fdRenderUsageNotice();
+    if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     fdUpdateCareNavigatorStatus(state);
     if(surfaces.base||surfaces.completion)fdMountCareDirectory(state);
     fdSyncOfflineVisit(state);

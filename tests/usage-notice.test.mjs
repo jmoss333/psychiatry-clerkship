@@ -55,7 +55,7 @@ test('shell wiring: one footer mount, rendered from the emitter, inerted by the 
   assert.match(shell, /<\/main>\s*<footer id="fdUsageMount" class="fd-usage-foot"><\/footer>/);
   assert.match(shell, /FD_SAFETY_INERT_IDS=\[[^\]]*'fdUsageMount'/);
   assert.match(shell, /function fdRenderUsageNotice\(\)\{[\s\S]*?window\.cwAnalytics[\s\S]*?fdUsageNotice\(an\)/);
-  assert.equal((shell.match(/fdRenderOverlays\(state\);\n\s*fdRenderUsageNotice\(\);/g) || []).length, 2,
+  assert.equal((shell.match(/fdRenderOverlays\(state\);\n\s*if\(typeof fdRenderUsageNotice==='function'\)fdRenderUsageNotice\(\);/g) || []).length, 2,
     'both render paths refresh the notice with the overlays');
   // The off build's own text gate: the shell must never name the emitter's file.
   assert.doesNotMatch(shell, /analytics\.js/);

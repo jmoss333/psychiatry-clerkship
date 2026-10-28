@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(779 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(782 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1401,3 +1401,16 @@ The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
 Settings adds a Reading comfort section before Your data, using existing `.fd-set`, `.fd-seg`, `.fd-seg__btn`, `.fd-set__note` and `.fd-btn--ghost` classes. Each choice is a normal `aria-pressed` button; Reset reading comfort restores both Standard choices. A status note reports save success or failure; failure retains the prior choice.
 
 Reading roots carry non-action `data-fd-reader-size` / `data-fd-reader-spacing` markers. Larger/Largest set `--fd-reading-scale` to 1.15/1.3; Spacious sets `--fd-reading-leading` to 2. Standard keeps the existing typography, including the guide's existing scale and leading. Rules affect reading bodies, guide leads, section headings, examples, references, crisis blocks and both table views; tool roots carry no markers. No new class selectors or motion. The mounted reading stays intact, and the reading-place session preserves its heading and offset through reflow, including a transient signed gap above the first heading. Selecting an already painted choice never takes scroll ownership.
+
+## Usage notice footer (L8 D3, 2026-10-27)
+
+Rendered by `fdUsageNotice` (fd_shell.js) into `<footer id="fdUsageMount">`, a sibling after
+`.fd-main` inside `.fd-shell`, **only on builds that ship the usage emitter** — empty, and therefore
+hidden, everywhere else.
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-usage-foot` | `<footer id="fdUsageMount">` | `:empty` → `display:none`, so off builds keep their exact layout. Same max width as `.fd-main`; at ≤ 640px its bottom padding clears the fixed dock. Inerted by the safety pause. |
+| `.fd-usage-notice` | `<p>` | One muted line (`--fd-font-xs`, `--fd-text-mid`). |
+| `.fd-usage-notice__btn` | `<button data-fd-settings>` | Text-style link that opens Settings › Usage — the only opt-out writer stays the emitter. |
+
