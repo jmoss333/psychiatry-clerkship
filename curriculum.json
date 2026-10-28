@@ -471,7 +471,7 @@
     "communication-practice.html": "Say your first line in a hard clinical moment, then compare it with the authored options.",
     "diagnostic-reasoning.html": "Turn bedside data into a problem representation, a differential, and a supervised next step.",
     "family-systems.html": "Rehearse collateral calls, family meetings, discharge-role mapping, and high-emotion conversations.",
-    "family-meeting-sim.html": "Rehearse an angry parent, an ambivalent spouse and a silent teen, then debrief four conversation skills.",
+    "family-meeting-sim.html": "Rehearse eight family conversations, then debrief four conversation skills. Draft, pending faculty review.",
     "one-patient-six-weeks.html": "Follow four patients through psychosis, mood, trauma, delirium, safety, and care transitions.",
     "capacity.html": "Walk the four abilities at the bedside with sample questions, then draft a structured capacity note.",
     "maine-law-navigator.html": "Pick the question you face; see the Maine pathway, clock, pitfall and statute. Not legal advice.",
@@ -721,7 +721,7 @@
     "maine_law.md": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "maine-law-navigator.html": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "one-patient-six-weeks.html": ["one patient six weeks", "case journeys"],
-    "family-meeting-sim.html": ["family simulation", "angry parent", "ambivalent spouse", "silent teen", "discharge meeting"],
+    "family-meeting-sim.html": ["family simulation", "angry parent", "ambivalent spouse", "silent teen", "discharge meeting", "involuntary hold", "interpreter", "co parents", "older adult psychosis", "struggling parent"],
     "capacity.html": [
       "capacity",
       "decisional capacity",

@@ -12,18 +12,29 @@ The display title deliberately avoids the phrase "Family Meeting": `tests/fd-sea
 
 ## How scoring works
 
-- Four axes, each scored 0, 1 or 2 per choice: `validation`, `structure` (agenda, roles, summary, close), `safety` (risk as clinical data, collaborative means safety, specific roles, routing to the team) and `nonblaming` (illness-not-character framing, holding several perspectives, no cross-examination).
+- Four axes, each scored 0, 1 or 2 per choice: `validation` (naming the feeling and the concrete event; translations offered as hypotheses), `structure` — "Structure, agenda and consent" (agenda, roles, summary, close, and stating and holding what the patient agreed can be shared), `safety` — "Safety actions" (risk as clinical data routed to the team, asking about firearms and other quick-harm means, specific safety roles, escalating in the moment) and `nonblaming` (illness-not-character framing, holding several perspectives, no cross-examination). A choice earns points on an axis only for content that does that axis's work: kindness, separate-time offers and confidentiality handling never earn `safety`.
 - A run's score per axis is the points earned divided by the most that the moments actually reached could offer. The debrief shows four bars, the authored feedback for each choice, the strongest authored option where the learner chose a weaker one, and "Try again from this moment". It never shows pass or fail.
 - Bands are descriptive: "often" (75% or more), "some of the time" (40–74%), "mostly missing" (below 40%).
+- A separate safety gate lists the required safety actions for each scenario and whether they were done, done after a miss, or not done; skill percentages never offset it. Endings are composed from what actually happened on the path. Choice order within a node is frozen once shipped; append new choices. The rubric is a draft and unvalidated.
+- The gate renders above the bars as "Safety steps on this run". If a required step was not done, or a safety flag fired, a banner says so and the safety bar's band sentence is replaced; a disclosure beyond consent adds its own notice. A "Run record" line (tool and rubric version, path, earned/max per axis, gate status, flags) is shown on screen for proctored use only — never stored, copied or sent.
+
+## Data model (v2)
+
+- Top level: `version` (2), `rubricVersion` (a string; bump the minor on any score change, the major on any axis or gate definition change), `status`, `axes`, `flagDefs`, `phases`, `scenarios`.
+- `flagDefs` is a fixed enum: `suicide-statement-not-asked`, `risk-judged-by-student`, `lethal-means-dismissed` (kind `safety`) and `disclosure-beyond-consent` (kind `consent`). A choice may carry at most one `flag`. A safety-flagged choice scores `safety: 0` and never satisfies a gate item; a disclosure beyond consent scores 0 on every axis and routes to a repair node.
+- Each scenario has `gate.required`: items with a stable `id` (`s1-`…`s8-` prefix; never renamed once shipped), a learner-visible `label`, `offeredAt` (node ids), `satisfiedBy` (`nodeId#index` at those nodes) and `claimTerms` (lower-case phrases an ending may only use inside an addendum whose `when` names the item). Every path must offer every item.
+- An ending has `title`, a base `text` that is true on every path, and optional `addenda`: `{ "when": { "met": [ids], "notMet": [ids] }, "text": … }`, appended in order when every condition holds (`met` = done, including after a miss; `notMet` = not done).
+- Stable item ids for the rubric-validation study: skill items are `scenarioId/nodeId#index`; gate items are their `id`.
 
 ## Adding or editing a scenario
 
-1. Give it a kebab-case `id`, a `title`, `setting`, `time`, `learnerRole`, `participants` (`name`, `role`, `stance`), `goals`, `start`, `nodes` and `endings`. Optional: `note` and `noteLink` (`label`, `page` — a shipped slug).
+1. Give it a kebab-case `id`, a `title`, `setting`, `time`, `learnerRole`, `participants` (`name`, `role`, `stance`), `goals`, `gate` (at least two required safety actions), `start`, `nodes` and `endings`. Optional: `note` and `noteLink` (`label`, `page` — a slug in `shipped_pages.json`; never a page that may be withheld).
 2. Each node has a `phase` (`join`, `share`, `hear`, `plan`, `close` — the five phases of `family_meeting_playbook_90min.md`), `lines` (`speaker`, `text`; speaker `narration` renders as a stage direction), an optional `cue`, an optional `repair: true`, and 3–4 `choices`.
-3. Each choice has `text` (what the learner says), `next` (a node id or an ending id), `scores` with all four axes, and `feedback` (one or two sentences: why this move helps or hurts, in the same words the playbook and Family Systems Practice use).
-4. Structure: 6–10 decisions on every path; no cycles; every node and ending reachable; every rupture has a repair node that rejoins the main line; every path must touch all four axes.
-5. Content rules: fictional people only; no doses; no instrument items; no hard-coded crisis numbers (the build injects them at `<!-- crisis-block-html -->`); no consent or confidentiality rules for minors (link the law page instead); means safety stays at the level of the concept, with details routed to the team and local policy.
-6. Run `node --test tests/family-meeting-sim.test.mjs`. The engine refuses to run on data that fails its own checks.
+3. Each choice has `text` (what the learner says), `next` (a node id or an ending id), `scores` with all four axes, and `feedback` (one or two sentences: why this move helps or hurts, in the same words the playbook and Family Systems Practice use). Optional `flag` (a `flagDefs` key).
+4. Structure: 6–10 decisions on every path; no cycles; every node and ending reachable; every path must touch all four axes and offer every gate item; option 0 at each main-line node is the strongest on every axis, so the option-0 path scores 100% and does every required safety step. Most missteps have a repair node that rejoins the main line; the test pins the choices that still have neither a repair route nor a flag, and that list may only shrink.
+5. Content rules: fictional people only; no doses; no instrument items; no hard-coded crisis numbers (the build injects them at `<!-- crisis-block-html -->`); no consent or confidentiality rules for minors (link the ethics and law page instead); means safety stays at the level of the concept, with details routed to the team and local policy; ask about a gun in the house where no relative volunteers one. For a relative's own risk the learner's scope is ask directly, hear the answer, stay, and hand over to the attending in the moment — never a risk formulation.
+6. Endings: put anything that depends on a safety step in an addendum conditioned on that gate item, never in the base text.
+7. Run `node --test tests/family-meeting-sim.test.mjs`. The engine refuses to run on data that fails its own checks.
 
 ## Storage
 
