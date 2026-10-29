@@ -92,8 +92,8 @@ function serialize(value) {
 /**
  * The canonical JSON text of any JSON value: keys sorted by code point at every level, no
  * whitespace, raw UTF-8. Python twin: `json.dumps(v, sort_keys=True, separators=(",", ":"),
- * ensure_ascii=False)`. Exported because the attestation ledger (faculty-console/ledger.mjs)
- * signs and chains exactly this form; one canonicaliser, not two.
+ * ensure_ascii=False)`. Exported because attest.mjs keys bank-review sections by exactly this
+ * form; one canonicaliser, not two.
  */
 export function canonicalJson(value) {
   return serialize(value);

@@ -1323,6 +1323,13 @@ function fakeTray() {
   const reminder = node({ 'data-fd-care-packet-reminder': '' });
   const cardNote = node({ 'data-fd-care-packet-card-note': '' });
   const cardButton = node({ 'data-fd-care-packet-card-print': '' });
+  const starterButton = node({ 'data-fd-care-packet-starter': '' });
+  const starterNote = node({ 'data-fd-care-packet-starter-note': '' });
+  const addons = {};
+  for (const key of ['transport', 'housing']) {
+    addons['[data-fd-care-packet-addon="' + key + '"]'] = node({});
+    addons['#fd-care-packet-addon-' + key + '-note'] = node({});
+  }
   const inner = { insideTray: true };
   let html = '';
   const root = { isConnected: true, writes: 0, get innerHTML() { return html; }, set innerHTML(value) { root.writes += 1; html = value; },
@@ -1331,9 +1338,12 @@ function fakeTray() {
       if (/reminder/.test(selector)) return reminder;
       if (/card-note/.test(selector)) return cardNote;
       if (/card-print/.test(selector)) return cardButton;
+      if (selector === '[data-fd-care-packet-starter]') return /data-fd-care-packet-starter aria-describedby/.test(html) ? starterButton : null;
+      if (selector === '[data-fd-care-packet-starter-note]') return /data-fd-care-packet-starter-note>/.test(html) ? starterNote : null;
+      if (addons[selector]) return /data-fd-care-packet-addon=/.test(html) ? addons[selector] : null;
       return /preview-toggle/.test(selector) && /data-fd-care-packet-preview-toggle/.test(html) ? toggle : null;
     }, querySelectorAll() { return []; } };
-  return { root, toggle, cardNote, cardButton, inner };
+  return { root, toggle, cardNote, cardButton, addons, inner };
 }
 
 test('changes that do not touch the listings patch the tray in place; a changed listing repaints it', () => {
@@ -1346,6 +1356,8 @@ test('changes that do not touch the listings patch the tray in place; a changed 
   c.openPreview();
   assert.equal(tray.cardNote.textContent, 'A separate one-sided page: the crisis lines and space for your own numbers. It is not part of the packet. Print from Chrome or Edge with scale 100 and margins set to Default, so it stays card-sized.', 'the card note is patched too');
   assert.equal(tray.cardButton.disabled, false);
+  assert.equal(tray.addons['[data-fd-care-packet-addon="transport"]'].disabled, true, 'the current fixture has no configured add-on resources');
+  assert.match(tray.addons['#fd-care-packet-addon-transport-note'].textContent, /unavailable/, 'the refusal note is patched without replacing controls');
   assert.equal(tray.root.writes, written, 'opening the preview only flips aria-expanded');
   assert.equal(tray.toggle.attrs['aria-expanded'], 'true');
   c.setUnit('name', '4 East');

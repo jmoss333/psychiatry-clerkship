@@ -161,23 +161,70 @@ def gh_json(repo, limit, *args):
         return None
 
 
+# The PR facts come from the REST API through `gh api`, never `gh pr list`: that is GraphQL
+# underneath, and Claude Code sessions are refused GraphQL (HTTP 403), so until 2026-10-18
+# --prs said "open PRs NOT checked" in every cloud session. Pages are asked for explicitly:
+# `gh api --paginate` follows Link headers to repositories/<numeric id>/..., which that proxy
+# refuses too. gh fills in {owner}/{repo} from the checkout's remote.
+PULLS = "repos/{owner}/{repo}/pulls"
+PAGE = 100
+MERGED_WINDOW = 300  # the newest merged PRs consulted, as `gh pr list --limit 300` did
+
+
+def gh_page(repo, limit, path, page):
+    sep = "&" if "?" in path else "?"
+    rows = gh_json(repo, limit, "api", f"{path}{sep}per_page={PAGE}&page={page}")
+    return rows if isinstance(rows, list) else None
+
+
+def gh_all(repo, limit, path, max_pages):
+    """Every row of a REST list; None when a page fails or the list outruns max_pages (a
+    prefix would read as the whole list)."""
+    rows = []
+    for page in range(1, max_pages + 1):
+        batch = gh_page(repo, limit, path, page)
+        if batch is None:
+            return None
+        rows.extend(batch)
+        if len(batch) < PAGE:
+            return rows
+    return None
+
+
 def open_prs(repo, limit):
-    rows = gh_json(repo, limit, "pr", "list", "--state", "open", "--limit", "60", "--json",
-                   "number,title,headRefName,isDraft,files")
-    return None if rows is None else [
-        {"number": p["number"], "title": p["title"], "branch": p["headRefName"],
-         "draft": p["isDraft"], "paths": [f["path"] for f in p.get("files") or []]}
-        for p in rows]
+    rows = gh_all(repo, limit, f"{PULLS}?state=open", 10)
+    if rows is None:
+        return None
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        files = list(pool.map(lambda p: gh_all(repo, limit, f"{PULLS}/{p['number']}/files", 30),
+                              rows))
+    if any(f is None for f in files):  # one PR's paths unread: its overlap is unknown
+        return None
+    try:
+        return [{"number": p["number"], "title": p["title"], "branch": p["head"]["ref"],
+                 "draft": p["draft"], "paths": [f["filename"] for f in fs]}
+                for p, fs in zip(rows, files)]
+    except (KeyError, TypeError):
+        return None
 
 
 def merged_heads(repo, limit):
-    rows = gh_json(repo, limit, "pr", "list", "--state", "merged", "--limit", "300", "--json",
-                   "headRefName,headRefOid")
-    if rows is None:
+    """Branch -> head oids of the newest MERGED_WINDOW merged PRs. The REST list is of closed
+    PRs; one closed without merging landed nothing, so only rows with `merged_at` count."""
+    heads, merged = {}, 0
+    try:
+        for page in range(1, 11):
+            batch = gh_page(repo, limit, f"{PULLS}?state=closed", page)
+            if batch is None:
+                return None
+            for p in batch:
+                if p.get("merged_at"):
+                    heads.setdefault(p["head"]["ref"], []).append(p["head"]["sha"])
+                    merged += 1
+            if len(batch) < PAGE or merged >= MERGED_WINDOW:
+                break
+    except (KeyError, TypeError):
         return None
-    heads = {}
-    for p in rows:
-        heads.setdefault(p["headRefName"], []).append(p["headRefOid"])
     return heads
 
 

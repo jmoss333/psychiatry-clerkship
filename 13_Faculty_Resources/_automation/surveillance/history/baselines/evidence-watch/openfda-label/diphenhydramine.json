@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260909",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "contraindications": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "warnings": {
+      "hash": "2050edd5d78ce4a8cdc59ab14d6991ba8f7abb53367244e3aee1ae2b85e2a7a2",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "303d7651-9c8f-4a14-9f2c-7181fa0f003e",
+  "version": "8"
+}

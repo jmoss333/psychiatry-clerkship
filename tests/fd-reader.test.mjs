@@ -287,7 +287,7 @@ test('the mobile action bar is a sibling of the article element, never a descend
   assert.equal((html.match(/<article/g) || []).length, 1,
     'exactly one <article> element expected -- a second would defeat the containment check below');
 
-  const start = html.indexOf('<article class="fd-reader">');
+  const start = html.search(/<article class="fd-reader"(?:\s[^>]*)?>/);
   assert.notEqual(start, -1, 'no .fd-reader article found');
   assert.equal(start, 0,
     '.fd-reader must be the very first thing rendered -- a shared wrapping container around ' +
@@ -634,4 +634,12 @@ test('fd_reader.js touches no DOM, storage, or clock, and stays ES5', () => {
     'fd_reader.js must stay a pure function of (index, state, bodyHtml)');
   assert.doesNotMatch(readerSrc, /\bconst\s|\blet\s|=>/,
     'fd_reader.js is a build-injected snippet, not a module -- ES5 only (var/function)');
+});
+
+
+test('readings carry normalized comfort markers while tools retain their own layout', () => {
+  const html=F.fdReader(IDX,{...BASE_STATE,readingComfort:{size:'larger',spacing:'spacious'}},'<h2>Body</h2>');
+  assert.match(html,/<article class="fd-reader"[^>]*data-fd-reader-size="larger"[^>]*data-fd-reader-spacing="spacious"/);
+  assert.doesNotMatch(F.fdReader(IDX,{...BASE_STATE,ref:'tool.html',readingComfort:{size:'largest',spacing:'spacious'}},'<iframe></iframe>'),/data-fd-reader-size|data-fd-reader-spacing/);
+  assert.match(F.fdReader(IDX,{...BASE_STATE,readingComfort:{size:'oops'}},'<h2>Body</h2>'),/data-fd-reader-size="standard"[^>]*data-fd-reader-spacing="standard"/);
 });

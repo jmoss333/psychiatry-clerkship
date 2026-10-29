@@ -185,7 +185,14 @@ def _separately_governed(url):
     # topic_meta is already hashed per slug WITHOUT facultyReview; hashing the
     # projected whole document would make a review invalidate itself. Vendored
     # runtime libraries are not teaching material authored for a tool.
-    return url in {"topic_meta.json", "tools/vendor/react.min.js", "tools/vendor/react-dom.min.js"}
+    # analytics.js is the cookieless usage-counter emitter: build_deploy.py copies it to
+    # the site root and common.py injects ANALYTICS_TAG into every built page ONLY when
+    # CLERKSHIP_ANALYTICS is on for the site. It is instrumentation, not teaching content,
+    # and check-static-site.mjs section 12 already audits it. Treating it as a teaching
+    # input would make --check-build fail every enabled build (bfcrs.html was first) and,
+    # worse, would tie tool attestation to a deploy flag.
+    return url in {"topic_meta.json", "tools/vendor/react.min.js", "tools/vendor/react-dom.min.js",
+                   "analytics.js"}
 
 
 def _teaching_bytes(path, url):

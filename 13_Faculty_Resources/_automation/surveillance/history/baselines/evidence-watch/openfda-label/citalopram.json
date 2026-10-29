@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20231009",
+  "sections": {
+    "boxed_warning": {
+      "hash": "953085fcc1347653c707568298648c317e4b9068d690c4ab4a992342810db109",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short -term studies . Closely m onitor all antidepressant-treated patients for clinical worsening , and for emergence of suicidal thoughts and behaviors [see Warnings and Precautions ( 5.1 )] . CELEXA is not approved for use in pediatric patients [see Use in Specific Populations ( 8.4 )]. WARNING: SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Increased risk of suicidal thoughts and behavior in pediatric and young adult patients taking antidepressants. Closely monitor all antidepressant-treated patients for clinical worsening and emergence of suicidal though t s and behaviors ( 5.1 ) . CELEXA is not approved for use in pediatric patients ( 8.4 ) ."
+    },
+    "contraindications": {
+      "hash": "fd908ff791a25503ed32cfb76c0b4aa3a22b6f4ff4d8961b785c3362c26574bb",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS CELEXA is contraindicated in patients: taking, or within 14 days of stopping, MAOIs (including MAOIs such as linezolid or intravenous methylene blue) because of an increased risk of serotonin syndrome [see Warnings and Precautions ( 5.3 ), Drug Interactions ( 7 )] . taking pimozide because of risk of QT prolongation [ see Drug Interactions ( 7 )] . with known hypersensitivity to citalopram or any of the inactive ingredients in CELEXA. Reactions have included angioedema and anaphylaxis [see Adverse Reactions ( 6.2 ) ]. Concomitant use of monoamine oxidase inhibitors (MAOIs) or use within 14 days of discontinuing a MAOI ( 4 ). Concomitant use of pimozide ( 4 ) . Known hypersensitivity to citalopram or any of the inactive ingredients of CELEXA ( 4 )."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "79a4982460ce42826189c56b3f73658a400271be5c3a879bc76e1da1fddffa4a",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "4259d9b1-de34-43a4-85a8-41dd214e9177",
+  "version": "40"
+}

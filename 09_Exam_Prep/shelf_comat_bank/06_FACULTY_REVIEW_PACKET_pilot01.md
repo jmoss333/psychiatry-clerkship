@@ -281,7 +281,7 @@ _Tier-2 rationale:_ The rationale is efficacy in resistance specifically: clozap
 
 ---
 
-## 7. `qbx_sud_001` — Thiamine before glucose in the malnourished patient
+## 7. `qbx_sud_001` — Thiamine with glucose in the malnourished patient
 **Category:** substance · **Type:** two-tier · **Intended difficulty:** advanced (3) · **Exam:** comat · **Setting:** emergency-department · **Age:** adult-18-64
 
 **NBME:** Behavioral Health · Pharmacotherapy/Intervention/Management · Emergency Department · 13 and older  
@@ -295,13 +295,13 @@ _Tier-2 rationale:_ The rationale is efficacy in resistance specifically: clozap
 | | Option | |
 |---|---|---|
 | A | Administer thiamine together with (or before) intravenous dextrose | ✅ **KEY** |
-| B | Administer intravenous dextrose alone and recheck the neurologic exam _(trap: Glucose before thiamine)_ |  |
+| B | Administer intravenous dextrose alone and recheck the neurologic exam _(trap: Dextrose without thiamine)_ |  |
 | C | Give lorazepam for presumed alcohol withdrawal before anything else _(trap: It's just withdrawal)_ |  |
 | D | Obtain a head CT before providing any treatment _(trap: Imaging before resuscitation)_ |  |
 
 **Correct answer: A.**
 
-**Why (concise):** In a malnourished patient with alcohol use, thiamine must accompany or precede dextrose because a glucose load can consume marginal thiamine stores and trigger Wernicke encephalopathy. 'Glucose before thiamine' is the classic error; 'it's just withdrawal' skips the differential; 'imaging before resuscitation' delays two time-critical, low-risk treatments.
+**Why (concise):** In a malnourished patient with alcohol use, thiamine must accompany or precede dextrose because a glucose load can consume marginal thiamine stores and trigger Wernicke encephalopathy. 'Dextrose without thiamine' is the classic error; 'it's just withdrawal' skips the differential; 'imaging before resuscitation' delays two time-critical, low-risk treatments.
 
 **Full explanation:** Thiamine is a cofactor for glucose metabolism, and administering a carbohydrate load to a thiamine-depleted patient can acutely precipitate Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia). In a malnourished patient with alcohol use and hypoglycemia, the safe practice is to give thiamine together with — or before — dextrose, then continue evaluating for withdrawal and other causes. Both interventions are immediate and should not be delayed for imaging.
 
@@ -318,7 +318,7 @@ _Tier-2 rationale:_ The rationale is efficacy in resistance specifically: clozap
 
 _Tier-2 rationale:_ Thiamine is a cofactor for glucose metabolism, so giving glucose to a depleted patient can exhaust the last thiamine stores and precipitate Wernicke encephalopathy. The distractor rationales invent pharmacology the mechanism does not support.
 
-**Key takeaway:** Thiamine before (or with) glucose in the malnourished alcohol-using patient.  
+**Key takeaway:** Thiamine with or alongside glucose in the malnourished alcohol-using patient — never delay dextrose for hypoglycemia.  
 **Common reasoning error:** Treating the low glucose in isolation and forgetting the thiamine dependency of glucose metabolism.
 
 **Safety/management caveat:** Do not withhold glucose in true hypoglycemia — give both; ensure adequate parenteral thiamine dosing per protocol.
@@ -328,6 +328,8 @@ _Tier-2 rationale:_ Thiamine is a cofactor for glucose metabolism, so giving glu
 **References:**
 - [✓ verified] American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022. 
 - [⧗ confirm] Schuckit MA. Recognition and management of withdrawal delirium (delirium tremens). N Engl J Med. 2014;371(22):2109-2113. DOI 10.1056/NEJMra1407298
+- [✓ verified] The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management. J Addict Med. 2020;14(3S Suppl 1):1-72. DOI 10.1097/ADM.0000000000000668
+- [✓ verified] Schabelman E, Kuo D. Glucose before thiamine for Wernicke encephalopathy: a literature review. J Emerg Med. 2012;42(4):488-494. DOI 10.1016/j.jemermed.2011.05.076
 
 **Faculty decision:** ☐ Attest  ☐ Revise (note: __________)  ☐ Retire
 
