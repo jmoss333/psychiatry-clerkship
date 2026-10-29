@@ -23,8 +23,9 @@ may only shrink (see ALLOWLIST_CAP in bin/check_citation_attribution.py). Someth
 push against it or it just sits there, and this is that something: for each grandfathered
 citation it searches NCBI by title, then by author + year, and reports the best candidate so
 a human can decide whether the citation should carry that identifier — at which point the
-citation gets the identifier and the allowlist entry is DELETED, which the gate then requires
-anyway, because a stale entry fails.
+citation gets the identifier and the allowlist entry is DELETED. The gate keeps asking for
+that deletion: a stale entry warns, on every run, until a follow-up governance PR deletes it
+(L1 keeps bin/ out of the content PR that adds the identifier).
 
 IT PROPOSES; IT NEVER WRITES. It does not touch the allowlist, the cache, or any page. The
 reason is on the record: on 2026-09-21 the previous Option-B implementation proposed PMID
@@ -190,9 +191,9 @@ def report(rows, cap, out=print):
             out(f"         {str(cand['title'])[:110]}")
         if row["verdict"] == "candidate-for-review":
             actionable += 1
-            out("      → if this IS the cited source, put the identifier on the citation and "
-                "DELETE the allowlist entry. The gate then requires the deletion anyway: a "
-                "grandfather clause whose citation changed fails as stale.")
+            out("      → if this IS the cited source, put the identifier on the citation (a "
+                "content PR). That makes this entry stale: the gate warns until a follow-up "
+                "governance PR DELETES it (L1 keeps bin/ out of the content PR).")
         out("")
     out(f"{actionable} of {len(rows)} entr(ies) have a candidate worth a human decision. "
         f"This audit blocks nothing and decides nothing.")
@@ -236,14 +237,15 @@ def self_test():
     # THE CONTRACT THAT KEEPS THIS OUT OF THE MERGE PATH. The workflow validator forbids
     # `continue-on-error:`, so "blocks nobody" cannot live in the YAML — it has to be the
     # tool's own exit behaviour, and it has to be asserted somewhere a gate runs. This is that
-    # assertion: reporting findings, including a stale entry the real gate fails on, is exit 0.
+    # assertion: reporting findings, including a stale entry (which the real gate warns on
+    # until a follow-up governance PR deletes it), is exit 0.
     loud = [{"citationKey": "deadbeefdeadbeef", "path": "x.md", "citedTitle": "A thing",
              "reason": "r", "candidates": [{"pmid": "1", "title": "A thing", "container": "J",
                                             "year": 2020, "score": 0.99, "aboutNotIt": False}],
              "verdict": "candidate-for-review"},
             {"citationKey": "cafecafecafecafe", "path": "y.md", "citedTitle": "Another",
              "reason": "r", "candidates": [],
-             "verdict": "stale-the-gate-already-fails-this"}]
+             "verdict": "stale-gate-warns-until-a-governance-pr-deletes-it"}]
     ck("a loud report still counts its actionable rows",
        report(loud, ALLOWLIST_CAP, out=lambda *_: None), 1)
 
@@ -290,7 +292,7 @@ def main():
     rows = [audit_entry(e, offline=args.offline) for e in entries]
     for row, entry in zip(rows, entries):
         if entry.get("citationKey") not in present:
-            row["verdict"] = "stale-the-gate-already-fails-this"
+            row["verdict"] = "stale-gate-warns-until-a-governance-pr-deletes-it"
 
     report(rows, ALLOWLIST_CAP)
     if args.out:

@@ -1000,11 +1000,11 @@ def self_test():
         for f in failures:
             print("  -", f)
         return 1
-    print(f"self-test: OK — {len(checks)}/{len(checks)} checks passed, covering the four failure "
-          f"classes the 2026-09-27 ruling requires (no identifier; identifier on a different "
-          f"paper; allowlist over cap; stale allowlist entry, which warns), the stale/unlisted/"
-          f"swap/over-cap exit codes end to end, the real #672 defects, and the "
-          f"live tree against the committed cache and allowlist")
+    print(f"self-test: OK — {len(checks)}/{len(checks)} checks passed, covering the 2026-09-27 "
+          f"ruling's four failure classes (no identifier; identifier on a different paper; "
+          f"allowlist over cap; stale allowlist entry — a FAIL in the ruling, a WARN since "
+          f"#1007), the stale/unlisted/swap/over-cap exit codes end to end, the real #672 "
+          f"defects, and the live tree against the committed cache and allowlist")
     return 0
 
 
