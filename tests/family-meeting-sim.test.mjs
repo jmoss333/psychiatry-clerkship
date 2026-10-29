@@ -11,6 +11,10 @@
 // which skill points can never offset — and the library rules that apply to a clinical tool (no
 // dose literals, crisis block by marker only, one literal cw_* storage key, no network, no free
 // text). Authored choice order within a node is frozen once shipped: append, never reorder.
+// 2026-10-29 (faculty-review packet, owner decisions of 2026-10-28): the directive option no
+// longer satisfies a routing gate item; S8 shows the handover on the keyed route (`roles`) and
+// carries a `branchOf` twin (`roles-unrouted`) for the routes that did not hand over; the
+// strongest option is no longer the uniquely longest at every node (a pinned ratchet below).
 // Reads committed files only.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -58,11 +62,13 @@ const W = {
   W011: 'Draft rubric, not validated. The four skills and their scores are an authored draft that has not been tested for reliability or validity; faculty review is pending. Use the bars to notice patterns, not to judge yourself or anyone else.',
   W022: 'Thank you for saying it before I asked — that tells me something about you. Most families don\'t know that the weeks right after leaving hospital are a higher-risk time, and the simplest protection is distance between someone who isn\'t sleeping and anything that could hurt them fast. Would you talk through storage of the rifle with the team before he comes home — and could we talk with Jordan, too, about the truck and driving for now?',
   W024: ', and — I ask every family this — whether there\'s a gun in the house. Sam, which of those feel possible to you?',
-  W026: 'What you tell me there stays between you and the team, unless I\'m worried about your safety or someone else\'s — and if that happened, I\'d tell you first.',
+  // W026 reworded 2026-10-28 (owner Decision 1): a deferral, not a confidentiality promise the state may not let a student keep.
+  W026: 'What you tell me there goes to the team; before anything goes to your grandmother, I\'d talk with you first about what and why — and some things I\'d have to share, like if I thought you weren\'t safe.',
   W027: 'Thank you, Lina — I can tell you\'ve been translating for your family for a long time, and that\'s a real thing to carry. Today I\'d like you to be the person we\'re here for, so the interpreter will translate everything, both ways, and I\'ll speak with your mother and grandfather directly. Where would everyone like to sit?',
   W029: 'are kept by another adult — and I ask every family: is there a gun in the house? — and there\'s an agreed way',
   W030: 'Owen, thank you for the handgun — that\'s exactly what we need to know, not because of who she is, but because frightening beliefs can lead to frightening actions, and because the months after losing a husband can be a time when people think about not wanting to go on — that\'s something the team will ask her about directly. For the first stretch at home I\'d like the two of you to think about three things the team will then go through with her: where the handgun lives, who she calls when she\'s frightened, and what that person says — which is not \'they aren\'t real\'. The social worker and the attending will work through the specifics with you, including driving — and your mother gets a say in all of it.',
-  W032: 'and anything else — and I ask every family this: is there a gun in either house? If there is, the social worker will talk through keeping it out of the home or locked away from Riley for now — is kept where Riley can\'t get to it alone',
+  // W032 re-cut 2026-10-29: the v2 splice had lost its verb ("… — is kept where Riley can't get to it alone"); same content, one sentence each.
+  W032: 'medicines included, the pharmacy-shelf ones too — stays where Riley can\'t get to it alone for now. I ask every family: is there a gun in either house? If there is, the social worker will talk through keeping it out of the home or locked away.',
   FIREARM: 'Ask about firearms every time; families rarely volunteer them.',
 };
 
@@ -165,15 +171,19 @@ test('graph: acyclic, reachable, 6-10 decisions, every axis testable', () => {
 // approved wording table. So the choices that predate v2 are listed here, and the list may only
 // shrink: a new or rescored choice that breaks I-7 fails, and so does a listed choice that no
 // longer breaks it (delete its entry). Faculty decide whether to close the gap.
+// Five entries were ADDED on 2026-10-29 by owner decision (2026-10-28 review): S5 `meaning#2`
+// and S6 `open#2` lost the validation point a stock phrase had earned; S8 `worry-answer#2` lost
+// its flag and gained a safety point (Decision 2); S8 `roles-unrouted#1/#2` are the verbatim
+// twin of `roles#1/#2`. None is a new misstep; each is an existing one re-scored or re-routed.
 const I7_KNOWN = {
   'angry-parent-admission': 'repair-rules#1 repair-rules#2 share-limits#2 repair-disclosure#1 repair-disclosure#2 collateral#1 collateral#2 means#2 visit#1 visit#2 close#1 close#2',
   'ambivalent-spouse-discharge': 'open#2 repair-ready#1 repair-ready#2 feelings#1 feelings#2 plan-review#1 limits#1 repair-verdict#1 repair-verdict#2 means#2 close#1 close#2',
   'silent-teen-guardian-present': 'open#2 repair-pressure#1 repair-pressure#2 story#1 repair-why#1 repair-why#2 privacy#1 privacy#2 trust#1 trust#2 response#1 response#2 close#1 close#2',
   'hold-disagreement-admission': 'repair-defend#1 repair-defend#2 what-you-can#2 repair-disclosure#1 repair-disclosure#2 rights#2 repair-law#1 repair-law#2 observations#1 means#2 close#1 close#2',
-  'shared-decision-household': 'repair-interpreter#1 repair-interpreter#2 decisions#1 decisions#2 privacy#2 repair-disclosure#1 repair-disclosure#2 repair-assume#1 repair-assume#2 safety-home#1 close#1 close#2',
-  'siblings-late-onset-psychosis': 'repair-open#1 repair-open#2 workup#2 repair-certainty#1 repair-certainty#2 split#2 repair-sides#1 repair-sides#2 burden#1 safety-home#2 close#1 close#2',
+  'shared-decision-household': 'repair-interpreter#1 repair-interpreter#2 decisions#1 decisions#2 privacy#2 repair-disclosure#1 repair-disclosure#2 meaning#2 repair-assume#1 repair-assume#2 safety-home#1 close#1 close#2',
+  'siblings-late-onset-psychosis': 'open#2 repair-open#1 repair-open#2 workup#2 repair-certainty#1 repair-certainty#2 split#2 repair-sides#1 repair-sides#2 burden#1 safety-home#2 close#1 close#2',
   'coparents-discharge-adolescent': 'open#1 open#2 riley#2 repair-over-riley#1 repair-over-riley#2 triangle#2 repair-sided#1 repair-sided#2 means-both#1 means-both#2 channel#1 close#1 close#2',
-  'parent-own-untreated-illness': 'open#1 open#2 picture#2 repair-disclosure#1 repair-disclosure#2 drinking#2 repair-diagnose#1 repair-diagnose#2 roles#1 roles#2 close#1 close#2',
+  'parent-own-untreated-illness': 'open#1 open#2 picture#2 repair-disclosure#1 repair-disclosure#2 drinking#2 repair-diagnose#1 repair-diagnose#2 worry-answer#2 roles#1 roles#2 roles-unrouted#1 roles-unrouted#2 close#1 close#2',
 };
 
 test('every rupture has a repair route back, or is flagged', () => {
@@ -210,7 +220,7 @@ test('authored choice order is frozen: no node loses choices', () => {
     'shared-decision-household': 'open:3 repair-interpreter:3 decisions:3 privacy:3 repair-disclosure:3 meaning:3 repair-assume:3 safety-home:3 close:3',
     'siblings-late-onset-psychosis': 'open:3 repair-open:3 workup:3 repair-certainty:3 split:3 repair-sides:3 burden:3 safety-home:3 close:3',
     'coparents-discharge-adolescent': 'open:3 riley:3 repair-over-riley:3 triangle:3 repair-sided:3 means-both:3 channel:3 close:3',
-    'parent-own-untreated-illness': 'open:3 picture:3 repair-disclosure:3 drinking:3 repair-diagnose:3 worry:3 repair-dismiss:3 worry-answer:3 roles:3 close:3',
+    'parent-own-untreated-illness': 'open:3 picture:3 repair-disclosure:3 drinking:3 repair-diagnose:3 worry:3 repair-dismiss:3 worry-answer:3 roles:3 roles-unrouted:3 close:3',
   };
   const E = engine();
   for (const sc of data().scenarios) {
@@ -256,12 +266,23 @@ test('the option-0 path is the main line, satisfies every gate item and scores 1
   // The authoring convention: option 0 is the strongest authored move at each main-line node, so
   // playing it throughout visits every non-repair node once (six moments in S1-S7, seven in S8),
   // scores 100% on every axis and does every required safety step. A rescore that breaks this
-  // is a rubric change and should be deliberate.
+  // is a rubric change and should be deliberate. A `branchOf` node is a twin of a main-line
+  // node for the routes that did NOT do the keyed thing (S8 `roles-unrouted`: the handover
+  // never happened, so the narration that shows it is absent): same choices verbatim, so it
+  // forks the story and never the scoring, and it is not itself on the main line.
   const E = engine();
   for (const s of data().scenarios) {
     const r = optionZero(E, s);
-    const mainLine = Object.values(s.nodes).filter((n) => !n.repair).length;
+    const mainLine = Object.values(s.nodes).filter((n) => !n.repair && !n.branchOf).length;
     assert.equal(r.steps.length, mainLine, `${s.id}: option-0 path visits every main-line node`);
+    for (const [nid, n] of Object.entries(s.nodes)) {
+      if (!n.branchOf) continue;
+      const parent = s.nodes[n.branchOf];
+      assert.ok(parent && !parent.repair && !parent.branchOf, `${s.id}/${nid}: branchOf names a main-line node`);
+      assert.deepEqual(n.choices, parent.choices, `${s.id}/${nid}: a branch twin repeats its parent's choices verbatim`);
+      assert.equal(n.phase, parent.phase);
+      assert.ok(!r.steps.some((st) => st.node === nid), `${s.id}/${nid}: the option-0 path never visits a branch twin`);
+    }
     assert.ok(r.steps.length === 6 || r.steps.length === 7, `${s.id}: 6 or 7 decisions`);
     if (s.id === 'parent-own-untreated-illness') assert.equal(r.steps.length, 7);
     assert.ok(r.steps.every((st) => !s.nodes[st.node].repair), `${s.id}: option-0 path stays on the main line`);
@@ -297,7 +318,7 @@ test('gate status is pure and deterministic', () => {
   }
   // The repair route gets credit for the repair while the record keeps the miss (spec §4).
   const s8 = byId(d, 'parent-own-untreated-illness');
-  const run = play(E, s8, ['open#0', 'picture#0', 'drinking#0', 'worry#1', 'repair-dismiss#0', 'worry-answer#1', 'roles#0', 'close#0']);
+  const run = play(E, s8, ['open#0', 'picture#0', 'drinking#0', 'worry#1', 'repair-dismiss#0', 'worry-answer#1', 'roles-unrouted#0', 'close#0']);
   const st = Object.fromEntries(E.gateStatus(s8, run.steps).items.map((it) => [it.id, it]));
   assert.equal(st['s8-ask-directly'].status, 'met-after-miss');
   assert.deepEqual([st['s8-ask-directly'].missedAt, st['s8-ask-directly'].satisfiedAt], [[3], 4], 'missed at 4, done at 5 (1-based)');
@@ -307,7 +328,7 @@ test('gate status is pure and deterministic', () => {
 test('a missed required safety action cannot be offset by skill points', () => {
   const E = engine(), R = render(), d = data();
   const s8 = byId(d, 'parent-own-untreated-illness');
-  const run = play(E, s8, ['open#0', 'picture#0', 'drinking#0', 'worry#2', 'repair-dismiss#2', 'roles#0', 'close#0']);
+  const run = play(E, s8, ['open#0', 'picture#0', 'drinking#0', 'worry#2', 'repair-dismiss#2', 'roles-unrouted#0', 'close#0']);
   assert.equal(E.gateStatus(s8, run.steps).items.find((it) => it.id === 's8-ask-directly').status, 'missed');
   const out = R.debriefHtml(d, s8, run);
   assert.ok(out.includes(W.W005), 'gate banner (W-005)');
@@ -342,8 +363,11 @@ test('firearm question is required where no relative volunteers a gun', () => {
   for (const [id, nid] of Object.entries(volunteered)) {
     const sc = byId(d, id);
     const item = sc.gate.required.find((g) => g.offeredAt.includes(nid));
-    assert.ok(item && item.satisfiedBy.length >= 2, `${id}: the means item at ${nid} has at least two satisfiers`);
+    assert.ok(item && item.satisfiedBy.length >= 1, `${id}: the means item at ${nid} has a satisfier`);
     assert.equal(sc.nodes[nid].choices[1].flag, 'lethal-means-dismissed', `${id}/${nid}#1 is flagged`);
+    // 2026-10-29: the directive (#2) takes the risk seriously but routes nothing, so it no longer
+    // satisfies a gate item whose label says "route"; the ending's notMet addendum renders instead.
+    assert.ok(!item.satisfiedBy.includes(`${nid}#2`), `${id}/${nid}#2 (the directive) does not satisfy ${item.id}`);
   }
 });
 
@@ -619,7 +643,10 @@ test('per-scenario wording pins', () => {
   // S3
   assert.ok(c('silent-teen-guardian-present', 'close', 0).text.includes(W.W026));
   assert.ok(c('silent-teen-guardian-present', 'privacy', 0).feedback.endsWith('The team will also see Sam alone, to ask about safety at home.'));
-  assert.ok(c('silent-teen-guardian-present', 'repair-why', 0).text.includes('what you say there stays with the team unless I\'m worried about your safety, and I\'d tell you first?'));
+  assert.ok(c('silent-teen-guardian-present', 'repair-why', 0).text.includes('What you tell me goes to the team; before anything went to your grandmother, I\'d talk with you first about what and why'));
+  for (const nid of ['repair-why', 'close']) {
+    assert.doesNotMatch(c('silent-teen-guardian-present', nid, 0).text, /stays (between you and|with) the team|I'd tell you first/, `${nid}#0: no confidentiality promise to a minor (Decision 1, 2026-10-28)`);
+  }
   // S4
   assert.ok(c('hold-disagreement-admission', 'rights', 0).text.includes('I\'ll ask the attending to tell you where things stand tonight if she can.'));
   assert.ok(c('hold-disagreement-admission', 'close', 0).text.includes('I\'ll ask the attending to see you tonight if she can, I\'ll make sure you get the written information'));
@@ -627,13 +654,13 @@ test('per-scenario wording pins', () => {
   // S5
   assert.equal(c('shared-decision-household', 'privacy', 1).next, 'repair-disclosure');
   // S6
-  assert.ok(c('siblings-late-onset-psychosis', 'close', 0).text.includes('a plan for the handgun that the team will go through with you and with her'));
+  assert.ok(c('siblings-late-onset-psychosis', 'close', 0).text.includes('whatever is decided about the handgun goes through the team and through her'));
   assert.ok(c('siblings-late-onset-psychosis', 'close', 0).text.includes('and the plan with her, too. Did I get it right?'));
   assert.equal(byId(d, 'siblings-late-onset-psychosis').note, 'This scenario rehearses communication. Whether a relative can decide anything for a patient depends on a capacity determination and on law — ask your attending.');
   // S7
   assert.ok(c('coparents-discharge-adolescent', 'open', 0).text.includes('the night their kid was in danger'));
   assert.ok(!/nearly died/.test(c('coparents-discharge-adolescent', 'open', 0).text));
-  assert.ok(c('coparents-discharge-adolescent', 'means-both', 0).text.includes('there\'s nothing — like a court order — that changes who we share what with'));
+  assert.ok(c('coparents-discharge-adolescent', 'means-both', 0).text.includes('whether anything, like a court order, changes who we can tell what'));
   assert.ok(c('coparents-discharge-adolescent', 'riley', 0).text.includes('one of the most important things anyone\'s said today'));
   assert.ok(c('coparents-discharge-adolescent', 'channel', 2).feedback.startsWith('Sometimes a professional in the middle is exactly right'));
   assert.ok(c('coparents-discharge-adolescent', 'close', 0).text.includes('and some time for you with the team on your own before you go.'));
@@ -643,14 +670,28 @@ test('per-scenario wording pins', () => {
   assert.equal(s8.nodes.worry.choices[0].next, 'worry-answer');
   assert.equal(s8.nodes['repair-dismiss'].choices[0].next, 'worry-answer');
   assert.equal(s8.nodes.worry.choices[2].next, 'repair-dismiss');
-  assert.ok(s8.nodes['worry-answer'].choices.every((x) => x.next === 'roles'));
+  // The keyed answer routes to `roles`, whose first line SHOWS the handover; the other two routes
+  // go to the `roles-unrouted` twin, where nothing has reached the attending (2026-10-29).
+  assert.equal(s8.nodes['worry-answer'].choices[0].next, 'roles');
+  assert.equal(s8.nodes['worry-answer'].choices[1].next, 'roles-unrouted');
+  assert.equal(s8.nodes['worry-answer'].choices[2].next, 'roles-unrouted');
+  assert.equal(s8.nodes['roles-unrouted'].branchOf, 'roles');
+  assert.equal(s8.nodes.roles.lines[0].speaker, 'narration');
+  assert.match(s8.nodes.roles.lines[0].text, /attending steps out with Joanne/);
+  assert.ok(s8.nodes['roles-unrouted'].lines.every((l) => l.speaker !== 'narration'), 'the unrouted twin shows no handover');
+  for (const i of [1, 2]) assert.equal(s8.nodes['repair-dismiss'].choices[i].next, 'roles-unrouted');
   assert.ok(s8.nodes['worry-answer'].choices[0].text.includes('I\'d like my attending to talk with you now, before we go on'));
+  assert.doesNotMatch(s8.nodes['worry-answer'].choices[0].text + s8.nodes.close.choices[0].text, /this page/, 'no character points at the web page (contacts are "crisis numbers that are yours")');
   assert.equal(s8.nodes['worry-answer'].choices[1].flag, 'risk-judged-by-student');
-  assert.equal(s8.nodes['worry-answer'].choices[2].flag, 'risk-judged-by-student');
+  // Decision 2 (owner, 2026-10-28): plan/means questions are the attending's, asked privately, but
+  // asking them is not a risk judgement — no flag, one safety point, scored below the keyed answer.
+  assert.equal(s8.nodes['worry-answer'].choices[2].flag, undefined);
+  assert.deepEqual(s8.nodes['worry-answer'].choices[2].scores, { validation: 0, structure: 0, safety: 1, nonblaming: 0 });
+  assert.match(s8.nodes['worry-answer'].choices[2].feedback, /^Right questions, wrong setting/);
   assert.equal(s8.nodes['repair-dismiss'].choices[1].flag, 'suicide-statement-not-asked');
   assert.equal(s8.nodes['repair-dismiss'].choices[2].flag, 'suicide-statement-not-asked');
   assert.ok(s8.nodes.close.choices[1].text.startsWith('Joanne, let\'s stop Kai\'s plan here'));
-  assert.ok(s8.nodes.close.choices[0].text.includes('my attending is going to talk with you today about what you said earlier'));
+  assert.ok(s8.nodes.close.choices[0].text.includes('my attending will come back to you today about what you said earlier'));
   assert.match(s8.nodes.roles.choices[0].text, /is there a gun in the house/);
   assert.ok(s8.nodes.drinking.choices[0].feedback.includes('If she seems intoxicated now, tell your attending before the meeting goes on'));
   assert.ok(s8.nodes.picture.choices[0].text.includes('he\'s been improving, the plan we\'re working toward is for him to come home'));
@@ -698,6 +739,41 @@ test('rewind replays from a moment without touching the steps before it', () => 
   assert.deepEqual(back.steps, run.steps.slice(0, 2));
   assert.equal(back.at, run.steps[2].node);
   assert.throws(() => E.choose(sc, run, 0), /ended/);
+});
+
+// Length-cue ratchet (2026-10-29). Measured before this pin: at EVERY one of the 69 nodes the
+// top-scoring option was also the uniquely longest (mean 67 words against 13.5), so a learner who
+// always presses the longest button scored 100% on every axis, met every gate item and reached
+// the best ending in all eight scenarios — the bars measured a response set, not a skill, and the
+// planned rubric-validation study would have validated the cue. Same shape as
+// `bin/check_qbank_length_cue.py`. The pin is exact, like I7_KNOWN: a rise fails (a new or
+// rewritten node lets the longest button win — lengthen a distractor or cut the exemplar), and a
+// fall fails until the pin is lowered here in the same PR, so the gain is locked in. Words are
+// whitespace tokens of the choice text; the strongest option is the engine's `strongest()`.
+const LENGTH_CUE_PIN = { nodes: 70, uniquelyLongestIsStrongest: 62 };
+
+test('length-cue ratchet: the strongest option is the uniquely longest at no more than the pinned number of nodes', () => {
+  const E = engine();
+  let nodes = 0, cue = 0;
+  const offenders = [];
+  for (const sc of data().scenarios) {
+    for (const [nid, n] of Object.entries(sc.nodes)) {
+      nodes += 1;
+      const best = E.strongest(n);
+      const words = n.choices.map((c) => c.text.trim().split(/\s+/).length);
+      if (words.every((w, i) => i === best || w < words[best])) { cue += 1; offenders.push(`${sc.id}/${nid}`); }
+    }
+  }
+  assert.equal(nodes, LENGTH_CUE_PIN.nodes, `node count changed (${nodes}); re-pin LENGTH_CUE_PIN.nodes with the cue count in the same PR`);
+  assert.ok(cue <= LENGTH_CUE_PIN.uniquelyLongestIsStrongest,
+    `the longest button now wins at ${cue} nodes (pin ${LENGTH_CUE_PIN.uniquelyLongestIsStrongest}) — lengthen a distractor or cut the exemplar at: ${offenders.join(' ')}`);
+  assert.equal(cue, LENGTH_CUE_PIN.uniquelyLongestIsStrongest,
+    `the longest button wins at only ${cue} nodes — lower LENGTH_CUE_PIN.uniquelyLongestIsStrongest to ${cue} to lock the gain in`);
+  // The seven nodes fixed on 2026-10-29 stay fixed: the exemplar is not the uniquely longest there.
+  const FIXED = ['silent-teen-guardian-present/close', 'shared-decision-household/safety-home', 'siblings-late-onset-psychosis/safety-home',
+    'coparents-discharge-adolescent/means-both', 'parent-own-untreated-illness/drinking', 'parent-own-untreated-illness/roles',
+    'parent-own-untreated-illness/roles-unrouted', 'parent-own-untreated-illness/close'];
+  for (const f of FIXED) assert.ok(!offenders.includes(f), `${f}: the longest button must not be the strongest here`);
 });
 
 test('display order is a deterministic permutation that does not always lead with the strongest option', () => {
