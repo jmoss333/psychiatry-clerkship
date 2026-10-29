@@ -2,6 +2,13 @@
    Pure ES5. No patient fields, persistence, route state, analytics, clock, or network access.
    Crisis HTML is the trusted build artifact from the shell's injected fdCrisisTemplate. */
 
+/* Patient-facing sharing requires explicit owner approval before re-enabling.
+   This source gate has no URL, storage or learner-facing override. */
+var FD_CARE_PATIENT_SHARING_ENABLED=false;
+function fdCarePatientSharingEnabled(){
+  return FD_CARE_PATIENT_SHARING_ENABLED===true;
+}
+
 var FD_CARE_PACK_LIMIT=3;
 
 function fdCarePackSafeId(value){
@@ -11,6 +18,7 @@ function fdCarePackSafeId(value){
 
 /* A launch destination, never a selectable handout resource. Ignore all screen state. */
 function fdCareBuilder(index){
+  if(!fdCarePatientSharingEnabled()) return '';
   var item=index&&index.careBuilder;
   if(!item||!fdCarePackSafeId(item.id)||item.id!=='supervised-resource-builder'||
      typeof item.title!=='string'||!item.title||
@@ -18,7 +26,7 @@ function fdCareBuilder(index){
      typeof item.url!=='string'||!/^https:\/\/[^\s?#<>"']+$/.test(item.url)) return '';
   return '<aside class="fd-care-builder" aria-labelledby="fd-care-builder-link">'+
     '<div><p id="fd-care-builder-description">'+fdEsc(item.description)+'</p>'+
-    '<p>Opens ReConnect in a new tab. No patient information or choices from this screen are sent.</p></div>'+
+    '<p>Opens in a new tab. No patient information or choices from this screen are sent.</p></div>'+
     '<a id="fd-care-builder-link" class="fd-care-builder__link" data-fd-care-builder="'+fdEsc(item.id)+
     '" href="'+fdEsc(item.url)+'" target="_blank" rel="noopener noreferrer" '+
     'aria-describedby="fd-care-builder-description">'+fdEsc(item.title)+'</a></aside>';
@@ -124,6 +132,7 @@ function fdCarePackResource(item){
 }
 
 function fdCareShare(index,id,ids){
+  if(!fdCarePatientSharingEnabled()) return '';
   var item=fdCarePackResourceById(index,id);
   if(!item) return '';
   var selectedIds=fdCarePackIds(index,ids),selected=false,i;
@@ -151,11 +160,12 @@ function fdCareShare(index,id,ids){
     (limit?' aria-describedby="fd-care-share-limit-'+fdEsc(item.id)+'" disabled':'')+'>'+
     (selected?'Remove from handout':'Add to handout')+'</button></div>'+
     '<p class="fd-care-share__status" data-fd-care-copy-status="share-'+fdEsc(item.id)+'" role="status" aria-live="polite"></p>'+
-    '<p class="fd-care-share__privacy">Exact ReConnect link only. No patient information is added or saved.</p>'+
+    '<p class="fd-care-share__privacy">Exact resource link only. No patient information is added or saved.</p>'+
     '</div></aside>';
 }
 
 function fdCarePack(index,ids,crisisHtml){
+  if(!fdCarePatientSharingEnabled()) return '';
   var resources=fdCarePackResources(index),selectedIds=fdCarePackIds(index,ids);
   var selected=Object.create(null),byId=Object.create(null),limit=selectedIds.length>=FD_CARE_PACK_LIMIT;
   var hasCrisis=typeof crisisHtml==='string'&&/class=["']crisis-block["']/.test(crisisHtml);
@@ -185,7 +195,7 @@ function fdCarePack(index,ids,crisisHtml){
     '<button type="button" class="fd-care-pack__clear" data-fd-care-pack-clear'+
     (selectedIds.length?'':' disabled')+'>Clear</button></div></section>'+
     '<article class="fd-care-pack__sheet" aria-labelledby="fd-care-pack-sheet-title">'+
-    '<header class="fd-care-pack__sheet-head"><p>ReConnect collection</p><h3 id="fd-care-pack-sheet-title">Patient care resources</h3>'+
+    '<header class="fd-care-pack__sheet-head"><p>Curated collection</p><h3 id="fd-care-pack-sheet-title">Patient care resources</h3>'+
     '<span>Verify current details before using or sharing these resources.</span></header>';
   if(selectedIds.length){
     out+='<div class="fd-care-pack__resources">';
@@ -201,7 +211,7 @@ function fdCarePack(index,ids,crisisHtml){
     out+='<details class="fd-care-pack__crisis"><summary>Crisis resources included automatically</summary>'+
       String(crisisHtml)+'</details>';
   }
-  out+='<footer class="fd-care-pack__provenance">Created by Joshua Moss, MD from personally curated ReConnect databases.</footer>'+
+  out+='<footer class="fd-care-pack__provenance">Created by Joshua Moss, MD from personally curated resource databases.</footer>'+
     '</article></div><div class="fd-care-pack__actions"><p>Your choices stay only on this screen.</p>'+
     '<button type="button" class="fd-care-pack__copy" data-fd-care-copy-selected'+
     (selectedIds.length?'':' disabled')+'>Copy selected links</button>'+

@@ -50,42 +50,6 @@ class ConceptBuildTests(unittest.TestCase):
             with self.assertRaisesRegex(deps.DependencyError, 'concepts.json'):
                 deps.discover(self.root, self.tool_page, {}, site, self.out)
 
-    def test_signed_overlay_changes_release_without_changing_tool_hash(self):
-        self.setup_tool()
-        self.sign('pending')
-        before = attestation_hash.digest_from_tree(self.root, self.shipped, {}, 'review.html')
-        self.assertEqual(deps.discover(self.root, self.tool_page, {}, 'ms3'), {CANDIDATE, EVIDENCE})
-        with self.assertRaisesRegex(ValueError, 'empty release'):
-            concept_cards.feed_bytes(self.root, 'ms3')
-        source_hash = attestation_hash.digest_from_tree(self.root, self.shipped, {}, 'different-route.md')
-        (self.root / 'question_bank.json').write_text('{"version":1,"items":[]}')
-        script = r'''
-import fs from 'node:fs';
-import path from 'node:path';
-import {generateKeyPairSync} from 'node:crypto';
-import {appendEvents, loadSigner} from './faculty-console/ledger.mjs';
-import {run} from './13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs';
-const [root, hash] = process.argv.slice(1);
-const {privateKey} = generateKeyPairSync('ed25519');
-const signer = loadSigner(privateKey.export({type:'pkcs8',format:'der'}).toString('base64'));
-const keysDoc = {version:1,keys:[{keyId:signer.keyId,algorithm:'ed25519',publicKeyPem:signer.publicKey.export({type:'spki',format:'pem'}),addedAt:'2026-09-25',revokedAt:null}]};
-fs.mkdirSync(path.join(root,'13_Faculty_Resources/ledger'),{recursive:true});
-fs.writeFileSync(path.join(root,'13_Faculty_Resources/ledger/keys.json'),JSON.stringify(keysDoc));
-const text = appendEvents({existingText:'',keysDoc,drafts:[{type:'attest',kind:'content',id:'different-route.md',contentHash:hash}],ts:'2026-09-25T12:00:00.000Z',by:'Synthetic Faculty, MD',base:'b'.repeat(40),signer}).text;
-const file = path.join(root,'events.jsonl');
-fs.writeFileSync(file,text);
-process.exitCode = run(['--root',root,'--receipt',path.join(root,'receipt.json')],{...process.env,CLERKSHIP_LEDGER:'on',CLERKSHIP_LEDGER_FILE:file});
-'''
-        result = subprocess.run(['node', '--input-type=module', '-e', script, str(self.root), source_hash],
-                                cwd=HERE.parents[2], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        for site in ('ms3', 'res'):
-            self.assertEqual(len(json.loads(concept_cards.feed_bytes(self.root, site))['cards']), 2)
-        self.assertEqual(before, attestation_hash.digest_from_tree(self.root, self.shipped, {}, 'review.html'))
-        self.page.write_text(self.page.read_text() + '\nAuthored change.\n')
-        with self.assertRaisesRegex(ValueError, 'empty release'):
-            concept_cards.feed_bytes(self.root, 'res')
-
     def test_digest_replaces_inherited_value_and_worker_precaches_final_bytes(self):
         self.setup_tool()
         raw = concept_cards.feed_bytes(self.root, 'ms3')

@@ -231,7 +231,10 @@ export async function installRotationEditionRoute(page, options = {}) {
   const gate = options.gate || 'enabled';
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
-    if (!TARGET_PATHS.has(url.pathname)) {
+    // Hosted previews add telemetry requests whose path is also '/'. Only learner
+    // document navigation can carry the catalog; never rewrite background traffic.
+    if (route.request().resourceType() !== 'document' || !route.request().isNavigationRequest()
+      || !TARGET_PATHS.has(url.pathname)) {
       await route.continue();
       return;
     }

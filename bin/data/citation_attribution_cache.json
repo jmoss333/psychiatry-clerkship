@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-10-05",
+  "refreshedAt": "2026-10-26",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -277,6 +277,29 @@
       "resolvedAt": "2026-09-27",
       "pmid": "38683591"
     },
+    "10.1001/jamainternmed.2026.4939": {
+      "title": "Comparative Effectiveness of Phenobarbital vs Diazepam for Alcohol Withdrawal Syndrome",
+      "container": "JAMA Intern Med",
+      "containerAlt": [
+        "JAMA Intern Med",
+        "JAMA Internal Medicine",
+        "JAMA internal medicine"
+      ],
+      "year": 2026,
+      "authors": [
+        "Bradley",
+        "Feeney",
+        "Law",
+        "Peterkin",
+        "Fantasia",
+        "Walkey",
+        "Bosch"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "42862568"
+    },
     "10.1001/jamanetworkopen.2024.35895": {
       "title": "Buprenorphine-Precipitated Withdrawal Among Hospitalized Patients Using Fentanyl",
       "container": "JAMA Netw Open",
@@ -418,6 +441,30 @@
       "resolvedAt": "2026-09-27",
       "pmid": "31758858"
     },
+    "10.1001/jamapsychiatry.2020.1586": {
+      "title": "Association of Suicide Prevention Interventions With Subsequent Suicide Attempts, Linkage to Follow-up Care, and Depression Symptoms for Acute Care Settings",
+      "container": "JAMA Psychiatry",
+      "containerAlt": [
+        "JAMA Psychiatry",
+        "JAMA psychiatry"
+      ],
+      "year": 2020,
+      "authors": [
+        "Doupnik",
+        "Rudd",
+        "Schmutte",
+        "Worsley",
+        "Bowden",
+        "McCarthy",
+        "Eggan",
+        "Bridge",
+        "Marcus"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "32584936"
+    },
     "10.1001/jamapsychiatry.2020.3650": {
       "title": "Sequential Combination of Pharmacotherapy and Psychotherapy in Major Depressive Disorder",
       "container": "JAMA Psychiatry",
@@ -468,6 +515,95 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "34076676"
+    },
+    "10.1001/jamapsychiatry.2021.3170": {
+      "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder",
+      "container": "JAMA Psychiatry",
+      "containerAlt": [
+        "JAMA Psychiatry",
+        "JAMA psychiatry"
+      ],
+      "year": 2022,
+      "authors": [
+        "Katz",
+        "Rogers",
+        "Lew",
+        "Thwin",
+        "Doros",
+        "Ahearn",
+        "Ostacher",
+        "DeLisi",
+        "Smith",
+        "Ringer",
+        "Ferguson",
+        "Hoffman",
+        "Kaufman",
+        "Paik",
+        "Conrad",
+        "Holmberg",
+        "Boney",
+        "Huang",
+        "Liang",
+        "Agrawal",
+        "Akhtar",
+        "Androsenko",
+        "Berger",
+        "Bhat",
+        "Brenner",
+        "Chalasani",
+        "Chang",
+        "Chen",
+        "Cornejo",
+        "Cory",
+        "Davidson",
+        "Dickmann",
+        "Duncan",
+        "Fernando",
+        "Floyd",
+        "Forman",
+        "Gale",
+        "Geete",
+        "Ignatowski",
+        "Jones",
+        "Juergens",
+        "Jurjus",
+        "Khatkhate",
+        "Konicki",
+        "Krahn",
+        "Larson",
+        "Leckband",
+        "Mack",
+        "Matthews",
+        "Mayo",
+        "McGlade",
+        "Michalets",
+        "Miller",
+        "Muly",
+        "Niculescu",
+        "Ostacher",
+        "Padala",
+        "Padala",
+        "Pazzaglia",
+        "Raskind",
+        "Renshaw",
+        "Shivakumar",
+        "Smith",
+        "Sullivan",
+        "Suppes",
+        "Swann",
+        "Thomas",
+        "Thompson",
+        "Turner",
+        "Umbert",
+        "Westermeyer",
+        "Wood",
+        "Wortzel",
+        "Yurgelun-Todd"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "34787653"
     },
     "10.1001/jamapsychiatry.2023.3971": {
       "title": "Psychotherapies for Generalized Anxiety Disorder in Adults",
@@ -802,6 +938,72 @@
       "resolvedAt": "2026-09-27",
       "pmid": "34762330"
     },
+    "10.1002/jhm.70088": {
+      "title": "Clinical progress note: Phenobarbital in the treatment of alcohol withdrawal syndrome",
+      "container": "Journal of Hospital Medicine",
+      "containerAlt": [
+        "J Hosp Med",
+        "Journal of Hospital Medicine",
+        "Journal of hospital medicine"
+      ],
+      "year": 2025,
+      "authors": [
+        "Abrams",
+        "Ronan"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "40443022"
+    },
+    "10.1002/phar.2855": {
+      "title": "Assessment of a modified MINDS ‐based protocol for management of alcohol withdrawal syndrome on an inpatient medical service",
+      "container": "Pharmacotherapy",
+      "containerAlt": [
+        "Pharmacotherapy",
+        "Pharmacotherapy: The Journal of Human Pharmacology and Drug Therapy"
+      ],
+      "year": 2023,
+      "authors": [
+        "Krcmarik",
+        "Hulley",
+        "Huang",
+        "Juang",
+        "Cadman",
+        "Urbiztondo",
+        "Vo",
+        "Vargas",
+        "Motarjemi",
+        "Moinizandi",
+        "Kwan"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "37475509"
+    },
+    "10.1002/phar.70197": {
+      "title": "Phenobarbital Versus Benzodiazepine‐Based Pathways for Alcohol Withdrawal Syndrome in Critically Ill Adults: A Systematic Review and Meta‐Analysis",
+      "container": "Pharmacotherapy",
+      "containerAlt": [
+        "Pharmacotherapy",
+        "Pharmacotherapy: The Journal of Human Pharmacology and Drug Therapy"
+      ],
+      "year": 2026,
+      "authors": [
+        "Rizwan",
+        "Brown",
+        "Barry",
+        "Guppy",
+        "Gerberi",
+        "Gajic",
+        "Herasevich"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "42634386"
+    },
     "10.1007/s00406-023-01716-5": {
       "title": "Clinical predictors of suicidal ideation, suicide attempts and suicide death in depressive disorder: a systematic review and meta-analysis",
       "container": "Eur Arch Psychiatry Clin Neurosci",
@@ -846,6 +1048,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "34519947"
+    },
+    "10.1007/s11606-020-05641-4": {
+      "title": "A Quasi-Experimental Analysis of Lethal Means Assessment and Risk for Subsequent Suicide Attempts and Deaths",
+      "container": "J GEN INTERN MED",
+      "containerAlt": [
+        "J GEN INTERN MED",
+        "J Gen Intern Med",
+        "Journal of General Internal Medicine",
+        "Journal of general internal medicine"
+      ],
+      "year": 2020,
+      "authors": [
+        "Boggs",
+        "Beck",
+        "Ritzwoller",
+        "Battaglia",
+        "Anderson",
+        "Lindrooth"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "32040838"
     },
     "10.1007/s11606-025-09499-2": {
       "title": "Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Risks Outweigh Benefits",
@@ -1231,6 +1456,25 @@
       "resolvedAt": "2026-09-27",
       "pmid": "33846015"
     },
+    "10.1016/j.annemergmed.2024.02.016": {
+      "title": "Managing Alcohol Withdrawal Syndrome",
+      "container": "Annals of Emergency Medicine",
+      "containerAlt": [
+        "Ann Emerg Med",
+        "Annals of Emergency Medicine",
+        "Annals of emergency medicine"
+      ],
+      "year": 2024,
+      "authors": [
+        "Gottlieb",
+        "Chien",
+        "Long"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "38530674"
+    },
     "10.1016/j.beth.2019.01.003": {
       "title": "Acceptability and Efficacy of Group Behavioral Activation for Depression Among Adults: A Meta-Analysis",
       "container": "Behavior Therapy",
@@ -1330,6 +1574,25 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39277317"
+    },
+    "10.1016/j.copsyc.2017.07.002": {
+      "title": "Firearm suicide: pathways to risk and methods of prevention",
+      "container": "Current Opinion in Psychology",
+      "containerAlt": [
+        "Curr Opin Psychol",
+        "Current Opinion in Psychology",
+        "Current opinion in psychology"
+      ],
+      "year": 2018,
+      "authors": [
+        "Houtsma",
+        "Butterworth",
+        "Anestis"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "30122279"
     },
     "10.1016/j.cpr.2025.102656": {
       "title": "Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: A systematic review",
@@ -1499,6 +1762,28 @@
       "resolvedAt": "2026-09-27",
       "pmid": "28917389"
     },
+    "10.1016/j.genhosppsych.2021.04.011": {
+      "title": "Lethal means counseling for suicide prevention: Views of emergency department clinicians",
+      "container": "General Hospital Psychiatry",
+      "containerAlt": [
+        "Gen Hosp Psychiatry",
+        "General Hospital Psychiatry",
+        "General hospital psychiatry"
+      ],
+      "year": 2021,
+      "authors": [
+        "Siry",
+        "Polzer",
+        "Omeragic",
+        "Knoepke",
+        "Matlock",
+        "Betz"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "33971519"
+    },
     "10.1016/j.genhosppsych.2021.11.005": {
       "title": "Effects of caffeine on anxiety and panic attacks in patients with panic disorder: A systematic review and meta-analysis",
       "container": "General Hospital Psychiatry",
@@ -1606,6 +1891,37 @@
       "resolvedAt": "2026-09-27",
       "pmid": "39271062"
     },
+    "10.1016/j.jad.2025.119487": {
+      "title": "The efficacy of lithium in the treatment of suicidal ideation, behavior and suicide: An updated systematic review and meta-analysis of randomized controlled trials",
+      "container": "Journal of Affective Disorders",
+      "containerAlt": [
+        "J Affect Disord",
+        "Journal of Affective Disorders",
+        "Journal of affective disorders"
+      ],
+      "year": 2025,
+      "authors": [
+        "Wang",
+        "Le",
+        "Wong",
+        "Teopiz",
+        "Kwan",
+        "Rosenblat",
+        "Rhee",
+        "Ho",
+        "Lo",
+        "Goldberg",
+        "Vinberg",
+        "Grande",
+        "Mansur",
+        "Meyer",
+        "McIntyre"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "40441661"
+    },
     "10.1016/j.jceh.2022.03.003": {
       "title": "Management of Alcohol Withdrawal Syndrome in Patients with Alcoholic Liver Disease",
       "container": "Journal of Clinical and Experimental Hepatology",
@@ -1625,6 +1941,26 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "36340306"
+    },
+    "10.1016/j.mayocpiqo.2021.11.010": {
+      "title": "Benzodiazepine Treatment and Hospital Course of Medical Inpatients With Alcohol Withdrawal Syndrome in the Veterans Health Administration",
+      "container": "Mayo Clinic Proceedings: Innovations, Quality & Outcomes",
+      "containerAlt": [
+        "Mayo Clin Proc Innov Qual Outcomes",
+        "Mayo Clinic Proceedings: Innovations, Quality & Outcomes",
+        "Mayo Clinic proceedings. Innovations, quality & outcomes"
+      ],
+      "year": 2022,
+      "authors": [
+        "Steel",
+        "Malte",
+        "Bradley",
+        "Hawkins"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "35224452"
     },
     "10.1016/j.neubiorev.2019.07.022": {
       "title": "Risk factors for suicidality in patients with panic disorder: A systematic review and meta-analysis",
@@ -1805,6 +2141,35 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "29150198"
+    },
+    "10.1016/s0140-6736(19)31135-3": {
+      "title": "Comparative efficacy and tolerability of 32 oral antipsychotics for the acute treatment of adults with multi-episode schizophrenia: a systematic review and network meta-analysis",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2019,
+      "authors": [
+        "Huhn",
+        "Nikolakopoulou",
+        "Schneider-Thoma",
+        "Krause",
+        "Samara",
+        "Peter",
+        "Arndt",
+        "Bäckers",
+        "Rothe",
+        "Cipriani",
+        "Davis",
+        "Salanti",
+        "Leucht"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "31303314"
     },
     "10.1016/s0140-6736(21)00476-1": {
       "title": "Borderline personality disorder",
@@ -2204,6 +2569,35 @@
       "resolvedAt": "2026-09-27",
       "pmid": "30743298"
     },
+    "10.1056/nejmoa051688": {
+      "title": "Effectiveness of Antipsychotic Drugs in Patients with Chronic Schizophrenia",
+      "container": "N Engl J Med",
+      "containerAlt": [
+        "N Engl J Med",
+        "New England Journal of Medicine",
+        "The New England journal of medicine"
+      ],
+      "year": 2005,
+      "authors": [
+        "Lieberman",
+        "Stroup",
+        "McEvoy",
+        "Swartz",
+        "Rosenheck",
+        "Perkins",
+        "Keefe",
+        "Davis",
+        "Davis",
+        "Lebowitz",
+        "Severe",
+        "Hsiao",
+        "Clinical Antipsychotic Trials of Intervention Effectiveness (CATIE) Investigators"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "16172203"
+    },
     "10.1056/nejmoa1612222": {
       "title": "Lithium Use in Pregnancy and the Risk of Cardiac Malformations",
       "container": "N Engl J Med",
@@ -2383,6 +2777,31 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39321364"
+    },
+    "10.1056/nejmsa1916744": {
+      "title": "Handgun Ownership and Suicide in California",
+      "container": "N Engl J Med",
+      "containerAlt": [
+        "N Engl J Med",
+        "New England Journal of Medicine",
+        "The New England journal of medicine"
+      ],
+      "year": 2020,
+      "authors": [
+        "Studdert",
+        "Zhang",
+        "Swanson",
+        "Prince",
+        "Rodden",
+        "Holsinger",
+        "Spittal",
+        "Wintemute",
+        "Miller"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "32492303"
     },
     "10.1080/00332747.2022.2062660": {
       "title": "Meta-Analysis of the Effect of Psychotherapy in an Inpatient Setting: Examining the Moderating Role of Diagnosis and Therapeutic Approach",
@@ -2718,6 +3137,21 @@
       "resolvedAt": "2026-09-27",
       "pmid": "31050757"
     },
+    "10.1097/adm.0000000000000668": {
+      "title": "The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management",
+      "container": "Journal of Addiction Medicine",
+      "containerAlt": [
+        "J Addict Med",
+        "Journal of Addiction Medicine",
+        "Journal of addiction medicine"
+      ],
+      "year": 2020,
+      "authors": [],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "32511109"
+    },
     "10.1097/adm.0000000000001133": {
       "title": "Rapid Low-dose Buprenorphine Initiation for Hospitalized Patients With Opioid Use Disorder",
       "container": "J Addict Med",
@@ -2783,6 +3217,26 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "30873690"
+    },
+    "10.1111/acem.14825": {
+      "title": "Phenobarbital treatment of alcohol withdrawal in the emergency department: A systematic review and meta‐analysis",
+      "container": "Academic Emergency Medicine",
+      "containerAlt": [
+        "Acad Emerg Med",
+        "Academic Emergency Medicine",
+        "Academic emergency medicine : official journal of the Society for Academic Emergency Medicine"
+      ],
+      "year": 2024,
+      "authors": [
+        "Lee",
+        "Dillon",
+        "Tahir",
+        "Murphy"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "37923363"
     },
     "10.1111/acps.12995": {
       "title": "Efficacy of inpatient psychotherapy for major depressive disorder: a meta‐analysis of controlled trials",
@@ -3342,6 +3796,24 @@
       "resolvedAt": "2026-09-27",
       "pmid": "40185617"
     },
+    "10.1155/jnme/7143046": {
+      "title": "Thiamine Use in Hospitalized Patients: A Clinical Review",
+      "container": "Journal of Nutrition and Metabolism",
+      "containerAlt": [
+        "J Nutr Metab",
+        "Journal of Nutrition and Metabolism",
+        "Journal of nutrition and metabolism"
+      ],
+      "year": 2026,
+      "authors": [
+        "Rosewarne",
+        "Farina"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "41684754"
+    },
     "10.1159/000499039": {
       "title": "Thiamine Substitution in Alcohol Use Disorder: A Narrative Review of Medical Guidelines",
       "container": "Eur Addict Res",
@@ -3468,6 +3940,27 @@
       "resolvedAt": "2026-09-27",
       "pmid": "26481174"
     },
+    "10.1176/appi.ajp.2016.15070854": {
+      "title": "Suicide Attempt as a Risk Factor for Completed Suicide: Even More Lethal Than We Knew",
+      "container": "AJP",
+      "containerAlt": [
+        "AJP",
+        "Am J Psychiatry",
+        "American Journal of Psychiatry",
+        "The American journal of psychiatry"
+      ],
+      "year": 2016,
+      "authors": [
+        "Bostwick",
+        "Pabbati",
+        "Geske",
+        "McKean"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "27523496"
+    },
     "10.1176/appi.ajp.2020.177901": {
       "title": "The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia",
       "container": "AJP",
@@ -3540,6 +4033,47 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39876682"
+    },
+    "10.1176/appi.focus.20220072": {
+      "title": "Suicide Risk Assessment, Management, and Mitigation in the Emergency Setting",
+      "container": "FOC",
+      "containerAlt": [
+        "FOC",
+        "Focus",
+        "Focus (Am Psychiatr Publ)",
+        "Focus (American Psychiatric Publishing)"
+      ],
+      "year": 2023,
+      "authors": [
+        "Powsner",
+        "Goebert",
+        "Richmond",
+        "Takeshita"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-12",
+      "pmid": "37205029"
+    },
+    "10.1176/appi.focus.20230009": {
+      "title": "The CANMAT and ISBD Guidelines for the Treatment of Bipolar Disorder: Summary and a 2023 Update of Evidence",
+      "container": "FOC",
+      "containerAlt": [
+        "FOC",
+        "Focus",
+        "Focus (Am Psychiatr Publ)",
+        "Focus (American Psychiatric Publishing)"
+      ],
+      "year": 2023,
+      "authors": [
+        "Keramatian",
+        "Chithra",
+        "Yatham"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-11",
+      "pmid": "38695002"
     },
     "10.1176/appi.ps.201900633": {
       "title": "Psychoeducation for Inpatients With First-Episode Psychosis: Results From a Survey of Psychiatry Trainees in New York City",
@@ -4376,6 +4910,25 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "40096692"
+    },
+    "10.7326/m13-1301": {
+      "title": "The Accessibility of Firearms and Risk for Suicide and Homicide Victimization Among Household Members",
+      "container": "Ann Intern Med",
+      "containerAlt": [
+        "Ann Intern Med",
+        "Annals of Internal Medicine",
+        "Annals of internal medicine"
+      ],
+      "year": 2014,
+      "authors": [
+        "Anglemyer",
+        "Horvath",
+        "Rutherford"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-22",
+      "pmid": "24592495"
     },
     "10.7326/m19-0687": {
       "title": "Assessment and Management of Patients at Risk for Suicide: Synopsis of the 2019 U.S. Department of Veterans Affairs and U.S. Department of Defense Clinical Practice Guidelines",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-10-05T07:36:22+00:00",
+  "capturedAt": "2026-10-27T04:42:19+00:00",
   "issues": [
     {
       "number": 8,
@@ -1673,8 +1673,8 @@
     {
       "number": 926,
       "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/926",
-      "state": "OPEN",
-      "closedAt": null,
+      "state": "CLOSED",
+      "closedAt": "2026-10-16T11:33:35Z",
       "fingerprint": "fda-drug-safety::modified::710b975819e377f7",
       "labels": [
         "P0",
@@ -1685,8 +1685,8 @@
     {
       "number": 927,
       "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/927",
-      "state": "OPEN",
-      "closedAt": null,
+      "state": "CLOSED",
+      "closedAt": "2026-10-16T11:33:37Z",
       "fingerprint": "spravato-rems::modified::ef08c5a75eed704c",
       "labels": [
         "P1",
@@ -1724,6 +1724,30 @@
       "state": "OPEN",
       "closedAt": null,
       "fingerprint": "link:lcme.org::broken-link::6b13fd593531c1d3",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 1110,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/1110",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "link:www.appi.org::broken-link::84a1b42c50a5af9a",
+      "labels": [
+        "P1",
+        "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 1111,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/1111",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "link:www.appi.org::broken-link::62e8151ad521db06",
       "labels": [
         "P1",
         "link-source-monitor",

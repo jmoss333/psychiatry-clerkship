@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20250606",
+  "sections": {
+    "boxed_warning": {
+      "hash": "b9cea68dd3eb399151d0ac37349977269b359cff3f7a7d9d3e5ac702c58b8245",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SEVERE NEUTROPENIA; ORTHOSTATIC HYPOTENSION, BRADYCARDIA, AND SYNCOPE; SEIZURE; MYOCARDITIS, PERICARDITIS AND CARDIOMYOPATHY; INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Severe Neutropenia CLOZARIL has caused severe neutropenia which is associated with an increased risk of serious and potentially fatal infections. Prior to initiating CLOZARIL treatment, obtain baseline ANC(s). CLOZARIL initiation is not recommended in patients with a baseline ANC less than 1500/\u03bcL (less than 1000/\u03bcL for those with Benign Ethnic Neutropenia (also known as Duffy-null associated neutrophil count)). See recommendations for dosage modifications based on ANC levels during CLOZARIL treatment [see Dosage and Administration ( 2.3 , 2.4 )] . Consider a hematology consultation before initiating CLOZARIL or during CLOZARIL treatment [see Warnings and Precautions ( 5.1 )] . Orthostatic Hypotension, Bradycardia, Syncope Orthostatic hypotension, bradycardia, syncope, and cardiac arrest have occurred with CLOZARIL treatment. The risk is highest during the initial titration period, particularly with rapid dose escalation. These reactions can occur with the first dose, with doses as low as 12.5 mg per day, or when restarting patients who have had even a brief interruption in treatment with CLOZARIL. Initiate treatment at 12.5 mg once or twice daily; titrate slowly; and use divided dosages to minimize risk. Use CLOZARIL cautiously in patients with cardiovascular or cerebrovascular disease or conditions predisposing to hypotension (e.g., dehydration, use of antihypertensive medications) [see Dosage and Administration ( 2.2 , 2.6 ), Warnings and Precautions ( 5.2 )]. Seizures Seizures have occurred with CLOZARIL treatment. The risk is dose-related. Initiate treatment at 12.5 mg, titrate gradually, and use divided dosing. Use caution when administering CLOZARIL to patients with a history of seizures or other predisposing risk factors for seizure (CNS pathology, medications that lower the seizure threshold, alcohol abuse). Caution patients about engaging in any activity where sudden loss of consciousness could cause serious risk to themselves or others [see Dosage and Administration ( 2.2 ), Warnings and Precautions ( 5.4 )]. Myocarditis, Pericarditis, Cardiomyopathy and Mitral Valve Incompetence Fatal myocarditis and cardiomyopathy have occurred with CLOZARIL treatment. Discontinue CLOZARIL and obtain a cardiac evaluation upon suspicion of these reactions. Generally, patients with CLOZARIL-related myocarditis or cardiomyopathy should not be rechallenged with CLOZARIL. Consider the possibility of myocarditis, pericarditis, or cardiomyopathy if chest pain, tachycardia, palpitations, dyspnea, fever, flu-like symptoms, hypotension, or ECG changes occur [see Warnings and Precautions( 5.5 )] . Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. CLOZARIL is not approved for use in patients with dementia-related psychosis [see Warnings and Precautions ( 5.6 )]. WARNING: SEVERE NEUTROPENIA; ORTHOSTATIC HYPOTENSION, BRADYCARDIA, AND SYNCOPE; SEIZURE; MYOCARDITIS, PERICARDITIS AND CARDIOMYOPATHY; INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS See full prescribing information for complete boxed warning. \u2022 Severe Neutropenia: CLOZARIL has caused severe neutropenia, which is associated with an increased risk of serious and fatal infections. Prior to initiating CLOZARIL treatment, obtain baseline ANC(s). CLOZARIL initiation is not recommended in patients with a baseline ANC less than 1500/ \u03bc L (less than 1000 \u03bc L for those with Benign Ethnic Neutropenia (also known as Duffy-null associated neutrophil count)). See recommendations for dosage modifications based on ANC levels during CLOZARIL treatment ( 2.3 , 2.4 , 5.1 ) \u2022 Orthostatic Hypotension, Bradycardia, and Syncope: Risk is dose-related. Starting dose is 12.5 mg. Titrate gradually and use divided dosages. ( 2.2 , 2.6 , 5.2 ) \u2022 Seizure: Risk is dose-related. Titrate gradually and use divided doses. Use with caution in patients with history of seizure or risk factors for seizure. ( 2.2 , 5.4 ) \u2022 Myocarditis, Pericarditis, Cardiomyopathy and Mitral Valve Incompetence: Can be fatal. Discontinue and obtain cardiac evaluation if findings suggest these cardiac reactions. ( 5.5 ) \u2022 Increased Mortality in Elderly Patients with Dementia-Related Psychosis: CLOZARIL is not approved for this condition. ( 5.6 )"
+    },
+    "contraindications": {
+      "hash": "0a4cbe9f38479d31d5563ef622b7392593d292fa5a449cf34b7734d15bbaabf0",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS CLOZARIL is contraindicated in patients with a history of hypersensitivity to clozapine (e.g., photosensitivity, vasculitis, erythema multiforme, or Stevens-Johnson syndrome) or any other component of CLOZARIL [see Adverse Reactions ( 6.2 )]. Known hypersensitivity to clozapine or any other component of CLOZARIL. ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "14b9c23b0d243090fc9770e67854668a37652505e40a04d362a305d3dabd332c",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "90876802-0e3a-44c9-9ff7-1754dfbe736a",
+  "version": "21"
+}

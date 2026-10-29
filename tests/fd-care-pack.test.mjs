@@ -14,9 +14,10 @@ const qrSrc = readFileSync(new URL(
 const curriculum = JSON.parse(readFileSync(new URL('../curriculum.json', import.meta.url), 'utf8'));
 const crisis = JSON.parse(readFileSync(new URL('../crisis_resources.json', import.meta.url), 'utf8'));
 
+// Exercise the retained feature with explicit opt-in; default-off has separate regressions.
 function api(qrSource = qrSrc) {
   // eslint-disable-next-line no-new-func
-  return new Function(`${dataSrc}\n${qrSource}\n${packSrc}\nreturn {
+  return new Function(`${dataSrc}\n${qrSource}\n${packSrc}\nFD_CARE_PATIENT_SHARING_ENABLED=true;\nreturn {
     resources: typeof fdCarePackResources === 'function' ? fdCarePackResources : null,
     ids: typeof fdCarePackIds === 'function' ? fdCarePackIds : null,
     toggle: typeof fdCarePackToggle === 'function' ? fdCarePackToggle : null,

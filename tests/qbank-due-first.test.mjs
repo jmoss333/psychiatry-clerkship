@@ -148,16 +148,16 @@ test('with the draft opt-in set, a due draft card resurfaces first again', () =>
     'the opt-in widens the pool to drafts only — never to retired items');
 });
 
-// ---- shell parity plumbing (RETIRED_QB_IDS / DRAFT_QB_IDS) -------------------------
+// ---- shell parity plumbing (RELEASED_QB_IDS) -------------------------
 
 test('the shell carries exactly one empty needle of each kind for the build to fill', () => {
-  for (const needle of ['var RETIRED_QB_IDS=[];', 'var DRAFT_QB_IDS=[];']) {
+  for (const needle of ['var RELEASED_QB_IDS=[];']) {
     assert.equal(spaSrc.split(needle).length - 1, 1,
       `build_deploy.py verified-replaces ${needle}; zero or two copies breaks the injection`);
   }
 });
 
-test('both shell calibration counters count only servable records (not retired; drafts only when opted in)', () => {
+test('both shell calibration counters count only servable records (published approved questions only)', () => {
   const summary = spaSrc.match(/function calibrationSummary\(\)\{[\s\S]*?\n  \}/);
   assert.ok(summary, 'calibrationSummary not found');
   assert.match(summary[0], /qbRecordServable\(id\)/,

@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260908",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "contraindications": {
+      "hash": "b8e8bcda659078da7bb2f0d1597f9b527145f8ae0c8ec3810b7ad04c5949ae81",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Naltrexone hydrochloride is contraindicated in: Patients receiving opioid analgesics. Patients currently dependent on opioids, including those currently maintained on opiate agonists (e.g., methadone) or partial agonists (e.g., buprenorphine). Patients in acute opioid withdrawal (see WARNINGS ). Any individual who has failed the naloxone challenge test or who has a positive urine screen for opioids. Any individual with a history of sensitivity to naltrexone hydrochloride or any other components of this product. It is not known if there is any cross-sensitivity with naloxone or the phenanthrene containing opioids."
+    },
+    "warnings": {
+      "hash": "bf52437b98f0911b260d39c48bd7bd37cf58227e38008df5d3add8d9c093a562",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "db911559-26f5-43a0-b61f-3425176c936f",
+  "version": "3"
+}

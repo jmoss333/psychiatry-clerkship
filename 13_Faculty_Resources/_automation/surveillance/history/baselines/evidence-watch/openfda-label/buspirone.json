@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260904",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "contraindications": {
+      "hash": "536c21d6882cc1a2349d542eaf558208645ca2e52bd3129874757b204455a703",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Buspirone hydrochloride tablets are contraindicated in patients hypersensitive to buspirone hydrochloride. The use of monoamine oxidase inhibitors (MAOIs) intended to treat depression with buspirone or within 14 days of stopping treatment with buspirone is contraindicated because of an increased risk of serotonin syndrome and/or elevated blood pressure. The use of buspirone within 14 days of stopping an MAOI intended to treat depression is also contraindicated. Starting buspirone in a patient who is being treated with reversible MAOIs such as linezolid or intravenous methylene blue is also contraindicated because of an increased risk of serotonin syndrome. (see WARNINGS , DOSAGE AND ADMINISTRATION AND DRUG INTERACTIONS )"
+    },
+    "warnings": {
+      "hash": "0a3a6c96696d02d6a6ac1515100cc3626e88e2374b62866a2774b0847e708d36",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "fa4d5cac-f687-4440-99d2-8bb27cf2f4ed",
+  "version": "3"
+}

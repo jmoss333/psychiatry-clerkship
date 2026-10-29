@@ -10,6 +10,7 @@ const make = new Function(`${SOURCE}\nreturn {
   fdReadingPlaces: fdReadingPlaces,
   fdReadingPlaceUpdate: fdReadingPlaceUpdate,
   fdReadingPlaceDrop: fdReadingPlaceDrop,
+  fdReadingRecentItems: typeof fdReadingRecentItems==='function'?fdReadingRecentItems:null,
   fdReadingHeadingIds: fdReadingHeadingIds,
   fdReadingResume: fdReadingResume
 };`);
@@ -24,6 +25,22 @@ test('sanitizing keeps valid own records and ignores inherited and prototype-lik
   assert.deepEqual(make().fdReadingPlaces(inherited), {
     'valid.md': { heading: 'h-1', offset: 3, updatedAt: 4 },
   });
+});
+
+test('recent readings choose newest three unfinished catalogue readings and reject unavailable or hidden refs', () => {
+  const F=make();
+  assert.equal(typeof F.fdReadingRecentItems,'function');
+  const items=['a.md','b.md','c.md','d.md','done.md','hidden.md','tool.html'].map(ref=>({ref,kind:ref.endsWith('.md')?'read':'tool'}));
+  items.find(item=>item.ref==='hidden.md').searchOnly=true;
+  const idx={byRef:Object.fromEntries(items.map(item=>[item.ref,item])),columns:[{items}]};
+  idx.byRef['unlisted.md']={ref:'unlisted.md',kind:'read'};
+  const places={};
+  for(const [ref,updatedAt] of [['a.md',1],['b.md',5],['c.md',5],['d.md',3],['done.md',9],['hidden.md',10],['tool.html',11],['missing.md',12],['unlisted.md',13]]) {
+    places[ref]={heading:'h',offset:8,updatedAt};
+  }
+  assert.deepEqual(F.fdReadingRecentItems(idx,places,{'done.md':true}).map(item=>item.ref),['b.md','c.md','d.md']);
+  assert.equal(F.fdReadingRecentItems({byRef:{},columns:[]},places,{}).length,0,'another audience exposes none of these resources');
+  assert.equal(Object.keys(places).length,9,'derivation never mutates saved positions');
 });
 
 test('sanitizing rejects malformed records, refs, headings, and non-finite values', () => {

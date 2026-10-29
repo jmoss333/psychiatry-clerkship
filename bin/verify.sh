@@ -7,7 +7,9 @@
 # command a human can re-run and compare. Installed as a pre-push hook by bin/install-hooks.sh.
 # This script's stdout is what goes in the PR body.
 #
-#   bash bin/verify.sh            # full battery
+#   bash bin/verify.sh            # full battery, both site builds included
+#   bash bin/verify.sh --push     # the pre-push tier: everything except the two site builds,
+#                                 # which CI and the deploy previews run on every PR (a gate run)
 #   bash bin/verify.sh --quick    # skip the two site builds (fast inner loop; NOT a gate run)
 #
 # Exits non-zero if ANY step fails. Installed as a pre-push hook by bin/install-hooks.sh.
@@ -37,8 +39,16 @@ unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_COMMON_DIR \
       GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_QUARANTINE_PATH \
       GIT_CONFIG GIT_CONFIG_GLOBAL GIT_CONFIG_SYSTEM GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL
 
-QUICK=0
-[ "${1:-}" = "--quick" ] && QUICK=1
+# DECISION: prepush-builds-to-ci (decisions.json, 2026-10-18). The pre-push hook runs the
+# --push tier: every check except the two site builds. Measured 2026-10-17 (R2's ledger): the
+# builds were 254 s of a 530 s hook, 48 %, and CI plus the five Netlify deploy previews already
+# build both sites on every PR, so the hook was paying for the builds a third time. The full
+# tier (no flag) is unchanged and is what a release, a build-script change or a doubt deserves.
+QUICK=0; TIER=full
+case "${1:-}" in
+  --quick) QUICK=1; TIER=quick ;;
+  --push)  QUICK=1; TIER=push ;;
+esac
 
 FAILED=()
 # Every step runs with TMPDIR pointed at a private directory of its own, which is removed as soon
@@ -52,7 +62,8 @@ trap '[ -n "$CUR_STEP_TMP" ] && rm -rf "$CUR_STEP_TMP"' EXIT
 trap 'exit 129' HUP; trap 'exit 130' INT; trap 'exit 143' TERM
 step() {
   local name="$1"; shift
-  local out rc tmp leaks
+  local out rc tmp leaks t0 t1 secs leaked
+  t0="$(perl -MTime::HiRes=time -e 'printf "%.3f", time' 2>/dev/null || date +%s)"
   tmp="${TMPDIR:-/tmp}"
   CUR_STEP_TMP="$(mktemp -d "${tmp%/}/verify-step.XXXXXX")" || CUR_STEP_TMP=''
   if [ -n "$CUR_STEP_TMP" ]; then
@@ -60,6 +71,9 @@ step() {
   else
     out="could not create a private TMPDIR under $tmp"; rc=2
   fi
+  t1="$(perl -MTime::HiRes=time -e 'printf "%.3f", time' 2>/dev/null || date +%s)"
+  secs="$(awk -v a="$t0" -v b="$t1" 'BEGIN{printf "%.3f", b-a}')"
+  leaked=0
   if [ $rc -eq 0 ]; then
     printf '  PASS  %-42s %s\n' "$name" "$(printf '%s' "$out" | tail -1 | cut -c1-58)"
   else
@@ -70,8 +84,20 @@ step() {
   if [ -n "$CUR_STEP_TMP" ] && ! leaks="$("$BASH" "$REPO/bin/tmp_leak_report.sh" "$CUR_STEP_TMP")"; then
     printf '  LEAK  %-42s %s\n' "$name" "$leaks"
     FAILED+=("$name (temp-dir leak)")
+    leaked=1
   fi
   CUR_STEP_TMP=''
+  # Telemetry (R2, 2026-10-17): every step's wall time, in memory for the end-of-run summary
+  # and as one JSON line in the machine-local ledger when the run declared one. It can never
+  # fail a step, and a harness that extracts step() alone (tests/verify-tmp-sandbox) sets no
+  # ledger, so it records nothing there. bin/gate_report.py reads the ledger.
+  STEP_NAMES+=("$name"); STEP_SECS+=("$secs")
+  if [ -n "${VERIFY_LEDGER:-}" ]; then
+    printf '{"type":"step","run":"%s","ts":"%s","step":"%s","seconds":%s,"exit":%d,"leak":%s}\n' \
+      "${VERIFY_RUN_ID:-}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      "$(printf '%s' "$name" | sed 's/\\/\\\\/g; s/"/\\"/g')" "$secs" "$rc" \
+      "$([ $leaked -eq 1 ] && echo true || echo false)" >> "$VERIFY_LEDGER" 2>/dev/null || true
+  fi
 }
 
 # ci.yml greps for machine-specific paths and fails when it FINDS them, so the exit codes
@@ -89,8 +115,22 @@ lint_machine_paths() {
   esac
 }
 
-echo "verify.sh — $(git rev-parse --abbrev-ref HEAD) @ $(git rev-parse --short HEAD)"
+VERIFY_BRANCH="$(git rev-parse --abbrev-ref HEAD)"; VERIFY_HEAD="$(git rev-parse --short HEAD)"
+echo "verify.sh — $VERIFY_BRANCH @ $VERIFY_HEAD"
 echo "─────────────────────────────────────────────────────────────────────"
+
+# --- telemetry (R2, 2026-10-17): what this run costs, step by step ---
+# Every step appends one JSON line to a machine-local ledger (outside the repo, like the egress
+# probe's cache); the run appends a summary line at the end. bin/gate_report.py turns 90 days of
+# it into the three answers nobody had: how long the gate takes and which steps are the cost,
+# which steps fail and when they last did, and which have NEVER failed (perfect, or vacuous —
+# docs/SILENT_SHRINK_CHECKLIST.md §D). CLERKSHIP_VERIFY_LEDGER= (empty) switches recording off;
+# an unwritable ledger is skipped silently — telemetry never blocks a push.
+VERIFY_RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+VERIFY_RUN_T0="$(perl -MTime::HiRes=time -e 'printf "%.3f", time' 2>/dev/null || date +%s)"
+STEP_NAMES=(); STEP_SECS=()
+VERIFY_LEDGER="${CLERKSHIP_VERIFY_LEDGER-${XDG_STATE_HOME:-${HOME:-/tmp}/.local/state}/clerkship/verify-ledger.jsonl}"
+if [ -n "$VERIFY_LEDGER" ] && ! mkdir -p "$(dirname "$VERIFY_LEDGER")" 2>/dev/null; then VERIFY_LEDGER=''; fi
 
 # --- the shared .git/config is still this repository's own ---
 # Every worktree reads one .git/config, and a fixture that inherits a hook's GIT_DIR writes into
@@ -103,6 +143,10 @@ step "git config health (before the run)"   python3 bin/check_git_config_health.
 
 # --- contract: CLAUDE.md and AGENTS.md are byte-identical (CI enforces this) ---
 step "CLAUDE.md/AGENTS.md byte-parity"      diff -q CLAUDE.md AGENTS.md
+step "unit — agent guide contract"          python3 bin/check_agent_guide.py --self-test
+step "agent guide contract (index + tags)"  python3 bin/check_agent_guide.py
+step "unit — monolith ratchet"              python3 bin/check_monolith_ratchet.py --self-test
+step "monolith ratchet (attest.mjs shrinks)" python3 bin/check_monolith_ratchet.py
 
 # --- contract: this script still mirrors ci.yml's gate (it silently drifted before) ---
 # Two directions since 2026-10-04. Mirroring (ci.yml → here) only asks whether the two gate
@@ -205,6 +249,7 @@ if [ ! -d metrics/node_modules/@netlify/blobs ]; then
 fi
 step "unit — metrics collector"             bash -c "cd metrics && node --test tests/*.test.mjs"
 step "unit — pairing block renderer"        python3 $A/site_build/test_pairings_block.py
+step "unit — topic hub block"               python3 $A/site_build/topic_hub_block.py --self-test
 step "unit — front door catalog"            python3 $A/site_build/test_frontdoor_catalog.py
 step "unit — path coverage"                 python3 bin/check_path_coverage.py --self-test
 step "path coverage (report-only)"          python3 bin/check_path_coverage.py
@@ -354,6 +399,11 @@ step "label pins agree with the receipt"   python3 $A/pharmacy/check_label_drift
 step "unit — surface governance"            python3 $A/test_surface_governance.py
 step "unit — tool governance"               python3 $A/test_validate_tool_governance.py
 step "validate_tool_governance"             python3 $A/validate_tool_governance.py
+# Care aftercare packet inserts (PR A). build_and_check.sh runs these too, but its "$LIB/..." paths
+# are invisible to bin/check_vacuity.py, which then reports the test file as a falsification no
+# gate runs. Same defect, same fix as test_validate_curriculum.py above.
+step "unit — care inserts"                  python3 $A/test_validate_care_inserts.py
+step "validate_care_inserts"                python3 $A/validate_care_inserts.py
 step "lint — no hard-coded machine paths"   lint_machine_paths
 # ci.yml runs this with --compare-ref "$BASE_SHA" on PR events; the bare form is its own
 # else-branch, so local runs get the same immutability contract minus the base comparison.
@@ -446,6 +496,8 @@ step "red-team tier 1 (gate integrity)"     node bin/redteam-offline.mjs
 if [ $QUICK -eq 0 ]; then
   step "build_and_check ms3"                bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh ms3
   step "build_and_check res"                bash 13_Faculty_Resources/_automation/site_build/build_and_check.sh res
+elif [ "$TIER" = push ]; then
+  echo "  SKIP  build_and_check ms3/res             (--push tier: CI and the deploy previews build both sites — decision prepush-builds-to-ci)"
 else
   echo "  SKIP  build_and_check ms3/res             (--quick; NOT a gate run)"
 fi
@@ -473,8 +525,23 @@ step "design system drift"                  python3 bin/check_design_drift.py
 # while doing so (see the first step) fails this push here rather than the next session.
 step "git config health (after the run)"    python3 bin/check_git_config_health.py
 
+# --- telemetry summary: the run's wall time and its five slowest steps ---
+VERIFY_RUN_T1="$(perl -MTime::HiRes=time -e 'printf "%.3f", time' 2>/dev/null || date +%s)"
+VERIFY_RUN_SECS="$(awk -v a="$VERIFY_RUN_T0" -v b="$VERIFY_RUN_T1" 'BEGIN{printf "%.1f", b-a}')"
+if [ ${#STEP_SECS[@]} -gt 0 ]; then
+  printf '  timing  %d steps in %ss wall; slowest five:\n' "${#STEP_SECS[@]}" "$VERIFY_RUN_SECS"
+  for i in "${!STEP_SECS[@]}"; do printf '%s\t%s\n' "${STEP_SECS[$i]}" "${STEP_NAMES[$i]}"; done \
+    | sort -rn | head -5 | awk -F'\t' '{printf "          %8.1fs  %s\n", $1, $2}'
+fi
+if [ -n "$VERIFY_LEDGER" ]; then
+  printf '{"type":"run","run":"%s","ts":"%s","branch":"%s","head":"%s","quick":%d,"tier":"%s","steps":%d,"failed":%d,"seconds":%s}\n' \
+    "$VERIFY_RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$VERIFY_BRANCH" "$VERIFY_HEAD" "$QUICK" "$TIER" \
+    "${#STEP_SECS[@]}" "${#FAILED[@]}" "$VERIFY_RUN_SECS" >> "$VERIFY_LEDGER" 2>/dev/null || true
+  echo "  ledger  $VERIFY_LEDGER  (python3 bin/gate_report.py for the 90-day view)"
+fi
 echo "─────────────────────────────────────────────────────────────────────"
 if [ ${#FAILED[@]} -eq 0 ]; then
+  [ "$TIER" = push ] && { echo "PUSH-TIER PASS — every check except the two site builds, which CI runs on the PR (decision prepush-builds-to-ci)"; exit 0; }
   [ $QUICK -eq 1 ] && { echo "QUICK PASS — builds skipped, not a gate run"; exit 0; }
   echo "ALL CHECKS PASSED"
   exit 0
