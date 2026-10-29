@@ -541,6 +541,10 @@
   font-size:var(--fd-font-2xs);font-weight:700;letter-spacing:.03em;
 }
 .fd-chip.is-tool{background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+/* Depth chips on Everything rows (fd_library.js fdDepthChip): a pocket card in the olive wash, a
+ * short module in the plain chip; a guide, the common case, carries none. */
+.fd-chip.is-card{background:var(--fd-olive-wash);color:var(--fd-olive-deep)}
+.fd-chip.is-module{background:var(--fd-chip);color:var(--fd-text-mid)}
 
 /* The setup face of the Now card (no week set): kicker "30-second setup", serif title, the one
  * button "Set rotation week". The daily pick (.fd-pick) retired from Today on 2026-10-04; the
@@ -663,7 +667,7 @@
 /* The phone's Learning activity & review link; the rail carries the desktop one. */
 .fd-today__record{margin:var(--fd-space-9) 0 0}
 
-/* Patient-care launchpad: one stable destination for external ReConnect resources. The paired
+/* Patient-care launchpad: one stable destination for external care resources. The paired
  * columns separate support from education, while the olive rule keeps this distinct from
  * red Safety actions and teal in-library tools. */
 .fd-care-page{max-width:calc(var(--fd-space-10) * 24);animation:fdFadeUp var(--fd-dur-fast) var(--fd-ease-standard)}
@@ -709,6 +713,190 @@
 .fd-care-search__actions a span{font-weight:400}
 .fd-care-search__contact{color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.6}
 .fd-care-search__pages{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-3);margin-top:var(--fd-space-5);font-size:var(--fd-font-xs);color:var(--fd-text-mid)}
+/* Aftercare packet (behind FD_CARE_PACKET_ENABLED): add buttons, bulk bar and the tray. Tokens only. */
+.fd-care-search__bulk{display:flex;flex-wrap:wrap;gap:var(--fd-space-3);margin:0 0 var(--fd-space-4)}
+.fd-care-search__capacity{flex-basis:100%;margin:0}
+.fd-care-search__bulk>div{flex:1 1 12rem;min-width:0}
+.fd-care-search__bulk p{font-size:var(--fd-font-sm)}
+.fd-care-packet__outcome{padding:var(--fd-space-3);border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);overflow-wrap:anywhere}
+.fd-care-packet__outcome summary{min-height:var(--fd-target-touch);cursor:pointer;display:flex;align-items:center}
+.fd-care-packet__confirm{width:calc(100% - 2rem);max-width:28rem;box-sizing:border-box;padding:var(--fd-space-5);border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-surface);color:var(--fd-text);max-height:calc(100dvh - 2rem);overflow:auto}
+.fd-care-packet__confirm::backdrop{background:var(--fd-backdrop)}
+.fd-care-packet__confirm button{min-height:var(--fd-target-touch);padding:.6rem 1rem;margin:.25rem;border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;cursor:pointer}
+.fd-care-packet__confirm button:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+
+.fd-care-search__pack{margin-left:auto}
+.fd-care-search__pack[aria-pressed="true"]{background:var(--fd-olive-wash);border-color:var(--fd-olive);color:var(--fd-olive-deep)}
+.fd-care-search__pack[aria-pressed="true"]::before{content:"\2713\00a0";font-weight:700}
+.fd-care-search__result article.is-packed{border-left:3px solid var(--fd-olive);padding-left:var(--fd-space-4)}
+.fd-care-search__packed{color:var(--fd-olive-deep);font-weight:750}
+/* A listing that cannot go in the packet says why, in plain text where the button would be (not focusable, not a disabled button). */
+.fd-care-search__ineligible{margin:var(--fd-space-2) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-xs);line-height:1.6}
+.fd-care-search__tray{margin-top:var(--fd-space-6)}
+.fd-care-packet{padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-bg)}
+.fd-care-packet__head h3{display:flex;align-items:center;gap:var(--fd-space-3);margin:0;font-size:var(--fd-font-lg);line-height:1.4;scroll-margin-top:var(--fd-space-10)}
+.fd-care-packet__count{display:inline-flex;align-items:center;justify-content:center;min-width:2em;padding:0 var(--fd-space-2);border:1px solid var(--fd-olive);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash);color:var(--fd-olive-deep);font-size:var(--fd-font-sm);font-weight:750}
+.fd-care-packet__hint,.fd-care-packet__empty{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.6}
+.fd-care-packet__group{margin-top:var(--fd-space-5)}
+.fd-care-packet__group h4{margin:0 0 var(--fd-space-2);color:var(--fd-olive-deep);font-size:var(--fd-font-xs);font-weight:750}
+.fd-care-packet__list{list-style:none;padding:0;margin:0;display:grid;gap:var(--fd-space-2)}
+.fd-care-packet__item{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--fd-space-3);padding:var(--fd-space-3) var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+.fd-care-packet__name{min-width:0;overflow-wrap:anywhere;font-size:var(--fd-font-sm);font-weight:650}
+.fd-care-packet__btns{display:flex;flex-wrap:wrap;gap:var(--fd-space-2)}
+.fd-care-packet__why{flex:1 0 100%;color:var(--fd-text);font-size:var(--fd-font-xs);font-weight:700;line-height:1.5}
+.fd-care-packet__why::before{content:"\26a0\00a0"}
+.fd-care-packet__card{margin-top:var(--fd-space-5);padding-top:var(--fd-space-4);border-top:1px solid var(--fd-line)}
+.fd-care-packet__note{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.6}
+.fd-care-search .fd-care-packet__btns button{min-width:var(--fd-target-touch)}
+.fd-care-search .fd-care-packet__clear{margin-top:var(--fd-space-4)}
+.fd-care-packet__check{display:flex;align-items:center;gap:var(--fd-space-3);min-height:var(--fd-target-touch);font-size:var(--fd-font-sm);line-height:1.5;cursor:pointer}
+.fd-care-packet__check input{flex:none;width:1.5rem;height:1.5rem;margin:0}
+.fd-care-packet__preview-toggle{margin-top:var(--fd-space-5)}
+/* The preview region: always present while the packet exists, hidden when closed. Controls are patched in place, never replaced. */
+.fd-care-search__preview{margin-top:var(--fd-space-5);padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-bg)}
+.fd-care-search__preview[hidden]{display:none}
+.fd-care-packet-preview__title{margin:0 0 var(--fd-space-4);font-size:var(--fd-font-lg);line-height:var(--fd-leading-snug);scroll-margin-top:var(--fd-space-10)}
+.fd-care-packet-preview__mode,.fd-care-packet-preview__pages{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}
+.fd-care-packet-preview__mode legend,.fd-care-packet-preview__pages legend{padding:0 var(--fd-space-2);font-size:var(--fd-font-sm);font-weight:750}
+.fd-care-packet-preview__always{margin:0 0 var(--fd-space-3);color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-packet-preview__unit{display:grid;gap:var(--fd-space-5);margin-top:var(--fd-space-5)}
+.fd-care-packet-preview__field{display:grid;gap:var(--fd-space-2)}
+.fd-care-packet-preview__field label{font-size:var(--fd-font-sm);font-weight:700}
+.fd-care-packet-preview__field input{min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-text-mid);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-base)}
+.fd-care-packet-preview__field input[aria-invalid="true"]{border-color:var(--fd-text);border-width:3px}
+.fd-care-packet-preview__field input[readonly]{border-style:dashed;color:var(--fd-text-mid)}
+.fd-care-packet-preview__profile{margin-top:var(--fd-space-5)}
+.fd-care-packet-preview__profile label{display:block;font-size:var(--fd-font-sm);font-weight:700}
+.fd-care-packet-preview__profilerow{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);margin-top:var(--fd-space-2)}
+.fd-care-packet-preview__profile select{box-sizing:border-box;min-width:0;max-width:100%;min-height:var(--fd-target-touch);padding:var(--fd-space-3) var(--fd-space-4);border:1px solid var(--fd-text-mid);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-base)}
+.fd-care-search .fd-care-packet-preview__profile button{margin-top:var(--fd-space-3)}
+.fd-care-search .fd-care-packet-preview__profilerow button{margin-top:0}
+.fd-care-packet-preview__profile button[hidden]{display:none}
+.fd-care-packet-preview__error{margin:0;color:var(--fd-text);font-size:var(--fd-font-sm);font-weight:800}
+.fd-care-packet-preview__error::before{content:"\26a0\00a0"}
+.fd-care-packet-preview__error[hidden]{display:none}
+.fd-care-packet-preview__hint,.fd-care-packet-preview__summary{margin:var(--fd-space-3) 0 0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-packet-preview__summary{color:var(--fd-text);font-weight:700}
+.fd-care-packet-preview__reason{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4) var(--fd-space-5);border-left:4px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:var(--fd-font-sm);font-weight:700;line-height:var(--fd-leading-normal)}
+.fd-care-packet-preview__actions{display:flex;flex-wrap:wrap;gap:var(--fd-space-4);margin-top:var(--fd-space-5)}
+.fd-care-search .fd-care-packet__print{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
+.fd-care-search .fd-care-packet__print:hover:not(:disabled){background:var(--fd-teal);border-color:var(--fd-teal);filter:brightness(.92)}
+.fd-care-packet-preview__fallback textarea{display:block;width:100%;margin-top:var(--fd-space-3);padding:var(--fd-space-4);border:1px solid var(--fd-text-mid);border-radius:var(--fd-radius-sm);background:var(--fd-surface);color:var(--fd-text);font:inherit;font-size:var(--fd-font-sm)}
+.fd-care-packet-preview__withheld,.fd-care-packet-preview__fail{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-packet-preview__withheld{list-style:none}
+.fd-care-packet-preview__stale{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-4) var(--fd-space-5);border-left:4px solid var(--fd-text);background:var(--fd-surface);font-size:var(--fd-font-sm);font-weight:700;line-height:var(--fd-leading-normal)}
+.fd-care-packet-preview__addresses{margin:var(--fd-space-5) 0 0;font-size:var(--fd-font-sm);line-height:var(--fd-leading-normal)}
+.fd-care-packet-preview__addresses summary{display:flex;align-items:center;min-height:var(--fd-target-touch);font-weight:700;cursor:pointer}
+.fd-care-packet-preview__addresses ul{margin:var(--fd-space-3) 0 0;padding-left:var(--fd-space-9)}
+.fd-care-packet-preview__url{overflow-wrap:anywhere;font-variant-ligatures:none}
+.fd-care-packet-preview__sheet{margin-top:var(--fd-space-6)}
+@media (max-width:640px){.fd-care-packet{padding:var(--fd-space-4)}.fd-care-search__pack{margin-left:0}.fd-care-packet :is(button,input,select,h3){scroll-margin-top:76px}.fd-care-search__preview{padding:var(--fd-space-4)}.fd-care-search__preview :is(button,input,select,textarea,h3){scroll-margin-top:76px}}
+
+/* ---- The printable aftercare packet (fd_care_packet_sheet.js) -----------------------------------------------------
+ * Ink only: system colours (Canvas, CanvasText), borders and weight, never a tint, so a monochrome ward printer, a
+ * missing "background graphics" setting and forced-colours mode all show the same page. GrayText is not used: it fails
+ * AA on Canvas and means "disabled" in forced colours. Type and spacing are tokens (px are absolute in print); inches
+ * appear only as a sheet's width and height. Geometry rules carry no width or media conditions, so a sheet measured in a
+ * hidden box and the same sheet printed lay out alike. Units space themselves with padding-bottom (the measurer reads
+ * boxes, and margins are not in a box), so anything bordered is an inner element. Nothing on a page may clip. */
+.fd-packet-sheet{color-scheme:light;color:CanvasText;background:Canvas;font-family:Arial,'Liberation Sans',Helvetica,sans-serif;font-size:var(--fd-font-base);line-height:var(--fd-leading-snug);letter-spacing:normal;word-spacing:normal;font-kerning:normal;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.fd-packet-sheet *{box-sizing:border-box;min-width:0;overflow-wrap:anywhere}
+.fd-packet-sheet :where(h1,h2,h3,h4,h5,h6,p,ul,ol,figure){margin:0}
+.fd-packet-page{display:flex;flex-direction:column;width:100%;max-width:8.5in;min-height:0;margin-inline:auto;margin-bottom:var(--fd-space-7);padding:var(--fd-space-12);border:1px solid CanvasText;border-radius:var(--fd-radius-sm);overflow-x:clip}
+.fd-packet-sheet--paper .fd-packet-page{width:8.5in;max-width:none;min-height:11in;margin-bottom:0;border:0;border-radius:0;break-after:page;page-break-after:always}
+.fd-packet-sheet--paper .fd-packet-page:last-child{break-after:auto;page-break-after:auto}
+.fd-packet-body{flex:1 1 auto}
+.fd-packet-body>*{padding-bottom:var(--fd-space-7)}
+.fd-packet-band{display:flex;align-items:center;justify-content:center;min-height:var(--fd-space-10);margin-bottom:var(--fd-space-6);border-top:2px solid CanvasText;border-bottom:2px solid CanvasText;font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:center}
+.fd-packet-band.is-empty{border-style:none}
+.fd-packet-foot{margin-top:auto;padding-top:var(--fd-space-4);border-top:2px solid CanvasText;font-size:var(--fd-font-2xs);line-height:var(--fd-leading-normal)}
+.fd-packet-pnum{font-weight:800;text-align:right}
+.fd-packet-vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fd-packet-blank{position:relative;display:inline-block;min-width:1.6in;border-bottom:1px solid CanvasText}
+.fd-packet-head__box{padding-bottom:var(--fd-space-4);border-bottom:3px solid CanvasText}
+.fd-packet-org{font-size:var(--fd-font-xs);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.fd-packet-title{font-family:'Times New Roman','Liberation Serif',Times,serif;font-size:var(--fd-font-3xl);line-height:var(--fd-leading-tight)}
+/* The paper's missing-contact line: bold with a rule, never colour, so a monochrome printer shows it. */
+.fd-packet-draft{margin-top:var(--fd-space-4);padding-top:var(--fd-space-3);border-top:1px solid CanvasText;font-size:var(--fd-font-sm);line-height:var(--fd-leading-snug)}
+.fd-packet-intro p+p{padding-top:var(--fd-space-4)}
+.fd-packet-sign{padding-top:var(--fd-space-4);font-style:italic}
+.fd-packet-review-note{padding-top:var(--fd-space-4)}
+.fd-packet-crisis__box{padding:var(--fd-space-6) var(--fd-space-7);border:2px solid CanvasText;border-radius:var(--fd-radius-md)}
+.fd-packet-crisis__title{padding-bottom:var(--fd-space-4);font-family:'Times New Roman','Liberation Serif',Times,serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
+.fd-packet-crisis__lines,.fd-packet-card__lines{display:grid;gap:var(--fd-space-4);padding:0;list-style:none}
+.fd-packet-crisis__lines li{display:grid;grid-template-columns:2.3in minmax(0,1fr);column-gap:var(--fd-space-7);align-items:baseline}
+.fd-packet-crisis__num{grid-row:1 / span 2;font-size:var(--fd-font-lg);font-weight:800;font-variant-numeric:tabular-nums}
+.fd-packet-crisis__label{font-weight:700}
+.fd-packet-crisis__when{grid-column:2;font-size:var(--fd-font-sm)}
+.fd-packet-crisis__note{padding-top:var(--fd-space-5);font-size:var(--fd-font-sm)}
+.fd-packet-ins__title,.fd-packet-sec{padding-bottom:var(--fd-space-3);border-bottom:1px solid CanvasText;font-family:'Times New Roman','Liberation Serif',Times,serif;font-size:var(--fd-font-xl);line-height:var(--fd-leading-tight)}
+.fd-packet-ins__title+*{margin-top:var(--fd-space-4)}
+.fd-packet-sechead,.fd-packet-tipwrap{padding-bottom:var(--fd-space-5)}
+.fd-packet-ins p+p,.fd-packet-ins p+ul,.fd-packet-ins ul+p{padding-top:var(--fd-space-4)}
+.fd-packet-list{padding-left:var(--fd-space-9)}
+.fd-packet-list li{padding-bottom:var(--fd-space-2)}
+.fd-packet-list.is-warn{list-style:square}
+.fd-packet-group+.fd-packet-group{padding-top:var(--fd-space-5)}
+.fd-packet-group__title{padding-bottom:var(--fd-space-3);font-size:var(--fd-font-md);font-weight:800}
+.fd-packet-group.is-warn .fd-packet-group__title::before{content:"\25b2\00a0"}
+.fd-packet-rows{display:grid;gap:var(--fd-space-5);padding-top:var(--fd-space-4)}
+.fd-packet-row{display:flex;align-items:flex-end;gap:var(--fd-space-4);min-height:var(--fd-space-11)}
+.fd-packet-row span{flex:none;max-width:60%;font-weight:700}
+.fd-packet-row i{flex:1 1 auto;min-height:var(--fd-space-8);border-bottom:1px solid CanvasText}
+.fd-packet-table{width:100%;border-collapse:collapse;font-size:var(--fd-font-sm)}
+.fd-packet-table th,.fd-packet-table td{padding:var(--fd-space-3) var(--fd-space-4);border-bottom:1px solid CanvasText;text-align:left;vertical-align:top}
+.fd-packet-table th{font-size:var(--fd-font-2xs);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.fd-packet-table__num{white-space:nowrap}
+.fd-packet-table__num b{font-size:var(--fd-font-md);font-variant-numeric:tabular-nums}
+.fd-packet-tip{padding:var(--fd-space-5) var(--fd-space-6);border:1px solid CanvasText;border-radius:var(--fd-radius-sm);font-size:var(--fd-font-sm)}
+.fd-packet-cat{padding-bottom:var(--fd-space-3);font-size:var(--fd-font-sm);font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.fd-packet-res{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:var(--fd-space-6);padding-top:var(--fd-space-5);border-top:1px solid CanvasText;break-inside:avoid;page-break-inside:avoid}
+.fd-packet-box{grid-column:1;width:16px;height:16px;margin-top:var(--fd-space-2);border:2px solid CanvasText;border-radius:var(--fd-radius-2xs)}
+.fd-packet-box.is-blank{visibility:hidden}
+.fd-packet-res__main{grid-column:2}
+.fd-packet-res__name{font-size:var(--fd-font-lg);font-weight:800}
+.fd-packet-res__d{padding-top:var(--fd-space-2);font-size:var(--fd-font-md)}
+.fd-packet-res__c{display:flex;flex-wrap:wrap;gap:var(--fd-space-2) var(--fd-space-7);padding-top:var(--fd-space-3);font-size:var(--fd-font-md)}
+.fd-packet-res__phone b{font-size:var(--fd-font-lg);font-variant-numeric:tabular-nums}
+.fd-packet-qr{grid-column:3;width:0.9in;height:0.9in}
+.fd-packet-qr svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
+/* The wallet card prints by itself (one page, one-sided): two ID-1 panels, 3.375in x 2.125in including the border, at the top of
+ * the Letter sheet, each inside its own dashed cut line. A panel is a min-height floor; its CONTENT must fit with headroom under
+ * a wide face (194.5px of 204 on the crisis panel, 185.4px on "My numbers", measured in the default, Verdana and Arial faces).
+ * Crisis text is never below --fd-font-xs and nothing else below --fd-font-2xs. Every crisis line is two lines (the number over
+ * the governed name): a sixth line, or any line that wraps, no longer fits, so the browser spec asserts both. */
+.fd-packet-cardpair{display:flex;flex-wrap:wrap;align-items:flex-start;gap:var(--fd-space-9)}
+.fd-packet-card{flex:none;width:3.375in;min-height:2.125in;padding:var(--fd-space-3) var(--fd-space-5);border:2px dashed CanvasText;border-radius:var(--fd-radius-md);break-inside:avoid;page-break-inside:avoid}
+.fd-packet-card__title{padding-bottom:var(--fd-space-1);border-bottom:1px solid CanvasText;font-size:var(--fd-font-sm);font-weight:800;line-height:var(--fd-leading-tight)}
+.fd-packet-card__title+*{padding-top:var(--fd-space-1)}
+.fd-packet-card__lines{gap:var(--fd-space-1);font-size:var(--fd-font-xs);line-height:var(--fd-leading-tight)}
+.fd-packet-card__lines .fd-packet-crisis__num{display:block;grid-row:auto;font-size:var(--fd-font-sm)}
+.fd-packet-card__lines .fd-packet-crisis__label{display:block;font-weight:400}
+.fd-packet-card__rows{display:grid;gap:var(--fd-space-4);font-size:var(--fd-font-xs);line-height:var(--fd-leading-tight)}
+.fd-packet-card__row span{display:block;font-weight:700}
+.fd-packet-card__row i{display:block;min-height:var(--fd-space-10);border-bottom:1px solid CanvasText}
+.fd-packet-cardsheet__note{padding-top:var(--fd-space-5);font-size:var(--fd-font-sm)}
+.fd-packet-notice{padding:var(--fd-space-12);font-size:var(--fd-font-xl);font-weight:800}
+.fd-packet-sheet--screen .fd-packet-box.is-blank{display:none}
+/* The measuring box and the print container are body-level, never inside the shell. The wrapper is zero-sized and clips
+ * (its content is laid out at the true page width, and nothing of it scrolls or is read), and it goes in the same task. */
+.fd-packet-measurewrap{position:absolute;top:0;left:0;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+#fdPacketPrint{display:none}
+@media (max-width:640px){
+  .fd-packet-sheet--screen .fd-packet-page{padding:var(--fd-space-7)}
+  .fd-packet-sheet--screen .fd-packet-crisis__lines li{grid-template-columns:minmax(0,1fr)}
+  .fd-packet-sheet--screen .fd-packet-crisis__num{grid-row:auto}
+  .fd-packet-sheet--screen .fd-packet-crisis__when{grid-column:1}
+  .fd-packet-sheet--screen .fd-packet-res{grid-template-columns:auto minmax(0,1fr)}
+  .fd-packet-sheet--screen .fd-packet-qr{grid-column:2}
+  .fd-packet-sheet--screen .fd-packet-card{width:100%}
+  .fd-packet-sheet--screen .fd-packet-table{display:block}
+  .fd-packet-sheet--screen .fd-packet-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .fd-packet-sheet--screen .fd-packet-table :is(tbody,tr){display:block}
+  .fd-packet-sheet--screen .fd-packet-table tr{padding:var(--fd-space-3) 0;border-bottom:1px solid CanvasText}
+  .fd-packet-sheet--screen .fd-packet-table td{display:block;padding:var(--fd-space-1) 0;border-bottom:0}
+  .fd-packet-sheet--screen .fd-packet-table__num{white-space:normal}
+}
 @media (max-width:640px){.fd-care-search{padding:var(--fd-space-5)}.fd-care-search__head{flex-direction:column;gap:var(--fd-space-2)}.fd-care-search__filters{grid-template-columns:minmax(0,1fr)}.fd-care-search__filters>button{justify-self:start}.fd-care-search__result{padding:var(--fd-space-4)}}
 .fd-care-navigator{margin:0 0 var(--fd-space-10);padding:var(--fd-space-6);border:1px solid var(--fd-line);border-radius:var(--fd-radius-lg);background:var(--fd-surface)}
 .fd-care-navigator__head{max-width:calc(var(--fd-space-10) * 15);margin-bottom:var(--fd-space-5)}
@@ -1064,6 +1252,9 @@
  * entrance animation: the list repaints on every keystroke of the filter. */
 .fd-library{animation:none}
 .fd-library__head{margin:0 0 var(--fd-space-8)}
+.fd-library__titlebar{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-3)}
+.fd-library__titlebar .fd-library__h1{margin-bottom:0}
+.fd-library__continuity{flex:none;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-3);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
 .fd-library__h1{margin:0 0 var(--fd-space-2);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-4xl);line-height:1.15;letter-spacing:-.01em;color:var(--fd-text)}
 .fd-library__lede{margin:0;font-size:var(--fd-font-base);color:var(--fd-text-mid)}
 .fd-library__controls{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-6) var(--fd-space-7);margin:0 0 var(--fd-space-5)}
@@ -1074,6 +1265,11 @@
 .fd-library__view:hover{color:var(--fd-text)}
 .fd-library__view.is-active{background:var(--fd-surface);color:var(--fd-teal-deep);font-weight:700;box-shadow:var(--fd-shadow-sm)}
 /* The count span is a flex item, so its leading space must be kept explicitly. */
+.fd-library__tasks{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-3);margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-library__tasks>span{margin-right:var(--fd-space-2)}
+.fd-library__task{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-weight:600;cursor:pointer}
+.fd-library__task:hover{border-color:var(--fd-teal);color:var(--fd-teal-deep)}
+.fd-library__task.is-active{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep)}
 .fd-library__view-count{font-weight:inherit;white-space:pre}
 /* Filter field: one bordered box holding the glyph, the input and either the "/" chip (desktop,
  * no query) or Clear (any width, with a query). The input itself has no border, so the box is
@@ -1099,6 +1295,13 @@
 .fd-kit__group-count{color:var(--fd-text-mid);font-weight:700}
 .fd-kit__chevron{margin-left:auto;transform:rotate(-90deg);transition:transform .18s var(--fd-ease-standard)}
 .fd-kit__group[open] > summary .fd-kit__chevron{transform:none}
+/* Sub-group headings inside a grouped column (curriculum.libraryColumns[].groups; fd_library.js
+ * fdLibraryGroup, Library re-cut 2026-10-17): plain headings between the rows, never disclosure,
+ * so nothing the inventory tests count as reachable is ever hidden. Small caps-weight eyebrow in
+ * the dim ink, a hair above the first row of its run. */
+.fd-kit__subhead{margin:var(--fd-space-7) 0 var(--fd-space-1);font-family:inherit;font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-kit__subhead:first-of-type{margin-top:var(--fd-space-4)}
+.fd-kit__subcount{font-weight:600;letter-spacing:0;text-transform:none}
 /* Rows (both views). The wrapper carries the row's rule and the selected state; the button inside
  * is the whole row (name first, then badge, summary, meta), and Essentials adds a desktop-only
  * Preview control beside it. */
@@ -1119,6 +1322,22 @@
 .fd-kit__title mark,.fd-collink__label mark,.fd-kit__summary mark{background:var(--fd-teal-wash);color:inherit;border-radius:calc(var(--fd-radius-2xs) - 1px);padding:0 var(--fd-space-1)}
 /* The desktop-only Preview control (Essentials). Hidden until the preview column exists. */
 .fd-kit__peek{display:none}
+.fd-library__details{display:inline-flex;align-items:center;justify-content:center;align-self:center;min-height:var(--fd-target-touch);margin-left:var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
+.fd-library__details:hover{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+.fd-library__pin{grid-column:2;justify-self:end;min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);margin:0 0 var(--fd-space-3) var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer}
+.fd-library__pin[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+.fd-continuity{margin-top:var(--fd-space-10);padding-top:var(--fd-space-8);border-top:1px solid var(--fd-line-strong)}
+.fd-continuity__title{margin:0;font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:var(--fd-font-section);line-height:1.3;scroll-margin-top:100px}
+.fd-continuity__intro,.fd-continuity__group p{color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
+.fd-continuity__columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:var(--fd-space-8)}
+.fd-continuity__group{min-width:0}
+.fd-continuity__group h3{font-size:var(--fd-font-base);margin:var(--fd-space-5) 0}
+.fd-continuity__row{display:flex;align-items:center;gap:var(--fd-space-3);border-bottom:1px solid var(--fd-line)}
+.fd-continuity__open{flex:1;min-width:0;min-height:var(--fd-target-touch);padding:var(--fd-space-3) 0;border:0;background:transparent;text-align:left;font:inherit;color:var(--fd-text);cursor:pointer;overflow-wrap:anywhere}
+.fd-continuity__open .governance-badge{display:block;width:fit-content;max-width:100%;white-space:normal}
+.fd-continuity__remove,.fd-continuity__clear{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0 var(--fd-space-3);border:0;border-radius:var(--fd-radius-sm);background:transparent;color:var(--fd-teal-deep);font:inherit;font-size:var(--fd-font-sm);font-weight:700;cursor:pointer}
+.fd-continuity__notice{color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fd-continuity__notice:empty{margin:0}
 /* Zero results and the filtered footer. */
 .fd-library__empty{max-width:560px;padding:var(--fd-space-10) 0 var(--fd-space-4);border-top:1px solid var(--fd-line-strong)}
 .fd-library__empty-h{margin:0 0 var(--fd-space-4);font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:600;font-size:calc(var(--fd-font-xl) + 1px);line-height:1.3;color:var(--fd-text)}
@@ -1180,7 +1399,11 @@
 .fd-article__meta{font-size:var(--fd-font-xs);font-weight:600;color:var(--fd-text-dim)}
 .fd-article__h1{margin:0 0 14px;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-weight:700;font-size:var(--fd-font-3xl);line-height:1.22;letter-spacing:.2px;color:var(--fd-text)}
 .fd-article__lead{margin:0 0 18px;font-size:var(--fd-font-lg);line-height:1.72;color:var(--fd-text);max-width:62ch}
-.fd-article__body{font-size:var(--fd-font-lg);line-height:1.72;max-width:62ch;color:var(--fd-text)}
+/* Comfort affects readings only; no animation or tool-frame typography changes. */
+.fd-reader:not(.fd-reader--tool)[data-fd-reader-size="larger"]{--fd-reading-scale:1.15}
+.fd-reader:not(.fd-reader--tool)[data-fd-reader-size="largest"]{--fd-reading-scale:1.3}
+.fd-reader:not(.fd-reader--tool)[data-fd-reader-spacing="spacious"]{--fd-reading-leading:2}
+.fd-article__body{font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.72);max-width:62ch;color:var(--fd-text)}
 /* The 62ch measure above is a reading rule. A tool page's body is the mounted <iframe>, not prose,
  * so it is lifted there -- see the .fd-reader--tool note on .fd-article. Kept immediately after the
  * base rule it overrides (specificity, not order, decides the cascade here; tests/fd-tokens.test.mjs
@@ -1208,8 +1431,8 @@
    frame's scroll-into-view targets below the header. Surfaced at ≤390px once .fd-shell stopped
    breaking position:sticky (2026-10-04); in-page readers set their own scroll-margin-top. */
 html:has(.fd-reader--tool){scroll-padding-top:112px}
-.fd-article__body h2{margin:30px 0 12px;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:var(--fd-font-2xl);line-height:1.3;color:var(--fd-text)}
-.fd-article__body h3{margin:24px 0 10px;font-size:var(--fd-font-xl);line-height:1.4;color:var(--fd-text)}
+.fd-article__body h2{margin:30px 0 12px;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1));line-height:1.3;color:var(--fd-text)}
+.fd-article__body h3{margin:24px 0 10px;font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));line-height:1.4;color:var(--fd-text)}
 .fd-article__body ul{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body ol{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body li{margin:6px 0}
@@ -1415,12 +1638,20 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-searchpanel__esc:hover{background:var(--fd-teal-wash)}
 .fd-searchpanel__browse{padding:var(--fd-space-2) var(--fd-space-5);border-bottom:1px solid var(--fd-line);background:var(--fd-callout)}
 .fd-searchpanel__body{max-height:46vh;overflow-y:auto;padding:var(--fd-space-3) var(--fd-space-4) var(--fd-space-5)}
+.fd-searchpanel__summary{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--fd-space-3);padding:var(--fd-space-3) var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
+.fd-searchpanel__summary p{margin:0}
 .fd-searchpanel__group{margin:var(--fd-space-5) var(--fd-space-4) var(--fd-space-2);font-size:var(--fd-font-xs);font-weight:700;color:var(--fd-text-mid)}
 .fd-searchpanel__group.is-safety{color:var(--fd-danger-dark)}
 .fd-searchpanel__group.is-care{color:var(--fd-olive-deep)}
 .fd-searchpanel__foot{padding:var(--fd-space-6) var(--fd-space-7);border-top:1px solid var(--fd-line);background:var(--fd-callout);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
 .fd-searchpanel__foot strong{color:var(--fd-text)}
 .fd-searchpanel__empty{padding:22px;text-align:center;font-size:var(--fd-font-md);color:var(--fd-text-dim)}
+.fd-searchpanel__recovery{display:flex;flex-direction:column;gap:var(--fd-space-3);padding:0 var(--fd-space-5) var(--fd-space-6)}
+.fd-searchpanel__recovery .fd-btn{min-height:var(--fd-target-touch);white-space:normal;text-align:left;justify-content:flex-start}
+.fd-searchpanel__related{display:flex;flex-wrap:wrap;gap:var(--fd-space-2);padding:var(--fd-space-4) var(--fd-space-5)}
+.fd-searchpanel__related p{width:100%;margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fd-searchpanel__related .fd-btn{min-height:var(--fd-target-touch);max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left}
+
 
 /* Result rows: an 8px mark column and the text. Protocols: filled danger dot and the kit's cue
  * line; pages: an outlined dot; tools: teal dot and the hint. The leading protocol of a crisis
@@ -1464,6 +1695,23 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-sheet__pending{margin:12px 0 0;font-size:var(--fd-font-xs);color:var(--fd-olive-deep);font-weight:600}
 .fd-sheet__failure{margin:0 0 14px;padding:12px 15px;border:1px solid var(--fd-danger);border-radius:var(--fd-radius-md);background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-sm);line-height:1.55}
 .fd-sheet__lead{margin:0 0 16px;font-size:var(--fd-font-md);line-height:1.65;color:var(--fd-text)}
+
+/* Resource Details: a bounded Library pilot, with the Open action outside the scroll body. */
+.fd-sheet--resource .fd-sheet__head{align-items:flex-start}
+.fd-sheet--resource .fd-sheet__title{min-width:0;overflow-wrap:anywhere}
+.fd-sheet--resource .fd-sheet__close{width:var(--fd-target-touch);height:var(--fd-target-touch)}
+.fd-sheet--resource .fd-sheet__body{min-height:0}
+.fd-resource__kind{margin:0 0 var(--fd-space-6);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-resource__label{margin:0 0 var(--fd-space-2);font:inherit;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-mid)}
+.fd-resource__text{margin:0 0 var(--fd-space-7);font-size:var(--fd-font-base);line-height:1.6;color:var(--fd-text);overflow-wrap:anywhere}
+.fd-resource__when{padding:var(--fd-space-6);margin:0 0 var(--fd-space-7);border-left:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+.fd-resource__when .fd-resource__text{margin-bottom:0}
+.fd-resource__placement{margin:0 0 var(--fd-space-5);font-size:var(--fd-font-sm);color:var(--fd-text-dim)}
+.fd-resource__footer{flex:0 0 auto;padding:var(--fd-space-6) var(--fd-space-7) max(var(--fd-space-6),env(safe-area-inset-bottom));border-top:1px solid var(--fd-line);background:var(--fd-surface-warm)}
+.fd-resource__footer .fd-btn{width:100%;min-height:48px}
+@media (max-width:640px){
+  .fd-sheet--resource{top:auto;left:0;right:0;bottom:0;width:auto;max-height:92vh;max-height:92dvh;border-left:0;border-top:3px solid var(--fd-teal);border-radius:20px 20px 0 0;animation:none}
+}
 
 .fd-kitrow{
   display:flex;align-items:center;gap:var(--fd-space-6);width:100%;text-align:left;
@@ -1983,24 +2231,24 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   line-height:1.15;letter-spacing:-.025em;margin-bottom:var(--fd-space-8);overflow-wrap:break-word;
 }
 .fd-reader--guide .fd-article__lead{
-  font-size:var(--fd-guide-body-size);line-height:1.75;color:var(--fd-text-mid);
+  font-size:calc(var(--fd-guide-body-size) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);color:var(--fd-text-mid);
   max-width:none;padding-bottom:var(--fd-space-9);border-bottom:1px solid var(--fd-line-strong);
   margin-bottom:var(--fd-space-9);
 }
 .fd-reader--guide .fd-article__lead:empty{display:none}
 .fd-reader--guide .fd-article__body{
-  max-width:none;font-size:var(--fd-guide-body-size);line-height:1.75;overflow-wrap:break-word;
+  max-width:none;font-size:calc(var(--fd-guide-body-size) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);overflow-wrap:break-word;
 }
 .fd-reader--guide .fd-article__body p{margin-top:0;margin-bottom:var(--fd-space-8)}
 .fd-reader--guide .fd-article__body h2{
-  font-size:var(--fd-guide-section-size);line-height:1.3;letter-spacing:-.015em;
+  font-size:calc(var(--fd-guide-section-size) * var(--fd-reading-scale,1));line-height:1.3;letter-spacing:-.015em;
   margin-top:0;margin-bottom:var(--fd-space-8);scroll-margin-top:140px;
 }
 /* A promoted bold lead (fd_guide.js) stays the authored paragraph; it only gains a landing offset. */
 .fd-reader--guide .fd-article__body .fd-guide-lead{scroll-margin-top:140px}
 .fd-reader--guide .fd-article__body h3{
   font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;
-  font-size:var(--fd-font-xl);line-height:1.4;margin-top:var(--fd-space-10);margin-bottom:var(--fd-space-6);
+  font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));line-height:1.4;margin-top:var(--fd-space-10);margin-bottom:var(--fd-space-6);
 }
 .fd-reader--guide .fd-article__body li{margin-top:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
 .fd-reader--guide .fd-article__body a{overflow-wrap:anywhere;text-underline-offset:.2em}
@@ -2030,17 +2278,17 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 .fd-reader--guide .fd-article__body .fd-guide-example{
   padding:var(--fd-space-8) var(--fd-space-9);border-left:3px solid var(--fd-teal);
-  background:var(--fd-teal-wash);font-size:var(--fd-font-lg);line-height:1.75;
+  background:var(--fd-teal-wash);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);
 }
 .fd-reader--guide .fd-article__body .fd-guide-references{
   padding-top:var(--fd-space-10);border-top:1px solid var(--fd-line-strong);
-  font-size:var(--fd-font-md);line-height:1.7;overflow-wrap:anywhere;
+  font-size:calc(var(--fd-font-md) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.7);overflow-wrap:anywhere;
 }
 .fd-reader--guide .fd-article__body .fd-guide-references li{margin-bottom:var(--fd-space-7)}
 .fd-reader--guide .fd-article__body .governance-notice{margin-bottom:var(--fd-space-9)}
 .fd-reader--guide .fd-article__body blockquote:has(.crisis-block-hook){
   padding:var(--fd-space-8) var(--fd-space-9);border-left:3px solid var(--fd-danger);
-  background:var(--fd-danger-wash);color:var(--fd-text);font-size:var(--fd-font-lg);line-height:1.75;
+  background:var(--fd-danger-wash);color:var(--fd-text);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.75);
 }
 .fd-reader--guide .fd-guide-margin{
   grid-column:1;grid-row:1/span 2;min-width:0;position:sticky;top:112px;
@@ -2106,20 +2354,20 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 .fd-reader--guide .fd-article__body .table-scroll{max-width:100%;margin:var(--fd-space-9) 0}
 .fd-reader--guide .fd-article__body .table-scroll-viewport{border-radius:var(--fd-radius-xs);border-color:var(--fd-line-strong)}
-.fd-reader--guide .fd-article__body table{font-size:var(--fd-font-base);line-height:1.6;border-spacing:0}
+.fd-reader--guide .fd-article__body table{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.6);border-spacing:0}
 .fd-reader--guide .fd-article__body .table-scroll table{width:100%;min-width:100%}
 .fd-reader--guide .fd-article__body :is(th,td){
   vertical-align:top;text-align:left;padding:var(--fd-space-6) var(--fd-space-7);border-color:var(--fd-line-strong);
 }
-.fd-reader--guide .fd-article__body thead th{color:var(--fd-teal-deep);background:var(--fd-teal-wash);font-size:var(--fd-font-sm)}
+.fd-reader--guide .fd-article__body thead th{color:var(--fd-teal-deep);background:var(--fd-teal-wash);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
 .fd-reader--guide .fd-article__body tbody tr:nth-child(even)>*{background:var(--fd-callout)}
 .fd-reader--guide .fd-guide-table-rows{border-top:1px solid var(--fd-line-strong)}
 .fd-reader--guide .fd-guide-table-rows dl{
   margin:0;padding:var(--fd-space-8) 0;border-bottom:1px solid var(--fd-line-strong);
-  font-size:var(--fd-font-lg);line-height:1.7;
+  font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.7);
 }
 .fd-reader--guide .fd-guide-table-rows dt{
-  margin-top:var(--fd-space-7);font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-mid);
+  margin-top:var(--fd-space-7);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));font-weight:700;color:var(--fd-text-mid);
 }
 .fd-reader--guide .fd-guide-table-rows dt:first-child{margin-top:0}
 .fd-reader--guide .fd-guide-table-rows dd{margin:var(--fd-space-2) 0 0;overflow-wrap:anywhere}
@@ -2233,6 +2481,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-library__body.has-preview .fd-kit__tool-preview{display:block}
   .fd-library__body.has-preview .fd-kit__peek{display:inline-flex;align-items:center;align-self:center;min-height:var(--fd-target-touch);margin-left:var(--fd-space-4);padding:0 var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);background:var(--fd-surface);color:var(--fd-text-mid);font:inherit;font-size:var(--fd-font-xs);font-weight:700;cursor:pointer;transition:color var(--fd-dur-fast) var(--fd-ease-standard),border-color var(--fd-dur-fast) var(--fd-ease-standard)}
   .fd-library__body.has-preview .fd-kit__peek:hover{border-color:var(--fd-line-hover);color:var(--fd-text)}
+  .fd-library__body.has-preview .fd-library__details{display:none}
   .fd-library__body.has-preview .fd-kit__peek[aria-pressed="true"]{border-color:var(--fd-teal);background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
   .fd-library__body.has-preview .fd-kit__item.is-selected{background:var(--fd-selected);border-radius:var(--fd-radius-sm);box-shadow:inset 3px 0 0 var(--fd-teal);margin:0 calc(-1 * var(--fd-space-7));padding:0 var(--fd-space-7)}
   /* The index is a sidebar of rows here: the track stacks, chips become flat rows. Rows keep a
@@ -2257,9 +2506,10 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   /* The reader's 20px gutters protect its embedded Compass; the Library list can use
      more of the phone's width without changing any reader or tool layout. */
   .fd-main:has(.fd-library){padding-top:var(--fd-space-4);padding-inline:var(--fd-space-6)}
-  .fd-library__head{margin-bottom:var(--fd-space-4)}
-  .fd-library__controls{row-gap:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
-  .fd-library__status{margin-bottom:var(--fd-space-2)}
+  .fd-library__head,.fd-library__status{margin-bottom:var(--fd-space-2)}
+  .fd-library__controls{row-gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__tasks{gap:var(--fd-space-2);margin-bottom:var(--fd-space-2)}
+  .fd-library__task{padding-inline:var(--fd-space-2)}
   .fd-library__body{row-gap:var(--fd-space-4)}
   .fd-kit__review{margin-bottom:var(--fd-space-2)}
   .fd-kit__reading,.fd-collink{padding-block:var(--fd-space-4)}
@@ -2402,6 +2652,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-alsolist .fd-continue__body{flex:1 1 200px}
 .fd-alsolist .fd-continue__kicker{flex:1 0 100%;order:-1;color:var(--fd-text-dim)}
 .fd-alsolist .fd-continue__segs{display:none}
+/* The Case-of-the-Week announcement (fd_today.js fdNewCaseRow): an Also-today face that only ever
+ * renders flat, in the week a case ships -- the same parts as the faces above (a kicker above the
+ * title like the demoted Continue's, title 15/600, trailing "Open →" 14/700 teal-deep with a 44px
+ * target) and no card chrome to strip, because it is born inside .fd-alsolist. */
+.fd-newcase{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--fd-space-5);row-gap:var(--fd-space-1);width:100%;margin:0;padding:0;border:0;background:transparent;color:var(--fd-text);font:inherit;text-align:left;cursor:pointer}
+.fd-newcase__kicker{flex:1 0 100%;order:-1;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text-dim)}
+.fd-newcase__title{flex:1 1 200px;min-width:0;font-size:var(--fd-font-base);font-weight:600;line-height:1.4}
+.fd-newcase__action{flex:0 0 auto;display:inline-flex;align-items:center;min-height:var(--fd-target-touch);font-size:var(--fd-font-md);font-weight:700;color:var(--fd-teal-deep);white-space:nowrap}
 .fd-alsolist .fd-continue__meta{display:flex;gap:var(--fd-space-4)}
 .fd-alsolist .fd-block{padding:var(--fd-space-2) 0 0}
 .fd-continue__title .fd-chip{margin-left:var(--fd-space-4);vertical-align:middle}
@@ -2507,4 +2765,31 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-thread__step:not(.is-current) .fd-thread__label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
   .fd-thread__step:not(.is-current) .fd-thread__node{min-height:var(--fd-target-touch)}
   .fd-now__cta,.fd-continue__cta,.fd-setupcta__cta,.fd-now .fd-due__action,.fd-now .fd-lastread__action,.fd-now .fd-resume__link>span:last-child,.fd-now .fd-btn--primary{flex:1 0 100%}
+}
+
+/* ---- Printing the aftercare packet (fd_care_packet_sheet.js, fd_care_packet.js) -----------------------------------
+ * Appended after the older pack's print block on purpose: nothing here may carry the older pack's class prefix. The inline
+ * preview NEVER prints, so Ctrl+P cannot print a packet the review has not released. Only the body-level container does,
+ * and only while the body marker is present; a leftover container is display:none on screen and cannot hide the app. */
+@media print{
+  .fd-care-search__preview{display:none !important}
+  body.fd-packet-printing{background:Canvas !important;color:CanvasText !important}
+  body.fd-packet-printing>:not(#fdPacketPrint){display:none !important}
+  body.fd-packet-printing #fdPacketPrint{display:block;margin:0;padding:0}
+}
+
+/* Reading choices retain a full target with either a touch or a mouse pointer. */
+.fd-set [data-fd-reading-size],.fd-set [data-fd-reading-spacing],.fd-set [data-fd-reading-reset]{min-height:var(--fd-target-touch)}
+
+.fd-reader:not(.fd-reader--tool):not(.fd-reader--guide) .fd-article__body table{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,inherit)}
+
+/* L8 D3 usage notice (fd_shell.js fdUsageNotice). Empty -- every build without the usage emitter --
+   means not rendered at all, so off builds keep their exact layout. On phones the fixed dock covers
+   the bottom of the page, so the footer clears it the same way .fd-main does. */
+.fd-usage-foot:empty{display:none}
+.fd-usage-foot{width:100%;max-width:1200px;margin:0 auto;padding:0 var(--fd-space-8) var(--fd-space-8)}
+.fd-usage-notice{margin:0;font-size:var(--fd-font-xs);color:var(--fd-text-mid);line-height:1.5}
+.fd-usage-notice__btn{border:0;background:none;padding:0;font:inherit;color:var(--fd-teal-deep);text-decoration:underline;cursor:pointer;min-height:24px}
+@media (max-width:640px){
+  .fd-usage-foot{padding:0 20px calc(88px + env(safe-area-inset-bottom))}
 }

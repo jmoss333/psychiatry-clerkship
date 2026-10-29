@@ -867,12 +867,12 @@
       "id": "t_mood-pearl3",
       "source": "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
       "kind": "pearl",
-      "excerpt": "Lithium is the mood stabilizer with anti-suicidal[^cipriani-2013-lithium-suicide] and best maintenance evidence — use it, and monitor it.",
+      "excerpt": "Lithium is the mood stabilizer with the best maintenance evidence — use it, and monitor it. Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides than with placebo, based on few events[^cipriani-2013-lithium-suicide]. More recent randomized evidence is mixed. The VA trial adding it to usual care found no reduction in repeated suicide-related events[^katz-2022-lithium-va]. An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts[^wang-2025-lithium-suicidality]. Teach a meaningful but uncertain anti-suicidal signal, not certain suicide prevention.",
       "targets": [
         {
           "id": "t_mood-pearl3:1",
           "text": "Lithium",
-          "contentRevision": 2
+          "contentRevision": 3
         }
       ]
     },
@@ -2045,6 +2045,11 @@
       "source": "14_Tracks/Resident/systems_medlegal.md",
       "title": "Inpatient Systems & Med-Legal",
       "reason": "Outside the initial shared legacy Concepts scope; audience-specific teaching requires a separately reviewed card map. FACULTY REVIEW REQUIRED for this exclusion."
+    },
+    {
+      "source": "03_Core_Topics/Ethics_Legal/maine_law_capacity_navigator.md",
+      "title": "Maine Law & Capacity: Statute Navigator",
+      "reason": "New legal page added 2026-10-27, pending attestation; statute-derived recall cards need a separately reviewed card map. Exclusion DECIDED: owner decision D-F7-8, 2026-10-27."
     }
   ]
 }

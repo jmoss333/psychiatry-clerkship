@@ -271,6 +271,7 @@ _STEM = {
     "link-source-monitor": "link_audit",
     "citation-monitor": "citation_audit",
     "resource-intake": "resource_intake",
+    "evidence-watch": "evidence_watch",
 }
 
 def write_report(job, findings, when=None, base=None):
@@ -282,7 +283,7 @@ def write_report(job, findings, when=None, base=None):
     with open(jpath, "w", encoding="utf-8") as fh:
         json.dump(findings, fh, indent=2)
     out = [jpath]
-    if job in ("link-source-monitor", "citation-monitor", "resource-intake"):
+    if job in ("link-source-monitor", "citation-monitor", "resource-intake", "evidence-watch"):
         cpath = os.path.join(base, f"{stem}_{when}.csv")
         cols = ["detected_at", "severity", "source_id", "change_type",
                 "summary", "source_url", "affects", "status"]

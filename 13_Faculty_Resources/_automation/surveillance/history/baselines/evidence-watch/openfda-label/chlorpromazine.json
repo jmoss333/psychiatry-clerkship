@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260903",
+  "sections": {
+    "boxed_warning": {
+      "hash": "a0332d4b7dd0428e985b13e5fb65aa9cb2d985d2e03505b3653fac9185828cfe",
+      "present": true,
+      "rems": false,
+      "text": "Warning Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Analyses of seventeen placebo-controlled trials (modal duration of 10 weeks), largely in patients taking atypical antipsychotic drugs, revealed a risk of death in drug-treated patients of between 1.6 to 1.7 times the risk of death in placebo-treated patients. Over the course of a typical 10-week controlled trial, the rate of death in drug-treated patients was about 4.5%, compared to a rate of about 2.6% in the placebo group. Although the causes of death were varied, most of the deaths appeared to be either cardiovascular (e.g., heart failure, sudden death) or infectious (e.g., pneumonia) in nature. Observational studies suggest that, similar to atypical antipsychotic drugs, treatment with conventional antipsychotic drugs may increase mortality. The extent to which the findings of increased mortality in observational studies may be attributed to the antipsychotic drug as opposed to some characteristic(s) of the patients is not clear. Chlorpromazine hydrochloride is not approved for the treatment of patients with dementia-related psychosis [see WARNINGS ]."
+    },
+    "contraindications": {
+      "hash": "cade536e7ce1eb2825b5903d7e1a2f5c731ff7f7446c5c3a195a99da5a722d94",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Do not use in patients with known hypersensitivity to phenothiazines. Do not use in comatose states or in the presence of large amounts of central nervous system depressants (alcohol, barbiturates, narcotics, etc.)."
+    },
+    "warnings": {
+      "hash": "f6bf9a0cd7e703ba0a2e61d30750fccb06680303a5b03b24c297f86155f32947",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "d1d8fd92-bba6-4521-8cea-3e1089ffd951",
+  "version": "6"
+}

@@ -234,3 +234,53 @@ packets or decisions. As unique evidence grows, storage and response capacity st
 need monitoring; this change is not unbounded storage. Original JSON responses
 remain readable by the new browser client. Reload already-open faculty tabs after
 deployment so they load the new decoder.
+
+### On-demand faculty review
+
+The phone inbox requests `section=index`: every packet is represented by its ID,
+source, observation date, saved-scan priority, and recorded-decision count. This
+initial response loads neither current readings nor the question bank. List order
+is provisional: current teaching and resolution are assessed only when opened.
+Nothing is filtered out as resolved or superseded based on a lightweight summary.
+
+Opening a packet requests `section=packet` with its revision and the index's exact
+report commit, teaching commit, and decision-ledger revision. A mismatch returns
+409 and asks faculty to reload. Only that packet and its replacement chain are
+assessed; unrelated reading files are not fetched. The detail retains the prior
+comparison/decision flow, adds every historical decision for that packet, and
+exposes the complete original packet (including saved question snapshots and any
+additional audit fields). Collapsing an opened packet keeps its unsaved rationale;
+reload asks before discarding unsaved text. Failed loads remain retryable.
+
+`section=history`, with the same revision checks, exposes every non-packet inbox
+field, including source snapshots and reconciliation receipts, plus the complete
+separate decision ledger and a list of all packet revisions. Together with each
+packet's full retained record, this provides access to every stored record without
+sending it all on initial load. Neither view writes evidence or decisions. Existing
+clients without a section parameter retain the full-response contract. Successful
+saves refresh and reopen the selected packet when no other forms contain unsaved
+work; otherwise those drafts remain in place, using only the exact ledger revision
+returned by that successful save. Concurrent external changes still fail revision
+checks. New typing during a pending reload cancels replacement of the view.
+
+### Resume review on the same browser
+
+After a packet opens successfully, the reader remembers only its 64-character
+revision in `cw_evidence_last_packet`. No key, rationale, evidence, or decision is
+stored with the bookmark. After login, **Resume review** reloads the index and
+requests that packet with fresh report, teaching, and decision revision pins.
+Changes between requests still fail the existing server checks. A replacement is
+identified on the earlier packet; both retained records remain in the list.
+Missing packets produce an explicit message while leaving available history open
+for inspection. Blocked or malformed browser storage does not prevent review.
+
+Resume refuses to replace a view containing unsaved notes. Typing while its index
+request is pending cancels the replacement through the existing draft-version
+check. The bookmark is local to that browser and origin, not an account-wide
+review status or evidence of clinical approval.
+
+The source name beside **Resume review** comes from the currently loaded inbox,
+not browser storage. It refreshes with the inbox and follows successful packet
+opens (including reopening a loaded panel), without a separate detail request.
+The button exposes the name as its accessible description. An absent saved packet
+is labelled unavailable; labels are rendered as text and long names can wrap.

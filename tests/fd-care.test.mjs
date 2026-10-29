@@ -267,9 +267,9 @@ test('the care page renders five static external links without forwarding contex
   }
   assert.match(html, /Verify current details before sharing/);
   assert.match(html, /Do not enter patient-identifying information/);
-  assert.match(html, /ReConnect collection/);
+  assert.match(html, /Curated collection/);
   assert.match(html, /Created by Joshua Moss, MD/);
-  assert.match(html, /personally curated ReConnect databases developed over several years/);
+  assert.match(html, /personally curated resource databases developed over several years/);
 });
 
 test('the care renderer escapes curriculum copy and remains pure ES5', () => {
@@ -297,7 +297,7 @@ test('the curriculum schema governs both care and external teaching resources', 
 const expectedBuilder = {
   id: 'supervised-resource-builder',
   title: 'Build a specific resource handout',
-  description: 'Choose a topic, broad area, and resource types, then review transparent ReConnect suggestions with a supervisor.',
+  description: 'Choose a topic, broad area, and resource types, then review transparent suggestions with a supervisor.',
   url: 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html',
 };
 
@@ -332,7 +332,7 @@ test('the supervised builder is projected and renders only a fixed safe external
   assert.ok(html.includes('href="' + expectedBuilder.url + '"'));
   assert.match(html, /target="_blank" rel="noopener noreferrer"/);
   assert.ok(html.includes(expectedBuilder.description));
-  assert.match(html, /Opens ReConnect in a new tab/);
+  assert.match(html, /Opens in a new tab/);
   for (const item of [null, {}, { ...expectedBuilder, id: 'other' },
     { ...expectedBuilder, title: '' }, { ...expectedBuilder, description: '' },
     ...['http://example.test/', expectedBuilder.url + '?topic=test', expectedBuilder.url + '#area',

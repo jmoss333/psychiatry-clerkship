@@ -234,6 +234,26 @@ class DeriveTests(unittest.TestCase):
             page = next(p for p in shipped_pages.derive(root)["pages"] if p["slug"] == "mse.html")
             self.assertNotIn("extraSources", page)
 
+    def test_injected_analytics_emitter_is_not_a_teaching_input(self):
+        """CLERKSHIP_ANALYTICS=on injects <script src="/analytics.js" defer> into every
+        built page. --check-build must pass (it failed on bfcrs.html, D1) and the
+        emitter must never become a teaching source of any tool."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = synthetic_root(tmp)
+            tag = '<script src="/analytics.js" defer></script>'
+            (root / "04_Assessment/mse.html").write_text(
+                '<html><head>' + tag + '</head><body></body></html>')
+            page = next(p for p in shipped_pages.derive(root)["pages"] if p["slug"] == "mse.html")
+            self.assertNotIn("extraSources", page)
+            manifest = json.loads((root / shipped_pages.MANIFEST_RELATIVE).read_text())
+            out = Path(tmp) / "out"
+            (out / "tools").mkdir(parents=True)
+            (out / "tools" / "mse.html").write_text(
+                '<html><head>' + tag + '</head><body></body></html>')
+            (out / "analytics.js").write_text("/* emitter */")
+            self.assertEqual(teaching_dependencies.discover(root, page, manifest, "ms3", out),
+                             set())
+
     def test_import_labels_and_download_names_are_not_module_or_teaching_loaders(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = synthetic_root(tmp)

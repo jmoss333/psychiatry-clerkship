@@ -160,7 +160,7 @@ async function compare(github, base, head) {
 }
 
 export async function loadReleaseStatus(fetchImpl, token, {
-  now = Date.now, ledgerMode = false, readSite = deployReader(fetchImpl),
+  now = Date.now, readSite = deployReader(fetchImpl),
 } = {}) {
   if (!token) throw new Error('GitHub token unavailable');
   const github = githubReader(fetchImpl, token);
@@ -324,9 +324,6 @@ export async function loadReleaseStatus(fetchImpl, token, {
       failedRuns,
       week,
     },
-    // Ledger mode (ADR-003): sign-offs never merge to main; ledger-publish rebuilds the sites
-    // for them on its own, so a sign-off is not a "waiting change" here.
-    ledgerMode,
     gaps,
   };
   return { ...status, headline: releaseHeadline(status) };
@@ -348,8 +345,7 @@ export function createHandler({
       return json(401, { state: 'unavailable' });
     }
     try {
-      const ledgerMode = getEnv('ATTEST_LEDGER').trim().toLowerCase() === 'on';
-      return json(200, await loadReleaseStatus(fetchImpl, getEnv('GITHUB_TOKEN'), { now, ledgerMode }));
+      return json(200, await loadReleaseStatus(fetchImpl, getEnv('GITHUB_TOKEN'), { now }));
     } catch {
       return json(503, {
         state: 'unavailable',

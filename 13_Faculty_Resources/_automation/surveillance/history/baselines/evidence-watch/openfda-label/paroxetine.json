@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260821",
+  "sections": {
+    "boxed_warning": {
+      "hash": "d941eeb68865a4276c70a7feb770c84edff05dc9ac1443269a49aac86a984f5a",
+      "present": true,
+      "rems": false,
+      "text": "BOXED WARNING WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and for emergence of suicidal thoughts and behaviors [see Warnings and Precautions ( 5.1 )]. Paroxetine is not approved for use in pediatric patients [see Use in Specific Populations ( 8.4 )]. WARNING: SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Increased risk of suicidal thoughts and behavior in pediatric and young adult patients taking antidepressants. Closely monitor all antidepressant-treated patients for clinical worsening and emergence of suicidal thoughts and behaviors. Paroxetine is not approved for use in pediatric patients. ( 5.1 , 8.4 )"
+    },
+    "contraindications": {
+      "hash": "2ce642ff506cd08aaf29517664225dd61a3044cd9c2c5539cac8421c76d799ee",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Paroxetine tablets are contraindicated in patients: Taking, or within 14 days of stopping, MAOIs (including the MAOIs linezolid and intravenous methylene blue) because of an increased risk of serotonin syndrome [see Warnings and Precautions ( 5.2 ), Drug Interactions ( 7) ]. Taking thioridazine because of risk of QT prolongation [see Warnings and Precautions ( 5.3 , Drug Interactions ( 7 )] Taking pimozide because of risk of QT prolongation [see Warnings and Precautions ( 5.3 ), Drug Interactions ( 7 )]. With known hypersensitivity (e.g., anaphylaxis, angioedema, Stevens-Johnson syndrome) to paroxetine or any of the inactive ingredients in paroxetine tablets [ see Adverse Reactions ( 6.1 ), ( 6.2 )]. Concomitant use of monoamine oxidase inhibitors (MAOIs) or use within 14 days of discontinuing a MAOI. ( 4 , 5.3 , 7 ) Concomitant use of pimozide or thioridazine. ( 4 , 5.3 , 7 ) Known hypersensitivity to paroxetine or to any of the inactive ingredients in paroxetine tablets. ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "2a7fb08720525134667c44a6885149151e098378c3242618f33658e56c85fb0a",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "598efb76-93ef-f7de-e063-6394a90a632e",
+  "version": "1"
+}

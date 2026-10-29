@@ -89,6 +89,33 @@ const KINDS = Object.freeze({
      detected      false for a test the scanner cannot see at all; it must stay undetected, or
                    the flag comes off. */
 const REGISTRY = Object.freeze({
+  'tests/smoke/learner-continuity.spec.js': {
+    kind: 'fixture',
+    why: 'Controls the target reading ledger rows and seeded saved positions/completion before asserting '
+      + 'resume behavior; pins, focus, and layout do not require any live pending or attested page.',
+  },
+  'tests/smoke/dialog-loading-focus.spec.js': {
+    kind: 'fixture',
+    why: 'Reads served content and pins the target ledger row to pending/high or attested before holding its response; '
+      + 'dialog focus never depends on the current faculty queue.',
+  },
+  'tests/smoke/interview-room.spec.js': {
+    kind: 'fixture',
+    why: 'Embedded dialog timing tests pin the Interview Room ledger row to pending/high before releasing it; '
+      + 'provider, consent and case fixtures are independent of faculty sign-offs.',
+  },
+  'tests/smoke/rotation-edition-v2.spec.js': {
+    kind: 'fixture',
+    why: 'Edition-switch timing tests pin the mood reading ledger row to pending/high before releasing it; '
+      + 'the fixture editions and focus assertions do not require a live pending page.',
+  },
+  'tests/cotw-20261012-safety.test.mjs': {
+    kind: 'fixture',
+    sources: ['ledger'],
+    why: 'Pins clinical/high risk independently of review status and derives a controlled pending fixture '
+      + 'for the warning. Built-page checks follow the served status and never require a pending queue; '
+      + 'a later faculty signature remains valid input to every assertion.',
+  },
   'tests/anki/test_qbank_governance.py': {
     kind: 'dormant',
     why: 'Pins live counts (192 items, 143 eligible, 49 drafts, 3 retired) and `_note` wording that main '
@@ -151,6 +178,11 @@ const REGISTRY = Object.freeze({
     why: 'Real Essentials renders with its pending count computed from the same index and compared with the '
       + 'rendered HTML, never pinned; the review-state branches use inline fixtures.',
   },
+  'tests/fd-tool-pins.test.mjs': {
+    kind: 'invariant',
+    why: 'Builds current audience projections and checks canonical tool IDs, rights exclusions, and local '
+      + 'storage behavior. Eligibility never depends on facultyReview or any live pending/attested count.',
+  },
   'tests/fd-search.test.mjs': {
     kind: 'invariant',
     why: 'Searches real topic_meta.json content; every review-state case (pending high-risk, reviewed) is an '
@@ -185,6 +217,16 @@ const REGISTRY = Object.freeze({
     kind: 'invariant',
     why: 'Real topic_meta.json supplies the search content; the governance triplets it attaches are inline '
       + 'fixtures, so no assertion depends on what is signed.',
+  },
+  'tests/cotw-discovery.test.mjs': {
+    kind: 'invariant',
+    why: 'Real topic_meta.json only feeds the reader render; every assertion is about which Case-of-the-Week '
+      + 'row the chrome names, which no review state changes.',
+  },
+  'tests/search-golden.test.mjs': {
+    kind: 'invariant',
+    why: 'Real topic_meta.json supplies the golden-query content; the governance triplets it attaches are '
+      + 'inline fixtures, so no assertion depends on what is signed.',
   },
   'tests/search-ward-benchmark.test.mjs': {
     kind: 'invariant',

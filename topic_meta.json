@@ -591,7 +591,7 @@
     "tldr": "Mutism, immobility, posturing, or waxy flexibility — recognize catatonia, do a lorazepam challenge, and hold antipsychotics.",
     "points": [
       "Use the Bush-Francis signs; describe motor findings objectively.",
-      "The lorazepam challenge is both diagnostic and therapeutic.",
+      "The lorazepam challenge both supports the diagnosis and starts treatment.",
       "ECT is definitive, especially for malignant catatonia."
     ],
     "cant": "Antipsychotics can precipitate malignant catatonia / NMS — exclude those before giving one.",
@@ -659,7 +659,7 @@
       "say": "The stillness and speech change can be part of a treatable motor syndrome, so we are going to assess it carefully.",
       "collateral": "Ask family/staff what changed, whether the patient eats/drinks, baseline movement/speech, and prior response to lorazepam or ECT.",
       "rounds": "Present BFCRS signs, medical/NMS rule-out, lorazepam challenge plan, supportive care, and ECT escalation threshold.",
-      "exam": "Lorazepam challenge is diagnostic and therapeutic; antipsychotics can worsen malignant catatonia/NMS.",
+      "exam": "Lorazepam challenge supports the diagnosis and is therapeutic; antipsychotics can worsen malignant catatonia/NMS.",
       "actions": [
         {
           "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
@@ -678,7 +678,159 @@
       "EPA1",
       "EPA2",
       "EPA10"
-    ]
+    ],
+    "safetySteps": [
+      "Name the signs with the Bush-Francis screen: mutism, stupor, staring, posturing, waxy flexibility, negativism, echophenomena",
+      "Vitals first: fever, rigidity, or autonomic instability suggests malignant catatonia, which overlaps with NMS and is a medical emergency",
+      "Hold antipsychotics until catatonia is excluded or has responded; raise it with the team before one is given",
+      "Lorazepam challenge per institutional protocol and your supervisor: supports the diagnosis and starts treatment",
+      "Escalate: ECT for severe, malignant, or benzodiazepine-refractory catatonia, without delay if deteriorating"
+    ],
+    "safetyDoc": "the Bush-Francis signs observed, vitals, recent antipsychotic exposure, and the lorazepam-challenge plan or response.",
+    "safetyTree": {
+      "start": "vitals",
+      "nodes": [
+        {
+          "id": "vitals",
+          "ask": "Check vitals now. Is there fever, rigidity, or an unstable pulse or blood pressure?",
+          "hint": "Malignant catatonia overlaps with NMS. Ask the nurse if you can't check vitals yourself.",
+          "options": [
+            {
+              "label": "Yes, any of these",
+              "next": "malignant"
+            },
+            {
+              "label": "No, vitals are stable",
+              "next": "signs"
+            },
+            {
+              "label": "Not checked yet",
+              "next": "unchecked"
+            }
+          ]
+        },
+        {
+          "id": "signs",
+          "ask": "Do you see catatonic signs: mutism, stupor, staring, posturing, waxy flexibility, negativism, or echoing?",
+          "hint": "Use the Bush-Francis screening items. Describe what you see; don't chart it as refusal.",
+          "options": [
+            {
+              "label": "Yes, one or more",
+              "next": "drug"
+            },
+            {
+              "label": "Not sure",
+              "next": "unsure"
+            },
+            {
+              "label": "No",
+              "next": "absent"
+            }
+          ]
+        },
+        {
+          "id": "drug",
+          "ask": "Is an antipsychotic ordered, recently given, or being considered?",
+          "hint": "Antipsychotics can precipitate or worsen NMS and malignant catatonia.",
+          "options": [
+            {
+              "label": "Yes",
+              "next": "hold"
+            },
+            {
+              "label": "No",
+              "next": "catatonia"
+            }
+          ]
+        },
+        {
+          "id": "malignant",
+          "title": "Fever, rigidity, or autonomic instability: medical emergency",
+          "tone": "danger",
+          "act": [
+            "Tell the nurse and the team now. Malignant catatonia overlaps with NMS and is a medical emergency.",
+            "Hold any antipsychotic until NMS and malignant catatonia are addressed.",
+            "Stay with the patient. Use your unit's emergency response if they are unstable, per local policy.",
+            "ECT treats malignant catatonia and should not be delayed when the patient is deteriorating."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "unchecked",
+          "title": "Possible catatonia, vitals unknown: get them now",
+          "tone": "danger",
+          "act": [
+            "Ask the nurse for vitals now. Look for fever, rigidity, and autonomic instability.",
+            "Tell the team while vitals are checked."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "hold",
+          "title": "Catatonic signs and an antipsychotic: raise it now",
+          "tone": "danger",
+          "act": [
+            "Raise the catatonia question with the team before the antipsychotic is given.",
+            "Antipsychotics can precipitate or worsen NMS and malignant catatonia. Hold until catatonia is excluded or has responded.",
+            "Trend vitals for hyperthermia and autonomic instability."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "catatonia",
+          "title": "Catatonic signs, vitals stable: assess and plan",
+          "tone": "first",
+          "act": [
+            "Tell the team now. A lorazepam challenge per institutional protocol supports the diagnosis and starts treatment.",
+            "Score the full Bush-Francis scale so severity can be tracked over time.",
+            "Look for the driver: med list, vitals, CK and basic labs, EEG if nonconvulsive status is possible.",
+            "Track intake, mobility, and complications of immobility."
+          ],
+          "escalate": "now"
+        },
+        {
+          "id": "unsure",
+          "title": "Unsure: describe the signs and ask",
+          "tone": "first",
+          "act": [
+            "Write down exactly what you see: posture, speech, response to requests, eating and drinking.",
+            "Ask staff and family what changed from baseline.",
+            "Tell the team. Catatonia is under-recognized; ask whether a Bush-Francis screen is warranted."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "absent",
+          "title": "No catatonic signs right now",
+          "tone": "first",
+          "act": [
+            "Recheck later. Catatonia can be excited as well as still.",
+            "Tell the team what you checked and what you found."
+          ],
+          "escalate": "soon"
+        }
+      ],
+      "scripts": {
+        "now": {
+          "label": "Ask them to come now",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "I'm worried about catatonia [or: malignant catatonia]. I see [signs]. I need you to come now.",
+          "background": "[Age], admitted for [reason]. Antipsychotic exposure: [drug and when, or none]. Prior catatonia or response to lorazepam or ECT: [if known].",
+          "assessment": "Vitals [values, or not yet checked]; rigidity [yes or no]. Bush-Francis signs: [list]. Eating and drinking: [yes or no].",
+          "recommendation": "Please come assess now. Should the antipsychotic be held until you see them?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        },
+        "soon": {
+          "label": "Ask them to see the patient today",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "I'm calling about possible catatonia: [what you saw]. Vitals are stable and nothing is unsafe right now.",
+          "background": "[Age], admitted for [reason]. Antipsychotic exposure: [drug and when, or none]. Prior catatonia: [if known].",
+          "assessment": "Bush-Francis signs: [list, or unsure]. Onset: [when, or unknown]. Eating and drinking: [yes or no].",
+          "recommendation": "Can you see them today, and when? Should a Bush-Francis screen be done first?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        }
+      }
+    }
   },
   "t_psychosis.md": {
     "read": 5,
@@ -818,7 +970,7 @@
     "points": [
       "Get collateral and ask specifically about prior mania/hypomania (MDQ).",
       "Match severity to setting; consider ECT for severe, psychotic, or catatonic depression.",
-      "Lithium carries the strongest maintenance evidence and an anti-suicidal effect."
+      "Lithium carries the strongest maintenance evidence; meta-analysis supports an anti-suicidal effect, but more recent randomized evidence is mixed."
     ],
     "cant": "Acute mania: stop the antidepressant, start a mood stabilizer or second-generation antipsychotic, and protect sleep.",
     "quiz": {
@@ -925,6 +1077,8 @@
     "safetyLevel": "high",
     "evidenceIds": [
       "cipriani-2013-lithium-suicide",
+      "katz-2022-lithium-va",
+      "wang-2025-lithium-suicidality",
       "canmat-isbd-bipolar-2018",
       "nolen-2019-lithium-levels"
     ],
@@ -2596,7 +2750,11 @@
       "diefenbach-2025",
       "shank-2026",
       "stanley-brown-2012-safety-planning",
-      "franklin-2017-suicide-risk-meta-analysis"
+      "franklin-2017-suicide-risk-meta-analysis",
+      "bostwick-2016-suicide-attempt-lethality",
+      "chung-2017-postdischarge-suicide",
+      "posner-2011-cssrs",
+      "liu-2020-passive-suicidal-ideation"
     ],
     "relatedTools": [
       "cssrs.html",
@@ -2703,7 +2861,7 @@
             },
             {
               "label": "Only a wish to be dead",
-              "next": "plan"
+              "next": "passive"
             },
             {
               "label": "No to both",
@@ -2728,7 +2886,7 @@
         },
         {
           "id": "acute",
-          "ask": "Is any acute risk factor present right now?",
+          "ask": "Is any acute risk factor present right now, a suicide attempt in the past year, or a psychiatric discharge in the past 3 months?",
           "hint": "Intoxication or withdrawal, severe agitation, psychosis or command hallucinations, severe insomnia, new access to lethal means, or unwilling to work on safety.",
           "options": [
             {
@@ -2738,6 +2896,25 @@
             {
               "label": "No",
               "next": "thoughts"
+            }
+          ]
+        },
+        {
+          "id": "passive",
+          "ask": "Only a wish to be dead: any preparation, an attempt in the past year, a discharge in the past 3 months, or an acute risk factor?",
+          "hint": "Ask about steps taken, intoxication or withdrawal, psychosis, severe insomnia, and new access to lethal means. Recheck for active thoughts.",
+          "options": [
+            {
+              "label": "Preparation or steps taken",
+              "next": "high"
+            },
+            {
+              "label": "Recent attempt, discharge, or acute factor",
+              "next": "high-acute"
+            },
+            {
+              "label": "None of these",
+              "next": "passive-only"
             }
           ]
         },
@@ -2791,11 +2968,23 @@
         },
         {
           "id": "thoughts",
-          "title": "Thoughts without plan or acute factors: still report",
+          "title": "Active thoughts, no plan or acute factor: report before encounter ends",
           "tone": "first",
           "act": [
-            "Tell your team before this encounter ends. You do not decide their risk.",
-            "Ask about lethal means, firearms first, and any past attempt.",
+            "Tell your team now, before this encounter ends. Don't hold it for rounds. You do not decide their risk.",
+            "Ask about lethal means, firearms first, and past attempts. An attempt in the past year or a discharge in the past 3 months: escalate now.",
+            "Write down their exact words and the reasons for living they named."
+          ],
+          "escalate": "soon"
+        },
+        {
+          "id": "passive-only",
+          "title": "Wish to be dead, no active thoughts: report this shift",
+          "tone": "first",
+          "act": [
+            "Tell your team this shift, before the patient leaves your care. The team completes the full risk assessment; you do not decide their risk.",
+            "Ask about lethal means, firearms first, and past attempts. Any steps, an attempt in the past year, or a discharge in the past 3 months: escalate now.",
+            "Recheck for active thoughts. If the wish becomes thoughts of killing themselves, tell the team before this encounter ends.",
             "Write down their exact words and the reasons for living they named."
           ],
           "escalate": "soon"
@@ -2832,12 +3021,12 @@
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         },
         "soon": {
-          "label": "Ask them to see the patient today",
+          "label": "Ask them to see the patient this shift",
           "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
           "situation": "I want to report a safety concern from my interview: [their exact words, or what prompted my concern].",
           "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
           "assessment": "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]. I'm not the one who decides their risk.",
-          "recommendation": "Can you assess them today — when? Is there anything I should do first?",
+          "recommendation": "Can you assess them this shift — when? Is there anything I should do first?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         }
       }
@@ -3418,6 +3607,7 @@
       "mcpheeters-2023-aud",
       "lieberman-2005-catie",
       "katz-2022-lithium-va",
+      "cipriani-2013-lithium-suicide",
       "clozapine-rems"
     ],
     "facultyReview": {
@@ -5509,7 +5699,10 @@
     "evidenceIds": [
       "clozapine-rems",
       "fda-drug-safety",
-      "canmat-isbd-bipolar-2018"
+      "canmat-isbd-bipolar-2018",
+      "cipriani-2013-lithium-suicide",
+      "katz-2022-lithium-va",
+      "wang-2025-lithium-suicidality"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -5955,7 +6148,34 @@
       "strawn-2007-neuroleptic-malignant-syndrome",
       "bap-catatonia-2023",
       "rosenberg-2015-malignant-hyperthermia"
-    ]
+    ],
+    "relatedTools": [
+      "decision-aids.html",
+      "bfcrs.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what changed in the last 72 hours: an antipsychotic started or increased, a dopamine agonist stopped, a serotonergic agent added (SSRI, SNRI, MAOI, tramadol, linezolid, triptans), anticholinergics or antihistamines, recent anesthesia or ECT — and whether it came on over minutes, hours, or days.",
+      "mse": "Do the two-second exam before anything else: reflexes (lead-pipe rigidity with hyporeflexia vs clonus with hyperreflexia, legs more than arms) and skin (diaphoretic vs dry and flushed); then pupils, mental status, and the vital-sign trend.",
+      "safety": "Treat as a medical emergency: hold the antipsychotic and never add another to calm a rigid, febrile patient; cool and hydrate aggressively, send a CK, monitor continuously, and escalate to the medical team early.",
+      "say": "Your fever and stiffness can be a reaction to a medicine, so we are stopping the likely one and treating this as an emergency until you are safe.",
+      "collateral": "Reconstruct the complete medication history with nursing, pharmacy, and family — every change in the last 72 hours, over-the-counter antihistamines, supplements, and substances — and what the patient looked like before the fever.",
+      "rounds": "Present the triad (fever, altered mental status, autonomic instability), the 72-hour medication timeline, the reflex and skin findings that separate NMS, serotonin syndrome, anticholinergic toxicity, and malignant catatonia, the CK, what was stopped, supportive care, and the escalation plan.",
+      "exam": "Hyporeflexia and lead-pipe rigidity days after a dopamine blocker is NMS; clonus and hyperreflexia hours after a serotonergic change is serotonin syndrome; dry, flushed skin with mydriasis is anticholinergic.",
+      "actions": [
+        {
+          "label": "Open the decision aids (NMS vs serotonin syndrome)",
+          "href": "?tool=decision-aids.html"
+        },
+        {
+          "label": "Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training",
+          "href": "?tool=bfcrs.html"
+        },
+        {
+          "label": "Open the catatonia guide",
+          "href": "?page=catatonia.md"
+        }
+      ]
+    }
   },
   "med_monitoring.md": {
     "read": 4,
@@ -6309,6 +6529,20 @@
       "Interview a new patient",
       "Present on rounds",
       "Write a progress note"
+    ],
+    "safetyLevel": "moderate"
+  },
+  "maine_law.md": {
+    "read": 8,
+    "tldr": "Before you act, name the Maine pathway and its clock: the blue paper (34-B §3863), the 24-hour second opinion, the 3-day court filing, and who decides when capacity is lost. Educational summary; not legal advice.",
+    "points": [
+      "An emergency admission (§3863) is not a commitment; without a staff practitioner's second-opinion certificate within 24 hours, the person must be discharged.",
+      "Commitment does not authorize treatment over objection; that needs a separate court order under §3864(7-A).",
+      "A minor may consent to treatment for substance use disorder or emotional or psychological problems (22 §1502), but informal admission under 18 needs a parent or guardian (§3831(3))."
+    ],
+    "relatedTools": [
+      "maine-law-navigator.html",
+      "capacity.html"
     ],
     "safetyLevel": "moderate"
   }

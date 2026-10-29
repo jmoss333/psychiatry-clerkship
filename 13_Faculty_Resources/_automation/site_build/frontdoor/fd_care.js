@@ -36,11 +36,11 @@ function fdCareGroup(resources, group, title, intro, packIds){
 function fdCare(index,selectedIntentId,packIds,crisisHtml){
   var idx=index||{}, resources=idx.careResources||[];
   return '<section class="fd-care-page" aria-labelledby="fd-care-title">'+
-    '<header class="fd-care-page__head"><p class="fd-care-page__source">ReConnect collection</p>'+
+    '<header class="fd-care-page__head"><p class="fd-care-page__source">Curated collection</p>'+
     '<h1 id="fd-care-title">Patient care resources</h1>'+
     '<p class="fd-care-page__intro">Shortcuts for finding support, planning follow-up, and sharing understandable information during supervised care.</p>'+
     '<div class="fd-care-page__provenance" aria-label="Collection provenance"><strong>Created by Joshua Moss, MD</strong>'+
-    '<span>Apps built from personally curated ReConnect databases developed over several years.</span></div></header>'+
+    '<span>Apps built from personally curated resource databases developed over several years.</span></div></header>'+
     '<div class="fd-care-page__notice" role="note"><strong>Verify current details before sharing</strong><span>Resources open in a new tab. Do not enter patient-identifying information.</span></div>'+
     fdCareSearch(idx)+fdCareNavigator(idx,selectedIntentId)+
     fdCarePack(idx,packIds,crisisHtml)+

@@ -634,3 +634,17 @@ test('Library view is never a persisted device preference', () => {
   fdSave({tab:'library',libraryView:'full'});
   assert.deepEqual(fdLoad(), {tab:'library'});
 });
+
+
+test('reading comfort stores only bounded enums and leaves reading places intact', () => {
+  const ls=memStorage(), api=make(ls);
+  const places={'a.md':{heading:'section',offset:30,updatedAt:1}};
+  assert.equal(api.fdSave({role:'ms3',readingPlaces:places,readingComfort:{size:'larger',spacing:'spacious',query:'private text'}}),true);
+  assert.deepEqual(api.fdLoad().readingComfort,{size:'larger',spacing:'spacious'});
+  assert.deepEqual(api.fdLoad().readingPlaces,places);
+  assert.doesNotMatch(ls.getItem('cw_frontdoor_v1'),/private text|query/);
+  for(const bad of [null,[],42,{size:'100px',spacing:'<style>'}]) {
+    api.fdSave({readingComfort:bad});
+    assert.deepEqual(api.fdLoad().readingComfort,{size:'standard',spacing:'standard'});
+  }
+});

@@ -1,0 +1,7 @@
+{
+  "name": "clerkship-faculty-console",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=24 <25"},
+  "dependencies": {"@netlify/blobs": "11.1.3"}
+}

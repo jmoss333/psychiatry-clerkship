@@ -312,6 +312,16 @@ function fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours){
     seen[practice.ref]=true;
     rows+=fdReaderThreadRow(practice.ref, 'Practice: '+practice.title, 'Tool · practice for this page', 'tool');
   }
+  /* Case of the Week for this topic (C2, 2026-10-17): the newest edition the hub registry ties to
+     this page (idx.cotwForTopic). Chrome beside the page, never text inside it, so no signature
+     moves; until now the weekly cases were reachable only by search or the collapsed hub list. */
+  var cases=(idx.cotwForTopic||{})[item.ref];
+  if(cases&&cases.length&&!seen[cases[0].slug]&&byRef[cases[0].slug]){
+    var moreCases=cases.length-1;
+    seen[cases[0].slug]=true;
+    rows+=fdReaderThreadRow(cases[0].slug, 'Case of the Week: '+cases[0].title,
+      'Case · this topic'+(moreCases?' · '+moreCases+' more in the case index':''), 'read');
+  }
   var caseRef=(typeof FD_CASE_TOOL_REF==='string')?FD_CASE_TOOL_REF:'one-patient-six-weeks.html';
   var step=(hasWeek&&!seen[caseRef]&&typeof fdWeekCaseStep==='function')
     ?fdWeekCaseStep(idx, thread.caseArc, readerWeek):null;
@@ -580,7 +590,12 @@ function fdReader(index, state, bodyHtml){
 
   var expanded=isTool&&st.toolExpanded===true;
   var out='<article class="fd-reader'+(isTool?' fd-reader--tool':'')+
-    (expanded?' is-tool-expanded':'')+'">';
+    (expanded?' is-tool-expanded':'')+'"';
+  if(!isTool){
+    var comfort=fdReadingComfort(st.readingComfort);
+    out+=' data-fd-reader-size="'+comfort.size+'" data-fd-reader-spacing="'+comfort.spacing+'"';
+  }
+  out+='>';
   var back='<button type="button" class="fd-reader__back" data-fd-back>‹ '+
     fdEsc(backLabel)+'</button>';
   if(isTool){

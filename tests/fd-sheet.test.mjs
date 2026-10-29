@@ -791,3 +791,16 @@ test('only kit sheets are safety sheets and take the modifier', () => {
 test('every real safetyTree passes the runtime check the sheet relies on', () => {
   for (const ref of TREE_REFS) assert.equal(F.fdTreeValid(REAL_META[ref].safetyTree), true, ref);
 });
+
+
+test('reading comfort presents named button groups, the saved choice and an explicit reset', () => {
+  const html=F.fdSheet(REAL_INDEX,REAL_META,{sheet:'settings',readingComfort:{size:'largest',spacing:'spacious'},readingComfortNotice:'Saved on this device.'});
+  assert.match(html,/role="group" aria-label="Reading text size"/);
+  assert.match(html,/data-fd-reading-size="largest" aria-pressed="true"/);
+  assert.match(html,/data-fd-reading-size="standard" aria-pressed="false"/);
+  assert.match(html,/role="group" aria-label="Reading line spacing"/);
+  assert.match(html,/data-fd-reading-spacing="spacious" aria-pressed="true"/);
+  assert.match(html,/data-fd-reading-reset[^>]*>Reset reading comfort<\/button>/);
+  assert.match(html,/role="status"[^>]*>Saved on this device\./);
+  assert.doesNotMatch(html,/role="radio/);
+});

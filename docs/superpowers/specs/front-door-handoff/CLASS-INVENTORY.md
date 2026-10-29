@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(645 distinct `fd-*` selector names, 30 `is-*` state classes). Every class below has a rule in that file unless
+(782 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -99,6 +99,8 @@ instead — see their surfaces.)
 | `.fd-btn--accent` | + `.fd-btn` | Teal wash ("Set as my week"). |
 | `.fd-chip` | `<span>` | Type chip. In the week rows and the Continue card it is emitted only for the exceptions (`fdKindChip`, `fd_today.js`): a tool, or a rights reference. A reading carries none (2026-10-01). The item sheet still labels a reading "read". |
 | `.fd-chip.is-tool` | same element | Teal variant for tools. |
+| `.fd-chip.is-card`, `.fd-chip.is-module` | same element | Depth chips on Everything rows (`fdDepthChip`, `fd_library.js`, 2026-10-17): `pg_` readings are pocket cards (olive wash), `exp_` readings are short modules (plain chip). A guide carries none; Essentials rows carry none. |
+| `.fd-kit__subhead`, `.fd-kit__subcount` | `<h3>` + `<span>` | Sub-group heading inside a grouped Everything column (`curriculum.libraryColumns[].groups`, partition-checked by `validate_curriculum.py`): 12px/700 uppercase dim eyebrow with " · n", `margin: space-7 0 space-1` (space-4 above the first). A plain heading, never a `<details>`, so no row leaves the accessibility tree or the nav-crawl inventory. |
 | `.fd-check` | `<button>` | 22px done-toggle circle. |
 | `.fd-check.is-done` | same element | Filled success + visible ✓. |
 | `.fd-check.is-done.is-just-done` | same element | **Both** state classes needed for the pop animation. |
@@ -267,7 +269,9 @@ concept-count status line when nothing is due), `caseWeek`):
       .fd-sectionhead.fd-also <h2>                    4. "Also today" (always rendered)
       .fd-alsolist                                     (only when a row exists)
         .fd-also__row[data-fd-mark][data-fd-count][style=--mark-share] ×N   the faces that did not win
-          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-capture
+          .fd-due / .fd-study-planner|.fd-block / .fd-resume / .fd-lastread / .fd-continue.is-secondary / .fd-newcase / .fd-capture
+          .fd-newcase <button data-fd-open>            the Case-of-the-Week announcement, only in the week it ships (fdNewCase)
+            .fd-newcase__kicker / .fd-newcase__title / .fd-newcase__action
       .fd-purpose        <details>                    5. the preparation chooser (shell-owned open state)
         .fd-prepare                                    the Prepare-for-tomorrow line + ghost button (sites shipping the tool)
       .fd-today__exam    <div>                        exam-date nudge: exam path only, until a date is stored
@@ -338,6 +342,7 @@ internal Progress. These are part of the same shipped class contract:
 | `.fd-resume__block` | Progress line inside `.fd-resume__link` when the capsule came from a timed block ("Block · 1 of 2 done"); the link then carries `resume=1&block=1&n[&cat]` (Phase 2, 2026-09-16). |
 | `.fd-block` | Timed block card (2026-09-02, not in the prototype), spliced in with the due row and resume card by `fdTodayLive`. Planner face: `.fd-block__head` (`__kicker`, `__chips` › `__chip(.is-sel)`, `__hint`), `.fd-block__steps` › `__step` (`__dot.is-review/.is-page/.is-qb`, `__title`, `__min`), `.fd-block__actions` (a `.fd-btn--primary` carrying `data-block-start`), or `.fd-block__empty`. Live face adds `.is-live` on the card, `__count`, `__check` on each `__step(.is-done)`, and `__doneline`. Click attributes are `data-block-minutes` / `-start` / `-continue` / `-end`, owned by the shell's auxiliary click handler — deliberately outside the `data-fd-*` controller namespace. Rendered by `fdBlockCard` (`frontdoor/fd_block.js`). |
 | ~~`.fd-primary__why`~~ | Retired 2026-10-01 (owner-directed design pass) with `fdTodayWhy`: the page's order already says what the line explained. |
+| `.fd-newcase`, `.fd-newcase__kicker`, `.fd-newcase__title`, `.fd-newcase__action` | "New this week · Case of the Week" row (`fdNewCaseRow` over `fdNewCase`, `fd_today.js`): a `<button data-fd-open="<slug>">` Also-today face with a `ring` mark, rendered only from the registry date of the newest edition through the six days after it (local calendar days, `FD_NEWCASE_WINDOW_DAYS`), then gone on its own. Kicker (13/700 dim, `order:-1`, full width), title (15/600), the compact `.fd-kit__pending` mark when the case's manifest governance is still `pending`, trailing "Open →" (14/700 teal-deep, 44px target). The data is `FD_COTW_NEWEST` ({slug, title, date} from `cotw_archive_block.newest`), inlined read-only by `build_deploy.py` and swapped per site by `resident_section.py` — the same registry row the archive index lists as "Newest case". Never the Now card; sits after the week row, before saved questions. |
 | `.fd-lastread` | "You were reading" row (`fdLastReadRow`, `frontdoor/fd_due.js`): the last opened item when it is an undone read from this week and not already the Continue target. Shares the runtime-row rule with `.fd-due`. Contains `.fd-lastread__kicker` (primary only), `.fd-lastread__title`, `.fd-lastread__action`. |
 | `.fd-due__kicker` | "Clear what's due" line, present only when the due row is the primary (`.fd-due.is-primary`). |
 | `.fd-freshset` | Ghost `.fd-btn` sibling of a completed-week `.fd-continue` that is primary: "Practice a fresh set →", opens the question bank. |
@@ -484,6 +489,7 @@ Omitting it collapses the rail underneath.
 | `.vh-live` (`#careNavigatorStatus`) | Persistent, initially empty shell status beside `#routeStatus`, outside replaceable `#content`. The shell updates its polite, atomic text after a valid Care choice and clears it when the choice or Care surface ends. It keeps the same DOM node through Care re-renders. |
 | `.fd-care-navigator__alternatives` | Zero to two secondary links; shares the responsive one-column phone layout. |
 | `.fd-care-navigator__clear` | Native button returns to the unselected task map without changing the resource groups. |
+
 | `.fd-care-builder` / `.fd-care-builder__link` | Fixed context-free ReConnect launcher before the local picker, outside the handout sheet. Copy is linked by `aria-describedby`; new-tab link has `noopener noreferrer`, 44px minimum height, wrapping and visible focus. Flex stacks at ≤640px; `@media print` hides it in every state. No selection, QR, storage or analytics hook. |
 | `.fd-care-pack__workbench` | Transient two-column builder: a flat choice list beside a paper-like preview, stacking to one column at ≤640px. It accepts only canonical `careResources` records and has no patient fields, route state, storage, analytics, or network request. |
 | `.fd-care-pack__choice.is-selected` | The active choice pairs `.is-selected` with `aria-pressed="true"`; its visible check and inset rule keep selection non-color-only. A fourth unselected choice disables until one of the three is removed. |
@@ -499,6 +505,124 @@ Omitting it collapses the rail underneath.
 | `.fd-careitem__actions` | Touch-sized “Show QR” and handout-toggle buttons for each canonical resource. The handout control shares the transient `carePackIds` state and disables an unselected fourth item at the limit. |
 | `.fd-care-share` | Transient accessible QR dialog, rendered in the overlay mount and bottom-docked at ≤640px. It shows one locally generated QR, description, exact canonical URL, Copy link, and the shared handout toggle; it adds no patient fields, storage, analytics, or network request. |
 | `.fd-care-sharebackdrop` | Separate fixed backdrop. Click closes the Quick Share dialog; Escape and the close button use the same controller action. |
+
+
+### 3a-i. Community directory search and the aftercare packet
+
+Added with the packet (PR B). The search panel (`fd_care_search.js`) was not inventoried when it shipped;
+the packet hooks into it, so both are recorded here. Everything marked **(packet)** renders only while
+`FD_CARE_PACKET_ENABLED` is true; with the gate off the markup is exactly the search panel without those nodes.
+
+```
+.fd-care-search [data-care-directory]
+  .fd-care-search__head / form.fd-care-search__form / .fd-care-search__privacy / __notice
+  [data-care-directory-results]                       the ONLY node repainted while typing
+    h3.fd-care-search__count#fd-care-directory-count   tabindex=-1; focus target after paging
+    .fd-care-search__bulk role="group"                 (packet) Add from this page / Add from all results, with capacity descriptions
+    ol.fd-care-search__list
+      li.fd-care-search__result
+        article[.is-packed]                            (packet) is-packed adds the left rule
+          p.fd-care-search__meta                       (packet) + span.fd-care-search__packed "In packet"
+          .fd-care-search__actions
+            a (Call / Text) / a (Website)
+            button.fd-care-search__pack                (packet) aria-pressed, action label "Add to packet" / "Remove from packet"
+            OR p.fd-care-search__ineligible [data-fd-care-packet-ineligible=CODE]   (packet) plain text where the button would be:
+                                                       "Can’t be added to the packet: <reason>" — not focusable, not a disabled button
+    nav.fd-care-search__pages
+  .fd-care-search__tray [data-fd-care-packet-tray]     (packet) AFTER the results mount; never repainted by typing
+    section.fd-care-packet
+      header.fd-care-packet__head
+        h3#fd-care-packet-title (tabindex=-1) + span.fd-care-packet__count
+        p.fd-care-packet__hint                         at 9+ ("Eight or fewer…") and at 12 ("full at 12")
+      [data-fd-care-packet-starter-panel]              only when a starter list is configured
+        button[data-fd-care-packet-starter] + p.fd-care-packet__hint[data-fd-care-packet-starter-note]
+      p.fd-care-packet__empty                          or:
+      section.fd-care-packet__group > h4 + ol.fd-care-packet__list
+        li.fd-care-packet__item [data-fd-care-packet-item]
+          .fd-care-packet__name / [span.fd-care-packet__why [data-fd-care-packet-ineligible]] / .fd-care-packet__btns > up / down / Remove <button>
+      button.fd-care-packet__clear                     whenever ANY state is saved (listings, a unit, a profile, Final, a page switch)
+      p.fd-care-packet__hint [data-fd-care-packet-reminder]    nonblocking sharing/privacy reminder; no confirmation controls
+      button.fd-care-packet__preview-toggle            only for a non-empty packet
+      .fd-care-packet__card > button.fd-care-packet__cardbtn [data-fd-care-packet-card-print] + p.fd-care-packet__note [data-fd-care-packet-card-note]
+                                                       the wallet card is its OWN one-sided print, available with no listings
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-care-search__pack` | The label never changes ("Add to packet"), so the accessible name always contains the visible text (WCAG 2.5.3). State is `aria-pressed`, the `✓` painted by `::before`, and the `In packet` tag on the card, so it is never colour alone. Disabled only when the packet is full and this listing is not in it. |
+| `.fd-care-search__bulk` | Sits in the results bar above the list. "All" means every match across pages, not the visible five. Both buttons disable when the packet is full or nothing new would be added. |
+| `.fd-care-search__result article.is-packed` | 3px olive left rule; `padding-left` compensates so text does not shift on toggle. |
+| `.fd-care-search__tray` | Outside the results mount on purpose: typing repaints only results, so tray focus is never lost. |
+| `.fd-care-packet__item` | Wraps at phone width; the up/down/Remove buttons keep the 44px target (`.fd-care-search button`). Moving swaps within a category only, because the printed pages group by category. |
+| `[data-fd-care-packet-starter-panel]` | Explicit "Load Sanford starter" action. The note is its accessible description and explains any disabled state. Loading is atomic: all configured resources must be currently available, eligible and fit the packet. Existing resource order, page choices and copy mode stay intact; typed details or another unit prevent replacement. Success loads the current Sanford profile, remembers only its ID, opens the preview and moves focus to its heading. Approval is still checked independently. No automatic printing or new storage key. The controls are patched in place when only their availability changes. |
+| `[data-fd-care-packet-addon]` | Optional Sanford group after the starter: native "Add transport" and "Add housing help" buttons with separate accessible description notes. Uses existing packet button and hint styles; no new CSS classes. Each explicit action adds its complete current bundle or explains why it cannot: all rows must be present, eligible, within their directory review date, and fit the packet. Preserves resource order, copy/page choices, saved and typed unit details, and device preference. Repeated clicks deduplicate. Success opens the preview and focuses its heading, with a fresh independent approval check for any selected unit; it never loads a unit or prints automatically. Availability is patched in place. |
+| `.fd-care-packet__check` | Shared by the preview's copy-mode radios, page switches and separate planned-call confirmations. The 44px target is the whole `<label>` row; its input is 24px (the WCAG 2.5.8 minimum, so a fixed bar scrolled over it cannot leave an undersized target). The four general print-review confirmations were retired by the [October 16 decision](../../plans/2026-10-16-care-packet-streamlined-print.md); this shared control style remains. |
+| `.fd-care-packet__hint[data-fd-care-packet-reminder]` | Plain, nonblocking text: “Check these resources with the patient before sharing. Do not enter patient-identifying information.” It stores no confirmation and makes no review-complete claim. Print and Copy remain in the preview beside the reason an actual output requirement is unmet. The preview button's `aria-expanded` is patched in place so an existing control is not replaced while the user is tabbing. |
+| `.fd-care-packet__preview-toggle` | "Preview and print", shown only for a non-empty packet. A disclosure: constant label, `aria-expanded`, `aria-controls="fd-care-packet-preview"` (a region that is always rendered, `hidden` when closed). Never a dialog. |
+
+---
+
+### 3a-ii. The packet preview and the printable sheet
+
+Added with the print PR. Everything here renders only while `FD_CARE_PACKET_ENABLED` is true.
+
+```
+.fd-care-search__preview#fd-care-packet-preview [data-fd-care-packet-preview] [hidden when closed]   after the tray
+  h3.fd-care-packet-preview__title#fd-care-packet-preview-title (tabindex=-1)
+  [data-fd-care-packet-controls]                       rendered once per opening, then PATCHED IN PLACE
+    fieldset.fd-care-packet-preview__mode > legend "Copy to print" + 2 × label.fd-care-packet__check (input[type=radio]) + p.__hint [data-fd-care-packet-modenote]
+    fieldset.fd-care-packet-preview__pages > legend "Pages to include" + p.__always + label.fd-care-packet__check × N (checkbox)
+    .fd-care-packet-preview__profile [data-fd-care-packet-profile]   unit choice and current approval status
+      label + .fd-care-packet-preview__profilerow > select [data-fd-care-packet-profile-select] + button [data-fd-care-packet-profile-load]
+      (or p.__hint [data-fd-care-packet-profile-none]) + p.__hint [data-fd-care-packet-profile-status]
+      p.__hint [data-fd-care-packet-profile-memory] + button [data-fd-care-packet-profile-forget][hidden when no remembered ID is present]
+      button [data-fd-care-packet-profile-unlink][hidden when no profile is loaded]
+    .fd-care-packet-preview__unit > .fd-care-packet-preview__field × 2 (label + input[readonly when a profile is loaded] + p.__error)  + p.__hint + p.__hint [data-fd-care-packet-readback]
+    p.fd-care-packet-preview__reason#fd-care-packet-reason (tabindex=-1)
+    .fd-care-packet-preview__actions > button.fd-care-packet__print + button.fd-care-packet__copy *(no rule)*
+    p.__summary / p.__hint [data-fd-care-packet-hint] / [data-fd-care-packet-fallback] > label + textarea
+                                                       the fallback is cleared by any change
+  .fd-care-packet-preview__sheet [data-fd-care-packet-pages]    repainted ~200 ms after typing stops
+    p.__stale [data-fd-care-packet-stale]              the directory copy is more than a week old
+    ul.__withheld                                      what was left off the paper, and why (a note or dose, or a crisis number)
+    details.__addresses > summary + ul > li (b + span.__url)   the full address behind each QR code; OUTSIDE the sheet
+    then EITHER p.__fail (the sheet was refused) OR .fd-packet-sheet.fd-packet-sheet--screen > article.fd-packet-page × N
+    (the notices above render together with the sheet, in that order)
+body > #fdPacketPrint.fd-packet-sheet.fd-packet-sheet--paper                       built for one print, removed with it
+                                                   (or a single p.fd-packet-notice: Ctrl+P without a current authorized print action, or with a field still being typed)
+body > .fd-packet-measurewrap > .fd-packet-sheet--paper > article.fd-packet-page   the hidden measuring box
+article.fd-packet-page [data-fd-packet-page] aria-label="Page n of N"
+  .fd-packet-band[.is-empty]  ·  .fd-packet-body > UNITS  ·  footer.fd-packet-foot
+UNITS (each is ONE root element, spaced by its own padding-bottom):
+  header.fd-packet-head > .fd-packet-head__box (p.fd-packet-org [only when an approved org or a unit name is set] + h1.fd-packet-title + p.fd-packet-draft [data-fd-packet-draft]) · section.fd-packet-ins.fd-packet-intro
+  section.fd-packet-crisis *(no rule)* > .fd-packet-crisis__box
+  section.fd-packet-ins (h2.__title on the first part only) · div.fd-packet-sechead > h2.fd-packet-sec · p.fd-packet-cat
+  section.fd-packet-res (span.fd-packet-box[.is-blank] + .__main + .fd-packet-qr; h3.__name) · div.fd-packet-tipwrap > p.fd-packet-tip
+body > #fdPacketPrint (the wallet card, its own print) > article.fd-packet-page.fd-packet-cardsheet [data-fd-packet-page]
+  h1.fd-packet-vh · .fd-packet-cardpair > section.fd-packet-card [data-fd-packet-card=crisis] (h2.__title + ul.__lines > li) + section.fd-packet-card [data-fd-packet-card=mine] (h2.__title + .fd-packet-card__rows > .fd-packet-card__row × n (span + i + i))
+  p.fd-packet-cardsheet__note
+```
+
+| Class | Notes |
+|---|---|
+| `.fd-care-packet-preview__*` | Controls are **never replaced** after the first paint: a `change` event fires when a field loses focus, before focus moves, so replacing the Print button then drops keyboard focus and loses the click. The controller sets `disabled`, text and `aria-invalid` on the existing nodes. Native `disabled` is kept (fails closed). An invalid field is marked by weight, a heavier border and a ⚠ glyph, never red: red means safety. |
+| `.fd-care-search__preview` | Hidden in print **always**, so Ctrl+P cannot bypass the current profile-approval, content and layout checks or print a stale preview. Only the separately staged packet is printable. |
+| `.fd-packet-sheet` | Ink only: `Canvas`/`CanvasText`, borders and weight, `color-scheme:light`. No `GrayText` (3.95:1 on Canvas, and "disabled" in forced colours). No hex, rgb or hsl (the stylesheet's zero-literal gate), no tint (it vanishes on a monochrome ward printer or without background graphics). |
+| `.fd-packet-page` | Reflows on screen (`width:100%`, `max-width:8.5in`). On paper (`--paper`) it is `min-height:11in`, **never `height`**: a fixed-height box silently drops overflowing text from the PDF while the page count stays the same, whereas `min-height` spills to an extra sheet that a test can see. Nothing on a page clips (only `overflow-x:clip` as a backstop); every feed field has `overflow-wrap:anywhere`. |
+| `.fd-packet-body > *` | A unit spaces itself with `padding-bottom`, because the measurer reads boxes and margins are not in a box. Anything bordered is an INNER element: `.fd-packet-head__box`, `.fd-packet-crisis__box`, and the plain wrappers `.fd-packet-sechead` and `.fd-packet-tipwrap` around the section rule and the tick-box tip. A unit root carries no outer margin; the reset is `:where()` (specificity 0) so the spacing rules after it win. Three units override the default 16px: the section head and the tip (10px, they sit in a keep-together chain) and the category label (6px). A sibling selector may style the inside of ONE unit; no rule may depend on a neighbouring unit, because the measurer reads each unit alone. |
+| `.fd-packet-band` | Ink only (rules above and below). The slot is reserved in Final too (`.is-empty`) so the two modes lay out alike. |
+| `.fd-packet-res` | Three explicit columns: the tick box (1), the text (2), the QR code (3), so placement never depends on the box being in the grid. The tick box column is reserved in Final too (`.fd-packet-box.is-blank`, `visibility:hidden`); on screen it is `display:none`. At 640px and below the QR code drops under the text. |
+| `.fd-packet-table` | Carries explicit ARIA table roles because the narrow-screen layout (640px and below, **screen only**) changes the cells' `display` and stacks each row; some engines read that as "not a table". The measuring host and the paper keep the fixed three-column table. |
+| `.fd-care-packet-preview__stale`, `__addresses`, `__url` | The preview-only notices. They are outside the sheet, so they never change a page count or a printed byte. The old-copy notice is a left rule and bold text, not a colour. |
+| `.fd-packet-qr` | 0.9in square, `shape-rendering:crispEdges`; omitted by the sheet above 49 modules. |
+| `.fd-packet-card` | ID-1 sized (3.375in, min-height 2.125in), two on one single-sided Letter page, each inside its own dashed cut line. The wallet card is NOT a page of the packet: it prints by itself from its own tray button, so a duplex packet is never cut up. A panel's size is a floor; its CONTENT must fit with headroom under a wide face (194.5px of 204 on the crisis panel measured in the default, Verdana and Arial faces). Every crisis line is two lines (the number over the governed name), so a sixth line or any wrap no longer fits; the validator caps the card at five lines and the browser spec asserts no wrap. |
+| `.fd-packet-sheet` fonts | Arial / Liberation Sans for text and Times / Liberation Serif for titles: metric-compatible pairs, so the Mac, the ward's Windows machines and the Ubuntu CI runner wrap the same text alike. Georgia and system-ui differed per machine, and a page count measured on one was not true on another. |
+| `.fd-packet-draft` | The paper's missing-contact line, in ink (bold with a rule above), never colour. Printed only when no unit phone is filled in; a typed number prints with no such line. |
+| `.fd-care-search__ineligible`, `.fd-care-packet__why` | Plain text, not a button and not focusable: a listing the packet cannot carry (a crisis-category service, one that lists a crisis line number, or one with no working phone or website) says why where the button would be, or beside its name in the tray with Remove still available. Never colour alone. |
+| `.fd-care-packet-preview__profile` | A native `<select>` and a "Load profile" button; changing the select alone never loads a profile. Loading remembers only its raw ID in `cw_care_unit_profile_v1` localStorage for this browser and site. A new controller may restore that ID once from the current usable profiles, only when the existing tab's packet has no profile or typed unit details. It never restores approval. The select keeps the 44px target. While a profile is loaded the name and phone are `readonly` (dashed border); "Use my own details instead" removes the remembered preference and unlinks the current profile. Typed details are never treated as confirmed. |
+| `.fd-care-packet-preview__hint[data-fd-care-packet-profile-memory]` | Plain storage-status text, separate from approval status. Unreadable preferences are ignored; failed writes or removal show a truthful hint rather than claiming success. "Forget this unit" removes the remembered preference without changing the current packet. Both controls are patched in place so focus survives a status change. Clear packet keeps the preference for a later visit, without restoring it in the same controller. See the [remembered-unit decision](../../plans/2026-10-16-care-packet-remember-unit.md). |
+| `#fdPacketPrint` | `display:none` on screen; shown only by `@media print` while `body.fd-packet-printing` is present. A leftover cannot hide the app. The print rules are appended at the END of the stylesheet because the older pack's print-isolation pin slices from the first `@media print` to the end of the file. |
+| `.fd-packet-measurewrap` | Zero-sized and clipped, `visibility:hidden`, removed in the same task as it is read: screen readers never see a second copy, and it adds no horizontal scroll. |
 
 ---
 
@@ -620,6 +744,8 @@ the bare `.fd-library`.
       input.fd-library__filter-input[data-fd-library-filter]
       button.fd-library__filter-clear[data-fd-library-filter-clear]   (only with a query)
       .fd-kbd.fd-library__filter-key     ("/", desktop only, only without a query)
+  .fd-library__tasks [role=group]         (Library tasks: All / Interview / Rounds)
+    button.fd-library__task[data-fd-library-task][aria-pressed] ×3 + .is-active
   p.fd-library__status [role=status]     (visible 13px dim line)
   .fd-library__body                      + .has-preview (Essentials with a previewed item)
     nav.fd-kit__index                    (aria-label="Essentials sections" | "Catalogue sections")
@@ -633,12 +759,14 @@ the bare `.fd-library`.
       details.fd-kit__group[open] ×N
         summary
           .fd-kit__group-name / .fd-kit__group-count ("· N") / .fd-kit__chevron
+        h3.fd-kit__subhead ×G            (Everything, columns with curriculum `groups` only) "Name" + .fd-kit__subcount (" · n"); plain heading, never disclosure
         .fd-kit__item ×N                 + .is-selected (the previewed row, Essentials)
           button.fd-kit__reading[data-fd-open]      (Essentials)  |  button.fd-collink[data-fd-open]  (Everything)
             .fd-kit__titlerow
               .fd-kit__safety [role=img aria-label="Safety"]   (kit pages and acute-safety tools)
               .fd-kit__title (serif 19)                        |  .fd-collink__label (Inter 600 16)
               .fd-chip.is-tool ("tool" | "reference")          (tools only)
+              .fd-chip.is-card ("card") | .fd-chip.is-module ("module")   (Everything only; pg_ / exp_ readings; a guide carries none)
               governanceBadge(item.governance)                 (full badge, verbatim, when pending)
             .fd-kit__summary             (reading summary verbatim; tool hint verbatim, summary fallback; Everything: hint only)
             .fd-kit__meta                ("Reading|Tool|Reference · N min · Safety kit · Week N · Case week N")
@@ -692,18 +820,26 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 
 | Class | Notes |
 |---|---|
+| `.fd-library__titlebar` / `.fd-library__continuity` | The Library heading and “On this device” shortcut share one flex row. The shortcut has a 44px minimum target and scrolls/focuses the continuation heading below the catalogue. It adds no block before the first reading. |
+| `.fd-library__pin` | A separate 44px Pin/Unpin control in canonical tool rows; pressed state uses teal wash. It never replaces the direct title opener, Details, or desktop Preview. |
+| `.fd-continuity` / `.fd-continuity__title` / `.fd-continuity__intro` | A hairline-separated device continuation area after the complete Library grid in both views. The named heading uses 600-weight Source Serif 4 with Georgia fallback, accepts programmatic focus, and has a top scroll margin. The copy distinguishes saved places and pins from the active filters. |
+| `.fd-continuity__columns` / `.fd-continuity__group` | Two responsive groups: up to three unfinished saved readings and up to five pinned tools. Columns collapse to one on phones; the existing catalogue counts and selected preview exclude this separate area. |
+| `.fd-continuity__row` / `.fd-continuity__open` / `.fd-continuity__remove` / `.fd-continuity__clear` | Flex rows with wrapping title openers and 44px Remove/Unpin/Clear controls. Governance badges stay verbatim and wrap within the open button. Forgetting saved places preserves completion. |
+| `.fd-continuity__notice` | Polite live status for successful changes, a full pin list, or unavailable storage. A failed mutation never claims a saved change. |
 | `.fd-library__views` | Re-valued (was a row of ghost buttons): `inline-grid 2 cols; padding:3px; radius 10` on `--fd-chip`; the active option lifts onto `--fd-surface` with a 1px/3px shadow, teal-deep 700. |
 | `.fd-library__filter` | The bordered box is the control (`flex:1 1 320px; min-height:44px; 1.5px --fd-line-strong; radius 10`); the input inside is borderless and `:focus-within` paints the ring on the box. |
-| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 8px bottom margins, and `.fd-library__body` uses an 8px row gap; text sizes and 44px controls remain unchanged so pending notices and wrapped resident titles fit above the dock. |
+| `.fd-library__tasks` / `.fd-library__task` | Wrapping task buttons with 44px touch targets. All preserves the full view; Interview and Rounds intersect the selected section and title filter. Task results use curated order, with Suicide Risk & Safety first in Interview; Rounds selects the audience’s formulation guide. Counts and the desktop preview follow the final visible results. Task state is visit-only and rides the Library history entry for Open/Back; reload resets it. |
+| `.fd-library__status` | Replaces the visually-hidden status paragraph: visible 13px `--fd-text-dim`, still `role="status" aria-live="polite"`. At ≤640px, it and `.fd-library__head` use 4px bottom margins. Controls use a 4px row gap and bottom margin; tasks use 4px gaps/margin and 4px inline button padding to fit wider system fonts at 320px, retaining minimum 44×44px targets and wrapping at enlarged text sizes. The body uses an 8px row gap. Text and review notices remain intact so the first reading fits above the dock. |
 | `.fd-kit__index-item` | One markup, two shapes: pill chip (phone) or sidebar row (desktop). `.is-active` is teal-wash + teal-deep 700 in both. Counts show matches while a query is live. |
 | `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
 | `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
 | `.fd-kit__item` | Row wrapper: `grid minmax(0,1fr) auto; border-bottom:1px solid --fd-line`. `.is-selected` (desktop Essentials): `--fd-selected` background, `inset 3px 0 0 --fd-teal`, bleeds 16px into the gutters. |
-| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px); both use 8px vertical padding at ≤640px and 4px at ≤430px, name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
+| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px); both use 8px vertical padding at ≤640px and 4px at ≤430px, retaining their 44px minimum height and all text, name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
 | `.fd-kit__safety` | The 8px `--fd-danger` dot — the only red in the list. |
 | `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
 | `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and tool hints in both views; reading summaries stay verbatim. |
 | `.fd-kit__peek` | Desktop Essentials only (`display:none` otherwise): 44px pill, `aria-pressed` on the previewed row. |
+| `.fd-library__details` | Four-resource pilot: separate 44px Details button with `data-fd-library-details` and `aria-haspopup="dialog"`. Shown in compact Essentials and at every width in Everything; hidden inside desktop `.has-preview`, where the existing Preview control remains. Title taps still open directly. If dismissal follows a resize that hides Details, focus returns to the same row's visible title. |
 | `.fd-kit__tool-preview` | Re-valued as the one card on the screen: padding 20, radius 12, `border-top:3px solid --fd-teal`, `--fd-shadow-card`. Shown only inside `.has-preview` at ≥1000px. |
 | `.fd-library__empty` | Max-width 560, `border-top:1px solid --fd-line-strong`; "Search the library" is the screen's one filled teal button in this state (the preview pane is withheld). |
 | `.fd-kit__teaching` | Keeps the Family Therapy Seminar Companion with teaching tools rather than patient-facing care links. Its fixed external link opens in a new tab, names that behavior with `.fd-visually-hidden` text, and preserves its local-browser/no-identifiers boundary in the note. |
@@ -984,6 +1120,9 @@ patient information, or an attestation, and it never turns a website action into
     .fd-searchpanel__browse
       .fd-btn[data-fd-tab="library"] <button>Browse the Library</button> (standard mode only)
     .fd-searchpanel__body
+      .fd-searchpanel__summary       (typed queries: visible match count)
+        p                           ("Showing the top 8 of N matches" / "Showing all N matches")
+        .fd-btn[data-fd-search-expand] (only >8 matches: "Show all matches" / "Show top 8")
       .fd-searchpanel__group ×N       + .is-safety | .is-care   ("Safety protocols" / "Pages" / "Tools" / "Patient care resources")
         .fd-result <button|a> ×N      + .is-first (a leading protocol, on --fd-danger-wash) | .is-care
           .fd-result__dot         + .is-tool | .is-safety | .is-care   (default: outlined = a page)
@@ -991,11 +1130,14 @@ patient information, or an attestation, and it never turns a website action into
           governanceBadge
           .fd-result__meta
       .fd-searchpanel__empty          (no-results state, replaces the results)
-    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, and related terms. Not here? ＋ Ask a question saves it for supervision.")
+      .fd-searchpanel__related        (up to three curated equivalent-query buttons after results)
+      .fd-searchpanel__recovery       (zero matches: Edit search / Browse Library / blank Capture)
+    .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
 Groups (one-thread redesign, Phase 2, spec section 6) appear in the order their best-ranked member
-holds in `fdSearchResults`, so the first rendered row is always `results[0]` — the row Enter opens. A
+holds in `fdSearchResults`, so the first rendered row is always `results[0]`. Enter in the field
+focuses that row; a second Enter opens it. A
 crisis query leads with its trigger protocol by contract, so Safety protocols lead exactly as the
 concept draws; an alias query (#429, "patient refuses medication") keeps its tool ahead of a protocol
 that merely shares a word. Meta lines: protocols carry the kit's own cue line (`safetyKit[].sub`);
@@ -1006,8 +1148,11 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 |---|---|
 | `.fd-search` | Carries the scrim **and** the centring — it is not a separate backdrop element (unlike the sheet). Phone: `padding:12px 10px 20px`. |
 | `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
-| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above results. APP already has The Essentials in dock slot 2, so this row is absent. |
+| `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above suggestions/matches. At zero matches the route moves into the recovery group. APP already has The Essentials in dock slot 2, so this row is absent. |
+| `.fd-searchpanel__related` | Up to three alternatives from the same curated synonym groups used for matching; no suggestions for unknown terms. Appears after results, preserving safety priority. Buttons wrap at phone widths with 44px targets, update the transient query, reset expansion and focus the input; nothing is saved. |
+| `.fd-searchpanel__recovery` | Zero-match actions stack with at least 44px targets. Edit search focuses the existing query. Browse opens the current audience's Library. Capture closes Search and opens a blank editor; Cancel/Escape restores the transient query and input focus. Only explicit Save stores the learner's question. Faculty preview omits Capture; APP omits the Library route. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
+| `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
 | `.fd-result` | A `8px | 1fr` grid at every width (title, badge and meta stack in column 2). `.is-first`: `--fd-danger-wash` background, 700 title. |
 | `.fd-result__dot` | Default: outlined 1.5px `--fd-text-dim` ring (a page); `.is-tool` teal fill; `.is-safety` danger fill; `.is-care` olive-deep fill. |
@@ -1087,6 +1232,28 @@ reference its existing "reference · not reproduced" line. On phones the panel s
   .fd-nudge__dismiss  <button>
 ```
 
+### Library resource Details pilot
+
+The four pilot refs are `pg_interview.md`, `case_formulation.md`, `collateral_workflow.md`, and
+`mse.html`. Only Library Details (`sheet: item:<ref>`, `sheetFrom: library`) takes this treatment;
+generic item previews and safety sheets retain their existing bodies and actions. The shared
+sheet controller owns modal focus, Escape, backdrop dismissal and nested Search. No new storage
+or route state is introduced. The new “Useful when…” lines are navigation copy in
+`fdResourcePreviewCopy`; purpose, title, time, placement and review status remain projected data.
+
+| Class | Contract |
+|---|---|
+| `.fd-sheet--resource` | Right sheet on wider screens; bottom sheet at ≤640px, at most 92dvh (92vh fallback), with a teal top rule and rounded top corners. The title wraps, the close target is 44px, and the body has `min-height:0` so it can scroll without pushing Open off-screen. |
+| `.fd-resource__kind` | Reading, Tool or Reference label from the existing item kind/rights flag. |
+| `.fd-resource__label` / `.fd-resource__text` | Purpose, Estimated time and Useful when heading/value pairs. Purpose is escaped source summary or authored tool hint. A positive finite estimate is labelled “N min read” for readings; missing time stays “Not estimated” or “Self-paced,” never inferred from a title. |
+| `.fd-resource__when` | Quiet teal wash and left rule for the short curated use-case line. No clinical advice or new review claim. |
+| `.fd-resource__placement` | The resource's first assigned week on the current audience's path, omitted when absent. |
+| `.fd-resource__footer` | A flex-shrink-free sibling after the scroll body, with safe-area bottom padding and a full-width Open button at least 48px tall. Opens the same existing resource route. |
+
+Projected pending/high-risk badges take priority over any legacy `attested` flag. Reviewed
+appearance is shown only when the projected governance state is reviewed, or when there is no
+projection and the existing attested flag is true. The preview itself adds no attestation.
+
 | Class | Notes |
 |---|---|
 | `.fd-sheetbackdrop` | Separate sibling element, before `.fd-sheet`. Carries the click-to-close. |
@@ -1096,7 +1263,7 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
 | `.fd-sheet__failure` | Fail-closed alert with an owner-controlled sentence; protocol steps and documentation remain absent. |
 | `.fd-set` | One settings section. Spaced by `.fd-set + .fd-set`, so sections are direct siblings and a new one can be inserted anywhere in the order without a wrapper. |
-| `.fd-seg` | Segmented control. Segments butt together inside one border (`gap:0`); the divider is `.fd-seg__btn + .fd-seg__btn`'s `border-left`. The settings panel renders **two** of them and the counts differ: Appearance has three segments, Usage two. Usage is also the only section of the panel that is usually absent — it renders only where the usage emitter shipped, and under a browser DNT/GPC signal it renders an explanatory note and no segments at all, because a control the panel could not honour would misrepresent who is deciding. |
+| `.fd-seg` | Labelled button group with adjacent segments. Appearance has three choices; Reading comfort has text size (Standard/Larger/Largest) and spacing (Standard/Spacious). Usage adds On/Off only where enabled and allowed by device privacy signals. |
 | `.fd-seg__btn` | An ordinary toggle button, never `role="radio"` — that role promises roving tabindex and arrow-key selection, which this control does not implement. `.is-active` (what the CSS fills) and `aria-pressed` (what assistive tech reads) are set together and must stay on the same button. |
 | `.fd-choices` | Wrapping chip set for a single choice from a variable-length list (today: role). Chips size to their text and wrap, because the labels are per-site prose — equal segments strand them over three lines at phone width. |
 | `.fd-set__label` | Visible label for a settings field, bound by `for`. The panel's other sections are button groups named by `aria-label`; this is the one control that needs a real `<label>`. |
@@ -1129,7 +1296,7 @@ differ. `.fd-sheet__back` is rendered only for a protocol reached from the kit.
 
 | State | Applied to | Meaning |
 |---|---|---|
-| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
+| `.is-active` | `.fd-tab`, `.fd-seg__btn`, `.fd-choices__btn`, `.fd-app__bridge-choice`, `.fd-app__task`, `.fd-app__reflection-choice`, `.fd-library__view`, `.fd-library__task`, `.fd-kit__index-item` | current tab / chosen segment / chosen chip / APP route, task, or private reflection / selected Library view / selected Library section |
 | `.is-sel` | `.fd-weektile`, `.fd-timeline__row` | chosen / viewed |
 | `.is-current` | `.fd-dot`, `.fd-railnav__row` | "you are here" |
 | `.is-done` | `.fd-check`, `.fd-dot`, `.fd-row__title`, `.fd-railnav__dot`, `.fd-railnav__title` | completed |
@@ -1229,3 +1396,30 @@ close it. Escape closes the disclosure and returns focus to its summary.
 uses the scoped button rule. Controls have 44px minimum targets and visible
 focus; filters and header reflow at 640px. Results alone update during typing.
 The persistent `#careDirectoryStatus.vh-live` announces result counts politely.
+
+## G-B owner-approved controls (2026-10-13)
+
+- `.fd-care-search__capacity` spans the bulk bar; each button has its own remaining-capacity description.
+- `.fd-care-packet__outcome` retains the last bulk result and an expandable omission list, outside patient output and storage.
+- `dialog.fd-care-packet__confirm` is a body-level native modal with counted heading, Keep packet first, Clear packet second; Escape/backdrop preserve state. It uses the shared theme and focus tokens.
+- Category order is fixed; moves operate within a category and clear review confirmations.
+
+
+### Reading comfort (original learner UX idea 6)
+
+Settings adds a Reading comfort section before Your data, using existing `.fd-set`, `.fd-seg`, `.fd-seg__btn`, `.fd-set__note` and `.fd-btn--ghost` classes. Each choice is a normal `aria-pressed` button; Reset reading comfort restores both Standard choices. A status note reports save success or failure; failure retains the prior choice.
+
+Reading roots carry non-action `data-fd-reader-size` / `data-fd-reader-spacing` markers. Larger/Largest set `--fd-reading-scale` to 1.15/1.3; Spacious sets `--fd-reading-leading` to 2. Standard keeps the existing typography, including the guide's existing scale and leading. Rules affect reading bodies, guide leads, section headings, examples, references, crisis blocks and both table views; tool roots carry no markers. No new class selectors or motion. The mounted reading stays intact, and the reading-place session preserves its heading and offset through reflow, including a transient signed gap above the first heading. Selecting an already painted choice never takes scroll ownership.
+
+## Usage notice footer (L8 D3, 2026-10-27)
+
+Rendered by `fdUsageNotice` (fd_shell.js) into `<footer id="fdUsageMount">`, a sibling after
+`.fd-main` inside `.fd-shell`, **only on builds that ship the usage emitter** — empty, and therefore
+hidden, everywhere else.
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-usage-foot` | `<footer id="fdUsageMount">` | `:empty` → `display:none`, so off builds keep their exact layout. Same max width as `.fd-main`; at ≤ 640px its bottom padding clears the fixed dock. Inerted by the safety pause. |
+| `.fd-usage-notice` | `<p>` | One muted line (`--fd-font-xs`, `--fd-text-mid`). |
+| `.fd-usage-notice__btn` | `<button data-fd-settings>` | Text-style link that opens Settings › Usage — the only opt-out writer stays the emitter. |
+

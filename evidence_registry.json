@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-11",
+  "updated": "2026-10-12",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -11205,6 +11205,610 @@
             "date": "2026-10-11",
             "note": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 39356516, DOI 10.1001/jama.2024.11331: author middle initial corrected; treatment findings unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC11447627/.",
             "reason": "Approved psychopharmacology primer expansion; bibliographic/source verification, not faculty attestation."
+          }
+        ]
+      }
+    },
+    {
+      "id": "posner-2011-cssrs",
+      "type": "primary-study",
+      "citation": {
+        "title": "The Columbia-Suicide Severity Rating Scale: initial validity and internal consistency findings from three multisite studies with adolescents and adults",
+        "authors": [
+          {
+            "family": "Posner",
+            "given": "Kelly"
+          },
+          {
+            "family": "Brown",
+            "given": "Gregory K"
+          },
+          {
+            "family": "Stanley",
+            "given": "Barbara"
+          },
+          {
+            "family": "Brent",
+            "given": "David A"
+          },
+          {
+            "family": "Yershova",
+            "given": "Kseniya V"
+          },
+          {
+            "family": "Oquendo",
+            "given": "Maria A"
+          },
+          {
+            "family": "Currier",
+            "given": "Glenn W"
+          },
+          {
+            "family": "Melvin",
+            "given": "Glenn A"
+          },
+          {
+            "family": "Greenhill",
+            "given": "Laurence"
+          },
+          {
+            "family": "Shen",
+            "given": "Sa"
+          },
+          {
+            "family": "Mann",
+            "given": "J John"
+          }
+        ],
+        "organization": "",
+        "year": 2011,
+        "journal": "The American journal of psychiatry",
+        "volume": "168",
+        "pages": "1266-1277",
+        "doi": "10.1176/appi.ajp.2011.10111704",
+        "pmid": "22193671",
+        "url": "https://doi.org/10.1176/appi.ajp.2011.10111704"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:22193671%20AND%20SRC:MED&resultType=core&format=json",
+        "verifiedAt": "2026-10-12",
+        "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Psychometric validation across three studies",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-means"
+        ],
+        "clerkshipRelevance": "Posner et al. found C-SSRS ideation and behavior subscales sensitive to change over time.",
+        "noteHistory": [
+          {
+            "date": "2026-10-12",
+            "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review.",
+            "reason": "2026-10-12 suicide-risk case source verification; not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "powsner-2023-emergency-suicide-assessment",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Suicide Risk Assessment, Management, and Mitigation in the Emergency Setting",
+        "authors": [
+          {
+            "family": "Powsner",
+            "given": "Seth"
+          },
+          {
+            "family": "Goebert",
+            "given": "Deborah"
+          },
+          {
+            "family": "Richmond",
+            "given": "Janet S"
+          },
+          {
+            "family": "Takeshita",
+            "given": "Junji"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "Focus (American Psychiatric Publishing)",
+        "volume": "21",
+        "pages": "8-17",
+        "doi": "10.1176/appi.focus.20220072",
+        "pmid": "37205029",
+        "url": "https://doi.org/10.1176/appi.focus.20220072"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:37205029%20AND%20SRC:MED&resultType=core&format=json",
+        "verifiedAt": "2026-10-12",
+        "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Narrative clinical review; evidence plus experienced recommendations",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-means"
+        ],
+        "clerkshipRelevance": "Powsner et al. distinguish screening, assessment and mitigation and emphasize clinical assessment for complex individual presentations.",
+        "noteHistory": [
+          {
+            "date": "2026-10-12",
+            "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review.",
+            "reason": "2026-10-12 suicide-risk case source verification; not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nuij-2021-safety-planning-meta-analysis",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Safety planning-type interventions for suicide prevention: meta-analysis",
+        "authors": [
+          {
+            "family": "Nuij",
+            "given": "Chani"
+          },
+          {
+            "family": "van Ballegooijen",
+            "given": "Wouter"
+          },
+          {
+            "family": "de Beurs",
+            "given": "Derek"
+          },
+          {
+            "family": "Juniar",
+            "given": "Dilfa"
+          },
+          {
+            "family": "Erlangsen",
+            "given": "Annette"
+          },
+          {
+            "family": "Portzky",
+            "given": "Gwendolyn"
+          },
+          {
+            "family": "O'Connor",
+            "given": "Rory C"
+          },
+          {
+            "family": "Smit",
+            "given": "Johannes H"
+          },
+          {
+            "family": "Kerkhof",
+            "given": "Ad"
+          },
+          {
+            "family": "Riper",
+            "given": "Heleen"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "The British journal of psychiatry : the journal of mental science",
+        "volume": "219",
+        "pages": "419-426",
+        "doi": "10.1192/bjp.2021.50",
+        "pmid": "35048835",
+        "url": "https://doi.org/10.1192/bjp.2021.50"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:35048835%20AND%20SRC:MED&resultType=core&format=json",
+        "verifiedAt": "2026-10-12",
+        "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Meta-analysis of six studies",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-means"
+        ],
+        "clerkshipRelevance": "Nuij et al. pooled six studies and found lower suicidal behavior (RR 0.570), but no significant effect on ideation.",
+        "noteHistory": [
+          {
+            "date": "2026-10-12",
+            "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review.",
+            "reason": "2026-10-12 suicide-risk case source verification; not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ferguson-2021-safety-planning-review",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The Effectiveness of the Safety Planning Intervention for Adults Experiencing Suicide-Related Distress: A Systematic Review",
+        "authors": [
+          {
+            "family": "Ferguson",
+            "given": "Monika"
+          },
+          {
+            "family": "Rhodes",
+            "given": "Kate"
+          },
+          {
+            "family": "Loughhead",
+            "given": "Mark"
+          },
+          {
+            "family": "McIntyre",
+            "given": "Heather"
+          },
+          {
+            "family": "Procter",
+            "given": "Nicholas"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "Archives of suicide research : official journal of the International Academy for Suicide Research",
+        "volume": "26",
+        "pages": "1022-1045",
+        "doi": "10.1080/13811118.2021.1915217",
+        "pmid": "33913799",
+        "url": "https://doi.org/10.1080/13811118.2021.1915217"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:33913799%20AND%20SRC:MED&resultType=core&format=json",
+        "verifiedAt": "2026-10-12",
+        "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Systematic review; heterogeneous interventions and study designs",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-means"
+        ],
+        "clerkshipRelevance": "Ferguson et al. reported feasibility and acceptability findings, while heterogeneous designs and combined interventions limited attribution to SPI alone.",
+        "noteHistory": [
+          {
+            "date": "2026-10-12",
+            "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review.",
+            "reason": "2026-10-12 suicide-risk case source verification; not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "siry-2021-lethal-means-clinician-views",
+      "type": "primary-study",
+      "citation": {
+        "title": "Lethal means counseling for suicide prevention: Views of emergency department clinicians",
+        "authors": [
+          {
+            "family": "Siry",
+            "given": "Bonnie J"
+          },
+          {
+            "family": "Polzer",
+            "given": "Evan"
+          },
+          {
+            "family": "Omeragic",
+            "given": "Faris"
+          },
+          {
+            "family": "Knoepke",
+            "given": "Christopher E"
+          },
+          {
+            "family": "Matlock",
+            "given": "Daniel D"
+          },
+          {
+            "family": "Betz",
+            "given": "Marian E"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "General hospital psychiatry",
+        "volume": "71",
+        "pages": "95-101",
+        "doi": "10.1016/j.genhosppsych.2021.04.011",
+        "pmid": "33971519",
+        "url": "https://doi.org/10.1016/j.genhosppsych.2021.04.011"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:33971519%20AND%20SRC:MED&resultType=core&format=json",
+        "verifiedAt": "2026-10-12",
+        "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Qualitative interviews about a decision aid; not an effectiveness trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-means"
+        ],
+        "clerkshipRelevance": "Siry et al. interviewed clinicians about the Lock to Live decision aid and identified implementation issues involving perceived utility, time constraints and workflow; this qualitative study did not measure a reduction in suicide deaths.",
+        "noteHistory": [
+          {
+            "date": "2026-10-12",
+            "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review.",
+            "reason": "2026-10-12 suicide-risk case source verification; not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "houtsma-2018-firearm-suicide-review",
+      "type": "other-authoritative",
+      "citation": {
+        "title": "Firearm suicide: pathways to risk and methods of prevention",
+        "authors": [
+          {
+            "family": "Houtsma",
+            "given": "Claire"
+          },
+          {
+            "family": "Butterworth",
+            "given": "Sarah E"
+          },
+          {
+            "family": "Anestis",
+            "given": "Michael D"
+          }
+        ],
+        "organization": "",
+        "year": 2018,
+        "journal": "Current opinion in psychology",
+        "volume": "22",
+        "pages": "7-11",
+        "doi": "10.1016/j.copsyc.2017.07.002",
+        "pmid": "30122279",
+        "url": "https://doi.org/10.1016/j.copsyc.2017.07.002"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=EXT_ID:30122279%20AND%20SRC:MED&resultType=core&format=json",
+        "verifiedAt": "2026-10-12",
+        "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Narrative review; not an individual risk prediction study",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-12",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "safety-means"
+        ],
+        "clerkshipRelevance": "Houtsma et al. reviewed firearm access and storage as modifiable contributors to firearm-suicide risk.",
+        "noteHistory": [
+          {
+            "date": "2026-10-12",
+            "note": "Identity and abstract checked against the original PubMed record via Europe PMC. Abstract-level claim verification only; AI-drafted annotation and case recommendations await faculty review.",
+            "reason": "2026-10-12 suicide-risk case source verification; not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bostwick-2016-suicide-attempt-lethality",
+      "type": "primary-study",
+      "citation": {
+        "title": "Suicide Attempt as a Risk Factor for Completed Suicide: Even More Lethal Than We Knew.",
+        "authors": [
+          {
+            "family": "Bostwick",
+            "given": "JM"
+          },
+          {
+            "family": "Pabbati",
+            "given": "C"
+          },
+          {
+            "family": "Geske",
+            "given": "JR"
+          },
+          {
+            "family": "McKean",
+            "given": "AJ"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "Am J Psychiatry",
+        "volume": "173",
+        "pages": "1094-1100",
+        "doi": "10.1176/appi.ajp.2016.15070854",
+        "pmid": "27523496",
+        "url": "https://doi.org/10.1176/appi.ajp.2016.15070854"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 27523496): title, authors, journal, volume, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-10-21",
+        "note": "PMID 27523496 resolved via NCBI efetch on 2026-10-21: title, all four authors (Bostwick JM, Pabbati C, Geske JR, McKean AJ), Am J Psychiatry 2016;173(11):1094-1100, DOI 10.1176/appi.ajp.2016.15070854 and PMC5510596 match; PubMed lists only CommentIn items (an editorial and a letter/reply), so no erratum or retraction is known. Rochester Epidemiology Project cohort of 1,490 Olmsted County residents with a first lifetime suicide attempt reaching medical attention (1986-2007), followed 3-25 years: 81 (5.4%) died by suicide, 48 of them on the index attempt; of the 33 who survived the index attempt and later died by suicide, 27 (81.8%) did so within a year. Observational, single US county, first attempts only: it licenses 'risk is concentrated in the year after an attempt', which is the window the pg_suicide.md safety tree uses ('a suicide attempt in the past year', approved by Josh 2026-10-22). Of the 48 who died on the index attempt, 72.9% (35/48, full-text Table 1) died by gunshot (OR for death on the index attempt by gunshot vs all other methods 140, 95% CI 60-325); the abstract's 'dead index attempters' means these 48, not all 81 suicides (full text: 'nearly three fourths (72.9%) of those who died on index suicide attempt had shot themselves'; PMC5510596, checked 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "community cohort (retrospective-prospective)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "risk-assessment",
+          "safety"
+        ],
+        "clerkshipRelevance": "Why a recent attempt is an acute, not only a historical, risk factor: in a community cohort of first medically treated attempts, most deaths after surviving the attempt came within a year.",
+        "noteHistory": [
+          {
+            "date": "2026-10-21",
+            "note": "PMID 27523496 resolved via NCBI efetch on 2026-10-21: title, all four authors (Bostwick JM, Pabbati C, Geske JR, McKean AJ), Am J Psychiatry 2016;173(11):1094-1100, DOI 10.1176/appi.ajp.2016.15070854 and PMC5510596 match; PubMed lists only CommentIn items (an editorial and a letter/reply), so no erratum or retraction is known. Rochester Epidemiology Project cohort of 1,490 Olmsted County residents with a first lifetime suicide attempt reaching medical attention (1986-2007), followed 3-25 years: 81 (5.4%) died by suicide, 48 of them on the index attempt; of the 33 who survived the index attempt and later died by suicide, 27 (81.8%) did so within a year. Observational, single US county, first attempts only: it licenses 'risk is concentrated in the year after an attempt', which is the window the pg_suicide.md safety tree uses ('a suicide attempt in the past year', approved by Josh 2026-10-22). Of the 48 who died on the index attempt, 72.9% (35/48, full-text Table 1) died by gunshot (OR for death on the index attempt by gunshot vs all other methods 140, 95% CI 60-325); the abstract's 'dead index attempters' means these 48, not all 81 suicides (full text: 'nearly three fourths (72.9%) of those who died on index suicide attempt had shot themselves'; PMC5510596, checked 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "RESIGN_PACKET_2026-10-21 wording item 1 (pg_suicide.md recent-attempt factor); not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "anglemyer-2014-firearm-access-suicide",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The accessibility of firearms and risk for suicide and homicide victimization among household members: a systematic review and meta-analysis.",
+        "authors": [
+          {
+            "family": "Anglemyer",
+            "given": "A"
+          },
+          {
+            "family": "Horvath",
+            "given": "T"
+          },
+          {
+            "family": "Rutherford",
+            "given": "G"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "Ann Intern Med",
+        "volume": "160",
+        "pages": "101-110",
+        "doi": "10.7326/M13-1301",
+        "pmid": "24592495",
+        "url": "https://doi.org/10.7326/M13-1301"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 24592495): title, authors, journal, volume, issue, pages and DOI all match",
+        "verifiedAt": "2026-10-22",
+        "note": "PMID 24592495 resolved via NCBI efetch on 2026-10-22: title, all three authors (Anglemyer A, Horvath T, Rutherford G), Ann Intern Med 2014;160(2):101-110 and DOI 10.7326/M13-1301 match. PubMed lists an ErratumIn (Ann Intern Med 2014;160(9):658-659) and a CommentIn editorial; the PubMed abstract carries the corrected figures inline ('16 [not 15] observational studies'; homicide OR 2.00 [not 1.94]); the suicide OR 3.24 (95% CI 2.41-4.40) is the corrected value. Observational meta-analysis: firearm access was mostly self-reported in survey interviews and heterogeneous populations were pooled, so it licenses an association with suicide, not the effect of removing access. Added for the 2026-10-12 Case of the Week firearm-access teaching point (re-sign packet 2026-10-21 W5/V3, approved by Josh 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and meta-analysis of observational studies",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "lethal-means",
+          "firearms"
+        ],
+        "clerkshipRelevance": "Why firearm access belongs in every suicide assessment: across 16 observational studies, access to a firearm was associated with roughly three times the odds of suicide.",
+        "noteHistory": [
+          {
+            "date": "2026-10-22",
+            "note": "PMID 24592495 resolved via NCBI efetch on 2026-10-22: title, all three authors (Anglemyer A, Horvath T, Rutherford G), Ann Intern Med 2014;160(2):101-110 and DOI 10.7326/M13-1301 match. PubMed lists an ErratumIn (Ann Intern Med 2014;160(9):658-659) and a CommentIn editorial; the PubMed abstract carries the corrected figures inline ('16 [not 15] observational studies'; homicide OR 2.00 [not 1.94]); the suicide OR 3.24 (95% CI 2.41-4.40) is the corrected value. Observational meta-analysis: firearm access was mostly self-reported in survey interviews and heterogeneous populations were pooled, so it licenses an association with suicide, not the effect of removing access. Added for the 2026-10-12 Case of the Week firearm-access teaching point (re-sign packet 2026-10-21 W5/V3, approved by Josh 2026-10-22). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "re-sign packet 2026-10-21 W5/V3 (CoTW firearm-access evidence); not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "liu-2020-passive-suicidal-ideation",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Characterizing the phenomenology of passive suicidal ideation: a systematic review and meta-analysis of its prevalence, psychiatric comorbidity, correlates, and comparisons with active suicidal ideation.",
+        "authors": [
+          {
+            "family": "Liu",
+            "given": "RT"
+          },
+          {
+            "family": "Bettis",
+            "given": "AH"
+          },
+          {
+            "family": "Burke",
+            "given": "TA"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Psychol Med",
+        "volume": "50",
+        "pages": "367-383",
+        "doi": "10.1017/S003329171900391X",
+        "pmid": "31907085",
+        "url": "https://doi.org/10.1017/S003329171900391X"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed efetch (PMID 31907085): title, authors, journal, volume, issue, pages, DOI and PMC id all match",
+        "verifiedAt": "2026-10-26",
+        "note": "PMID 31907085 resolved via NCBI efetch on 2026-10-26: title, all three authors (Liu RT, Bettis AH, Burke TA), Psychol Med 2020;50(3):367-383, DOI 10.1017/S003329171900391X and PMC7024002 match; PubMed lists no erratum, retraction or comment. Systematic review and meta-analysis of 86 studies through 9 September 2019. Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths, and correlates of passive and active ideation were largely equivalent in head-to-head comparisons. It licenses 'passive ideation is clinically significant and needs full assessment', not 'passive ideation is low risk'. Added for the pg_suicide.md passive-versus-active routing (decision X6, Josh 2026-10-26). Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "suicide",
+          "risk-assessment",
+          "passive-ideation"
+        ],
+        "clerkshipRelevance": "Why a passive wish to be dead is still reported and fully assessed: across 86 studies it tracked psychiatric comorbidity and suicide attempts, and its correlates largely matched those of active ideation.",
+        "noteHistory": [
+          {
+            "date": "2026-10-26",
+            "note": "PMID 31907085 resolved via NCBI efetch on 2026-10-26: title, all three authors (Liu RT, Bettis AH, Burke TA), Psychol Med 2020;50(3):367-383, DOI 10.1017/S003329171900391X and PMC7024002 match; PubMed lists no erratum, retraction or comment. Systematic review and meta-analysis of 86 studies through 9 September 2019. Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths, and correlates of passive and active ideation were largely equivalent in head-to-head comparisons. It licenses 'passive ideation is clinically significant and needs full assessment', not 'passive ideation is low risk'. Added for the pg_suicide.md passive-versus-active routing (decision X6, Josh 2026-10-26). Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "decision X6 (pg_suicide passive vs active routing); not faculty attestation"
           }
         ]
       }

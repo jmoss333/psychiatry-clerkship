@@ -32,12 +32,10 @@ THE RULE:
                13_Faculty_Resources/_automation/surface_governance.py,
                13_Faculty_Resources/_automation/validate_attestation_consistency.py,
                13_Faculty_Resources/_automation/validate_curriculum.py,
-               13_Faculty_Resources/_automation/validate_topic_meta.py,
-               13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs}
+               13_Faculty_Resources/_automation/validate_topic_meta.py}
                PLUS any path ending .schema.json
     G_DIRS  = {.claude/, .github/, bin/, faculty-console/,
-               13_Faculty_Resources/_automation/maintenance/, tests/maintenance/,
-               13_Faculty_Resources/ledger/}
+               13_Faculty_Resources/_automation/maintenance/, tests/maintenance/}
     CONTENT(path) = a `source`/`extraSources` entry of shipped_pages.json at BASE or at HEAD
                     OR (matches ^(0\\d|1[0-4]|99)_[^/]+/ AND not under 13_Faculty_Resources/)
                     EXCEPT question_bank.json when nothing but its items' `status` changed:
@@ -185,10 +183,6 @@ G_FILES = frozenset({
     "13_Faculty_Resources/_automation/validate_attestation_consistency.py",
     "13_Faculty_Resources/_automation/validate_curriculum.py",
     "13_Faculty_Resources/_automation/validate_topic_meta.py",
-    # The attestation ledger's build-side reader (ADR-003). It lives under site_build/ with the
-    # registration data, but it decides which signed sign-offs a build honours, so it is the
-    # machinery of attestation, not data that rides with a page.
-    "13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs",
 })
 # Everything under these is governance. `.github/` in FULL, not only `workflows/`: a composite
 # action, an issue template or CODEOWNERS decides how the work is reviewed just as a workflow
@@ -205,9 +199,9 @@ G_DIRS = (
     "faculty-console/",
     "13_Faculty_Resources/_automation/maintenance/",
     "tests/maintenance/",
-    # The ledger's public keys (ADR-003): whoever can change keys.json can mint sign-offs the
-    # builds will accept, so it can never ride in a content PR.
-    "13_Faculty_Resources/ledger/",
+    # The agent rulebook's topic pages: CLAUDE.md is their index since 2026-10-16, and a
+    # content PR must not be able to rewrite the rules it is judged by any more than CLAUDE.md.
+    "docs/agent-guide/",
 )
 # A schema is the shape a registry must hold; loosening one is a governance act wherever the
 # file lives — including under site_build/, whose DATA rides with a page but whose CONTRACTS
@@ -1869,10 +1863,6 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
                             "shipped_pages.schema.json"), True)
         check("is_governance covers the attestation machinery's own modules",
               is_governance("13_Faculty_Resources/_automation/attestation_hash.py"), True)
-        check("is_governance covers the ledger's public keys (ADR-003)",
-              is_governance("13_Faculty_Resources/ledger/keys.json"), True)
-        check("is_governance covers the ledger's build-side reader, despite site_build/",
-              is_governance("13_Faculty_Resources/_automation/site_build/ledger_overlay.mjs"), True)
         check("is_governance excludes site_build registration DATA", is_governance(SHIPPED_REL),
               False)
         check("is_governance excludes the build's own nav wiring",

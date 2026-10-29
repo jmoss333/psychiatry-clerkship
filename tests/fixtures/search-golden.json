@@ -1,0 +1,38 @@
+{
+  "description": "Golden learner queries (C2, 2026-10-17). Each row: on each site, one of `acceptable` must rank within the top `maxRank` of the real search (titles, summaries, aliases, the synonym list and page text together); `before` pages must not outrank it; `minTotal` guards recall. `{site}` in a ref is the site's own case twin (ms3 or res). `track` lists pages a site's search must never return for the listed queries. Run against the BUILT sites by frontdoor-search-gate.mjs (check-static-site.mjs, every build) and against the source projection by tests/search-golden.test.mjs. Before/after numbers for this list are in the C2 PR body. Change a row only with the reason in the same diff.",
+  "queries": [
+    { "query": "agitation", "sites": { "both": { "acceptable": ["agitation.md"], "maxRank": 1 } } },
+    { "query": "lithium level", "sites": { "both": { "acceptable": ["med_monitoring.md"], "maxRank": 1 } } },
+    { "query": "catatonia", "sites": { "both": { "acceptable": ["catatonia.md"], "maxRank": 1, "before": ["exp_consult.md"] } } },
+    { "query": "catatonia", "sites": { "both": { "acceptable": ["cotw_20260831_catatonia_{site}.md", "bfcrs.html"], "maxRank": 4 } } },
+    { "query": "QTc", "sites": { "both": { "acceptable": ["med_monitoring.md", "psychopharm_primer.md", "cl_reference.md"], "maxRank": 2, "minTotal": 6 } } },
+    { "query": "QTc", "sites": { "both": { "acceptable": ["med_monitoring.md"], "maxRank": 6 } } },
+    { "query": "QT prolongation", "sites": { "both": { "acceptable": ["med_monitoring.md", "psychopharm_primer.md", "cl_reference.md"], "maxRank": 2, "minTotal": 6 } } },
+    { "query": "capacity", "sites": { "both": { "acceptable": ["capacity.html"], "maxRank": 1 } } },
+    { "query": "NMS", "sites": { "both": { "acceptable": ["toxidromes.md"], "maxRank": 1 } } },
+    { "query": "NMS", "sites": { "both": { "acceptable": ["cotw_20260914_ssnms_{site}.md"], "maxRank": 3 } } },
+    { "query": "neuroleptic malignant", "sites": { "both": { "acceptable": ["toxidromes.md"], "maxRank": 1, "minTotal": 4 } } },
+    { "query": "alcohol withdrawal", "sites": { "both": { "acceptable": ["t_sud.md"], "maxRank": 1 } } },
+    { "query": "alcohol withdrawal", "sites": { "both": { "acceptable": ["withdrawal.html"], "maxRank": 3 } } },
+    { "query": "first-episode psychosis", "sites": { "both": { "acceptable": ["t_psychosis.md"], "maxRank": 1 } } },
+    { "query": "first-episode psychosis", "sites": { "both": { "acceptable": ["cotw_20260907_fep_{site}.md"], "maxRank": 3 } } },
+    { "query": "FEP", "sites": { "both": { "acceptable": ["t_psychosis.md", "cotw_20260907_fep_{site}.md"], "maxRank": 2 } } },
+    { "query": "decision-making capacity", "sites": { "both": { "acceptable": ["capacity.html"], "maxRank": 1 } } },
+    { "query": "CIWA", "sites": { "both": { "acceptable": ["withdrawal.html"], "maxRank": 3 } } },
+    { "query": "EPS", "sites": { "both": { "acceptable": ["med_monitoring.md"], "maxRank": 1 } } }
+  ],
+  "track": {
+    "res": {
+      "why": "MS3-track pages: the six-week path's week pages (the MS3 learningPaths landingRef) and curriculum.siteLibrary.resident.exclusions. They still open from links on the resident site.",
+      "neverReturn": ["orientation.md", "osce.md", "shelf.md", "reading_map.md"],
+      "neverReturnPattern": "^week[1-6]\\.md$|_ms3\\.md$",
+      "queries": ["week 6", "week 1", "osce", "orientation", "shelf", "comat", "reading map", "capacity", "catatonia", "agitation", "alcohol withdrawal", "first-episode psychosis"]
+    },
+    "ms3": {
+      "why": "Resident-only pages ship to the resident site alone; MS3 search must never surface one.",
+      "neverReturn": ["adv_psychopharm.md", "canon_200.md", "cl_reference.md", "rotation.md", "supervision_teaching.md", "systems_medlegal.md", "rp-agitation.html", "rp-brief-psych.html", "rp-canon-quiz.html", "rp-post-event-huddle.html"],
+      "neverReturnPattern": "_res\\.md$",
+      "queries": ["capacity", "QTc", "lithium level", "agitation", "catatonia", "NMS", "canon", "supervision"]
+    }
+  }
+}
