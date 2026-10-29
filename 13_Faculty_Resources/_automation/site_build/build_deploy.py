@@ -8,6 +8,7 @@ from pathlib import Path
 import common
 import concept_cards
 import review_companions
+import qbank_public
 import hashlib
 import frontdoor_catalog
 import shipped_pages
@@ -236,37 +237,29 @@ with open(os.path.join(OUT,"pharmacy_public.json"),"wb") as _fh:
 _pp_problems=_pp.verify(json.load(open(os.path.join(OUT,"pharmacy_public.json"),encoding="utf-8")),_pharmacy_src)
 if _pp_problems:
     raise SystemExit("pharmacy_public.json failed verification: "+"; ".join(_pp_problems))
-# question_bank.json: served at site root so both qbank-attest.html and question-bank-practice.html can fetch ../question_bank.json
-_missing_req=[]
-_copy_required(LIB+"/question_bank.json", OUT+"/question_bank.json", _missing_req)
-_abort_missing(_missing_req)
-
-# ---- diagnostic pretest pool (adaptive engine v2): 1 attested, scoreable item per
-# blueprint category. Slim pool so the SPA home never loads the full bank. Selection:
-# prefer difficulty-2, then high-yield, then lowest id (deterministic). ----
-_PRETEST_CATS=["mood","psychosis","anxiety","substance","neurocog","pharm",
-               "safety","personality","childdev","otherdx","ethics","relational"]
-try:
-    _qb=json.load(open(LIB+"/question_bank.json",encoding="utf-8"))
-    def _one_correct(it): return sum(1 for o in it.get("options",[]) if o.get("c") is True)==1
-    _pool=[]
-    for _cat in _PRETEST_CATS:
-        _cand=[i for i in _qb.get("items",[]) if i.get("category")==_cat
-               and i.get("status")=="attested" and _one_correct(i)]
-        if not _cand: continue
-        _cand.sort(key=lambda i:(abs((i.get("difficulty") or 2)-2), 0 if i.get("hy") else 1, i.get("id","")))
-        _it=_cand[0]
-        _pool.append({"id":_it["id"],"cat":_cat,"pages":_it.get("pages",[]),
-            "stem":_it.get("stem",""),
-            "options":[{"key":o.get("key"),"t":o.get("t",""),"c":bool(o.get("c"))}
-                       for o in _it.get("options",[])],
-            "why":_it.get("why",""),"pearl":_it.get("pearl","")})
-    json.dump({"v":1,"generated":"build","items":_pool},
-              open(OUT+"/pretest_pool.json","w",encoding="utf-8"))
-    print("pretest pool:",len(_pool),"of",len(_PRETEST_CATS),"categories")
-except Exception as _e:
-    open(OUT+"/pretest_pool.json","w",encoding="utf-8").write('{"v":1,"items":[]}')
-    print("pretest pool: WARN could not build (%s)" % _e)
+# Publish only the explicit faculty-attested, active projection. Canonical drafts
+# stay in the repository and faculty console, never in a learner download.
+_qb_public=qbank_public.project_question_bank(
+    json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
+with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
+    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    _fh.write("\n")
+# Placement is another publication of question text, so it takes the same released
+# bytes as practice and Anki. Missing categories are reported by static QA.
+_pretest=qbank_public.pretest_pool(_qb_public)
+with open(OUT+"/pretest_pool.json","w",encoding="utf-8") as _fh:
+    json.dump(_pretest,_fh,ensure_ascii=False)
+print("pretest pool:",len(_pretest["items"]),"of",len(qbank_public.PRETEST_CATEGORIES),"categories")
+# Pre/post knowledge check (DRAFT, L8 outcomes design) -- CLERKSHIP_PREPOST, default off.
+# Off: no forms file and the shell marker expands to nothing (see the needle block below).
+_PREPOST=common.prepost_enabled()
+if _PREPOST:
+    _prepost=qbank_public.prepost_forms(_qb_public)
+    with open(OUT+"/prepost_forms.json","w",encoding="utf-8") as _fh:
+        json.dump(_prepost,_fh,ensure_ascii=False)
+    print("pre/post forms: shipped, %d + %d items"%(len(_prepost["forms"]["A"]),len(_prepost["forms"]["B"])))
+else:
+    print("pre/post forms: off (CLERKSHIP_PREPOST=%s)"%common.prepost_mode())
 
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
@@ -311,6 +304,27 @@ _crisis_data=_crisis.load(LIB)
 # block, so resident_section.py's second pass is a no-op on pages injected here.
 import pairings_block as _pairings
 _pair_data=_pairings.resolve(_pairings.load(LIB), LIB)
+
+# ---- TOPIC HUB BLOCK ---------------------------------------------------------------
+# "Everything on this topic": one collapsed block per hub page naming every other surface
+# the library has on that problem (pocket card, module, official-form reference, Case of
+# the Week editions, reasoning/family/drill cases, question-bank count) -- generated from
+# the registries, so a new case shows up the week it ships. Injected into the BUILT copy
+# only: the source file is untouched and attestation hashes do not move. No marker: the
+# renderer places the block before the page's "**Pair with**" paragraph (or at the end),
+# and resident_section.py's sweep REPLACES it with the resident rendering (COTW twins and
+# resident-only siblings differ per site). Registry: site_build/topic_hubs.json.
+import topic_hub_block as _hub
+_hub_data=_hub.resolve(_hub.load(LIB))
+
+# ---- CASE-OF-THE-WEEK ARCHIVE on the index page ------------------------------------
+# The index (cotw_index.md) is the only Library-placed route to the weekly cases, and its
+# line-up was hand-written -- on 2026-10-17 it listed 12 of 17 shipped editions. The
+# archive is now rendered from the registry at the page's marker: newest case first, every
+# edition grouped under its topic hub. The index source is attested (one slug, two sources);
+# the marker replaced the hand list once, and the registry's own `tldr` lines are the blurbs.
+import cotw_archive_block as _archive
+_archive_data=_archive.load(LIB)
 # Required surfaces = where a learner is plausibly DOING risk work (assessing, rehearsing, or
 # planning disposition around self-harm/violence), not merely reading about it. Reference and
 # reading pages are deliberately excluded so the block stays meaningful rather than wallpaper.
@@ -318,6 +332,9 @@ _pair_data=_pairings.resolve(_pairings.load(LIB), LIB)
 _CRISIS_REQUIRED_TOOLS={
     "cssrs.html","sp-interview.html","communication-practice.html",
     "family-systems.html","one-patient-six-weeks.html",
+    # Family Conversation Simulator: the learner rehearses safety-plan roles and means-safety
+    # counseling with families (discharge and adolescent scenarios) — risk work.
+    "family-meeting-sim.html",
     # PHQ-9 item 9 is itself a suicide-risk screen (the tool escalates on it) — risk work.
     "screeners.html",
     # FRST one-pager: the learner screens imminent-violence warning signs, and its sibling
@@ -392,6 +409,8 @@ missing=[]
 _PAIRINGS_REQUIRED_MD={"week%d.md"%_n for _n in range(1,7)}
 _pair_md_done=set()
 _crisis_md_done=set()
+_hub_md_done=set()
+_archive_md_done=False
 for src,dst,_ in md:
     p=os.path.join(LIB,src)
     if os.path.exists(p):
@@ -399,13 +418,17 @@ for src,dst,_ in md:
         _t=open(p,encoding="utf-8").read()
         _t,_did=_crisis.inject_markdown(_t,_crisis_data)
         _t,_pdid=_pairings.inject_markdown(_t,_pair_data,dst,"ms3")
+        _t,_hdid=_hub.inject_markdown(_t,_hub_data,dst,"ms3")
+        _t,_adid=_archive.inject_markdown(_t,_archive_data,dst,"ms3")
         _compass_did=False
         if dst=="welcome.md":
             _t,_compass_did=welcome_compass.inject_compass(_t,_compass_fragment)
-        if _did or _pdid or _compass_did:
+        if _did or _pdid or _hdid or _adid or _compass_did:
             open(OUT+"/content/"+dst,"w",encoding="utf-8").write(_t)
         if _did: _crisis_md_done.add(dst)
         if _pdid: _pair_md_done.add(dst)
+        if _hdid: _hub_md_done.add(dst)
+        if _adid: _archive.assert_complete(_t,_archive_data,"ms3"); _archive_md_done=True
     else: missing.append(src)
 
 # Fail the build if a required safety surface lost its crisis block (marker deleted, page
@@ -425,6 +448,23 @@ if _pair_gap:
     for _g in _pair_gap: print("   -",_g,"(expected the pairing-block marker in its source)")
     raise SystemExit(1)
 print("pairing block injected:",len(_pair_md_done),"week page(s)")
+
+# Same hard-fail shape again: every hub the registry names for this site must have received
+# its block. A hub page dropped from the manifest, or a rename, would otherwise ship a topic
+# with no hub and nothing to say so.
+_hub_gap=sorted(set(_hub.hubs_for_site(_hub_data,"ms3"))-_hub_md_done)
+if _hub_gap:
+    print("BUILD ABORTED — topic hub block missing from hub page(s):")
+    for _g in _hub_gap: print("   -",_g,"(listed in site_build/topic_hubs.json but not injected)")
+    raise SystemExit(1)
+print("topic hub block injected:",len(_hub_md_done),"hub page(s)")
+
+# The index must carry the archive (marker present and consumed) and the archive must list
+# every shipped edition -- assert_complete above fails the build on a missing case.
+if not _archive_md_done:
+    print("BUILD ABORTED — Case-of-the-Week archive not rendered on cotw_index.md (marker missing from its source?)")
+    raise SystemExit(1)
+print("case-of-the-week archive injected on cotw_index.md")
 
 # ---- QA-gate source map: every source path this build knows about, written NEXT TO the
 # build dir (<OUT>.source-map.json), never inside it — nothing ships. check-static-site.mjs
@@ -462,10 +502,10 @@ nav=[
  {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md")]+_week_items},
  {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
- {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md")]},
+ {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md"),_md("Maine Law & Capacity: Statute Navigator","maine_law.md"),_tool("maine-law-navigator.html","Maine Law Navigator")]},
  {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_tool("interaction-cards.html","Interaction Cards — One Action"),_tool("pharmacy.html","Psychiatric Pharmacy"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
  {"section":"Communicate with Patients","items":[_tool("communication-practice.html","What Do You Say Next?"),_md("Psychotherapies at a Glance","psychotherapy.md"),_md("Motivational Interviewing","motivational_interviewing.md"),_md("Brief Psychotherapy on the Unit","brief_psychotherapy.md"),_md("Therapy on the Unit","therapy_on_the_unit.md"),_tool("reflection.html","Reflection & Identity")]},
- {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
+ {"section":"Work with Family and Systems","items":[_tool("family-systems.html","Family Systems Practice"),_tool("family-meeting-sim.html","Family Conversation Simulator"),_md("I Need Collateral: 10-Minute Workflow","collateral_workflow.md"),_md("Family & Discharge","exp_family.md"),_md("Family Meeting Playbook (90-min)","family_playbook.md"),_md("Family Therapy Modalities","family_modalities.md")]},
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","Case Journeys"),_tool("prepare-for-tomorrow.html","Prepare for tomorrow"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
@@ -547,6 +587,10 @@ for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
+# Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms
+# outcome_tally.js only; it sends nothing unless the emitter above also ships.
+_OUTCOMES = common.outcomes_enabled()
+print("outcome counters:", "armed (CLERKSHIP_OUTCOMES=on)" if _OUTCOMES else "off (CLERKSHIP_OUTCOMES=%s)" % common.outcomes_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -587,18 +631,11 @@ except ValueError as _fd_error:
     raise SystemExit(1)
 print("frontdoor payload:",sum(len(c["refs"]) for c in _fd_payload["curriculum"]["libraryColumns"]),"placed refs (ms3)")
 
-# ---- retired/draft-bank-ids injection (shell servability parity) ----
-# The shell counts due QB# cards and confidently-wrong items straight from cw_srs_v1 /
-# cw_qb_v1; the practice tool filters via activeItems() — retired items always, drafts
-# unless the learner opted in (cw_qb_drafts_v1; WP-37 attested-only default). Inject the
-# CURRENT retired and draft ids so both surfaces count identically. Verified replacement:
-# a missing/duplicated needle means the shell's parity plumbing was edited away — fail the
-# build, don't ship the drift. The resident build inherits this (it rebrands the MS3-built
-# index.html).
-_qb_items=json.load(open(LIB+"/question_bank.json",encoding="utf-8")).get("items",[])
-_retired_ids=sorted(i["id"] for i in _qb_items if i.get("retired"))
-_draft_ids=sorted(i["id"] for i in _qb_items
-                  if not i.get("retired") and i.get("status")!="attested")
+# ---- released-bank-ids injection (shell servability parity) ----
+# An allowlist excludes withdrawn and unknown saved IDs, even if an old browser
+# still has the historical draft opt-in. Derive it from the actual public JSON.
+_qb_items=json.load(open(OUT+"/question_bank.json",encoding="utf-8"))["items"]
+_released_ids=sorted(i["id"] for i in _qb_items)
 # Communication-case titles for the practice panel's spoken drills. The shell used to carry a
 # hand-written id->title map that had already fallen two cases behind communication_cases.json,
 # so three pages rendered an unnamed "What Do You Say Next?" tile beside named ones. Injecting
@@ -609,13 +646,20 @@ _case_titles={c["id"]:c["title"] for c in _cc.get("cases",[]) if c.get("id") and
 _spa_out=OUT+"/index.html"
 _spa_t=open(_spa_out,encoding="utf-8").read()
 for _needle,_ids,_label in ((
-        "var RETIRED_QB_IDS=[];",_retired_ids,"RETIRED_QB_IDS"),(
-        "var DRAFT_QB_IDS=[];",_draft_ids,"DRAFT_QB_IDS"),(
+        "var RELEASED_QB_IDS=[];",_released_ids,"RELEASED_QB_IDS"),(
         "var PRACTICE_CASE_TITLES={};",_case_titles,"PRACTICE_CASE_TITLES")):
     if _spa_t.count(_needle)!=1:
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
         raise SystemExit(1)
     _spa_t=_spa_t.replace(_needle,"var %s=%s;"%(_label,json.dumps(_ids)))
+try:
+    _spa_t=common.apply_prepost_marker(_spa_t,_PREPOST)
+except ValueError as _e:
+    print("BUILD ABORTED — %s"%_e)
+    raise SystemExit(1)
+if not _PREPOST and (common.PREPOST_SIGNATURE in _spa_t or os.path.exists(OUT+"/prepost_forms.json")):
+    print("BUILD ABORTED — CLERKSHIP_PREPOST=off but the pre/post check is present")
+    raise SystemExit(1)
 # The longitudinal case ("One Patient, Six Weeks"), READ-ONLY, for Today's "On the unit this
 # week" (one-thread redesign, Phase 1). Injected rather than fetched so the section exists at
 # first render: a runtime fetch made Today's DOM churn after boot and two loads of the same page
@@ -651,12 +695,57 @@ if _spa_t.count(_pairings_needle)!=1:
     print("BUILD ABORTED — FD_PAIRINGS needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_pairings_needle,"var FD_PAIRINGS=%s;"%frontdoor_catalog._inline_json(_pairings_inline))
+# The aftercare packet's standard inserts plus the crisis contacts they reference (care_inserts_payload.py).
+# Validated here by the validator's own check(); a payload the packet cannot print safely aborts the
+# build, so the last good deploy stays live. Crisis numbers are copied from crisis_resources.json, never
+# typed. The resident build rebrands this index.html, so it inherits the payload and re-asserts the
+# postcondition (resident_section.py).
+import care_inserts_payload
+try:
+    _care_inserts=care_inserts_payload.build_payload()
+    _spa_t=care_inserts_payload.inject(_spa_t,_care_inserts)
+    care_inserts_payload.assert_injected(_spa_t)
+except care_inserts_payload.PayloadError as _care_error:
+    print("BUILD ABORTED — aftercare packet payload: %s"%_care_error)
+    raise SystemExit(1)
+# "Beyond this page" (README_MEDIA.md M1): media_map.json stores keys only; media_index.py
+# resolves them against the two attested library pages and topic_meta.json (never written), fails
+# the build naming any key that does not resolve to a verified entry, and emits NO pages while the
+# map is a draft. Inlined like FD_PAIRINGS so the Reader renders it at first paint, and written
+# beside index.html as media_index.json. The resident build swaps in its own index (an anchor that
+# does not ship there is skipped), matching this exact inlined value.
+import media_index as _media_index
+_media_ms3=_media_index.build_or_abort(LIB,"ms3")
+open(OUT+"/media_index.json","w",encoding="utf-8").write(_media_index.serialize(_media_ms3))
+_media_needle="var FD_MEDIA=null;"
+if _spa_t.count(_media_needle)!=1:
+    print("BUILD ABORTED — FD_MEDIA needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_media_needle,"var FD_MEDIA=%s;"%frontdoor_catalog._inline_json(_media_ms3))
+# The newest Case of the Week for Today's "new this week" row (fd_today.js fdNewCase), from the
+# same archive data that renders the index (cotw_archive_block.newest). Inlined like FD_MEDIA so
+# the row exists at first render; the resident build swaps in its own edition by matching this
+# exact value. Nothing here reads the clock -- the shell decides from the registry date whether
+# the row shows -- so the built page stays byte-stable from one build to the next.
+_cotw_newest_needle="var FD_COTW_NEWEST=null;"
+if _spa_t.count(_cotw_newest_needle)!=1:
+    print("BUILD ABORTED — FD_COTW_NEWEST needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_cotw_newest_needle,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_data,"ms3")))
+# Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
+# copies this index.html, so both sites inherit the same value from the same CONTEXT.
+try:
+    _spa_t=common.apply_draft_trees_flag(_spa_t)
+except ValueError as _draft_err:
+    print("BUILD ABORTED —",_draft_err)
+    raise SystemExit(1)
 open(_spa_out,"w",encoding="utf-8").write(_spa_t)
-print("retired-qb injection:",len(_retired_ids),"id(s)")
-print("draft-qb injection:",len(_draft_ids),"id(s)")
+print("released-qb injection:",len(_released_ids),"id(s)")
 print("practice-case-title injection:",len(_case_titles),"case(s)")
 print("case-arc injection:",len((_case_arc or {}).get("weeks") or []),"week(s)")
 print("pairings injection:",len((_pairings_inline or {}).get("pairings") or []),"pairing(s)")
+print("care-inserts injection:",len(_care_inserts["inserts"]),"insert(s),",len(_care_inserts["contacts"]),"crisis contact(s)")
+print("media index (ms3): status=%s, %d page(s) render"%(_media_ms3["status"],len(_media_ms3["pages"])))
 
 # ---- page->tool link divergence (report only; never fails the build) ----
 # The practice panel reconciles two sources that disagree in OPPOSITE directions:
@@ -694,7 +783,8 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3,
+                            inject_outcomes=_OUTCOMES)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -706,11 +796,18 @@ for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.h
 _crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
 print("crisis block injected: shell index")
 
+# Icon sprite (C1, icons & wayfinding): the vendored Lucide subset as one hidden <symbol> sprite,
+# so fdIcon()'s <use href="#ic-NAME"> resolves. Verified replacement of the one marker comment;
+# hidden, 0x0, aria-hidden, and referenced by nothing yet, so it changes no rendered pixel. The
+# resident build inherits it with this index; common.assert_page_contract requires exactly one.
+import icon_sprite as _icon_sprite
+print("icon sprite injected: shell index, %d glyph(s)"%_icon_sprite.inject_sprite_file(OUT+"/index.html"))
+
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
 open(OUT+"/robots.txt","w",encoding="utf-8").write("User-agent: *\nDisallow: /\n")
 open(OUT+"/404.html","w",encoding="utf-8").write('<!doctype html><meta charset="utf-8"><title>Not found</title><meta name="robots" content="noindex,nofollow"><style>body{font-family:system-ui,sans-serif;background:#f6f3ee;color:#2f2924;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#174d43}</style><div><h1 style="color:#9f3f2a">Page not found</h1><p><a href="/">Return to the clerkship hub</a></p></div>')
-open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
+open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: geolocation=(), camera=(), microphone=(self)\n  Content-Security-Policy: default-src 'self'; img-src 'self' data:; media-src 'self' blob: https://sp-interview-proxy.netlify.app; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://sp-interview-proxy.netlify.app https://clerkship-metrics.netlify.app https://clerkship-faculty-attest.netlify.app; frame-src 'self'; frame-ancestors 'self' https://clerkship-faculty-attest.netlify.app\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n/content/*\n  Cache-Control: public, max-age=0, must-revalidate\n/audio/*\n  Cache-Control: public, max-age=604800\n/audio_oe/*\n  Cache-Control: public, max-age=604800\n/media/*\n  Cache-Control: public, max-age=604800\n/tools/quizzes.json\n  Cache-Control: public, max-age=86400\n/search-index.json\n  Cache-Control: public, max-age=86400\n/evidence_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool_registry.json\n  Cache-Control: public, max-age=0, must-revalidate\n/tool-governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/communication_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/reasoning_cases.json\n  Cache-Control: public, max-age=0, must-revalidate\n/family_systems_scenarios.json\n  Cache-Control: public, max-age=0, must-revalidate\n/governance.json\n  Cache-Control: public, max-age=0, must-revalidate\n/favicon.svg\n  Cache-Control: public, max-age=604800\n/sw.js\n  Cache-Control: public, max-age=0, must-revalidate\n")
 
 # Deploy-preview only (#430): Netlify injects /.netlify/scripts/cdp into preview HTML, whose
 # drawer frames https://app.netlify.com/ and trips the frame-src above. The literal written
@@ -757,6 +854,16 @@ if not _ANALYTICS_MS3:
         raise SystemExit(
             "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
             "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
+
+# Outcome-counter fail-closed postcondition: an off build carries no CW_OUTCOMES stamp
+# anywhere. The resident build is a copy of this tree, so this also covers it.
+if not _OUTCOMES:
+    _outcomes_leaked = common.outcomes_flag_leaks(OUT)
+    if _outcomes_leaked:
+        raise SystemExit(
+            "outcome counters: CLERKSHIP_OUTCOMES=%s but the CW_OUTCOMES stamp is present: %s"
+            % (common.outcomes_mode(), ", ".join(_outcomes_leaked))
         )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------

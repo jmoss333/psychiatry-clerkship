@@ -18,9 +18,9 @@
 // that is a real defect for a person, and the daily delivery check names it.
 //
 // It never writes a file, never touches `reviewed.json`, and never creates a signature; it
-// only moves signatures the owner already made toward the learners. No-op in ledger mode
-// (ATTEST_LEDGER=on), where there is no rolling PR. ATTEST_ROLLING_PR_AUTOMERGE=off keeps the
-// PR open for a person to merge. Tests: tests/rolling-pr-sweep.test.mjs.
+// only moves signatures the owner already made toward the learners.
+// ATTEST_ROLLING_PR_AUTOMERGE=off keeps the PR open for a person to merge.
+// Tests: tests/rolling-pr-sweep.test.mjs.
 
 export const GITHUB_API = 'https://api.github.com';
 export const DEFAULT_REPO = 'jmoss333/psychiatry-clerkship';
@@ -83,7 +83,6 @@ function client({ token, fetchImpl }) {
 
 /** The sweep settings, or a reason it must not run. Never throws. */
 export function sweepSettings(env) {
-  if (readEnv(env, 'ATTEST_LEDGER').toLowerCase() === 'on') return { skip: 'ledger-mode' };
   const token = readEnv(env, 'GITHUB_TOKEN');
   const repo = readEnv(env, 'GITHUB_REPO') || DEFAULT_REPO;
   const branch = readEnv(env, 'GIT_BRANCH') || DEFAULT_BRANCH;

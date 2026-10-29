@@ -289,7 +289,7 @@ test('the endpoint reports the served commit, the waiting changes and the held t
   assert.equal(body.train.nextSlot, '2026-09-27T15:05:00.000Z');
   assert.equal(body.headline.tone, 'attention');
   assert.match(body.headline.text, /^2 merged changes \(1 faculty sign-off\) are not live for learners yet\./);
-  assert.equal(body.ledgerMode, false);
+  assert.equal(Object.hasOwn(body, 'ledgerMode'), false);
 });
 
 test('an unreadable Netlify falls back to the release branch and says so', async () => {
@@ -325,10 +325,12 @@ test('sites serving different commits are flagged, and release ahead of both is 
   assert.match(body.headline.text, /serve different commits/);
 });
 
-test('ledger mode is reported so sign-offs are not expected in the list', async () => {
+test('ATTEST_LEDGER no longer changes release status (decision attestation-ledger-removed)', async () => {
   const { fetchImpl } = fixtureFetch();
   const body = await (await handler(fetchImpl, { ATTEST_LEDGER: 'on' })(request())).json();
-  assert.equal(body.ledgerMode, true);
+  assert.equal(Object.hasOwn(body, 'ledgerMode'), false);
+  assert.equal(body.state, 'complete');
+  assert.equal(body.waiting.changes.length, 2, 'sign-offs are listed as waiting changes, as without the variable');
 });
 
 test('main unreadable is a 503 with no partial claim', async () => {
@@ -765,7 +767,6 @@ test('the re-signing list sorts each drifted page by when learners are affected'
   const allSigned = resignSchedule({ drifted: [], known: ['anki.md', 'sp-interview.html', 'orphan.md'], signoffs, nextSlot, nowMs });
   assert.equal(resignHeading(allSigned),
     'Every drifted page is signed; learners see them cleared after the sign-offs merge and the 15:05 UTC publish (in 1 h 12 min).');
-  assert.match(resignHeading({ ...allSigned, ledgerMode: true }), /ledger publish rebuilds the sites/);
   assert.equal(resignHeading(resignSchedule({ drifted: [], known: [], signoffs: staleSignoffs({ ms3: governanceDoc('ms3', {}), res: governanceDoc('res', {}) }), nextSlot, nowMs })), '');
 });
 

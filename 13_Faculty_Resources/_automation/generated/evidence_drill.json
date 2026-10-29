@@ -163,22 +163,22 @@
    }
   },
   {
-   "id": "ed_psychopharm_primer_boyer-shannon-2005-serotonin-syndrome",
+   "id": "ed_psychopharm_primer_apa-2020-schizophrenia",
    "status": "draft",
    "review": null,
    "page": "psychopharm_primer.md",
-   "sourceId": "boyer-shannon-2005-serotonin-syndrome",
-   "claim": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased.",
+   "sourceId": "apa-2020-schizophrenia",
+   "claim": "APA guidance supports offering an LAI when the patient prefers it or adherence has been poor or uncertain.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Academy of Child and Adolescent Psychiatry · 2026",
-     "sourceId": "aacap-parameters",
+     "t": "Keepers et al. · 2020 · Am J Psychiatry",
+     "c": true,
+     "sourceId": "apa-2020-schizophrenia",
      "key": "A"
     },
     {
      "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
-     "c": true,
      "sourceId": "boyer-shannon-2005-serotonin-syndrome",
      "key": "B"
     },
@@ -188,8 +188,88 @@
      "key": "C"
     },
     {
-     "t": "Schefft et al. · 2019 · Acta Psychiatr Scand",
-     "sourceId": "schefft-2019",
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The American Psychiatric Association Practice Guideline for the Treatment of Patients With Schizophrenia.",
+    "doi": "10.1176/appi.ajp.2020.177901",
+    "pmid": "32867516",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/32867516/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_bap-catatonia-2023",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "bap-catatonia-2023",
+   "claim": "Catatonia guidance includes benzodiazepines and ECT as central treatments; a blanket ban on scheduled benzodiazepines would misteach that care.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "British Association for Psychopharmacology · 2023",
+     "c": true,
+     "sourceId": "bap-catatonia-2023",
+     "key": "A"
+    },
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "Faculty review status was preserved; bibliographic identity was not inferred.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Evidence-based consensus guidelines for the management of catatonia",
+    "doi": "10.1177/02698811231158232",
+    "pmid": "",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_boyer-shannon-2005-serotonin-syndrome",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+   "claim": "Serotonin syndrome: clonus, hyperreflexia, and autonomic instability with rapid onset, usually after a serotonergic agent was started or increased.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Keramatian et al. · 2023 · Focus (Am Psychiatr Publ)",
+     "sourceId": "keramatian-2023-canmat-bipolar",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
      "key": "D"
     }
    ],
@@ -203,12 +283,12 @@
    }
   },
   {
-   "id": "ed_psychopharm_primer_fda-prozac-label-maoi-switching",
+   "id": "ed_psychopharm_primer_brunner-2025-benzodiazepine-taper",
    "status": "draft",
    "review": null,
    "page": "psychopharm_primer.md",
-   "sourceId": "fda-prozac-label-maoi-switching",
-   "claim": "The classic avoidable trigger is switching too soon around an MAOI: allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent — to avoid serotonin syndrome / hypertensive crisis.",
+   "sourceId": "brunner-2025-benzodiazepine-taper",
+   "claim": "Do not abruptly stop treatment in someone likely to be physically dependent and at risk of withdrawal.",
    "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -217,19 +297,139 @@
      "key": "A"
     },
     {
-     "t": "American Psychiatric Association Publishing · 2022",
-     "sourceId": "dsm-5-tr",
+     "t": "Brunner et al. · 2025 · J Gen Intern Med",
+     "c": true,
+     "sourceId": "brunner-2025-benzodiazepine-taper",
      "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Risks Outweigh Benefits.",
+    "doi": "10.1007/s11606-025-09499-2",
+    "pmid": "40526204",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40526204/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_cipriani-2013-lithium-suicide",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "cipriani-2013-lithium-suicide",
+   "claim": "Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides with lithium than placebo, based on few events.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "c": true,
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 23814104 resolved and matches. 48 RCTs, 6674 participants; lithium vs placebo for suicide OR 0.13 (95% CI 0.03-0.66) and all-cause death OR 0.38 (0.15-0.95). Directly supports the anti-suicidal claim on t_mood.md:13.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Lithium in the prevention of suicide in mood disorders: updated systematic review and meta-analysis.",
+    "doi": "10.1136/bmj.f3646",
+    "pmid": "23814104",
+    "url": "https://doi.org/10.1136/bmj.f3646"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_clozapine-rems",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "clozapine-rems",
+   "claim": "Although the FDA eliminated the clozapine REMS in 2025, ANC monitoring remains recommended according to prescribing information.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2025",
+     "c": true,
+     "sourceId": "clozapine-rems",
+     "key": "B"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "FDA Clozapine Safety / REMS Removed",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.fda.gov/drugs/drug-safety-communications/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_fda-prozac-label-maoi-switching",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "fda-prozac-label-maoi-switching",
+   "claim": "Switching caution: the familiar MAOI teaching rule is to allow ≥2 weeks after stopping most SSRIs (≥5 weeks after fluoxetine, due to its long half-life) before starting an MAOI, and ≥2 weeks after stopping an MAOI before starting a serotonergic agent.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
     },
     {
      "t": "U.S. Food and Drug Administration · 2026",
      "c": true,
      "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Keramatian et al. · 2023 · Focus (Am Psychiatr Publ)",
+     "sourceId": "keramatian-2023-canmat-bipolar",
      "key": "C"
     },
     {
-     "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
-     "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
      "key": "D"
     }
    ],
@@ -243,6 +443,286 @@
    }
   },
   {
+   "id": "ed_psychopharm_primer_huhn-2019-antipsychotics",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "huhn-2019-antipsychotics",
+   "claim": "In a later network meta-analysis of acute, multi-episode schizophrenia, symptom-reduction estimates favored antipsychotics over placebo, but six drugs did not reach statistical significance; these findings should not be generalized to every clinical setting.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Huhn et al. · 2019 · Lancet",
+     "c": true,
+     "sourceId": "huhn-2019-antipsychotics",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 31526735, DOI 10.1016/S0140-6736(19)31677-0: zotepine-versus-haloperidol Figure 3 estimate and funding/copyright statements corrected. The primer makes no claim about that pairwise estimate. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC8476989/.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Comparative efficacy and tolerability of 32 oral antipsychotics for the acute treatment of adults with multi-episode schizophrenia: a systematic review and network meta-analysis.",
+    "doi": "10.1016/s0140-6736(19)31135-3",
+    "pmid": "31303314",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/31303314/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_katz-2022-lithium-va",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "katz-2022-lithium-va",
+   "claim": "The VA trial adding lithium to usual care found no reduction in repeated suicide-related events.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "c": true,
+     "sourceId": "katz-2022-lithium-va",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+   "pearl": "A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+   "citation": {
+    "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder: A Randomized Clinical Trial.",
+    "doi": "10.1001/jamapsychiatry.2021.3170",
+    "pmid": "34787653",
+    "url": "https://doi.org/10.1001/jamapsychiatry.2021.3170"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_keramatian-2023-canmat-bipolar",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "keramatian-2023-canmat-bipolar",
+   "claim": "For bipolar I depression, antidepressant monotherapy is not recommended.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Keramatian et al. · 2023 · Focus (Am Psychiatr Publ)",
+     "c": true,
+     "sourceId": "keramatian-2023-canmat-bipolar",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The CANMAT and ISBD Guidelines for the Treatment of Bipolar Disorder: Summary and a 2023 Update of Evidence.",
+    "doi": "10.1176/appi.focus.20230009",
+    "pmid": "38695002",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38695002/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_lam-2024-canmat-mdd",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "lam-2024-canmat-mdd",
+   "claim": "For adults with major depression, CANMAT supports ECT as a first-line option in severe illness — psychotic or catatonic features, severe suicidal ideation, or a deteriorating physical condition — and otherwise generally recommends considering rTMS before ECT because it is less invasive.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Keramatian et al. · 2023 · Focus (Am Psychiatr Publ)",
+     "sourceId": "keramatian-2023-canmat-bipolar",
+     "key": "C"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "c": true,
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 40490255, DOI 10.1177/07067437251349087: author middle initial corrected; recommendations unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC12149145/.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Canadian Network for Mood and Anxiety Treatments (CANMAT) 2023 Update on Clinical Guidelines for Management of Major Depressive Disorder in Adults: Réseau canadien pour les traitements de l'humeur et de l'anxiété (CANMAT) 2023 : Mise à jour des lignes directrices cliniques pour la prise en charge du trouble dépressif majeur chez les adultes.",
+    "doi": "10.1177/07067437241245384",
+    "pmid": "38711351",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/38711351/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_lieberman-2005-catie",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "lieberman-2005-catie",
+   "claim": "Olanzapine had longer treatment persistence than some comparators but greater metabolic burden.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "C"
+    },
+    {
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "c": true,
+     "sourceId": "lieberman-2005-catie",
+     "key": "D"
+    }
+   ],
+   "why": "Zotero parent 2TPA9P9D matched the PubMed title, first author, year, DOI, PMID, and journal. NEJM published a correction on 2010-09-09 (doi:10.1056/NEJMx100054) to the hospitalization person-year figures in Results and Table 3 and the prolactin unit in Table 3. The correction does not change the discontinuation and weight/metabolic findings taught here; scope verified against the journal notice on 2026-09-27.",
+   "pearl": "The correction does not change the discontinuation and weight/metabolic findings taught here; scope verified against the journal notice on 2026-09-27.",
+   "citation": {
+    "title": "Effectiveness of antipsychotic drugs in patients with chronic schizophrenia.",
+    "doi": "10.1056/nejmoa051688",
+    "pmid": "16172203",
+    "url": "https://doi.org/10.1056/nejmoa051688"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_mcpheeters-2023-aud",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "mcpheeters-2023-aud",
+   "claim": "Oral naltrexone and acamprosate have evidence for reducing return to any drinking.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "C"
+    },
+    {
+     "t": "McPheeters et al. · 2023 · JAMA",
+     "c": true,
+     "sourceId": "mcpheeters-2023-aud",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review. Correction PMID 39356516, DOI 10.1001/jama.2024.11331: author middle initial corrected; treatment findings unchanged. Read https://pmc.ncbi.nlm.nih.gov/articles/PMC11447627/.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Pharmacotherapy for Alcohol Use Disorder: A Systematic Review and Meta-Analysis.",
+    "doi": "10.1001/jama.2023.19761",
+    "pmid": "37934220",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/37934220/"
+   }
+  },
+  {
+   "id": "ed_psychopharm_primer_wang-2025-lithium-suicidality",
+   "status": "draft",
+   "review": null,
+   "page": "psychopharm_primer.md",
+   "sourceId": "wang-2025-lithium-suicidality",
+   "claim": "An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts.",
+   "stem": "This claim on psychopharm_primer.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Boyer et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "boyer-shannon-2005-serotonin-syndrome",
+     "key": "A"
+    },
+    {
+     "t": "U.S. Food and Drug Administration · 2026",
+     "sourceId": "fda-prozac-label-maoi-switching",
+     "key": "B"
+    },
+    {
+     "t": "Lam et al. · 2024 · Can J Psychiatry",
+     "sourceId": "lam-2024-canmat-mdd",
+     "key": "C"
+    },
+    {
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "c": true,
+     "sourceId": "wang-2025-lithium-suicidality",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.Results excerpt is limited to the suicide-attempt estimate; it is not used to claim a significant benefit or absence of benefit.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The efficacy of lithium in the treatment of suicidal ideation, behavior and suicide: An updated systematic review and meta-analysis of randomized controlled trials.",
+    "doi": "10.1016/j.jad.2025.119487",
+    "pmid": "40441661",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40441661/"
+   }
+  },
+  {
    "id": "ed_t_mood_canmat-isbd-bipolar-2018",
    "status": "draft",
    "review": null,
@@ -252,24 +732,24 @@
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Appelbaum et al. · 1988 · The New England Journal of Medicine",
-     "sourceId": "appelbaum-grisso-1988-capacity",
-     "key": "A"
-    },
-    {
      "t": "Yatham et al. · 2018 · Bipolar Disorders",
      "c": true,
      "sourceId": "canmat-isbd-bipolar-2018",
-     "key": "B"
+     "key": "A"
     },
     {
      "t": "Cipriani et al. · 2013 · BMJ",
      "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "C"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
      "key": "D"
     }
    ],
@@ -288,7 +768,7 @@
    "review": null,
    "page": "t_mood.md",
    "sourceId": "cipriani-2013-lithium-suicide",
-   "claim": "Lithium is the mood stabilizer with anti-suicidal and best maintenance evidence — use it, and monitor it.",
+   "claim": "Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides than with placebo, based on few events.",
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -303,13 +783,13 @@
      "key": "B"
     },
     {
-     "t": "Franklin et al. · 2017 · Psychological Bulletin",
-     "sourceId": "franklin-2017-suicide-risk-meta-analysis",
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
      "key": "C"
     },
     {
-     "t": "Nolen et al. · 2019 · Bipolar Disord",
-     "sourceId": "nolen-2019-lithium-levels",
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
      "key": "D"
     }
    ],
@@ -323,12 +803,12 @@
    }
   },
   {
-   "id": "ed_t_mood_nolen-2019-lithium-levels",
+   "id": "ed_t_mood_katz-2022-lithium-va",
    "status": "draft",
    "review": null,
    "page": "t_mood.md",
-   "sourceId": "nolen-2019-lithium-levels",
-   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+   "sourceId": "katz-2022-lithium-va",
+   "claim": "The VA trial adding it to usual care found no reduction in repeated suicide-related events.",
    "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
@@ -342,14 +822,54 @@
      "key": "B"
     },
     {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "c": true,
+     "sourceId": "katz-2022-lithium-va",
+     "key": "C"
+    },
+    {
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
+     "key": "D"
+    }
+   ],
+   "why": "PMID 34787653 resolved via NCBI efetch on 2026-09-24: all 19 named authors (plus the collective author Li+ plus Investigators), 2022, JAMA Psychiatry 79(1):24-32, DOI and PMC8600458 match; PubMed lists only CommentIn items (an editorial and a letter/reply), and Crossref records no update, so no erratum is known. The published title is the one recorded here; the working citation had paraphrased it as 'Effect of Lithium vs Placebo on the Risk of Suicide-Related Events'. VA Cooperative Studies Program trial CSP #590 (NCT01928446, confirmed on ClinicalTrials.gov): double-blind lithium vs placebo added to usual care in veterans with bipolar disorder or depression who had survived a recent suicide-related event, 29 VA medical centers. Stopped for futility after 519 were randomized (255 lithium, 264 placebo); no overall difference in repeated suicide-related events (HR 1.10, 95% CI 0.77-1.55). Mean lithium concentrations at 3 months were 0.54 mEq/L (bipolar) and 0.46 mEq/L (major depression). A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+   "pearl": "A null trial: read beside Cipriani 2013, it does not license an anti-suicide claim for lithium added to usual care in this population.",
+   "citation": {
+    "title": "Lithium Treatment in the Prevention of Repeat Suicide-Related Outcomes in Veterans With Major Depression or Bipolar Disorder: A Randomized Clinical Trial.",
+    "doi": "10.1001/jamapsychiatry.2021.3170",
+    "pmid": "34787653",
+    "url": "https://doi.org/10.1001/jamapsychiatry.2021.3170"
+   }
+  },
+  {
+   "id": "ed_t_mood_nolen-2019-lithium-levels",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "nolen-2019-lithium-levels",
+   "claim": "Lithium runs a narrow therapeutic window (acute ~0.8–1.2 mEq/L; maintenance ~0.6–0.8, lower in older adults): check baseline and periodic renal, thyroid and calcium (parathyroid) function (and an ECG in older/cardiac patients), and remember NSAIDs, ACE-inhibitors/ARBs, thiazides, and dehydration push levels toward toxicity.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "A"
+    },
+    {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
+     "key": "B"
+    },
+    {
      "t": "Nolen et al. · 2019 · Bipolar Disord",
      "c": true,
      "sourceId": "nolen-2019-lithium-levels",
      "key": "C"
     },
     {
-     "t": "Wibbelink et al. · 2026 · JAMA Psychiatry",
-     "sourceId": "wibbelink-2026",
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "sourceId": "wang-2025-lithium-suicidality",
      "key": "D"
     }
    ],
@@ -360,6 +880,46 @@
     "doi": "10.1111/bdi.12805",
     "pmid": "31112628",
     "url": "https://doi.org/10.1111/bdi.12805"
+   }
+  },
+  {
+   "id": "ed_t_mood_wang-2025-lithium-suicidality",
+   "status": "draft",
+   "review": null,
+   "page": "t_mood.md",
+   "sourceId": "wang-2025-lithium-suicidality",
+   "claim": "An updated randomized-trial meta-analysis found a nonsignificant reduction in suicide attempts.",
+   "stem": "This claim on t_mood.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Yatham et al. · 2018 · Bipolar Disorders",
+     "sourceId": "canmat-isbd-bipolar-2018",
+     "key": "A"
+    },
+    {
+     "t": "Cipriani et al. · 2013 · BMJ",
+     "sourceId": "cipriani-2013-lithium-suicide",
+     "key": "B"
+    },
+    {
+     "t": "Katz et al. · 2022 · JAMA Psychiatry",
+     "sourceId": "katz-2022-lithium-va",
+     "key": "C"
+    },
+    {
+     "t": "Wang et al. · 2025 · J Affect Disord",
+     "c": true,
+     "sourceId": "wang-2025-lithium-suicidality",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.Results excerpt is limited to the suicide-attempt estimate; it is not used to claim a significant benefit or absence of benefit.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "The efficacy of lithium in the treatment of suicidal ideation, behavior and suicide: An updated systematic review and meta-analysis of randomized controlled trials.",
+    "doi": "10.1016/j.jad.2025.119487",
+    "pmid": "40441661",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40441661/"
    }
   },
   {
@@ -532,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Bohus et al. · 2021 · Lancet",
-     "sourceId": "bohus-lancet-2021",
+     "t": "Modini et al. · 2026 · Australas Psychiatry",
+     "sourceId": "modini-large-2026",
      "key": "A"
     },
     {
-     "t": "Lima et al. · 2004 · Cochrane Database of Systematic Reviews",
-     "sourceId": "lima-2004-betablockers-akathisia",
+     "t": "Posner et al. · 2011 · The American journal of psychiatry",
+     "sourceId": "posner-2011-cssrs",
      "key": "B"
     },
     {
@@ -572,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Yatham et al. · 2018 · Bipolar Disorders",
-     "sourceId": "canmat-isbd-bipolar-2018",
+     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
+     "sourceId": "brodsky-2025",
      "key": "A"
     },
     {
-     "t": "National Institute for Health and Care Excellence · 2015",
-     "sourceId": "nice-violence-aggression-ng10",
+     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
+     "sourceId": "project-beta-psychopharm-agitation-2012",
      "key": "B"
     },
     {

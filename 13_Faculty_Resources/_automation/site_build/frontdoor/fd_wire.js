@@ -3,20 +3,36 @@
    pure; browser effects live in fdWire and fdOpenResource behind explicit options so the same
    decisions can be tested without a DOM. */
 
+/* Where the learner is put when nothing else says where to go (owner decision, 2026-10-08:
+   Essentials first while trainees get used to the site; maybe back to Today once it is routine).
+   This ONE build-time value is the whole switch -- no runtime toggle, nothing persisted, and the
+   smoke fixtures read it from here (tests/smoke/landing.js) rather than restating it:
+     'essentials'  the end of first-run setup (the role choice, plus the week step where there is
+                   one) and the brand/Home button open Library -> Essentials.
+     'today'       both open Today, the behaviour before 2026-10-08.
+   It is declared first because FD_ACTION_SEMANTICS below reads it at load. A deep link is never
+   overridden (fdSetupExit honours a routed tab), and neither is a returning learner's bare visit:
+   fdResolveState restores the stored tab exactly as it always has. */
+var FD_LANDING_VIEW='essentials';
+
+function fdLandsOnEssentials(){ return FD_LANDING_VIEW==='essentials'; }
+
 /* Every attribute the controller gives a meaning to. The exam-date input commits on change and
    is deliberately absent from FD_ACTION_SELECTOR below. */
 var FD_HANDLED_ATTRS=[
   'data-fd-open','data-fd-sheet','data-fd-safety','data-fd-toggle','data-fd-tab',
   'data-fd-week','data-fd-view-week','data-fd-setweek','data-fd-role','data-fd-step',
   'data-fd-back','data-fd-home','data-fd-search','data-fd-change-week','data-fd-progress',
+  'data-fd-reading-size','data-fd-reading-spacing','data-fd-reading-reset',
   'data-fd-theme','data-fd-settings','data-fd-analytics','data-fd-exam-date',
   'data-fd-app-bridge','data-fd-app-shift','data-fd-app-start','data-fd-app-reflect','data-fd-app-reset',
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-close-search','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-close-search','data-fd-search-expand','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
-  'data-fd-kit-section','data-fd-kit-tool',
+  'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details','data-fd-library-task',
+  'data-fd-tool-pin','data-fd-tool-pins-clear','data-fd-reading-place-remove','data-fd-reading-places-clear','data-fd-continuity-show',
   'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
@@ -24,7 +40,8 @@ var FD_HANDLED_ATTRS=[
   'data-fd-care-copy','data-fd-care-copy-selected',
   'data-fd-offline-open','data-fd-offline-close','data-fd-offline-refresh',
   'data-fd-feedback-open','data-fd-feedback-cancel','data-fd-feedback-save',
-  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete'
+  'data-fd-feedback-edit','data-fd-feedback-confirm','data-fd-feedback-delete',
+  'data-fd-tree-answer','data-fd-tree-back','data-fd-tree-restart','data-fd-escalate','data-fd-escalate-close'
 ];
 
 var FD_ACTION_SEMANTICS={
@@ -36,6 +53,13 @@ var FD_ACTION_SEMANTICS={
   'data-fd-library-view':'choose Library view',
   'data-fd-kit-section':'choose a Library section',
   'data-fd-kit-tool':'preview an Essentials item',
+  'data-fd-library-details':'open Library resource details',
+  'data-fd-library-task':'choose Library task',
+  'data-fd-tool-pin':'toggle a device tool pin',
+  'data-fd-tool-pins-clear':'clear device tool pins',
+  'data-fd-reading-place-remove':'forget one saved reading place',
+  'data-fd-reading-places-clear':'clear saved reading places',
+  'data-fd-continuity-show':'focus device continuation',
   /* The filter field commits on input events, like the exam-date field, and is deliberately
      absent from FD_ACTION_SELECTOR. data-fd-search-query rides on a data-fd-search control and
      seeds the dialog with the Library filter's query (zero results, filtered footer). */
@@ -66,10 +90,13 @@ var FD_ACTION_SEMANTICS={
   'data-fd-role':'choose learner role',
   'data-fd-step':'toggle session protocol step',
   'data-fd-back':'return to originating tab',
-  'data-fd-home':'return to Today',
+  'data-fd-home':fdLandsOnEssentials()?'return to Library Essentials':'return to Today',
   'data-fd-search':'open search dialog',
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
+  'data-fd-reading-size':'set saved reading text size',
+  'data-fd-reading-spacing':'set saved reading line spacing',
+  'data-fd-reading-reset':'reset reading comfort',
   'data-fd-theme':'set saved color theme',
   'data-fd-settings':'open settings panel',
   'data-fd-analytics':'set usage measurement',
@@ -89,11 +116,17 @@ var FD_ACTION_SEMANTICS={
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
+  'data-fd-search-expand':'toggle all search matches for this query',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
   'data-fd-try-now':'preview related tool',
   'data-fd-expand-tool':'toggle saved tool workspace width',
-  'data-fd-reading-top':'clear this reading place and focus the article heading'
+  'data-fd-reading-top':'clear this reading place and focus the article heading',
+  'data-fd-tree-answer':'answer a safety tree question',
+  'data-fd-tree-back':'step back one safety tree answer',
+  'data-fd-tree-restart':'restart a safety tree',
+  'data-fd-escalate':'show an escalation script',
+  'data-fd-escalate-close':'return from an escalation script to its tree'
 };
 
 function fdActionSemantic(attr){
@@ -103,6 +136,8 @@ function fdActionSemantic(attr){
 function fdOwn(o,k){ return !!o&&Object.prototype.hasOwnProperty.call(o,k); }
 
 function fdValidTab(tab){ return tab==='path'||tab==='library'||tab==='care'||tab==='today'; }
+
+function fdValidLibraryTask(task){ return task==='all'||task==='interview'||task==='rounds'; }
 
 function fdClone(o){
   var out={}, src=o||{};
@@ -150,9 +185,10 @@ function fdResolveState(url, stored, options){
   if(src.appBridge==='pa'||src.appBridge==='pmhnp') out.appBridge=src.appBridge;
   out.tab=fdValidTab(src.tab)?src.tab:'today';
   out.libraryView='essentials';
-  /* Section, filter and preview are shell memory (one-thread redesign, D3): a reload always
+  /* Section, task, filter and preview are shell memory (one-thread redesign, D3): a reload always
      starts the Library at All with an empty filter, whatever was stored or in the URL. */
   out.kitSection='all';
+  out.libraryTask='all';
   out.libraryFilter='';
   if(typeof src.openId==='string'&&src.openId) out.openId=src.openId;
   if(fdValidTab(src.fromTab)) out.fromTab=src.fromTab;
@@ -168,6 +204,7 @@ function fdResolveState(url, stored, options){
      interrupted read -- scrolled to the top. */
   if(typeof src.scrollPos==='number'&&isFinite(src.scrollPos)&&src.scrollPos>=0) out.scrollPos=src.scrollPos;
   if(src.readingPlaces!==undefined) out.readingPlaces=fdReadingPlaces(src.readingPlaces);
+  if(src.readingComfort!==undefined) out.readingComfort=fdReadingComfort(src.readingComfort);
 
   var parsed, routedRef=null;
   try{ parsed=new URL(String(url||''),'https://frontdoor.invalid/'); }catch(_){ parsed=null; }
@@ -225,6 +262,39 @@ function fdResolveState(url, stored, options){
   }
   if(fdAppMode(out)&&out.tab==='path') out.tab='today';
   return out;
+}
+
+/* The landing (FD_LANDING_VIEW) as a state patch and a route. */
+function fdLandingPatch(){
+  return fdLandsOnEssentials()?{tab:'library',libraryView:'essentials',kitSection:'all'}:{tab:'today'};
+}
+function fdLandingRoute(search){
+  return fdLandsOnEssentials()?fdRouteForTab('library',search,'essentials'):fdRouteForTab('today',search);
+}
+
+/* First-run setup ends here: the role step for APP (which has no week step) and the week step for
+   everyone else. A visit that arrived on a tab link (?tab= / ?library=full) reaches that tab --
+   whatever FD_LANDING_VIEW says; before 2026-10-08 such a visit was dropped on Today. Anything
+   else lands per FD_LANDING_VIEW. 'replace' keeps history as it was: setup and its result share
+   one entry, so Back from the landing leaves exactly as Back from Today used to. */
+function fdSetupExit(search, appMode){
+  var params;
+  try{ params=new URLSearchParams(String(search||'').replace(/^\?/,'')); }
+  catch(_){ params=new URLSearchParams(); }
+  var routed=params.get('tab');
+  if(params.get('library')==='full'&&(!fdValidTab(routed)||routed==='library')){
+    return {patch:{tab:'library',libraryView:'full',kitSection:'all'},
+      route:fdRouteForTab('library',search,'full'),history:'replace'};
+  }
+  if(routed==='library'){
+    return {patch:{tab:'library',libraryView:'essentials',kitSection:'all'},
+      route:fdRouteForTab('library',search,'essentials'),history:'replace'};
+  }
+  if(fdValidTab(routed)){
+    if(appMode&&routed==='path') routed='today';
+    return {patch:{tab:routed},route:fdRouteForTab(routed,search),history:'replace'};
+  }
+  return {patch:fdLandingPatch(),route:fdLandingRoute(search),history:'replace'};
 }
 
 /* Preparation choices are visit context, never answers or durable learning state. */
@@ -364,7 +434,8 @@ function fdCloseSheet(state){
   var ref=fdProtocolRef(state&&state.sheet);
   var unread=!!ref&&!((state.done||{})[ref]===true);
   return {
-    patch:{sheet:null,sheetFrom:null,stepsDone:{},nudge:unread?ref:null,settingsConfirmClear:false},
+    patch:{sheet:null,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+      nudge:unread?ref:null,settingsConfirmClear:false},
     route:null,
     effect:unread?{type:'nudge-timeout',delay:8000}:null
   };
@@ -375,13 +446,13 @@ function fdDispatch(attrs, context, state){
 
   if(fdOwn(a,'close')){
     if(s.careShareId) return {patch:{careShareId:''},route:null,effect:null};
-    if(s.searchOpen) return {patch:{searchOpen:false,query:''},route:null,effect:null};
+    if(s.searchOpen) return {patch:{searchOpen:false,query:'',searchExpanded:false},route:null,effect:null};
     if(s.sheet) return fdCloseSheet(s);
     if(s.nudge) return {patch:{nudge:null},route:null,effect:null};
     return {patch:{},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-close-search')){
-    return {patch:{searchOpen:false,query:''},route:null,effect:null};
+    return {patch:{searchOpen:false,query:'',searchExpanded:false},route:null,effect:null};
   }
   /* The settings panel closes through here too -- it has no close action of its own. When that
      panel grows a destructive confirmation, its armed flag has to be reset in fdCloseSheet, or an
@@ -483,6 +554,10 @@ function fdDispatch(attrs, context, state){
          week-scoped selection is the wrong first view -- browsing means everything. */
       var firstWeek=(c.index&&c.index.weeks&&c.index.weeks[0])||{};
       patch={week:null,tab:'library',libraryView:'full',kitSection:'all',viewWeek:firstWeek.n,screen:'app',openId:null,browsing:true};
+      /* This explicit browse entrance is a fresh Library visit, not a view switch or Back. */
+      if(s.libraryTask&&s.libraryTask!=='all') patch.libraryTask='all';
+      if(s.libraryFilter) patch.libraryFilter='';
+      if(s.kitToolPreview) patch.kitToolPreview='';
       if(s.setupFrom) patch.setupFrom=null;
       return {
         patch:patch,
@@ -494,12 +569,23 @@ function fdDispatch(attrs, context, state){
        transition detail of an ordinary week choice stays exactly what it was. */
     patch={week:n,viewWeek:n,tab:'today',screen:'app',openId:null};
     if(s.browsing===true) patch.browsing=false;
+    /* Change week from inside the app (setupFrom:'app') still returns to Today, where the new week
+       shows. Only first-run / gate setup ends on the landing (fdSetupExit, FD_LANDING_VIEW). */
+    var weekRoute=fdRouteForTab('today',c.search), weekHistory=null;
     if(s.setupFrom) patch.setupFrom=null;
-    return {
+    else{
+      var weekExit=fdSetupExit(c.search,fdAppMode(s));
+      for(var weekKey in weekExit.patch){ if(fdOwn(weekExit.patch,weekKey)) patch[weekKey]=weekExit.patch[weekKey]; }
+      weekRoute=weekExit.route;
+      weekHistory=weekExit.history||null;
+    }
+    var weekResult={
       patch:patch,
-      route:fdRouteForTab('today',c.search),
+      route:weekRoute,
       effect:{type:'set-rotation',start:fdRotationStartForWeek(n,c.index.weeks,c.nowMs)}
     };
+    if(weekHistory) weekResult.history=weekHistory;
+    return weekResult;
   }
   if(fdOwn(a,'data-fd-setweek')){
     n=fdNumberAttr(a,'data-fd-setweek');
@@ -551,16 +637,21 @@ function fdDispatch(attrs, context, state){
     return {patch:{feedbackNotice:null},route:null,effect:{type:'feedback-remove',id:noteId}};
   }
 
+  /* Both openers clear nudge: the full-read toast stacks above this drawer and its mount is never
+     inerted, so one left by closing an unread protocol would sit over the reopened modal for the
+     rest of its timeout. The timeout later patching nudge:null onto a null key is harmless. */
   if(fdOwn(a,'data-fd-safety')){
     ref=a['data-fd-safety'];
     if(ref){
       return {
-        patch:{sheet:String(ref),sheetFrom:c.inSheet?'kit':null,stepsDone:{},searchOpen:false},
+        patch:{sheet:String(ref),sheetFrom:c.inSheet?'kit':null,stepsDone:{},treePath:[],
+          escalate:null,nudge:null,searchOpen:false},
         route:null,effect:{type:'open-protocol',ref:String(ref)}
       };
     }
     return {
-      patch:{sheet:'kit',sheetFrom:null,stepsDone:{},searchOpen:false},
+      patch:{sheet:'kit',sheetFrom:null,stepsDone:{},treePath:[],escalate:null,nudge:null,
+        searchOpen:false},
       route:null,effect:{type:'open-sheet',ref:null}
     };
   }
@@ -568,7 +659,8 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-try-now')){
     ref=String(a['data-fd-try-now']||'');
     return {
-      patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},searchOpen:false},
+      patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+        searchOpen:false},
       route:null,effect:{type:'open-sheet',ref:ref}
     };
   }
@@ -577,7 +669,8 @@ function fdDispatch(attrs, context, state){
     if(fdIsLegacyRouteAlias(ref)) return fdLegacyRouteResult(ref,c,s);
     if(fdOwn(a,'data-fd-sheet')){
       return {
-        patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},searchOpen:false},
+        patch:{sheet:'item:'+ref,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,
+          searchOpen:false},
         route:null,effect:{type:'open-sheet',ref:ref}
       };
     }
@@ -649,6 +742,43 @@ function fdDispatch(attrs, context, state){
   if(fdOwn(a,'data-fd-kit-tool')){
     return {patch:{kitToolPreview:String(a['data-fd-kit-tool']||'')},route:null,effect:null};
   }
+  if(fdOwn(a,'data-fd-library-task')){
+    var libraryTask=a['data-fd-library-task'];
+    if(s.screen!=='app'||s.tab!=='library'||s.openId||s.sheet||s.searchOpen||
+       !fdValidLibraryTask(libraryTask)) return {patch:{},route:null,effect:null};
+    return {patch:{libraryTask:libraryTask},route:null,effect:null};
+  }
+  if(fdOwn(a,'data-fd-tool-pin')||fdOwn(a,'data-fd-tool-pins-clear')||
+     fdOwn(a,'data-fd-reading-place-remove')||fdOwn(a,'data-fd-reading-places-clear')||fdOwn(a,'data-fd-continuity-show')){
+    if(s.screen!=='app'||s.tab!=='library'||s.openId||s.sheet||s.searchOpen) return {patch:{},route:null,effect:null};
+    var continuityAction='show';
+    if(fdOwn(a,'data-fd-tool-pin')){
+      ref=a['data-fd-tool-pin'];
+      if(typeof fdToolPinAllowed!=='function'||!fdToolPinAllowed(c.index,ref)) return {patch:{},route:null,effect:null};
+      continuityAction='pin';
+    } else if(fdOwn(a,'data-fd-tool-pins-clear')) continuityAction='pins-clear';
+    else if(fdOwn(a,'data-fd-reading-place-remove')){
+      ref=a['data-fd-reading-place-remove'];
+      if(!fdReadingCatalogItem(c.index,ref))return {patch:{},route:null,effect:null};
+      continuityAction='reading-remove';
+    } else if(fdOwn(a,'data-fd-reading-places-clear')) continuityAction='readings-clear';
+    return {patch:{},route:null,effect:{type:'library-continuity',action:continuityAction,ref:ref||null}};
+  }
+  if(fdOwn(a,'data-fd-library-details')){
+    ref=String(a['data-fd-library-details']||'');
+    var detailColumns=c.index&&c.index.columns||[];
+    var detailAvailable=detailColumns.some(function(column){
+      return (column.items||[]).some(function(item){ return item.ref===ref; });
+    });
+    if(s.screen!=='app'||s.tab!=='library'||s.openId||!detailAvailable||
+       !fdOwn(c.index&&c.index.byRef,ref)||typeof fdResourcePreviewCopy!=='function'||
+       !fdResourcePreviewCopy(ref)) return {patch:{},route:null,effect:null};
+    return {
+      patch:{sheet:'item:'+ref,sheetFrom:'library',stepsDone:{},treePath:[],
+        escalate:null,nudge:null,searchOpen:false},
+      route:null,effect:{type:'open-sheet',ref:ref}
+    };
+  }
   /* The Library filter (one-thread redesign, Phase 2). Both are visit-only like kitSection: no
      route, no save; apply() mirrors them onto the Library's history entry (D3). */
   if(fdOwn(a,'data-fd-library-filter-clear')){
@@ -666,6 +796,13 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-care-clear')){
     return {patch:{careIntentId:''},route:null,effect:null};
+  }
+  /* Hidden patient-sharing controls must not dispatch from stale markup/state. */
+  if((typeof fdCarePatientSharingEnabled!=='function'||!fdCarePatientSharingEnabled())&&
+     (fdOwn(a,'data-fd-care-pack')||fdOwn(a,'data-fd-care-pack-print')||
+      fdOwn(a,'data-fd-care-share')||fdOwn(a,'data-fd-care-copy')||
+      fdOwn(a,'data-fd-care-copy-selected'))){
+    return {patch:{carePackIds:[],careShareId:''},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-care-pack')){
     return {patch:{carePackIds:fdCarePackToggle(
@@ -725,6 +862,8 @@ function fdDispatch(attrs, context, state){
        memory for ONE visit. Patched only when set so an unfiltered transition is unchanged. */
     if(s.libraryFilter) patch.libraryFilter='';
     if(s.kitToolPreview) patch.kitToolPreview='';
+    /* Task follows Essentials/Everything switches, but a new Library visit starts at All. */
+    if((tab!=='library'||s.tab!=='library')&&s.libraryTask&&s.libraryTask!=='all') patch.libraryTask='all';
     return {patch:patch,route:fdRouteForTab(tab,c.search),effect:null};
   }
   if(fdOwn(a,'data-fd-role')){
@@ -735,10 +874,17 @@ function fdDispatch(attrs, context, state){
        rest of the state alone is what keeps the panel open on the chip it just filled. */
     picked=String(a['data-fd-role']||'');
     if(picked==='app'){
-      return {
-        patch:{role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false},
-        route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}
-      };
+      var appPatch={role:'app',screen:'app',tab:'today',week:null,browsing:true,openId:null,searchOpen:false};
+      var appResult={patch:appPatch,route:fdRouteForTab('today',c.search),effect:{type:'browse-without-rotation'}};
+      /* APP has no week step, so in the wizard choosing the role IS the end of setup. Picking APP
+         in the settings panel is a change of workspace and still opens On shift. */
+      if(s.screen==='setup-role'){
+        var appExit=fdSetupExit(c.search,true);
+        for(var appKey in appExit.patch){ if(fdOwn(appExit.patch,appKey)) appPatch[appKey]=appExit.patch[appKey]; }
+        appResult.route=appExit.route;
+        if(appExit.history) appResult.history=appExit.history;
+      }
+      return appResult;
     }
     if(s.screen==='setup-role'){
       return {patch:{role:picked,screen:'setup-week'},route:null,effect:null};
@@ -750,6 +896,31 @@ function fdDispatch(attrs, context, state){
     patch=fdClone(s.stepsDone);
     if(n!==null) patch[n]=!patch[n];
     return {patch:{stepsDone:patch},route:null,effect:null};
+  }
+  /* Safety tree (2026-10-10 safety-drawer spec §4.4). Overlay-only state, reset by every sheet
+     open and close. Each action asks for the new heading, so a screen reader announces the
+     next question or the script, and a second press on Enter lands on that heading, not on
+     whichever answer now occupies the pressed button's place. */
+  if(fdOwn(a,'data-fd-tree-answer')){
+    raw=String(a['data-fd-tree-answer']||'');
+    if(!/^[a-z][a-z0-9-]{0,23}\.[0-3]$/.test(raw)) return {patch:{},route:null,effect:null};
+    next=(s.treePath||[]).slice();
+    next.push(raw);
+    return {patch:{treePath:next,escalate:null},route:null,effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-tree-back')){
+    return {patch:{treePath:(s.treePath||[]).slice(0,-1),escalate:null},route:null,
+      effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-tree-restart')){
+    return {patch:{treePath:[],escalate:null},route:null,effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-escalate')){
+    return {patch:{escalate:a['data-fd-escalate']==='soon'?'soon':'now'},route:null,
+      effect:{type:'focus-sheet-heading'}};
+  }
+  if(fdOwn(a,'data-fd-escalate-close')){
+    return {patch:{escalate:null},route:null,effect:{type:'focus-sheet-heading'}};
   }
   if(fdOwn(a,'data-fd-back')){
     if(s.screen==='setup-week'){
@@ -769,17 +940,31 @@ function fdDispatch(attrs, context, state){
     return {patch:{openId:null,tab:tab},route:fdRouteForTab(tab,c.search,s.libraryView),effect:null};
   }
   if(fdOwn(a,'data-fd-home')){
+    /* Brand = Home = the landing (FD_LANDING_VIEW). The redesign spec's "Brand = Home (Today)" is
+       superseded while the landing is Essentials (owner, 2026-10-08; deviation recorded in
+       docs/superpowers/specs/one-thread-handoff/README.md). Home IS the Library tab's own
+       transition -- Essentials, All, no filter, no preview, Care's visit-only picks dropped --
+       plus closing a sheet, so the two can never disagree. Today stays one tap away on its tab. */
+    if(fdLandsOnEssentials()){
+      var home=fdDispatch({'data-fd-tab':'library'},c,s);
+      home.patch.sheet=null;
+      if(s.libraryTask&&s.libraryTask!=='all') home.patch.libraryTask='all';
+      return home;
+    }
     return {
       patch:{tab:'today',openId:null,searchOpen:false,sheet:null},
       route:fdRouteForTab('today',c.search),effect:null
     };
   }
   if(fdOwn(a,'data-fd-search')){
-    patch={searchOpen:true};
+    patch={searchOpen:true,searchExpanded:false};
     /* The Library hands its filter query to Search (zero results, filtered footer). The query is
        dialog state only: the search panel re-renders from it and nothing routes or saves it. */
     if(fdOwn(a,'data-fd-search-query')) patch.query=String(a['data-fd-search-query']||'');
     return {patch:patch,route:null,effect:{type:'focus-search'}};
+  }
+  if(fdOwn(a,'data-fd-search-expand')){
+    return {patch:s.searchOpen?{searchExpanded:s.searchExpanded!==true}:{},route:null,effect:null};
   }
   if(fdOwn(a,'data-fd-change-week')){
     tab=s.openId&&fdValidTab(s.fromTab)?s.fromTab:(fdValidTab(s.tab)?s.tab:'today');
@@ -825,6 +1010,19 @@ function fdDispatch(attrs, context, state){
   }
   if(fdOwn(a,'data-fd-clear-confirm')){
     return {patch:{settingsConfirmClear:false},route:null,effect:{type:'clear-device-data'}};
+  }
+  if(fdOwn(a,'data-fd-reading-size')||fdOwn(a,'data-fd-reading-spacing')||fdOwn(a,'data-fd-reading-reset')){
+    if(s.sheet!=='settings') return {patch:{},route:null,effect:null};
+    var comfort=fdReadingComfort(s.readingComfort), size=a['data-fd-reading-size'], spacing=a['data-fd-reading-spacing'];
+    if(fdOwn(a,'data-fd-reading-reset'))comfort=fdReadingComfort(null);
+    else if(fdOwn(a,'data-fd-reading-size')){
+      if(size!=='standard'&&size!=='larger'&&size!=='largest')return {patch:{},route:null,effect:null};
+      comfort.size=size;
+    }else{
+      if(spacing!=='standard'&&spacing!=='spacious')return {patch:{},route:null,effect:null};
+      comfort.spacing=spacing;
+    }
+    return {patch:{readingComfort:comfort},route:null,effect:{type:'reading-comfort'}};
   }
   if(fdOwn(a,'data-fd-theme')){
     /* The value is the MODE, not the painted attribute -- fdApplyEffect resolves it. A missing or
@@ -1126,7 +1324,8 @@ function fdTrapFocus(event, dialog){
    opens the native picker and -- the attribute being valueless in the markup -- dispatches an
    empty value, so a learner clicking their own date input ERASES the date they had. It is
    committed on a change event instead; see changeHandler. */
-var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-filter-clear],'+
+var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-fd-tab],[data-fd-library-view],[data-fd-kit-section],[data-fd-kit-tool],[data-fd-library-details],[data-fd-library-task],[data-fd-library-filter-clear],'+
+  '[data-fd-tool-pin],[data-fd-tool-pins-clear],[data-fd-reading-place-remove],[data-fd-reading-places-clear],[data-fd-continuity-show],'+
   '[data-fd-care-intent],[data-fd-care-clear],[data-fd-care-pack],[data-fd-care-pack-clear],[data-fd-care-pack-print],'+
   '[data-fd-care-share],[data-fd-care-share-close],[data-fd-care-copy],[data-fd-care-copy-selected],'+
   '[data-fd-offline-open],[data-fd-offline-close],[data-fd-offline-refresh],'+
@@ -1137,9 +1336,11 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-feedback-open],[data-fd-feedback-cancel],[data-fd-feedback-save],'+
   '[data-fd-feedback-edit],[data-fd-feedback-confirm],[data-fd-feedback-delete],'+
   '[data-fd-back],[data-fd-home],[data-fd-search],[data-fd-change-week],[data-fd-progress],'+
+  '[data-fd-reading-size],[data-fd-reading-spacing],[data-fd-reading-reset],'+
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
-  '[data-fd-close-search],[data-fd-close-sheet],[data-fd-close-nudge],'+
+  '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
+  '[data-fd-close-search],[data-fd-search-expand],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
 /* The dock stopped forwarding the page's primary action on 2026-10-04 (one-thread redesign,
@@ -1182,9 +1383,10 @@ function fdInstallReadingPlace(reader,ref,state,options){
   var save=o.save||fdSave, now=o.now||Date.now;
   var timerSet=o.setTimer||setTimeout, timerClear=o.clearTimer||clearTimeout;
   var frame=o.requestAnimationFrame||(win&&win.requestAnimationFrame?function(fn){win.requestAnimationFrame(fn);}:function(fn){timerSet(fn,0);});
-  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, anchors, authored={}, i;
+  var active=true, timer=null, ready=false, suppressedY=null, resizeSeq=0, baselineY=0, pendingPosition=null, comfortPosition=null, anchors, authored={}, i;
+  var arrivalInteracted=false, arrivalWaiting=false, arrivalY=0, arrivalPosition=null;
   function empty(){ }
-  if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty};
+  if(!status||!top||!nodes.length||!win||!fdReadingRef(ref))return {destroy:empty,startAtTop:empty,reflow:function(change){if(change)change();}};
   anchors=fdReadingHeadingIds(nodes.map(function(node){return node.textContent||'';}));
   for(i=0;i<nodes.length;i++)if(nodes[i].id)authored[nodes[i].id]=true;
   for(i=0;i<nodes.length;i++){
@@ -1198,13 +1400,15 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function availableAnchors(){return nodes.map(anchor);}
   function scrollY(){return typeof win.scrollY==='number'&&isFinite(win.scrollY)?Math.max(0,win.scrollY):0;}
   function absoluteTop(node){return node.getBoundingClientRect().top+scrollY();}
+  function rendered(node){return !node.getClientRects||node.getClientRects().length>0;}
   function current(){
-    var y=scrollY(), chosen=nodes[0], pos=absoluteTop(chosen), j, next;
-    for(j=1;j<nodes.length;j++){
+    var y=scrollY(), chosen=null, pos=0, j, next;
+    for(j=0;j<nodes.length;j++){
+      if(!rendered(nodes[j]))continue;
       next=absoluteTop(nodes[j]);
-      if(next<=y&&next>=pos){chosen=nodes[j];pos=next;}
+      if(!chosen||(next<=y&&next>=pos)){chosen=nodes[j];pos=next;}
     }
-    return {heading:anchor(chosen),offset:Math.max(0,y-pos)};
+    return chosen?{heading:anchor(chosen),offset:Math.max(0,y-pos)}:null;
   }
   function write(places){
     state.readingPlaces=places;
@@ -1216,13 +1420,20 @@ function fdInstallReadingPlace(reader,ref,state,options){
   function capture(){
     if(!active||!ready||suppressedY!==null)return;
     if(Math.abs(scrollY()-baselineY)<=4){pendingPosition=null;return;}
-    var position=pendingPosition||current();
+    var position=pendingPosition;
+    if(position&&!nodes.some(function(node){return anchor(node)===position.heading&&rendered(node);}))position=null;
+    position=position||current();
     pendingPosition=null;
+    if(!position)return;
     write(fdReadingPlaceUpdate(state.readingPlaces,ref,position.heading,position.offset,now()));
     baselineY=scrollY();
   }
   function onScroll(){
-    if(!active||!ready)return;
+    if(!active)return;
+    if(!ready){
+      if(arrivalWaiting&&arrivalInteracted)arrivalPosition=Math.abs(scrollY()-arrivalY)>4?current():null;
+      return;
+    }
     if(suppressedY!==null){
       if(Math.abs(scrollY()-suppressedY)<=4)return;
       suppressedY=null;
@@ -1240,6 +1451,33 @@ function fdInstallReadingPlace(reader,ref,state,options){
     if(timer!==null){timerClear(timer);timer=null;}
     capture();
   }
+  /* Capture before typography changes, then restore after layout without treating it as a
+     learner scroll. The resource and the modal stay mounted throughout. */
+  function reflow(change){
+    if(!active){if(change)change();return;}
+    if(timer!==null){timerClear(timer);timer=null;}
+    var position=comfortPosition||current(), sequence=++resizeSeq;
+    if(!comfortPosition&&position){
+      for(var n=0;n<nodes.length;n++)if(anchor(nodes[n])===position.heading){
+        /* Negative only in this transient frame: the viewport may precede the first heading. */
+        position.offset=scrollY()-absoluteTop(nodes[n]);break;
+      }
+    }
+    if(ready)capture();
+    comfortPosition=position;
+    pendingPosition=null;
+    ready=false;
+    if(change)change();
+    frame(function(){
+      if(!active||sequence!==resizeSeq)return;
+      var target=null;
+      for(var j=0;j<nodes.length;j++)if(position&&anchor(nodes[j])===position.heading){target=nodes[j];break;}
+      if(target&&rendered(target))win.scrollTo(0,Math.max(0,absoluteTop(target)+position.offset));
+      suppressedY=scrollY();baselineY=scrollY();
+      comfortPosition=null;
+      ready=o.allowStorage===true;
+    });
+  }
   function onResize(){
     if(!active||!ready)return;
     if(timer!==null){timerClear(timer);timer=null;capture();}
@@ -1251,13 +1489,46 @@ function fdInstallReadingPlace(reader,ref,state,options){
       var resolved=place&&fdReadingResume(place,availableAnchors()), target=null, j;
       if(resolved){
         for(j=0;j<nodes.length;j++)if(anchor(nodes[j])===resolved.heading){target=nodes[j];break;}
-        if(target){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
+        if(target&&rendered(target)){win.scrollTo(0,absoluteTop(target)+resolved.offset);suppressedY=scrollY();baselineY=scrollY();}
       }
       ready=true;
     });
   }
+  function removeArrivalListeners(){
+    win.removeEventListener('pageshow',onArrival);
+    win.removeEventListener('wheel',onArrivalInput);
+    win.removeEventListener('touchmove',onArrivalInput);
+    win.removeEventListener('keydown',onArrivalKey);
+    win.removeEventListener('pointerdown',onArrivalPointer);
+    win.removeEventListener('scroll',onScroll);
+  }
+  function arrivalControl(event,keys){
+    var target=event&&event.target;
+    if(event&&event.defaultPrevented)return true;
+    if(!target)return false;
+    if(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName||''))return true;
+    if(keys&&/^(BUTTON|A)$/.test(target.tagName||''))return true;
+    return !!(target.closest&&target.closest('dialog,[role="dialog"],[contenteditable="true"]'));
+  }
+  function onArrivalInput(event){if(!arrivalControl(event,false))arrivalInteracted=true;}
+  function onArrivalKey(event){
+    if(event&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!arrivalControl(event,true)&&
+       /^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End| |Spacebar)$/.test(event.key))onArrivalInput(event);
+  }
+  function onArrivalPointer(event){
+    /* A press in the document scrollbar gutter, not an ordinary page/control click. */
+    var root=doc&&doc.documentElement;
+    if(event&&event.button===0&&root&&typeof root.clientWidth==='number'&&
+       typeof event.clientX==='number'&&event.clientX>=root.clientWidth)onArrivalInput(event);
+  }
+  function onArrival(){
+    arrivalWaiting=false;
+    win.removeEventListener('pageshow',onArrival);
+    frame(arrive);
+  }
   function destroy(){
     if(!active)return;
+    removeArrivalListeners();
     if(timer!==null){timerClear(timer);timer=null;}
     capture();
     active=false;
@@ -1279,15 +1550,20 @@ function fdInstallReadingPlace(reader,ref,state,options){
   }
   if(o.allowStorage!==true){
     status.textContent='Reading place could not be saved on this device';
-    return {destroy:destroy,startAtTop:startAtTop};
+    return {destroy:destroy,startAtTop:startAtTop,reflow:reflow};
   }
-  frame(function(){
+  function arrive(){
     if(!active)return;
+    removeArrivalListeners();
     state.readingPlaces=fdReadingPlaces(state.readingPlaces);
     var place=state.readingPlaces[ref], resolved=place&&fdReadingResume(place,availableAnchors()), target=null;
-    if(o.restore===false){
+    if(o.restore===false||arrivalInteracted){
+      if(arrivalPosition){
+        for(var k=0;k<nodes.length;k++)if(anchor(nodes[k])===arrivalPosition.heading){target=nodes[k];break;}
+        if(target)win.scrollTo(0,absoluteTop(target)+arrivalPosition.offset);
+        write(fdReadingPlaceUpdate(state.readingPlaces,ref,arrivalPosition.heading,arrivalPosition.offset,now()));
+      }else write(state.readingPlaces);
       baselineY=scrollY();
-      write(state.readingPlaces);
     }else if(place&&!resolved){
       win.scrollTo(0,0);
       suppressedY=scrollY();
@@ -1316,8 +1592,24 @@ function fdInstallReadingPlace(reader,ref,state,options){
     win.addEventListener('scroll',onScroll);
     win.addEventListener('pagehide',onPagehide);
     win.addEventListener('resize',onResize);
-  });
-  return {destroy:destroy,startAtTop:startAtTop};
+  }
+  /* On a cold document, native reload restoration can occur after the reader's first frame
+     (for example when a font delays load). Start observing after pageshow's arrival frame so
+     that browser movement cannot recreate a cleared place or overwrite a saved offset. SPA
+     opens are already complete; explicit guide/practice arrivals retain their own timing.
+     The startup gate can open before load, so a learner's scroll input wins while we wait. */
+  var doc=win.document;
+  if(o.restore!==false&&doc&&(doc.readyState==='loading'||doc.readyState==='interactive')){
+    arrivalWaiting=true;
+    arrivalY=scrollY();
+    win.addEventListener('pageshow',onArrival);
+    win.addEventListener('wheel',onArrivalInput,{passive:true});
+    win.addEventListener('touchmove',onArrivalInput,{passive:true});
+    win.addEventListener('keydown',onArrivalKey);
+    win.addEventListener('pointerdown',onArrivalPointer);
+    win.addEventListener('scroll',onScroll);
+  }else frame(arrive);
+  return {destroy:destroy,startAtTop:startAtTop,reflow:reflow};
 }
 
 function fdWire(root, initialState, opts){
@@ -1371,6 +1663,15 @@ function fdWire(root, initialState, opts){
     var first=(d.querySelector&&d.querySelector('.fd-searchpanel__input'))||fdFocusable(d)[0]||d;
     if(first&&first.focus) try{first.focus();}catch(_){}
   }
+  /* The tree's one focus target. refocusInvoker cannot serve a tree action: an answer's
+     "equivalent control" is whichever button happens to share its attribute in the next node. */
+  function focusSheetHeading(){
+    var d=dialog();
+    var h=d&&d.querySelector&&d.querySelector('.fd-tree__heading');
+    if(!h||!h.focus) return false;
+    try{h.focus();}catch(_){return false;}
+    return true;
+  }
   /* THE EQUIVALENT of a control that is gone: the one live element carrying the same action
      attribute AND the same value, inside the given scope. That pairing is the whole of it -- two
      controls with the same attribute and value do the same thing, which is why focus may move to
@@ -1419,8 +1720,15 @@ function fdWire(root, initialState, opts){
      falls through to the next entry on the stack, as it always did. */
   function restoreInvoker(){
     while(invokers.length){
-      var el=invokers.pop();
+      var original=invokers.pop(), el=original;
       if(el&&el.isConnected===false) el=equivalentControl(el,root);
+      /* Essentials hides Details when the desktop preview appears. Keep focus on the same
+         resource's title if that breakpoint was crossed while its drawer was open. */
+      if(original&&original.hasAttribute&&original.hasAttribute('data-fd-library-details')&&
+         state.tab==='library'&&!state.openId&&!isShown(el)){
+        el=libraryRowOpener(original.getAttribute('data-fd-library-details'));
+        if(!isShown(el)) el=null;
+      }
       if(el&&el.focus){
         try{el.focus();}catch(_){}
         return;
@@ -1445,17 +1753,18 @@ function fdWire(root, initialState, opts){
     for(var k in patch){ if(fdOwn(patch,k)) return true; }
     return !!r.route||!!(r.effect&&r.effect.type&&r.effect.type!=='set-theme');
   }
-  /* The route keys every entry carries, plus the Library's section and filter (owner decision D3,
-     one-thread redesign): both live ONLY here and in memory -- never in the URL, never in
+  /* The route keys every entry carries, plus the Library's section, task and filter (D3):
+     these live ONLY here and in memory -- never in the URL, never in
      storage -- so Back and Forward restore them, and a reload (which reads neither) resets them.
      The preview (kitToolPreview) is deliberately absent: it stays transient. */
-  var FD_HISTORY_KEYS=['tab','viewWeek','openId','fromTab','libraryView','kitSection','libraryFilter'];
+  var FD_HISTORY_KEYS=['tab','viewWeek','openId','fromTab','libraryView','kitSection','libraryTask','libraryFilter'];
   function historySnapshot(){
     var snap={};
     for(var i=0;i<FD_HISTORY_KEYS.length;i++){
       var key=FD_HISTORY_KEYS[i];
       if(state[key]===undefined) continue;
       if(key==='kitSection'&&(state.tab!=='library'||state[key]==='all')) continue;
+      if(key==='libraryTask'&&(state.tab!=='library'||state[key]==='all'||!fdValidLibraryTask(state[key]))) continue;
       if(key==='libraryFilter'&&(state.tab!=='library'||!state[key])) continue;
       snap[key]=state[key];
     }
@@ -1545,7 +1854,7 @@ function fdWire(root, initialState, opts){
     return raw||'';
   }
   function baseChanged(before, after){
-    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','libraryFilter','careIntentId','carePackIds','offlineOpen'];
+    var keys=['openId','tab','screen','libraryView','kitSection','kitToolPreview','libraryTask','libraryFilter','careIntentId','carePackIds','offlineOpen'];
     for(var i=0;i<keys.length;i++){
       if(baseValue(before,keys[i])!==baseValue(after,keys[i])) return true;
     }
@@ -1556,8 +1865,8 @@ function fdWire(root, initialState, opts){
     /* settingsConfirmClear belongs here because arming the erase changes the PANEL and nothing
        under it. Left out, it falls to the else branch and is classed as a base change, so every
        arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
-    var overlayKeys={searchOpen:true,query:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
-      nudge:true,settingsConfirmClear:true};
+    var overlayKeys={searchOpen:true,query:true,searchExpanded:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
+      nudge:true,settingsConfirmClear:true,readingComfort:true,readingComfortNotice:true,treePath:true,escalate:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
       if(fdOwn(patch,key)&&before[key]!==state[key]){
@@ -1571,6 +1880,7 @@ function fdWire(root, initialState, opts){
     }
     var type=effect&&effect.type;
     if(type==='set-theme') surfaces.chrome=true;
+    if(type==='reading-comfort') surfaces.overlay=true;
     if(type==='focus-search'||type==='open-sheet'||type==='open-protocol'||
         type==='nudge-timeout'||type==='search-input'||
         type==='set-analytics') surfaces.overlay=true;
@@ -1651,6 +1961,20 @@ function fdWire(root, initialState, opts){
             return !destroyed&&generation===navGeneration&&state.openId===effect.openRef;
           }
         });
+      }
+    } else if(effect.type==='reading-comfort'){
+      var reader=root&&root.querySelector?root.querySelector('.fd-reader'):null;
+      if(reader&&!(reader.classList&&reader.classList.contains('fd-reader--tool'))){
+        var pref=fdReadingComfort(state.readingComfort);
+        if(reader.getAttribute&&reader.getAttribute('data-fd-reader-size')===pref.size&&
+           reader.getAttribute('data-fd-reader-spacing')===pref.spacing)return;
+        var paint=function(){
+          reader.setAttribute('data-fd-reader-size',pref.size);
+          reader.setAttribute('data-fd-reader-spacing',pref.spacing);
+        };
+        var session=o.readingPlaceSession&&o.readingPlaceSession();
+        if(session&&session.reflow)session.reflow(paint);
+        else paint();
       }
     } else if(effect.type==='set-theme'){
       /* Paints only. The cw_theme write is hoisted above the render in apply() -- see the comment
@@ -1805,6 +2129,10 @@ function fdWire(root, initialState, opts){
     if('offsetParent' in el) return el.offsetParent!==null;
     return true; /* no layout information (a test stub): treat as shown */
   }
+  function libraryRowOpener(ref){
+    if(!root||!root.querySelector||!ref||/["\\]/.test(ref)) return null;
+    return root.querySelector('.fd-kit__item [data-fd-open="'+ref+'"]');
+  }
   function rememberOpener(ref, invoker){
     originOpener=null;
     if(!invoker) return;
@@ -1928,9 +2256,41 @@ function fdWire(root, initialState, opts){
     var beforeRefreshScope=offlineRefreshScope(state);
     var beforeHistory=historyValue();
     var patch=result.patch||{};
+    var continuity=result.effect&&result.effect.type==='library-continuity';
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    if(continuity&&result.effect.action!=='show'){
+      var action=result.effect.action, changed=false, message='';
+      if(action==='pin'){
+        var pinResult=fdToolPinsToggle(result.effect.ref,index);
+        changed=pinResult.ok;
+        message=changed?(pinResult.pins.indexOf(result.effect.ref)!==-1?'Tool pinned to Quick tools.':'Tool unpinned.'):
+          (pinResult.reason==='limit'?'Choose up to five tools. Unpin one before adding another.':'Pins could not be changed on this device.');
+      } else if(action==='pins-clear'){
+        changed=fdToolPinsClear();
+        message=changed?'Pins cleared.':'Pins could not be cleared on this device.';
+      } else {
+        /* Read confirmed storage: a reader's in-memory position may belong to a failed save. */
+        var readReceipt={},savedPlaces=fdReadingPlaces(fdLoad(readReceipt).readingPlaces);
+        var nextPlaces=action==='readings-clear'?{}:fdReadingPlaceDrop(savedPlaces,result.effect.ref);
+        var candidate=fdClone(state);candidate.readingPlaces=nextPlaces;
+        changed=readReceipt.ok&&fdSave(candidate);
+        if(changed)state.readingPlaces=nextPlaces;
+        message=changed?(action==='readings-clear'?'Saved places cleared. Completion kept.':'Saved place removed. Completion kept.'):
+          'Saved places could not be changed on this device.';
+      }
+      state.continuityNotice=message;patch.continuityNotice=message;
+    }
+    /* Every way out of Search ends this query's expansion, including a result or another tab. */
+    if(!state.searchOpen&&state.searchExpanded){
+      state.searchExpanded=false;
+      patch.searchExpanded=false;
+    }
+    if(!state.sheet&&state.sheetFrom==='library'){
+      state.sheetFrom=null;
+      patch.sheetFrom=null;
+    }
     if(state.screen!=='app'||state.tab!=='today'||state.openId)state.offlineOpen=false;
     if(beforeRefreshScope&&beforeRefreshScope!==offlineRefreshScope(state))cancelOfflineRefresh();
     if(state.tab!=='care'||state.openId){
@@ -1944,13 +2304,20 @@ function fdWire(root, initialState, opts){
     /* Where the learner was when they opened a resource (#427). Recorded by the controller, not
        by fdDispatch: the scroll offset is a browser fact and dispatch stays pure. A reader that
        opens another reader keeps the origin -- "back" still means the tab it all started from. */
-    if(!before.openId&&state.openId){ state.scrollPos=currentScrollY(); rememberOpener(state.openId,invoker); }
+    if(!before.openId&&state.openId){
+      state.scrollPos=currentScrollY();
+      /* The drawer's Open control disappears with the drawer. Back belongs to the resource's
+         original Library row, even when a desktop preview offers a second visible opener. */
+      var resourceInvoker=before.sheetFrom==='library'&&before.sheet==='item:'+state.openId
+        ?libraryRowOpener(state.openId)||invoker:invoker;
+      rememberOpener(state.openId,resourceInvoker);
+    }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
     /* Returning from an item keeps the Library's section and filter (spec section 2 acceptance:
        "Opening an item and pressing Back returns to the same view, section and scroll"). Until
        2026-10-04 this line reset kitSection to All on every return. */
-    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryFilter');
+    var changedBase=baseChanged(before,state)||fdOwn(patch,'kitSection')||fdOwn(patch,'libraryTask')||fdOwn(patch,'libraryFilter')||!!(continuity&&result.effect.action!=='show');
     var detail=absorbStaleBase(transitionDetail(before,patch,result.effect,changedBase));
     var generation=navGeneration;
     if(changedBase||result.route||result.effect&&(result.effect.type==='open-resource'||
@@ -2027,18 +2394,22 @@ function fdWire(root, initialState, opts){
     }
     /* A section-only filter belongs just to this Essentials visit. Other navigation patches also
        reset kitSection to All; those still carry durable route state and must be saved normally. */
-    var visitOnly=fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryFilter')||
+    var visitOnly=fdOwn(patch,'searchExpanded')||fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryTask')||fdOwn(patch,'libraryFilter')||
       fdOwn(patch,'careIntentId')||fdOwn(patch,'carePackIds')||fdOwn(patch,'careShareId')||
       fdOwn(patch,'offlineOpen')||!!(result.effect&&(result.effect.type==='refresh-offline'||
         result.effect.type==='copy-care-links'));
     var careShareTransition=fdOwn(patch,'careShareId');
     for(var saveKey in patch){
-      if(fdOwn(patch,saveKey)&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryFilter'&&
+      if(fdOwn(patch,saveKey)&&saveKey!=='searchExpanded'&&saveKey!=='kitSection'&&saveKey!=='kitToolPreview'&&saveKey!=='libraryTask'&&saveKey!=='libraryFilter'&&
          saveKey!=='careIntentId'&&saveKey!=='carePackIds'&&saveKey!=='careShareId'&&
          saveKey!=='offlineOpen'&&!(careShareTransition&&(saveKey==='searchOpen'||saveKey==='sheet')))
         visitOnly=false;
     }
-    if(!visitOnly) fdSave(state);
+    if(result.effect&&result.effect.type==='reading-comfort'){
+      var comfortSaved=fdSave(state);
+      if(!comfortSaved)state.readingComfort=fdReadingComfort(before.readingComfort);
+      state.readingComfortNotice=comfortSaved?'Saved on this device.':'Could not save reading preferences on this device.';
+    }else if(!visitOnly&&!continuity) fdSave(state);
     if(!fromHistory){
       var pushed=routeTo(result.route,result.history==='replace');
       if(!pushed&&beforeHistory!==historyValue()) replaceHistorySnapshot();
@@ -2048,12 +2419,24 @@ function fdWire(root, initialState, opts){
     fdApplyEffect(result.effect,fromHistory,generation,
       !!(invoker&&invoker.getAttribute&&invoker.getAttribute('data-fd-reading-resume')==='1'));
     focusPostTransition(before,result,changedBase);
+    if(continuity&&!afterOverlay&&(!externalModalOpen())&&
+       (typeof fdPageFocusAllowed!=='function'||fdPageFocusAllowed())){
+      var fromContinuity=invoker&&invoker.closest&&invoker.closest('.fd-continuity');
+      var continuityTarget=result.effect.action==='show'||fromContinuity||!changed
+        ?root.querySelector('.fd-continuity__title'):equivalentControl(invoker,root);
+      if(continuityTarget&&continuityTarget.focus){
+        try{continuityTarget.focus({preventScroll:true});}catch(_){continuityTarget.focus();}
+        if(result.effect.action==='show'||!changed){
+          if(continuityTarget.scrollIntoView)continuityTarget.scrollIntoView({block:'start'});
+        }
+      }
+    }
     if(fdOwn(patch,'appPractice')&&!afterOverlay&&!beforeHadOverlay){
       focusAppPractice(invoker,before);
     }
     /* The Essentials rail rebuilds with the filtered results. Keep keyboard focus on the exact
        section button the learner chose, which also scrolls a clipped phone rail into view. */
-    if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview'))&&!afterOverlay&&!beforeHadOverlay){
+    if((fdOwn(patch,'kitSection')||fdOwn(patch,'kitToolPreview')||fdOwn(patch,'libraryTask'))&&!afterOverlay&&!beforeHadOverlay){
       var rebuiltFilter=equivalentControl(invoker,root);
       if(rebuiltFilter&&rebuiltFilter.focus) try{rebuiltFilter.focus();}catch(_){}
     }
@@ -2085,7 +2468,8 @@ function fdWire(root, initialState, opts){
       if(offlineFocus&&offlineFocus.focus)try{offlineFocus.focus();}catch(_){}
     }
     if(before.openId&&!state.openId) restoreOrigin(before);
-    if(afterOverlay&&afterOverlay!==beforeOverlay) focusDialog();
+    if(afterOverlay&&(afterOverlay!==beforeOverlay||
+       (result.effect&&result.effect.type==='focus-search'))) focusDialog();
     else if(!afterOverlay&&beforeHadOverlay) restoreInvoker();
     /* The fallback exists because refocusInvoker's premise -- the equivalent control is still
        there after the render -- is true of every control in the panel except one. The two-tap
@@ -2104,7 +2488,8 @@ function fdWire(root, initialState, opts){
        an open panel nobody touched. Focus belongs wherever the learner left it there; the
        fallback is for the element that was destroyed under their finger. */
     else if(afterOverlay&&afterOverlay===beforeOverlay){
-      if(!refocusInvoker(invoker)&&invoker) focusDialog();
+      var headed=!!(result.effect&&result.effect.type==='focus-sheet-heading')&&focusSheetHeading();
+      if(!headed&&!refocusInvoker(invoker)&&invoker) focusDialog();
     }
     return state;
   }
@@ -2221,8 +2606,9 @@ function fdWire(root, initialState, opts){
     var direction=target.selectionDirection;
     var before=fdClone(state);
     state.query=String(target.value||'');
+    state.searchExpanded=false;
     renderTransient(state,transitionDetail(
-      before,{query:state.query},{type:'search-input'},false
+      before,{query:state.query,searchExpanded:false},{type:'search-input'},false
     ));
     var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
     if(fresh&&fresh.focus){
@@ -2312,25 +2698,19 @@ function fdWire(root, initialState, opts){
       apply(fdDispatch({close:true},context(),state),event.target,false);
       return;
     }
+    /* Enter in the search field SHOWS the results; it never opens one (C2, 2026-10-17). Until
+       then Enter jumped into result #1 and ran find-in-page there, so a learner who pressed Go on
+       a phone keyboard landed in a page they had not chosen ("QTc" opened the primer and then
+       reported "No matching passage"). Now focus moves to the first result row: the phone keyboard
+       closes, the list is in view, a screen reader lands on the list, and one more Enter or tap
+       opens the row the learner can see -- the same row Enter used to open, so nothing about
+       ranking or the safety-first order changes. No results: the field keeps focus. */
     if(event.key==='Enter'&&state.searchOpen&&fdIsTypingTarget(event.target)){
-      var searcher=o.searchResults||fdSearchResults;
-      var results=searcher(index,state.query||'',o.synonyms||{},state)||[];
-      if(results.length){
-        var first=results[0], attrs={};
-        if(first.kind==='care'){
-          var careId=first.item&&first.item.id;
-          var careLink=careId&&root&&root.querySelector?
-            root.querySelector('.fd-result.is-care[data-care-resource="'+careId+'"]'):null;
-          if(event.preventDefault) event.preventDefault();
-          if(careLink&&careLink.click) careLink.click();
-          return;
-        }
-        if(first.kind==='protocol') attrs['data-fd-safety']=first.item.ref;
-        else{
-          attrs['data-fd-open']=first.item.ref;
-        }
-        if(event.preventDefault) event.preventDefault();
-        apply(fdDispatch(attrs,context(),state),event.target,false);
+      var firstRow=root&&root.querySelector?root.querySelector('.fd-searchpanel__body .fd-result'):null;
+      if(event.preventDefault) event.preventDefault();
+      if(firstRow&&firstRow.focus){
+        try{ firstRow.focus(); }catch(_){}
+        try{ if(firstRow.scrollIntoView) firstRow.scrollIntoView({block:'nearest'}); }catch(_){}
       }
       return;
     }
@@ -2378,10 +2758,13 @@ function fdWire(root, initialState, opts){
     merged.feedbackNotice=null;
     merged.offlineOpen=false;
     merged.searchOpen=false;
+    merged.searchExpanded=false;
     merged.query='';
     merged.sheet=null;
     merged.sheetFrom=null;
     merged.stepsDone={};
+    merged.treePath=[];
+    merged.escalate=null;
     if(snap){
       for(var routeIndex=0;routeIndex<FD_HISTORY_KEYS.length;routeIndex++){
         delete merged[FD_HISTORY_KEYS[routeIndex]];
@@ -2391,10 +2774,11 @@ function fdWire(root, initialState, opts){
         if(fdOwn(snap,routeKey)) merged[routeKey]=snap[routeKey];
       }
       if(merged.libraryView!=='full') merged.libraryView='essentials';
-      /* Section and filter come back from the entry that recorded them (D3); an entry without
+      /* Section, task and filter come back from the entry that recorded them (D3); an entry without
          them -- every non-Library entry, and every entry written before this change -- means All
          and no filter. Anything but a string is treated as absent. */
       if(typeof merged.kitSection!=='string'||!merged.kitSection) merged.kitSection='all';
+      if(merged.tab!=='library'||!fdValidLibraryTask(merged.libraryTask)) merged.libraryTask='all';
       if(typeof merged.libraryFilter!=='string') merged.libraryFilter='';
     } else {
       merged.roles=o.roles||merged.roles;
@@ -2523,6 +2907,17 @@ function fdWire(root, initialState, opts){
       dispatch:function(attrs,c){
         if(destroyed||!startupCommitted) return state;
         return apply(fdDispatch(attrs,context(c),state),null,false);
+      },
+      /* Capture owns its own dialog. Keep Search's query and opener only in this closure
+         so closing the resumed Search still returns to its original button. */
+      suspendSearch:function(){
+        if(destroyed||!startupCommitted||!state.searchOpen) return null;
+        var query=String(state.query||''), invoker=invokers.length?invokers[invokers.length-1]:null;
+        apply(fdDispatch({'data-fd-close-search':''},context(),state),null,false);
+        return function(){
+          if(destroyed||!startupCommitted) return state;
+          return apply(fdDispatch({'data-fd-search':'','data-fd-search-query':query},context(),state),invoker,false);
+        };
       },
       prepareStartup:prepareStartup,
       commitStartup:commitStartup,

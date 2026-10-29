@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Site A Library</title>
+<script src="./support.js"></script>
+<script src="icons/wf-icons.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.th{--bg:#f6f3ee;--surface:#ffffff;--bar:#fbf9f5;--text:#3b332c;--mid:#64574b;--dim:#76695d;--teal:#3a7d6e;--tealdeep:#2c6356;--wash:#edf4f2;--danger:#a34132;--line:#ebe5da;--line2:#ddd3c6;--seg:#ece7df;--onfill:#ffffff}
+.th.dark{--bg:#211d1a;--surface:#2a2521;--bar:#26221e;--text:#ece5db;--mid:#bcb0a2;--dim:#a2968a;--teal:#5fa392;--tealdeep:#7fc0ae;--wash:#1d332e;--danger:#d97a68;--line:#3a332c;--line2:#4a4139;--seg:#332d28;--onfill:#211d1a}
+.ic{display:block;flex:none;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+.s14{width:14px;height:14px;stroke-width:2.1}.s16{width:16px;height:16px;stroke-width:2}.s18{width:18px;height:18px;stroke-width:1.8}.s48{width:48px;height:48px;stroke-width:1.25}
+.bold.s16{stroke-width:3.4}.bold.s18{stroke-width:3.2}
+button{font:inherit;cursor:pointer}
+a{color:inherit}
+</style>
+</helmet>
+<div class="th {{theme}}" style="width: 2000px; height: 1500px; box-sizing: border-box; padding: 64px; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; display: flex; gap: 64px; align-items: flex-start;">
+
+  <div style="width: 520px; flex: none; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--mid);">Before — shipped</div>
+    <img src="{{beforeSrc}}" alt="Shipped Library: rows differ only by title" style="width: 520px; border-radius: 10px; border: 1px solid var(--line2); display: block;">
+    <div style="font-size: 13px; color: var(--mid); line-height: 1.5;">{{beforeNote}}</div>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-size: 14px; font-weight: 600; color: var(--tealdeep);">After — section icons in the index; a type icon column on every row; the type word leads the meta line</div>
+
+    <sc-if value="{{isDesktop}}" hint-placeholder-val="{{ true }}">
+      <div style="width: 1280px; background: var(--bg); border: 1px solid var(--line2); border-radius: 10px; padding: 40px 120px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px;">
+        <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 36px;">Library</div>
+        <div style="display: flex; gap: 16px; align-items: center;">
+          <div role="tablist" aria-label="Library view" style="display: flex; background: var(--seg); border-radius: 10px; padding: 4px;">
+            <button type="button" role="tab" aria-selected="{{essSel}}" onClick="{{toEss}}" style="height: 36px; padding: 0 18px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600; background: {{essBg}}; color: {{essColor}};">Essentials · 31</button>
+            <button type="button" role="tab" aria-selected="{{evSel}}" onClick="{{toEv}}" style="height: 36px; padding: 0 18px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600; background: {{evBg}}; color: {{evColor}};">Everything · 85</button>
+          </div>
+          <label style="flex: 1; height: 40px; border: 1px solid var(--line2); border-radius: 10px; background: var(--surface); display: flex; align-items: center; gap: 10px; padding: 0 14px; color: var(--dim); font-size: 14px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.search}}"></path></svg><input type="search" value="{{query}}" placeholder="Filter by title or topic — e.g. delirium, family meeting" style="border: 0; background: transparent; outline: none; flex: 1; font: inherit; color: var(--text);"></label>
+        </div>
+        <div style="font-size: 13px; color: var(--mid);">{{showing}}</div>
+        <div style="display: flex; gap: 32px; align-items: flex-start;">
+          <nav aria-label="Sections" style="width: 200px; flex: none; display: flex; flex-direction: column; gap: 2px;">
+            <sc-for list="{{index}}" as="s" hint-placeholder-count="8">
+              <a href="#" aria-current="{{s.current}}" onClick="{{s.pick}}" style="min-height: 40px; padding: 0 10px; border-radius: 8px; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; font-weight: {{s.weight}}; background: {{s.bg}}; color: {{s.color}};"><span style="width: 16px; flex: none; color: {{s.icolor}};"><sc-if value="{{s.hasIcon}}" hint-placeholder-val="{{ true }}"><svg class="ic s16 {{s.wt}}" viewBox="0 0 24 24" aria-hidden="true"><path d="{{s.d}}"></path></svg></sc-if></span><span style="flex: 1;">{{s.label}}</span><span style="color: var(--mid); font-weight: 400;">{{s.n}}</span></a>
+            </sc-for>
+          </nav>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+            <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; border-top: 1px solid var(--line2);">
+                <span style="color: var(--mid);"><svg class="ic s48" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.search}}"></path></svg></span>
+                <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 20px;">No titles match "catatonia lorazepam"</div>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" style="height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: var(--teal); color: var(--onfill); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.search}}"></path></svg>Search</button>
+                  <button type="button" style="height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line2); background: var(--surface); color: var(--text); font-weight: 500; font-size: 14px;">Clear</button>
+                </div>
+                <div style="font-size: 12px; color: var(--dim);">Optional line art: the existing magnifier at 48 px in text-mid. Search remains the one filled teal button.</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{hasRows}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column;">
+                <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+                  <div style="display: flex; flex-direction: column; margin-bottom: 20px;">
+                    <div style="height: 40px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line2); font-size: 13px; font-weight: 600; color: var(--mid);"><span style="color: {{g.icolor}};"><svg class="ic s16 {{g.wt}}" viewBox="0 0 24 24" aria-hidden="true"><path d="{{g.d}}"></path></svg></span>{{g.title}} <span style="font-weight: 400;">· {{g.n}}</span><span style="flex: 1;"></span><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.chevronDown}}"></path></svg></div>
+                    <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
+                      <a href="#" style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 4px; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--text);">
+                        <span style="width: 18px; flex: none; padding-top: 3px; color: var(--mid);"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.d}}"></path></svg></span>
+                        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                          <span style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 18px; line-height: 1.3;">{{r.title}}</span>
+                          <sc-if value="{{r.hasSum}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: var(--mid); line-height: 1.5;">{{r.sum}}</span></sc-if>
+                          <span style="font-size: 13px; color: var(--mid);"><strong style="font-weight: 600; color: var(--text);">{{r.type}}</strong>{{r.meta}}</span>
+                        </span>
+                        <span style="flex: none; padding-top: 4px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.trail}}"></path></svg></span>
+                      </a>
+                    </sc-for>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <sc-if value="{{showPreview}}" hint-placeholder-val="{{ false }}">
+            <aside style="width: 280px; flex: none; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--teal); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{i.tool}}"></path></svg>Tool</div>
+              <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 22px;">Mental Status Exam</div>
+              <div style="font-size: 14px; color: var(--mid); line-height: 1.5;">Domain-by-domain descriptor bank and a builder that drafts a written mental status exam.</div>
+              <button type="button" style="height: 44px; border: 0; border-radius: 8px; background: var(--teal); color: var(--onfill); font-weight: 600; font-size: 15px; margin-top: 6px;">Open tool</button>
+              <div style="font-size: 12px; color: var(--dim);">The preview's type kicker reuses the row's icon, so the row and the pane read as one item.</div>
+            </aside>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isMobile}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; gap: 48px; align-items: flex-start;">
+        <div style="width: 390px; height: 844px; flex: none; border: 1px solid var(--line2); border-radius: 28px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column;">
+          <div style="flex: 1; overflow: hidden; padding: 20px 18px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 30px;">Library</div>
+            <div style="display: flex; background: var(--seg); border-radius: 10px; padding: 4px; align-self: flex-start;">
+              <button type="button" onClick="{{toEss}}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600; background: {{essBg}}; color: {{essColor}};">Essentials · 31</button>
+              <button type="button" onClick="{{toEv}}" style="height: 40px; padding: 0 16px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600; background: {{evBg}}; color: {{evColor}};">Everything · 85</button>
+            </div>
+            <div style="display: flex; gap: 8px; overflow: hidden; padding: 2px 0;">
+              <sc-for list="{{chips}}" as="s" hint-placeholder-count="4">
+                <a href="#" onClick="{{s.pick}}" style="height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid {{s.border}}; background: {{s.chipBg}}; color: {{s.color}}; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex: none; text-decoration: none;"><sc-if value="{{s.hasIcon}}" hint-placeholder-val="{{ true }}"><span style="color: {{s.icolor}};"><svg class="ic s16 {{s.wt}}" viewBox="0 0 24 24" aria-hidden="true"><path d="{{s.d}}"></path></svg></span></sc-if>{{s.label}} <span style="font-weight: 400; color: var(--mid);">{{s.n}}</span></a>
+              </sc-for>
+            </div>
+            <sc-for list="{{mrows}}" as="r" hint-placeholder-count="5">
+              <a href="#" style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line); text-decoration: none; color: var(--text);">
+                <span style="width: 18px; flex: none; padding-top: 3px; color: var(--mid);"><svg class="ic s18" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.d}}"></path></svg></span>
+                <span style="flex: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 17px;">{{r.title}}</span><span style="font-size: 13px; color: var(--mid);"><strong style="font-weight: 600; color: var(--text);">{{r.type}}</strong>{{r.meta}}</span></span>
+                <span style="flex: none; padding-top: 3px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true"><path d="{{r.trail}}"></path></svg></span>
+              </a>
+            </sc-for>
+          </div>
+          <div style="height: 64px; flex: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding: 4px 6px 6px; background: var(--bar); border-top: 1px solid var(--line);">
+            <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="width: 22px; height: 22px; stroke-width: 1.6;"><path d="{{i.today}}"></path></svg>Today</span>
+            <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="width: 22px; height: 22px; stroke-width: 1.6;"><path d="{{i.path}}"></path></svg>Path</span>
+            <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 600; color: var(--tealdeep); background: var(--wash); border-radius: 12px;"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="width: 22px; height: 22px; stroke-width: 1.6;"><path d="{{i.library}}"></path></svg>Library</span>
+            <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="width: 22px; height: 22px; stroke-width: 1.6;"><path d="{{i.care}}"></path></svg>Care</span>
+            <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: var(--mid);"><svg class="ic s16" viewBox="0 0 24 24" aria-hidden="true" style="width: 22px; height: 22px; stroke-width: 1.6;"><path d="{{i.ask}}"></path></svg>Ask</span>
+          </div>
+        </div>
+        <div style="width: 440px; display: flex; flex-direction: column; gap: 16px; font-size: 14px; color: var(--mid); line-height: 1.55; padding-top: 8px;">
+          <div style="font-weight: 600; color: var(--text);">Row anatomy</div>
+          <div>18 px type icon in a fixed column, aligned to the title's first line, 12 px gap. The type word leads the meta line in semibold text colour, so type is carried by both icon and word.</div>
+          <div>The trailing chevron means "opens here". An external page shows the 14–16 px external icon instead, with visually hidden text "opens in a new tab".</div>
+          <div>The "tool" chip is removed, because the wrench icon plus the word "Tool" replace it. This is a class inventory change (<code>.fd-kit__chip--tool</code> retired).</div>
+          <div><strong style="color: var(--text);">Data proposal:</strong> the meta line's type word comes from a new derived <code>kind</code> field in the catalogue build (reading | tool | pocket-card | deck | podcast | book-list | video | case | exam | medication). Today the Anki decks and OSCE pages all say "Reading". Assigning kinds is a catalogue build change, not a clinical content edit.</div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"device":{"editor":"enum","options":["desktop","mobile"],"default":"desktop"},"view":{"editor":"enum","options":["everything","essentials"],"default":"everything"},"state":{"editor":"enum","options":["default","empty"],"default":"default"},"$preview":{"width":2000,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: null, section: null };
+  }
+  renderVals() {
+    var self = this;
+    var W = window.WFIcons;
+    var all = W ? W.all() : {};
+    var view = this.state.view || (this.props.view === 'essentials' ? 'essentials' : 'everything');
+    var device = this.props.device === 'mobile' ? 'mobile' : 'desktop';
+    var empty = this.props.state === 'empty';
+    var ess = view === 'essentials';
+    var defSection = ess ? 'all' : 'evidence';
+    var section = this.state.section || defSection;
+
+    function sec(id, label, key, n) {
+      var on = id === section;
+      var red = key === 'safety';
+      return {
+        label: label, n: n, d: key ? all[key] : '', hasIcon: !!key, wt: red ? 'bold' : '',
+        current: on ? 'true' : 'false',
+        bg: on ? 'var(--wash)' : 'transparent', chipBg: on ? 'var(--wash)' : 'var(--surface)',
+        border: on ? 'var(--teal)' : 'var(--line2)',
+        color: on ? 'var(--tealdeep)' : 'var(--text)', weight: on ? 600 : 500,
+        icolor: red ? 'var(--danger)' : (on ? 'var(--tealdeep)' : 'var(--mid)'),
+        pick: function (e) { if (e && e.preventDefault) { e.preventDefault(); } self.setState({ section: id }); }
+      };
+    }
+    var index = ess ? [
+      sec('all', 'All', '', 31), sec('week', 'This week', 'thisWeek', 4), sec('start', 'Start here', 'startHere', 2),
+      sec('pocket', 'Pocket cards', 'pocketCard', 3), sec('acute', 'Acute & safety', 'safety', 5),
+      sec('dx', 'Core diagnoses', 'diagnoses', 6), sec('meds', 'Medications', 'medication', 2),
+      sec('fam', 'Family & discharge', 'family', 3), sec('exam', 'Exam', 'exam', 2), sec('tools', 'Tools', 'tool', 8)
+    ] : [
+      sec('all', 'All', '', 85), sec('tools', 'Interactive tools', 'tool', 20), sec('acute', 'Acute & safety', 'safety', 12),
+      sec('core', 'Core topics', 'diagnoses', 17), sec('skills', 'Clinical skills', 'skills', 17), sec('evidence', 'Evidence & exam', 'evidence', 19)
+    ];
+
+    function row(title, kind, meta, sum, ext) {
+      var map = { 'Reading': 'reading', 'Tool': 'tool', 'Pocket card': 'pocketCard', 'Flashcard deck': 'deck',
+        'Podcast': 'podcast', 'Book list': 'bookList', 'Video': 'video', 'Case': 'caseVignette', 'Exam prep': 'exam',
+        'Medication': 'medication' };
+      return { title: title, type: kind, meta: meta ? ' · ' + meta : '', sum: sum || '', hasSum: !!sum,
+        d: all[map[kind]], trail: ext ? all.external : all.chevronRight };
+    }
+    var evRows = [
+      row('Core Reading List', 'Book list', '3 min'),
+      row('COMAT & Shelf Review', 'Exam prep', '5 min · Week 6 · Case week 6'),
+      row('OSCE Stations', 'Exam prep', '4 min · Week 6'),
+      row('Practice Cases', 'Case', '6 min · Week 6'),
+      row('Rapid Review — Buzzwords', 'Reading', ''),
+      row('Weekly Reading Map', 'Reading', '4 min'),
+      row('Anki Flashcard Decks', 'Flashcard deck', '2 min', '', true),
+      row('High-Yield Rounds Questions', 'Exam prep', '8 min'),
+      row('Psychopharmacology Primer', 'Medication', ''),
+      row('Book Library', 'Book list', ''),
+      row('Podcast Library', 'Podcast', '')
+    ];
+    var essGroups = [
+      { title: 'Start here', n: 2, d: all.startHere, wt: '', icolor: 'var(--mid)', rows: [
+        row('Welcome to the Rotation', 'Reading', '3 min · Week 1', 'Start with the Six-Week Compass and Orientation Packet, then choose the resource relevant to the task you are preparing to discuss with your supervising team.'),
+        row('Documentation & Oral Presentation', 'Reading', '5 min · Week 1 · Case week 6')
+      ]},
+      { title: 'Pocket cards', n: 3, d: all.pocketCard, wt: '', icolor: 'var(--mid)', rows: [
+        row('Interview & MSE', 'Pocket card', '5 min · Week 1 · Case week 1'),
+        row('Mental Status Exam', 'Tool', 'Week 1')
+      ]}
+    ];
+    var evGroups = [{ title: 'Evidence & exam', n: 19, d: all.evidence, wt: '', icolor: 'var(--mid)', rows: evRows }];
+
+    var chips = index.slice(0, 4);
+    if (!ess) { chips = [index[5], index[0], index[1], index[2]]; }
+
+    return {
+      i: all, index: index, chips: chips,
+      groups: ess ? essGroups : evGroups,
+      mrows: ess ? [essGroups[0].rows[0], essGroups[0].rows[1], essGroups[1].rows[0], essGroups[1].rows[1]] : evRows.slice(0, 9),
+      theme: this.props.theme === 'dark' ? 'dark' : '',
+      isDesktop: device === 'desktop', isMobile: device === 'mobile',
+      isEmpty: empty, hasRows: !empty, showPreview: ess && !empty,
+      query: empty ? 'catatonia lorazepam' : '',
+      showing: empty ? 'No pages match in ' + (ess ? 'Essentials.' : 'Everything.') : (ess ? 'Showing all 31 Essentials items.' : 'Showing 19 pages in Evidence & exam.'),
+      essSel: ess ? 'true' : 'false', evSel: ess ? 'false' : 'true',
+      essBg: ess ? 'var(--surface)' : 'transparent', evBg: ess ? 'transparent' : 'var(--surface)',
+      essColor: ess ? 'var(--tealdeep)' : 'var(--mid)', evColor: ess ? 'var(--mid)' : 'var(--tealdeep)',
+      toEss: function () { self.setState({ view: 'essentials', section: null }); },
+      toEv: function () { self.setState({ view: 'everything', section: null }); },
+      beforeSrc: ess ? '/_blob/80af9ed96fdf2d3aa0afcd4c19e1d086' : '/_blob/33be2db40f7ec54b05cb4a4e7c0db525',
+      beforeNote: ess ? 'Essentials: text-only index; readings and tools are told apart only by a small "tool" chip.' : 'Evidence & exam: 19 near-identical rows. A flashcard deck, an OSCE station and a book list all say "Reading".'
+    };
+  }
+}
+</script>
+</body>
+</html>

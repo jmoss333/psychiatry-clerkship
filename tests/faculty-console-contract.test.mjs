@@ -5441,7 +5441,7 @@ const BASELINE_STATEMENT = 'I have reviewed this content and attest to it as it 
   + 'clinically accurate, supported by its cited evidence, original, and free of protected health '
   + 'information.';
 
-function baselineHarnessFetch({ pressFails = false, forecast, rollingPr } = {}) {
+function baselineHarnessFetch({ pressFails = false, forecast, rollingPr, questionPreview } = {}) {
   let items = [
     { slug: 'anx.md', title: 'Anxiety disorders', kind: 'page', status: 'unreviewed', reason: 'New page awaiting review.', sites: ['ms3'] },
     driftedItem('t_mood.md', 'Mood disorders'),
@@ -5458,9 +5458,11 @@ function baselineHarnessFetch({ pressFails = false, forecast, rollingPr } = {}) 
     ],
     excluded: [{ slug: 'mse-tool', title: 'MSE', kind: 'tool', was: 'pending',
       reason: 'Its own review label says "draft". Changing that label is a content change (ADR-003 §6), so it is not signed here.' }],
-    questions: { sign: [{ id: 'qb_moo_900', category: 'mood', stem: 'A fictional inpatient reports sadness.' }], excluded: [] },
+    questions: { manifestRevision: 'b'.repeat(40),
+      sign: [{ id: 'qb_moo_900', revision: 'c'.repeat(64), category: 'mood', stem: 'A fictional inpatient reports sadness.' }], excluded: [] },
     ...(forecast ? { forecast } : {}),
   };
+  if (questionPreview !== undefined) preview.questions = questionPreview;
   const branchSync = rollingPr ? {
     isolated: true, aheadBy: 1, behindBy: 0, rollingPr, rollingPrChecked: true,
     branch: 'attest/pending', baseBranch: 'main', reasons: [], alarmed: false,
@@ -5480,10 +5482,10 @@ function baselineHarnessFetch({ pressFails = false, forecast, rollingPr } = {}) 
         commit: 'https://github.example/commit/baseline', signed, excluded: preview.excluded,
         questions: { updated: 1, commit: 'https://github.example/commit/questions', signed: ['qb_moo_900'], excluded: [] } });
     }
-    if (parsed.searchParams.get('view') === 'batch') return jsonResponse(preview);
+    if (parsed.searchParams.get('view') === 'batch') return jsonResponse(structuredClone(preview));
     return jsonResponse({ ...serverState({ items, questions: [] }), ...(branchSync ? { branchSync } : {}) });
   };
-  return { fetchImpl, calls };
+  return { fetchImpl, calls, preview };
 }
 
 test('the baseline is lazy, lists what one press signs and leaves out, and sends the statement with the exclusions', async () => {
@@ -5517,10 +5519,48 @@ test('the baseline is lazy, lists what one press signs and leaves out, and sends
   assert.equal(posts.length, 1, 'one press');
   assert.deepEqual(JSON.parse(posts[0].body), {
     target: 'content', mode: 'baseline', statement: BASELINE_STATEMENT, exclude: ['anx.md'],
+    questionSnapshot: { manifestRevision: 'b'.repeat(40), items: [{ id: 'qb_moo_900', revision: 'c'.repeat(64) }] },
   });
   const receipt = document.getElementById('many-page-receipt');
   assert.match(receipt.textContent, /Signed 1 page or tool\. Attested 1 question\. 1 left out, with the reason below\./);
   assert.ok(document.findAll('a').some(link => link.getAttribute('href') === 'https://github.example/commit/baseline'));
+});
+
+test('a baseline preview without exact question revisions cannot offer a signing press', async () => {
+  const entry = { id: 'qb_moo_900', revision: 'c'.repeat(64) };
+  for (const questionPreview of [null, { sign: [entry], excluded: [] },
+    { manifestRevision: 'b'.repeat(40), sign: [{ id: entry.id }], excluded: [] },
+    { manifestRevision: 'b'.repeat(40), sign: [{ ...entry, revision: 'old' }], excluded: [] },
+    { manifestRevision: 'b'.repeat(40), sign: [entry, entry], excluded: [] },
+  ]) {
+    const { fetchImpl, calls } = baselineHarnessFetch({ questionPreview });
+    const { document } = await startHarness({ fetchImpl });
+    await openDetails(document.getElementById('baseline'));
+    assert.equal(Boolean(document.getElementById('baseline-sign')), false);
+    assert.match(document.getElementById('baseline-body').textContent, /reload|revision/i);
+    assert.equal(calls.some(call => call.method === 'POST'), false);
+  }
+});
+
+test('baseline submits the captured question revisions until an explicit preview refresh', async () => {
+  for (const refresh of [false, true]) {
+    const { fetchImpl, calls, preview } = baselineHarnessFetch();
+    const { document } = await startHarness({ fetchImpl });
+    await openDetails(document.getElementById('baseline'));
+    preview.questions.manifestRevision = 'd'.repeat(40);
+    preview.questions.sign[0].revision = 'e'.repeat(64);
+    if (refresh) {
+      await document.getElementById('baseline-refresh').dispatch('click');
+      await flushAsyncWork();
+    }
+    await document.getElementById('baseline-sign').dispatch('click');
+    await flushAsyncWork();
+    const body = JSON.parse(calls.find(call => call.method === 'POST').body);
+    assert.deepEqual(body.questionSnapshot, {
+      manifestRevision: (refresh ? 'd' : 'b').repeat(40),
+      items: [{ id: 'qb_moo_900', revision: (refresh ? 'e' : 'c').repeat(64) }],
+    });
+  }
 });
 
 /* The forecast (2026-09-30): before the press, one line says what it leaves undone and whether

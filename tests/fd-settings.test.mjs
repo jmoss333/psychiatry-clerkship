@@ -60,6 +60,8 @@ const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf
 
 // eslint-disable-next-line no-new-func
 const makeSettings = new Function(`
+  ${read('phase_policy.js')}
+  ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
   ${read('frontdoor/fd_shell.js')}
   ${read('frontdoor/fd_sheet.js')}

@@ -1,89 +1,59 @@
 #!/usr/bin/env python3
-"""Item-level review flags on six question banks: count the open ones, name them, and only let them shrink.
+"""Review-only question staging plus capped item-level flags on five other banks.
 
-WHAT IS MEASURED, AND ONLY THIS. Every question-bank item carries (or lacks) an ITEM-LEVEL
-review flag: `status` on question_bank.json items, `facultyReview.status` on the other five
-banks. This tool counts, per bank, the items whose item-level flag is OPEN -- draft, pending,
-missing, or any value that is not reviewed/attested -- and compares that set, by name, to a
-capped allowlist. "Exposure" in this tool's name means exactly that: an item in a bank file
-the sites ship (all six were shipped sources in shipped_pages.json on 2026-10-05; this tool
-does not re-check that) whose own flag is open. It is NOT a claim that the item reached
-learners without a faculty signature -- see WHAT THIS DOES NOT ESTABLISH.
+QUESTION BANK: REVIEW SOURCE AND LEARNER PUBLICATION ARE DIFFERENT SETS.
+Canonical question_bank.json contains both attested questions and valid drafts for faculty
+review. qbank_public.project_question_bank publishes only active, explicitly attested items.
+This checker calls that same strict reader, names each source draft as STAGED, and does not
+count staged or retired items as learner exposure. Missing/unknown approval, duplicate or
+malformed IDs, malformed retirement and unreadable banks fail closed (exit 2).
 
-THE GAP IT CLOSES. Item-level flags were enforced on one bank and counted on none.
-question_bank.json is the only bank whose per-item status is the claim of record: the faculty
-console attests its items one at a time, and the attestation hash strips per-item status before
-hashing the file (13_Faculty_Resources/_automation/attestation_hash.py, canonical_question_bank).
-The other five banks are attested at TOOL level instead: each file is an extraSource of a host
-tool in shipped_pages.json, and that tool's signature hashes the whole file, item-level flags
-included (attestation_hash.py, sources_for_slug). On 2026-10-03 every communication case,
-family-systems scenario and clinical-reasoning case (both audiences) had
-`facultyReview.status: "draft"`, and none of the 437 flash-card questions in quizzes.json carried
-a block at all. No gate counted that item-level metadata, so the number of items whose own flag
-says draft could grow and nobody would see it move.
+CAPS['QB'] stays ZERO and its allowlist stays empty. No draft is grandfathered into learner
+publication. check-static-site.mjs independently checks the actual bank, pretest pool, shell
+and Daily Review inventories against the canonical source on every audience build. The Anki
+export/parity path checks learner downloads against that projected bank. A successful source
+check alone is not proof of a successful build or of what either live site serves.
 
-WHAT THIS DOES NOT ESTABLISH. It does not read tool-level attestation; bin/check_attestation_hashes.py
-does. On 2026-10-05 every host tool of the five facultyReview banks (communication-practice.html,
-family-systems.html, diagnostic-reasoning.html, review.html, rp-canon-quiz.html) was signed and
-still hash-bound to the bytes counted here. So an open item on those banks is item-level metadata
-that says draft (or is absent) INSIDE content covered by a tool-level signature. Whether that
-signature reflected a full read of every item is the signer's judgment, which no gate can
-establish: if it did, the open flags are bookkeeping; if it did not, the remedy is Reopen on the
-host tool's row in the faculty console, not anything this tool does. For QB the item-level status
-IS the claim of record, so an open QB item is one the console has not attested.
+A content edit demotes an attested question to draft; the existing faculty console reads
+canonical drafts and records explicit approval of exact reviewed revisions. Neither this
+checker nor the projection signs, promotes, retires or edits a question. Withholding a revised
+draft does not retain its previous approved wording: it returns to learner publication only
+after faculty approval through the existing console. Both AI pilots are independent and stay
+under their disabled feature flags.
 
-THE RATCHET. Named, not counted: a count cannot see one item's flag cleared and a different
-item's opened in the same diff; a list of ids can. The cap per bank is CAPS below, in the
-script, so raising it is a policy edit under its own review (docs/RATCHETS.md, "the allowlist
-ratchet is shaped differently"); the list is data. TODAY'S COUNTS ARE THE CAPS: the gate does
-not pretend any flag is cleared, it stops the number rising unnoticed.
+OTHER BANKS: NAMED, SHRINK-ONLY ITEM-METADATA RATCHETS.
+COMM, FAM, REASON, REASON-RES and DECK retain their existing item-level metadata policy.
+Their host tools also have whole-file signatures; this checker does not read those signatures
+or infer that an open item-level flag means an unreviewed tool. Missing facultyReview/status
+and every value other than reviewed/attested remain OPEN. Retired rows in those five banks
+remain open until a separately verified consumer filters them.
 
-  FAIL  an open item that is not on the list            (a new open flag, or a swap)
-  FAIL  more open items than the bank's cap             (the ratchet turned the wrong way)
-  FAIL  a listed id that appears twice, or a list longer than its cap   (only a bin/ edit can do either)
-  WARN  a listed id that is no longer open              (stale: cleared, retired or gone)
-  WARN  fewer open items than the bank's cap            (names the number to lower CAPS to)
+  FAIL  an open item not on its named list (including a swap at the same count)
+  FAIL  an open count or allowlist longer than its cap, or a duplicated listed ID
+  WARN  a stale listed ID or fewer open items than the cap
 
-WHY A STALE ENTRY WARNS HERE (check_citation_attribution.py adopted the same rule on 2026-10-07). The
-allowlist lives in bin/, a governance path; the banks are content (shipped extraSources).
-bin/check_governance_separation.py L1 forbids both in one diff. If a stale entry failed, the
-content PR that clears an item's flag would fail this gate; adding the allowlist deletion to that
-PR would fail L1; and deleting the entry first, in a governance PR, would leave the still-open
-item unlisted. No PR could ever clear a flag. So the content PR clears the flag and passes with a
-WARN, and a follow-up governance PR deletes the entry (a content-class commit) and lowers CAPS (a
-policy-class commit; bin/check_policy_content_separation.py keeps them apart). The cost, stated:
-until that follow-up lands, a stale id whose flag opens again -- reopened, or deleted and re-added
-under the same id -- passes without a FAIL. The cap still bounds the total, and every run prints
-the stale entry.
+A stale entry warns because content PRs cannot change governance paths such as bin/. The
+content change clears the flag first; a follow-up governance change deletes the stale entry
+and lowers its cap. Until then, reopening the same stale ID is still bounded by its bank's
+cap. This limitation is reported, not silently described as fresh approval.
 
-REPORT, NEVER FIX. This tool reads six registries and one allowlist and writes nothing but its
-report (--init-allowlist writes the allowlist ONCE, when none exists). It never changes an item's
-flag or text: QB items are attested in the console, under the console's identity (L4); the other
-banks' flags change in content PRs.
+Cap increases are separate policy decisions, never repairs made to pass a content change.
+This change permits faculty-only QB staging; it raises no cap and adds no allowlist entry.
 
 HOW EACH BANK IS READ.
-  QB          question_bank.json items[]          `status` (attested | draft); `retired: true`
-                                                  items do not ship and are reported, not counted
-  COMM        communication_cases.json cases[]    facultyReview.status
+  QB          question_bank.json items[]           status (attested | draft), retired bool
+  COMM        communication_cases.json cases[]     facultyReview.status
   FAM         family_systems_scenarios.json scenarios[]
-  REASON      reasoning_cases.json cases[]        (MS3 audience)
-  REASON-RES  reasoning_cases_resident.json cases[]  (resident audience; ids overlap REASON, so
-                                                  the allowlist is keyed per bank)
-  DECK        07_…/Landmark_Trials/quizzes.json decks[].questions[]  id = deck.id#index (the
-                                                  positional id review.html uses; see
-                                                  bin/check_deck_card_stability.py)
-A `facultyReview` block that is absent, not an object, or has no `status` is MISSING. The status
-values reviewed and attested are CLEAR. retired is its own bucket and counts as open on the
-five facultyReview banks until a consumer provably filters it (none does today; none is marked).
+  REASON      reasoning_cases.json cases[]         MS3 audience
+  REASON-RES  reasoning_cases_resident.json cases[] resident audience; IDs are bank-scoped
+  DECK        07_…/Landmark_Trials/quizzes.json decks[].questions[]; id = deck.id#index
 
-Exit 0 clean, or warnings only · 1 any FAIL above · 2 could not check (a bank or the allowlist
-missing, unparsable or not the shape this tool reads; an allowlist naming a bank this tool does
-not know).
+REPORT, NEVER FIX. Reads six registries and one allowlist. --init-allowlist writes only when
+no allowlist exists. Exit 0 clean/warnings; 1 policy findings; 2 could not check.
 
-    python3 bin/check_qbank_draft_exposure.py                  # the gate (bin/verify.sh runs it)
-    python3 bin/check_qbank_draft_exposure.py --self-test      # planted rises go red, stale entries warn
-    python3 bin/check_qbank_draft_exposure.py --init-allowlist # write the allowlist ONCE from today's tree
-    python3 bin/check_qbank_draft_exposure.py --root DIR       # another checkout / fixture
+    python3 bin/check_qbank_draft_exposure.py
+    python3 bin/check_qbank_draft_exposure.py --self-test
+    python3 bin/check_qbank_draft_exposure.py --root DIR
 """
 from __future__ import annotations
 
@@ -95,6 +65,13 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "13_Faculty_Resources/_automation/site_build"))
+try:
+    from qbank_public import project_question_bank
+except ImportError as exc:
+    print(f"qbank draft exposure: COULD NOT CHECK -- publication validator unavailable: {exc}")
+    raise SystemExit(2) from exc
+
 ALLOWLIST = "bin/qbank_draft_exposure_allowlist.json"
 QUIZZES = "07_Evidence_and_Reading/Landmark_Trials/quizzes.json"
 
@@ -114,10 +91,12 @@ BUCKETS = ("draft", "pending", "missing", "retired", "other")
 STALE_STATE = {
     "clear": "its item-level flag is now reviewed/attested",
     "not-shipped": "it is now retired and not shipping",
+    "staged": "it is a review-only draft and is not published",
     None: "it is gone from the bank",
 }
 
-# POLICY. Item-level flags open on 2026-10-04. Lower a number here when the open count has
+# POLICY. QB publishes zero unapproved questions; review-only source drafts are staged,
+# not allowlisted. Other banks: item-level flags open on 2026-10-04. Lower a number when the count has
 # shrunk (the gate prints the number, and the stale entries to delete first); raising one is a
 # decision that more items may carry an open item-level flag, and belongs in its own commit
 # with its reason.
@@ -149,12 +128,17 @@ def _bucket_of_review(block):
 
 def classify(bank, data, rel):
     """-> {id: bucket} over every item in the bank; bucket is clear | draft | pending | missing | retired | other.
-    For QB a retired item is bucket 'not-shipped' and never counted as open."""
+    For QB a retired item is 'not-shipped' and a valid draft is 'staged'; neither is public."""
     key = next(b for b in BANKS if b[0] == bank)
     _, _, list_key, how = key
     items = data.get(list_key) if isinstance(data, dict) else None
     if not isinstance(items, list):
         raise CheckError(f"{rel}: expected a `{list_key}` list")
+    if bank == "QB":
+        try:
+            project_question_bank(data)
+        except (OSError, ValueError, TypeError) as exc:
+            raise CheckError(f"{rel}: {exc}") from exc
     out = {}
     if bank == "DECK":
         for deck in items:
@@ -174,7 +158,7 @@ def classify(bank, data, rel):
             elif item.get("status") == "attested":
                 out[item["id"]] = "clear"
             elif item.get("status") == "draft":
-                out[item["id"]] = "draft"
+                out[item["id"]] = "staged"
             elif isinstance(item.get("status"), str):
                 out[item["id"]] = "other"
             else:
@@ -224,19 +208,21 @@ def gate(buckets_by_bank, allowlist, caps, out=print):
     """buckets_by_bank: {bank: {id: bucket}}. The whole exit contract, in-process for --self-test."""
     failures = 0
     warnings = []
-    out("qbank draft exposure -- items whose ITEM-LEVEL review flag is open, per bank (cap = policy in CAPS; "
-        "tool-level signatures are not read here)")
+    out("qbank draft exposure -- QB drafts are faculty-only staging; other banks count open ITEM-LEVEL "
+        "review flags (cap = policy in CAPS; tool-level signatures are not read here)")
     out(f"  {'bank':<11}{'items':>6}{'clear':>7}{'draft':>7}{'pend':>6}{'miss':>6}{'retd':>6}{'other':>7}"
         f"{'OPEN':>9}{'cap':>5}{'listed':>8}")
     for bank, _, _, _ in BANKS:
         buckets = buckets_by_bank[bank]
-        counts = {b: sum(1 for v in buckets.values() if v == b) for b in BUCKETS + ("clear", "not-shipped")}
+        counts = {b: sum(1 for v in buckets.values() if v == b) for b in BUCKETS + ("clear", "not-shipped", "staged")}
         open_ids = {i for i, v in buckets.items() if v in BUCKETS}
         listed = allowlist[bank]
         cap = caps[bank]
         out(f"  {bank:<11}{len(buckets):>6}{counts['clear']:>7}{counts['draft']:>7}{counts['pending']:>6}"
             f"{counts['missing']:>6}{counts['retired']:>6}{counts['other']:>7}{len(open_ids):>9}{cap:>5}{len(listed):>8}"
             + (f"   ({counts['not-shipped']} retired QB draft(s) not shipping)" if counts["not-shipped"] else ""))
+        for item_id in sorted(i for i, bucket in buckets.items() if bucket == "staged"):
+            out(f"  STAGED  QB: {item_id} -- faculty review only; excluded from learner projection")
         seen = set()
         for i in listed:
             if i in seen:
@@ -300,11 +286,21 @@ def _fixture(td):
     root = Path(td)
     rv = {"status": "draft", "reviewer": "", "lastReviewed": ""}
     ok = {"status": "reviewed", "reviewer": "Faculty", "lastReviewed": "2026-10-01"}
+    def question(identifier, status, retired=False):
+        return {"id": identifier, "status": status, "retired": retired, "type": "sba",
+                "category": "mood", "competency": ["dx"], "difficulty": 2, "pages": ["t_mood.md"],
+                "stem": "Which option completes this synthetic review fixture?",
+                "options": [{"key": "A", "t": "Correct fixture choice", "c": True}] +
+                    [{"key": key, "t": "Fixture alternative " + key,
+                      "trap": {"name": "Fixture misconception", "note": "Synthetic explanation."}}
+                     for key in ("B", "C", "D")],
+                "why": "Synthetic rationale.", "pearl": "Synthetic teaching point.",
+                "evidence": "t_mood.md fixture evidence."}
     files = {
-        "question_bank.json": {"items": [
-            {"id": "qb_mood_001", "status": "attested"},
-            {"id": "qb_mood_002", "status": "attested"},
-            {"id": "qb_sud_015", "status": "draft", "retired": True},
+        "question_bank.json": {"version": 1, "_note": "Synthetic review-policy fixture.", "items": [
+            question("qb_mood_001", "attested"),
+            question("qb_mood_002", "attested"),
+            question("qb_sud_015", "draft", True),
         ]},
         "communication_cases.json": {"cases": [{"id": "comm_a", "facultyReview": rv}, {"id": "comm_b", "facultyReview": ok}]},
         "family_systems_scenarios.json": {"scenarios": [{"id": "fam_a", "facultyReview": rv}]},
@@ -350,6 +346,28 @@ def self_test():
         expect("a retired QB draft is reported and not counted as open", "1 retired QB draft(s) not shipping" in out)
         expect("a missing facultyReview block counts as open (DECK AR-01#0)", '"AR-01#0"' in
                (root / ALLOWLIST).read_text(encoding="utf-8"))
+
+        # QB staging changes review availability, never the publication cap or approval.
+        bank = copy.deepcopy(files["question_bank.json"])
+        bank["items"][0]["status"] = "draft"
+        _write(root, "question_bank.json", bank)
+        before = (root / "question_bank.json").read_bytes()
+        rc, out = run(root, caps)
+        expect("a revised QB draft is explicitly staged for faculty and does not need an exception",
+               rc == 0 and "STAGED  QB: qb_mood_001 -- faculty review only" in out and "FAIL" not in out)
+        expect("staging is read-only, with no approval written", before == (root / "question_bank.json").read_bytes())
+        for invalid in ("approved", None):
+            bank["items"][0]["status"] = invalid
+            _write(root, "question_bank.json", bank)
+            rc, out = run(root, caps)
+            expect(f"invalid QB approval {invalid!r} fails closed", rc == 2 and "COULD NOT CHECK" in out)
+        _write(root, "question_bank.json", files["question_bank.json"])
+        leaked = collect(root)
+        leaked["QB"]["qb_mood_001"] = "draft"
+        lines = []
+        rc = gate(leaked, load_allowlist(root), caps, out=lines.append)
+        expect("a draft counted as published still fails the unchanged zero cap",
+               rc == 1 and "QB: 1 open, cap is 0" in "\n".join(lines))
 
         # RED 1: a new open flag -- flip a cleared item to draft: unlisted AND over cap.
         bank = copy.deepcopy(files["communication_cases.json"])

@@ -91,6 +91,21 @@ function fdSheetKitEntry(index, ref){
   return null;
 }
 
+/* True for the sheets the safety drawer owns: the kit list and any kit protocol. False for
+   Settings and item previews. The shell pauses the page only under these, and only these take
+   the high-contrast .fd-sheet--safety treatment. */
+function fdSheetIsSafety(index, sheet){
+  if(!sheet) return false;
+  return sheet==='kit'||!!fdSheetKitEntry(index, sheet);
+}
+
+/* {ref: title} for the kit, so a tree's `see` link can name the protocol it opens. */
+function fdSheetKitTitles(index){
+  var kit=(index&&index.kit)||[], out={};
+  for(var i=0;i<kit.length;i++) out[kit[i].item.ref]=kit[i].item.title;
+  return out;
+}
+
 /* Week number containing ref, or null for a library-only page. The prototype read this off its
    items' own `w` field; this repo's items carry no week (curriculum.json owns that structure), so
    it is a lookup rather than a property read. */
@@ -208,17 +223,30 @@ function fdSheetProtocolFailure(copy, crisisHtml){
 
 /* Every clinical value below is read from topicMeta[ref]; the crisis block is a trusted build
    artifact passed through the shell's inert template. Neither is defaulted to clinical text. */
-function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCopy){
+function fdSheetProtocolBody(entry, topicMeta, stepsDone, crisisHtml, failureCopy, treeState){
   var item=entry.item;
   var protocol=fdSheetProtocolData(entry,topicMeta);
   if(protocol.kind==='missing')return fdSheetProtocolFailure(failureCopy,crisisHtml);
-  var steps=protocol.steps;
+  /* A tree replaces the checklist only when its page is attested -- the attestation hash covers
+     the whole topic_meta record, so an edited tree demotes its page and drops back to the
+     checklist by itself. A deploy preview (draftTrees, build-injected only there) shows an
+     unattested tree under a DRAFT banner so faculty can review it. Missing steps still fail
+     closed above: the checklist is the tree's fallback and must exist. */
+  var ts=treeState||{}, tree=((topicMeta||{})[item.ref]||{}).safetyTree;
+  var showTree=typeof fdTreeValid==='function'&&fdTreeValid(tree)&&
+    (protocol.kind==='reviewed'||ts.draft===true);
   var out='';
-  /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
-     The steps stay siblings of each other inside it, so the + rule above still applies. */
-  out+='<div style="margin-bottom:16px">';
-  for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
-  out+='</div>';
+  if(showTree){
+    out+=fdTreeView(tree,{path:ts.path,escalate:ts.escalate},
+      {draft:protocol.kind!=='reviewed',kitTitles:ts.kitTitles});
+  } else {
+    var steps=protocol.steps;
+    /* Wrapper carries only the 16px gap down to the callout (the prototype's own step container).
+       The steps stay siblings of each other inside it, so the + rule above still applies. */
+    out+='<div style="margin-bottom:16px">';
+    for(var i=0;i<steps.length;i++){ out+=fdSheetStep(steps[i], i, stepsDone); }
+    out+='</div>';
+  }
   out+='<div class="fd-doccallout"><b>Document:</b> '+fdEsc(protocol.doc)+'</div>';
   /* "From:" names the PAGE, not the file. The prototype's line is `From: {{ protoSrc }}` with a
      human-readable source ("Acute & Safety / Toxidromes"); the first implementation substituted
@@ -262,6 +290,27 @@ function fdSheetItemBody(item, index){
   return out;
 }
 
+/* Library Details uses the same projected facts and governance priority as its desktop pane.
+   The short use-case line is navigation copy, never a clinical recommendation or attestation. */
+function fdResourcePreviewBody(item, index){
+  var tool=item.kind==='tool', kind=item.rights?'Reference':(tool?'Tool':'Reading');
+  var purpose=tool?(item.hint||item.summary||''):(item.summary||item.hint||'');
+  var estimated=typeof item.minutes==='number'&&isFinite(item.minutes)&&item.minutes>0;
+  var time=estimated?(item.minutes+(tool?' min':' min read')):(tool?'Self-paced':'Not estimated');
+  var out='<p class="fd-resource__kind">'+kind+'</p>';
+  out+='<h3 class="fd-resource__label">Purpose</h3><p class="fd-resource__text">'+
+    fdEsc(purpose||'Open the resource for its full description.')+'</p>';
+  out+='<h3 class="fd-resource__label">Estimated time</h3><p class="fd-resource__text">'+fdEsc(time)+'</p>';
+  out+='<div class="fd-resource__when"><h3 class="fd-resource__label">Useful when…</h3><p class="fd-resource__text">'+
+    fdEsc(fdResourcePreviewCopy(item.ref))+'</p></div>';
+  var week=fdSheetWeekOf(index,item.ref);
+  if(week!==null) out+='<p class="fd-resource__placement">Week '+week+' in your learning path</p>';
+  var g=item.governance;
+  if(g&&g.status==='pending') out+=governanceBadge(g);
+  else if((g&&g.status==='reviewed')||(!g&&item.attested===true)) out+='<span class="fd-attested">✓ faculty-attested</span>';
+  return out;
+}
+
 /* The settings panel. Pure like every other body renderer here: everything it cannot derive --
    the theme mode a learner picked, and in later sections the role list and the analytics posture
    -- arrives on state, the way st.crisisHtml already does.
@@ -291,6 +340,26 @@ function fdSettingsSeg(mode){
       opts[i][1]+'</button>';
   }
   return out+'</div>';
+}
+
+function fdSettingsReadingComfort(state){
+  var st=state||{}, pref=fdReadingComfort(st.readingComfort);
+  var groups=[['Reading text size','size','data-fd-reading-size',[['standard','Standard'],['larger','Larger'],['largest','Largest']]],
+    ['Reading line spacing','spacing','data-fd-reading-spacing',[['standard','Standard'],['spacious','Spacious']]]];
+  var out='<p class="fd-set__note">Readings only. Tools keep their own layout.</p>';
+  for(var g=0;g<groups.length;g++){
+    var group=groups[g];
+    out+='<p class="fd-set__note">'+group[0]+'</p><div class="fd-seg" role="group" aria-label="'+group[0]+'">';
+    for(var i=0;i<group[3].length;i++){
+      var opt=group[3][i], active=pref[group[1]]===opt[0];
+      out+='<button type="button" class="fd-seg__btn'+(active?' is-active':'')+'" '+
+        group[2]+'="'+opt[0]+'" aria-pressed="'+active+'">'+opt[1]+'</button>';
+    }
+    out+='</div>';
+  }
+  out+='<p class="fd-set__note"><button type="button" class="fd-btn fd-btn--ghost" data-fd-reading-reset>Reset reading comfort</button></p>';
+  out+='<p class="fd-set__note" role="status">'+fdEsc(st.readingComfortNotice||'')+'</p>';
+  return out;
 }
 
 function fdSettingsSection(title, body){
@@ -475,6 +544,7 @@ function fdSheetSettingsBody(state){
     '<p class="fd-set__note">System follows your device’s light or dark setting.</p>');
   /* Last of the sections that ALWAYS render: a learner scrolling this panel meets every
      reversible setting before the one that is not. */
+  out+=fdSettingsSection('Reading comfort',fdSettingsReadingComfort(st));
   out+=fdSettingsSection('Your data', fdSettingsData(st.settingsConfirmClear===true));
   /* And Usage after it, on the builds that have one. A section present on some builds and absent
      on most must not open a gap in the middle of the fixed order, and this one is reversible, so
@@ -493,7 +563,7 @@ function fdSheet(index, topicMeta, state){
   var sheet=st.sheet;
   if(!sheet) return '';
 
-  var title='', body='', hasBack=false;
+  var title='', body='', hasBack=false, resourcePreview=null;
   if(sheet==='settings'){
     title='Settings';
     body=fdSheetSettingsBody(st);
@@ -504,24 +574,29 @@ function fdSheet(index, topicMeta, state){
     var iref=String(sheet).slice(FD_SHEET_ITEM_PREFIX.length);
     var item=(idx.byRef||{})[iref]||fdSheetMissingItem(iref);
     title=item.title;
-    body=fdSheetItemBody(item, idx);
+    resourcePreview=st.sheetFrom==='library'&&fdResourcePreviewCopy(iref)&&idx.byRef&&idx.byRef[iref]?item:null;
+    body=resourcePreview?fdResourcePreviewBody(item,idx):fdSheetItemBody(item, idx);
   } else {
     var entry=fdSheetKitEntry(idx, sheet);
     if(!entry) return '';
     title=entry.item.title;
     hasBack=(st.sheetFrom==='kit');
     body=fdSheetProtocolBody(
-      entry, topicMeta, st.stepsDone, st.crisisHtml, st.protocolFailureCopy
+      entry, topicMeta, st.stepsDone, st.crisisHtml, st.protocolFailureCopy,
+      {path:st.treePath, escalate:st.escalate, draft:st.draftTrees===true,
+        kitTitles:fdSheetKitTitles(idx)}
     );
   }
 
   /* Two elements, not one: .fd-sheetbackdrop is a separate sibling emitted BEFORE the panel and
      carries the click-to-close. Only the search overlay merges scrim and layout into one element
      (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other). */
+  var safety=fdSheetIsSafety(idx, sheet);
   return '<div class="fd-sheetbackdrop" data-fd-close-sheet></div>'+
-    '<aside class="fd-sheet" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
+    '<aside class="fd-sheet'+(safety?' fd-sheet--safety':'')+(resourcePreview?' fd-sheet--resource':'')+'" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
       fdSheetHead(title, hasBack)+
       '<div class="fd-sheet__body">'+body+'</div>'+
+      (resourcePreview?'<div class="fd-resource__footer"><button type="button" class="fd-btn fd-btn--primary" data-fd-open="'+fdEsc(resourcePreview.ref)+'" aria-label="Open '+fdEsc(title)+'">Open</button></div>':'')+
     '</aside>';
 }
 

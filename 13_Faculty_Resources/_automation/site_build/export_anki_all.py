@@ -13,7 +13,7 @@ combined file and/or either standalone deck without deck-identity collisions.
 The shared note-type (model) IDs are intentionally reused so cards look and
 behave identically across packages.
 
-Usage:  python3 export_anki_all.py [--out DIR]
+Usage:  python3 export_anki_all.py --feed PATH --out DIR [--bank PATH]
 """
 
 import argparse
@@ -34,13 +34,13 @@ def main():
     ap = argparse.ArgumentParser()
     here = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.abspath(os.path.join(here, "..", "..", ".."))
+    ap.add_argument("--bank", default=os.path.join(repo, "question_bank.json"))
     ap.add_argument("--out", required=True)
     ap.add_argument("--feed", required=True)
     args = ap.parse_args()
+    with open(args.bank) as f:
+        items = qb.project_question_bank(json.load(f))["items"]
     os.makedirs(args.out, exist_ok=True)
-
-    with open(os.path.join(repo, "question_bank.json")) as f:
-        items = json.load(f)["items"]
 
     qb_deck, _, qb_notes = qb.build_deck(
         items, include_drafts=False,

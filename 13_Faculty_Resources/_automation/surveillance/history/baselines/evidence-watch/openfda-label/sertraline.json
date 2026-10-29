@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20230808",
+  "sections": {
+    "boxed_warning": {
+      "hash": "72e1db0f1bc0faacf531e4428d7474773ed42284f87bb3bee06a1e80d2f3ae59",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SUICIDAL THOUGHTS AND BEHAVIORS Antidepressants increased the risk of suicidal thoughts and behavior in pediatric and young adult patients in short-term studies. Closely monitor all antidepressant-treated patients for clinical worsening, and for emergence of suicidal thoughts and behaviors [See Warnings and Precautions (5.1) ] . WARNING: SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. \u2022 Antidepressants increased the risk of suicidal thoughts and behaviors in pediatric and young adult patients ( 5.1 ) \u2022 Closely monitor for clinical worsening and emergence of suicidal thoughts and behaviors ( 5.1 )"
+    },
+    "contraindications": {
+      "hash": "0a9d67c4d88203bf5ec5e787405322d2406cb701184cd9d3a2d3fd62fbadddec",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS ZOLOFT is contraindicated in patients: \u2022 Taking, or within 14 days of stopping, MAOIs, (including the MAOIs linezolid and intravenous methylene blue) because of an increased risk of serotonin syndrome [See Warnings and Precautions (5.2) , Drug Interactions (7.1) ] . \u2022 Taking pimozide [See Drug Interactions (7.1) ] . \u2022 With known hypersensitivity to sertraline (e.g., anaphylaxis, angioedema) [See Adverse Reactions (6.1 , 6.2) ] . In addition to the contraindications for all ZOLOFT formulations listed above, ZOLOFT oral solution is contraindicated in patients: \u2022 Taking disulfiram. ZOLOFT oral solution contains alcohol, and concomitant use of ZOLOFT and disulfiram may result in a disulfiram-alcohol reaction. \u2022 Concomitant use of monoamine oxidase inhibitors (MAOIs), or use within 14 days of stopping MAOIs ( 4 , 7.1 ) \u2022 Concomitant use of pimozide ( 4 , 7.1 ) \u2022 Known hypersensitivity to sertraline or excipients ( 4 , 5.4 ) \u2022 ZOLOFT oral solution only: Concomitant use of disulfiram ( 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "61eea91c57d90795d51da3656b0484d37e7326d9ee7183e4a404536e46fadd05",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "fda754f6-d0f3-4dce-a17a-927d64f912f7",
+  "version": "7"
+}

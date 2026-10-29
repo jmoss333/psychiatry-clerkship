@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Care aftercare packet - unit profile candidates (v1)",
+  "description": "Editable candidate content and actual verification evidence only. A candidate never grants permission to use it. An independent owner-authenticated exact-version approval is required at patient output. Verification must cover identity and contact, plus callback exactly when callbackProgram is true and branding exactly when brandingApproved is true. Expiration is the start of the New York calendar date ninety days after the oldest required actual check. Updating build or approval dates never renews a check. Patient-specific call windows and deadlines belong only in handwriting or the After Visit Summary, never this data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profiles"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "profiles": {
+      "description": "Empty until real unit facts and the actual checks supporting them have been recorded. These remain candidates until independently approved.",
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "$ref": "#/definitions/profile"
+      }
+    }
+  },
+  "definitions": {
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "org",
+        "brandingApproved",
+        "unitName",
+        "unitPhone",
+        "unitPurpose",
+        "unitHours",
+        "callbackProgram",
+        "callbackTeam",
+        "callbackPhone",
+        "callbackHours",
+        "callbackFallback",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]{1,40}$"
+        },
+        "label": {
+          "description": "What the trainee picks in the profile list. Not printed.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "org": {
+          "description": "The organization or site line. Printed only when brandingApproved is true; null for none.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "brandingApproved": {
+          "description": "Records a checked institutional branding fact, not owner approval of this candidate. False requires org=null.",
+          "type": "boolean"
+        },
+        "unitName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "unitPhone": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30
+        },
+        "unitPurpose": {
+          "type": "string",
+          "maxLength": 160,
+          "minLength": 1
+        },
+        "unitHours": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1
+        },
+        "callbackProgram": {
+          "description": "Records a checked operational callback program, not a patient-specific arranged call. False requires every callback text field to be empty.",
+          "type": "boolean"
+        },
+        "callbackTeam": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "callbackPhone": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "callbackHours": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "callbackFallback": {
+          "type": "string",
+          "maxLength": 240,
+          "description": "A confirmed noncrisis fallback clause without final punctuation. The standard sentence supplies its final full stop."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/definitions/verification"
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "checkedOn",
+        "checkedBy",
+        "evidence"
+      ],
+      "properties": {
+        "field": {
+          "enum": [
+            "identity",
+            "contact",
+            "callback",
+            "branding"
+          ]
+        },
+        "checkedOn": {
+          "$ref": "#/definitions/date"
+        },
+        "checkedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}

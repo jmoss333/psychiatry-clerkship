@@ -5,6 +5,7 @@ import test from 'node:test';
 const BUILD = '../13_Faculty_Resources/_automation/site_build';
 const careUrl = new URL(`${BUILD}/frontdoor/fd_care.js`, import.meta.url);
 const careSrc = existsSync(careUrl) ? readFileSync(careUrl, 'utf8') : '';
+const careSearchSrc = readFileSync(new URL(`${BUILD}/frontdoor/fd_care_search.js`, import.meta.url), 'utf8');
 const packUrl = new URL(`${BUILD}/frontdoor/fd_care_pack.js`, import.meta.url);
 const packSrc = existsSync(packUrl) ? readFileSync(packUrl, 'utf8') : '';
 const navigatorUrl = new URL(`${BUILD}/frontdoor/fd_care_navigator.js`, import.meta.url);
@@ -20,6 +21,9 @@ if (careSrc) {
     ${dataSrc}
     ${navigatorSrc}
     ${packSrc}
+    // Explicit opt-in fixture; production default is covered by fd-care-sharing-gate.test.mjs.
+    FD_CARE_PATIENT_SHARING_ENABLED=true;
+    ${careSearchSrc}
     ${careSrc}
     return {
       fdCare: typeof fdCare === 'function' ? fdCare : null,
@@ -251,7 +255,7 @@ test('the care page renders five static external links without forwarding contex
   assert.match(html, /Find support and follow-up/);
   assert.match(html, /Teach and share/);
   assert.equal((html.match(/class="fd-carelink"/g) || []).length, 5);
-  assert.equal((html.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, 5);
+  assert.equal((html.match(/target="_blank" rel="noopener noreferrer"/g) || []).length, 6);
   assert.equal((html.match(/data-care-resource=/g) || []).length, 5);
   assert.equal((html.match(/data-fd-care-share=/g) || []).length, 5);
   assert.equal((html.match(/data-fd-care-pack=/g) || []).length, 10);
@@ -263,9 +267,9 @@ test('the care page renders five static external links without forwarding contex
   }
   assert.match(html, /Verify current details before sharing/);
   assert.match(html, /Do not enter patient-identifying information/);
-  assert.match(html, /ReConnect collection/);
+  assert.match(html, /Curated collection/);
   assert.match(html, /Created by Joshua Moss, MD/);
-  assert.match(html, /personally curated ReConnect databases developed over several years/);
+  assert.match(html, /personally curated resource databases developed over several years/);
 });
 
 test('the care renderer escapes curriculum copy and remains pure ES5', () => {
@@ -293,7 +297,7 @@ test('the curriculum schema governs both care and external teaching resources', 
 const expectedBuilder = {
   id: 'supervised-resource-builder',
   title: 'Build a specific resource handout',
-  description: 'Choose a topic, broad area, and resource types, then review transparent ReConnect suggestions with a supervisor.',
+  description: 'Choose a topic, broad area, and resource types, then review transparent suggestions with a supervisor.',
   url: 'https://reconnect-tools.netlify.app/tools/supervised-resource-builder.html',
 };
 
@@ -328,7 +332,7 @@ test('the supervised builder is projected and renders only a fixed safe external
   assert.ok(html.includes('href="' + expectedBuilder.url + '"'));
   assert.match(html, /target="_blank" rel="noopener noreferrer"/);
   assert.ok(html.includes(expectedBuilder.description));
-  assert.match(html, /Opens ReConnect in a new tab/);
+  assert.match(html, /Opens in a new tab/);
   for (const item of [null, {}, { ...expectedBuilder, id: 'other' },
     { ...expectedBuilder, title: '' }, { ...expectedBuilder, description: '' },
     ...['http://example.test/', expectedBuilder.url + '?topic=test', expectedBuilder.url + '#area',

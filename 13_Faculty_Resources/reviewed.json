@@ -1,23 +1,25 @@
 {
   "cotw_20261005_mddaug_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (MDD treatment selection & augmentation, MS3) added 2026-10-05; awaiting faculty attestation.",
-    "at": "2026-10-05",
-    "by": "Pending faculty review"
+    "at": "2026-10-11",
+    "by": "Joshua Moss, MD",
+    "contentHash": "68edb284e985676649e58503640d25afd982748a",
+    "clinicalHash": "9b8a9a262a6c97fe32ac3e771bd40bf5353fdd1d"
   },
   "cotw_20261005_mddaug_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "New Case of the Week (MDD treatment selection & augmentation, resident) added 2026-10-05; awaiting faculty attestation.",
-    "at": "2026-10-05",
-    "by": "Pending faculty review"
+    "at": "2026-10-11",
+    "by": "Joshua Moss, MD",
+    "contentHash": "7a63dfe7d0a3532465c7e18f2756ebcb89bac238",
+    "clinicalHash": "9d44319545feed5e5ca245246b7a06e66aac7371"
   },
   "cotw_20260928_mania_ms3.md": {
     "status": "reviewed",
@@ -611,10 +613,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-10-16",
     "by": "Joshua Moss, MD",
-    "contentHash": "b3b10db05db142b14bad904f7c76c47639d38901",
-    "clinicalHash": "4c7b3f3bd2e6a5a4733283941b8e755ea0fcec26"
+    "contentHash": "489c581ebc87a2be8ed4745ff58a4c9f2b090dae",
+    "clinicalHash": "e9337f4da03121356a40f4fc04f3685ee7487f4c"
   },
   "agitation.md": {
     "status": "reviewed",
@@ -622,10 +624,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-10-16",
     "by": "Joshua Moss, MD",
-    "contentHash": "226f92a906df894c97018289de25e104a21ce3dd",
-    "clinicalHash": "cf62d5eb4880027d5970f3fb31a6ef6ffd1f1245"
+    "contentHash": "9f3a96ec5a2ce77017cebfb90b1d0cf79bd7dd51",
+    "clinicalHash": "3d4a6a255eabb28699f810b072de90b4e9437aff"
   },
   "catatonia.md": {
     "status": "reviewed",
@@ -1292,6 +1294,16 @@
     "contentHash": "5496f2b1858f14162913a063fb23753a698b489a",
     "clinicalHash": "a01969f13e1f6f41258397f9af261b4c913d7434"
   },
+  "family-meeting-sim.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "high"
+    },
+    "reason": "New Family Conversation Simulator (three draft fictional scenarios, safety-planning rehearsal) added 2026-10-27; awaiting faculty attestation.",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
+  },
   "rp-canon-quiz.html": {
     "status": "reviewed",
     "risk": {
@@ -1405,16 +1417,15 @@
     "clinicalHash": "dc835816041c17932b0915d62f28ef9e6965acee"
   },
   "one-patient-six-weeks.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
+    "reason": "Content changed since faculty review on 2026-10-06; awaiting re-attestation.",
     "at": "2026-10-06",
-    "by": "Joshua Moss, MD",
-    "note": "Fictional composite longitudinal simulation.",
-    "contentHash": "915fedc095e8c0016a7ceb2215dfe3563542637d",
-    "clinicalHash": "69f82216ba404f52f889a432bd657651312233a7"
+    "by": "Pending faculty review",
+    "note": "Fictional composite longitudinal simulation."
   },
   "anki.md": {
     "status": "reviewed",
@@ -1517,5 +1528,45 @@
     "by": "Joshua Moss, MD",
     "contentHash": "7b4e50643cb836b354ba1e9ae95caa6819d98c8b",
     "clinicalHash": "e7b686488027d06c3278bb1ebf181fe54357edc0"
+  },
+  "cotw_20261012_safety_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "high"
+    },
+    "reason": "New Case of the Week (Suicide risk assessment & safety planning, MS3) added 2026-10-12; awaiting faculty attestation.",
+    "at": "2026-10-12",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261012_safety_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "high"
+    },
+    "reason": "New Case of the Week (Suicide risk assessment & safety planning, resident) added 2026-10-12; awaiting faculty attestation.",
+    "at": "2026-10-12",
+    "by": "Pending faculty review"
+  },
+  "maine_law.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "legal",
+      "level": "high"
+    },
+    "reason": "New Maine law & capacity statute page added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
+  },
+  "maine-law-navigator.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "legal",
+      "level": "high"
+    },
+    "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
   }
 }

@@ -56,6 +56,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import { evaluateInstrumentRights } from './instrument-rights-gate.mjs';
 import { checkBuiltSearch } from './frontdoor-search-gate.mjs';
 
@@ -568,35 +569,19 @@ if (existsSync(qbPath) && parsed[qbPath]) {
   }
 }
 
-/* ---------- 6c. shell retired/draft-ids parity injection (HARD) ---------- */
-// The shell's due counters and confidently-wrong calibration counters skip bank items the
-// practice tool will not serve via build-injected RETIRED_QB_IDS and DRAFT_QB_IDS lists
-// (build_deploy.py replaces the empty source literals; drafts additionally honour the
-// learner's cw_qb_drafts_v1 opt-in at runtime — WP-37 attested-only default). Drift
-// silently re-opens the parity gap with question-bank-practice.html's activeItems(), so
-// the two BUILT artifacts are cross-checked here: whatever question_bank.json ships,
-// index.html must carry exactly its retired ids and its non-retired draft ids. Fixture
-// sites without a bank skip the rule (scoped to real builds, like the pretest checks).
-if (existsSync(qbPath) && parsed[qbPath] && existsSync(p('index.html'))) {
-  const bankItems = (parsed[qbPath].items || []).filter(Boolean);
-  const expected = {
-    RETIRED_QB_IDS: bankItems.filter((it) => it.retired).map((it) => it.id).sort(),
-    DRAFT_QB_IDS: bankItems.filter((it) => !it.retired && it.status !== 'attested')
-      .map((it) => it.id).sort(),
-  };
-  const shellSrc = readFileSync(p('index.html'), 'utf8');
-  for (const [name, want] of Object.entries(expected)) {
-    const injected = shellSrc.match(new RegExp(`var ${name}=(\\[[^\\]]*\\]);`));
-    if (!injected) {
-      H(`index.html is missing the build-injected ${name} list (shell servability parity)`);
-      continue;
-    }
-    let ids = null;
-    try { ids = JSON.parse(injected[1]); } catch { /* falls through to the mismatch report */ }
-    if (!Array.isArray(ids) || JSON.stringify([...ids].sort()) !== JSON.stringify(want)) {
-      H(`${name} drift: index.html carries ${injected[1]} but question_bank.json expects ${JSON.stringify(want)}`);
-    }
-  }
+/* ---------- 6c. approved-only question-bank publication (HARD) ---------- */
+// Check the completed learner artifacts against canonical eligibility. The Python
+// boundary verifies the entire public bank, placement subset, shell allowlist,
+// Daily Review restore inventory and accidental raw copies anywhere in the site.
+// Small QA fixtures that publish no bank surface need no canonical bank fixture.
+if (existsSync(qbPath) || existsSync(p('pretest_pool.json')) ||
+    existsSync(p('tools', 'question-bank-practice.html'))) {
+  const check = spawnSync('python3', [
+    join(dirname(fileURLToPath(import.meta.url)), 'qbank_public.py'), SITE,
+  ], { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+  if (check.error || check.status !== 0) {
+    H(`question bank publication failed: ${check.error?.message || check.stderr || check.stdout || 'checker did not complete'}`);
+  } else I(check.stdout.trim());
 }
 
 /* ---------- 7. orphaned source pages (HARD) ---------- */
@@ -757,6 +742,14 @@ const SHELL_REF_ALLOWLIST = new Set([
         }
         if (MEDIA_PREFIX.some(prefix => entry.startsWith(prefix)) || MEDIA_EXT.test(entry)) {
           H(`sw: PRECACHE entry is media (must never be precached — Range semantics belong to the network): ${entry}`);
+          continue;
+        }
+        // Netlify consumes these at the publish root and answers 404 for them; one 404 in
+        // PRECACHE makes cache.addAll() reject and the worker never installs (2026-10-16
+        // P0: /_headers). Keep in sync with SW_NETLIFY_RESERVED_ROOT_NAMES in common.py.
+        if (['/_headers', '/_redirects', '/netlify.toml'].includes(entry) ||
+            entry.split('/').some(seg => seg.startsWith('.'))) {
+          H(`sw: PRECACHE entry is not servable on Netlify (control file or dot-path — install would fail): ${entry}`);
           continue;
         }
         // "/" is the precache key for the shell (_sw_precache_url() in common.py never
@@ -1270,6 +1263,71 @@ const RATCHET_EXEMPT_CLASSES = new Set(['lfs-stub-soft']);
       }
     }
   }
+}
+
+/* ---------- 13. no proprietary "ReConnect" naming in learner-facing output (HARD) ----------
+ * Owner rule: external-facing material never names ReConnect. The Care tab shipped
+ * "ReConnect collection" to learners (2026-10-16 review, P1). Every shipped text file is
+ * scanned for the brand casing "ReConnect"; lowercase URL hosts/paths
+ * (reconnect-tools.netlify.app/...) and the English verb "reconnect" are not matched.
+ *
+ * Allowlist = occurrences inside FACULTY-ATTESTED sources only, where rewording would
+ * reopen the page's signature (attestation_hash.py) and so needs the owner's decision.
+ * Each entry is an exact snippet; a snippet that no longer appears is itself HARD, so the
+ * list cannot outlive the text it excuses. Never add an entry for an unattested source:
+ * fix the wording instead.
+ */
+{
+  const BRAND = /ReConnect/g;
+  const ATTESTED_ALLOW = {
+    'content/t_sud.md': [
+      '### Related ReConnect directories',
+      'Open the ReConnect Resource Finder',
+    ],
+    'content/exp_family.md': [
+      '## Related ReConnect directory',
+      'Open the ReConnect Resource Finder',
+    ],
+    'tools/pharmacy.html': [
+      'the ReConnect handout it cites',
+      "'ReConnect family handout: '",
+    ],
+  };
+  const TEXT_EXT = /\.(html?|md|js|mjs|css|json|txt|xml|svg|webmanifest|vtt)$/i;
+  const walkText = (dir) => {
+    const out = [];
+    for (const name of readdirSync(dir)) {
+      const abs = join(dir, name);
+      const st = statSync(abs);
+      if (st.isDirectory()) out.push(...walkText(abs));
+      else if (TEXT_EXT.test(name)) out.push(abs);
+    }
+    return out;
+  };
+  let scanned = 0;
+  for (const abs of walkText(SITE)) {
+    const rel = relative(SITE, abs).split('\\').join('/');
+    let text = readFileSync(abs, 'utf8');
+    scanned += 1;
+    for (const snippet of ATTESTED_ALLOW[rel] || []) {
+      if (!text.includes(snippet)) {
+        H(`learner naming: stale allowlist entry for ${rel} (snippet no longer shipped — remove it): ${snippet}`);
+      }
+      text = text.split(snippet).join('');
+    }
+    const lines = text.split('\n');
+    lines.forEach((ln, i) => {
+      if (BRAND.test(ln)) {
+        const at = ln.search(BRAND);
+        H(`learner naming: "ReConnect" in learner-facing output ${rel}:${i + 1} — use neutral wording: ${ln.slice(Math.max(0, at - 50), at + 60).trim()}`);
+      }
+      BRAND.lastIndex = 0;
+    });
+  }
+  for (const rel of Object.keys(ATTESTED_ALLOW)) {
+    if (!existsSync(p(rel))) I(`learner naming: allowlisted ${rel} not shipped on this site`);
+  }
+  I(`learner naming: scanned ${scanned} shipped text file(s) for "ReConnect"`);
 }
 
 /* ---------- report ---------- */

@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260410",
+  "sections": {
+    "boxed_warning": {
+      "hash": "8013a949627620f14b4c9a264bf64d5d688636be1b61f5a4dc28d680dd2cf900",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS Increased Mortality in Elderly Patients with Dementia-Related Psychosis Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death [see Warnings and Precautions (5.1) ] . SEROQUEL is not approved for the treatment of patients with dementia-related psychosis [see Warnings and Precautions (5.1) ] . Suicidal Thoughts and Behaviors Antidepressants increased the risk of suicidal thoughts and behavior in children, adolescents, and young adults in short-term studies. These studies did not show an increase in the risk of suicidal thoughts and behavior with antidepressant use in patients over age 24; there was a reduction in risk with antidepressant use in patients aged 65 and older [see Warnings and Precautions (5.2) ]. In patients of all ages who are started on antidepressant therapy, monitor closely for worsening, and for emergence of suicidal thoughts and behaviors. Advise families and caregivers of the need for close observation and communication with the prescriber [ see Warnings and Precautions (5.2) ] . SEROQUEL is not approved for use in pediatric patients under ten years of age [see Use in Specific Populations (8.4) ] . WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS; and SUICIDAL THOUGHTS AND BEHAVIORS See full prescribing information for complete boxed warning. Increased Mortality in Elderly Patients with Dementia-Related Psychosis \u2022Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. SEROQUEL is not approved for elderly patients with dementia-related psychosis ( 5.1 ) Suicidal Thoughts and Behaviors \u2022Increased risk of suicidal thoughts and behavior in children, adolescents and young adults taking antidepressants ( 5.2 )\u2022Monitor for worsening and emergence of suicidal thoughts and behaviors ( 5.2 )"
+    },
+    "contraindications": {
+      "hash": "6092562564b11d8eef9205a0a42ecdae5b9f598289ca98b57d81c11f4728cfb9",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Hypersensitivity to quetiapine or to any excipients in the SEROQUEL formulation. Anaphylactic reactions have been reported in patients treated with SEROQUEL. Known hypersensitivity to SEROQUEL or any components in the formulation. (4)"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "fe3e62fa6e0f236bbb68eab2e47c2b8d327dddea633f7e20d40efe11e085f42b",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "8ae62aaf-f8c5-417f-baac-0098369ca322",
+  "version": "53"
+}
