@@ -36,8 +36,12 @@
           "why": "Early psychosis presentation"
         }
       ],
-      "family": [],
-      "gap": "LEAP pick withheld until its ISBN is confirmed (see unverified); omit the family side rather than substitute."
+      "family": [
+        {
+          "isbn": "9780985206703",
+          "why": "LEAP — named in book_library.md as a highest-yield family resource (anosognosia); ISBN confirmed for the 20th Anniversary Edition, Vida Press, 2020 (verified 2026-10-06)"
+        }
+      ]
     },
     {
       "week": 2,
@@ -97,9 +101,13 @@
         {
           "isbn": "9781476709475",
           "why": "CRAFT — named in book_library.md for substance use"
+        },
+        {
+          "isbn": "9780985206703",
+          "why": "LEAP — named in book_library.md for anosognosia"
         }
       ],
-      "gap": "Episode 26 removed (Dr. Moss, 2026-10-06): a general relationship-boundaries episode, not confidentiality teaching, and no reading page teaches personal boundaries to move it to. The listen side is omitted. LEAP pick withheld until its ISBN is confirmed (see unverified)."
+      "gap": "Episode 26 removed (Dr. Moss, 2026-10-06): a general relationship-boundaries episode, not confidentiality teaching, and no reading page teaches personal boundaries to move it to. The listen side is omitted."
     },
     {
       "week": 5,
@@ -132,6 +140,23 @@
       ],
       "family": [],
       "gap": "Episode 90 (USMLE Step 1 preparation) removed (Dr. Moss, 2026-10-06): exam preparation, not resident-level clinical teaching; it belongs only in an optional medical-student exam-preparation placement. Integration week is learner-facing; no family pick."
+    },
+    {
+      "week": 6,
+      "anchor": "shelf.md",
+      "pairing": null,
+      "sites": [
+        "ms3"
+      ],
+      "podcastCategory": "Clinician wellbeing & professional growth",
+      "listen": [
+        {
+          "episode": 90,
+          "why": "Optional exam-preparation and study-skills listening for medical students only (Dr. Moss, 2026-10-06); not resident-level clinical teaching, so scoped to the MS3 site"
+        }
+      ],
+      "family": [],
+      "gap": "Exam preparation is learner-facing; no family pick."
     }
   ],
   "excluded": {
@@ -140,20 +165,6 @@
       "Medication-focused episodes (e.g. 49, 57, 71, 167, 236) — medication workstream is reviewed separately",
       "All '▶ search channel' episodes (e.g. 58, 119, 126, 231) — no exact verified link",
       "Suicide-specific episodes (54, 60, 82) — not paired automatically with a learning page; surface only through the Safety kit if faculty choose"
-    ]
-  },
-  "unverified": {
-    "reason": "Withheld from the picks because the item could not be verified end to end; the build cannot pick these until a curator restores them.",
-    "checkedOn": "2026-10-05",
-    "items": [
-      {
-        "isbn": "9780985206703",
-        "was": [
-          "t_psychosis.md family",
-          "exp_family.md family"
-        ],
-        "finding": "Title and author confirmed (Xavier Amador, I Am Not Sick I Don't Need Help!, via OpenAlex title search), but the ISBN itself did not resolve in Open Library or Crossref, so the edition the library names is unconfirmed. Restore after confirming the ISBN against a catalogue."
-      }
     ]
   }
 }
