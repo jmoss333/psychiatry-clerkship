@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260716",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e33e77964a5e7e476ec0dcd36a6f9d1aeadcad89949a87444ae27f1e7a63f2dd",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Ziprasidone is not approved for the treatment of patients with dementia-related psychosis [see Warnings and Precautions ( 5.1 )]. WARNING: INCREASED MORTALITY IN ELDERLY PATIENTS WITH DEMENTIA-RELATED PSYCHOSIS See full prescribing information for complete boxed warning Elderly patients with dementia-related psychosis treated with antipsychotic drugs are at an increased risk of death. Ziprasidone is not approved for the treatment of patients with dementia-related psychosis ( 5.1 )"
+    },
+    "contraindications": {
+      "hash": "36dd59cc3111e3dd102b922c3275f8ecba8d43f7bfb55c063fc6bcafd5592821",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Do not use in patients with a known history of QT prolongation (4.1) Do not use in patients with recent acute myocardial infarction (4.1) Do not use in patients with uncompensated heart failure (4.1) Do not use in combination with other drugs that have demonstrated QT prolongation (4.1) Do not use in patients with known hypersensitivity to ziprasidone (4.2) 4.1 QT Prolongation Because of ziprasidone\u2019s dose-related prolongation of the QT interval and the known association of fatal arrhythmias with QT prolongation by some other drugs, ziprasidone is contraindicated: in patients with a known history of QT prolongation (including congenital long QT syndrome) in patients with recent acute myocardial infarction in patients with uncompensated heart failure Pharmacokinetic/pharmacodynamic studies between ziprasidone and other drugs that prolong the QT interval have not been performed. An additive effect of ziprasidone and other drugs that prolong the QT interval cannot be excluded. Therefore, ziprasidone should not be given with: dofetilide, sotalol, quinidine, other Class Ia and III anti-arrhythmics, mesoridazine, thioridazine, chlorpromazine, droperidol, pimozide, sparfloxacin, gatifloxacin, moxifloxacin, halofantrine, mefloquine, pentamidine, arsenic trioxide, levomethadyl acetate, dolasetron mesylate, probucol or tacrolimus. other drugs that have demonstrated QT prolongation as one of their pharmacodynamic effects and have this effect described in the full prescribing information as a contraindication or a boxed or bolded warning [see Warnings and Precautions (5.3) ]. 4.2 Hypersensitivity Ziprasidone is contraindicated in individuals with a known hypersensitivity to the product."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "c9e8a34f9c60b80f2780e444f7164785bca714db0a6f8a165e0d6852c4f316ac",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "5d576819-cd14-4a61-8a2f-6b90d8eac07e",
+  "version": "101"
+}

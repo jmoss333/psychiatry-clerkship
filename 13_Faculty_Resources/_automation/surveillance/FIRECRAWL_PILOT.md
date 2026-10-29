@@ -278,3 +278,9 @@ Resume refuses to replace a view containing unsaved notes. Typing while its inde
 request is pending cancels the replacement through the existing draft-version
 check. The bookmark is local to that browser and origin, not an account-wide
 review status or evidence of clinical approval.
+
+The source name beside **Resume review** comes from the currently loaded inbox,
+not browser storage. It refreshes with the inbox and follows successful packet
+opens (including reopening a loaded panel), without a separate detail request.
+The button exposes the name as its accessible description. An absent saved packet
+is labelled unavailable; labels are rendered as text and long names can wrap.

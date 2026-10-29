@@ -250,6 +250,16 @@ _pretest=qbank_public.pretest_pool(_qb_public)
 with open(OUT+"/pretest_pool.json","w",encoding="utf-8") as _fh:
     json.dump(_pretest,_fh,ensure_ascii=False)
 print("pretest pool:",len(_pretest["items"]),"of",len(qbank_public.PRETEST_CATEGORIES),"categories")
+# Pre/post knowledge check (DRAFT, L8 outcomes design) -- CLERKSHIP_PREPOST, default off.
+# Off: no forms file and the shell marker expands to nothing (see the needle block below).
+_PREPOST=common.prepost_enabled()
+if _PREPOST:
+    _prepost=qbank_public.prepost_forms(_qb_public)
+    with open(OUT+"/prepost_forms.json","w",encoding="utf-8") as _fh:
+        json.dump(_prepost,_fh,ensure_ascii=False)
+    print("pre/post forms: shipped, %d + %d items"%(len(_prepost["forms"]["A"]),len(_prepost["forms"]["B"])))
+else:
+    print("pre/post forms: off (CLERKSHIP_PREPOST=%s)"%common.prepost_mode())
 
 # ---- local tool runtime vendor: no bedside CDN dependency ----
 # Several React-based tools historically loaded React from cdnjs and went blank when ward
@@ -577,6 +587,10 @@ for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
+# Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms
+# outcome_tally.js only; it sends nothing unless the emitter above also ships.
+_OUTCOMES = common.outcomes_enabled()
+print("outcome counters:", "armed (CLERKSHIP_OUTCOMES=on)" if _OUTCOMES else "off (CLERKSHIP_OUTCOMES=%s)" % common.outcomes_mode())
 
 # Front Door modules stay dormant in this task, but their data is made site-specific now.
 # Build after nav finalization so titles/kinds come from this site's actual browse catalog.
@@ -638,6 +652,14 @@ for _needle,_ids,_label in ((
         print("BUILD ABORTED — %s needle missing or duplicated in spa_index.html"%_label)
         raise SystemExit(1)
     _spa_t=_spa_t.replace(_needle,"var %s=%s;"%(_label,json.dumps(_ids)))
+try:
+    _spa_t=common.apply_prepost_marker(_spa_t,_PREPOST)
+except ValueError as _e:
+    print("BUILD ABORTED — %s"%_e)
+    raise SystemExit(1)
+if not _PREPOST and (common.PREPOST_SIGNATURE in _spa_t or os.path.exists(OUT+"/prepost_forms.json")):
+    print("BUILD ABORTED — CLERKSHIP_PREPOST=off but the pre/post check is present")
+    raise SystemExit(1)
 # The longitudinal case ("One Patient, Six Weeks"), READ-ONLY, for Today's "On the unit this
 # week" (one-thread redesign, Phase 1). Injected rather than fetched so the section exists at
 # first render: a runtime fetch made Today's DOM churn after boot and two loads of the same page
@@ -774,7 +796,8 @@ common.apply_contrast_fix(
     _glob.glob(OUT+"/content/*.md")+_glob.glob(OUT+"/tools/*.html")+[OUT+"/index.html"]
 )
 _QV=common.quiz_cache_bust(OUT+"/tools/quizzes.json")   # content-hash cache-bust (reproducible)
-common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3)
+common.apply_full_page_pass(OUT, cache_bust=_QV, inject_analytics=_ANALYTICS_MS3,
+                            inject_outcomes=_OUTCOMES)
 for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.html"):
     frontdoor_catalog.assert_catalog_resolver_injected(_frontdoor_destination, _rotation_projection["revision"])
 
@@ -785,6 +808,13 @@ for _frontdoor_destination in (OUT+"/index.html", OUT+"/tools/rotation-curator.h
 # artifact and receives its own final-marker postcondition below.
 _crisis.inject_required_html_file(OUT+"/index.html", _crisis_data, "Front Door shell index")
 print("crisis block injected: shell index")
+
+# Icon sprite (C1, icons & wayfinding): the vendored Lucide subset as one hidden <symbol> sprite,
+# so fdIcon()'s <use href="#ic-NAME"> resolves. Verified replacement of the one marker comment;
+# hidden, 0x0, aria-hidden, and referenced by nothing yet, so it changes no rendered pixel. The
+# resident build inherits it with this index; common.assert_page_contract requires exactly one.
+import icon_sprite as _icon_sprite
+print("icon sprite injected: shell index, %d glyph(s)"%_icon_sprite.inject_sprite_file(OUT+"/index.html"))
 
 
 open(OUT+"/favicon.svg","w",encoding="utf-8").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#9f3f2a"/><text x="32" y="45" font-family="Georgia,serif" font-size="40" fill="#fff" text-anchor="middle">\u03c8</text></svg>')
@@ -837,6 +867,16 @@ if not _ANALYTICS_MS3:
         raise SystemExit(
             "usage analytics: disabled for ms3 (CLERKSHIP_ANALYTICS=%s) but "
             "still present: %s" % (common.analytics_mode(), ", ".join(sorted(_analytics_leaked)))
+        )
+
+# Outcome-counter fail-closed postcondition: an off build carries no CW_OUTCOMES stamp
+# anywhere. The resident build is a copy of this tree, so this also covers it.
+if not _OUTCOMES:
+    _outcomes_leaked = common.outcomes_flag_leaks(OUT)
+    if _outcomes_leaked:
+        raise SystemExit(
+            "outcome counters: CLERKSHIP_OUTCOMES=%s but the CW_OUTCOMES stamp is present: %s"
+            % (common.outcomes_mode(), ", ".join(_outcomes_leaked))
         )
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact ----------
