@@ -709,6 +709,12 @@
      resident build swaps in its own edition. {slug, title, date}: the renderer shows it only for
      the week after `date`, so null, a malformed value or an older edition renders nothing. */
   var FD_COTW_NEWEST=null;
+  /* "Presenting tomorrow" (presenting_tomorrow.py, F4): which attested fields and which links each
+     hospital phase shows, and the syndromes that qualify on this site. Same verified-needle
+     injection as FD_MEDIA; the resident build swaps in its own value. The clinical lines come from
+     FD_TOPIC_META, the cases from FD_INDEX.cotwForTopic -- this is routing data only. Null means
+     the chooser offers no syndrome picker. */
+  var FD_PRESENTING=null;
   /* One-shot arrival target for a "Beyond this page" library link: {ref, anchor}. Set by the
      click, consumed by the next mount of that ref, never stored. */
   var fdMediaArrival=null;
@@ -2554,6 +2560,9 @@
      render so the plan follows the learner's actual misses. */
   var fdBlockMinutes=10;
   var fdTodayPurposeId='',fdTodayPurposeOpen=true,fdTodayPlannerOpen=false;
+  /* The syndrome and hospital phase chosen under "Before rounds" (F4). Session-only, like the
+     purpose itself: never persisted, never in the URL. */
+  var fdTodayPrepRef='',fdTodayPrepPhase='';
   function fdWeakestCategory(){
     try{
       var rows=masteryByBlueprint(), best=null;
@@ -2772,7 +2781,7 @@
     }
     if(captureHtml) rows.push({kind:'capture',mark:'plus',count:captureSummary?captureSummary.total:undefined,html:captureHtml});
     live.alsoRows=rows;
-    live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen);
+    live.purposeHtml=facultyPreviewRequest?'':fdTodayPurpose(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen,{prep:FD_PRESENTING,meta:FD_TOPIC_META,prepRef:fdTodayPrepRef,prepPhase:fdTodayPrepPhase,audience:FD_AUDIENCE});
     live.caseWeek=fdWeekCaseStep(FD_INDEX,FD_CASE_ARC,weekN);
     /* The newest case, handed in raw: fdNewCase (fd_today.js) decides from live.nowMs and the
        registry date whether Today announces it this week. Build data, not a device store, so it
@@ -3508,6 +3517,26 @@
       if(!purposeValid)return;
       fdTodayPurposeId=purposeId;fdTodayPurposeOpen=purposeId!=='';specialRefresh();
       var purposeFocus=contentEl.querySelector(purposeId?'[data-today-purpose="'+purposeId+'"]':'[data-today-purpose-toggle]');if(purposeFocus)purposeFocus.focus();return;
+    }
+    /* F4: the syndrome and phase pickers under "Before rounds". Both values are validated against
+       the build-injected payload before they are kept, the same way the purpose id is. */
+    el=target.closest&&target.closest('[data-today-prep]');
+    if(el){
+      event.preventDefault();if(facultyPreviewRequest)return;
+      var prepRef=el.getAttribute('data-today-prep'),prepValid=prepRef==='',prepList=(FD_PRESENTING&&FD_PRESENTING.syndromes)||[];
+      for(var pr=0;pr<prepList.length;pr++){if(prepList[pr].ref===prepRef)prepValid=true;}
+      if(!prepValid)return;
+      fdTodayPrepRef=prepRef;specialRefresh();
+      var prepFocus=contentEl.querySelector(prepRef?'[data-today-prep="'+prepRef+'"]':'[data-today-purpose="rounds"]');if(prepFocus)prepFocus.focus();return;
+    }
+    el=target.closest&&target.closest('[data-today-prep-phase]');
+    if(el){
+      event.preventDefault();if(facultyPreviewRequest)return;
+      var prepPhase=el.getAttribute('data-today-prep-phase'),phaseValid=false,phaseList=(FD_PRESENTING&&FD_PRESENTING.phases)||[];
+      for(var pp=0;pp<phaseList.length;pp++){if(phaseList[pp].id===prepPhase)phaseValid=true;}
+      if(!phaseValid)return;
+      fdTodayPrepPhase=prepPhase;specialRefresh();
+      var phaseFocus=contentEl.querySelector('[data-today-prep-phase="'+prepPhase+'"]');if(phaseFocus)phaseFocus.focus();return;
     }
     el=target.closest&&target.closest('[data-today-planner-toggle]');
     if(el){event.preventDefault();if(facultyPreviewRequest)return;fdTodayPlannerOpen=!fdTodayPlannerOpen;specialRefresh();var plannerToggle=contentEl.querySelector('[data-today-planner-toggle]');if(plannerToggle)plannerToggle.focus();return;}

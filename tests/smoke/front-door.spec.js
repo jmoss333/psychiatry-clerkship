@@ -5936,6 +5936,62 @@ test('Today purpose is optional, session-only, and preserves the regular planner
   await expectHealthy(page);
 });
 
+// ---- "Presenting tomorrow" (F4, 2026-10-18) -----------------------------------------------------
+// Under "Before rounds" the chooser offers the syndromes the site's topic hubs carry a workflow
+// block for; a pick renders one phased card from the syndrome's own attested record and routes to
+// the guide, the newest Case of the Week and the drills. Session-only, like the purpose itself.
+test('Before rounds offers the syndrome picker; a pick renders the phased card from the attested record and opens the case', async ({ page }, info) => {
+  const resident = isResidentProject(info.project.name);
+  await seedApp(page, info);
+  await page.goto('/');
+  await otfExpectOnePrimary(page);
+  const chooser = page.locator('.fd-purpose');
+  await expect(chooser).toHaveAttribute('open', '');
+  await expect(page.locator('.fd-prep')).toHaveCount(0);
+  await chooser.locator('[data-today-purpose="rounds"]').click();
+  const prep = chooser.locator('.fd-prep');
+  await expect(prep).toHaveCount(1);
+  await expect(prep.locator('.fd-prep__prompt')).toHaveText('Presenting a specific patient? Pick the syndrome.');
+  const payload = await page.evaluate(() => (typeof FD_PRESENTING === 'object' ? FD_PRESENTING : null));
+  expect(payload && payload.syndromes.length).toBeGreaterThanOrEqual(3);
+  await expect(prep.locator('[data-today-prep]')).toHaveCount(payload.syndromes.length);
+  await expect(prep.locator('.fd-prep__card')).toHaveCount(0);
+  // Pick Mood disorders: phase pills appear (first phase pressed) and the card carries the record's own lines.
+  const mood = prep.locator('[data-today-prep="t_mood.md"]');
+  await mood.click();
+  await expect(mood).toBeFocused();
+  await expect(mood).toHaveAttribute('aria-pressed', 'true');
+  await expect(prep.locator('[data-today-prep-phase]')).toHaveCount(payload.phases.length);
+  await expect(prep.locator(`[data-today-prep-phase="${payload.phases[0].id}"]`)).toHaveAttribute('aria-pressed', 'true');
+  const card = prep.locator('.fd-prep__card');
+  await expect(card).toHaveCount(1);
+  await expect(card.locator('.fd-prep__title')).toHaveText(`Mood disorders · ${payload.phases[0].label}`);
+  // The built topic_meta.json is the same object the shell inlines as FD_TOPIC_META.
+  const meta = (await (await requestGetWithRetry(page.request, '/topic_meta.json')).json())['t_mood.md'];
+  await expect(card.locator('.fd-prep__line dd').first()).toHaveText(meta.clinicalWorkflow.ask);
+  expect(await card.locator('.fd-prep__line').count()).toBeGreaterThanOrEqual(3);
+  await expect(card.locator('.fd-prep__epa')).toHaveCount(resident ? 1 : 0);
+  // The primary action, the URL and the stores are untouched by the picks.
+  await otfExpectOnePrimary(page);
+  expect(new URL(page.url()).searchParams.has('page')).toBe(false);
+  // Day 2–3: the Case of the Week link is this site's own twin and opens in the reader.
+  await prep.locator('[data-today-prep-phase="rounds"]').click();
+  await expect(prep.locator('[data-today-prep-phase="rounds"]')).toHaveAttribute('aria-pressed', 'true');
+  const cotw = card.locator('.fd-prep__links [data-fd-open^="cotw_"]');
+  await expect(cotw).toHaveCount(1);
+  const slug = await cotw.getAttribute('data-fd-open');
+  expect(slug).toMatch(new RegExp(`_${resident ? 'res' : 'ms3'}\\.md$`));
+  await cotw.click();
+  await page.waitForURL((url) => url.searchParams.get('page') === slug);
+  await expect(page.locator('.fd-article__h1')).toBeVisible();
+  // Back: the pick is still there (session), Regular Today clears the picker.
+  await page.locator('.fd-reader__back[data-fd-back]').first().click();
+  await expect(chooser.locator('.fd-prep__card')).toHaveCount(1);
+  await chooser.locator('[data-today-purpose=""]').click();
+  await expect(page.locator('.fd-prep')).toHaveCount(0);
+  await expectHealthy(page);
+});
+
 test('Today purpose uses published reader/tool routes with keyboard, mobile and large text',async({page},info)=>{
   await seedApp(page,info);await page.goto('/');
   const routes=[{id:'rounds',ref:'oral.html',tool:true},{id:'interview',ref:'pg_interview.md',tool:false},{id:'family',ref:'family_playbook.md',tool:false}];
