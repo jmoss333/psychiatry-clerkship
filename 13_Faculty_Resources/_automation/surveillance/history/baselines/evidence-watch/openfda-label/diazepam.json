@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260811",
+  "sections": {
+    "boxed_warning": {
+      "hash": "b68e9898d2b38e2af238cc330b4ad75f7bb8039a6ec4fa9626e383d8c553eed2",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: RISKS FROM CONCOMITANT USE WITH OPIOIDS; ABUSE, MISUSE, AND ADDICTION; and DEPENDENCE AND WITHDRAWAL REACTIONS Concomitant use of benzodiazepines and opioids may result in profound sedation, respiratory depression, coma, and death. Reserve concomitant prescribing of these drugs in patients for whom alternative treatment options are inadequate. Limit dosages and durations to the minimum required. Follow patients for signs and symptoms of respiratory depression and sedation (see WARNINGS and PRECAUTIONS ). The use of benzodiazepines, including VALIUM, exposes users to risks of abuse, misuse, and addiction, which can lead to overdose or death. Abuse and misuse of benzodiazepines commonly involve concomitant use of other medications, alcohol, and/or illicit substances, which is associated with an increased frequency of serious adverse outcomes. Before prescribing VALIUM and throughout treatment, assess each patient's risk for abuse, misuse, and addiction (see WARNINGS ) . The continued use of benzodiazepines, including VALIUM, may lead to clinically significant physical dependence. The risks of dependence and withdrawal increase with longer treatment duration and higher daily dose. Abrupt discontinuation or rapid dosage reduction of VALIUM after continued use may precipitate acute withdrawal reactions, which can be life-threatening. To reduce the risk of withdrawal reactions, use a gradual taper to discontinue VALIUM or reduce the dosage (see DOSAGE AND ADMINISTRATION and WARNINGS ) ."
+    },
+    "contraindications": {
+      "hash": "451b729f3dac845cd376febe6e9244c66b40ebe8a213b94dba3ea5bed32d319a",
+      "present": true,
+      "rems": false,
+      "text": "CONTRAINDICATIONS Valium is contraindicated in patients with a known hypersensitivity to diazepam and, because of lack of sufficient clinical experience, in pediatric patients under 6 months of age. Valium is also contraindicated in patients with myasthenia gravis, severe respiratory insufficiency, severe hepatic insufficiency, and sleep apnea syndrome. It may be used in patients with open- angle glaucoma who are receiving appropriate therapy, but is contraindicated in acute narrow-angle glaucoma."
+    },
+    "warnings": {
+      "hash": "58a358ca8364bca6c748ea2c9bc70d6de856a5bed2dc315952b7106abeacc34c",
+      "present": true,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    }
+  },
+  "set_id": "260e2041-2bb3-482f-850e-b5d47a7bdbe6",
+  "version": "11"
+}

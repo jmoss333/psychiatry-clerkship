@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20260714",
+  "sections": {
+    "boxed_warning": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false,
+      "text": ""
+    },
+    "contraindications": {
+      "hash": "87da69894ff8317426ed5766a9404359d31e228ec7d2e401f9a68ebe175f5d38",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS Acamprosate calcium is contraindicated in patients who previously have exhibited hypersensitivity to acamprosate calcium or any of its components (4.1). Acamprosate calcium is contraindicated in patients with severe renal impairment (4.2). 4.1 Hypersensitivity to Acamprosate Calcium Acamprosate calcium is contraindicated in patients who previously have exhibited hypersensitivity to acamprosate calcium or any of its components. 4.2 Severe Renal Impairment Acamprosate calcium is contraindicated in patients with severe renal impairment (creatinine clearance of \u226430 mL/min) [ see Dosage and Administration ( 2.1 ), Warnings and Precautions ( 5.1 ), Use in Specific Populations ( 8.6 ), and Clinical Pharmacology ( 12.3 ) ]."
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "d3d4c6ffdb29c7843eb22ff0c0243e9c1ae77dc1543e6e72edbfc7f0e4b22213",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "1cfe4675-766f-4f1a-b1a8-96bbdacfcfa5",
+  "version": "1"
+}

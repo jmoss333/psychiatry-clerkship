@@ -3961,3 +3961,23 @@ test('resume review remembers reopening an already loaded packet',async({page})=
  await b.getByRole('button',{name:'Open packet'}).click();await expect(b.getByRole('heading',{name:'Packet details',exact:true})).toBeVisible();await a.getByRole('button',{name:'Open packet'}).click();
  expect(await page.evaluate(()=>localStorage.getItem('cw_evidence_last_packet'))).toBe(resumeRevision);
 });
+
+test('resume review source label comes from the fresh inbox without fetching packet details',async({page})=>{
+ const packet=resumePacket(),requests=await mockEvidencePages(page,{packets:[packet]});await page.addInitScript(revision=>localStorage.setItem('cw_evidence_last_packet',revision),resumeRevision);await openResumeInbox(page);
+ const button=page.getByRole('button',{name:'Resume review',exact:true}),label=page.locator('#evidence-resume-source');
+ await expect(label).toHaveText('Resume source');await expect(button).toHaveAccessibleDescription('Resume source');expect(requests.map(r=>r.section)).toEqual(['index']);
+ packet.sourceName='Updated source from fresh inbox';await page.getByRole('button',{name:'Reload evidence'}).click();await expect(label).toHaveText(packet.sourceName);expect(requests.map(r=>r.section)).toEqual(['index','index']);
+ expect(await page.evaluate(()=>localStorage.getItem('cw_evidence_last_packet'))).toBe(resumeRevision);
+ packet.sourceName='<img src=x onerror=alert(1)> '+ 'LongSource'.repeat(25);await page.getByRole('button',{name:'Reload evidence'}).click();await expect(label).toHaveText(packet.sourceName);await expect(label.locator('img')).toHaveCount(0);
+ await page.setViewportSize({width:390,height:844});expect(await label.evaluate(e=>e.getBoundingClientRect().right<=innerWidth)).toBe(true);
+});
+
+test('resume review source label follows successful opens and cached reopening',async({page})=>{
+ const first=resumePacket(),second=resumePacket({revision:'b'.repeat(64),sourceName:'Second source'});await mockEvidencePages(page,{packets:[first,second]});await page.goto('/evidence.html');await page.getByLabel('Faculty key').fill(FACULTY_KEY);await page.getByRole('button',{name:'Open evidence inbox'}).click();const label=page.locator('#evidence-resume-source');await expect(label).toBeHidden();
+ const a=page.locator('article').filter({has:page.getByRole('heading',{name:'Resume source',exact:true})}),b=page.locator('article').filter({has:page.getByRole('heading',{name:'Second source',exact:true})});
+ await a.getByRole('button',{name:'Open packet'}).click();await expect(label).toHaveText('Resume source');await a.getByRole('button',{name:'Open packet'}).click();await b.getByRole('button',{name:'Open packet'}).click();await expect(label).toHaveText('Second source');await a.getByRole('button',{name:'Open packet'}).click();await expect(label).toHaveText('Resume source');
+});
+
+test('resume review source label identifies an unavailable saved packet without inventing a source name',async({page})=>{
+ await mockEvidencePages(page,{packets:[resumePacket({revision:'b'.repeat(64)})]});await page.addInitScript(revision=>localStorage.setItem('cw_evidence_last_packet',revision),resumeRevision);await openResumeInbox(page);await expect(page.locator('#evidence-resume-source')).toHaveText('Saved packet unavailable');await page.getByRole('button',{name:'Resume review',exact:true}).click();await expect(page.getByRole('status')).toContainText('saved packet is unavailable');
+});

@@ -330,7 +330,7 @@
       "id": "qbx_sud_001",
       "version": 1,
       "status": "draft",
-      "title": "Thiamine before glucose in the malnourished patient",
+      "title": "Thiamine with glucose in the malnourished patient",
       "type": "two-tier",
       "category": "substance",
       "competency": ["next-step", "safety"],
@@ -355,12 +355,12 @@
       "lead_in": "Which of the following is the most appropriate immediate management?",
       "options": [
         { "key": "A", "t": "Administer thiamine together with (or before) intravenous dextrose", "c": true },
-        { "key": "B", "t": "Administer intravenous dextrose alone and recheck the neurologic exam", "trap": { "name": "Glucose before thiamine", "note": "Giving glucose without thiamine in a thiamine-deficient patient can precipitate or worsen Wernicke encephalopathy." } },
+        { "key": "B", "t": "Administer intravenous dextrose alone and recheck the neurologic exam", "trap": { "name": "Dextrose without thiamine", "note": "Giving glucose without thiamine in a thiamine-deficient patient can precipitate or worsen Wernicke encephalopathy." } },
         { "key": "C", "t": "Give lorazepam for presumed alcohol withdrawal before anything else", "trap": { "name": "It's just withdrawal", "note": "New confusion in alcohol use needs a real differential — hypoglycemia and Wernicke here — not a reflexive benzodiazepine." } },
         { "key": "D", "t": "Obtain a head CT before providing any treatment", "trap": { "name": "Imaging before resuscitation", "note": "Correcting hypoglycemia and giving thiamine are immediate and should not wait on imaging." } }
       ],
       "correct_option": "A",
-      "why": "In a malnourished patient with alcohol use, thiamine must accompany or precede dextrose because a glucose load can consume marginal thiamine stores and trigger Wernicke encephalopathy. 'Glucose before thiamine' is the classic error; 'it's just withdrawal' skips the differential; 'imaging before resuscitation' delays two time-critical, low-risk treatments.",
+      "why": "In a malnourished patient with alcohol use, thiamine must accompany or precede dextrose because a glucose load can consume marginal thiamine stores and trigger Wernicke encephalopathy. 'Dextrose without thiamine' is the classic error; 'it's just withdrawal' skips the differential; 'imaging before resuscitation' delays two time-critical, low-risk treatments.",
       "complete_correct_answer_explanation": "Thiamine is a cofactor for glucose metabolism, and administering a carbohydrate load to a thiamine-depleted patient can acutely precipitate Wernicke encephalopathy (confusion, ophthalmoplegia, ataxia). In a malnourished patient with alcohol use and hypoglycemia, the safe practice is to give thiamine together with — or before — dextrose, then continue evaluating for withdrawal and other causes. Both interventions are immediate and should not be delayed for imaging.",
       "explanation_for_each_distractor": {
         "B": "Dextrose without thiamine risks precipitating Wernicke encephalopathy in a depleted patient.",
@@ -368,13 +368,15 @@
         "D": "Head CT may follow, but it must not delay correcting hypoglycemia and giving thiamine."
       },
       "pearl": "Malnourished + alcohol + needs glucose → give thiamine with or before dextrose to prevent Wernicke.",
-      "key_takeaway": "Thiamine before (or with) glucose in the malnourished alcohol-using patient.",
+      "key_takeaway": "Thiamine with or alongside glucose in the malnourished alcohol-using patient — never delay dextrose for hypoglycemia.",
       "common_reasoning_error": "Treating the low glucose in isolation and forgetting the thiamine dependency of glucose metabolism.",
       "management_or_safety_caveat": "Do not withhold glucose in true hypoglycemia — give both; ensure adequate parenteral thiamine dosing per protocol.",
-      "evidence": "Thiamine should be given before or with glucose in patients at risk of deficiency to avoid precipitating Wernicke encephalopathy (standard emergency/toxicology practice; DSM-5-TR substance-related disorders context).",
+      "evidence": "Give thiamine with or alongside glucose in patients at risk of deficiency; ASAM 2020 states thiamine and glucose can be given in any order or concurrently, and dextrose is never delayed for hypoglycemia (Schabelman & Kuo 2012).",
       "references": [
         { "citation": "American Psychiatric Association. Diagnostic and Statistical Manual of Mental Disorders, 5th ed, Text Revision (DSM-5-TR). Washington, DC: APA; 2022.", "type": "manual-dsm", "access_date": "2026-07-13", "verified": true, "note": "Substance-related and alcohol use disorder context." },
-        { "citation": "Schuckit MA. Recognition and management of withdrawal delirium (delirium tremens). N Engl J Med. 2014;371(22):2109-2113.", "type": "guideline", "doi": "10.1056/NEJMra1407298", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Thiamine/glucose and withdrawal management." }
+        { "citation": "Schuckit MA. Recognition and management of withdrawal delirium (delirium tremens). N Engl J Med. 2014;371(22):2109-2113.", "type": "guideline", "doi": "10.1056/NEJMra1407298", "access_date": "2026-07-13", "verified": false, "note": "Identifier from record; faculty to confirm. Thiamine/glucose and withdrawal management." },
+        { "citation": "The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management. J Addict Med. 2020;14(3S Suppl 1):1-72.", "type": "guideline", "doi": "10.1097/ADM.0000000000000668", "pmid": "32511109", "access_date": "2026-10-22", "verified": true, "note": "'Patients also receiving glucose can be administered thiamine and glucose in any order or concurrently.'" },
+        { "citation": "Schabelman E, Kuo D. Glucose before thiamine for Wernicke encephalopathy: a literature review. J Emerg Med. 2012;42(4):488-494.", "type": "review", "doi": "10.1016/j.jemermed.2011.05.076", "pmid": "22104258", "access_date": "2026-10-22", "verified": true, "note": "'a delay in giving glucose to hypoglycemic patients cannot be recommended at this time, although prompt thiamine supplementation after or concurrent with a return to normoglycemia is recommended.'" }
       ],
       "reference_access_date": "2026-07-13",
       "faculty_review_flags": ["emergency", "medication", "higher-intensity-review"],

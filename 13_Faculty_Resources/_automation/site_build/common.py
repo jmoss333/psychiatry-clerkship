@@ -854,6 +854,9 @@ SNIPPET_MARKERS = {
     "/*__PHI_HEURISTIC__*/": "phi_heuristic.js",
     "/*__SW_REGISTER__*/": "sw_register.js",
     "/*__CALIB_LOG__*/": "calib_log.js",
+    # Nested: calib_log.js itself carries this marker, so it must come AFTER CALIB_LOG in
+    # this (insertion-ordered) dict. Inert unless CLERKSHIP_OUTCOMES stamps CW_OUTCOMES.
+    "/*__OUTCOME_TALLY__*/": "outcome_tally.js",
     "/*__PHASE_POLICY__*/": "phase_policy.js",
     "/*__SESS_CAPSULE__*/": "sess_capsule.js",
     "/*__BLOCK_STORE__*/": "block_store.js",
@@ -867,6 +870,7 @@ SNIPPET_MARKERS = {
     "/*__FD_TOOL_PINS__*/": "frontdoor/fd_tool_pins.js",
     "/*__FD_CAPTURE_EMAIL__*/": "frontdoor/fd_capture_email.js",
     "/*__FD_DATA__*/": "frontdoor/fd_data.js",
+    "/*__FD_ICONS__*/": "frontdoor/fd_icons.js",
     "/*__FD_OFFLINE__*/": "frontdoor/fd_offline.js",
     "/*__FD_EDITION_CATALOG__*/": "frontdoor/fd_edition_catalog.js",
     "/*__FD_EDITION_CONTRACT__*/": "frontdoor/fd_edition_contract.js",
@@ -899,6 +903,47 @@ SNIPPET_MARKERS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Pre/post knowledge check (L8 outcomes design, DRAFT) -- off by default.
+# ---------------------------------------------------------------------------
+# CLERKSHIP_PREPOST=off|on. Deliberately NOT a SNIPPET_MARKERS entry: those always expand,
+# and this one must expand to NOTHING in an off build. The shell carries the marker exactly
+# once; the build replaces it either with frontdoor/fd_prepost.js (on) or with "" (off), and
+# writes prepost_forms.json only when on. The resident shell is a copy of the MS3 one.
+PREPOST_MODES = ("off", "on")
+PREPOST_MARKER = "/*__FD_PREPOST__*/"
+PREPOST_SNIPPET = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontdoor", "fd_prepost.js")
+PREPOST_SIGNATURE = "function fdPrepostSectionHtml("
+
+
+def prepost_mode():
+    """Read CLERKSHIP_PREPOST from the environment; default 'off'."""
+    raw = os.environ.get("CLERKSHIP_PREPOST", "off").strip().lower()
+    if raw not in PREPOST_MODES:
+        raise ValueError(
+            "CLERKSHIP_PREPOST must be one of %s, got %r" % ("|".join(PREPOST_MODES), raw)
+        )
+    return raw
+
+
+def prepost_enabled(mode=None):
+    """Whether this build ships the pre/post knowledge-check UI and its forms."""
+    mode = prepost_mode() if mode is None else mode
+    return mode == "on"
+
+
+def apply_prepost_marker(text, enabled=False):
+    """Expand the shell's pre/post marker: the snippet when enabled, nothing otherwise.
+
+    Fails closed (ValueError) when the marker is missing or duplicated, so a refactor of
+    the shell cannot silently drop the off-by-default guarantee or ship two copies.
+    """
+    if text.count(PREPOST_MARKER) != 1:
+        raise ValueError("pre/post marker %s missing or duplicated in the shell" % PREPOST_MARKER)
+    body = open(PREPOST_SNIPPET, encoding="utf-8").read() if enabled else ""
+    return text.replace(PREPOST_MARKER, body, 1)
+
+
 def inject_shared_snippets(path):
     """Replace shared-snippet markers with their canonical bodies. Idempotent."""
     t = open(path, encoding="utf-8").read()
@@ -916,7 +961,65 @@ def inject_shared_snippets(path):
     return False
 
 
-def apply_full_page_pass(out_dir, cache_bust=None, inject_analytics=False):
+# ---------------------------------------------------------------------------
+# Outcome counters (L8 outcomes design, DRAFT) -- a second, independent gate.
+# ---------------------------------------------------------------------------
+# CLERKSHIP_OUTCOMES=off|on, default off. It decides only whether pages that carry
+# outcome_tally.js (injected through calib_log.js) receive the CW_OUTCOMES stamp that
+# arms it. Turning it on changes nothing unless CLERKSHIP_ANALYTICS also ships the
+# emitter for that site, because cwOutcomeTally() needs cwAnalytics. It is separate from
+# CLERKSHIP_ANALYTICS on purpose: the page-view counters may already be enabled for a
+# site, and merging this code must not widen what that site sends until the owner
+# decides, after the ethics determination, to turn this gate on.
+OUTCOMES_MODES = ("off", "on")
+OUTCOMES_FLAG_TAG = "<script>window.CW_OUTCOMES=1</script>"
+
+
+def outcomes_mode():
+    """Read CLERKSHIP_OUTCOMES from the environment; default 'off'."""
+    raw = os.environ.get("CLERKSHIP_OUTCOMES", "off").strip().lower()
+    if raw not in OUTCOMES_MODES:
+        raise ValueError(
+            "CLERKSHIP_OUTCOMES must be one of %s, got %r" % ("|".join(OUTCOMES_MODES), raw)
+        )
+    return raw
+
+
+def outcomes_enabled(mode=None):
+    """Whether this build stamps CW_OUTCOMES into outcome-tally pages."""
+    mode = outcomes_mode() if mode is None else mode
+    return mode == "on"
+
+
+def apply_outcomes_flag(path, enabled=False):
+    """Stamp OUTCOMES_FLAG_TAG into a page that carries cwOutcomeTally. Idempotent.
+
+    Only pages whose injected snippets define cwOutcomeTally are touched; a page
+    without it has nothing to arm. Defaults False, the flag's own default.
+    """
+    if not enabled:
+        return False
+    t = open(path, encoding="utf-8").read()
+    if "function cwOutcomeTally(" not in t or OUTCOMES_FLAG_TAG in t or "</head>" not in t:
+        return False
+    t = t.replace("</head>", OUTCOMES_FLAG_TAG + "\n</head>", 1)
+    open(path, "w", encoding="utf-8").write(t)
+    return True
+
+
+def outcomes_flag_leaks(out_dir):
+    """Every shipped .html under out_dir that carries the CW_OUTCOMES stamp."""
+    leaked = []
+    for dirpath, _dirnames, filenames in os.walk(out_dir):
+        for fname in filenames:
+            if fname.endswith(".html"):
+                fp = os.path.join(dirpath, fname)
+                if OUTCOMES_FLAG_TAG in open(fp, encoding="utf-8").read():
+                    leaked.append(os.path.relpath(fp, out_dir))
+    return sorted(leaked)
+
+
+def apply_full_page_pass(out_dir, cache_bust=None, inject_analytics=False, inject_outcomes=False):
     """Run chrome + dark-mode over every shipped HTML page in a build.
 
     Safe to re-run: every transform is idempotent. Callers that write additional
@@ -928,6 +1031,8 @@ def apply_full_page_pass(out_dir, cache_bust=None, inject_analytics=False):
     site under analytics_enabled_for()), threaded straight to apply_dark_mode.
     Defaults False so a caller that has not been updated to pass it explicitly
     never ships the emitter.
+
+    `inject_outcomes` arms outcome_tally.js (see outcomes_enabled()); same default.
     """
     pages = sorted(glob.glob(os.path.join(out_dir, "tools", "*.html")))
     index = os.path.join(out_dir, "index.html")
@@ -941,6 +1046,7 @@ def apply_full_page_pass(out_dir, cache_bust=None, inject_analytics=False):
         # analytics_head() needs. The SPA shell has no single one (see there).
         page_slug = None if is_index else os.path.basename(p)
         inject_shared_snippets(p)
+        apply_outcomes_flag(p, enabled=inject_outcomes)
         apply_page_chrome(p, is_index=is_index)
         apply_dark_mode(
             p,
@@ -1012,6 +1118,14 @@ def page_contract_failures(out_dir):
             missing.append("favicon link")
         if not is_index and "<!--ifn-->" not in t:
             missing.append("in-iframe link interceptor")
+        # Icon sprite (icon_sprite.py): the shell index carries exactly one, expanded; no page
+        # may ship the raw marker. fdIcon() output points at its symbols, so a missing sprite
+        # would draw nothing rather than fail loudly.
+        if "<!--fd-icon-sprite-->" in t:
+            missing.append("unexpanded icon sprite marker <!--fd-icon-sprite-->")
+        if is_index and t.count('id="fd-icon-sprite"') != 1:
+            missing.append("exactly one icon sprite (id=\"fd-icon-sprite\"), found %d"
+                           % t.count('id="fd-icon-sprite"'))
         for marker in SNIPPET_MARKERS:
             if marker in t:
                 missing.append("unexpanded shared-snippet marker %s" % marker)

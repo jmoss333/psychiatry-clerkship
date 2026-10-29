@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-10-22",
+  "refreshedAt": "2026-10-26",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -276,6 +276,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "38683591"
+    },
+    "10.1001/jamainternmed.2026.4939": {
+      "title": "Comparative Effectiveness of Phenobarbital vs Diazepam for Alcohol Withdrawal Syndrome",
+      "container": "JAMA Intern Med",
+      "containerAlt": [
+        "JAMA Intern Med",
+        "JAMA Internal Medicine",
+        "JAMA internal medicine"
+      ],
+      "year": 2026,
+      "authors": [
+        "Bradley",
+        "Feeney",
+        "Law",
+        "Peterkin",
+        "Fantasia",
+        "Walkey",
+        "Bosch"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "42862568"
     },
     "10.1001/jamanetworkopen.2024.35895": {
       "title": "Buprenorphine-Precipitated Withdrawal Among Hospitalized Patients Using Fentanyl",
@@ -915,6 +938,72 @@
       "resolvedAt": "2026-09-27",
       "pmid": "34762330"
     },
+    "10.1002/jhm.70088": {
+      "title": "Clinical progress note: Phenobarbital in the treatment of alcohol withdrawal syndrome",
+      "container": "Journal of Hospital Medicine",
+      "containerAlt": [
+        "J Hosp Med",
+        "Journal of Hospital Medicine",
+        "Journal of hospital medicine"
+      ],
+      "year": 2025,
+      "authors": [
+        "Abrams",
+        "Ronan"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "40443022"
+    },
+    "10.1002/phar.2855": {
+      "title": "Assessment of a modified MINDS ‐based protocol for management of alcohol withdrawal syndrome on an inpatient medical service",
+      "container": "Pharmacotherapy",
+      "containerAlt": [
+        "Pharmacotherapy",
+        "Pharmacotherapy: The Journal of Human Pharmacology and Drug Therapy"
+      ],
+      "year": 2023,
+      "authors": [
+        "Krcmarik",
+        "Hulley",
+        "Huang",
+        "Juang",
+        "Cadman",
+        "Urbiztondo",
+        "Vo",
+        "Vargas",
+        "Motarjemi",
+        "Moinizandi",
+        "Kwan"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "37475509"
+    },
+    "10.1002/phar.70197": {
+      "title": "Phenobarbital Versus Benzodiazepine‐Based Pathways for Alcohol Withdrawal Syndrome in Critically Ill Adults: A Systematic Review and Meta‐Analysis",
+      "container": "Pharmacotherapy",
+      "containerAlt": [
+        "Pharmacotherapy",
+        "Pharmacotherapy: The Journal of Human Pharmacology and Drug Therapy"
+      ],
+      "year": 2026,
+      "authors": [
+        "Rizwan",
+        "Brown",
+        "Barry",
+        "Guppy",
+        "Gerberi",
+        "Gajic",
+        "Herasevich"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "42634386"
+    },
     "10.1007/s00406-023-01716-5": {
       "title": "Clinical predictors of suicidal ideation, suicide attempts and suicide death in depressive disorder: a systematic review and meta-analysis",
       "container": "Eur Arch Psychiatry Clin Neurosci",
@@ -1366,6 +1455,25 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "33846015"
+    },
+    "10.1016/j.annemergmed.2024.02.016": {
+      "title": "Managing Alcohol Withdrawal Syndrome",
+      "container": "Annals of Emergency Medicine",
+      "containerAlt": [
+        "Ann Emerg Med",
+        "Annals of Emergency Medicine",
+        "Annals of emergency medicine"
+      ],
+      "year": 2024,
+      "authors": [
+        "Gottlieb",
+        "Chien",
+        "Long"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "38530674"
     },
     "10.1016/j.beth.2019.01.003": {
       "title": "Acceptability and Efficacy of Group Behavioral Activation for Depression Among Adults: A Meta-Analysis",
@@ -1833,6 +1941,26 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "36340306"
+    },
+    "10.1016/j.mayocpiqo.2021.11.010": {
+      "title": "Benzodiazepine Treatment and Hospital Course of Medical Inpatients With Alcohol Withdrawal Syndrome in the Veterans Health Administration",
+      "container": "Mayo Clinic Proceedings: Innovations, Quality & Outcomes",
+      "containerAlt": [
+        "Mayo Clin Proc Innov Qual Outcomes",
+        "Mayo Clinic Proceedings: Innovations, Quality & Outcomes",
+        "Mayo Clinic proceedings. Innovations, quality & outcomes"
+      ],
+      "year": 2022,
+      "authors": [
+        "Steel",
+        "Malte",
+        "Bradley",
+        "Hawkins"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "35224452"
     },
     "10.1016/j.neubiorev.2019.07.022": {
       "title": "Risk factors for suicidality in patients with panic disorder: A systematic review and meta-analysis",
@@ -3009,6 +3137,21 @@
       "resolvedAt": "2026-09-27",
       "pmid": "31050757"
     },
+    "10.1097/adm.0000000000000668": {
+      "title": "The ASAM Clinical Practice Guideline on Alcohol Withdrawal Management",
+      "container": "Journal of Addiction Medicine",
+      "containerAlt": [
+        "J Addict Med",
+        "Journal of Addiction Medicine",
+        "Journal of addiction medicine"
+      ],
+      "year": 2020,
+      "authors": [],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "32511109"
+    },
     "10.1097/adm.0000000000001133": {
       "title": "Rapid Low-dose Buprenorphine Initiation for Hospitalized Patients With Opioid Use Disorder",
       "container": "J Addict Med",
@@ -3074,6 +3217,26 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "30873690"
+    },
+    "10.1111/acem.14825": {
+      "title": "Phenobarbital treatment of alcohol withdrawal in the emergency department: A systematic review and meta‐analysis",
+      "container": "Academic Emergency Medicine",
+      "containerAlt": [
+        "Acad Emerg Med",
+        "Academic Emergency Medicine",
+        "Academic emergency medicine : official journal of the Society for Academic Emergency Medicine"
+      ],
+      "year": 2024,
+      "authors": [
+        "Lee",
+        "Dillon",
+        "Tahir",
+        "Murphy"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "37923363"
     },
     "10.1111/acps.12995": {
       "title": "Efficacy of inpatient psychotherapy for major depressive disorder: a meta‐analysis of controlled trials",
@@ -3632,6 +3795,24 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "40185617"
+    },
+    "10.1155/jnme/7143046": {
+      "title": "Thiamine Use in Hospitalized Patients: A Clinical Review",
+      "container": "Journal of Nutrition and Metabolism",
+      "containerAlt": [
+        "J Nutr Metab",
+        "Journal of Nutrition and Metabolism",
+        "Journal of nutrition and metabolism"
+      ],
+      "year": 2026,
+      "authors": [
+        "Rosewarne",
+        "Farina"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-10-26",
+      "pmid": "41684754"
     },
     "10.1159/000499039": {
       "title": "Thiamine Substitution in Alcohol Use Disorder: A Narrative Review of Medical Guidelines",

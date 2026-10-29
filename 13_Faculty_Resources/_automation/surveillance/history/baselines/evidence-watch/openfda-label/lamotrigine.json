@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-27T04:41:04+00:00",
+  "effective_time": "20251010",
+  "sections": {
+    "boxed_warning": {
+      "hash": "6256dac81dddf67fc58f2138bba4900748fbff4b60e13564e8830fe1af77b3a0",
+      "present": true,
+      "rems": false,
+      "text": "WARNING: SERIOUS SKIN RASHES LAMICTAL can cause serious rashes requiring hospitalization and discontinuation of treatment. The incidence of these rashes, which have included Stevens-Johnson syndrome, is approximately 0.3% to 0.8% in pediatric patients (aged 2 to 17 years) and 0.08% to 0.3% in adults receiving LAMICTAL. One rash-related death was reported in a prospectively followed cohort of 1,983 pediatric patients (aged 2 to 16 years) with epilepsy taking LAMICTAL as adjunctive therapy. In worldwide postmarketing experience, rare cases of toxic epidermal necrolysis and/or rash-related death have been reported in adult and pediatric patients, but their numbers are too few to permit a precise estimate of the rate. In addition to age, factors that may increase the risk of occurrence or the severity of rash caused by LAMICTAL include (1) coadministration of LAMICTAL with valproate (includes valproic acid and divalproex sodium), (2) exceeding the recommended initial dose of LAMICTAL, (3) exceeding the recommended dose escalation for LAMICTAL, or (4) the presence of the HLA-B*1502 allele. However, cases have occurred in the absence of these factors. Nearly all cases of life-threatening rashes caused by LAMICTAL have occurred within 2 to 8 weeks of treatment initiation. However, isolated cases have occurred after prolonged treatment (e.g., 6 months). Accordingly, duration of therapy cannot be relied upon as means to predict the potential risk heralded by the first appearance of a rash. Although benign rashes are also caused by LAMICTAL, it is not possible to predict reliably which rashes will prove to be serious or life threatening. Accordingly, LAMICTAL should ordinarily be discontinued at the first sign of rash, unless the rash is clearly not drug related. Discontinuation of treatment may not prevent a rash from becoming life threatening or permanently disabling or disfiguring [see Warnings and Precautions ( 5.1 )] . WARNING: SERIOUS SKIN RASHES See full prescribing information for complete boxed warning. \u2022 Cases of life-threatening serious rashes, including Stevens-Johnson syndrome and toxic epidermal necrolysis, and/or rash-related death have been caused by lamotrigine. The rate of serious rash is greater in pediatric patients than in adults. Additional factors that may increase the risk of rash include: o coadministration with valproate. o exceeding recommended initial dose of LAMICTAL. o exceeding recommended dose escalation for LAMICTAL. o presence of the HLA-B*1502 allele. ( 5.1 ) \u2022 Benign rashes are also caused by lamotrigine; however, it is not possible to predict which rashes will prove to be serious or life threatening. LAMICTAL should be discontinued at the first sign of rash, unless the rash is clearly not drug related. ( 5.1 )"
+    },
+    "contraindications": {
+      "hash": "d61f94a9faebe80bdb6f9d12cb08b952329b843bfbe44532130350f5fc2366fd",
+      "present": true,
+      "rems": false,
+      "text": "4 CONTRAINDICATIONS LAMICTAL is contraindicated in patients who have demonstrated hypersensitivity (e.g., rash, angioedema, acute urticaria, extensive pruritus, mucosal ulceration) to the drug or its ingredients [see Boxed Warning , Warnings and Precautions ( 5.1 , 5.3 )]. Hypersensitivity to the drug or its ingredients. ( Boxed Warning , 4 )"
+    },
+    "warnings": {
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "present": false,
+      "rems": false
+    },
+    "warnings_and_cautions": {
+      "hash": "ae202923cdf700815bb43cf5c650cda606659c62592808110cc4f25c2700538a",
+      "present": true,
+      "rems": false
+    }
+  },
+  "set_id": "d7e3572d-56fe-4727-2bb4-013ccca22678",
+  "version": "45"
+}
