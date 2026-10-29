@@ -799,6 +799,15 @@ is styled only inside `.has-preview`. The row itself (`data-fd-open`) opens the 
 the Preview control (`data-fd-kit-tool`) only changes the pane. No row animation: the list repaints on
 every keystroke of the filter.
 
+At 640px and narrower, the Library uses an 8px top inset, 12px side gutters and tighter gaps around
+its controls, status and sections; reading rows use 8px vertical padding. At 430px and narrower,
+the top inset, control/section gaps and row padding step down to 4px, with no extra margin after
+the status or review banner. This reserves room for wider system-font wrapping and keeps the
+first reading whole above the phone dock with a pending-review banner present. The banner's text,
+font, internal padding and 44px disclosure target stay unchanged; all other controls keep their
+touch minimums, and the shell's bottom dock clearance stays intact. The shell-inset rules are
+scoped by `.fd-main:has(.fd-library)` so readers and other routes keep their existing spacing.
+
 State. Section (`kitSection`), filter (`libraryFilter`) and preview (`kitToolPreview`) are controller
 memory only (fd_wire.js): never persisted, never in the URL. Section and filter ride on the Library's
 history entry via `history.replaceState` so Back/Forward restore them (owner decision D3); a reload
@@ -825,7 +834,7 @@ badges are byte-identical to their sources; `<mark>` wraps the matched run witho
 | `.fd-kit__review` | Existing string verbatim, now on `--fd-olive-wash` with `border-left:3px solid --fd-olive`; the summary is olive-deep 700 underlined. |
 | `.fd-kit__group > summary` | "Name · count", 13px/700 `--fd-text-mid`, `border-bottom:1px solid --fd-line-strong`; every group starts open. |
 | `.fd-kit__item` | Row wrapper: `grid minmax(0,1fr) auto; border-bottom:1px solid --fd-line`. `.is-selected` (desktop Essentials): `--fd-selected` background, `inset 3px 0 0 --fd-teal`, bleeds 16px into the gutters. |
-| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px), name first. Essentials uses 8px vertical padding at ≤640px, retaining its 44px minimum height and all text. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
+| `.fd-kit__reading` / `.fd-collink` | The row button: `padding:16px 2px` (Everything 14px); both use 8px vertical padding at ≤640px and 4px at ≤430px, retaining their 44px minimum height and all text, name first. Serif 600 19px title in Essentials, Inter 600 16px in Everything. Hover colours the title teal-deep. |
 | `.fd-kit__safety` | The 8px `--fd-danger` dot — the only red in the list. |
 | `.fd-kit__meta` | 13px `--fd-text-dim`. Replaces `.fd-kit__minutes`. |
 | `mark` | `--fd-teal-wash`, `color:inherit`, radius 3 — inside titles, labels and tool hints in both views; reading summaries stay verbatim. |

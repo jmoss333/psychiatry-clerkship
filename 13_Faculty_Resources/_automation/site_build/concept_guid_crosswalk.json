@@ -143,11 +143,11 @@
       "editorialId": "t_anxiety-summary:1",
       "noteId": "t_anxiety-summary",
       "identityAction": "new-note-required",
-      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
+      "reason": "F02 changes the PTSD teaching and grouped recall faces; FACULTY REVIEW REQUIRED",
       "oldFront": "In one line?",
       "oldBack": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines.",
-      "newFront": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with […], and resist the reflex to standing benzodiazepines.",
-      "newBack": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines."
+      "newFront": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, choose among […], and resist the reflex to standing benzodiazepines.",
+      "newBack": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, choose among disorder-specific psychotherapy and medication options according to evidence, patient preference, and access, and resist the reflex to standing benzodiazepines."
     },
     {
       "oldGuid": "Aixvea>vN]",
@@ -202,36 +202,36 @@
       "oldOrdinal": 0,
       "editorialId": "t_anxiety-pearl5:1",
       "noteId": "t_anxiety-pearl5",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "F02 changes the PTSD teaching and grouped recall faces; FACULTY REVIEW REQUIRED",
       "oldFront": "Definitive treatment is behavioral — […], PE/CPT for PTSD, interoceptive exposure for panic.",
       "oldBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
-      "newFront": "Definitive treatment is behavioral — […], PE/CPT for PTSD, interoceptive exposure for panic.",
-      "newBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic."
+      "newFront": "Disorder-specific psychotherapy — […], CPT/PE/EMDR for PTSD, interoceptive exposure for panic; for PTSD, individual trauma-focused psychotherapy is preferred over medication.",
+      "newBack": "Disorder-specific psychotherapy — ERP for OCD, CPT/PE/EMDR for PTSD, interoceptive exposure for panic; for PTSD, individual trauma-focused psychotherapy is preferred over medication."
     },
     {
       "oldGuid": "CX_F7rPGOI",
       "oldOrdinal": 1,
       "editorialId": "t_anxiety-pearl5:2",
       "noteId": "t_anxiety-pearl5",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "F02 changes the PTSD teaching and grouped recall faces; FACULTY REVIEW REQUIRED",
       "oldFront": "Definitive treatment is behavioral — ERP for OCD, […], interoceptive exposure for panic.",
       "oldBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
-      "newFront": "Definitive treatment is behavioral — ERP for OCD, […], interoceptive exposure for panic.",
-      "newBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic."
+      "newFront": "Disorder-specific psychotherapy — ERP for OCD, […], interoceptive exposure for panic; for PTSD, individual trauma-focused psychotherapy is preferred over medication.",
+      "newBack": "Disorder-specific psychotherapy — ERP for OCD, CPT/PE/EMDR for PTSD, interoceptive exposure for panic; for PTSD, individual trauma-focused psychotherapy is preferred over medication."
     },
     {
       "oldGuid": "CX_F7rPGOI",
       "oldOrdinal": 2,
       "editorialId": "t_anxiety-pearl5:3",
       "noteId": "t_anxiety-pearl5",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "F02 changes the PTSD teaching and grouped recall faces; FACULTY REVIEW REQUIRED",
       "oldFront": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, […].",
       "oldBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
-      "newFront": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, […].",
-      "newBack": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic."
+      "newFront": "Disorder-specific psychotherapy — ERP for OCD, CPT/PE/EMDR for PTSD, […]; for PTSD, individual trauma-focused psychotherapy is preferred over medication.",
+      "newBack": "Disorder-specific psychotherapy — ERP for OCD, CPT/PE/EMDR for PTSD, interoceptive exposure for panic; for PTSD, individual trauma-focused psychotherapy is preferred over medication."
     },
     {
       "oldGuid": "DTayR:LXYe",

@@ -131,14 +131,16 @@ test('dangerous object keys, missing inventories, and oversized files fail befor
   assert.throws(() => restore.reviewPrepareRestore(dangerous, reviews, bank, now), Error);
   assert.throws(() => restore.reviewPrepareRestore(exported(), null, bank, now), Error);
   assert.throws(() => restore.reviewPrepareRestore(exported(), reviews, null, now), Error);
-  assert.throws(() => restore.reviewPrepareRestore(exported(), reviews, [], now), Error);
+  const noReleasedBank = restore.reviewPrepareRestore(exported(), reviews, [], now);
+  assert.equal(noReleasedBank.qbCount, 0);
   assert.throws(() => restore.reviewPrepareRestore(' '.repeat(10_000_001), reviews, bank, now), Error);
 });
 
 test('built question-bank inventory must be present, complete, and unique', () => {
   const doc = items => ({getElementById: () => items === null ? null : {textContent: JSON.stringify(items)}});
   assert.deepEqual(restore.reviewQbInventoryFromDocument(doc(bank)), bank);
-  for (const items of [null, [], [{id: 'Q-1', retired: false}, {id: 'Q-1', retired: false}],
+  assert.deepEqual(restore.reviewQbInventoryFromDocument(doc([])), []);
+  for (const items of [null, [{id: 'Q-1', retired: false}, {id: 'Q-1', retired: false}],
     [{id: 'Q-1'}], [{id: '', retired: false}]]) {
     assert.throws(() => restore.reviewQbInventoryFromDocument(doc(items)), Error);
   }

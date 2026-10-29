@@ -126,15 +126,15 @@
       "id": "t_anxiety-summary",
       "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
       "kind": "summary",
-      "excerpt": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, treat the disorder with antidepressants plus structured behavioral work, and resist the reflex to standing benzodiazepines.",
+      "excerpt": "On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, choose among disorder-specific psychotherapy and medication options according to evidence, patient preference, and access, and resist the reflex to standing benzodiazepines.",
       "targets": [
         {
           "id": "t_anxiety-summary:1",
-          "text": "antidepressants plus structured behavioral work",
-          "contentRevision": 2
+          "text": "disorder-specific psychotherapy and medication options according to evidence, patient preference, and access",
+          "contentRevision": 3
         }
       ],
-      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
+      "reviewNote": "FACULTY REVIEW REQUIRED: F02 changes the source wording and rendered recall faces; no clinical approval is recorded here."
     },
     {
       "id": "t_anxiety-pearl1",
@@ -179,24 +179,25 @@
       "id": "t_anxiety-pearl5",
       "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
       "kind": "pearl",
-      "excerpt": "Definitive treatment is behavioral — ERP for OCD, PE/CPT for PTSD, interoceptive exposure for panic.",
+      "excerpt": "Disorder-specific psychotherapy — ERP for OCD, CPT/PE/EMDR for PTSD, interoceptive exposure for panic; for PTSD, individual trauma-focused psychotherapy is preferred over medication.",
       "targets": [
         {
           "id": "t_anxiety-pearl5:1",
           "text": "ERP for OCD",
-          "contentRevision": 1
+          "contentRevision": 2
         },
         {
           "id": "t_anxiety-pearl5:2",
-          "text": "PE/CPT for PTSD",
-          "contentRevision": 1
+          "text": "CPT/PE/EMDR for PTSD",
+          "contentRevision": 2
         },
         {
           "id": "t_anxiety-pearl5:3",
           "text": "interoceptive exposure for panic",
-          "contentRevision": 1
+          "contentRevision": 2
         }
-      ]
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: F02 changes the source wording and rendered recall faces; no clinical approval is recorded here."
     },
     {
       "id": "t_anxiety-pearl6",
@@ -1914,7 +1915,7 @@
     {
       "source": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
       "kind": "pearl",
-      "excerpt": "SSRIs are first-line (SNRIs also for anxiety disorders, venlafaxine for PTSD, not OCD); benzodiazepines are a liability on the unit, not a maintenance plan.",
+      "excerpt": "SSRIs are first-line medication options for anxiety disorders and OCD; SNRIs are also options for anxiety disorders, not OCD. For PTSD, choose sertraline, paroxetine, or venlafaxine when medication is selected; benzodiazepines are not recommended for PTSD.",
       "reason": "Published target no longer occurs in current source; withdraw instead of substituting a changed clinical claim. FACULTY REVIEW REQUIRED."
     },
     {

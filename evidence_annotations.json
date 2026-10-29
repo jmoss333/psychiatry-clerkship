@@ -3329,6 +3329,77 @@
           ]
         }
       ]
+    },
+    {
+      "sourceId": "vadod-2017-ptsd-cpg",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://www.ptsd.va.gov/professional/articles/article-pdf/id88366.pdf#page=62",
+        "retrievedAt": "2026-10-11",
+        "pmid": "",
+        "doi": "",
+        "sourceSpan": "For global symptoms of PTSD, we suggest against the use of prazosin as mono- or augmentation therapy. For nightmares associated with PTSD, there is insufficient evidence to recommend for or against the use of prazosin as mono- or augmentation therapy."
+      },
+      "claims": [
+        {
+          "claimId": "historical-prazosin-nightmares-and-global-ptsd",
+          "claimText": "For PTSD-related nightmares, evidence was insufficient to recommend for or against prazosin as monotherapy or augmentation; for global PTSD symptoms the guideline suggested against it. This historical insufficient-evidence position is not the later nightmare-specific recommendation.",
+          "claimTerms": [
+            "For nightmares associated with PTSD",
+            "insufficient evidence to recommend for or against",
+            "For global symptoms of PTSD"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "vadod-2023-ptsd-cpg",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://web.archive.org/web/20230721190354id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf#page=35",
+        "retrievedAt": "2026-10-11",
+        "pmid": "",
+        "doi": "",
+        "sourceSpan": "1 mg at bedtime; titrate to clinical response. We recommend individual psychotherapies, listed in Recommendation 8, over pharmacologic interventions for the treatment of PTSD. We recommend the individual, manualized trauma-focused psychotherapies for the treatment of PTSD: Cognitive Processing Therapy, Eye Movement Desensitization and Reprocessing, or Prolonged Exposure. We recommend paroxetine, sertraline, or venlafaxine for the treatment of PTSD. We suggest against divalproex, guanfacine, ketamine, prazosin, risperidone, tiagabine, or vortioxetine for the treatment of PTSD. We recommend against benzodiazepines for the treatment of PTSD. There is insufficient evidence to recommend for or against the combination or augmentation of psychotherapy (see Recommendation 8 and Recommendation 9) or medications (see Recommendation 15) with any psychotherapy or medication for the treatment of PTSD (see Recommendation 22 for antipsychotic medications and Recommendation 23 for 3,4-methylenedioxymethamphetamine). We suggest prazosin for the treatment of nightmares associated with PTSD. Prazosin might cause syncope with a sudden loss of consciousness. Syncopal episodes usually occur within 30 to 90 minutes of the initial dose. Addition of a diuretic, other antihypertensive agents, or a PDE5 inhibitor might cause an additive hypotensive effect. Some patients might experience side effects from prazosin, such as orthostatic hypotension, dizziness, or headaches. However, these side effects might be mitigated by slowly increasing the dose to the desired result. Caution should be used in patients on other medications that affect blood pressure or can cause orthostasis, including the concomitant use of phosphodiesterase type 5 inhibitors. Evidence suggests treatment with prazosin improves nightmares related to PTSD, as demonstrated by two SRs and one RCT.(240-242) Treatment with prazosin was associated with a clinically significant improvement in nightmares in an SR with six studies.(240) The other SR, which included seven studies, also found a clinically significant improvement with overlap between the SRs the studies included.(241) One additional RCT, not included in the SRs, found no significant difference in nightmare outcomes between prazosin and placebo; however, the study might have been underpowered because of a small sample size.(242) Included in the SRs was a large, well-designed, VA Cooperative multisite trial with Veterans in which prazosin failed to improve global symptoms of PTSD and nightmares compared with placebo.(243) However, the recent SRs identified by this evidence review determined a benefit with the treatment of prazosin for nightmares even when including the large VA Cooperative trial. The Work Group notes that this Weak against recommendation covers prazosin when used as monotherapy for PTSD. Please see Recommendation 32 for information on using prazosin to treat nightmares associated with PTSD."
+      },
+      "claims": [
+        {
+          "claimId": "ptsd-therapy-named-medications-and-combination-uncertainty",
+          "claimText": "The guideline recommends individual manualized trauma-focused psychotherapy with cognitive processing therapy, eye movement desensitization and reprocessing, or prolonged exposure over medication; recommends paroxetine, sertraline or venlafaxine when medication is selected; and recommends against benzodiazepines for PTSD. Evidence is insufficient for the specified psychotherapy/medication combinations or augmentation, so this is not a universal requirement to combine treatments.",
+          "claimTerms": [
+            "over pharmacologic interventions",
+            "paroxetine, sertraline, or venlafaxine",
+            "We recommend against benzodiazepines",
+            "insufficient evidence to recommend for or against the combination or augmentation"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "t_anxiety",
+            "qb_anx_002"
+          ]
+        },
+        {
+          "claimId": "prazosin-nightmares-dose-and-limitations",
+          "claimText": "The guideline suggests prazosin for PTSD-related nightmares, not as monotherapy for PTSD overall. It considers the large VA trial that failed to improve global PTSD symptoms and nightmares alongside systematic reviews finding nightmare benefit. Its initial-dose table lists 1 mg at bedtime, titrated to clinical response, with first-dose syncope and additive hypotension warnings; the nightmare discussion advises slow titration to mitigate orthostatic hypotension, dizziness or headaches.",
+          "claimTerms": [
+            "We suggest prazosin for the treatment of nightmares associated with PTSD",
+            "Weak against recommendation covers prazosin when used as monotherapy for PTSD",
+            "1 mg at bedtime; titrate to clinical response.",
+            "failed to improve global symptoms of PTSD and nightmares",
+            "orthostatic hypotension"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "rounds_questions",
+            "t_anxiety",
+            "pharmacy:prazosin"
+          ]
+        }
+      ]
     }
   ]
 }

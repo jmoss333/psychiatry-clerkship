@@ -331,7 +331,7 @@ function reviewRestoreDay(value){return typeof value==='string'&&(value===''||/^
 function reviewQbInventoryFromDocument(doc){
   var node=doc&&doc.getElementById('cw-review-qb-inventory'),items;
   try{items=JSON.parse(node&&node.textContent||'');}catch(_){throw Error('Current question-bank card list is unavailable. Reload and try again.');}
-  if(!Array.isArray(items)||!items.length)throw Error('Current question-bank card list is incomplete.');
+  if(!Array.isArray(items))throw Error('Current question-bank card list is incomplete.');
   var seen=Object.create(null);
   items.forEach(function(item){
     if(!item||typeof item.id!=='string'||!item.id||seen[item.id]||typeof item.retired!=='boolean')
@@ -373,7 +373,7 @@ function reviewPrepareRestore(raw,reviewCards,qbItems,now){
   var source=payload.srs;
   if(!reviewRestoreObject(source)||source.v!==1||!reviewRestoreObject(source.cards)||
       !reviewRestoreObject(source.day)||!reviewRestoreObject(source.settings)||
-      !Array.isArray(reviewCards)||!reviewCards.length||!Array.isArray(qbItems)||!qbItems.length||
+      !Array.isArray(reviewCards)||!reviewCards.length||!Array.isArray(qbItems)||
       !Number.isFinite(now))throw Error('Review backup or current card inventory is incomplete.');
   var allowed=Object.create(null),i,id;
   for(i=0;i<reviewCards.length;i++){

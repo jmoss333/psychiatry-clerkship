@@ -1,24 +1,49 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile,readdir,mkdtemp,rm} from 'node:fs/promises';
+import {readFile,readdir,mkdtemp,rm,cp,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import {build} from 'esbuild';
 import {runtimeEnvironment} from '../netlify/functions/dana-preview.mjs';
+import {buildPreviewFixture} from '../qa/build-fixture.mjs';
+import {existsSync} from 'node:fs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+test('parallel preview fixtures retain their assets and private source after another fixture is removed',async t=>{
+ const runs=await Promise.allSettled([0,1].map(async()=>{
+  const fixture=await buildPreviewFixture();t.after(fixture.cleanup);return fixture;
+ }));
+ for(const run of runs)assert.equal(run.status,'fulfilled',run.reason?.stack);
+ const [first,second]=runs.map(run=>run.value);
+ assert.notEqual(first.dist,second.dist);
+ for(const fixture of [first,second]){
+  assert.ok(existsSync(path.join(fixture.dist,'reading-companion.html')),'browser assets must use the isolated output');
+  assert.ok(existsSync(fixture.sourcePack),'the private source pack must also use the isolated output');
+  assert.ok(!existsSync(path.join(fixture.dist,'reading-companion.json')),'source pack stays outside the published files');
+ }
+ const assets=await readFile(path.join(second.dist,'reading-companion.html'));
+ const source=await readFile(second.sourcePack);
+ assert.ok(JSON.parse(source).units.length>0,'the isolated pack must contain the real reviewed excerpt');
+ await first.cleanup();
+ assert.ok(!existsSync(first.dist));
+ const replacement=await buildPreviewFixture();t.after(replacement.cleanup);
+ assert.deepEqual(await readFile(path.join(second.dist,'reading-companion.html')),assets);
+ assert.deepEqual(await readFile(second.sourcePack),source);
+ await second.cleanup();await replacement.cleanup();
+ assert.ok(!existsSync(second.dist));assert.ok(!existsSync(replacement.sourcePack));
+});
 test('runtime deployment binding comes from trusted invocation context, not build-only variables',()=>{
  const env=runtimeEnvironment({DEPLOY_ID:'stale-build',DANA_PREVIEW_ENABLED:'true'},{deploy:{id:'actual-deploy'},site:{url:'https://preview.test'}});
  assert.equal(env.DEPLOY_ID,'actual-deploy');assert.equal(env.URL,'https://preview.test');assert.equal(env.DANA_PREVIEW_ENABLED,'true');
  assert.equal(runtimeEnvironment({DEPLOY_ID:'build-only'},{}).DEPLOY_ID,undefined);
 });
-test('only the nine explicit browser files ship; private case and keys remain outside dist',async()=>{
+test('only the twelve explicit browser files ship; private case and keys remain outside dist',async()=>{
  const run=spawnSync(process.execPath,['build.mjs'],{cwd:root,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
- assert.deepEqual((await readdir(path.join(root,'dist'))).sort(),['app.js','index.html','moment-content.js','moment-station.js','practice-coach.js','practice-content.js','station-content.js','station.js','styles.css']);
- const published=['app.js','index.html','styles.css','station.js','station-content.js','moment-content.js','moment-station.js','practice-content.js','practice-coach.js'];
+ assert.deepEqual((await readdir(path.join(root,'dist'))).sort(),['app.js','index.html','moment-content.js','moment-station.js','practice-coach.js','practice-content.js','reading-companion.css','reading-companion.html','reading-companion.js','station-content.js','station.js','styles.css']);
+ const published=['app.js','index.html','styles.css','station.js','station-content.js','moment-content.js','moment-station.js','practice-content.js','practice-coach.js','reading-companion.html','reading-companion.js','reading-companion.css'];
  const publicText=(await Promise.all(published.map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
- for(const forbidden of ['OPENAI_API_KEY','DANA_PREVIEW_STATE_KEY','hiddenAgenda','Tom has a sleep medication','ordinaryFacts','sp-interview.pack.json'])assert.ok(!publicText.includes(forbidden),forbidden);
+ for(const forbidden of ['OPENAI_API_KEY','AI_PILOT_PROVIDER_KEY','DANA_PREVIEW_STATE_KEY','hiddenAgenda','Tom has a sleep medication','ordinaryFacts','sp-interview.pack.json'])assert.ok(!publicText.includes(forbidden),forbidden);
  const stationText=(await Promise.all(['station.js','station-content.js','moment-station.js','moment-content.js','practice-content.js','practice-coach.js'].map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
  for(const banned of ['fetch(','localStorage','sessionStorage','indexedDB','XMLHttpRequest'])assert.ok(!stationText.includes(banned),'the station must not '+banned);
  const config=await readFile(path.join(root,'netlify.toml'),'utf8');
@@ -45,4 +70,27 @@ test('station styling ships in a stylesheet, not an inline element the CSP block
  assert.match(css,/\.sp-station .station-grid/,'including the grid the station relies on');
  const toml=await readFile(path.join(root,'netlify.toml'),'utf8');
  assert.match(toml,/style-src 'self'/,"and the restrictive policy is unchanged");
+});
+
+// Exercise the allowlist rather than just asserting its source text.
+test('an accidental private file in public fails the publish build',async t=>{
+ const dir=await mkdtemp(path.join(tmpdir(),'reader-private-publish-'));t.after(()=>rm(dir,{recursive:true,force:true}));
+ await cp(path.join(root,'public'),path.join(dir,'public'),{recursive:true});
+ await cp(path.join(root,'build.mjs'),path.join(dir,'build.mjs'));
+ await writeFile(path.join(dir,'public/private-source.json'),'{}');
+ const run=spawnSync(process.execPath,['build.mjs'],{cwd:dir,encoding:'utf8'});
+ assert.notEqual(run.status,0);assert.match(run.stderr,/explicit allowlist/);
+});
+test('reader function bundles the source privately and remains unavailable by default',async t=>{
+ const run=spawnSync(process.execPath,['build.mjs'],{cwd:root,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
+ const dir=await mkdtemp(path.join(tmpdir(),'reader-function-bundle-'));t.after(()=>rm(dir,{recursive:true,force:true}));
+ const result=await build({entryPoints:[path.join(root,'netlify/functions/reading-companion.mjs')],outfile:path.join(dir,'reader.mjs'),bundle:true,platform:'node',target:'node22',format:'esm',write:false,metafile:true,external:['@netlify/blobs'],logLevel:'silent'});
+ assert.equal(result.errors.length,0);
+ assert.ok(Object.keys(result.metafile.inputs).some(f=>f.endsWith('generated/reading-companion.json')));
+ assert.ok(!Object.keys(result.metafile.inputs).some(f=>f.endsWith('.py')));
+ assert.ok(!(await readdir(path.join(root,'dist'))).includes('reading-companion.json'));
+ const {default:handler}=await import('../netlify/functions/reading-companion.mjs');
+ const old=process.env.READING_COMPANION_ENABLED;delete process.env.READING_COMPANION_ENABLED;
+ try{const response=await handler(new Request('https://preview.test/api/reading-companion'),{site:{url:'https://preview.test'}});assert.equal(response.status,503);assert.equal((await response.json()).error.code,'disabled');}
+ finally{if(old===undefined)delete process.env.READING_COMPANION_ENABLED;else process.env.READING_COMPANION_ENABLED=old;}
 });

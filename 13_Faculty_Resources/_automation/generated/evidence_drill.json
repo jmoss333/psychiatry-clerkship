@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Modini et al. · 2026 · Australas Psychiatry",
-     "sourceId": "modini-large-2026",
+     "t": "Lima et al. · 2004 · Cochrane Database of Systematic Reviews",
+     "sourceId": "lima-2004-betablockers-akathisia",
      "key": "A"
     },
     {
-     "t": "Posner et al. · 2011 · The American journal of psychiatry",
-     "sourceId": "posner-2011-cssrs",
+     "t": "Siry et al. · 2021 · General hospital psychiatry",
+     "sourceId": "siry-2021-lethal-means-clinician-views",
      "key": "B"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
-     "sourceId": "brodsky-2025",
+     "t": "Tetzlaff et al. · 2025 · Clin Psychol Rev",
+     "sourceId": "tetzlaff-2025",
      "key": "A"
     },
     {
-     "t": "American Association for Emergency Psychiatry Project BETA · 2012",
-     "sourceId": "project-beta-psychopharm-agitation-2012",
+     "t": "U.S. Department of Veterans Affairs / Department of Defense · 2017",
+     "sourceId": "vadod-2017-ptsd-cpg",
      "key": "B"
     },
     {
