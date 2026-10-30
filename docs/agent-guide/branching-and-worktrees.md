@@ -38,6 +38,29 @@ most wasted work here has been one session not seeing another.
   `main` before acting** — the #626 handoff prescribed committing 35 MB past LFS and writing
   attestations. `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` is a superseded July snapshot.
 
+### Codex review runs before a PR goes on Josh's approval list — [judgment]
+- **Run the Codex review before a PR is placed on Josh's approval list, not after.** Fold its
+  findings in first, then list the PR. On 2026-10-28 #1115 and #1119 were approved, and only
+  then did a Codex review prompt their authoring sessions to push new teaching logic and new
+  suicide-intent patterns — the approved diff was no longer the diff on the PR. A review that
+  can still change the content belongs before the approval, so the approval is the last word.
+
+### After `josh-approved`, the owning session does not push content — [report: .github/workflows/approved-head-guard.yml; bin/approved_head_guard.py]
+- **Once a PR carries `josh-approved`, its owning session must not push content to it.** A fix,
+  a Codex follow-up or a second thought goes in a **follow-up PR**, or the session comments on
+  the PR and asks Josh for re-approval. Merging `main` into the branch is still fine. Every
+  session pushes as the same account and the ruleset keeps an approval through a new push, so
+  GitHub alone never shows that the approved head moved (#1115, #1119, 2026-10-28).
+- **The merging agent records the approval** with
+  `python3 bin/approved_head_guard.py receipt --pr <n> --expect-head <sha Josh reviewed>`: it
+  posts a receipt comment (head SHA, merge base, and a fingerprint of the PR's own `-U0` diff
+  against `main`), then adds the label. `--expect-head` refuses if the head already moved.
+- **`approved-head-guard.yml` re-checks every push** (trusted copy from `main`, hosted runner).
+  Re-sync only → pass. The PR's own lines changed, or the label has no receipt → it removes the
+  label, returns the PR to draft, comments "head changed after approval — re-approval needed",
+  and fails. It is **not** a required check (that is Josh's call), and it is a tripwire for
+  honest sessions, not a lock: any session can write a receipt as the same account.
+
 ### Push the branch the day you create it — [judgment]
 - **Push the branch the day you create it, before the work is finished.** A branch that exists
   only locally is invisible to every gate, every reviewer and every automation here. The

@@ -1,0 +1,40 @@
+name: Approved-head guard
+
+# G2 of the approved-head guard (bin/approved_head_guard.py; rule in
+# docs/agent-guide/branching-and-worktrees.md). On every push to a PR that carries the
+# `josh-approved` label it compares the PR's own diff against the approval receipt. A re-sync
+# from main passes; a content change removes the label, returns the PR to draft, comments
+# "head changed after approval — re-approval needed" and fails.
+#
+# pull_request_target runs the copy of this workflow and script that is on main, so a PR
+# cannot edit its own judge. PR objects are fetched for diffing only — no PR code is checked
+# out or executed. NOT a required check: making it one is a separate decision for Josh.
+on:
+  pull_request_target:
+    types: [synchronize, labeled, reopened]
+
+permissions: {}
+
+concurrency:
+  group: approved-head-guard-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          lfs: false
+
+      - name: Compare the PR's diff with its approval receipt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python3 bin/approved_head_guard.py check --pr "$PR_NUMBER" --apply --status
