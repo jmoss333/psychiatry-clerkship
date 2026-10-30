@@ -20,20 +20,22 @@ for (const file of files) {
     /localStorage\.setItem\(\s*['"]cw_sp_endpoint['"]/,
     `${label} endpoint must persist`,
   );
-  assert.match(
+  // The passcode lives in page memory only (CodeQL js/clear-text-storage-of-sensitive-data,
+  // alerts #56/#57): no web-storage write of it anywhere, and every older copy is removed.
+  assert.doesNotMatch(
     html,
-    /sessionStorage\.getItem\(\s*['"]cw_sp_passcode['"]\s*\)/,
-    `${label} passcode must load from sessionStorage`,
+    /(?:sessionStorage|localStorage)\.setItem\(\s*['"]cw_sp_passcode['"]/,
+    `${label} passcode must never be written to web storage`,
   );
-  assert.match(
+  assert.doesNotMatch(
     html,
-    /sessionStorage\.setItem\(\s*['"]cw_sp_passcode['"]/,
-    `${label} passcode must save to sessionStorage`,
+    /(?:sessionStorage|localStorage)\.getItem\(\s*['"]cw_sp_passcode['"]/,
+    `${label} passcode must never be read from web storage`,
   );
   assert.match(
     html,
     /sessionStorage\.removeItem\(\s*['"]cw_sp_passcode['"]\s*\)/,
-    `${label} passcode must have a clear path`,
+    `${label} a tab-scoped copy left by an older build must be deleted`,
   );
   assert.match(
     html,
@@ -42,14 +44,39 @@ for (const file of files) {
   );
   assert.match(
     html,
-    /useEffect\(function\(\)\{[\s\S]{0,240}clearLegacyPasscode\(\)/,
-    `${label} legacy passcode cleanup must run on initialization`,
+    /useEffect\(function\(\)\{[\s\S]{0,240}clearStoredPasscode\(\)/,
+    `${label} stored-passcode cleanup must run on initialization`,
   );
-  assert.doesNotMatch(
-    html,
-    /localStorage\.(?:getItem|setItem)\(\s*['"]cw_sp_passcode['"]/,
-    `${label} passcode must never be read from or written to localStorage`,
-  );
+
+  // Behaviour, not just text: run the three helpers and the holder straight out of the file
+  // against fake stores. Writing and reading never touch storage; clearing removes both copies.
+  const holder = html.match(/^var passcodeMemory=\{value:''\};$/m);
+  const helpers = ['clearStoredPasscode', 'readPasscode', 'writePasscode']
+    .map((name) => html.match(new RegExp(`^  function ${name}\\(.*$`, 'm')));
+  assert.ok(holder && helpers.every(Boolean), `${label} passcode holder and helpers must be present`);
+  const touched = [];
+  const fakeStore = (area, seed) => ({
+    data: { ...seed },
+    getItem(k) { touched.push(`${area}.get:${k}`); return Object.hasOwn(this.data, k) ? this.data[k] : null; },
+    setItem(k, v) { touched.push(`${area}.set:${k}`); this.data[k] = String(v); },
+    removeItem(k) { touched.push(`${area}.remove:${k}`); delete this.data[k]; },
+  });
+  const local = fakeStore('local', { cw_sp_passcode: 'old-persistent', cw_sp_endpoint: '/api/sp' });
+  const session = fakeStore('session', { cw_sp_passcode: 'old-tab' });
+  // eslint-disable-next-line no-new-func
+  const api = new Function('localStorage', 'sessionStorage',
+    `${holder[0]}\n${helpers.map((m) => m[0]).join('\n')}\n` +
+    'return { clearStoredPasscode, readPasscode, writePasscode };')(local, session);
+  assert.equal(api.readPasscode(), '', `${label} a fresh page starts with no passcode, whatever storage holds`);
+  api.writePasscode('class-code');
+  assert.equal(api.readPasscode(), 'class-code', `${label} the passcode is readable for the life of the page`);
+  assert.deepEqual(touched, [], `${label} reading and writing the passcode never touch web storage`);
+  api.clearStoredPasscode();
+  assert.equal(local.data.cw_sp_passcode, undefined, `${label} the legacy localStorage copy is removed`);
+  assert.equal(session.data.cw_sp_passcode, undefined, `${label} the older sessionStorage copy is removed`);
+  assert.equal(local.data.cw_sp_endpoint, '/api/sp', `${label} the endpoint (not secret) is left alone`);
+  api.writePasscode('');
+  assert.equal(api.readPasscode(), '', `${label} clearing blanks the in-memory passcode`);
   assert.match(html, /Clear passcode/, `${label} clear action must be visible`);
   assert.match(
     html,
@@ -58,8 +85,8 @@ for (const file of files) {
   );
   assert.match(
     html,
-    /The passcode is kept only for this browser tab\./,
-    `${label} tab-lifetime guidance must be visible`,
+    /The passcode is kept only while this page is open; reloading asks for it again\./,
+    `${label} page-lifetime guidance must be visible`,
   );
   assert.match(
     html,
@@ -92,4 +119,4 @@ for (const file of files) {
   }
 }
 
-console.log('PASS — passcode is tab-scoped in canonical and preview tools');
+console.log('PASS — passcode is held in page memory only in canonical and preview tools');

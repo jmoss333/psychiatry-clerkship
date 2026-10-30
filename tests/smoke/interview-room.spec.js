@@ -64,7 +64,6 @@ async function installFakes(page, scenario = {}, siteOrigin = '') {
       autoOpenSettings: false,
     };
     try {
-      if (!configured.noPasscode) sessionStorage.setItem('cw_sp_passcode', 'student-test-key');
       localStorage.setItem('cw_sp_endpoint', '/api/sp');
       if (configured.roomMode) localStorage.setItem(roomModeKey, configured.roomMode);
       if (configured.consented) localStorage.setItem(consentKey, `${consentVersion}|${realtimeModel}|${transcriptionModel}`);
@@ -574,6 +573,35 @@ async function openRoom(page, scenario = {}) {
   await page.goto('sp-interview.html');
   await expect(page).toHaveTitle(/Interview Room/);
   await expect(supportedButton(page)).toBeVisible();
+  if (!scenario.noPasscode) await enterPasscode(page);
+}
+
+// The passcode lives in page memory only and is never written to web storage (CodeQL
+// js/clear-text-storage-of-sensitive-data, alerts #56/#57), so the harness cannot seed it. A
+// configured learner is one who typed it into setup on this page: do exactly that, then drop the
+// setup's own connection check from the log so every later assertion sees the same requests a
+// learner's room makes. The health check the save triggers is kept — it is the room's own request.
+async function enterPasscode(target) {
+  await target.getByRole('button', { name: /setup/i }).click();
+  await target.getByLabel('Passcode', { exact: true }).fill('student-test-key');
+  await target.getByRole('button', { name: 'Save & test connection' }).click();
+  await expect(target.getByText(/✓ Connected/)).toBeVisible();
+  await target.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(target.getByRole('heading', { name: 'Live mode setup' })).toHaveCount(0);
+  // Saving re-checks the spoken room. Let that check land before the test acts, as it had landed
+  // at boot when the passcode came from storage.
+  await expect.poll(() => target.evaluate(() => window.__voiceTestLog.fetches
+    .some(({ url, method }) => url === '/api/sp/realtime' && method === 'GET'))).toBe(true);
+  await expect(target.getByText('Checking whether the spoken room is open…')).toHaveCount(0);
+  await target.evaluate(() => {
+    const fetches = window.__voiceTestLog.fetches;
+    const kept = fetches.filter(({ url, method }) => !(url === '/api/sp' && method === 'GET'));
+    fetches.splice(0, fetches.length, ...kept);
+  });
+  expect(await target.evaluate(() => ({
+    session: sessionStorage.getItem('cw_sp_passcode'),
+    local: localStorage.getItem('cw_sp_passcode'),
+  })), 'the passcode is never written to web storage').toEqual({ session: null, local: null });
 }
 
 async function log(page) {
@@ -652,6 +680,7 @@ for (const [site, origin] of [
           const element = await page.locator('iframe.toolframe').elementHandle();
           const room = await element.contentFrame();
           await expect(supportedButton(room)).toBeVisible();
+          await enterPasscode(room);
           if (kind === 'Chart') await room.getByLabel('Patient').selectOption(FOLLOW_UP_ID);
           if (kind === 'spoken consent') await supportedButton(room).click();
           else if (spoken) await enterSpokenRoom(room);
@@ -1141,7 +1170,7 @@ test('the family visit is one card that opens the faculty preview in this tab, b
   const card = page.getByRole('region', { name: 'Morgan and Maya' });
   await expect(card).toBeVisible();
   await expect(card).toContainText(/two voices/i);
-  await expect(card).toContainText(/passcode stays here/i);
+  await expect(card).toContainText(/enter the passcode again when you come back/i);
   // The door follows the whole entrance (the door and the access panel) and is not inside it — a
   // door inside the entrance would satisfy a weaker "after a .case" check.
   expect(await card.evaluate((element) => {
@@ -1271,7 +1300,8 @@ test('the speakers choice reaches the proxy as far-field audio setup', async ({ 
 });
 
 test('setup surfaces a typed server error message without object coercion', async ({ page }) => {
-  await openRoom(page, { setupError: true, roomMode: 'typed' });
+  // The connection check fails by design here, so the learner cannot have saved a passcode yet.
+  await openRoom(page, { setupError: true, roomMode: 'typed', noPasscode: true });
   await page.getByRole('button', { name: /setup/i }).click();
   await page.getByRole('button', { name: /Save & test connection/i }).click();
   await expect(page.getByText('✗ Correct the rotation passcode.')).toBeVisible();
