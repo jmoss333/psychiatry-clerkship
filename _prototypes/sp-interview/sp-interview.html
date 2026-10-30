@@ -405,6 +405,11 @@
 "use strict";
 var previewConfig=window.__SP_PREVIEW__||{providerMode:'live',endpoint:null,autoOpenSettings:true};
 var SPOKEN_CONSENT_VERSION='2026-09-26-realtime-v1';
+/* The learner passcode lives in page memory only (CodeQL js/clear-text-storage-of-sensitive-data,
+   alerts #56/#57). It is never written to web storage: reloading the page, or the site remounting
+   the tool, asks for it again. Any copy an older build left in sessionStorage or localStorage is
+   removed on load by clearStoredPasscode(). */
+var passcodeMemory={value:''};
 /* The shared family meeting (Morgan and Maya) needs two voices in one room. A real-time session is
    pinned to one voice, so until the two-session family room exists that encounter runs in the
    faculty preview on the chained voice pipeline. One card, one door, same tab, no credentials. */
@@ -1343,9 +1348,9 @@ function App(){
   }
   function reconnectSpoken(){var session=rtRef.current;if(!session)return;try{var again=session.reconnect();if(again&&typeof again.catch==='function')again.catch(function(){});}catch(x){}}
 
-  function clearLegacyPasscode(){ try{localStorage.removeItem('cw_sp_passcode');}catch(x){} }
-  function readPasscode(){ try{return sessionStorage.getItem('cw_sp_passcode')||'';}catch(x){return '';} }
-  function writePasscode(v){ try{ if(v){sessionStorage.setItem('cw_sp_passcode',v);} else{sessionStorage.removeItem('cw_sp_passcode');} }catch(x){} }
+  function clearStoredPasscode(){ try{localStorage.removeItem('cw_sp_passcode');}catch(x){} try{sessionStorage.removeItem('cw_sp_passcode');}catch(x){} }
+  function readPasscode(){ return passcodeMemory.value||''; }
+  function writePasscode(v){ passcodeMemory.value=v?String(v):''; }
   function refreshRealtimeHealth(endpoint,key){
     var generation=healthRequestRef.current.generation+1;
     if(healthRequestRef.current.abort)try{healthRequestRef.current.abort.abort();}catch(x){}
@@ -1358,7 +1363,7 @@ function App(){
       .then(function(health){if(healthRequestRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return null;var valid=!!(health&&typeof health==='object'&&typeof health.enabled==='boolean'&&typeof health.acceptingSessions==='boolean'&&Array.isArray(health.cases));setRealtimeHealth(valid?{status:'ready',data:health}:{status:'unavailable',data:null});healthRequestRef.current.abort=null;return valid?health:null;})
       .catch(function(){if(healthRequestRef.current.generation===generation){setRealtimeHealth({status:'unavailable',data:null});healthRequestRef.current.abort=null;}return null;});
   }
-  function loadCfg(){ var ep=previewConfig.endpoint===null?'https://sp-interview-proxy.netlify.app/api/sp':previewConfig.endpoint; clearLegacyPasscode();
+  function loadCfg(){ var ep=previewConfig.endpoint===null?'https://sp-interview-proxy.netlify.app/api/sp':previewConfig.endpoint; clearStoredPasscode();
     try{ep=localStorage.getItem('cw_sp_endpoint')||ep;}catch(x){}
     return {ep:ep,pc:readPasscode(),msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
@@ -1387,11 +1392,11 @@ function App(){
       })
       .catch(function(err){if(providerCheckRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return;providerCheckRef.current.abort=null;setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
   }
-  function clearPasscode(){ cancelProviderCheck();writePasscode(''); clearLegacyPasscode();setShowSpokenConsent(false);pendingBeginRef.current=null;
+  function clearPasscode(){ cancelProviderCheck();writePasscode(''); clearStoredPasscode();setShowSpokenConsent(false);pendingBeginRef.current=null;
     if(E&&E.provider&&('passcode' in E.provider)){E.provider.passcode='';}
     refreshRealtimeHealth('', '');
-    setCfg(function(c){return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});});
-    announce('Passcode cleared for this browser tab.'); }
+    setCfg(function(c){return Object.assign({},c,{pc:'',msg:'Passcode cleared.'});});
+    announce('Passcode cleared.'); }
   function trapDialogKey(ev,onEscape){
     if(ev.key==='Escape'){ev.preventDefault();onEscape();return;}
     if(ev.key!=='Tab')return;
@@ -1434,7 +1439,7 @@ function App(){
     if(provMode!=='live'){refreshRealtimeHealth('', '');return;}
     var loaded=loadCfg();refreshRealtimeHealth(loaded.ep,loaded.pc);
   },[S.pack,provMode]);
-  useEffect(function(){ clearLegacyPasscode(); if(previewConfig.autoOpenSettings&&provMode==='live'&&!readPasscode()){openSettings();} },[]);
+  useEffect(function(){ clearStoredPasscode(); if(previewConfig.autoOpenSettings&&provMode==='live'&&!readPasscode()){openSettings();} },[]);
   useEffect(function(){ if(chatRef.current){chatRef.current.scrollTop=chatRef.current.scrollHeight;} });
   useEffect(function(){ if(stepOut&&returnRef.current){try{returnRef.current.focus();}catch(x){}} },[stepOut]);
   useEffect(function(){ if(showSpokenConsent&&spokenConsentRef.current){try{spokenConsentRef.current.focus();}catch(x){}} },[showSpokenConsent]);
@@ -1627,7 +1632,7 @@ function App(){
     e(Ribbon,{line:ribbonLine}),
     (showSettings&&cfg)?e('div',{className:'card'},
       e('h2',null,'Live mode setup'),
-      e('p',{style:{fontSize:'.82rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser. The passcode is kept only for this browser tab. The API key never leaves the server.'),
+      e('p',{style:{fontSize:'.82rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser. The passcode is kept only while this page is open; reloading asks for it again. The API key never leaves the server.'),
       e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_ep'},'Endpoint URL'),
       e('input',{id:'cfg_ep',type:'url',className:'cfgin',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
         onChange:function(ev){setCfg(Object.assign({},cfg,{ep:ev.target.value}));}}),
@@ -1710,7 +1715,7 @@ function App(){
         e('p',{className:'goal'},'Keep both people in the room: hold Morgan’s autonomy while hearing what Maya has seen, without letting either decide for the other.'),
         e('div',{className:'begincol'},
           e('p',{className:'setting'},e('b',null,'Runs in the faculty preview')),
-          e('p',{className:'setting',role:'note'},'Two voices need two patients in the room, which the spoken room cannot hold yet. The family visit opens in this tab on the preview’s own door; your passcode stays here.'),
+          e('p',{className:'setting',role:'note'},'Two voices need two patients in the room, which the spoken room cannot hold yet. The family visit opens in this tab on the preview’s own door; you will enter the passcode again when you come back.'),
           e('div',{className:'begin'},
             e('a',{className:'btn primary'+(showSpokenConsent?' is-disabled':''),href:FAMILY_VISIT_URL,target:'_top',rel:'noopener noreferrer',
               'aria-disabled':showSpokenConsent?'true':null,tabIndex:showSpokenConsent?-1:null,
