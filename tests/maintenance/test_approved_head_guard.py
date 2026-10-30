@@ -16,6 +16,12 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.append(str(ROOT / "bin"))
+from _git_env import scrub_inherited_git_env  # noqa: E402
+
+# Builds git repositories: an inherited GIT_DIR (pre-push hook) would aim them at this repo.
+scrub_inherited_git_env()
+
 SCRIPT = ROOT / "bin" / "approved_head_guard.py"
 WORKFLOW = ROOT / ".github" / "workflows" / "approved-head-guard.yml"
 
