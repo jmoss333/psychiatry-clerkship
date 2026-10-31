@@ -407,6 +407,7 @@ class WorkflowContract(unittest.TestCase):
 
     def test_runs_trusted_base_code_on_every_push(self):
         self.assertEqual(set(self.on), {"pull_request_target"})
+        self.assertIn("opened", self.on["pull_request_target"]["types"])
         self.assertIn("synchronize", self.on["pull_request_target"]["types"])
         self.assertIn("ready_for_review", self.on["pull_request_target"]["types"])
 
