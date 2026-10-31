@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-18",
+  "updated": "2026-10-31",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -2045,7 +2045,8 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "sp-interview"
+            "sp-interview",
+            "screeners.html"
           ]
         }
       ]
@@ -3326,6 +3327,56 @@
           "direction": "mixed",
           "usedBy": [
             "pg_suicide"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "lowe-2004-phq9-monitoring",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-31",
+        "pmid": "15550799",
+        "doi": "10.1097/00005650-200412000-00006",
+        "sourceSpan": "Test-retest reliability of the PHQ-9 was excellent, and its minimal clinically important difference for individual change, estimated as 2 standard errors of measurement, was 5 points on the 0 to 27 point PHQ-9 scale."
+      },
+      "claims": [
+        {
+          "claimId": "phq9-mcid-5-points",
+          "claimText": "The PHQ-9's minimal clinically important difference for individual change, estimated as 2 standard errors of measurement, was 5 points on the 0 to 27 point scale.",
+          "claimTerms": [
+            "minimal clinically important difference for individual change",
+            "was 5 points on the 0 to 27 point PHQ-9 scale"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "screeners.html"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "kroenke-2010-phq-gad-review",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-10-31",
+        "pmid": "20633738",
+        "doi": "10.1016/j.genhosppsych.2010.03.006",
+        "sourceSpan": "The optimal cutpoint is > or = 10 on the parent scales (PHQ-9 and GAD-7) and > or = 3 on the ultra-brief versions (PHQ-2 and GAD-2). Sensitivity to change is well-established for the PHQ-9 and emerging albeit not yet definitive for the GAD-7 and PHQ-15."
+      },
+      "claims": [
+        {
+          "claimId": "gad7-sensitivity-to-change-emerging",
+          "claimText": "Sensitivity to change is well-established for the PHQ-9 and emerging albeit not yet definitive for the GAD-7.",
+          "claimTerms": [
+            "Sensitivity to change is well-established for the PHQ-9",
+            "emerging albeit not yet definitive for the GAD-7"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "screeners.html"
           ]
         }
       ]

@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-12",
+  "updated": "2026-10-31",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -11809,6 +11809,136 @@
             "date": "2026-10-26",
             "note": "PMID 31907085 resolved via NCBI efetch on 2026-10-26: title, all three authors (Liu RT, Bettis AH, Burke TA), Psychol Med 2020;50(3):367-383, DOI 10.1017/S003329171900391X and PMC7024002 match; PubMed lists no erratum, retraction or comment. Systematic review and meta-analysis of 86 studies through 9 September 2019. Passive ideation was associated with psychiatric comorbidity and suicide attempts, with preliminary evidence of a large association with suicide deaths, and correlates of passive and active ideation were largely equivalent in head-to-head comparisons. It licenses 'passive ideation is clinically significant and needs full assessment', not 'passive ideation is low risk'. Added for the pg_suicide.md passive-versus-active routing (decision X6, Josh 2026-10-26). Annotation is AI-drafted from the abstract and awaits faculty signature.",
             "reason": "decision X6 (pg_suicide passive vs active routing); not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lowe-2004-phq9-monitoring",
+      "type": "primary-study",
+      "citation": {
+        "title": "Monitoring depression treatment outcomes with the patient health questionnaire-9.",
+        "authors": [
+          {
+            "family": "Löwe",
+            "given": "B"
+          },
+          {
+            "family": "Unützer",
+            "given": "J"
+          },
+          {
+            "family": "Callahan",
+            "given": "CM"
+          },
+          {
+            "family": "Perkins",
+            "given": "AJ"
+          },
+          {
+            "family": "Kroenke",
+            "given": "K"
+          }
+        ],
+        "organization": "",
+        "year": 2004,
+        "journal": "Med Care",
+        "volume": "42",
+        "pages": "1194-1201",
+        "doi": "10.1097/00005650-200412000-00006",
+        "pmid": "15550799",
+        "url": "https://doi.org/10.1097/00005650-200412000-00006"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 15550799): title, 5 authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-10-31",
+        "note": "Added for the Screeners page measurement-based-care card (screeners.html, 2026-10-31): the 5-point threshold for one person's PHQ-9 change. Scope note: it supports the minimal clinically important difference for individual change (2 standard errors of measurement, late-life depression trial sample); it does not define response or remission. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "validation study within a randomized treatment trial (434 IMPACT intervention subjects)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-31",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "screening",
+          "follow-up",
+          "measurement-based-care"
+        ],
+        "clerkshipRelevance": "The 5-point minimal clinically important difference a learner uses to decide whether one patient's PHQ-9 change is more than measurement noise.",
+        "noteHistory": [
+          {
+            "date": "2026-10-31",
+            "note": "Added for the Screeners page measurement-based-care card (screeners.html, 2026-10-31): the 5-point threshold for one person's PHQ-9 change. Scope note: it supports the minimal clinically important difference for individual change (2 standard errors of measurement, late-life depression trial sample); it does not define response or remission. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "Screeners measurement-based-care card (enhancement A, owner request 2026-10-31); not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "kroenke-2010-phq-gad-review",
+      "type": "systematic-review",
+      "citation": {
+        "title": "The Patient Health Questionnaire Somatic, Anxiety, and Depressive Symptom Scales: a systematic review.",
+        "authors": [
+          {
+            "family": "Kroenke",
+            "given": "K"
+          },
+          {
+            "family": "Spitzer",
+            "given": "RL"
+          },
+          {
+            "family": "Williams",
+            "given": "JB"
+          },
+          {
+            "family": "Löwe",
+            "given": "B"
+          }
+        ],
+        "organization": "",
+        "year": 2010,
+        "journal": "Gen Hosp Psychiatry",
+        "volume": "32",
+        "pages": "345-359",
+        "doi": "10.1016/j.genhosppsych.2010.03.006",
+        "pmid": "20633738",
+        "url": "https://doi.org/10.1016/j.genhosppsych.2010.03.006"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 20633738): title, 4 authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-10-31",
+        "note": "Added for the Screeners page measurement-based-care card (screeners.html, 2026-10-31): why the card teaches no individual-change threshold for the GAD-7. Scope note: it supports the parent-scale cutpoint of 10 and that sensitivity to change is established for the PHQ-9 but emerging for the GAD-7; it gives no GAD-7 change threshold. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review (four multisite studies, 9740 patients, plus key literature)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-10-31",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "anxiety",
+          "screening",
+          "measurement-based-care"
+        ],
+        "clerkshipRelevance": "Why the PHQ-9 can be trended for treatment response while the GAD-7's sensitivity to change is still emerging.",
+        "noteHistory": [
+          {
+            "date": "2026-10-31",
+            "note": "Added for the Screeners page measurement-based-care card (screeners.html, 2026-10-31): why the card teaches no individual-change threshold for the GAD-7. Scope note: it supports the parent-scale cutpoint of 10 and that sensitivity to change is established for the PHQ-9 but emerging for the GAD-7; it gives no GAD-7 change threshold. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "Screeners measurement-based-care card (enhancement A, owner request 2026-10-31); not faculty attestation"
           }
         ]
       }

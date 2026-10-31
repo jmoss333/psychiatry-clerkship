@@ -393,6 +393,11 @@ PG_SUICIDE_PASSIVE_IDEATION_2026_10_IDS = {
     "liu-2020-passive-suicidal-ideation",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | PG_SUICIDE_PASSIVE_IDEATION_2026_10_IDS
+# Screeners measurement-based-care card (enhancement A, owner request 2026-10-31).
+SCREENERS_MBC_2026_10_IDS = {
+    "lowe-2004-phq9-monitoring", "kroenke-2010-phq-gad-review",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | SCREENERS_MBC_2026_10_IDS
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
