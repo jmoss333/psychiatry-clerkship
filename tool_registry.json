@@ -75,7 +75,11 @@
       "riskLevel": "moderate",
       "disclaimerType": "screening-not-diagnosis",
       "storageKeys": [],
-      "evidenceIds": [],
+      "evidenceIds": [
+        "kroenke-2001-phq9",
+        "lowe-2004-phq9-monitoring",
+        "kroenke-2010-phq-gad-review"
+      ],
       "relatedPages": [
         "t_mood.md",
         "t_anxiety.md"
