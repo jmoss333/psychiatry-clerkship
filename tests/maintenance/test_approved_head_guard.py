@@ -71,16 +71,22 @@ def lines(n, tag="line"):
 class FakeGitHub(guard.GitHub):
     """Records every call; answers pulls/comments from fixtures."""
 
-    def __init__(self, pull, comments=()):
+    def __init__(self, pull, comments=(), review=None):
         self.calls = []
         self._pull = pull
         self._comments = list(comments)
+        self._review = review or {
+            "state": "APPROVED", "commit_id": pull["head"]["sha"],
+            "user": {"login": "jmoss333"},
+        }
         super().__init__("owner/repo", self._run)
 
     def _run(self, args, stdin):
         self.calls.append((tuple(args), stdin))
         if args[:2] == ["api", "repos/owner/repo/pulls/7"]:
             return json.dumps(self._pull)
+        if args[0] == "api" and "/reviews/" in args[1]:
+            return json.dumps(self._review)
         if args[0] == "api" and "--paginate" in args:
             return json.dumps([self._comments])
         return "{}"
@@ -112,7 +118,9 @@ def pull(head, labels=(), draft=False, state="open"):
 
 def receipt_comment(head, base, fp, login="jmoss333", cid=1):
     return {"id": cid, "user": {"login": login},
-            "body": guard.receipt_body(head, base, fp, "Josh Moss, MD")}
+            "body": guard.receipt_body(
+                head, base, fp, "Josh Moss, MD",
+                "chat://thread/test-session#message/test-approval", "owner/repo#7")}
 
 
 class Scenario(unittest.TestCase):
@@ -163,11 +171,11 @@ class ResyncOnly(Scenario):
         _mb, fp = guard.fingerprint(self.repo.path, "main", "pr")
         self.assertEqual(fp, self.approved_fp)
 
-    def test_resync_passes_and_changes_nothing(self):
+    def test_resync_requires_a_fresh_receipt(self):
         new_head = self.resync_from_main()
         gh = self.approved_gh(new_head)
-        self.assertEqual(self.check(gh, "--apply", "--status"), 0)
-        self.assertEqual(gh.verbs(), ["status:success"])
+        self.assertEqual(self.check(gh, "--apply", "--status"), 1)
+        self.assertEqual(gh.verbs(), ["comment", "unlabel", "draft", "status:failure"])
 
     def test_main_moving_without_a_resync_also_passes(self):
         self.repo.git("checkout", "-q", "main")
@@ -188,7 +196,7 @@ class ContentChange(Scenario):
         head = self.push_content()
         gh = self.approved_gh(head)
         self.assertEqual(self.check(gh, "--apply", "--status"), 1)
-        self.assertEqual(gh.verbs(), ["unlabel", "draft", "comment", "status:failure"])
+        self.assertEqual(gh.verbs(), ["comment", "unlabel", "draft", "status:failure"])
         body = gh.posted_bodies()[-1]
         self.assertIn(guard.TRIP_SENTENCE, body.lower())
         self.assertIn(self.approved_head, body)
@@ -224,13 +232,30 @@ class ContentChange(Scenario):
         head = self.push_content()
         gh = self.approved_gh(head, draft=True)
         self.assertEqual(self.check(gh, "--apply"), 1)
-        self.assertEqual(gh.verbs(), ["unlabel", "comment"])
+        self.assertEqual(gh.verbs(), ["comment", "unlabel"])
 
     def test_without_apply_it_only_reports(self):
         head = self.push_content()
         gh = self.approved_gh(head)
         self.assertEqual(self.check(gh), 1)
         self.assertEqual(gh.verbs(), [])
+
+    def test_moving_an_identical_substitution_to_another_hunk_trips(self):
+        self.repo.git("checkout", "-q", "main")
+        self.repo.write("duplicate.txt", "target\nmiddle\ntarget\n")
+        self.repo.commit("add duplicate targets")
+        self.repo.git("checkout", "-q", "pr")
+        self.repo.git("merge", "-q", "--no-edit", "main")
+        self.repo.write("duplicate.txt", "approved\nmiddle\ntarget\n")
+        approved_head = self.repo.commit("approve first target")
+        approved_base, approved_fp = guard.fingerprint(self.repo.path, "main", "pr")
+        self.repo.write("duplicate.txt", "target\nmiddle\napproved\n")
+        moved_head = self.repo.commit("move approved substitution")
+        _base, moved_fp = guard.fingerprint(self.repo.path, "main", "pr")
+        self.assertEqual(moved_fp, approved_fp, "the old normalized diff cannot see the move")
+        gh = FakeGitHub(pull(moved_head, labels=[guard.LABEL]),
+                        [receipt_comment(approved_head, approved_base, approved_fp)])
+        self.assertEqual(self.check(gh), 1)
 
 
 class NoLabel(Scenario):
@@ -246,12 +271,44 @@ class NoLabel(Scenario):
         self.assertEqual(self.check(gh, "--apply"), 0)
         self.assertEqual(gh.verbs(), [])
 
+    def test_revoked_approval_does_not_pass_after_the_label_is_removed(self):
+        receipt = receipt_comment(self.approved_head, self.approved_base, self.approved_fp)
+        decision = guard.Decision(False, "the approved head changed", ["unlabel", "draft", "comment"])
+        revocation = {"id": 2, "user": {"login": "github-actions[bot]"},
+                      "body": guard.trip_comment(decision, None, self.approved_head, self.approved_fp)}
+        gh = FakeGitHub(pull(self.approved_head, draft=True), [receipt, revocation])
+        self.assertEqual(self.check(gh, "--apply", "--status"), 1)
+        self.assertEqual(gh.verbs(), ["status:failure"])
+
+    def test_old_receipt_cannot_be_reused_after_revocation_on_a_label_event(self):
+        receipt = receipt_comment(self.approved_head, self.approved_base, self.approved_fp)
+        decision = guard.Decision(False, "the approved head changed", ["unlabel", "draft", "comment"])
+        revocation = {"id": 2, "user": {"login": "github-actions[bot]"},
+                      "body": guard.trip_comment(decision, None, self.approved_head, self.approved_fp)}
+        gh = FakeGitHub(pull(self.approved_head, labels=[guard.LABEL]), [receipt, revocation])
+        self.assertEqual(self.check(gh), 1)
+
+    def test_untrusted_comment_cannot_forge_a_revocation(self):
+        receipt = receipt_comment(self.approved_head, self.approved_base, self.approved_fp)
+        forged = {"id": 2, "user": {"login": "untrusted"}, "body": guard.TRIP_MARKER}
+        gh = FakeGitHub(pull(self.approved_head, labels=[guard.LABEL]), [receipt, forged])
+        self.assertEqual(self.check(gh), 0)
+
+    def test_revocation_reapplies_draft_when_the_pr_is_marked_ready(self):
+        receipt = receipt_comment(self.approved_head, self.approved_base, self.approved_fp)
+        decision = guard.Decision(False, "the approved head changed", ["comment", "unlabel", "draft"])
+        revocation = {"id": 2, "user": {"login": "github-actions[bot]"},
+                      "body": guard.trip_comment(decision, None, self.approved_head, self.approved_fp)}
+        gh = FakeGitHub(pull(self.approved_head, draft=False), [receipt, revocation])
+        self.assertEqual(self.check(gh, "--apply"), 1)
+        self.assertEqual(gh.verbs(), ["draft"])
+
 
 class Receipts(Scenario):
     def test_label_without_receipt_trips(self):
         gh = FakeGitHub(pull(self.approved_head, labels=[guard.LABEL]), [])
         self.assertEqual(self.check(gh, "--apply"), 1)
-        self.assertEqual(gh.verbs(), ["unlabel", "draft", "comment"])
+        self.assertEqual(gh.verbs(), ["comment", "unlabel", "draft"])
 
     def test_receipt_from_an_unlisted_author_is_ignored(self):
         gh = FakeGitHub(pull(self.approved_head, labels=[guard.LABEL]),
@@ -268,25 +325,66 @@ class Receipts(Scenario):
     def run_receipt(self, gh, *extra):
         args = guard.build_parser().parse_args(
             ["--repo-dir", self.repo.path, "receipt", "--repo", "owner/repo", "--pr", "7",
-             "--local-refs", "main", "pr", *extra])
+             "--local-refs", "main", "pr", "--expect-head", self.approved_head,
+             "--chat-approval-ref", "chat://thread/test-session#message/test-approval",
+             "--approval-scope", "owner/repo#7", *extra])
         return guard.cmd_receipt(args, gh)
 
-    def test_receipt_posts_comment_before_label_and_round_trips(self):
+    def test_receipt_refuses_a_short_expected_head(self):
         gh = FakeGitHub(pull(self.approved_head))
-        self.assertEqual(self.run_receipt(gh, "--expect-head", self.approved_head[:12]), 0)
+        self.assertEqual(self.run_receipt(gh, "--expect-head", self.approved_head[:12]), 1)
+        self.assertEqual(gh.verbs(), [])
+
+    def test_receipt_parser_requires_chat_reference_and_scope(self):
+        subparsers = next(action for action in guard.build_parser()._actions
+                          if getattr(action, "choices", None))
+        help_text = subparsers.choices["receipt"].format_help()
+        self.assertIn("--chat-approval-ref", help_text)
+        self.assertIn("--approval-scope", help_text)
+
+    def test_receipt_refuses_a_reference_or_scope_for_another_pr(self):
+        gh = FakeGitHub(pull(self.approved_head))
+        self.assertEqual(self.run_receipt(gh, "--approval-scope", "owner/repo#8"), 1)
+        self.assertEqual(gh.verbs(), [])
+
+    def test_receipt_accepts_a_shaped_chat_reference_without_review_api_access(self):
+        gh = FakeGitHub(pull(self.approved_head))
+        self.assertEqual(self.run_receipt(gh), 0)
         self.assertEqual(gh.verbs(), ["comment", "label"])
-        r = guard.latest_receipt([{"id": 9, "user": {"login": "jmoss333"},
-                                   "body": gh.posted_bodies()[0]}], ["jmoss333"])
-        self.assertEqual((r.head, r.fingerprint), (self.approved_head, self.approved_fp))
+        self.assertFalse(any("/reviews/" in arg for call, _ in gh.calls for arg in call))
+        body = gh.posted_bodies()[0]
+        self.assertIn("chat://thread/test-session#message/test-approval", body)
+        self.assertIsNotNone(guard.RECEIPT_RE.search(body))
+
+    def test_legacy_v2_receipt_still_guards_its_exact_head(self):
+        body = (f"<!-- approved-head-receipt v2 head={self.approved_head} "
+                f"base={self.approved_base} fingerprint={self.approved_fp} "
+                "review=1 scope=owner/repo#7 -->")
+        gh = FakeGitHub(pull(self.approved_head, labels=[guard.LABEL]),
+                        [{"id": 1, "user": {"login": "jmoss333"}, "body": body}])
+        self.assertEqual(self.check(gh), 0)
+
+    def test_receipt_refuses_an_unshaped_chat_reference(self):
+        gh = FakeGitHub(pull(self.approved_head))
+        self.assertEqual(self.run_receipt(gh, "--chat-approval-ref", "Josh said yes"), 1)
+        self.assertEqual(gh.verbs(), [])
+
+    def test_receipt_scope_is_rechecked_before_a_label_can_pass(self):
+        body = guard.receipt_body(
+            self.approved_head, self.approved_base, self.approved_fp, "Josh Moss, MD",
+            "chat://thread/test-session#message/test-approval", "owner/repo#8")
+        gh = FakeGitHub(pull(self.approved_head, labels=[guard.LABEL]),
+                        [{"id": 1, "user": {"login": "jmoss333"}, "body": body}])
+        self.assertEqual(self.check(gh), 1)
 
     def test_receipt_refuses_when_head_moved_since_josh_looked(self):
         gh = FakeGitHub(pull(self.approved_head))
-        self.assertEqual(self.run_receipt(gh, "--expect-head", "deadbeef"), 1)
+        self.assertEqual(self.run_receipt(gh, "--expect-head", "d" * 40), 1)
         self.assertEqual(gh.verbs(), [])
 
     def test_dry_run_writes_nothing(self):
         gh = FakeGitHub(pull(self.approved_head))
-        self.assertEqual(self.run_receipt(gh, "--dry-run"), 0)
+        self.assertEqual(self.run_receipt(gh, "--expect-head", self.approved_head, "--dry-run"), 0)
         self.assertEqual(gh.verbs(), [])
 
 
@@ -297,8 +395,8 @@ class DecideTable(unittest.TestCase):
         L = [guard.LABEL]
         self.assertTrue(guard.decide([], None, "x", "h").ok)
         self.assertTrue(guard.decide(L, self.R, "c" * 64, "a" * 40).ok)
-        self.assertTrue(guard.decide(L, self.R, "c" * 64, "d" * 40).ok)
-        self.assertFalse(guard.decide(L, self.R, "e" * 64, "a" * 40).ok)
+        self.assertFalse(guard.decide(L, self.R, "c" * 64, "d" * 40).ok)
+        self.assertTrue(guard.decide(L, self.R, "e" * 64, "a" * 40).ok)
         self.assertFalse(guard.decide(L, None, "c" * 64, "a" * 40).ok)
 
 
@@ -310,6 +408,7 @@ class WorkflowContract(unittest.TestCase):
     def test_runs_trusted_base_code_on_every_push(self):
         self.assertEqual(set(self.on), {"pull_request_target"})
         self.assertIn("synchronize", self.on["pull_request_target"]["types"])
+        self.assertIn("ready_for_review", self.on["pull_request_target"]["types"])
 
     def test_least_privilege(self):
         self.assertEqual(self.doc["permissions"], {})

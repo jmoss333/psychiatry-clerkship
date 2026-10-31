@@ -10,30 +10,27 @@ The two halves:
 
   receipt  (G1, run by the merging agent when Josh approves a PR)
            Computes a fingerprint of the PR's own change against `main`, posts a receipt
-           comment carrying the head SHA, the merge base and that fingerprint, THEN adds the
-           `josh-approved` label. Receipt first, label second, so a `labeled` event never sees a
-           label without its receipt.
+           comment carrying the head SHA, merge base, fingerprint, explicit user-chat evidence
+           reference and scope, THEN adds the `josh-approved` label. Receipt first, label
+           second, so a `labeled` event never sees a label without its receipt.
 
   check    (G2, run by .github/workflows/approved-head-guard.yml on every PR push)
            No `josh-approved` label            -> pass.
-           Label + fingerprint matches receipt -> pass (a plain re-sync from `main` included).
-           Label + fingerprint differs, or the label has no receipt
+           Label + full head matches receipt   -> pass.
+           Label + changed head, or the label has no receipt
                                                -> remove the label, return the PR to draft,
                                                   comment "head changed after approval —
                                                   re-approval needed", fail.
 
-The fingerprint. `git diff -U0 <merge-base> <head>`, normalised: per file the path, status and
-new mode; then only the `+`/`-` lines of each hunk, with the hunk line numbers and the
-`index <old>..<new>` blob line dropped; a binary file contributes its new blob id. With zero
-context lines and no line numbers, merging `main` into the branch leaves the fingerprint alone
-when `main` touched other files or other lines of the same file; it changes when the PR's own
-added/removed lines change (including a conflict resolution that rewrites them). It is
-deliberately conservative: if `main` absorbs part of the PR, the PR's diff shrinks and the guard
-trips. A false trip costs one re-approval; a missed post-approval push is the incident above.
+The receipt records the merge base and fingerprint for audit context, but approval is bound to
+the full head SHA. Any new commit, including a re-sync from `main`, requires a fresh receipt.
+This avoids treating the same added/removed lines at a different location as unchanged.
 
-Limits (documented, not hidden): every agent can run `receipt` as the same account, so this is a
-tripwire against an honest session pushing after approval, not a control against a session that
-means to re-bless its own push. That needs the separate-identity cutover (T4) and CODEOWNERS.
+Limits (documented, not hidden): the chat evidence reference is an honest-session record of the
+user's approval, not independent proof of human identity or authorization. Every agent can run
+`receipt` as the same account, so this is a tripwire against an honest session pushing after
+approval, not a control against a session that means to re-bless its own push. That needs the
+separate-identity cutover (T4) and CODEOWNERS.
 
 Exit codes: 0 pass; 1 tripped / refused; 2 could not check (fails closed, changes nothing).
 Stdlib only; talks to GitHub through the `gh` CLI. No network in `fingerprint`.
@@ -55,12 +52,28 @@ LABEL = "josh-approved"
 STATUS_CONTEXT = "approved-head-guard"
 FINGERPRINT_VERSION = "approved-head-fingerprint v1"
 DEFAULT_RECEIPT_AUTHORS = ("jmoss333",)
+DEFAULT_TRIP_AUTHORS = ("github-actions[bot]",)
 TRIP_SENTENCE = "head changed after approval — re-approval needed"
 TRIP_MARKER = "<!-- approved-head-guard: tripped -->"
-RECEIPT_RE = re.compile(
-    r"<!-- approved-head-receipt v1 head=(?P<head>[0-9a-f]{40}) "
-    r"base=(?P<base>[0-9a-f]{40}) fingerprint=(?P<fingerprint>[0-9a-f]{64}) -->"
+CHAT_APPROVAL_REF_RE = re.compile(
+    r"chat://thread/[A-Za-z0-9][A-Za-z0-9._-]{0,127}"
+    r"#message/[A-Za-z0-9][A-Za-z0-9._-]{0,127}"
 )
+RECEIPT_V2_RE = re.compile(
+    r"<!-- approved-head-receipt v2 head=(?P<head>[0-9a-f]{40}) "
+    r"base=(?P<base>[0-9a-f]{40}) fingerprint=(?P<fingerprint>[0-9a-f]{64}) "
+    r"review=(?P<review>[1-9][0-9]*) scope=(?P<scope>[A-Za-z0-9_.-]{1,100}/"
+    r"[A-Za-z0-9_.-]{1,100}#[1-9][0-9]*) -->"
+)
+RECEIPT_V3_RE = re.compile(
+    r"<!-- approved-head-receipt v3 head=(?P<head>[0-9a-f]{40}) "
+    r"base=(?P<base>[0-9a-f]{40}) fingerprint=(?P<fingerprint>[0-9a-f]{64}) "
+    r"chat=(?P<chat>chat://thread/[A-Za-z0-9][A-Za-z0-9._-]{0,127}"
+    r"#message/[A-Za-z0-9][A-Za-z0-9._-]{0,127}) scope=(?P<scope>[A-Za-z0-9_.-]{1,100}/"
+    r"[A-Za-z0-9_.-]{1,100}#[1-9][0-9]*) -->"
+)
+# Kept for callers that only need to recognize either retained receipt format.
+RECEIPT_RE = re.compile(r"<!-- approved-head-receipt v[23]\b")
 SAFE_REPO = re.compile(r"[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}")
 SAFE_REF = re.compile(r"[A-Za-z0-9._/-]{1,200}")
 SAFE_SHA = re.compile(r"[0-9a-f]{40}")
@@ -164,40 +177,79 @@ class Receipt:
     fingerprint: str
     comment_id: int = 0
     author: str = ""
+    chat_approval_ref: str = ""
+    scope: str = ""
 
 
-def receipt_body(head: str, base: str, fp: str, approved_by: str, note: str = "") -> str:
+def receipt_body(head: str, base: str, fp: str, approved_by: str, chat_approval_ref: str,
+                 approval_scope: str, note: str = "") -> str:
     lines = [
-        f"<!-- approved-head-receipt v1 head={head} base={base} fingerprint={fp} -->",
+        f"<!-- approved-head-receipt v3 head={head} base={base} fingerprint={fp} "
+        f"chat={chat_approval_ref} scope={approval_scope} -->",
         f"**Approval receipt** — {approved_by} approved head `{head[:12]}`.",
         "",
         f"- Label: `{LABEL}`",
         f"- Head SHA: `{head}`",
         f"- Merge base with `main`: `{base}`",
         f"- Diff fingerprint (`{FINGERPRINT_VERSION}`): `{fp}`",
+        f"- User-chat approval evidence: `{chat_approval_ref}`",
+        f"- Approval scope: `{approval_scope}`",
         "",
-        "The approved-head guard compares every later push against this fingerprint. Merging "
-        "`main` in is fine; changing this PR's own lines removes the label and returns the PR "
-        "to draft. After approval the owning session does not push content here — fixes go in a "
-        "follow-up PR, or it comments and asks for re-approval.",
+        "The approved-head guard requires every later run to match this full head SHA. Any new "
+        "commit removes the label and returns the PR to draft. After approval the owning session "
+        "does not push content here — fixes go in a follow-up PR, or it comments and asks for "
+        "re-approval.",
+        "",
+        "This chat-evidence pointer is an honest-session tripwire record; it does not independently "
+        "authenticate a human reviewer or prove authorization.",
     ]
     if note:
         lines += ["", note]
     return "\n".join(lines)
 
 
-def latest_receipt(comments: Iterable[dict], authors: Sequence[str]) -> Optional[Receipt]:
-    """Newest receipt comment written by an allowed author (comment order = creation order)."""
-    found: Optional[Receipt] = None
+@dataclass(frozen=True)
+class ApprovalState:
+    receipt: Optional[Receipt] = None
+    revoked: bool = False
+
+
+def parse_receipt(body: str, comment_id: int, author: str) -> Optional[Receipt]:
+    """Parse a current chat-evidence receipt or a retained v2 review receipt."""
+    m = RECEIPT_V3_RE.search(body)
+    if m:
+        return Receipt(m["head"], m["base"], m["fingerprint"], comment_id, author,
+                       m["chat"], m["scope"])
+    m = RECEIPT_V2_RE.search(body)
+    if m:
+        return Receipt(m["head"], m["base"], m["fingerprint"], comment_id, author,
+                       f"legacy-github-review:{m['review']}", m["scope"])
+    return None
+
+
+def latest_approval_state(comments: Iterable[dict], authors: Sequence[str],
+                          trip_authors: Sequence[str] = DEFAULT_TRIP_AUTHORS) -> ApprovalState:
+    """Newest approval event; a later trip revokes older receipts until a new one is posted."""
+    state = ApprovalState()
     allowed = {a.lower() for a in authors}
+    trusted_trip_authors = {a.lower() for a in trip_authors}
     for c in comments:
+        body = c.get("body") or ""
         login = ((c.get("user") or {}).get("login") or "").lower()
+        if TRIP_MARKER in body and login in trusted_trip_authors:
+            state = ApprovalState(revoked=True)
+            continue
         if login not in allowed:
             continue
-        m = RECEIPT_RE.search(c.get("body") or "")
-        if m:
-            found = Receipt(m["head"], m["base"], m["fingerprint"], int(c.get("id") or 0), login)
-    return found
+        receipt = parse_receipt(body, int(c.get("id") or 0), login)
+        if receipt:
+            state = ApprovalState(receipt)
+    return state
+
+
+def latest_receipt(comments: Iterable[dict], authors: Sequence[str]) -> Optional[Receipt]:
+    """Compatibility helper for callers that only need the current unrevoked receipt."""
+    return latest_approval_state(comments, authors).receipt
 
 
 @dataclass
@@ -208,18 +260,21 @@ class Decision:
 
 
 def decide(labels: Iterable[str], receipt: Optional[Receipt], current_fp: str,
-           head_sha: str) -> Decision:
-    if LABEL not in set(labels):
+           head_sha: str, revoked: bool = False) -> Decision:
+    has_label = LABEL in set(labels)
+    if revoked:
+        actions = ["unlabel"] if has_label else []
+        actions += ["draft"]
+        return Decision(False, "a previous approval was revoked; a fresh receipt is required", actions)
+    if not has_label:
         return Decision(True, f"no `{LABEL}` label — nothing to guard")
     if receipt is None:
         return Decision(False, f"`{LABEL}` is present but no approval receipt was found",
                         ["unlabel", "draft", "comment"])
-    if receipt.fingerprint == current_fp:
-        if receipt.head == head_sha:
-            return Decision(True, "head is the approved head")
-        return Decision(True, "head moved but the PR's own diff is unchanged (re-sync only)")
-    return Decision(False, "the PR's own diff no longer matches the approved fingerprint",
-                    ["unlabel", "draft", "comment"])
+    if receipt.head == head_sha:
+        return Decision(True, "head exactly matches the approved head")
+    return Decision(False, "the current head does not exactly match the approved head",
+                    ["comment", "unlabel", "draft"])
 
 
 def trip_comment(decision: Decision, receipt: Optional[Receipt], head_sha: str,
@@ -228,8 +283,8 @@ def trip_comment(decision: Decision, receipt: Optional[Receipt], head_sha: str,
         TRIP_MARKER,
         f"**{TRIP_SENTENCE[0].upper()}{TRIP_SENTENCE[1:]}.**",
         "",
-        f"The approved-head guard found that {decision.reason}. It removed `{LABEL}` and "
-        "returned this PR to draft. Nothing was reverted.",
+        f"The approved-head guard found that {decision.reason}. It is revoking `{LABEL}` and "
+        "returning this PR to draft. Nothing was reverted.",
         "",
         f"- Current head: `{head_sha}`",
         f"- Current fingerprint: `{current_fp}`",
@@ -332,9 +387,22 @@ def cmd_receipt(args, gh: Optional[GitHub] = None) -> int:
     head = (pull.get("head") or {}).get("sha", "")
     if not SAFE_SHA.fullmatch(head):
         raise GuardError("PR head SHA is missing")
-    if args.expect_head and not head.startswith(args.expect_head.lower()):
+    expected_head = args.expect_head.lower()
+    if not SAFE_SHA.fullmatch(expected_head):
+        print("Refusing: --expect-head must be the full 40-character SHA Josh reviewed.",
+              file=sys.stderr)
+        return 1
+    if head != expected_head:
         print(f"Refusing: PR head is {head}, but Josh approved {args.expect_head}. "
               "Ask for re-approval of the current head.", file=sys.stderr)
+        return 1
+    expected_scope = f"{args.repo}#{args.pr}"
+    if not CHAT_APPROVAL_REF_RE.fullmatch(args.chat_approval_ref):
+        print("Refusing: --chat-approval-ref must be chat://thread/<thread>#message/<message>.",
+              file=sys.stderr)
+        return 1
+    if args.approval_scope.lower() != expected_scope.lower():
+        print(f"Refusing: --approval-scope must be {expected_scope}.", file=sys.stderr)
         return 1
     base_ref = (pull.get("base") or {}).get("ref") or args.base_ref
     if args.local_refs:
@@ -344,7 +412,8 @@ def cmd_receipt(args, gh: Optional[GitHub] = None) -> int:
     if git(args.repo_dir, "rev-parse", f"{head_local}^{{commit}}").decode().strip() != head:
         raise GuardError("fetched head does not match the PR head; retry")
     mb, fp = fingerprint(args.repo_dir, base_local, head_local)
-    body = receipt_body(head, mb, fp, args.approved_by, args.note or "")
+    body = receipt_body(head, mb, fp, args.approved_by, args.chat_approval_ref,
+                        args.approval_scope, args.note or "")
     if args.dry_run:
         print(body)
         return 0
@@ -362,21 +431,31 @@ def cmd_check(args, gh: Optional[GitHub] = None) -> int:
     if not SAFE_SHA.fullmatch(head):
         raise GuardError("PR head SHA is missing")
     labels = _labels(pull)
-    if pull.get("state") != "open" or LABEL not in labels:
+    if pull.get("state") != "open":
         decision = Decision(True, "PR is not open" if pull.get("state") != "open"
                             else f"no `{LABEL}` label — nothing to guard")
         current_fp, receipt = "", None
     else:
-        base_ref = (pull.get("base") or {}).get("ref") or args.base_ref
-        if args.local_refs:
-            base_local, head_local = args.local_refs
+        approval_state = latest_approval_state(gh.comments(args.pr), args.receipt_authors)
+        receipt = approval_state.receipt
+        current_fp = ""
+        if LABEL in labels:
+            base_ref = (pull.get("base") or {}).get("ref") or args.base_ref
+            if args.local_refs:
+                base_local, head_local = args.local_refs
+            else:
+                base_local, head_local = _fetch_pr(args.repo_dir, args.pr, base_ref)
+            if git(args.repo_dir, "rev-parse", f"{head_local}^{{commit}}").decode().strip() != head:
+                raise GuardError("fetched head does not match the PR head (a newer push is in flight)")
+            _mb, current_fp = fingerprint(args.repo_dir, base_local, head_local)
+        expected_scope = f"{args.repo}#{args.pr}"
+        if approval_state.revoked:
+            decision = decide(labels, receipt, current_fp, head, revoked=True)
+        elif receipt is not None and receipt.scope.lower() != expected_scope.lower():
+            decision = Decision(False, "the approval receipt scope does not match this PR",
+                                ["comment", "unlabel", "draft"])
         else:
-            base_local, head_local = _fetch_pr(args.repo_dir, args.pr, base_ref)
-        if git(args.repo_dir, "rev-parse", f"{head_local}^{{commit}}").decode().strip() != head:
-            raise GuardError("fetched head does not match the PR head (a newer push is in flight)")
-        _mb, current_fp = fingerprint(args.repo_dir, base_local, head_local)
-        receipt = latest_receipt(gh.comments(args.pr), args.receipt_authors)
-        decision = decide(labels, receipt, current_fp, head)
+            decision = decide(labels, receipt, current_fp, head)
 
     summary = f"approved-head-guard PR #{args.pr} @ {head[:12]}: " \
               f"{'PASS' if decision.ok else 'TRIPPED'} — {decision.reason}"
@@ -387,12 +466,12 @@ def cmd_check(args, gh: Optional[GitHub] = None) -> int:
             fh.write(summary + "\n")
 
     if args.apply and not decision.ok:
+        if "comment" in decision.actions:
+            gh.comment(args.pr, trip_comment(decision, receipt, head, current_fp))
         if "unlabel" in decision.actions:
             gh.remove_label(args.pr)
         if "draft" in decision.actions and not pull.get("draft"):
             gh.to_draft(args.pr)
-        if "comment" in decision.actions:
-            gh.comment(args.pr, trip_comment(decision, receipt, head, current_fp))
     if args.status:
         gh.status(head, decision.ok, decision.reason)
     return 0 if decision.ok else 1
@@ -420,8 +499,12 @@ def build_parser() -> argparse.ArgumentParser:
                        help=argparse.SUPPRESS)  # tests: skip the fetch
         s.set_defaults(func=fn)
         if name == "receipt":
-            s.add_argument("--expect-head", default="",
-                           help="the SHA (or prefix) Josh approved; refuse if the head moved")
+            s.add_argument("--expect-head", required=True,
+                           help="the full SHA Josh reviewed; refuse unless it exactly matches")
+            s.add_argument("--chat-approval-ref", required=True,
+                           help="chat://thread/<thread>#message/<message> evidence pointer")
+            s.add_argument("--approval-scope", required=True,
+                           help="explicit approval scope: owner/repo#PR-number")
             s.add_argument("--approved-by", default="Josh Moss, MD")
             s.add_argument("--note", default="")
             s.add_argument("--dry-run", action="store_true")
