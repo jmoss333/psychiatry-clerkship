@@ -1,0 +1,75 @@
+[
+  {
+    "finding_id": "dsm-5-tr::modified::a35cd9886e79f47c",
+    "fingerprint": "dsm-5-tr::modified::a35cd9886e79f47c",
+    "job": "guideline-surveillance",
+    "source_id": "dsm-5-tr",
+    "source_name": "DSM-5-TR (APPI)",
+    "source_url": "https://www.appi.org/products/dsm",
+    "source_type": "login",
+    "modality": "signal_only",
+    "detected_at": "2026-11-01T06:04:55+00:00",
+    "change_type": "modified",
+    "severity": "P1",
+    "summary": "Content changed at DSM-5-TR (APPI) (signal-only source; excerpt withheld for copyright)",
+    "evidence": {
+      "prev_hash": "a9a50827ba4ad078b597f93d2320a1bbb2fff77aafe156c07f96bd0acfa639e4",
+      "new_hash": "4fa06513668cf20578afcf0325ff71616526d8b9b5db18a46ceb9c8ab9de84f2",
+      "prev_seen_at": "2026-10-01T06:07:18+00:00"
+    },
+    "affects": [
+      "02_Clinical_Skills/Interviewing/README.md",
+      "02_Clinical_Skills/Screeners/README.md",
+      "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md",
+      "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md",
+      "03_Core_Topics/Sexual_Gender/sexual_paraphilic_gender_inpatient_teaching.md",
+      "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md",
+      "07_Evidence_and_Reading/Inpatient_Evidence/evidence_inpatient.md",
+      "07_Evidence_and_Reading/Landmark_Library/Primary_Source_Download_List.md",
+      "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md",
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/APA_SURFACE_CARDS.md",
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/README.md",
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html",
+      "13_Faculty_Resources/APA_Downloads_2026-06-29/scripts/catalog_template.html",
+      "13_Faculty_Resources/APA_membership_resource_scan_2026-06-29.md",
+      "13_Faculty_Resources/Handoffs/HANDOFF_for_fable5_2026-07-01.md",
+      "13_Faculty_Resources/Handoffs/openevidence_library_accuracy_review_2026-07-01.md",
+      "14_Tracks/MS3/Student_Ready_Pack/07_shelf_guide/shelf_review_guide.md",
+      "14_Tracks/Resident/canon_200.md"
+    ],
+    "recommended_action": "Review DSM-5-TR (APPI); if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/1160"
+  },
+  {
+    "finding_id": "uspstf-mental-health::modified::8055ccef24bf2fef",
+    "fingerprint": "uspstf-mental-health::modified::8055ccef24bf2fef",
+    "job": "guideline-surveillance",
+    "source_id": "uspstf-mental-health",
+    "source_name": "USPSTF Recommendations (mental health topics)",
+    "source_url": "https://www.uspreventiveservicestaskforce.org/uspstf/topic_search_results?topic_status=P",
+    "source_type": "html",
+    "modality": "full_text",
+    "detected_at": "2026-11-01T06:05:00+00:00",
+    "change_type": "modified",
+    "severity": "P0",
+    "summary": "Content changed at USPSTF Recommendations (mental health topics)",
+    "evidence": {
+      "prev_hash": "4179c02785105f459f79d87604603251f655db3dd67647b9595a294ce3390c62",
+      "new_hash": "ad54b58eb9746bd6e251ba6f5e1be2c2333eb28a51553237b8f690b3b18b883b",
+      "prev_seen_at": "2026-10-01T06:07:25+00:00",
+      "diff_excerpt": "-United States Preventive Services Taskforce Published Screening 2025 Intimate Partner Violence and Caregiver Abuse of Older or Vulnerable Adults: Screening Adolescent, Adult, Senior B, I Injury Prevention, Mental Health Conditions and Substance Abuse, Miscellaneous Published Screening 2025 Syphilis Infection During Pregnancy: Screening Adolescent, Adult A Infectious Diseases, Obstetric and Gynecologic Conditions Published Counseling 2025 Breastfeeding: Primary Care Behavioral Counseling Interventions Adult B Perinatal Care Published Counseling, Screening 2025 Food Insecurity: Screening Adolescent, Adult, Pediatric, Senior I Metabolic, nutritional, and Endocrine Conditions Published Screening 2025 Osteoporosis to Prevent Fractures: Screening Adult, Senior B, I Musculoskeletal Disorders Published Preventive medication, Screening 2024 Iron Deficiency and Iron Deficiency Anemia During Pregnancy: Screening and Supplementation Adolescent, Adult I Metabolic, nutritional, and Endocrine Conditions Published Counseling 2024 High Body Mass Index in Children and Adolescents: Interventions Adolescent, Pediatric B Metabolic, nutritional, and Endocrine Conditions Published Counseling 2024 Falls Prevention in Community-Dwelling Older Adults: Interventions Senior B, C Injury Prevention, Musculoskeletal Disorders Published Screening 2024 Breast Cancer: Screening Adult, Senior B, I Cancer Published Counseling, Screening 2024 Prevention of Child Maltreatment: Primary Care Interventions Adolescent, Pediatric I Development and Behavior, Injury Prevention, Mental Health Conditions and Substance Abuse Published Screening 2024 Speech and Language Delay and Disorders in Children: Screening Pediatric I Development and Behavior Published Counseling, Preventive medication, Screening 2023 Oral Health in Adults: Screening and Preventive Interventions Adult, Senior I Miscellaneous Published Counseling, Preventive medication, Screening 2023 Oral Health in Children and Adolescents Aged 5 to 17 Years: Screening and Preventive Interventions Adolescent, Pediatric I Miscellaneous Published Screening 2023 Hypertensive Disorders of Pregnancy: Screening Adult B Obstetric and Gynecologic Conditions Published Preventive medication 2023 Prevention of Acquisition of HIV: Preexposure Prophylaxis Adolescent, Adult A Infectious Diseases Published Preventive medication 2023 Folic Acid Supplementation to Prevent Neural Tube Defects: Preventive Medication Adolescent, Adult A Development and Behavior, Obstetric and Gynecologic Conditions, Perinatal Care Published Screening 2023 Lipid Disorders in Children and Adolescents: Screening Adolescent, Pediatric I Cardiovascular Disorders (Heart and Vascular Diseases) Published Screening 2023 Anxiety Disorders in Adults: Screening Adult, Senior B, I Mental Health Conditions and Substance Abuse Published Screening 2023 Depression and Suicide Risk in Adults: Screening Adult, Senior B, I Development and Behavior, Mental Health Conditions and Substance Abuse Published Screening 2023 Latent Tuberculosis Infection in Adults: Screening Adult, Senior B Infectious Diseases\n+United States Preventive Services Taskforce Search and Filter All Recommendation Topics Search the USPSTF Site Recommendations search results Hits: 108 Status Type Year Topic Name Age Group Grade Category Published Screening 2025 Intimate Partner Violence and Caregiver Abuse of Older or Vulnerable Adults: Screening Adolescent, Adult, Senior B, I Injury Prevention, Mental Health Conditions and Substance Abuse, Miscellaneous Published Screening 2025 Syphilis Infection During Pregnancy: Screening Adolescent, Adult A Infectious Diseases, Obstetric and Gynecologic Conditions Published Counseling 2025 Breastfeeding: Primary Care Behavioral Counseling Interventions Adult B Perinatal Care Published Counseling, Screening 2025 Food Insecurity: Screening Adolescent, Adult, Pediatric, Senior I Metabolic, nutritional, and Endocrine Conditions Published Screening 2025 Osteoporosis to Prevent Fractures: Screening Adult, Senior B, I Musculoskeletal Disorders Published Preventive medication, Screening 2024 Iron Deficiency and Iron Deficiency Anemia During Pregnancy: Screening and Supplementation Adolescent, Adult I Metabolic, nutritional, and Endocrine Conditions Published Counseling 2024 High Body Mass Index in Children and Adolescents: Interventions Adolescent, Pediatric B Metabolic, nutritional, and Endocrine Conditions Published Counseling 2024 Falls Prevention in Community-Dwelling Older Adults: Interventions Senior B, C Injury Prevention, Musculoskeletal Disorders Published Screening 2024 Breast Cancer: Screening Adult, Senior B, I Cancer Published Counseling, Screening 2024 Prevention of Child Maltreatment: Primary Care Interventions Adolescent, Pediatric I Development and Behavior, Injury Prevention, Mental Health Conditions and Substance Abuse Published Screening 2024 Speech and Language Delay and Disorders in Children: Screening Pediatric I Development and Behavior Published Counseling, Preventive medication, Screening 2023 Oral Health in Adults: Screening and Preventive Interventions Adult, Senior I Miscellaneous Published Counseling, Preventive medication, Screening 2023 Oral Health in Children and Adolescents Aged 5 to 17 Years: Screening and Preventive Interventions Adolescent, Pediatric I Miscellaneous Published Screening 2023 Hypertensive Disorders of Pregnancy: Screening Adult B Obstetric and Gynecologic Conditions Published Preventive medication 2023 Prevention of Acquisition of HIV: Preexposure Prophylaxis Adolescent, Adult A Infectious Diseases Published Preventive medication 2023 Folic Acid Supplementation to Prevent Neural Tube Defects: Preventive Medication Adolescent, Adult A Development and Behavior, Obstetric and Gynecologic Conditions, Perinatal Care Published Screening 2023 Lipid Disorders in Children and Adolescents: Screening Adolescent, Pediatric I Cardiovascular Disorders (Heart and Vascular Diseases) Published Screening 2023 Anxiety Disorders in Adults: Screening Adult, Senior B, I Mental Health Conditions and Substance Abuse Published Screening 2023 Depression and Suicide Risk in Adults: Screening Adult, Senior B, I Development and Behavior, Mental Health Conditions and Substance Abuse Published Screening 2023 Latent Tuberculosis Infection in Adults: Screening Adult, Senior B Infectious Diseases Pages: 1 2 3 4 5 6 \u203a"
+    },
+    "affects": [
+      "02_Clinical_Skills/Screeners/screeners.html",
+      "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md",
+      "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md",
+      "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/columbia-cssrs-screener.html",
+      "07_Evidence_and_Reading/Rounds_Questions/rounds_questions.md"
+    ],
+    "recommended_action": "Review USPSTF Recommendations (mental health topics); if guidance changed, update the affected teaching page(s) and re-stamp reviewed.json.",
+    "status": "issue-open",
+    "_escalation": "P1->P0 (acute-safety path affected)",
+    "github_issue": "https://github.com/jmoss333/psychiatry-clerkship/issues/1161"
+  }
+]

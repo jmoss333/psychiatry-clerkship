@@ -1,15 +1,15 @@
 {
-  "checkedAt": "2026-10-26T07:34:29+00:00",
-  "crossrefExamined": 145,
+  "checkedAt": "2026-11-02T07:13:57+00:00",
+  "crossrefExamined": 146,
   "findingCounts": {
     "P0": 0,
     "P1": 0,
     "P2": 6
   },
-  "pubmedExamined": 144,
+  "pubmedExamined": 145,
   "schemaVersion": 1,
-  "sourcesDeclared": 166,
-  "sourcesIdentified": 147,
+  "sourcesDeclared": 167,
+  "sourcesIdentified": 148,
   "sourcesWithFindings": 4,
   "state": "success",
   "unverifiableById": 19
