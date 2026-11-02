@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-10-27T04:42:19+00:00",
+  "capturedAt": "2026-11-02T08:04:26+00:00",
   "issues": [
     {
       "number": 8,
@@ -1751,6 +1751,30 @@
       "labels": [
         "P1",
         "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 1160,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/1160",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "dsm-5-tr::modified::a35cd9886e79f47c",
+      "labels": [
+        "P1",
+        "guideline-surveillance",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 1161,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/1161",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "uspstf-mental-health::modified::8055ccef24bf2fef",
+      "labels": [
+        "P0",
+        "guideline-surveillance",
         "surveillance"
       ]
     }
