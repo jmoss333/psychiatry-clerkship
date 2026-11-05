@@ -15,7 +15,9 @@
  *
  * one line per source path the slug ships from, sorted by path, each line carrying that
  * file's git blob sha; then, only when the slug HAS a topic_meta record, one `topic_meta`
- * line over that record canonicalised with `facultyReview` removed. The digest is the git
+ * line over that record canonicalised with `facultyReview` removed. A Case-of-the-Week page
+ * also carries its audience-specific rendered registry projection, so an MS3 summary edit
+ * cannot leave its MS3 signature clean or reopen its resident twin. The digest is the git
  * blob sha of that manifest text.
  *
  * Choosing a git blob sha is what makes the console's read cheap: every value on the left is
@@ -165,6 +167,138 @@ export function canonicalTopicMetaRecord(record) {
   return Buffer.from(serialize(body), 'utf8');
 }
 
+// Case-of-the-Week pages render audience-specific metadata above the case source. The raw
+// projection is generated into shipped_pages.json; consumers never read the producer directly.
+const COTW_SLUG = /^cotw_([0-9]{8})_(.+)_(ms3|res)\.md$/;
+const COTW_DEFAULT_READ = { ms3: 8, res: 10 };
+const COTW_SHELF_VOCAB = new Set([
+  'mood', 'psychosis', 'anxiety', 'substance', 'neurocog', 'pharm', 'safety',
+  'personality', 'childdev', 'otherdx', 'ethics', 'relational',
+]);
+const COTW_EPA_VOCAB = new Set(Array.from({ length: 13 }, (_, index) => `EPA${index + 1}`));
+const COTW_STAGE_VOCAB = [
+  'encounter', 'diagnosis', 'safety', 'treatment', 'communication', 'family', 'team', 'exam',
+];
+const COTW_BASE_STAGES = new Set(['diagnosis', 'treatment', 'team', 'exam']);
+const COTW_BLUEPRINT_STAGES = {
+  safety: ['safety'],
+  substance: ['safety'],
+  personality: ['communication'],
+  relational: ['communication', 'family'],
+  childdev: ['family'],
+  ethics: ['communication'],
+};
+const COTW_WORKFLOW_KEYS = new Set([
+  'ask', 'mse', 'safety', 'say', 'collateral', 'rounds', 'exam', 'actions',
+]);
+
+function cotwClean(values, vocab) {
+  return Array.isArray(values)
+    ? values.filter(value => typeof value === 'string' && vocab.has(value))
+    : [];
+}
+
+function cotwTldr(week, level) {
+  let value = week[`tldr_${level}`];
+  if (typeof value !== 'string' || !value.trim()) value = week.tldr;
+  if (typeof value === 'string' && value.trim()) return value;
+  const label = week.label || (Object.hasOwn(week, 'topic') ? week.topic : 'Case of the Week');
+  return `Case of the Week — ${label}. Guided discussion questions, a ranked differential, and a workup-and-management ladder.`;
+}
+
+function cotwStages(week) {
+  const override = cotwClean(week.stages, new Set(COTW_STAGE_VOCAB));
+  const chosen = override.length ? new Set(override) : new Set(COTW_BASE_STAGES);
+  if (!override.length) {
+    for (const code of cotwClean(week.blueprint, COTW_SHELF_VOCAB)) {
+      for (const stage of COTW_BLUEPRINT_STAGES[code] || []) chosen.add(stage);
+    }
+  }
+  return COTW_STAGE_VOCAB.filter(stage => chosen.has(stage));
+}
+
+function cotwWorkflow(week) {
+  if (!week.workflow || typeof week.workflow !== 'object' || Array.isArray(week.workflow)) return {};
+  const result = {};
+  for (const [key, value] of Object.entries(week.workflow)) {
+    if (!COTW_WORKFLOW_KEYS.has(key)) continue;
+    if (key === 'actions') {
+      const actions = Array.isArray(value)
+        ? value.filter(action => action && typeof action === 'object' && !Array.isArray(action)
+          && typeof action.label === 'string' && typeof action.href === 'string')
+        : [];
+      if (actions.length) result[key] = actions;
+    } else if (typeof value === 'string' && value.trim()) {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/** Canonical registry content rendered for one Case-of-the-Week audience. */
+export function canonicalCotwRegistryEntry(slug, registry) {
+  const match = COTW_SLUG.exec(slug);
+  if (!match) return null;
+  const [, date, topic, audience] = match;
+  let document = registry;
+  if (Buffer.isBuffer(document) || document instanceof Uint8Array || typeof document === 'string') {
+    try {
+      document = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(
+        Buffer.isBuffer(document) || document instanceof Uint8Array ? document : Buffer.from(document, 'utf8'),
+      ));
+    } catch {
+      throw new AttestationHashError(`${slug}: unreadable Case-of-the-Week registry`);
+    }
+  }
+  if (!document || typeof document !== 'object' || Array.isArray(document) || !Array.isArray(document.weeks)) {
+    throw new AttestationHashError(`${slug}: malformed Case-of-the-Week registry`);
+  }
+  const editions = document.weeks.filter(week => week && typeof week === 'object' && !Array.isArray(week)
+    && typeof week.date === 'string' && week.date.replaceAll('-', '') === date && week.topic === topic);
+  if (editions.length !== 1) {
+    throw new AttestationHashError(`${slug}: no unique Case-of-the-Week registry edition`);
+  }
+  const week = editions[0];
+  const label = week.label || (Object.hasOwn(week, 'topic') ? week.topic : 'Case of the Week');
+  const read = Number.isInteger(week.read) ? week.read : COTW_DEFAULT_READ[audience];
+  const projection = {
+    fingerprint: 'cotw-registry/1',
+    audience,
+    date: week.date,
+    topic: week.topic,
+    label,
+    source: week[`${audience}_src`],
+    read,
+    tldr: cotwTldr(week, audience),
+    blueprint: cotwClean(week.blueprint, COTW_SHELF_VOCAB),
+    epa: cotwClean(week.epa, COTW_EPA_VOCAB),
+    stages: cotwStages(week),
+    workflow: cotwWorkflow(week),
+  };
+  return Buffer.from(serialize(projection), 'utf8');
+}
+
+/** The manifest value for a Case-of-the-Week's rendered registry projection. */
+export function cotwRegistryManifestValue(slug, registryHash) {
+  if (!COTW_SLUG.test(slug)) return null;
+  if (typeof registryHash !== 'string' || !/^[a-f0-9]{40}$/.test(registryHash)) {
+    throw new AttestationHashError(`${slug}: Case-of-the-Week registry projection is missing`);
+  }
+  return registryHash;
+}
+
+export function cotwRegistryHashForSlug(shippedDoc, slug) {
+  if (!COTW_SLUG.test(slug)) return null;
+  const pages = shippedDoc && typeof shippedDoc === 'object' ? shippedDoc.pages : null;
+  const values = new Set((Array.isArray(pages) ? pages : [])
+    .filter(page => page && typeof page === 'object' && page.slug === slug)
+    .map(page => page.cotwRegistryHash));
+  if (values.size !== 1) {
+    throw new AttestationHashError(`${slug}: no unique Case-of-the-Week registry projection`);
+  }
+  return cotwRegistryManifestValue(slug, [...values][0]);
+}
+
 /**
  * Every source path the slug ships from: `source` first, then `extraSources`.
  *
@@ -199,7 +333,7 @@ export function sourcesForSlug(shippedDoc, slug) {
  * A `record` that is not a mapping counts as NO record, decided here so every caller
  * inherits it, exactly as the Python module decides it once in `manifest_for_slug`.
  */
-export function manifestForSlug(slug, sources, record) {
+export function manifestForSlug(slug, sources, record, cotwRegistryHash = null) {
   const paths = Object.keys(sources || {}).sort(compareCodePoints);
   if (!paths.length) {
     throw new AttestationHashError(
@@ -210,6 +344,8 @@ export function manifestForSlug(slug, sources, record) {
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     lines.push(`topic_meta ${blobSha(canonicalTopicMetaRecord(record))}`);
   }
+  const cotwValue = cotwRegistryManifestValue(slug, cotwRegistryHash);
+  if (cotwValue !== null) lines.push(`cotw_registry ${cotwValue}`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -366,7 +502,7 @@ export function canonicalClinicalRecord(record) {
  * maps each path to its CLINICAL value (clinicalSourceSha; for a non-Markdown source that is
  * the same value v1 carries, so the console may pass its tree sha straight through).
  */
-export function clinicalManifestForSlug(slug, sources, record) {
+export function clinicalManifestForSlug(slug, sources, record, cotwRegistryHash = null) {
   const paths = Object.keys(sources || {}).sort(compareCodePoints);
   if (!paths.length) {
     throw new AttestationHashError(
@@ -377,5 +513,7 @@ export function clinicalManifestForSlug(slug, sources, record) {
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     lines.push(`topic_meta ${blobSha(canonicalClinicalRecord(record))}`);
   }
+  const cotwValue = cotwRegistryManifestValue(slug, cotwRegistryHash);
+  if (cotwValue !== null) lines.push(`cotw_registry ${cotwValue}`);
   return `${lines.join('\n')}\n`;
 }
