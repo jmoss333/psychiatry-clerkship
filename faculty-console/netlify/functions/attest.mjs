@@ -11,6 +11,7 @@ import {
   canonicalTopicMetaRecord,
   clinicalManifestForSlug,
   clinicalSourceSha,
+  COTW_REGISTRY_PATH,
   digestFromManifest,
   isClinicalMarkdownSource,
   manifestForSlug,
@@ -97,6 +98,7 @@ const JSON_INDENT = 2;
 const GITHUB_API = 'https://api.github.com';
 const MAX_POST_BYTES = 128 * 1024;
 const MAX_BANK_BYTES = 4 * 1024 * 1024;
+const MAX_COTW_REGISTRY_BYTES = 4 * 1024 * 1024;
 const GIT_OBJECT_ID_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i;
 
 const ERROR_MESSAGES = Object.freeze({
@@ -1268,7 +1270,7 @@ function contentApiStatus(entry) {
  * `shipped` is the RAW shipped_pages document: deriveContentUniverse drops `source` and
  * `extraSources`, so a universe entry knows the page's title and not its text.
  */
-function digestForSlug(slug, { shipped, tree, topicMeta }) {
+function digestForSlug(slug, { shipped, tree, topicMeta, cotwRegistry }) {
   const paths = sourcesForSlug(shipped, slug);
   if (!paths.length) return null;
   const sources = {};
@@ -1280,7 +1282,7 @@ function digestForSlug(slug, { shipped, tree, topicMeta }) {
   // Own properties only: `topicMeta.constructor` would otherwise hand a function to a rule
   // whose "is this a record?" test is about what topic_meta.json actually contains.
   const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
-  return digestFromManifest(manifestForSlug(slug, sources, record));
+  return digestFromManifest(manifestForSlug(slug, sources, record, cotwRegistry));
 }
 
 // ── Fingerprint v2: `clinicalHash` ──────────────────────────────────────────────────────
@@ -1368,7 +1370,7 @@ function clinicalDigestForSlug(slug, inputs) {
   }
   const { topicMeta } = inputs;
   const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
-  return digestFromManifest(clinicalManifestForSlug(slug, values, record));
+  return digestFromManifest(clinicalManifestForSlug(slug, values, record, inputs.cotwRegistry));
 }
 
 /** Reviewed rows whose v1 hash no longer matches but which carry a clinicalHash to try. */
@@ -1427,7 +1429,18 @@ async function readDigestInputs(repository, shipped, branch) {
     tree = new Map(listed);
     tree.set(QBANK_PATH, sourceBlobSha(QBANK_PATH, bank.bytes));
   }
-  return { tree, shipped, topicMeta: topicMetaFile.json, head };
+  let cotwRegistry = null;
+  if (shipsCotw(shipped)) {
+    const registry = await repository.readRaw(COTW_REGISTRY_PATH, {
+      maxBytes: MAX_COTW_REGISTRY_BYTES,
+      ref: head,
+    });
+    if (registry.sha !== listed.get(COTW_REGISTRY_PATH)) {
+      throw new GithubError('github_response_invalid', 502);
+    }
+    cotwRegistry = registry.bytes;
+  }
+  return { tree, shipped, topicMeta: topicMetaFile.json, cotwRegistry, head };
 }
 
 function shipsQuestionBank(shipped) {
@@ -1435,6 +1448,12 @@ function shipsQuestionBank(shipped) {
   return pages.some(page => isRecord(page)
     && (page.source === QBANK_PATH
       || (Array.isArray(page.extraSources) && page.extraSources.includes(QBANK_PATH))));
+}
+
+function shipsCotw(shipped) {
+  const pages = isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [];
+  return pages.some(page => isRecord(page) && typeof page.slug === 'string'
+    && /^cotw_[0-9]{8}_.+_(?:ms3|res)\.md$/.test(page.slug));
 }
 
 // ── Bank contents (2026-10-05) ──────────────────────────────────────────────────────────
@@ -1567,7 +1586,7 @@ async function buildBankView(repository, settings, slug) {
   const record = isRecord(inputs.topicMeta) && Object.hasOwn(inputs.topicMeta, slug) ? inputs.topicMeta[slug] : null;
   const digest = digestForSlug(slug, inputs);
   const verified = Boolean(digest) && Object.values(values).every(Boolean)
-    && digestFromManifest(manifestForSlug(slug, values, record)) === digest;
+    && digestFromManifest(manifestForSlug(slug, values, record, inputs.cotwRegistry)) === digest;
   const page = (isRecord(inputs.shipped) && Array.isArray(inputs.shipped.pages) ? inputs.shipped.pages : [])
     .find(entry => isRecord(entry) && entry.slug === slug) || {};
   return {
