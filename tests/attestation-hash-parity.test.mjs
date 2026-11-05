@@ -44,7 +44,8 @@ import {
   CLINICAL_FINGERPRINT,
   blobSha,
   canonicalClinicalRecord,
-  cotwRegistryManifestValue,
+  canonicalCotwRegistryEntry,
+  cotwRegistryHashForSlug,
   canonicalQuestionBank,
   canonicalTopicMetaRecord,
   clinicalManifestForSlug,
@@ -74,8 +75,6 @@ from pathlib import Path
 root = Path(payload["root"])
 shipped = json.loads((root / payload["shipped"]).read_text(encoding="utf-8"))
 meta = json.loads((root / payload["topicMeta"]).read_text(encoding="utf-8"))
-cotw_path = root / ah.COTW_REGISTRY_PATH
-cotw = cotw_path.read_bytes() if cotw_path.exists() else None
 out = {
     "constants": {"stale": ah.STALE_REASON, "pending": ah.PENDING_SENTINEL},
     "slugs": {},
@@ -85,11 +84,11 @@ for slug in payload["slugs"]:
     paths = ah.sources_for_slug(shipped, slug)
     sources = {p: (root / p).read_bytes() for p in paths}
     try:
-        manifest = ah.manifest_for_slug(slug, sources, meta.get(slug), cotw)
+        manifest = ah.manifest_for_slug(slug, sources, meta.get(slug), ah.cotw_registry_hash_for_slug(shipped, slug))
     except ah.AttestationHashError:
         out["slugs"][slug] = {"error": "AttestationHashError"}
         continue
-    clinical = ah.clinical_manifest_for_slug(slug, sources, meta.get(slug), cotw)
+    clinical = ah.clinical_manifest_for_slug(slug, sources, meta.get(slug), ah.cotw_registry_hash_for_slug(shipped, slug))
     out["slugs"][slug] = {
         "manifest": manifest,
         "digest": ah.blob_sha(manifest.encode("utf-8")),
@@ -153,13 +152,12 @@ function jsManifest(root, shipped, topicMeta, slug) {
     sources[source] = sourceBlobSha(source, fs.readFileSync(path.join(root, source)));
   }
   const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
-  return manifestForSlug(slug, sources, record, cotwRegistry);
+  return manifestForSlug(slug, sources, record, cotwRegistryHashForSlug(shipped, slug));
 }
 
 const shippedDoc = readJson(repo, SHIPPED_PAGES);
 const topicMetaDoc = readJson(repo, TOPIC_META);
 const ledger = readJson(repo, REVIEWED);
-const cotwRegistry = fs.readFileSync(path.join(repo, '08_Cases_and_Simulation', 'case-of-the-week', 'cotw_registry.json'));
 
 // The parity set is the derived shipped listing, so the ledger decides nothing about what is
 // compared. Its size is not pinned here: shipped_pages.py --check-build binds the listing to
@@ -235,17 +233,21 @@ test('a Case-of-the-Week registry summary is hashed only for its rendered audien
   const sources = { 'demo.md': blobSha(Buffer.from('Synthetic case.\n', 'utf8')) };
   const ms3 = 'cotw_20260105_demo_ms3.md';
   const res = 'cotw_20260105_demo_res.md';
-  const beforeMs3 = manifestForSlug(ms3, sources, null, registry);
-  const beforeRes = manifestForSlug(res, sources, null, registry);
+  const beforeMs3Hash = blobSha(canonicalCotwRegistryEntry(ms3, registry));
+  const beforeResHash = blobSha(canonicalCotwRegistryEntry(res, registry));
+  const beforeMs3 = manifestForSlug(ms3, sources, null, beforeMs3Hash);
+  const beforeRes = manifestForSlug(res, sources, null, beforeResHash);
   const changed = Buffer.from(JSON.stringify({ weeks: [{
     date: '2026-01-05', topic: 'demo', label: 'Demo', ms3_src: 'demo-ms3.md', res_src: 'demo-res.md',
     tldr_ms3: 'MS3 summary, revised.', tldr_res: 'Resident summary.',
   }] }), 'utf8');
 
-  assert.notEqual(manifestForSlug(ms3, sources, null, changed), beforeMs3);
-  assert.equal(manifestForSlug(res, sources, null, changed), beforeRes);
+  const changedMs3Hash = blobSha(canonicalCotwRegistryEntry(ms3, changed));
+  const changedResHash = blobSha(canonicalCotwRegistryEntry(res, changed));
+  assert.notEqual(manifestForSlug(ms3, sources, null, changedMs3Hash), beforeMs3);
+  assert.equal(manifestForSlug(res, sources, null, changedResHash), beforeRes);
   assert.match(beforeMs3, /^cotw_registry [a-f0-9]{40}$/m);
-  assert.notEqual(cotwRegistryManifestValue(ms3, registry), cotwRegistryManifestValue(ms3, changed));
+  assert.notEqual(beforeMs3Hash, changedMs3Hash);
 });
 
 test('the governance strings are byte-identical across the two implementations', () => {
@@ -462,7 +464,7 @@ function jsClinicalManifest(root, shipped, topicMeta, slug) {
     sources[source] = clinicalSourceSha(source, fs.readFileSync(path.join(root, source)));
   }
   const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
-  return clinicalManifestForSlug(slug, sources, record, cotwRegistry);
+  return clinicalManifestForSlug(slug, sources, record, cotwRegistryHashForSlug(shipped, slug));
 }
 
 test('every shipped Markdown source normalises to identical clinical text in both twins', (t) => {

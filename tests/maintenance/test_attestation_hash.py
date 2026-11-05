@@ -26,6 +26,7 @@ from attestation_hash import (  # noqa: E402
     STALE_REASON,
     AttestationHashError,
     blob_sha,
+    canonical_cotw_registry_entry,
     canonical_topic_meta_record,
     clinical_digest,
     clinical_manifest_for_slug,
@@ -283,6 +284,10 @@ class CotwRegistryCoverageTest(unittest.TestCase):
 
     def _write_registry(self):
         self.registry_path.write_text(json.dumps(self.registry), encoding="utf-8")
+        for page in self.shipped["pages"]:
+            page["cotwRegistryHash"] = blob_sha(
+                canonical_cotw_registry_entry(page["slug"], self.registry)
+            )
 
     def test_per_audience_tldr_drift_reopens_only_the_rendered_case(self):
         ms3_hash = digest_from_tree(self.root, self.shipped, self.topic_meta, self.ms3_slug)

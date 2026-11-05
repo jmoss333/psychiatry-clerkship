@@ -116,7 +116,6 @@ def canonical_topic_meta_record(record: dict) -> bytes:
 
 # Case-of-the-Week pages render audience-specific metadata from this registry above the case
 # source. The source Markdown alone therefore cannot be the entire attested surface.
-COTW_REGISTRY_PATH = "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
 _COTW_SLUG = re.compile(r"^cotw_([0-9]{8})_(.+)_(ms3|res)\.md$")
 _COTW_DEFAULT_READ = {"ms3": 8, "res": 10}
 _COTW_SHELF_VOCAB = frozenset(
@@ -245,14 +244,33 @@ def canonical_cotw_registry_entry(slug: str, registry: bytes | dict) -> bytes | 
     )
 
 
-def cotw_registry_manifest_value(slug: str, registry: bytes | dict | None) -> str | None:
-    """The manifest value for a Case-of-the-Week's rendered registry projection."""
+def cotw_registry_manifest_value(slug: str, registry_hash: str | None) -> str | None:
+    """The derived-listing manifest value for a Case-of-the-Week projection.
+
+    ``shipped_pages.json`` is the one derived answer to what ships. Its Case-of-the-Week
+    entries carry this audience-specific projection hash, generated from the registry by
+    ``shipped_pages.py``. Consumers therefore never re-read a shipping producer.
+    """
     if not _COTW_SLUG.fullmatch(slug):
         return None
-    if registry is None:
-        raise AttestationHashError(f"{slug}: Case-of-the-Week registry is missing")
-    canonical = canonical_cotw_registry_entry(slug, registry)
-    return blob_sha(canonical)
+    if not isinstance(registry_hash, str) or not HEX40.fullmatch(registry_hash):
+        raise AttestationHashError(f"{slug}: Case-of-the-Week registry projection is missing")
+    return registry_hash
+
+
+def cotw_registry_hash_for_slug(shipped_doc: dict, slug: str) -> str | None:
+    """Read one Case-of-the-Week projection hash from the derived shipped listing."""
+    if not _COTW_SLUG.fullmatch(slug):
+        return None
+    pages = shipped_doc.get("pages") if isinstance(shipped_doc, dict) else None
+    values = {
+        page.get("cotwRegistryHash")
+        for page in pages or []
+        if isinstance(page, dict) and page.get("slug") == slug
+    }
+    if len(values) != 1:
+        raise AttestationHashError(f"{slug}: no unique Case-of-the-Week registry projection")
+    return cotw_registry_manifest_value(slug, values.pop())
 
 
 # The one registry that is both page text (#783 lists it in the question tools'
@@ -326,7 +344,7 @@ def manifest_for_slug(
     slug: str,
     sources: dict[str, bytes],
     record: dict | None,
-    cotw_registry: bytes | dict | None = None,
+    cotw_registry_hash: str | None = None,
 ) -> str:
     """The manifest text for one slug: `path <blob sha>` per source, then `topic_meta`.
 
@@ -360,7 +378,7 @@ def manifest_for_slug(
     lines = [f"{path} {source_blob_sha(path, sources[path])}" for path in sorted(sources)]
     if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_topic_meta_record(record))}")
-    cotw_value = cotw_registry_manifest_value(slug, cotw_registry)
+    cotw_value = cotw_registry_manifest_value(slug, cotw_registry_hash)
     if cotw_value is not None:
         lines.append(f"cotw_registry {cotw_value}")
     return "\n".join(lines) + "\n"
@@ -370,10 +388,10 @@ def digest(
     slug: str,
     sources: dict[str, bytes],
     record: dict | None,
-    cotw_registry: bytes | dict | None = None,
+    cotw_registry_hash: str | None = None,
 ) -> str:
     """The slug's `contentHash`: the blob SHA of its manifest."""
-    return blob_sha(manifest_for_slug(slug, sources, record, cotw_registry).encode("utf-8"))
+    return blob_sha(manifest_for_slug(slug, sources, record, cotw_registry_hash).encode("utf-8"))
 
 
 # --------------------------------------------------------------------------------------
@@ -570,7 +588,7 @@ def clinical_manifest_for_slug(
     slug: str,
     sources: dict[str, bytes],
     record: dict | None,
-    cotw_registry: bytes | dict | None = None,
+    cotw_registry_hash: str | None = None,
 ) -> str:
     """The clinical manifest: a version line, then v1's shape over the clinical values.
 
@@ -585,7 +603,7 @@ def clinical_manifest_for_slug(
     lines += [f"{path} {clinical_source_sha(path, sources[path])}" for path in sorted(sources)]
     if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_clinical_record(record))}")
-    cotw_value = cotw_registry_manifest_value(slug, cotw_registry)
+    cotw_value = cotw_registry_manifest_value(slug, cotw_registry_hash)
     if cotw_value is not None:
         lines.append(f"cotw_registry {cotw_value}")
     return "\n".join(lines) + "\n"
@@ -595,24 +613,17 @@ def clinical_digest(
     slug: str,
     sources: dict[str, bytes],
     record: dict | None,
-    cotw_registry: bytes | dict | None = None,
+    cotw_registry_hash: str | None = None,
 ) -> str:
     """The slug's `clinicalHash`: the blob SHA of its clinical manifest."""
     return blob_sha(
-        clinical_manifest_for_slug(slug, sources, record, cotw_registry).encode("utf-8")
+        clinical_manifest_for_slug(slug, sources, record, cotw_registry_hash).encode("utf-8")
     )
 
 
 def _read_sources(root: Path, paths: list[str]) -> dict[str, bytes]:
     """Working-tree bytes for each path; raises FileNotFoundError on the first absentee."""
     return {path: (Path(root) / path).read_bytes() for path in paths}
-
-
-def _read_cotw_registry(root: Path, slug: str) -> bytes | None:
-    """Registry bytes only for a Case-of-the-Week slug; other pages have no such input."""
-    if not _COTW_SLUG.fullmatch(slug):
-        return None
-    return (root / COTW_REGISTRY_PATH).read_bytes()
 
 
 def digest_from_tree(root, shipped_doc: dict, topic_meta: dict, slug: str) -> str:
@@ -625,7 +636,7 @@ def digest_from_tree(root, shipped_doc: dict, topic_meta: dict, slug: str) -> st
     """
     root = Path(root)
     sources = _read_sources(root, sources_for_slug(shipped_doc, slug))
-    return digest(slug, sources, topic_meta.get(slug), _read_cotw_registry(root, slug))
+    return digest(slug, sources, topic_meta.get(slug), cotw_registry_hash_for_slug(shipped_doc, slug))
 
 
 def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) -> dict:
@@ -656,8 +667,6 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
         "legacy": [],
         "unshipped_unlisted": [],
     }
-    cotw_registry = None
-    cotw_registry_loaded = False
     for slug in sorted(ledger):
         entry = ledger[slug]
         if not isinstance(entry, dict):
@@ -697,17 +706,15 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
             continue
 
         sources = _read_sources(root, paths)
-        if _COTW_SLUG.fullmatch(slug) and not cotw_registry_loaded:
-            try:
-                cotw_registry = _read_cotw_registry(root, slug)
-            except FileNotFoundError:
-                report["unresolvable"][slug] = [COTW_REGISTRY_PATH]
-                continue
-            cotw_registry_loaded = True
-        manifest = manifest_for_slug(slug, sources, topic_meta.get(slug), cotw_registry)
+        try:
+            cotw_registry_hash = cotw_registry_hash_for_slug(shipped_doc, slug)
+        except AttestationHashError:
+            report["unresolvable"][slug] = ["derived Case-of-the-Week registry projection"]
+            continue
+        manifest = manifest_for_slug(slug, sources, topic_meta.get(slug), cotw_registry_hash)
         actual = blob_sha(manifest.encode("utf-8"))
         clinical_actual = (
-            clinical_digest(slug, sources, topic_meta.get(slug), cotw_registry)
+            clinical_digest(slug, sources, topic_meta.get(slug), cotw_registry_hash)
             if clinical_stored is not None and actual != stored else None
         )
         if actual == stored:
