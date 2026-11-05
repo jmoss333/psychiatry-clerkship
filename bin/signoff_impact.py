@@ -54,10 +54,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from attestation_hash import (  # noqa: E402
-    COTW_REGISTRY_PATH,
     HEX40,
     AttestationHashError,
     clinical_digest,
+    cotw_registry_hash_for_slug,
     digest,
     sources_for_slug,
 )
@@ -152,16 +152,14 @@ def binding(tree, shipped, topic_meta, slug, row):
     sources = {path: tree.blob(path) for path in paths}
     if not paths or any(data is None for data in sources.values()):
         return "removed"
-    cotw_registry = tree.blob(COTW_REGISTRY_PATH) if slug.startswith("cotw_") else None
-    if slug.startswith("cotw_") and cotw_registry is None:
-        return "removed"
     record = topic_meta.get(slug)
     try:
-        if digest(slug, sources, record, cotw_registry) == stored:
+        cotw_registry_hash = cotw_registry_hash_for_slug(shipped, slug)
+        if digest(slug, sources, record, cotw_registry_hash) == stored:
             return "bound"
         clinical = row.get("clinicalHash")
         if isinstance(clinical, str) and HEX40.fullmatch(clinical) \
-                and clinical_digest(slug, sources, record, cotw_registry) == clinical:
+                and clinical_digest(slug, sources, record, cotw_registry_hash) == clinical:
             return "clinical"
     except AttestationHashError:
         return "removed"
@@ -173,7 +171,7 @@ def _touched(slug, base_in, head_in, changed):
     (b_ledger, b_shipped, b_meta), (h_ledger, h_shipped, h_meta) = base_in, head_in
     b_paths, h_paths = sources_for_slug(b_shipped, slug), sources_for_slug(h_shipped, slug)
     return (b_paths != h_paths or any(path in changed for path in set(b_paths) | set(h_paths))
-            or (slug.startswith("cotw_") and COTW_REGISTRY_PATH in changed)
+            or cotw_registry_hash_for_slug(b_shipped, slug) != cotw_registry_hash_for_slug(h_shipped, slug)
             or b_meta.get(slug) != h_meta.get(slug) or b_ledger.get(slug) != h_ledger.get(slug))
 
 

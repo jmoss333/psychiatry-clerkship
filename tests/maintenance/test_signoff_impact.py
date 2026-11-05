@@ -21,7 +21,9 @@ sys.path.insert(0, str(ROOT / "bin"))
 from _git_env import scrub_inherited_git_env  # noqa: E402
 scrub_inherited_git_env()
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
-from attestation_hash import COTW_REGISTRY_PATH, clinical_digest, digest  # noqa: E402
+from attestation_hash import (  # noqa: E402
+    blob_sha, canonical_cotw_registry_entry, clinical_digest, digest,
+)
 from maintenance.validate_scheduled_workflows import PINNED_ACTIONS  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("signoff_impact", ROOT / "bin" / "signoff_impact.py")
@@ -32,6 +34,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "pr-signoff-impact.yml"
 PAGE = "01_Core/page.md"
 PAGE_TEXT = "# Agitation\n\nOffer oral medication first.\n\nKey paper: doi:10.1000/one\n"
 OTHER = "01_Core/other.md"
+COTW_REGISTRY_PATH = "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
 
 
 def _git(root, *args):
@@ -168,21 +171,28 @@ class ClassificationTests(unittest.TestCase):
         repo.write(resident_source, "# Resident case\n")
         repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
         repo.shipped["pages"].extend([
-            {"slug": ms3, "source": ms3_source},
-            {"slug": resident, "source": resident_source},
+            {"slug": ms3, "source": ms3_source,
+             "cotwRegistryHash": blob_sha(canonical_cotw_registry_entry(ms3, registry))},
+            {"slug": resident, "source": resident_source,
+             "cotwRegistryHash": blob_sha(canonical_cotw_registry_entry(resident, registry))},
         ])
-        registry_bytes = json.dumps(registry).encode()
         for slug, source in ((ms3, ms3_source), (resident, resident_source)):
             sources = {source: (repo.root / source).read_bytes()}
             repo.ledger[slug] = {
                 "status": "reviewed", "by": "Joshua Moss, MD", "at": "2026-09-26",
-                "contentHash": digest(slug, sources, None, registry_bytes),
+                "contentHash": digest(slug, sources, None, next(
+                    page["cotwRegistryHash"] for page in repo.shipped["pages"] if page["slug"] == slug
+                )),
             }
         repo.save_registries()
         repo.base = repo.commit("cotw signed")
 
         registry["weeks"][0]["tldr_ms3"] = "MS3 summary, revised."
         repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        for page in repo.shipped["pages"]:
+            if page["slug"] in {ms3, resident}:
+                page["cotwRegistryHash"] = blob_sha(canonical_cotw_registry_entry(page["slug"], registry))
+        repo.save_registries()
         result = repo.impact(repo.commit("revise ms3 summary"))
         self.assertEqual([row["slug"] for row in result["reopened"]], [ms3])
 

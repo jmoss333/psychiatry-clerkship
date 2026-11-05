@@ -167,9 +167,8 @@ export function canonicalTopicMetaRecord(record) {
   return Buffer.from(serialize(body), 'utf8');
 }
 
-// Case-of-the-Week pages render audience-specific metadata from this registry above the case
-// source. Python twin: COTW_REGISTRY_PATH / canonical_cotw_registry_entry.
-export const COTW_REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
+// Case-of-the-Week pages render audience-specific metadata above the case source. The raw
+// projection is generated into shipped_pages.json; consumers never read the producer directly.
 const COTW_SLUG = /^cotw_([0-9]{8})_(.+)_(ms3|res)\.md$/;
 const COTW_DEFAULT_READ = { ms3: 8, res: 10 };
 const COTW_SHELF_VOCAB = new Set([
@@ -280,12 +279,24 @@ export function canonicalCotwRegistryEntry(slug, registry) {
 }
 
 /** The manifest value for a Case-of-the-Week's rendered registry projection. */
-export function cotwRegistryManifestValue(slug, registry) {
+export function cotwRegistryManifestValue(slug, registryHash) {
   if (!COTW_SLUG.test(slug)) return null;
-  if (registry === null || registry === undefined) {
-    throw new AttestationHashError(`${slug}: Case-of-the-Week registry is missing`);
+  if (typeof registryHash !== 'string' || !/^[a-f0-9]{40}$/.test(registryHash)) {
+    throw new AttestationHashError(`${slug}: Case-of-the-Week registry projection is missing`);
   }
-  return blobSha(canonicalCotwRegistryEntry(slug, registry));
+  return registryHash;
+}
+
+export function cotwRegistryHashForSlug(shippedDoc, slug) {
+  if (!COTW_SLUG.test(slug)) return null;
+  const pages = shippedDoc && typeof shippedDoc === 'object' ? shippedDoc.pages : null;
+  const values = new Set((Array.isArray(pages) ? pages : [])
+    .filter(page => page && typeof page === 'object' && page.slug === slug)
+    .map(page => page.cotwRegistryHash));
+  if (values.size !== 1) {
+    throw new AttestationHashError(`${slug}: no unique Case-of-the-Week registry projection`);
+  }
+  return cotwRegistryManifestValue(slug, [...values][0]);
 }
 
 /**
@@ -322,7 +333,7 @@ export function sourcesForSlug(shippedDoc, slug) {
  * A `record` that is not a mapping counts as NO record, decided here so every caller
  * inherits it, exactly as the Python module decides it once in `manifest_for_slug`.
  */
-export function manifestForSlug(slug, sources, record, cotwRegistry = null) {
+export function manifestForSlug(slug, sources, record, cotwRegistryHash = null) {
   const paths = Object.keys(sources || {}).sort(compareCodePoints);
   if (!paths.length) {
     throw new AttestationHashError(
@@ -333,7 +344,7 @@ export function manifestForSlug(slug, sources, record, cotwRegistry = null) {
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     lines.push(`topic_meta ${blobSha(canonicalTopicMetaRecord(record))}`);
   }
-  const cotwValue = cotwRegistryManifestValue(slug, cotwRegistry);
+  const cotwValue = cotwRegistryManifestValue(slug, cotwRegistryHash);
   if (cotwValue !== null) lines.push(`cotw_registry ${cotwValue}`);
   return `${lines.join('\n')}\n`;
 }
@@ -491,7 +502,7 @@ export function canonicalClinicalRecord(record) {
  * maps each path to its CLINICAL value (clinicalSourceSha; for a non-Markdown source that is
  * the same value v1 carries, so the console may pass its tree sha straight through).
  */
-export function clinicalManifestForSlug(slug, sources, record, cotwRegistry = null) {
+export function clinicalManifestForSlug(slug, sources, record, cotwRegistryHash = null) {
   const paths = Object.keys(sources || {}).sort(compareCodePoints);
   if (!paths.length) {
     throw new AttestationHashError(
@@ -502,7 +513,7 @@ export function clinicalManifestForSlug(slug, sources, record, cotwRegistry = nu
   if (record !== null && typeof record === 'object' && !Array.isArray(record)) {
     lines.push(`topic_meta ${blobSha(canonicalClinicalRecord(record))}`);
   }
-  const cotwValue = cotwRegistryManifestValue(slug, cotwRegistry);
+  const cotwValue = cotwRegistryManifestValue(slug, cotwRegistryHash);
   if (cotwValue !== null) lines.push(`cotw_registry ${cotwValue}`);
   return `${lines.join('\n')}\n`;
 }

@@ -79,15 +79,12 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
-function expectedCotwRegistryValue(files, slug) {
+function expectedCotwRegistryValue(week, slug) {
   const match = /^cotw_([0-9]{8})_(.+)_(ms3|res)\.md$/.exec(slug);
   if (!match) return null;
   const [, date, topic, audience] = match;
-  const weeks = files[COTW_REGISTRY_PATH]?.json?.weeks;
-  assert.ok(Array.isArray(weeks), 'a Case-of-the-Week digest must have its registry');
-  const editions = weeks.filter(week => week?.date?.replaceAll('-', '') === date && week.topic === topic);
-  assert.equal(editions.length, 1, 'a Case-of-the-Week digest must select one edition');
-  const week = editions[0];
+  assert.equal(week?.date?.replaceAll('-', ''), date);
+  assert.equal(week?.topic, topic);
   const tldr = typeof week[`tldr_${audience}`] === 'string' && week[`tldr_${audience}`].trim()
     ? week[`tldr_${audience}`]
     : week.tldr;
@@ -115,7 +112,7 @@ function expectedDigest(files, sources, slug) {
     delete body.facultyReview;
     lines.push(`topic_meta ${blobShaOf(canonicalJson(body))}`);
   }
-  const cotwValue = expectedCotwRegistryValue(files, slug);
+  const cotwValue = page.cotwRegistryHash;
   if (cotwValue) lines.push(`cotw_registry ${cotwValue}`);
   return blobShaOf(`${lines.join('\n')}\n`);
 }
@@ -137,6 +134,7 @@ function expectedClinicalDigest(files, sources, slug) {
     delete body.evidenceIds;
     lines.push(`topic_meta ${blobShaOf(canonicalJson(body))}`);
   }
+  if (page.cotwRegistryHash) lines.push(`cotw_registry ${page.cotwRegistryHash}`);
   return blobShaOf(`${lines.join('\n')}\n`);
 }
 
@@ -679,14 +677,18 @@ const COTW_WEEK = {
 // The two rows shipped_pages.py derives from one registry week.
 function cotwPages(week = COTW_WEEK) {
   const stamp = week.date.replace(/-/g, '');
-  return [['ms3', 'MS3', 'ms3_src'], ['res', 'Resident', 'res_src']].map(([level, label, key]) => ({
-    slug: `cotw_${stamp}_${week.topic}_${level}.md`,
+  return [['ms3', 'MS3', 'ms3_src'], ['res', 'Resident', 'res_src']].map(([level, label, key]) => {
+    const slug = `cotw_${stamp}_${week.topic}_${level}.md`;
+    return {
+    slug,
     kind: 'page',
     sites: [level],
     title: `${week.label} — ${label}`,
     source: `08_Cases_and_Simulation/case-of-the-week/${week[key]}`,
     producer: 'cotw_registry',
-  }));
+    cotwRegistryHash: expectedCotwRegistryValue(week, slug),
+  };
+  });
 }
 
 // Every source a Case-of-the-Week week ships from, so its slugs can be bound to page text
@@ -3013,8 +3015,8 @@ test('a Case-of-the-Week summary edit reopens only the audience that renders it'
     sha: blobShaOf(initialBytes),
   };
   files[SHIPPED_PAGES_PATH].json.pages.push(
-    { slug: ms3, kind: 'page', sites: ['ms3'], title: 'Demo — MS3', source: 'case-ms3.md', producer: 'cotw_registry' },
-    { slug: res, kind: 'page', sites: ['res'], title: 'Demo — Resident', source: 'case-res.md', producer: 'cotw_registry' },
+    { slug: ms3, kind: 'page', sites: ['ms3'], title: 'Demo — MS3', source: 'case-ms3.md', producer: 'cotw_registry', cotwRegistryHash: expectedCotwRegistryValue(initialRegistry.weeks[0], ms3) },
+    { slug: res, kind: 'page', sites: ['res'], title: 'Demo — Resident', source: 'case-res.md', producer: 'cotw_registry', cotwRegistryHash: expectedCotwRegistryValue(initialRegistry.weeks[0], res) },
   );
   const signedAgainst = {
     ...defaultSources(),
@@ -3037,6 +3039,11 @@ test('a Case-of-the-Week summary edit reopens only the audience that renders it'
     rawBody: revisedBytes.toString('utf8'),
     sha: blobShaOf(revisedBytes),
   };
+  for (const page of files[SHIPPED_PAGES_PATH].json.pages) {
+    if (page.slug === ms3 || page.slug === res) {
+      page.cotwRegistryHash = expectedCotwRegistryValue(revisedRegistry.weeks[0], page.slug);
+    }
+  }
   const mock = createGithubMock({
     files,
     sources: { ...signedAgainst, [COTW_REGISTRY_PATH]: revisedBytes },
@@ -3049,8 +3056,8 @@ test('a Case-of-the-Week summary edit reopens only the audience that renders it'
   assert.equal(bySlug[ms3].stale, true);
   assert.equal(bySlug[res].status, 'reviewed');
   assert.equal(Object.hasOwn(bySlug[res], 'stale'), false);
-  assert.ok(mock.calls.some(call => call.path === COTW_REGISTRY_PATH),
-    'the console must read the same registry projection it signs');
+  assert.equal(mock.calls.some(call => call.path === COTW_REGISTRY_PATH), false,
+    'the console reads the derived shipped projection, never a shipping producer');
 });
 
 test('reopening preserves the stored hash rather than rebinding it', async () => {
