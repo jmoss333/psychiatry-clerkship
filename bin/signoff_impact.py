@@ -170,8 +170,17 @@ def _touched(slug, base_in, head_in, changed):
     """Could this change have moved the row's state? Only then is it recomputed."""
     (b_ledger, b_shipped, b_meta), (h_ledger, h_shipped, h_meta) = base_in, head_in
     b_paths, h_paths = sources_for_slug(b_shipped, slug), sources_for_slug(h_shipped, slug)
+    def projection_or_missing(shipped):
+        # A base predating CotW projection hashes cannot establish a bound historical
+        # signature. Still compare it as absent: adopting the coverage is relevant to
+        # that row, and binding() will count it as already awaiting rather than making
+        # this advisory report fail.
+        try:
+            return cotw_registry_hash_for_slug(shipped, slug)
+        except AttestationHashError:
+            return None
     return (b_paths != h_paths or any(path in changed for path in set(b_paths) | set(h_paths))
-            or cotw_registry_hash_for_slug(b_shipped, slug) != cotw_registry_hash_for_slug(h_shipped, slug)
+            or projection_or_missing(b_shipped) != projection_or_missing(h_shipped)
             or b_meta.get(slug) != h_meta.get(slug) or b_ledger.get(slug) != h_ledger.get(slug))
 
 

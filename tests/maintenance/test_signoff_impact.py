@@ -196,6 +196,35 @@ class ClassificationTests(unittest.TestCase):
         result = repo.impact(repo.commit("revise ms3 summary"))
         self.assertEqual([row["slug"] for row in result["reopened"]], [ms3])
 
+    def test_a_pre_projection_cotw_listing_is_already_awaiting_not_uncheckable(self):
+        repo = Repo(self)
+        slug = "cotw_20260105_demo_ms3.md"
+        source = "08_Cases_and_Simulation/case-of-the-week/demo-ms3.md"
+        registry = {"weeks": [{
+            "date": "2026-01-05", "topic": "demo", "label": "Demo",
+            "ms3_src": "demo-ms3.md", "res_src": "demo-res.md",
+            "tldr_ms3": "MS3 summary.", "tldr_res": "Resident summary.",
+        }]}
+        repo.write(source, "# MS3 case\n")
+        repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        repo.shipped["pages"].append({"slug": slug, "source": source})
+        repo.ledger[slug] = {
+            "status": "reviewed", "by": "Joshua Moss, MD", "at": "2026-09-26",
+            # Historical CotW signatures predate the derived registry projection.
+            "contentHash": blob_sha(f"{source} {blob_sha((repo.root / source).read_bytes())}\n".encode()),
+        }
+        repo.save_registries()
+        repo.base = repo.commit("cotw signed before derived projections")
+
+        repo.shipped["pages"][-1]["cotwRegistryHash"] = blob_sha(
+            canonical_cotw_registry_entry(slug, registry)
+        )
+        repo.save_registries()
+        result = repo.impact(repo.commit("adopt derived projection"))
+        self.assertEqual(result["reopened"], [])
+        self.assertEqual(result["examined"], 1)
+        self.assertEqual(result["alreadyAwaiting"], 1)
+
     def test_an_unreadable_side_is_could_not_check_never_reopens_nothing(self):
         repo = Repo(self)
         (repo.root / impact_mod.LEDGER_REL).unlink()
