@@ -240,8 +240,11 @@ function enumeratePaths(tree) {
 const scriptPart = (html, part) => {
   const m = new RegExp(`<dt>${part}</dt><dd>(.*?)</dd>`).exec(html);
   if (!m) return null;
-  return m[1].replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").replace(/&quot;/g, '"')
-    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  // Unwrap only the one element fd_tree.js puts in a script part (the blank mark), then undo
+  // fdEsc. Exact-string removal, not a tag-stripping regex: this is a comparison, not a sanitizer.
+  return m[1].split('<mark class="fd-script__blank">').join('').split('</mark>').join('')
+    .replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
 };
 
 test('every path of every real tree replays to an action whose own escalation renders', () => {
