@@ -1,6 +1,7 @@
 // Safety decision trees (2026-10-10 safety-drawer spec §4.1-4.4): fd_tree.js renders a tree and
 // its escalation script from topic_meta.json's safetyTree and owns no clinical text.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -174,6 +175,169 @@ test('no real tree string is copied into fd_tree.js', () => {
       assert.ok(!treeSrc.includes(s), `${ref}: "${s}" must live in topic_meta.json only`);
     }
   }
+});
+
+// ---------------------------------------------------------------------------------------------
+// Script variants and exhaustive path enumeration (2026-11-04, Codex P2 on #1131: the passive
+// branch of pg_suicide reached the shared "soon" script, whose Assessment line reports "no plan,
+// intent, preparation or acute risk factor" although that branch never asks about plan or intent).
+
+const variantTree = () => {
+  const t = clone();
+  t.scripts['soon-v'] = { ...SCRIPT, label: 'See today, variant', assessment: 'Variant A.' };
+  t.nodes[3].script = 'soon-v';
+  return t;
+};
+
+test('an action that names a variant opens that variant for its own urgency only', () => {
+  const t = variantTree();
+  assert.equal(F.fdTreeValid(t), true);
+  const soon = F.fdTreeView(t, { path: ['q1.1', 'q2.1'], escalate: 'soon' }, {});
+  assert.match(soon, /<p class="fd-script__label">See today, variant<\/p>/);
+  assert.match(soon, /<dd>Variant A\.<\/dd>/);
+  assert.match(soon, /data-fd-escalate="now">Need them sooner\? Use the come-now script</,
+    'a soon variant still offers the come-now script');
+  const now = F.fdTreeView(t, { path: ['q1.1', 'q2.1'], escalate: 'now' }, {});
+  assert.match(now, /<p class="fd-script__label">Come now<\/p>/, 'come-now from a soon variant is the plain now');
+  const elsewhere = F.fdTreeView(t, { path: ['q1.1'], escalate: 'soon' }, {});
+  assert.match(elsewhere, /<p class="fd-script__label">See today<\/p>/, 'a question screen never opens a variant');
+  const action = F.fdTreeView(t, { path: ['q1.1', 'q2.1'] }, {});
+  assert.match(action, /data-fd-escalate="soon">Escalate to attending/, 'the stored urgency is still now|soon');
+});
+
+test('fdTreeValid fails closed on each broken variant rule', () => {
+  const breaks = {
+    'variant of the other urgency': (t) => { t.scripts['now-v'] = SCRIPT; t.nodes[3].script = 'now-v'; },
+    'names a missing variant': (t) => { t.nodes[3].script = 'soon-missing'; },
+    'names a plain script': (t) => { t.nodes[3].script = 'soon'; },
+    'malformed variant key': (t) => { t.scripts['Soon-V'] = SCRIPT; },
+    'unknown script key': (t) => { t.scripts.later = SCRIPT; },
+    'variant missing a part': (t) => { delete t.scripts['soon-v'].readBack; },
+    'script not a string': (t) => { t.nodes[3].script = 7; },
+  };
+  for (const [name, mutate] of Object.entries(breaks)) {
+    const t = variantTree();
+    mutate(t);
+    assert.equal(F.fdTreeValid(t), false, name);
+  }
+});
+
+/** Every root-to-action path of a tree, each as the view.path the UI would build. */
+function enumeratePaths(tree) {
+  const byId = Object.fromEntries(tree.nodes.map((n) => [n.id, n]));
+  const out = [];
+  const walk = (id, path, seen) => {
+    const n = byId[id];
+    assert.ok(n, `node ${id} exists`);
+    assert.ok(!seen.has(id), `no cycle through ${id}`);
+    if (!n.options) { out.push({ path, terminal: n }); return; }
+    n.options.forEach((o, i) => walk(o.next, [...path, `${id}.${i}`], new Set([...seen, id])));
+  };
+  walk(tree.start, [], new Set());
+  return out;
+}
+
+const scriptPart = (html, part) => {
+  const m = new RegExp(`<dt>${part}</dt><dd>(.*?)</dd>`).exec(html);
+  if (!m) return null;
+  return m[1].replace(/<[^>]+>/g, '').replace(/&#39;/g, "'").replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+};
+
+test('every path of every real tree replays to an action whose own escalation renders', () => {
+  for (const [ref, meta] of REAL_TREES) {
+    const tree = meta.safetyTree;
+    const paths = enumeratePaths(tree);
+    const reached = new Set(paths.map((p) => p.terminal.id));
+    const actions = tree.nodes.filter((n) => !n.options).map((n) => n.id);
+    assert.deepEqual([...reached].sort(), actions.sort(), `${ref}: every action is reachable`);
+    for (const { path, terminal } of paths) {
+      const where = `${ref} ${path.join(' > ')}`;
+      const walk = F.fdTreeWalk(tree, path);
+      assert.equal(walk.ok, true, where);
+      assert.equal(walk.node.id, terminal.id, where);
+      assert.ok(path.length <= 5, `${where}: within the question budget`);
+      const screen = F.fdTreeView(tree, { path }, {});
+      assert.match(screen, new RegExp(`data-fd-escalate="${terminal.escalate}">Escalate to attending`), where);
+      const script = F.fdTreeView(tree, { path, escalate: terminal.escalate }, {});
+      const expected = tree.scripts[terminal.script || terminal.escalate] || tree.scripts.now;
+      assert.equal(scriptPart(script, 'Assessment'), expected.assessment, where);
+    }
+  }
+});
+
+/*
+ * pg_suicide: does the Assessment line a learner reads at the end of each path claim only what
+ * that path asked? The model below is the test's reading of the tree, pinned to the exact text it
+ * read (sha256), so any wording change fails here and must be re-modelled, not waved through.
+ *
+ *   OPTION_FACTS  what each answer establishes: n = asked and absent, p = asked and present.
+ *   SCRIPT_CLAIMS for each script, the alternatives its Assessment blank offers; each lists the
+ *                 findings it reports as absent. A path is accurate when at least one
+ *                 alternative's absences were all asked-and-absent on that path, and none of
+ *                 them was found present.
+ *
+ * PENDING_FACULTY_WORDING holds terminals known to be inaccurate whose fix is clinical wording
+ * (Josh's decision; see the O2 findings doc). The set must equal the inaccurate set exactly: a
+ * new inaccuracy fails, and so does a fixed one still listed here.
+ */
+const OPTION_FACTS = {
+  'danger.0': { p: ['immediate-danger'] },
+  'danger.1': { n: ['immediate-danger'] },
+  'ask.0': { p: ['active'] },
+  'ask.1': { p: ['passive'], n: ['active'] },
+  'ask.2': { n: ['active', 'passive'] },
+  'plan.0': { p: ['plan-intent-or-preparation'] },
+  'plan.1': { n: ['plan', 'intent', 'preparation'] },
+  'acute.0': { p: ['acute-or-recent-history'] },
+  'acute.1': { n: ['acute', 'attempt-past-year', 'discharge-past-3-months'] },
+  'passive.0': { p: ['preparation'] },
+  'passive.1': { p: ['acute-or-recent-history'] },
+  'passive.2': { n: ['preparation', 'acute', 'attempt-past-year', 'discharge-past-3-months'] },
+  'contradict.0': { p: ['contradiction'] },
+  'contradict.1': { n: ['contradiction'] },
+};
+const SCRIPT_CLAIMS = {
+  // "What I know so far: [plan, intent, preparation, an acute risk factor — or: I haven't asked yet]"
+  // offers "I haven't asked yet", which claims nothing.
+  now: { sha: '03eff40d8cc69e1d90bee788083df1ce27eeb68d1f60bed34cf5db500ef18551', alternatives: [[]] },
+  // "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]"
+  soon: { sha: '3e76302b3c7cd15ece082d292a9843b26f83c0ca2e038949ba36b201bf0c3934', alternatives: [['plan', 'intent', 'preparation', 'acute'], ['active', 'passive']] },
+};
+const PENDING_FACULTY_WORDING = new Set(['passive-only']);
+
+const sha = (s) => createHash('sha256').update(s).digest('hex');
+
+test('pg_suicide: each path\'s handoff Assessment claims only what that path asked', () => {
+  const meta = REAL_META['pg_suicide.md'];
+  assert.ok(meta && meta.safetyTree, 'pg_suicide.md has a safetyTree');
+  const tree = meta.safetyTree;
+
+  // The model covers every answer and every script; nothing unmodelled slips through.
+  const options = tree.nodes.filter((n) => n.options).flatMap((n) => n.options.map((_, i) => `${n.id}.${i}`));
+  assert.deepEqual(options.sort(), Object.keys(OPTION_FACTS).sort(), 'OPTION_FACTS covers exactly the tree\'s answers');
+  assert.deepEqual(Object.keys(tree.scripts).sort(), Object.keys(SCRIPT_CLAIMS).sort(),
+    'SCRIPT_CLAIMS covers exactly the tree\'s scripts — model a new variant before it ships');
+  for (const [key, claim] of Object.entries(SCRIPT_CLAIMS)) {
+    assert.equal(sha(tree.scripts[key].assessment), claim.sha,
+      `scripts.${key}.assessment changed; re-model its claims`);
+  }
+
+  const inaccurate = new Map();
+  const paths = enumeratePaths(tree);
+  // 9 on 2026-11-04: imminent; high via plan; high-acute and thoughts via acute; high,
+  // high-acute and passive-only via passive; contradicted and denies via contradict.
+  assert.equal(paths.length, 9, 'exhaustive enumeration: a changed tree must be re-modelled here');
+  for (const { path, terminal } of paths) {
+    const absent = new Set(path.flatMap((s) => OPTION_FACTS[s].n || []));
+    const present = new Set(path.flatMap((s) => OPTION_FACTS[s].p || []));
+    const key = terminal.script || terminal.escalate;
+    const ok = SCRIPT_CLAIMS[key].alternatives.some(
+      (alt) => alt.every((f) => absent.has(f) && !present.has(f)));
+    if (!ok) inaccurate.set(terminal.id, `${path.join(' > ')} -> scripts.${key}`);
+  }
+  assert.deepEqual([...inaccurate.keys()].sort(), [...PENDING_FACULTY_WORDING].sort(),
+    `inaccurate handoffs: ${JSON.stringify(Object.fromEntries(inaccurate))}`);
 });
 
 test('fd_tree.js is pure ES5 and names no clinical or audience token', () => {

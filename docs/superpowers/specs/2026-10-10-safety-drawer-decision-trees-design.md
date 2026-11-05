@@ -139,6 +139,19 @@ Each rule gets a test that breaks it and watches it fail.
 9. No dose literals (the hooks' `DOSE_RE`: `\b\d+(?:\.\d+)?\s?(?:mg|mcg|mL|mg/kg)\b`), no phone
    or crisis numbers (crisis contacts live only in `crisis_resources.json`), no audience tokens
    (`MS3`, `student`, `resident`, `clerkship`, `shelf`, site names).
+10. **Amendment 2026-11-04 (Codex P2 on #1131): script variants.** Besides `now` and `soon`,
+    `scripts` may hold named variants `now-<name>` / `soon-<name>` (`<name>` =
+    `[a-z][a-z0-9-]{0,15}`), each checked like any script. An action may name one with an optional
+    `script` key; its urgency prefix must equal the action's `escalate`, which stays `now`|`soon`.
+    The variant renders only while that action is on screen and its own urgency is asked for;
+    question screens and the come-now link from a soon script still open the plain scripts, and
+    escalation state is never a variant key. Why: the passive-only branch of `pg_suicide` reached
+    the shared `soon` script, whose Assessment reports "no plan, intent, preparation or acute risk
+    factor" although that branch never asks about plan or intent. `tests/fd-tree.test.mjs`
+    enumerates every path of every real tree and, for `pg_suicide`, checks each path's Assessment
+    against what that path asked (pinned by sha256; known gaps listed in
+    `PENDING_FACULTY_WORDING`). The variant's wording is a faculty decision and ships in its own
+    content PR, which re-attests `pg_suicide.md`.
 
 ### 4.4 Rendering and wiring
 

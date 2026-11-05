@@ -18,7 +18,16 @@
    Escalation never waits for the end of a tree. "Escalate to attending" is on every tree
    screen: on a question it opens the "now" script (when in doubt, escalate now); on an action it
    opens that action's own script. A "soon" script offers the "now" script; nothing offers the
-   reverse. */
+   reverse.
+
+   Script variants (2026-11-04, Codex P2 on #1131). One shared script per urgency made every
+   action that escalates "soon" read the same Assessment line, so a branch that never asked about
+   plan or intent still had the learner report them as absent. An action may now name its own
+   script with "script": a key of tree.scripts of the form "<urgency>-<name>" ("soon-passive"),
+   whose urgency matches the action's "escalate". The variant is used only while that action is
+   on screen and its own urgency is asked for; everywhere else -- every question screen, the
+   come-now link from a soon script -- the plain "now"/"soon" script still opens. Escalation state
+   stays 'now'|'soon': the variant is chosen from the current node, never stored. */
 
 function fdTreeNodes(tree){
   var list=tree&&tree.nodes, out={};
@@ -34,6 +43,14 @@ function fdTreeNodes(tree){
 var FD_TREE_ID_RE=/^[a-z][a-z0-9-]{0,23}$/;
 var FD_TREE_STEP_RE=/^([a-z][a-z0-9-]{0,23})\.([0-3])$/;
 var FD_TREE_MAX_QUESTIONS=5;
+/* "now", "soon", or a named variant of either. Mirrors TREE_SCRIPT_KEY_RE in
+   validate_topic_meta.py and the scripts patternProperties in topic_meta.schema.json. */
+var FD_TREE_SCRIPT_KEY_RE=/^(now|soon)(?:-[a-z][a-z0-9-]{0,15})?$/;
+
+function fdTreeScriptTier(key){
+  var m=FD_TREE_SCRIPT_KEY_RE.exec(String(key));
+  return m?m[1]:null;
+}
 var FD_TREE_SCRIPT_PARTS=[
   ['identify','Identify'],['situation','Situation'],['background','Background'],
   ['assessment','Assessment'],['recommendation','Recommendation'],['readBack','Read back']
@@ -73,6 +90,10 @@ function fdTreeValid(tree){
   var nodes=fdTreeNodes(tree), scripts=tree&&tree.scripts;
   if(!nodes||!scripts||!fdTreeScriptValid(scripts.now)) return false;
   if(scripts.soon!==undefined&&!fdTreeScriptValid(scripts.soon)) return false;
+  for(var key in scripts){
+    if(!Object.prototype.hasOwnProperty.call(scripts,key)) continue;
+    if(!fdTreeScriptTier(key)||!fdTreeScriptValid(scripts[key])) return false;
+  }
   if(typeof tree.start!=='string'||!nodes[tree.start]) return false;
   for(var id in nodes){
     if(!Object.prototype.hasOwnProperty.call(nodes,id)) continue;
@@ -88,6 +109,11 @@ function fdTreeValid(tree){
       if(!n.act||typeof n.act.length!=='number'||n.act.length<1||n.act.length>4) return false;
       for(var j=0;j<n.act.length;j++){ if(!fdTreeText(n.act[j])) return false; }
       if(n.escalate!=='now'&&!(n.escalate==='soon'&&scripts.soon)) return false;
+      if(n.script!==undefined){
+        if(typeof n.script!=='string'||n.script===n.escalate||
+          !Object.prototype.hasOwnProperty.call(scripts,n.script)||
+          fdTreeScriptTier(n.script)!==n.escalate) return false;
+      }
     }
   }
   return fdTreeDepthOk(nodes,tree.start,0,{});
@@ -126,8 +152,19 @@ function fdTreeEscalateButton(script, label){
     fdEsc(label)+'</button>';
 }
 
-function fdTreeScriptView(tree, key){
-  var used=(key==='soon'&&tree.scripts.soon)?'soon':'now', s=tree.scripts[used];
+/* The script key that opens for urgency "key" while "node" is on screen: the node's own variant
+   when it names one of that urgency, else the plain script (a missing "soon" falls to "now"). */
+function fdTreeScriptKey(tree, key, node){
+  var used=(key==='soon'&&tree.scripts.soon)?'soon':'now';
+  if(node&&!fdTreeIsQuestion(node)&&typeof node.script==='string'&&
+    fdTreeScriptTier(node.script)===used&&
+    Object.prototype.hasOwnProperty.call(tree.scripts,node.script)&&
+    fdTreeScriptValid(tree.scripts[node.script])) return node.script;
+  return used;
+}
+
+function fdTreeScriptView(tree, key, node){
+  var chosen=fdTreeScriptKey(tree,key,node), used=fdTreeScriptTier(chosen), s=tree.scripts[chosen];
   var out='<section class="fd-script" aria-labelledby="fdScriptHeading">'+
     '<h3 class="fd-tree__heading" id="fdScriptHeading" tabindex="-1">Say this to your attending</h3>'+
     '<p class="fd-script__label">'+fdEsc(s.label)+'</p><dl class="fd-script__parts">';
@@ -183,7 +220,7 @@ function fdTreeView(tree, view, opts){
     out+='<p class="fd-tree__draft" role="note">DRAFT — not faculty-reviewed. '+
       'Learners do not see this tree.</p>';
   }
-  if(v.escalate==='now'||v.escalate==='soon') return out+fdTreeScriptView(tree,v.escalate)+'</div>';
+  if(v.escalate==='now'||v.escalate==='soon') return out+fdTreeScriptView(tree,v.escalate,node)+'</div>';
   out+=fdTreeEscalateButton(question?'now':node.escalate,'Escalate to attending');
   if(walk.trail.length){
     out+='<ol class="fd-tree__trail" aria-label="Your answers">';
