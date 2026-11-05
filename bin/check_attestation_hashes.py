@@ -62,6 +62,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
 
 from attestation_hash import (  # noqa: E402
+    COTW_REGISTRY_PATH,
     HEX40,
     AttestationHashError,
     blob_sha,
@@ -77,6 +78,21 @@ from attestation_hash import (  # noqa: E402
 LEDGER_REL = "13_Faculty_Resources/reviewed.json"
 SHIPPED_REL = "13_Faculty_Resources/_automation/site_build/shipped_pages.json"
 TOPIC_META_REL = "topic_meta.json"
+
+
+def _cotw_registry(root, slug, rev=None):
+    """Registry bytes when this slug renders Case-of-the-Week metadata, otherwise None."""
+    if not slug.startswith("cotw_"):
+        return None
+    if rev is not None:
+        data = _blob_at(root, rev, COTW_REGISTRY_PATH)
+        if data is None:
+            raise InputError("%s is absent at %s" % (COTW_REGISTRY_PATH, rev[:12]))
+        return data
+    try:
+        return (Path(root) / COTW_REGISTRY_PATH).read_bytes()
+    except OSError as exc:
+        raise InputError("cannot read %s: %s" % (COTW_REGISTRY_PATH, exc)) from exc
 
 
 class InputError(Exception):
@@ -362,13 +378,15 @@ def run_explain(root, slug, rev=None, stream=None):
         sources = {path: (root / path).read_bytes() for path in paths}
         origins = {path: None for path in paths}
         record = topic_meta.get(slug)
+        cotw_registry = _cotw_registry(root, slug)
     else:
         resolved = _resolve_rev(root, rev)
         sources, origins = _sources_at_rev(root, history_ref(root), paths, resolved, slug,
                                            entry.get("at"), notes)
         record = _topic_meta_at(root, resolved, {}).get(slug)
+        cotw_registry = _cotw_registry(root, slug, resolved)
 
-    manifest = manifest_for_slug(slug, sources, record)
+    manifest = manifest_for_slug(slug, sources, record, cotw_registry)
     actual = blob_sha(manifest.encode("utf-8"))
 
     print("%s — the inputs its attestation covers%s"
@@ -389,6 +407,10 @@ def run_explain(root, slug, rev=None, stream=None):
               file=stream)
     else:
         print("  (no topic_meta record for this slug — no topic_meta line)", file=stream)
+    if cotw_registry is not None:
+        cotw_line = next(line for line in manifest.splitlines() if line.startswith("cotw_registry "))
+        print("  %s" % cotw_line, file=stream)
+        print("      audience-specific rendered Case-of-the-Week registry projection", file=stream)
     for note in notes:
         print(note, file=stream)
 
@@ -484,7 +506,12 @@ def _row_as_of_attestation(root, ref, shipped, slug, at, cache, notes):
         raise GitError("%s: no commit on %s touches %s" % (slug, ref, primary))
 
     sources, _ = _sources_at_rev(root, ref, paths, rev, slug, at, notes)
-    return rev, basis, digest(slug, sources, _topic_meta_at(root, rev, cache).get(slug))
+    return rev, basis, digest(
+        slug,
+        sources,
+        _topic_meta_at(root, rev, cache).get(slug),
+        _cotw_registry(root, slug, rev),
+    )
 
 
 def _stale_now(root, shipped, topic_meta, slug, content_hash):

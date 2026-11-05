@@ -20,6 +20,9 @@ input that review covered, one line each, itself a blob SHA:
 - the slug's `topic_meta.json` record, if it has one, canonicalised with `facultyReview`
   removed — governance state is not content, so attesting a page must not depend on the
   attestation block that records the attesting.
+- for a Case-of-the-Week page, its one edition's canonicalised registry projection for that
+  audience. The registry renders the audience's summary and derived metadata above the case
+  source, so changing `tldr_ms3` reopens the MS3 case without reopening its resident twin.
 
 Every value is reproducible by hand, which is the point of choosing a git blob SHA over a
 bare sha256: `printf '%s' "$manifest" | git hash-object --stdin` re-derives the digest, and
@@ -30,8 +33,9 @@ compute the whole manifest from ONE recursive-tree API call, with no file fetche
 Collision resistance is irrelevant here — the threat is drift, not forgery.
 
 SCOPE, stated so nobody over-reads a `bound` result: the digest covers the page's own
-sources and its topic_meta record. It does not cover build-time injections (the crisis
-block, pairings) or anything downstream of them.
+sources, its topic_meta record, and a Case-of-the-Week page's audience-specific registry
+projection. It does not cover build-time injections (the crisis block, pairings) or anything
+downstream of them.
 
 Deliberately stdlib-only, importing nothing from this repository: `surface_governance.py`
 consumes it and itself imports nothing from `site_build/`, and a JS twin
@@ -110,6 +114,147 @@ def canonical_topic_meta_record(record: dict) -> bytes:
     )
 
 
+# Case-of-the-Week pages render audience-specific metadata from this registry above the case
+# source. The source Markdown alone therefore cannot be the entire attested surface.
+COTW_REGISTRY_PATH = "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+_COTW_SLUG = re.compile(r"^cotw_([0-9]{8})_(.+)_(ms3|res)\.md$")
+_COTW_DEFAULT_READ = {"ms3": 8, "res": 10}
+_COTW_SHELF_VOCAB = frozenset(
+    {"mood", "psychosis", "anxiety", "substance", "neurocog", "pharm", "safety",
+     "personality", "childdev", "otherdx", "ethics", "relational"}
+)
+_COTW_EPA_VOCAB = frozenset({"EPA%d" % number for number in range(1, 14)})
+_COTW_STAGE_VOCAB = (
+    "encounter", "diagnosis", "safety", "treatment", "communication", "family", "team", "exam"
+)
+_COTW_BASE_STAGES = frozenset({"diagnosis", "treatment", "team", "exam"})
+_COTW_BLUEPRINT_STAGES = {
+    "safety": ("safety",),
+    "substance": ("safety",),
+    "personality": ("communication",),
+    "relational": ("communication", "family"),
+    "childdev": ("family",),
+    "ethics": ("communication",),
+}
+_COTW_WORKFLOW_KEYS = frozenset(
+    {"ask", "mse", "safety", "say", "collateral", "rounds", "exam", "actions"}
+)
+
+
+def _cotw_clean(values, vocab):
+    if not isinstance(values, list):
+        return []
+    return [value for value in values if isinstance(value, str) and value in vocab]
+
+
+def _cotw_tldr(week: dict, level: str) -> str:
+    value = week.get("tldr_" + level)
+    if not isinstance(value, str) or not value.strip():
+        value = week.get("tldr")
+    if isinstance(value, str) and value.strip():
+        return value
+    label = week.get("label") or week.get("topic", "Case of the Week")
+    return (
+        "Case of the Week — %s. Guided discussion questions, a ranked differential, "
+        "and a workup-and-management ladder." % label
+    )
+
+
+def _cotw_stages(week: dict) -> list[str]:
+    override = _cotw_clean(week.get("stages"), set(_COTW_STAGE_VOCAB))
+    if override:
+        chosen = set(override)
+    else:
+        chosen = set(_COTW_BASE_STAGES)
+        for code in _cotw_clean(week.get("blueprint"), _COTW_SHELF_VOCAB):
+            chosen.update(_COTW_BLUEPRINT_STAGES.get(code, ()))
+    return [stage for stage in _COTW_STAGE_VOCAB if stage in chosen]
+
+
+def _cotw_workflow(week: dict) -> dict:
+    value = week.get("workflow")
+    if not isinstance(value, dict):
+        return {}
+    result = {}
+    for key, item in value.items():
+        if key not in _COTW_WORKFLOW_KEYS:
+            continue
+        if key == "actions":
+            actions = [
+                action for action in item
+                if isinstance(action, dict)
+                and isinstance(action.get("label"), str)
+                and isinstance(action.get("href"), str)
+            ] if isinstance(item, list) else []
+            if actions:
+                result[key] = actions
+        elif isinstance(item, str) and item.strip():
+            result[key] = item
+    return result
+
+
+def canonical_cotw_registry_entry(slug: str, registry: bytes | dict) -> bytes | None:
+    """Canonical registry content rendered for one Case-of-the-Week audience.
+
+    A registry edit must reopen the case that displays it, but no other edition or audience.
+    This projection includes only fields that shape that audience's shipped case/derived metadata;
+    in particular, it resolves ``tldr_ms3`` / ``tldr_res`` exactly as ``cotw_meta.entry_for``
+    does, rather than hashing the entire registry document.
+    """
+    match = _COTW_SLUG.fullmatch(slug)
+    if not match:
+        return None
+    date, topic, level = match.groups()
+    if isinstance(registry, bytes):
+        try:
+            registry = json.loads(registry.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise AttestationHashError(f"{slug}: unreadable Case-of-the-Week registry") from exc
+    if not isinstance(registry, dict) or not isinstance(registry.get("weeks"), list):
+        raise AttestationHashError(f"{slug}: malformed Case-of-the-Week registry")
+    editions = [
+        week for week in registry["weeks"]
+        if isinstance(week, dict)
+        and isinstance(week.get("date"), str)
+        and week["date"].replace("-", "") == date
+        and week.get("topic") == topic
+    ]
+    if len(editions) != 1:
+        raise AttestationHashError(f"{slug}: no unique Case-of-the-Week registry edition")
+    week = editions[0]
+    label = week.get("label") or week.get("topic", "Case of the Week")
+    read = week.get("read")
+    if not isinstance(read, int):
+        read = _COTW_DEFAULT_READ[level]
+    projection = {
+        "fingerprint": "cotw-registry/1",
+        "audience": level,
+        "date": week.get("date"),
+        "topic": week.get("topic"),
+        "label": label,
+        "source": week.get(level + "_src"),
+        "read": read,
+        "tldr": _cotw_tldr(week, level),
+        "blueprint": _cotw_clean(week.get("blueprint"), _COTW_SHELF_VOCAB),
+        "epa": _cotw_clean(week.get("epa"), _COTW_EPA_VOCAB),
+        "stages": _cotw_stages(week),
+        "workflow": _cotw_workflow(week),
+    }
+    return json.dumps(projection, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
+
+
+def cotw_registry_manifest_value(slug: str, registry: bytes | dict | None) -> str | None:
+    """The manifest value for a Case-of-the-Week's rendered registry projection."""
+    if not _COTW_SLUG.fullmatch(slug):
+        return None
+    if registry is None:
+        raise AttestationHashError(f"{slug}: Case-of-the-Week registry is missing")
+    canonical = canonical_cotw_registry_entry(slug, registry)
+    return blob_sha(canonical)
+
+
 # The one registry that is both page text (#783 lists it in the question tools'
 # `extraSources`) and an attestation ledger (each item's `status`). Its line in a manifest
 # is hashed over the bank WITHOUT any item's `status`: otherwise signing a question would
@@ -177,7 +322,12 @@ def sources_for_slug(shipped_doc: dict, slug: str) -> list[str]:
     return paths
 
 
-def manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+def manifest_for_slug(
+    slug: str,
+    sources: dict[str, bytes],
+    record: dict | None,
+    cotw_registry: bytes | dict | None = None,
+) -> str:
     """The manifest text for one slug: `path <blob sha>` per source, then `topic_meta`.
 
     `sources` maps each source path to its working-tree bytes. Refuses an empty mapping:
@@ -210,12 +360,20 @@ def manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None)
     lines = [f"{path} {source_blob_sha(path, sources[path])}" for path in sorted(sources)]
     if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_topic_meta_record(record))}")
+    cotw_value = cotw_registry_manifest_value(slug, cotw_registry)
+    if cotw_value is not None:
+        lines.append(f"cotw_registry {cotw_value}")
     return "\n".join(lines) + "\n"
 
 
-def digest(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+def digest(
+    slug: str,
+    sources: dict[str, bytes],
+    record: dict | None,
+    cotw_registry: bytes | dict | None = None,
+) -> str:
     """The slug's `contentHash`: the blob SHA of its manifest."""
-    return blob_sha(manifest_for_slug(slug, sources, record).encode("utf-8"))
+    return blob_sha(manifest_for_slug(slug, sources, record, cotw_registry).encode("utf-8"))
 
 
 # --------------------------------------------------------------------------------------
@@ -408,7 +566,12 @@ def canonical_clinical_record(record: dict) -> bytes:
     )
 
 
-def clinical_manifest_for_slug(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+def clinical_manifest_for_slug(
+    slug: str,
+    sources: dict[str, bytes],
+    record: dict | None,
+    cotw_registry: bytes | dict | None = None,
+) -> str:
     """The clinical manifest: a version line, then v1's shape over the clinical values.
 
     The first line keeps a clinical digest from ever equalling a v1 digest. The same
@@ -422,17 +585,34 @@ def clinical_manifest_for_slug(slug: str, sources: dict[str, bytes], record: dic
     lines += [f"{path} {clinical_source_sha(path, sources[path])}" for path in sorted(sources)]
     if isinstance(record, dict):
         lines.append(f"topic_meta {blob_sha(canonical_clinical_record(record))}")
+    cotw_value = cotw_registry_manifest_value(slug, cotw_registry)
+    if cotw_value is not None:
+        lines.append(f"cotw_registry {cotw_value}")
     return "\n".join(lines) + "\n"
 
 
-def clinical_digest(slug: str, sources: dict[str, bytes], record: dict | None) -> str:
+def clinical_digest(
+    slug: str,
+    sources: dict[str, bytes],
+    record: dict | None,
+    cotw_registry: bytes | dict | None = None,
+) -> str:
     """The slug's `clinicalHash`: the blob SHA of its clinical manifest."""
-    return blob_sha(clinical_manifest_for_slug(slug, sources, record).encode("utf-8"))
+    return blob_sha(
+        clinical_manifest_for_slug(slug, sources, record, cotw_registry).encode("utf-8")
+    )
 
 
 def _read_sources(root: Path, paths: list[str]) -> dict[str, bytes]:
     """Working-tree bytes for each path; raises FileNotFoundError on the first absentee."""
     return {path: (Path(root) / path).read_bytes() for path in paths}
+
+
+def _read_cotw_registry(root: Path, slug: str) -> bytes | None:
+    """Registry bytes only for a Case-of-the-Week slug; other pages have no such input."""
+    if not _COTW_SLUG.fullmatch(slug):
+        return None
+    return (root / COTW_REGISTRY_PATH).read_bytes()
 
 
 def digest_from_tree(root, shipped_doc: dict, topic_meta: dict, slug: str) -> str:
@@ -443,8 +623,9 @@ def digest_from_tree(root, shipped_doc: dict, topic_meta: dict, slug: str) -> st
     the slug at all: `sources_for_slug` returns [] and a digest over nothing would look
     exactly like a digest over something.
     """
-    sources = _read_sources(Path(root), sources_for_slug(shipped_doc, slug))
-    return digest(slug, sources, topic_meta.get(slug))
+    root = Path(root)
+    sources = _read_sources(root, sources_for_slug(shipped_doc, slug))
+    return digest(slug, sources, topic_meta.get(slug), _read_cotw_registry(root, slug))
 
 
 def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) -> dict:
@@ -475,6 +656,8 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
         "legacy": [],
         "unshipped_unlisted": [],
     }
+    cotw_registry = None
+    cotw_registry_loaded = False
     for slug in sorted(ledger):
         entry = ledger[slug]
         if not isinstance(entry, dict):
@@ -514,10 +697,17 @@ def ledger_hash_report(root, ledger: dict, shipped_doc: dict, topic_meta: dict) 
             continue
 
         sources = _read_sources(root, paths)
-        manifest = manifest_for_slug(slug, sources, topic_meta.get(slug))
+        if _COTW_SLUG.fullmatch(slug) and not cotw_registry_loaded:
+            try:
+                cotw_registry = _read_cotw_registry(root, slug)
+            except FileNotFoundError:
+                report["unresolvable"][slug] = [COTW_REGISTRY_PATH]
+                continue
+            cotw_registry_loaded = True
+        manifest = manifest_for_slug(slug, sources, topic_meta.get(slug), cotw_registry)
         actual = blob_sha(manifest.encode("utf-8"))
         clinical_actual = (
-            clinical_digest(slug, sources, topic_meta.get(slug))
+            clinical_digest(slug, sources, topic_meta.get(slug), cotw_registry)
             if clinical_stored is not None and actual != stored else None
         )
         if actual == stored:
