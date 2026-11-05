@@ -2045,7 +2045,8 @@
           ],
           "direction": "positive",
           "usedBy": [
-            "sp-interview"
+            "sp-interview",
+            "scale-chooser.html"
           ]
         }
       ]
@@ -2444,7 +2445,8 @@
           "usedBy": [
             "t_sud",
             "rounds_questions",
-            "rapid_review"
+            "rapid_review",
+            "scale-chooser.html"
           ]
         },
         {
