@@ -54,6 +54,7 @@ const MANIFEST_PATH = '13_Faculty_Resources/_automation/site_build/site_manifest
 const SHIPPED_PAGES_PATH = '13_Faculty_Resources/_automation/site_build/shipped_pages.json';
 const TOPIC_META_PATH = 'topic_meta.json';
 const QBANK_PATH = 'question_bank.json';
+const COTW_REGISTRY_PATH = '08_Cases_and_Simulation/case-of-the-week/cotw_registry.json';
 
 /* The content hash, re-derived here rather than imported from
    faculty-console/attestation-hash.mjs: a handler test that computed its expectation with
@@ -78,6 +79,31 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
+function expectedCotwRegistryValue(files, slug) {
+  const match = /^cotw_([0-9]{8})_(.+)_(ms3|res)\.md$/.exec(slug);
+  if (!match) return null;
+  const [, date, topic, audience] = match;
+  const weeks = files[COTW_REGISTRY_PATH]?.json?.weeks;
+  assert.ok(Array.isArray(weeks), 'a Case-of-the-Week digest must have its registry');
+  const editions = weeks.filter(week => week?.date?.replaceAll('-', '') === date && week.topic === topic);
+  assert.equal(editions.length, 1, 'a Case-of-the-Week digest must select one edition');
+  const week = editions[0];
+  const tldr = typeof week[`tldr_${audience}`] === 'string' && week[`tldr_${audience}`].trim()
+    ? week[`tldr_${audience}`]
+    : week.tldr;
+  const projection = {
+    fingerprint: 'cotw-registry/1', audience, date: week.date, topic: week.topic,
+    label: week.label || week.topic, source: week[`${audience}_src`],
+    read: Number.isInteger(week.read) ? week.read : (audience === 'ms3' ? 8 : 10),
+    tldr,
+    blueprint: Array.isArray(week.blueprint) ? week.blueprint : [],
+    epa: Array.isArray(week.epa) ? week.epa : [],
+    stages: ['diagnosis', 'treatment', 'team', 'exam'],
+    workflow: {},
+  };
+  return blobShaOf(canonicalJson(projection));
+}
+
 function expectedDigest(files, sources, slug) {
   const page = files[SHIPPED_PAGES_PATH].json.pages.find(entry => entry.slug === slug);
   const lines = [page.source, ...(page.extraSources || [])]
@@ -89,6 +115,8 @@ function expectedDigest(files, sources, slug) {
     delete body.facultyReview;
     lines.push(`topic_meta ${blobShaOf(canonicalJson(body))}`);
   }
+  const cotwValue = expectedCotwRegistryValue(files, slug);
+  if (cotwValue) lines.push(`cotw_registry ${cotwValue}`);
   return blobShaOf(`${lines.join('\n')}\n`);
 }
 
@@ -670,11 +698,19 @@ function cotwSources(weeks = [COTW_WEEK]) {
       sources[page.source] = Buffer.from(`# ${page.title}\n\nSynthetic case source.\n`, 'utf8');
     }
   }
+  sources[COTW_REGISTRY_PATH] = Buffer.from(`${JSON.stringify({ weeks }, null, 2)}\n`, 'utf8');
   return sources;
 }
 
 function cotwFiles(weeks = [COTW_WEEK]) {
   const files = defaultFiles();
+  const registry = { weeks };
+  const registryBytes = Buffer.from(`${JSON.stringify(registry, null, 2)}\n`, 'utf8');
+  files[COTW_REGISTRY_PATH] = {
+    json: registry,
+    rawBody: registryBytes.toString('utf8'),
+    sha: blobShaOf(registryBytes),
+  };
   files[SHIPPED_PAGES_PATH].json.pages = [
     ...files[SHIPPED_PAGES_PATH].json.pages,
     ...weeks.flatMap(week => cotwPages(week)),
@@ -2958,6 +2994,63 @@ test('a two-source slug hashes both of its sources', async () => {
   other['14_Tracks/Resident/resident_welcome.md'] = Buffer
     .from('Resident welcome, revised.\n', 'utf8');
   assert.notEqual(expectedDigest(files, other, 'welcome.md'), saved['welcome.md'].contentHash);
+});
+
+test('a Case-of-the-Week summary edit reopens only the audience that renders it', async () => {
+  const files = defaultFiles();
+  const ms3 = 'cotw_20260105_demo_ms3.md';
+  const res = 'cotw_20260105_demo_res.md';
+  const initialRegistry = {
+    weeks: [{
+      date: '2026-01-05', topic: 'demo', label: 'Demo', ms3_src: 'demo-ms3.md', res_src: 'demo-res.md',
+      tldr_ms3: 'MS3 summary.', tldr_res: 'Resident summary.',
+    }],
+  };
+  const initialBytes = Buffer.from(`${JSON.stringify(initialRegistry, null, 2)}\n`, 'utf8');
+  files[COTW_REGISTRY_PATH] = {
+    json: initialRegistry,
+    rawBody: initialBytes.toString('utf8'),
+    sha: blobShaOf(initialBytes),
+  };
+  files[SHIPPED_PAGES_PATH].json.pages.push(
+    { slug: ms3, kind: 'page', sites: ['ms3'], title: 'Demo — MS3', source: 'case-ms3.md', producer: 'cotw_registry' },
+    { slug: res, kind: 'page', sites: ['res'], title: 'Demo — Resident', source: 'case-res.md', producer: 'cotw_registry' },
+  );
+  const signedAgainst = {
+    ...defaultSources(),
+    'case-ms3.md': Buffer.from('Synthetic MS3 case.\n', 'utf8'),
+    'case-res.md': Buffer.from('Synthetic resident case.\n', 'utf8'),
+    [COTW_REGISTRY_PATH]: initialBytes,
+  };
+  files[REVIEWED_PATH].json[ms3] = {
+    ...files[REVIEWED_PATH].json['t_mood.md'], contentHash: expectedDigest(files, signedAgainst, ms3),
+  };
+  files[REVIEWED_PATH].json[res] = {
+    ...files[REVIEWED_PATH].json['t_mood.md'], contentHash: expectedDigest(files, signedAgainst, res),
+  };
+
+  const revisedRegistry = structuredClone(initialRegistry);
+  revisedRegistry.weeks[0].tldr_ms3 = 'MS3 summary, revised.';
+  const revisedBytes = Buffer.from(`${JSON.stringify(revisedRegistry, null, 2)}\n`, 'utf8');
+  files[COTW_REGISTRY_PATH] = {
+    json: revisedRegistry,
+    rawBody: revisedBytes.toString('utf8'),
+    sha: blobShaOf(revisedBytes),
+  };
+  const mock = createGithubMock({
+    files,
+    sources: { ...signedAgainst, [COTW_REGISTRY_PATH]: revisedBytes },
+  });
+
+  const payload = await (await handlerWith(mock)(apiRequest('GET'))).json();
+  const bySlug = Object.fromEntries(payload.items.map(item => [item.slug, item]));
+  assert.equal(payload.freshness, 'verified');
+  assert.equal(bySlug[ms3].status, 'unreviewed');
+  assert.equal(bySlug[ms3].stale, true);
+  assert.equal(bySlug[res].status, 'reviewed');
+  assert.equal(Object.hasOwn(bySlug[res], 'stale'), false);
+  assert.ok(mock.calls.some(call => call.path === COTW_REGISTRY_PATH),
+    'the console must read the same registry projection it signs');
 });
 
 test('reopening preserves the stored hash rather than rebinding it', async () => {

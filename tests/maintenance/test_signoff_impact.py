@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT / "bin"))
 from _git_env import scrub_inherited_git_env  # noqa: E402
 scrub_inherited_git_env()
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
-from attestation_hash import clinical_digest, digest  # noqa: E402
+from attestation_hash import COTW_REGISTRY_PATH, clinical_digest, digest  # noqa: E402
 from maintenance.validate_scheduled_workflows import PINNED_ACTIONS  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("signoff_impact", ROOT / "bin" / "signoff_impact.py")
@@ -150,6 +150,41 @@ class ClassificationTests(unittest.TestCase):
             "page.md", {PAGE: (PAGE_TEXT + "\nNew text.\n").encode()}, repo.meta["page.md"])
         repo.save_registries()
         self.assertEqual(repo.impact(repo.commit("edit and re-sign"))["reopened"], [])
+
+    def test_a_cotw_summary_change_reopens_only_its_rendered_audience(self):
+        repo = Repo(self)
+        ms3 = "cotw_20260105_demo_ms3.md"
+        resident = "cotw_20260105_demo_res.md"
+        registry = {
+            "weeks": [{
+                "date": "2026-01-05", "topic": "demo", "label": "Demo",
+                "ms3_src": "demo-ms3.md", "res_src": "demo-res.md",
+                "tldr_ms3": "MS3 summary.", "tldr_res": "Resident summary.",
+            }]
+        }
+        ms3_source = "08_Cases_and_Simulation/case-of-the-week/demo-ms3.md"
+        resident_source = "08_Cases_and_Simulation/case-of-the-week/demo-res.md"
+        repo.write(ms3_source, "# MS3 case\n")
+        repo.write(resident_source, "# Resident case\n")
+        repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        repo.shipped["pages"].extend([
+            {"slug": ms3, "source": ms3_source},
+            {"slug": resident, "source": resident_source},
+        ])
+        registry_bytes = json.dumps(registry).encode()
+        for slug, source in ((ms3, ms3_source), (resident, resident_source)):
+            sources = {source: (repo.root / source).read_bytes()}
+            repo.ledger[slug] = {
+                "status": "reviewed", "by": "Joshua Moss, MD", "at": "2026-09-26",
+                "contentHash": digest(slug, sources, None, registry_bytes),
+            }
+        repo.save_registries()
+        repo.base = repo.commit("cotw signed")
+
+        registry["weeks"][0]["tldr_ms3"] = "MS3 summary, revised."
+        repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        result = repo.impact(repo.commit("revise ms3 summary"))
+        self.assertEqual([row["slug"] for row in result["reopened"]], [ms3])
 
     def test_an_unreadable_side_is_could_not_check_never_reopens_nothing(self):
         repo = Repo(self)
