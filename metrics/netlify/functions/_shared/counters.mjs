@@ -25,15 +25,32 @@ export function blobKey(site, week, eventKey) {
  * Read-modify-write with bounded retries. Netlify Blobs has no atomic
  * increment; at cohort sizes of 4-10 a lost update costs one count, which is
  * cheaper than a transaction. Deliberate — see the plan's design note.
+ *
+ * H5 ceiling: with a positive integer `ceiling`, a counter never exceeds it.
+ * The write that reaches it stores `capped: true` (the only fifth field the
+ * schema ever carries); once capped, further increments write nothing. A
+ * capped cell means "at least `ceiling`, possibly forged" — readers exclude it
+ * (metrics/HARDENING.md). Without `ceiling` the behaviour is unchanged.
  */
-export async function increment(store, { site, week, key }) {
+export async function increment(store, { site, week, key }, { ceiling } = {}) {
+  const cap = Number.isInteger(ceiling) && ceiling > 0 ? ceiling : null;
   let lastError;
   for (let attempt = 0; attempt < RETRIES; attempt += 1) {
     try {
       const path = blobKey(site, week, key);
       const current = await store.get(path, { type: 'json' });
-      const n = (Number.isInteger(current?.n) ? current.n : 0) + 1;
-      await store.setJSON(path, { site, week, key, n });
+      const prev = Number.isInteger(current?.n) ? current.n : 0;
+      if (cap !== null && (prev >= cap || current?.capped === true)) {
+        if (current?.capped !== true) {
+          await store.setJSON(path, { site, week, key, n: Math.min(prev, cap), capped: true });
+        }
+        return Math.min(prev, cap);
+      }
+      const n = prev + 1;
+      const row = cap !== null && n >= cap
+        ? { site, week, key, n, capped: true }
+        : { site, week, key, n };
+      await store.setJSON(path, row);
       return n;
     } catch (err) {
       lastError = err;

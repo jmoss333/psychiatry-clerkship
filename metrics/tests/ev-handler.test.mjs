@@ -2,9 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createEv, createProductionEv } from '../netlify/functions/ev.mjs';
+import { parseCollection } from '../netlify/functions/_shared/collection.mjs';
 
 const ALLOWLIST = { version: 1, keys: { ms3: ['page:t_mood.md', 'tool:interview-room:open'], res: ['page:x.md'] } };
 const ORIGINS = ['https://une-ms3-psychiatry.netlify.app', 'https://mmc-psychiatry-residents-sanford.netlify.app'];
+const ORIGIN_SITES = { [ORIGINS[0]]: 'ms3', [ORIGINS[1]]: 'res' };
+
+// Writes are OFF unless a test opts in (H1), and only the published production deploy writes
+// (H2). The pre-existing tests below pin the validation pipeline itself, so they run with an
+// explicitly ENABLED switch armed from before the fixed clock, invoked as published production.
+// The H1-H6 tests further down pin each gate on its own.
+const ENABLED = parseCollection({
+  schemaVersion: 1, writes: 'on', armedFromWeek: '2026-W30', store: 'usage-counters', counterCeiling: 500,
+});
+const PROD = { deploy: { context: 'production', published: true } };
 
 // Real allowlisted ms3 keys, read from the actual registry rather than
 // invented strings — so "more than MAX_KEYS distinct keys" genuinely
@@ -31,10 +42,13 @@ function post(body, origin = ORIGINS[0]) {
   });
 }
 
-const build = (store) => createEv({
-  store, allowlist: ALLOWLIST, origins: ORIGINS,
-  now: () => new Date('2026-09-04T12:00:00Z'),
-});
+const build = (store) => {
+  const handler = createEv({
+    store, allowlist: ALLOWLIST, originSites: ORIGIN_SITES, collection: ENABLED,
+    now: () => new Date('2026-09-04T12:00:00Z'),
+  });
+  return (request) => handler(request, PROD);
+};
 
 test('counts an allowlisted key', async () => {
   const store = fakeStore();
@@ -68,10 +82,10 @@ test('caps the batch at MAX_KEYS (20) even when every key is distinct and allowl
   const store = fakeStore();
   const distinctRealKeys = REAL_MS3_KEYS.slice(0, 25); // > 20, all real, all distinct
   const buildReal = createEv({
-    store, allowlist: REAL_ALLOWLIST, origins: ORIGINS,
+    store, allowlist: REAL_ALLOWLIST, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
-  const res = await buildReal(post({ site: 'ms3', keys: distinctRealKeys }));
+  const res = await buildReal(post({ site: 'ms3', keys: distinctRealKeys }), PROD);
   assert.equal(res.status, 204);
   assert.equal(store.data.size, 20,
     'sending 25 distinct allowlisted keys must still write only 20 — this would pass ' +
@@ -131,12 +145,12 @@ test('the production store is acquired fresh on every invocation, never cached a
   };
 
   const handler = createProductionEv({
-    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    allowlist: ALLOWLIST, getStore, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
 
-  await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
-  await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
+  await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
+  await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
 
   assert.equal(getStoreCalls, 2, 'getStore() must run once per request, not once per container');
   assert.equal(JSON.parse(backend.get('ms3/2026-W36/page%3At_mood.md')).n, 2,
@@ -154,13 +168,13 @@ test('an OPTIONS preflight never causes the store to be acquired', async () => {
   let calls = 0;
   const getStore = () => { calls += 1; return fakeStore(); };
   const handler = createProductionEv({
-    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    allowlist: ALLOWLIST, getStore, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
 
   const res = await handler(new Request('https://metrics.invalid/api/ev', {
     method: 'OPTIONS', headers: { origin: ORIGINS[0] },
-  }));
+  }), PROD);
 
   assert.equal(res.status, 204);
   assert.equal(calls, 0, 'an OPTIONS preflight must never construct a store client');
@@ -170,11 +184,11 @@ test('a disallowed origin never causes the store to be acquired', async () => {
   let calls = 0;
   const getStore = () => { calls += 1; return fakeStore(); };
   const handler = createProductionEv({
-    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    allowlist: ALLOWLIST, getStore, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
 
-  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }, 'https://evil.invalid'));
+  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }, 'https://evil.invalid'), PROD);
 
   assert.equal(res.status, 403);
   assert.equal(calls, 0, 'a rejected origin must never construct a store client');
@@ -184,13 +198,13 @@ test('a non-POST method never causes the store to be acquired', async () => {
   let calls = 0;
   const getStore = () => { calls += 1; return fakeStore(); };
   const handler = createProductionEv({
-    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    allowlist: ALLOWLIST, getStore, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
 
   const res = await handler(new Request('https://metrics.invalid/api/ev', {
     method: 'GET', headers: { origin: ORIGINS[0] },
-  }));
+  }), PROD);
 
   assert.equal(res.status, 405);
   assert.equal(calls, 0, 'a rejected method must never construct a store client');
@@ -200,11 +214,11 @@ test('a successful POST acquires the store exactly once', async () => {
   let calls = 0;
   const getStore = () => { calls += 1; return fakeStore(); };
   const handler = createProductionEv({
-    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    allowlist: ALLOWLIST, getStore, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
 
-  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
+  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
 
   assert.equal(res.status, 204);
   assert.equal(calls, 1, 'an otherwise-valid POST must construct the store exactly once');
@@ -213,11 +227,11 @@ test('a successful POST acquires the store exactly once', async () => {
 test('a store factory that throws still yields 204, never a 500', async () => {
   const getStore = () => { throw new Error('Blobs outage'); };
   const handler = createProductionEv({
-    allowlist: ALLOWLIST, getStore, origins: ORIGINS,
+    allowlist: ALLOWLIST, getStore, originSites: ORIGIN_SITES, collection: ENABLED,
     now: () => new Date('2026-09-04T12:00:00Z'),
   });
 
-  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
+  const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
 
   assert.equal(res.status, 204,
     'a Blobs outage while acquiring the store must never turn a valid POST into a 500');

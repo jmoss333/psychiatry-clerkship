@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 // the director dashboard prototype loads as a classic <script> (one implementation, tested once
 // in tests/director-dashboard.test.mjs).
 import './cohort_aggregate.js';
+// The collector's committed collection switch: same store name, same armed week, so this
+// reader can never count a week the writer was not armed for (H6) or a capped cell (H5).
+import { loadCollection, weekCounts } from '../netlify/functions/_shared/collection.mjs';
 
 // F8 read-only cohort aggregate (D-F8-2, permitted by D-X-4: a function on an existing site that
 // stores nothing per person).
@@ -14,8 +17,8 @@ import './cohort_aggregate.js';
 // "site not found", no metrics deploy preview runs on PRs, and creating the site is the
 // owner-only Step 6 of docs/superpowers/plans/2026-09-04-usage-analytics-collection.md.
 // To wire it after that site exists (an owner decision): `git mv` this file to
-// metrics/netlify/functions/cohort.mjs, change the two relative paths ('./' -> '../../aggregate/'),
-// and add to metrics/netlify.toml a `/api/cohort` -> `/.netlify/functions/cohort` redirect (as
+// metrics/netlify/functions/cohort.mjs, change the two relative paths ('./' -> '../../aggregate/')
+// and the collection import ('../netlify/functions/_shared/' -> './_shared/'), and add to metrics/netlify.toml a `/api/cohort` -> `/.netlify/functions/cohort` redirect (as
 // for /api/ev) and "aggregate/cohort_aggregate.js", "aggregate/synthetic_feed.json" to
 // included_files. No environment variable or secret is needed.
 //
@@ -52,8 +55,16 @@ export function syntheticFeed() {
  * Real counters from the metrics store as the aggregate contract's 4-field records. Reads only;
  * anything that is not exactly { site, week, key, n } with integer n >= 0 is dropped.
  * Reachable only through loadFeed({ realEnabled: true }), which production never passes.
+ *
+ * Also dropped, by the committed collection switch (metrics/collection.json):
+ *  - any week before `armedFromWeek`, or every week while it is null (H6: pre-switch-on
+ *    traffic, smoke tests and anything forged before arming never reach an aggregate);
+ *  - any cell marked `capped` (H5: it hit the per-counter ceiling, so its true value is unknown
+ *    and it may be forged — excluded rather than reported at the ceiling).
  */
-export async function readRealCounters(store) {
+export const COLLECTION = loadCollection();
+
+export async function readRealCounters(store, collection = COLLECTION) {
   const out = [];
   const { blobs } = await store.list();
   for (const blob of blobs) {
@@ -62,23 +73,32 @@ export async function readRealCounters(store) {
     const { site, week, key, n } = row;
     if (typeof site !== 'string' || typeof week !== 'string' || typeof key !== 'string') continue;
     if (!Number.isInteger(n) || n < 0) continue;
+    if (!weekCounts(week, collection) || row.capped === true) continue;
     out.push({ site, week, key, n });
   }
   return out;
 }
 
-export async function loadFeed({ realEnabled = REAL_COUNTERS_ENABLED, calendar = REAL_CALENDAR, getStore } = {}) {
+export async function loadFeed({
+  realEnabled = REAL_COUNTERS_ENABLED,
+  calendar = REAL_CALENDAR,
+  getStore,
+  collection = COLLECTION,
+} = {}) {
   if (!realEnabled) return syntheticFeed();
   if (!Array.isArray(calendar) || calendar.length === 0) {
     throw new Error('real path refused: no rotation calendar wired');
   }
+  if (collection.armedFromWeek === null) {
+    throw new Error('real path refused: collection not armed (metrics/collection.json)');
+  }
   const resolveStore = getStore || (await import('@netlify/blobs')).getStore;
-  const store = resolveStore('usage-counters');
+  const store = resolveStore(collection.store);
   return {
     _synthetic: false,
     contractVersion: 1,
     rotationBlocks: calendar,
-    counters: await readRealCounters(store),
+    counters: await readRealCounters(store, collection),
   };
 }
 
