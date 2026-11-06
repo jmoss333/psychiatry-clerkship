@@ -17,7 +17,7 @@ gates below are about **bounding** forged data, not preventing it.
 | H1 | **Writes need an explicit enable flag.** `metrics/collection.json` → `"writes": "on"` **and** a valid `armedFromWeek`. It's a committed file, not an env var, so switching on is a reviewed commit (same discipline as `REAL_COUNTERS_ENABLED`). Default and committed state: `"off"`, `null`. While off, the body is never read, the store is never opened, and the response is the same 204. | `_shared/collection.mjs`, `ev.mjs` | file missing or malformed, any other value, wrong `schemaVersion` |
 | H2 | **Only the published production deploy writes.** Checks `context.deploy.context === 'production' && context.deploy.published === true`, using the function's trusted handler context, never the `CONTEXT` env var. Previews, branch deploys, `dev` and old production permalinks (`<deploy-id>--…`) are all refused. | `ev.mjs` `isPublishedProduction` | context missing, partial or non-boolean |
 | H3 | **Site-bound origins.** `une-ms3-psychiatry` may post only `site: "ms3"`, and `mmc-psychiatry-residents-sanford` only `site: "res"`. | `ev.mjs` `LEARNER_ORIGIN_SITES` | mismatch → 204, no write |
-| H4 | **Per-client rate limit at Netlify's edge**, before the function runs: 120 requests / 60 s per IP, on the `/api/ev` redirect. Code-based redirect rules are on every plan (Free allows 2 per project; this is 1). It's deliberately not `config.rateLimit` in `ev.mjs`, which would need `config.path` and so disable the default endpoint the redirect targets. | `netlify.toml` `[redirects.rate_limit]` | **unverifiable until first deploy:** an invalid rule does not fail the deploy. Check the deploy log's post-processing stage. |
+| H4 | **One collector route with a per-client edge rate limit:** `config.path: '/api/ev'` and `config.rateLimit` (120 requests / 60 s per domain and IP). The custom path disables `/.netlify/functions/ev`; no redirect remains. The handler also rejects other paths with 404 before preflight, body reads or storage. | `ev.mjs` exported `config` and path guard | **Edge enforcement is unverified until deployment.** Invalid rules may be ignored. The handler guard prevents alternate-path writes but cannot prevent invocation charges. |
 | H5 | **Per-counter ceiling.** A `(site, week, key)` counter stops at `counterCeiling` (500) and is marked `capped: true`. After that, posts cost one read and no write. Readers **exclude** capped cells, because their true value is unknown and may be forged. | `_shared/counters.mjs` `increment`, `aggregate/cohort_function.mjs`, `bin/read_counters.mjs` | non-integer ceiling → switch disabled |
 | H6 | **Pre-switch-on weeks never count.** The writer refuses any week before `armedFromWeek`. Readers drop those weeks and, while unarmed, every week. The store name lives in the same file, so writer and readers always open the same store. Moving to a fresh name (e.g. `usage-counters-2027`) is the clean-slate option if a period is ever found polluted. | `_shared/collection.mjs` `weekCounts`, readers | `armedFromWeek: null` → nothing counts; `loadFeed` real path refuses |
 
@@ -46,7 +46,9 @@ least one named test red (checked by mutation on 2026-11-05).
 4. **Cost of a flood.**
    - Below the rate limit, each accepted key costs a function invocation plus ≤ 2 Blobs
      operations; capped keys cost 1 read.
-   - Over the limit, Netlify answers 429 at the edge without invoking the function.
+   - After enforcement activates, Netlify answers 429 at the edge without invoking the function.
+     Netlify documents an enforcement delay of up to 10 seconds after crossing the threshold;
+     120/min is not a strict invocation or spend ceiling.
    - While writes are off (H1), a request costs one invocation and no Blobs operation.
    - Netlify's credit billing still meters invocations, so a sustained multi-IP flood is a cost
      risk. The daily deploy-health check doesn't watch usage. Watch the team usage page after
@@ -57,9 +59,42 @@ least one named test red (checked by mutation on 2026-11-05).
    edge. The function still never reads, logs or stores an IP. Netlify's platform request logs
    already process it, but the learner-facing privacy notice (L8 D3) should mention rate
    limiting if it describes processing at all.
-7. **Rate-limit rule not yet proven.** It can only be confirmed in the first deploy's log
-   (post-processing stage). If it's absent, the rule was rejected silently and only H5 bounds a
-   single client.
+7. **Routing and edge enforcement are not yet proven live.** Local tests pin the exported
+   configuration and execute the handler, not Netlify's edge. A missing or invalid rate-limit
+   rule can leave the canonical route unthrottled even though alternate-path writes are blocked.
+
+## Route coverage and first-deploy verification
+
+The earlier rewrite limited `/api/ev` but left the default function URL callable. The collector
+now uses the documented custom-path registration and attaches the limit to that same path.
+Do not restore the rewrite to work around a routing failure: it targets an endpoint disabled
+by `config.path`. An earlier sp-proxy routing incident is why registration must be checked on
+this collector's own deployment before enabling collection.
+
+Local regression tests reject the direct function URL (including query, suffix and trailing
+slash variants) and other noncanonical paths, with no body read or store acquisition even
+when the injected collection is armed and the deploy is published production. Canonical POST
+and OPTIONS still work, including query strings. H1 and H2 continue to test disabled collection
+and nonproduction/unpublished contexts separately.
+
+At the **first separately authorized deploy**, with `collection.json` still off/unarmed:
+
+1. Confirm the deployed function manifest registers only `/api/ev` and that post-processing
+   accepts the 120/60 per-IP-and-domain rate-limit rule. A successful deploy alone is not proof.
+2. Confirm `/api/ev` returns the expected 204/CORS response for an allowed-origin preflight and
+   drops a synthetic POST without opening the store.
+3. Probe `/.netlify/functions/ev`, its trailing-slash/suffix/query variants, and noncanonical
+   API paths. They must not reach a collector write path; check function invocation evidence,
+   not just a static HTTP response. Any platform normalization must resolve to the protected
+   route or reject the request.
+4. In an authorized bounded test, confirm 429 enforcement on `/api/ev` after allowing for the
+   documented delay of up to 10 seconds. Verify blocked requests do not invoke the function.
+5. If routing, rule acceptance or enforcement is absent, leave collection off and fix the
+   deployment configuration before considering activation. Do not create the site or change
+   keys as part of local verification.
+
+References: [Netlify function routing](https://docs.netlify.com/build/functions/configuration/#routing)
+and [Netlify rate limiting](https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/).
 
 ## Switching on (L8, not before the determination letters are in hand)
 

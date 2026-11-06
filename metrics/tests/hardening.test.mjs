@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import * as collector from '../netlify/functions/ev.mjs';
 import { createEv, createProductionEv, isPublishedProduction, LEARNER_ORIGIN_SITES } from '../netlify/functions/ev.mjs';
 import {
   DISABLED, isIsoWeek, loadCollection, parseCollection, weekCounts,
@@ -208,21 +209,62 @@ test('H3: a learner-site deploy-preview origin is not a learner origin', async (
 
 // ── H4: per-client rate limit at Netlify's edge (code-based rule, available on every plan) ───
 
-test('H4: the /api/ev redirect carries a per-IP rate limit, and ev.mjs declares no config.path', () => {
+test('H4: the only registered collector path carries the per-IP rate limit', () => {
+  assert.deepEqual(collector.config, {
+    path: '/api/ev',
+    rateLimit: {
+      action: 'rate_limit',
+      windowLimit: 120,
+      windowSize: 60,
+      aggregateBy: ['ip', 'domain'],
+    },
+  }, 'custom path disables the default function endpoint; the rule must cover that path');
   const toml = readFileSync(new URL('../netlify.toml', import.meta.url), 'utf8');
-  const block = toml.slice(toml.indexOf('[[redirects]]'));
-  assert.match(block, /from = "\/api\/ev"[\s\S]*?\[redirects\.rate_limit\]/,
-    'the rate limit must sit on the /api/ev redirect');
-  const rule = block.slice(block.indexOf('[redirects.rate_limit]'));
-  const limit = Number(rule.match(/^\s*window_limit\s*=\s*(\d+)/m)?.[1]);
-  const size = Number(rule.match(/^\s*window_size\s*=\s*(\d+)/m)?.[1]);
-  assert.ok(limit > 0 && limit <= 600, `window_limit ${limit} must be a real, bounded limit`);
-  assert.ok(size > 0 && size <= 180, `window_size ${size} must be 1-180 s (Netlify maximum 180)`);
-  assert.match(rule, /^\s*aggregate_by\s*=\s*\["ip", "domain"\]/m,
-    'per-domain-and-IP is the only aggregation outside Enterprise');
-  const source = readFileSync(new URL('../netlify/functions/ev.mjs', import.meta.url), 'utf8');
-  assert.doesNotMatch(source, /export const config\b/,
-    'a config.path route would disable the default endpoint the redirect targets');
+  const active = toml.replace(/^\s*#.*$/gm, '');
+  assert.doesNotMatch(active, /\[\[redirects\]\]/,
+    'no rewrite may target the disabled endpoint or create an alternate collector route');
+});
+
+test('H4: direct function URLs and alternate paths cannot read bodies or acquire storage', async () => {
+  for (const path of [
+    '/.netlify/functions/ev', '/.netlify/functions/ev/', '/.netlify/functions/ev/extra',
+    '/.netlify/functions/ev?path=/api/ev', '/api/ev/', '/api/ev/extra', '/api/%65v',
+    '/API/ev', '/unlimited',
+  ]) {
+    for (const method of ['POST', 'OPTIONS']) {
+      let acquired = 0;
+      const handler = createProductionEv({
+        allowlist: ALLOWLIST, now: NOW, collection: armed(),
+        getStore: () => { acquired += 1; return fakeStore(); },
+      });
+      const request = new Request(`https://metrics.invalid${path}`, {
+        method, headers: { origin: MS3, 'Content-Type': 'text/plain' },
+        ...(method === 'POST' ? { body: JSON.stringify(MS3_EVENT) } : {}),
+      });
+      let bodyRead = false;
+      request.text = async () => { bodyRead = true; return JSON.stringify(MS3_EVENT); };
+      const response = await handler(request, PROD);
+      assert.equal(response.status, 404, `${method} ${path}`);
+      assert.equal(bodyRead, false, `${method} ${path} must not read the body`);
+      assert.equal(acquired, 0, `${method} ${path} must not acquire storage`);
+    }
+  }
+});
+
+test('H4: the canonical route accepts POST and OPTIONS, including query strings', async () => {
+  for (const suffix of ['', '?ignored=value']) {
+    const { handler, store, acquired } = rig(armed());
+    const url = `https://metrics.invalid/api/ev${suffix}`;
+    const preflight = await handler(new Request(url, { method: 'OPTIONS', headers: { origin: MS3 } }), PROD);
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get('access-control-allow-origin'), MS3);
+    assert.equal(acquired(), 0);
+    const response = await handler(new Request(url, {
+      method: 'POST', headers: { origin: MS3 }, body: JSON.stringify(MS3_EVENT),
+    }), PROD);
+    assert.equal(response.status, 204);
+    assert.equal((await store.get(MS3_BLOB)).n, 1);
+  }
 });
 
 // ── H5: per-counter ceiling ──────────────────────────────────────────────────────────────────

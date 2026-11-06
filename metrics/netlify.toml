@@ -57,30 +57,7 @@
   # (If it ever did go missing, the loader fails CLOSED — writes off — not open.)
   included_files = ["allowlist.json", "collection.json"]
 
-# Pinned explicitly: in-source route registration was observed NOT to register on the live
-# sp-proxy deploy, so the path fell through to the static 404 (which carries no CORS header)
-# and the browser reported a generic load failure. Status 200 = rewrite, not redirect.
-[[redirects]]
-  from = "/api/ev"
-  to = "/.netlify/functions/ev"
-  status = 200
-  force = true
-  # H4: per-client rate limit, enforced by Netlify's edge BEFORE the function runs, so a
-  # flood costs neither function time nor Blobs operations. Code-based redirect rules are
-  # available on every plan (Free: 2 rules per project; this is the only one), and
-  # per-domain-and-IP is the only aggregation outside Enterprise. Defined on the redirect,
-  # NOT as `export const config = { path, rateLimit }` in ev.mjs: a `config.path` route
-  # disables the default function endpoint this rewrite targets (sp-preview/README.md) and
-  # in-source routes were observed not to register (see the redirect note above).
-  # Sizing: the emitter sends ONE sendBeacon per event, and a whole rotation group (4-10 learners)
-  # can sit behind one hospital or campus NAT address, so the limit is per address, not per
-  # learner: 120 requests / 60 s leaves several times a busy group's peak and still caps a
-  # single forging client at 2,400 key increments a minute before H5's ceiling. Over the
-  # limit Netlify answers 429; sendBeacon never surfaces that to the page. Netlify counts
-  # the address at its edge to enforce this; the function still never reads or stores it.
-  # Verify at first deploy: the deploy log's post-processing stage lists valid rules (an
-  # invalid rule does NOT fail the deploy).
-  [redirects.rate_limit]
-    window_limit = 120
-    window_size = 60
-    aggregate_by = ["ip", "domain"]
+# The collector registers /api/ev and its edge rate limit together in ev.mjs.
+# config.path disables /.netlify/functions/ev; do not restore a rewrite to it.
+# Check route registration and rate-limit acceptance at the first authorized deploy
+# while collection remains off. See HARDENING.md for the verification checklist.

@@ -3,6 +3,19 @@ import { readFileSync } from 'node:fs';
 import { DISABLED, loadCollection, weekCounts } from './_shared/collection.mjs';
 import { isoWeek, increment } from './_shared/counters.mjs';
 
+// H4: register only the rate-limited route. Netlify disables the default
+// /.netlify/functions/ev endpoint when config.path is set. Do not add a rewrite
+// to that endpoint in netlify.toml. Verify routing and enforcement at first deploy.
+export const config = {
+  path: '/api/ev',
+  rateLimit: {
+    action: 'rate_limit',
+    windowLimit: 120,
+    windowSize: 60,
+    aggregateBy: ['ip', 'domain'],
+  },
+};
+
 // Runtime read + JSON.parse, resolved relative to this module's own URL.
 // NOT `import allowlistJson from '../../allowlist.json' with { type: 'json' }` —
 // import attributes are supported by the Node 22 runtime pinned in
@@ -69,6 +82,9 @@ export function createEv({
   const origins = Object.keys(originSites);
 
   return async function ev(request, context) {
+    // Defense in depth if routing ever exposes another URL: reject it before
+    // preflight, body parsing or storage. This guard is not an edge rate limiter.
+    if (new URL(request.url).pathname !== config.path) return new Response(null, { status: 404 });
     const origin = request.headers.get('origin') || '';
 
     if (request.method === 'OPTIONS') {
