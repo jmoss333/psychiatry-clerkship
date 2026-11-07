@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 
 import { DISABLED, loadCollection, weekCounts } from './_shared/collection.mjs';
 import { isoWeek, increment } from './_shared/counters.mjs';
+import { createCounterStore } from './_shared/blobs.mjs';
 
 // H4: register only the rate-limited route. Netlify disables the default
 // /.netlify/functions/ev endpoint when config.path is set. Do not add a rewrite
@@ -196,15 +197,19 @@ export function createEv({
 // failure — which means a stale client would silently stop incrementing
 // counters with zero signal anywhere. `createProductionEv` is its own export
 // (rather than inlined below) precisely so a test can inject a fake
-// `getStore` and prove it is invoked once per qualifying request, never once
-// per container lifetime, and never at all for a request that was always
+// `getStore` and prove clients are fresh per qualifying request and write,
+// never cached for the container lifetime, and never acquired for a request that was always
 // going to be rejected.
 //
 // The store NAME comes from the committed collection switch, so the writer and
 // every reader always agree on it (metrics/collection.json → `store`).
-export function createProductionEv({ allowlist, getStore, now, originSites, collection = DISABLED }) {
+export function createProductionEv({
+  allowlist, getStore, now, originSites, collection = DISABLED, fetch = globalThis.fetch,
+}) {
   return createEv({
-    getStore: () => getStore(collection.store),
+    // The pinned SDK can report modified:true on failed conditional HTTP writes.
+    // Validate each write's raw HTTP status after the SDK's own operation.
+    getStore: () => createCounterStore(getStore, collection.store, fetch),
     allowlist,
     now,
     originSites,

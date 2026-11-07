@@ -142,7 +142,7 @@ test('the production store is acquired fresh on every invocation, never cached a
   await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
   await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
 
-  assert.equal(getStoreCalls, 2, 'getStore() must run once per request, not once per container');
+  assert.equal(getStoreCalls, 4, 'each request needs a fresh reader and an isolated writer');
   assert.equal(JSON.parse(backend.data.get('ms3/2026-W36/page%3At_mood.md')).n, 2,
     'both invocations must still increment the same backend-persisted counter');
 });
@@ -200,7 +200,7 @@ test('a non-POST method never causes the store to be acquired', async () => {
   assert.equal(calls, 0, 'a rejected method must never construct a store client');
 });
 
-test('a successful POST acquires the store exactly once', async () => {
+test('an accepted POST acquires a reader and an isolated writer', async () => {
   let calls = 0;
   const getStore = () => { calls += 1; return fakeStore(); };
   const handler = createProductionEv({
@@ -211,7 +211,7 @@ test('a successful POST acquires the store exactly once', async () => {
   const res = await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
 
   assert.equal(res.status, 204);
-  assert.equal(calls, 1, 'an otherwise-valid POST must construct the store exactly once');
+  assert.equal(calls, 2, 'an otherwise-valid POST needs one reader and one isolated writer');
 });
 
 test('a store factory that throws still yields 204, never a 500', async () => {

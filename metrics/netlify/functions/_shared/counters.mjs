@@ -1,6 +1,8 @@
 // Pure counter logic. No network, no Netlify imports — the store is injected so
 // every branch is testable offline.
 
+import { CounterWriteError } from './blobs.mjs';
+
 const RETRIES = 3;
 
 /** ISO-8601 week-numbering string, e.g. "2026-W36". Weeks, never timestamps. */
@@ -59,6 +61,9 @@ export async function increment(store, { site, week, key }, { ceiling } = {}) {
       if (result?.modified === true) return n;
       lastError = new Error('counter write conflict');
     } catch (err) {
+      // The SDK already finished/retried this write; do not restart it on a
+      // permanent HTTP failure or an uncertain transport outcome.
+      if (err instanceof CounterWriteError) throw err;
       lastError = err;
     }
   }

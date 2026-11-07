@@ -46,7 +46,9 @@ least one named test red (checked by mutation on 2026-11-05).
 4. **Cost of a flood.**
    - Below the rate limit, each accepted batch costs a function invocation and each key normally
      costs 2 Blobs operations. Three bounded attempts allow up to 6 application-level
-     operations per key under conflicts/errors; the SDK can additionally retry transport errors.
+     operations per key under conflicts. The pinned SDK additionally allows six HTTP attempts
+     per operation for transient errors. A failed write is terminal after that SDK operation;
+     permanent 403/404 writes make one PUT with no retry delay.
      An already capped key costs 1 read and no write.
    - After enforcement activates, Netlify answers 429 at the edge without invoking the function.
      Netlify documents an enforcement delay of up to 10 seconds after crossing the threshold;
@@ -57,8 +59,9 @@ least one named test red (checked by mutation on 2026-11-05).
      switch-on.
 5. **Concurrent requests and failed writes.** Reads request strong consistency and every write
    uses the read ETag (`onlyIfMatch`) or `onlyIfNew` for creation. A conflict re-reads rather
-   than overwriting; after three attempts the event is dropped (the collector still returns
-   204). No unconditional fallback is allowed. The cap remains sticky if a later ceiling is
+   than overwriting; after three conflicts the event is dropped. The handler returns 204 if
+   it finishes before the platform deadline; transient SDK waits are a remaining limit below.
+   No unconditional fallback is allowed. The cap remains sticky if a later ceiling is
    raised or omitted. Counts are still not exact-once: exhausted retries can lose events, and
    a transport failure after a successful write can cause a retry to count again. These are
    approximate event counters, not unique learners or authenticated measures.
@@ -77,6 +80,34 @@ until another request reaches the ceiling. Both cases erased `capped` before the
 conditions now reject the stale write, and the retry observes the terminal cap. Tests also
 exercise the pinned `@netlify/blobs` 11.0.2 SDK with a fake HTTP transport, including its
 `modified: false` result for HTTP 412. Missing ETags and exhausted conflicts fail closed.
+
+The pinned SDK incorrectly reports `modified: true` for conditional HTTP 403/404 responses
+and exhausted HTTP 429/500 retries, even when nothing was persisted. An ETag is not sufficient
+evidence of success because an error response can carry one. The production writer therefore
+uses `_shared/blobs.mjs` to capture each write's final HTTP status in an isolated SDK client.
+After the SDK operation returns, only HTTP 200 (its write-success contract) and HTTP 412 (a
+conditional conflict) are accepted. Other statuses and transport failures throw a terminal
+write error; `increment` does not restart the whole operation. No errors are thrown into the
+SDK's fetch loop, which would turn permanent 403/404 failures into 75 seconds of retry waits.
+Reads keep their existing behavior. No request or response details are logged.
+
+`metrics/tests/write-errors.test.mjs` exercises actual-SDK creations and updates for all four
+error statuses, with misleading ETags, and checks production wiring, concurrent status
+isolation, success, 412 conflicts and actual retry delays. Permanent 403/404 errors cause one
+PUT and zero sleeps. Transient 429/500 responses retain the SDK's own six-attempt limit and
+server reset headers. A transient failure followed by a real successful write is recognized.
+The collector's ordinary silent 204 behavior is covered, not a live platform timeout guarantee.
+This makes write acknowledgments honest; it does not recover dropped events or turn these
+approximate counters into complete records.
+
+**Remaining activation blocker: whole-request deadlines.** The existing SDK may spend 25
+seconds in retry waits per operation at its default delay, or longer when a 429 response
+specifies a later `X-RateLimit-Reset` (the test pins a 120-second example). Keys are processed
+serially. A batch can therefore exceed Netlify's synchronous function deadline and never return
+its intended 204. Before enabling collection, add and test a handler-wide deadline that aborts
+in-flight fetches and prevents later keys or retries from making writes after expiration.
+A `Promise.race` alone is insufficient because it can leave writes running after the response.
+Collection remains off; this patch does not claim to resolve that pre-existing timing risk.
 
 The real cohort reader uses strong listing/reads and refuses its whole feed when any countable
 row has `capped: true` or an integer count at/above the configured ceiling (including legacy

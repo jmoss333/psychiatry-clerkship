@@ -165,7 +165,7 @@ test('H2: the production entry point forwards Netlify\'s context to the gate', a
   await handler(post(MS3_EVENT), { deploy: { context: 'branch-deploy', published: false } });
   assert.equal(acquired, 0);
   await handler(post(MS3_EVENT), PROD);
-  assert.equal(acquired, 1);
+  assert.equal(acquired, 2, 'published production may acquire a reader and writer');
 });
 
 // ── H3: each learner origin may post counts for its own site only ────────────────────────────
