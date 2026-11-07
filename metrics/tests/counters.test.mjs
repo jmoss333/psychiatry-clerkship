@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fakeStore } from './helpers/store.mjs';
 import { isoWeek, blobKey, increment } from '../netlify/functions/_shared/counters.mjs';
 
 test('isoWeek formats an ISO week-numbering date', () => {
@@ -16,11 +17,8 @@ test('blobKey is stable and contains no separator ambiguity', () => {
 });
 
 test('increment creates a counter at 1 then advances it', async () => {
-  const data = new Map();
-  const store = {
-    async get(k) { return data.has(k) ? JSON.parse(data.get(k)) : null; },
-    async setJSON(k, v) { data.set(k, JSON.stringify(v)); },
-  };
+  const store = fakeStore();
+  const { data } = store;
   const at = { site: 'ms3', week: '2026-W36', key: 'page:t_mood.md' };
   assert.equal(await increment(store, at), 1);
   assert.equal(await increment(store, at), 2);
@@ -29,11 +27,8 @@ test('increment creates a counter at 1 then advances it', async () => {
 });
 
 test('increment stores no field beyond the four in the schema', async () => {
-  const data = new Map();
-  const store = {
-    async get(k) { return data.has(k) ? JSON.parse(data.get(k)) : null; },
-    async setJSON(k, v) { data.set(k, JSON.stringify(v)); },
-  };
+  const store = fakeStore();
+  const { data } = store;
   await increment(store, { site: 'res', week: '2026-W36', key: 'page:x.md' });
   const stored = JSON.parse([...data.values()][0]);
   assert.deepEqual(Object.keys(stored).sort(), ['key', 'n', 'site', 'week']);
