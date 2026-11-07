@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fakeStore } from './helpers/store.mjs';
 import { readFileSync } from 'node:fs';
 
 import * as collector from '../netlify/functions/ev.mjs';
@@ -25,14 +26,6 @@ const armed = (overrides = {}) => parseCollection({
   counterCeiling: 500, ...overrides,
 });
 
-function fakeStore() {
-  const data = new Map();
-  return {
-    data,
-    async get(k) { return data.has(k) ? JSON.parse(data.get(k)) : null; },
-    async setJSON(k, v) { data.set(k, JSON.stringify(v)); },
-  };
-}
 
 function post(body, origin = MS3) {
   return new Request('https://metrics.invalid/api/ev', {
@@ -273,7 +266,7 @@ test('H5: a counter stops at the ceiling and is marked capped exactly once', asy
   const store = fakeStore();
   const at = { site: 'ms3', week: WEEK, key: 'page:t_mood.md' };
   let writes = 0;
-  const counting = { get: store.get, async setJSON(k, v) { writes += 1; return store.setJSON(k, v); } };
+  const counting = { ...store, async setJSON(...args) { writes += 1; return store.setJSON(...args); } };
   for (let i = 0; i < 2; i += 1) await increment(counting, at, { ceiling: 3 });
   assert.deepEqual(await store.get(blobKey(at.site, at.week, at.key)), { ...at, n: 2 });
   assert.equal(await increment(counting, at, { ceiling: 3 }), 3);
@@ -319,7 +312,7 @@ test('H6: the collector writes nothing before the armed week, and starts on it',
   assert.equal((await onTime.store.get(blobKey('ms3', '2027-W02', 'page:t_mood.md'))).n, 1);
 });
 
-test('H6 + H5: the cohort reader drops pre-armed weeks and capped cells', async () => {
+test('H6 + H5: the cohort reader drops pre-armed weeks but refuses countable capped cells', async () => {
   const { readRealCounters, loadFeed } = await import('../aggregate/cohort_function.mjs');
   const rows = {
     a: { site: 'ms3', week: '2027-W01', key: 'page:x.md', n: 7 },           // before armed week
@@ -328,7 +321,7 @@ test('H6 + H5: the cohort reader drops pre-armed weeks and capped cells', async 
   };
   const store = { list: async () => ({ blobs: Object.keys(rows).map((key) => ({ key })) }), get: async (k) => rows[k] };
   const c = armed({ armedFromWeek: '2027-W02' });
-  assert.deepEqual(await readRealCounters(store, c), [{ site: 'ms3', week: '2027-W02', key: 'page:x.md', n: 6 }]);
+  await assert.rejects(readRealCounters(store, c), /incomplete counters: capped cell/);
   assert.deepEqual(await readRealCounters(store), [], 'with the committed (unarmed) switch nothing counts');
   await assert.rejects(
     loadFeed({ realEnabled: true, calendar: [{ id: 'b1', site: 'ms3', start: '2027-01-04', weeks: 6 }], getStore: () => store }),
@@ -345,5 +338,5 @@ test('H6: the reader opens the same store the writer writes', async () => {
     collection: armed({ store: 'usage-counters-2027', armedFromWeek: '2027-W02' }),
     getStore: (name) => { opened = name; return { list: async () => ({ blobs: [] }) }; },
   });
-  assert.equal(opened, 'usage-counters-2027');
+  assert.deepEqual(opened, { name: 'usage-counters-2027', consistency: 'strong' });
 });

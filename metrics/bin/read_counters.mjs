@@ -6,10 +6,11 @@
 // (metrics/collection.json), the same source the collector writes by. A week
 // before `armedFromWeek` (or any week while unarmed) is flagged as
 // NOT COUNTABLE; a cell that hit the per-counter ceiling is shown as `capped`
-// and is excluded from every aggregate (metrics/HARDENING.md, H5/H6).
+// and withholds the real aggregate with an incomplete-data error (metrics/HARDENING.md, H5/H6).
 import { getStore } from '@netlify/blobs';
 
 import { loadCollection, weekCounts } from '../netlify/functions/_shared/collection.mjs';
+import { isCappedCounter } from '../netlify/functions/_shared/counters.mjs';
 
 const SUPPRESS_BELOW = 5;
 
@@ -27,11 +28,11 @@ if (!week) {
 }
 
 const collection = loadCollection();
-const store = getStore(collection.store);
+const store = getStore({ name: collection.store, consistency: 'strong' });
 const { blobs } = await store.list({ prefix: `${site}/${week}/` });
 const rows = [];
 for (const blob of blobs) {
-  const row = await store.get(blob.key, { type: 'json' });
+  const row = await store.get(blob.key, { type: 'json', consistency: 'strong' });
   if (row) rows.push(row);
 }
 rows.sort((a, b) => b.n - a.n || a.key.localeCompare(b.key));
@@ -41,8 +42,11 @@ if (!weekCounts(week, collection)) {
   console.log(`  NOT COUNTABLE: armedFromWeek is ${collection.armedFromWeek ?? 'null (unarmed)'}; ` +
     'these rows are excluded from every aggregate');
 }
+if (weekCounts(week, collection) && rows.some((row) => isCappedCounter(row, collection.counterCeiling))) {
+  console.log('  INCOMPLETE: capped counters detected; cohort aggregates are withheld pending review');
+}
 for (const row of rows) {
-  const shown = row.capped === true
+  const shown = isCappedCounter(row, collection.counterCeiling)
     ? 'capped'
     : !raw && row.n < SUPPRESS_BELOW ? `<${SUPPRESS_BELOW}` : String(row.n);
   console.log(`  ${shown.padStart(6)}  ${row.key}`);

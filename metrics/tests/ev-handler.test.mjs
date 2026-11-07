@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fakeStore } from './helpers/store.mjs';
 import { readFileSync } from 'node:fs';
 import { createEv, createProductionEv } from '../netlify/functions/ev.mjs';
 import { parseCollection } from '../netlify/functions/_shared/collection.mjs';
@@ -26,14 +27,6 @@ const REAL_ALLOWLIST = JSON.parse(
 const REAL_MS3_KEYS = REAL_ALLOWLIST.keys.ms3;
 assert.ok(REAL_MS3_KEYS.length > 20, 'need more than MAX_KEYS real ms3 keys to test the cap');
 
-function fakeStore() {
-  const data = new Map();
-  return {
-    data,
-    async get(k) { return data.has(k) ? JSON.parse(data.get(k)) : null; },
-    async setJSON(k, v) { data.set(k, JSON.stringify(v)); },
-  };
-}
 
 function post(body, origin = ORIGINS[0]) {
   return new Request('https://metrics.invalid/api/ev', {
@@ -116,7 +109,7 @@ test('rejects an origin that is not a learner site', async () => {
 });
 
 test('a store failure still returns 204 and never throws to the client', async () => {
-  const store = { async get() { throw new Error('blobs down'); }, async setJSON() {} };
+  const store = { async getWithMetadata() { throw new Error('blobs down'); }, async setJSON() {} };
   const res = await build(store)(post({ site: 'ms3', keys: ['page:t_mood.md'] }));
   assert.equal(res.status, 204);
 });
@@ -134,14 +127,11 @@ test('the production store is acquired fresh on every invocation, never cached a
   // backend. A regression that memoizes the STORE (rather than just the
   // allowlist / the dynamic import) would still pass every other test here —
   // this is the only test that would catch it.
-  const backend = new Map();
+  const backend = fakeStore();
   let getStoreCalls = 0;
   const getStore = () => {
     getStoreCalls += 1;
-    return {
-      async get(k) { return backend.has(k) ? JSON.parse(backend.get(k)) : null; },
-      async setJSON(k, v) { backend.set(k, JSON.stringify(v)); },
-    };
+    return { ...backend }; // fresh client, same backend and ETags
   };
 
   const handler = createProductionEv({
@@ -153,7 +143,7 @@ test('the production store is acquired fresh on every invocation, never cached a
   await handler(post({ site: 'ms3', keys: ['page:t_mood.md'] }), PROD);
 
   assert.equal(getStoreCalls, 2, 'getStore() must run once per request, not once per container');
-  assert.equal(JSON.parse(backend.get('ms3/2026-W36/page%3At_mood.md')).n, 2,
+  assert.equal(JSON.parse(backend.data.get('ms3/2026-W36/page%3At_mood.md')).n, 2,
     'both invocations must still increment the same backend-persisted counter');
 });
 
