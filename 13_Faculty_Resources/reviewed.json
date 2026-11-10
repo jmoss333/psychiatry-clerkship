@@ -1576,5 +1576,15 @@
     "reason": "New Which Scale? chooser (Phase 1 of docs/superpowers/plans/2026-10-31-scale-chooser-plan.md; D1 and D2 approved 2026-11-05) added 2026-11-05; awaiting faculty attestation.",
     "at": "2026-11-05",
     "by": "Pending faculty review"
+  },
+  "how-we-know.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "general",
+      "level": "moderate"
+    },
+    "reason": "New How We Know page (learner edition, without the correction history: faculty decision 2026-11-09) added 2026-11-10; awaiting faculty attestation.",
+    "at": "2026-11-10",
+    "by": "Pending faculty review"
   }
 }
