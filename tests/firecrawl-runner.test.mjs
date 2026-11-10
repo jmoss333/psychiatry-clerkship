@@ -57,3 +57,30 @@ assert 'Lithium no longer requires enrollment.' in p[-1]['new']
 assert p[-1]['sourceCoverage']=='complete-snapshot-delta'
 `],{encoding:'utf8'});assert.equal(r.status,0,r.stdout+r.stderr);
 });
+
+test('changed-source review includes cited shipped HTML sources',()=>{
+const r=spawnSync('python3',['-c',`
+import json,sys,tempfile,subprocess
+from pathlib import Path
+sys.path.insert(0,'13_Faculty_Resources/_automation/surveillance/bin')
+import run_firecrawl_pilot as R,lib_surveillance as L,passage_review as P
+from simulate_firecrawl_passages import fixture_markdown
+from evidence_storage import decode_inbox
+with tempfile.TemporaryDirectory() as folder:
+ root=Path(folder); inputs=root/'responses.json'; state=root/'inbox.json'
+ sources={s['id']:s for s in L.load_registry()['sources']}
+ def response(source, text):
+  return {'success':True,'data':{'markdown':text,'metadata':{'sourceURL':source['url'],'url':source['url'],'statusCode':200}}}
+ responses={sid:response(source,fixture_markdown(P.load_config()) if sid=='clozapine-rems' else ('SYNTHETIC unrelated source page for offline examination. '*10)) for sid,source in sources.items() if sid in R.DEFAULT_IDS}
+ def run(name):
+  inputs.write_text(json.dumps(responses))
+  return subprocess.run([sys.executable,'13_Faculty_Resources/_automation/surveillance/bin/run_firecrawl_review.py','--responses',str(inputs),'--state',str(state),'--out-dir',str(root/name)],capture_output=True,text=True)
+ first=run('first');assert first.returncode in (0,1),first.stderr
+ responses['samhsa-guidelines']=response(sources['samhsa-guidelines'],'SYNTHETIC updated source page for offline examination. '*10)
+ changed=run('changed');assert changed.returncode==1,changed.stderr
+ saved=decode_inbox(json.loads(state.read_text()))
+ packet=[p for p in saved['packets'] if p['sourceId']=='samhsa-guidelines'][-1]
+ assert any(r['source']=='13_Faculty_Resources/APA_Downloads_2026-06-29/catalog.html' for r in packet['readings'])
+ assert saved['failures']==[]
+`],{encoding:'utf8'});assert.equal(r.status,0,r.stdout+r.stderr);
+});

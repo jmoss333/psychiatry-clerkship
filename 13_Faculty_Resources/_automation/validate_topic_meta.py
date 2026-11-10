@@ -206,7 +206,12 @@ TREE_MAX_QUESTIONS = 5
 TREE_CAPS = {"ask": 140, "hint": 160, "label": 60, "title": 80, "act": 160,
              "script": 240, "scriptLabel": 60}
 TREE_QUESTION_KEYS = {"id", "ask", "hint", "options"}
-TREE_ACTION_KEYS = {"id", "title", "tone", "act", "escalate", "see"}
+TREE_ACTION_KEYS = {"id", "title", "tone", "act", "escalate", "see", "script"}
+# Script keys: "now", "soon", or a named variant "<urgency>-<name>" an action can pick with its
+# own "script" key (2026-11-04, Codex P2 on #1131: one shared "soon" script made a branch that
+# never asked about plan or intent report them as absent). Mirrors FD_TREE_SCRIPT_KEY_RE in
+# site_build/frontdoor/fd_tree.js and the scripts patternProperties in topic_meta.schema.json.
+TREE_SCRIPT_KEY_RE = re.compile(r"^(now|soon)(?:-[a-z][a-z0-9-]{0,15})?$")
 
 
 def tree_text_problems(text, cap, allow_blanks):
@@ -245,8 +250,9 @@ def check_safety_tree(k, v):
         scripts = scripts if isinstance(scripts, dict) else {}
     for key in sorted(scripts):
         script, label = scripts[key], "safetyTree.scripts.%s" % key
-        if key not in ("now", "soon"):
-            bad(k, "%s: script keys are 'now' and 'soon' only" % label)
+        if not TREE_SCRIPT_KEY_RE.match(key):
+            bad(k, "%s: script keys are 'now', 'soon', or a variant 'now-<name>'/'soon-<name>'"
+                % label)
             continue
         if not isinstance(script, dict) or set(script) != set(TREE_SCRIPT_KEYS):
             bad(k, "%s must have exactly the keys %s" % (label, ", ".join(TREE_SCRIPT_KEYS)))
@@ -308,8 +314,20 @@ def check_safety_tree(k, v):
             for j, act in enumerate(acts):
                 for problem in tree_text_problems(act, TREE_CAPS["act"], False):
                     bad(k, "%s act %d %s" % (label, j, problem))
-        if node["escalate"] not in scripts:
+        if node["escalate"] not in ("now", "soon"):
+            bad(k, "%s escalate must be 'now' or 'soon'" % label)
+        elif node["escalate"] not in scripts:
             bad(k, "%s escalates to missing script %r" % (label, node["escalate"]))
+        if "script" in node:
+            variant = node["script"]
+            match = TREE_SCRIPT_KEY_RE.match(variant) if isinstance(variant, str) else None
+            if not match or variant in ("now", "soon"):
+                bad(k, "%s script must name a variant 'now-<name>' or 'soon-<name>'" % label)
+            elif variant not in scripts:
+                bad(k, "%s names missing script %r" % (label, variant))
+            elif match.group(1) != node["escalate"]:
+                bad(k, "%s script %r does not match its escalate %r"
+                    % (label, variant, node["escalate"]))
         if "see" in node:
             see = node["see"]
             if (not isinstance(see, list) or not 1 <= len(see) <= 2
