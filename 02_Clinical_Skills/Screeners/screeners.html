@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Screeners — PHQ-9 & GAD-7" version="1.2" built="2026-10-02" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="5min" summary="Interactive PHQ-9 and GAD-7 scoring practice with severity bands and item-9 safety escalation reminder. Educational; not diagnostic; no PHI." -->
+<!-- [CLERKSHIP-META v1] tool="Screeners — PHQ-9 & GAD-7" version="1.3" built="2026-10-31" category="clinical-skills" audience="trainee,ms3" settings="inpatient,self-study" time="5min" summary="Interactive PHQ-9 and GAD-7 scoring practice with severity bands, item-9 safety escalation reminder, and a then-to-now change readout for measurement-based care. Educational; not diagnostic; no PHI." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
@@ -63,6 +63,15 @@
   .route .go{display:inline-block;background:var(--accent-dark,#1e5248);color:#fff;text-decoration:none;font-weight:600;font-size:.86rem;padding:8px 14px;border-radius:6px;margin:2px 0 8px}
   .route .go:hover,.route .go:focus{background:var(--accent,#2a6b5e)}
   .route .cost{font-size:.77rem;color:var(--text-light)}
+  /* Measurement-based care (2026-10-31) — a then-to-now readout. Tokens only; stores nothing. */
+  .mbc{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-top:16px}
+  .mbc h4{font-family:var(--font-head);font-size:.98rem;color:var(--primary-dark);margin:0 0 6px;font-weight:600}
+  .mbc .why{font-size:.86rem;color:var(--text-mid);margin:0 0 8px}
+  .mbc .pick{display:flex;gap:16px;flex-wrap:wrap;margin:6px 0 10px;font-size:.88rem;color:var(--text-mid)}
+  .mbc select{font:inherit;padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);margin-left:6px}
+  .mbc ul{margin:0;padding-left:1.15em;font-size:.9rem}
+  .mbc li{margin:4px 0}
+  .mbc .src{font-size:.78rem;color:var(--text-light);margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -137,6 +146,70 @@ function Scale(props){
   );
 }
 
+/* MBC_HELPERS_BEGIN — pure functions: no DOM, no storage, no clock.
+   tests/screeners-mbc.test.mjs executes this block straight out of the page. Measurement-based
+   care reads two totals of the same instrument, not one: how far the score moved, whether that
+   is more than one person's measurement noise, and where it landed. Response and remission are
+   working definitions a service sets; only the 5-point PHQ-9 threshold and the GAD-7 caveat
+   are claims about a paper (evidence_annotations.json). */
+var MBC={
+  SCALES:{
+    'PHQ-9':{max:27,mcid:5,remissionBelow:5},
+    'GAD-7':{max:21,mcid:null,remissionBelow:null}
+  },
+  read:function(name,base,now,band){
+    var s=MBC.SCALES[name]; base=parseInt(base,10); now=parseInt(now,10);
+    var r={name:name,base:base,now:now,change:now-base,bandFrom:band(base)[0],bandTo:band(now)[0],
+           pct:null,meaningful:null,response:null,remission:null};
+    if(base>0) r.pct=Math.round((base-now)/base*100);
+    if(s.mcid!==null) r.meaningful=Math.abs(now-base)>=s.mcid;
+    if(s.remissionBelow!==null){
+      r.remission=now<s.remissionBelow;
+      if(base>=s.remissionBelow) r.response=(base-now)*2>=base;
+    }
+    return r;
+  },
+  pts:function(n){ n=Math.abs(n); return n+(n===1?' point':' points'); },
+  lines:function(r){
+    var out=[];
+    var dir=r.change<0?'down '+MBC.pts(r.change):(r.change>0?'up '+MBC.pts(r.change):'unchanged');
+    out.push('Then '+r.base+' ('+r.bandFrom+') → now '+r.now+' ('+r.bandTo+'): '+dir
+      +(r.pct!==null&&r.change!==0?' — a '+Math.abs(r.pct)+'% '+(r.change<0?'fall':'rise')+' from baseline':'')+'.');
+    if(r.name==='PHQ-9'){
+      if(r.change===0) out.push('No change. Ask what the plan has had time to do before you call it a non-response.');
+      else if(r.meaningful) out.push((r.change<0?'A fall':'A rise')+' of '+MBC.pts(r.change)+' meets the 5-point threshold for one person’s change — '
+        +(r.change<0?'more than measurement noise.':'a worsening that counts; find out why.'));
+      else out.push('A change of '+MBC.pts(r.change)+' is under 5 — inside the noise for one person’s score. Do not call it better or worse on the number alone.');
+      out.push(r.response===null?'Response is not defined from a baseline already under 5.'
+        :'Response (a fall of at least half from baseline): '+(r.response?'met.':'not met.'));
+      out.push('Remission (total under 5): '+(r.remission?'met.':'not met.'));
+      out.push('Item 9 is read on its own at every administration — a falling total never clears it.');
+    } else {
+      out.push('No individual-change threshold is taught here for the GAD-7: its sensitivity to change is still emerging. Read the movement alongside the interview, not instead of it.');
+    }
+    return out;
+  }
+};
+/* MBC_HELPERS_END */
+
+function MbcCard(props){
+  var name=props.name, max=MBC.SCALES[name].max;
+  var b=useState(name==='PHQ-9'?18:15), base=b[0], setBase=b[1];
+  var n=useState(name==='PHQ-9'?11:9), now=n[0], setNow=n[1];
+  var opts=[]; for(var i=0;i<=max;i++) opts.push(e('option',{key:i,value:i},i));
+  var r=MBC.read(name,base,now,props.band);
+  return e('section',{className:'mbc','aria-labelledby':'mbc-h'},
+    e('h4',{id:'mbc-h'},'Measurement-based care · reading the change'),
+    e('p',{className:'why'},'One score screens; two scores of the same instrument tell you whether the plan is working. Pick a baseline total and today’s total (practice numbers — nothing is saved).'),
+    e('div',{className:'pick'},
+      e('label',null,'Baseline total',e('select',{value:base,'aria-label':name+' baseline total',onChange:function(ev){setBase(parseInt(ev.target.value,10))}},opts)),
+      e('label',null,'Today’s total',e('select',{value:now,'aria-label':name+' today’s total',onChange:function(ev){setNow(parseInt(ev.target.value,10))}},opts))),
+    e('ul',{'aria-live':'polite'},MBC.lines(r).map(function(l,i){return e('li',{key:i},l);})),
+    name==='PHQ-9'
+      ? e('p',{className:'src'},'Bands: Kroenke et al., J Gen Intern Med 2001, PMID 11556941. The 5-point threshold is the minimal clinically important difference for individual change in Löwe et al., Med Care 2004, PMID 15550799. Response and remission as written here are common working definitions in measurement-based care — your service’s protocol names its own. Teaching, not an order.')
+      : e('p',{className:'src'},'Sensitivity to change is “well-established for the PHQ-9 and emerging albeit not yet definitive for the GAD-7” (Kroenke et al., Gen Hosp Psychiatry 2010, PMID 20633738). Teaching, not an order.'));
+}
+
 function App(){
   var t=useState("phq"),tab=t[0],setTab=t[1];
   return e("div",{className:"shell"},
@@ -149,6 +222,7 @@ function App(){
     tab==="phq"
       ? e(Scale,{key:"phq",name:"PHQ-9",lead:PHQ_LEAD,items:PHQ,band:phqBand,interp:"PHQ-9 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–19 moderately severe · 20–27 severe. ≥10 has good sensitivity/specificity for major depression. Always review item 9 (self-harm) regardless of total."})
       : e(Scale,{key:"gad",name:"GAD-7",lead:GAD_LEAD,items:GAD,band:gadBand,interp:"GAD-7 bands: 0–4 minimal · 5–9 mild · 10–14 moderate · 15–21 severe. ≥10 is the usual threshold for further evaluation of generalized anxiety; it also screens reasonably for panic, social anxiety, and PTSD."}),
+    tab==="phq" ? e(MbcCard,{key:"mbc-phq",name:"PHQ-9",band:phqBand}) : e(MbcCard,{key:"mbc-gad",name:"GAD-7",band:gadBand}),
     e("div",{className:"route"},
       e("h4",null,"Get the official forms"),
       e("p",null,"The tally here is for learning the instruments. PHQ Screeners provides the official printable forms, scoring instructions and translations. Use your clinic’s approved form for patient care and documentation."),
