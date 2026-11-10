@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "writes": "off",
+  "armedFromWeek": null,
+  "store": "usage-counters",
+  "counterCeiling": 500
+}
