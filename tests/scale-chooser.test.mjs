@@ -127,6 +127,8 @@ test('invariant 4, in words — the cited lines say what the annotated claims sa
   const cows = ROWS.find((r) => r.id === 'opioid-withdrawal');
   assert.match(cows.licenses[0], /COWS ≥8 with 1 objective sign of opioid withdrawal/);
   assert.match(cows.licenses[0], /Teaching, not an order/);
+  const trend = ROWS.find((r) => r.id === 'depression-trend');
+  assert.match(trend.licenses[0], /minimal clinically important difference for individual change was 5 points on the 0 to 27 point scale/);
 });
 
 test('invariant 5 — a number in a teaching line needs evidence on its row', () => {
