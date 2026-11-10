@@ -169,6 +169,22 @@ class TestPagePasses(_SiteFixture):
         self.assertIn("clinical-warm.css", t)
         self.assertIn("cc-rise", t)
         self.assertIn("<!--ifn-->", t)
+        self.assertIn("<!--hub-->", t)
+
+    def test_direct_open_library_link(self):
+        """A tool opened in its own tab gets one way back; the shell index never does, and the
+        script is a no-op inside the shell's frame (it tests self against top first)."""
+        common.apply_dark_mode(self.tool)
+        t = self.read()
+        self.assertEqual(t.count("<!--hub-->"), 1)
+        self.assertIn("if(window.self!==window.top)return;", t)
+        self.assertIn("a.href='/?tab=library'", t)
+        self.assertIn("@media print{.cw-hub{display:none}}", t)
+        self.assertLess(t.index("<!--hub-->"), t.index("</body>"))
+
+    def test_index_does_not_get_the_library_link(self):
+        common.apply_dark_mode(self.tool, is_index=True)
+        self.assertNotIn("<!--hub-->", self.read())
 
     def test_dark_mode_rewrites_hardcoded_white(self):
         common.apply_dark_mode(self.tool)
@@ -187,6 +203,7 @@ class TestPagePasses(_SiteFixture):
         self.assertEqual(once, self.read())
         self.assertEqual(once.count('class="skip-link"'), 1)
         self.assertEqual(once.count("<!--ifn-->"), 1)
+        self.assertEqual(once.count("<!--hub-->"), 1)
 
     def test_cache_bust_applied_only_when_requested(self):
         with open(self.tool, "w", encoding="utf-8") as fh:
@@ -900,7 +917,7 @@ class TestSharedSnippets(unittest.TestCase):
             '<a class="skip-link">s</a><div id="root"></div><script>cw_theme'
             + self.MARKER
             + '</script><style>[data-theme="dark"]{}</style>'
-            + '<link rel="icon"><!--ifn-->'
+            + '<link rel="icon"><!--ifn--><!--hub-->'
         )
         open(os.path.join(d, "tools", "t.html"), "w", encoding="utf-8").write(page)
         failures = common.page_contract_failures(d)
@@ -921,7 +938,7 @@ class TestSharedSnippets(unittest.TestCase):
             "<script>cw_theme;var DAY=86400000;\n"
             + self.MARKER + "\n" + self.MARKER
             + '\n</script><style>[data-theme="dark"]{}</style>'
-            '<link rel="icon"><!--ifn-->'
+            '<link rel="icon"><!--ifn--><!--hub-->'
         )
         p = os.path.join(d, "tools", "t.html")
         open(p, "w", encoding="utf-8").write(page)
@@ -946,7 +963,7 @@ class TestSharedSnippets(unittest.TestCase):
         open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(index_html)
         open(os.path.join(d, "tools", "t.html"), "w", encoding="utf-8").write(
             '<a class="skip-link">s</a><div id="root"></div><script>cw_theme</script>'
-            '<style>[data-theme="dark"]{}</style><link rel="icon"><!--ifn-->' + tool_extra)
+            '<style>[data-theme="dark"]{}</style><link rel="icon"><!--ifn--><!--hub-->' + tool_extra)
         return d
 
     def _messages(self, d):
