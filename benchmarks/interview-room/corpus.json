@@ -68,6 +68,27 @@
       "checks": [{"kind": "intent", "key": "si_plan", "expected": false}, {"kind": "gate", "key": "si_plan_detail", "expected": false}]
     },
     {
+      "id": "ordinary-plan-after-disclosure-when-you-leave", "group": "context-shift", "cases": ["Dana"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D14: ordinary discharge plan must not reveal suicide-plan detail", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "Do you have a plan for when you leave the hospital?"],
+      "rationale": "The same D14 boundary in the other common wording. Until 2026-10-21 only the sentence above was tested, and this one matched the plan intent through its 'for when' look-ahead and opened the plan disclosure.",
+      "checks": [{"kind": "intent", "key": "si_plan", "expected": false}, {"kind": "gate", "key": "si_plan_detail", "expected": false}]
+    },
+    {
+      "id": "ordinary-plan-after-disclosure-after-you-leave", "group": "context-shift", "cases": ["Dana"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D14: ordinary discharge plan must not reveal suicide-plan detail", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "What's the plan for after you leave?"],
+      "rationale": "D14 in a third wording; the plan intent must stay a question about method, never about discharge.",
+      "checks": [{"kind": "intent", "key": "si_plan", "expected": false}, {"kind": "gate", "key": "si_plan_detail", "expected": false}]
+    },
+    {
+      "id": "ordinary-plan-after-disclosure-when-youd-like-to-go-home", "group": "context-shift", "cases": ["Dana"], "setup": "warm",
+      "basis": "existing-decision", "reference": "D14: ordinary discharge plan must not reveal suicide-plan detail", "reviewStatus": "pending-faculty-review",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about when you'd like to go home?"],
+      "rationale": "D14 in the timing wording. On 2026-10-28 (Codex review of #1119) this sentence matched the plan intent's new `thought about when` pattern and opened the plan disclosure; that pattern now requires a plan continuation instead of excluding discharge verbs.",
+      "checks": [{"kind": "intent", "key": "si_plan", "expected": false}, {"kind": "gate", "key": "si_plan_detail", "expected": false}]
+    },
+    {
       "id": "learner-assertion", "group": "statement", "cases": ["Dana", "Marcus", "Ray"], "setup": "warm",
       "basis": "proposed", "reference": "Speech-act distinction: assertion versus question", "reviewStatus": "pending-faculty-review",
       "turns": ["You have had thoughts of killing yourself."],
