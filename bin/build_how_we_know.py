@@ -431,7 +431,9 @@ code{background:var(--fd-chip);padding:1px 6px;border-radius:5px;font-size:13px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<!-- <main>, not <div>: the build's page contract gives the skip link its #root target by
+     adding id="root" to the first <main> (common.apply_page_chrome). -->
+<main class="wrap">
 
 <header class="hero">
   <p class="kicker">Evidence &amp; Reading · Critical Appraisal</p>
@@ -486,7 +488,7 @@ found a reason to doubt it. Copy that drops the second half is where most citati
   recommendations. All clinical content in this library is synthetic or de-identified.</p>
 </footer>
 
-</div>
+</main>
 <script>
 document.querySelectorAll('button.reveal').forEach(function(btn){
   btn.addEventListener('click', function(){
@@ -563,6 +565,9 @@ def self_test():
     checks.append(("full edition keeps the original feedback", "That is Correction 2." in full))
     checks.append(("only the public edition carries the tool metadata header",
                    "[CLERKSHIP-META v1]" in public and "[CLERKSHIP-META v1]" not in full))
+    checks.append(("both editions wrap their content in one <main>",
+                   full.count("<main") == 1 and public.count("<main") == 1
+                   and full.count("</main>") == 1 and public.count("</main>") == 1))
     checks.append(("no unexpanded marker in either edition", "{{" not in full and "{{" not in public))
     try:
         assert_public(public)
