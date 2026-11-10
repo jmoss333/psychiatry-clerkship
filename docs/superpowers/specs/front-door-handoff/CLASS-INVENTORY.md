@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(782 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(789 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -265,7 +265,13 @@ concept-count status line when nothing is due), `caseWeek`):
         .fd-continue <button> | .fd-setupcta <button>
       .fd-primary.fd-now.fd-now--{resume|block|read|due}   ...or a device-store face won (state.nowHtml)
         .fd-due | .fd-resume | .fd-lastread | .fd-block     (fd_due.js / fd_block.js, chrome stripped)
-      .fd-offline        <section>                    the offline receipt, right after the Now card
+      .fd-offline        <section>                    the offline receipt, right after the Now card (week set)
+      .fd-starters       <section aria-labelledby>    first-visit starters -- ONLY with no week set
+        .fd-sectionhead#fd-starters-title <h2>
+        .fd-starters__list
+          .fd-starter <button data-fd-open=REF> ×≤3   only tools this site ships
+            .fd-starter__body > .fd-starter__title + .fd-starter__line
+            .fd-starter__go <span aria-hidden>        "Open →"
       .fd-sectionhead.fd-also <h2>                    4. "Also today" (always rendered)
       .fd-alsolist                                     (only when a row exists)
         .fd-also__row[data-fd-mark][data-fd-count][style=--mark-share] ×N   the faces that did not win
@@ -318,6 +324,7 @@ Removed from Today (2026-10-04): `.fd-consistency` (D2 — it now opens Learning
 | `.fd-today__record` | Wrapper for the phone's copy of the `.fd-progresscard` link, under the pills; hidden ≥1000px where the rail carries it. |
 | `.fd-continue__cta`, `.fd-setupcta__cta` | The Now card's filled button on the two lead faces, as `aria-hidden` spans (the card is the control; the kicker and title are its name). "Continue →" / "Preview week →" / "Review week →" / "Set rotation week". A demoted Continue (`.is-secondary`) has none and arrows its title instead. |
 | `.fd-continue__kicker.is-complete` | Switches teal → terracotta when the week is finished. |
+| `.fd-starters`, `.fd-starters__list`, `.fd-starter`, `.fd-starter__body`, `.fd-starter__title`, `.fd-starter__line`, `.fd-starter__go` | First-visit starters (2026-11-09), rendered by `fdTodayStarters` only when no week is set and only for tools in `index.byRef`. One hairline-bordered list on `--fd-surface` (the `.fd-railkit` shape), rows divided by hairlines, 44px minimum height, hover `--fd-callout`. Quiet on purpose: the setup card above keeps the only filled button. With no week set the `.fd-offline` receipt renders AFTER the preparation chooser instead of after the Now card. |
 | `.fd-continue__segs` | The week's progress as one `.fd-continue__seg` per activity, `.is-done` filled teal over the `--fd-ring-track` ground from the left (2026-10-01). Replaces the retired `.fd-ring` percentage ring. Decorative (`aria-hidden`): `.fd-continue__count` is the text. On a secondary Continue it still renders; the title drops to 17px. |
 | `.fd-railkit` | The rail's Safety kit as ONE panel (2026-10-01): warm surface, hairline border, a 4px `--fd-danger` rule on the left. Its `.fd-kitcard` rows have no border or ground of their own -- hairline dividers between them, `--fd-danger-wash` on hover -- so `.fd-kitcard__sub` ink is gated against `--fd-surface-warm`. The sheet's `.fd-kitrow` is unchanged. |
 | `.fd-quicktool` (label) | `fdQuickToolLabel` shows the title before its ` — ` subtitle ("The Interview Room"), and the full title rides on the button as `title` (2026-10-01). |
