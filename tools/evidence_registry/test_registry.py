@@ -365,6 +365,10 @@ ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP9_2026_09_IDS
 INTERVIEW_ROOM_FOLLOWUP_2026_09_IDS = {"kroenke-2001-phq9"}
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | INTERVIEW_ROOM_FOLLOWUP_2026_09_IDS
 
+# Original full guidelines added for the F01–F03 PTSD faculty-review draft.
+PTSD_ORIGINAL_GUIDELINE_2026_10_IDS = {"vadod-2017-ptsd-cpg", "vadod-2023-ptsd-cpg"}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PTSD_ORIGINAL_GUIDELINE_2026_10_IDS
+
 
 # Approved primer expansion (2026-10-11). Reuse bap-catatonia-2023; no duplicate DOI.
 PSYCHOPHARM_PRIMER_2026_10_IDS = {
@@ -672,7 +676,8 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
     for position, source in enumerate(registry["sources"]):
-        assert source["governance"]["supersededBy"] == [], position
+        expected_supersession = ["vadod-2023-ptsd-cpg"] if source["id"] == "vadod-2017-ptsd-cpg" else []
+        assert source["governance"]["supersededBy"] == expected_supersession, position
         expected_status = (
             "corrected"
             if source["id"] in CORRECTED_IDS | PEER_REVIEW_WP9_2026_09_CORRECTED_IDS | PSYCHOPHARM_PRIMER_CORRECTED_IDS
