@@ -137,7 +137,8 @@ def collect(args):
         impact['readings'] = []
         for source, ref in refs.items():
             file = (Path(L.LIB_ROOT) / source).resolve()
-            if not file.is_relative_to(Path(L.LIB_ROOT).resolve()) or not file.is_file() or file.suffix != '.md':
+            if (not file.is_relative_to(Path(L.LIB_ROOT).resolve()) or not file.is_file() or
+                    file.suffix not in ('.md', '.html')):
                 impact['status'] = 'incomplete'
                 impact['coverage']['errors'].append('Reading source unavailable: ' + source)
                 continue

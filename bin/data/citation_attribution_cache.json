@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-10-26",
+  "refreshedAt": "2026-11-02",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -1337,6 +1337,25 @@
       "resolvedAt": "2026-09-27",
       "pmid": "24657098"
     },
+    "10.1016/j.anclin.2025.07.004": {
+      "title": "Perioperative Considerations for Medications for Opioid Use Disorder",
+      "container": "Anesthesiology Clinics",
+      "containerAlt": [
+        "Anesthesiol Clin",
+        "Anesthesiology Clinics",
+        "Anesthesiology clinics"
+      ],
+      "year": 2025,
+      "authors": [
+        "Harrison",
+        "Kornfeld",
+        "Aggarwal"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-02",
+      "pmid": "41233100"
+    },
     "10.1016/j.annemergmed.2013.05.003": {
       "title": "Diagnosing Delirium in Older Emergency Department Patients: Validity and Reliability of the Delirium Triage Screen and the Brief Confusion Assessment Method",
       "container": "Annals of Emergency Medicine",
@@ -1455,6 +1474,36 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "33846015"
+    },
+    "10.1016/j.annemergmed.2024.01.041": {
+      "title": "National Institute on Drug Abuse Clinical Trials Network Meeting Report: Managing Patients Exposed to Xylazine-Adulterated Opioids in Emergency, Hospital and Addiction Care Settings",
+      "container": "Annals of Emergency Medicine",
+      "containerAlt": [
+        "Ann Emerg Med",
+        "Annals of Emergency Medicine",
+        "Annals of emergency medicine"
+      ],
+      "year": 2024,
+      "authors": [
+        "Perrone",
+        "Haroz",
+        "D’Orazio",
+        "Gianotti",
+        "Love",
+        "Salzman",
+        "Lowenstein",
+        "Thakrar",
+        "Klipp",
+        "Rae",
+        "Reed",
+        "Sisco",
+        "Wightman",
+        "Nelson"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-02",
+      "pmid": "38493376"
     },
     "10.1016/j.annemergmed.2024.02.016": {
       "title": "Managing Alcohol Withdrawal Syndrome",
@@ -2569,6 +2618,25 @@
       "resolvedAt": "2026-09-27",
       "pmid": "30743298"
     },
+    "10.1055/s-0044-1787571": {
+      "title": "Opioid Maintenance Therapy: A Review of Methadone, Buprenorphine, and Naltrexone Treatments for Opioid Use Disorder",
+      "container": "Semin Neurol",
+      "containerAlt": [
+        "Semin Neurol",
+        "Seminars in Neurology",
+        "Seminars in neurology"
+      ],
+      "year": 2024,
+      "authors": [
+        "Fipps",
+        "Oesterle",
+        "Kolla"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-02",
+      "pmid": "38848746"
+    },
     "10.1056/nejmoa051688": {
       "title": "Effectiveness of Antipsychotic Drugs in Patients with Chronic Schizophrenia",
       "container": "N Engl J Med",
@@ -2821,6 +2889,35 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "35442174"
+    },
+    "10.1080/02791072.2024.2430616": {
+      "title": "24-Hour Induction of Transdermal Buprenorphine to Buprenorphine Extended-Release",
+      "container": "Journal of Psychoactive Drugs",
+      "containerAlt": [
+        "J Psychoactive Drugs",
+        "Journal of Psychoactive Drugs",
+        "Journal of psychoactive drugs"
+      ],
+      "year": 2024,
+      "authors": [
+        "Azar",
+        "Li",
+        "Wong",
+        "Nikoo",
+        "Machado",
+        "Ignaszewski",
+        "Mathew",
+        "Raheemullah",
+        "Wakeman",
+        "Mullen",
+        "Krausz",
+        "Montaner",
+        "Maharaj"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-02",
+      "pmid": "39560320"
     },
     "10.1080/13811118.2021.1915217": {
       "title": "The Effectiveness of the Safety Planning Intervention for Adults Experiencing Suicide-Related Distress: A Systematic Review",
@@ -3171,6 +3268,31 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37579112"
+    },
+    "10.1097/adm.0000000000001281": {
+      "title": "Novel Uses of Methadone Under the “72-Hour Rule” to Facilitate Transitions of Care and Low-Dose Buprenorphine Induction in an Outpatient Bridge Clinic",
+      "container": "J Addict Med",
+      "containerAlt": [
+        "J Addict Med",
+        "Journal of Addiction Medicine",
+        "Journal of addiction medicine"
+      ],
+      "year": 2024,
+      "authors": [
+        "Shahlapour",
+        "Singh",
+        "Christine",
+        "Laks",
+        "Evans",
+        "Farrell",
+        "Khan",
+        "Taylor",
+        "Rozansky"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-02",
+      "pmid": "38329815"
     },
     "10.1097/jcp.0000000000002090": {
       "title": "Lithium Toxicity and Altered Clearance Following Initiation of Semaglutide in Patients With Bipolar Disorder",

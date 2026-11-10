@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.0" built="2026-06-29" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and CIWA-Ar score bands. One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, faculty-reviewed." -->
+<!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.1" built="2026-10-31" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and CIWA-Ar score bands. One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, faculty-reviewed; a delirium-screen-first path (who to screen, arousal and attention before any cognitive test, the unit's validated screen, what a negative screen does not license)." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Algorithms &amp; Decision Aids</title>
-<meta name="description" content="Visual decision aids for inpatient psychiatry: rule-out-first decision trees, the agitation escalation ladder, NMS vs serotonin syndrome, the alcohol-withdrawal timeline, and CIWA-Ar score bands.">
+<meta name="description" content="Visual decision aids for inpatient psychiatry: rule-out-first decision trees, the agitation escalation ladder, NMS vs serotonin syndrome, the alcohol-withdrawal timeline, CIWA-Ar score bands, and a delirium-screen-first path.">
 <style>
   :root{
     --bg:#f6f3ee; --bg2:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --border:#ddd3c6; --border2:#ebe5da;
@@ -123,6 +123,9 @@
   .note{font-size:.84rem;color:var(--light);margin-top:8px}
   .disc{font-size:.78rem;color:var(--light);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
   a.more{color:var(--accent-d);font-size:.85rem}
+  /* Delirium screen first (2026-10-31) — layout only; colours come from the classes it reuses. */
+  .screenlist{margin:0;padding-left:1.15em;font-size:.88rem}
+  .screenlist li{margin:4px 0}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -214,7 +217,56 @@ var TIMELINE=[
  {t:"48–72 h+",h:"Delirium tremens",s:"Confusion, fever, autonomic instability — a medical emergency with real mortality.",tone:"dgr"}
 ];
 
-var VIEWS=[["trees","Decision trees"],["ladder","Agitation ladder"],["nmsss","NMS vs SS"],["withdrawal","Withdrawal timeline"],["ciwa","CIWA-Ar bands"]];
+/* DELIRIUM_SCREEN_BEGIN — data and one view, no storage, no state.
+   tests/decision-aids-delirium-screen.test.mjs executes this block straight out of the page.
+   It teaches when and how to screen; it reproduces no instrument. The 4AT and the CAM family
+   are named and routed to, never scored or programmed here: no item wording, no cut-offs,
+   no algorithm. The mse.html cognition pearl (delirium screen first, MoCA only after) is the
+   rule this view puts in front of the learner. */
+var SCREEN={
+ who:["New or worse confusion","Age 65 or older on admission","Known dementia or cognitive impairment","Acute illness, infection or surgery","New or changed psychotropic, opioid or anticholinergic","Alcohol or sedative withdrawal"],
+ look:[
+  ["Arousal","Drowsy, hard to rouse or hyperalert is abnormal on its own. Note it before you test anything."],
+  ["Attention","Months of the year backwards, or a digit span. Errors, stalling or needing to be restarted mean inattention."],
+  ["Baseline","Ask the nurse and the family what is new compared with the patient's usual self. Delirium is a change, so you need the before."]],
+ screen:"Use the validated screen your unit trains you on: often the 4AT on general wards, the CAM family (CAM, 3D-CAM, CAM-ICU) where that is the standard. Score it from the official form and its instructions, not from memory.",
+ formUrl:"https://www.the4at.com/",
+ positive:"Screen positive: delirium is a medical diagnosis. Work up the cause — the Confused / fluctuating tree under Decision trees is the next step, not a psychiatric label.",
+ limits:[
+  "One negative screen is a snapshot. Delirium fluctuates, so rescreen each shift and whenever the picture changes.",
+  "Hypoactive delirium is quiet. It is the form most easily mistaken for depression.",
+  "A MoCA or MMSE taken during delirium measures the delirium. Defer formal cognitive testing until it clears.",
+  "Dementia does not rule delirium out. Delirium on top of dementia is common, and the change from baseline is what you look for."],
+ rounds:"“Nursing reports new drowsiness since yesterday, and the patient can’t do months backwards — screen positive. I’m treating it as delirium and working up the cause before any cognitive testing.”"
+};
+function ScreenView(){
+  return e("div",{className:"card"},
+    e("h2",null,"Delirium screen first"),
+    e("div",{className:"cap"},"On every confused patient, and before any cognitive test: is this delirium? Look at arousal and attention, get the baseline, then use your unit’s validated screen."),
+    e("div",{className:"node ro"},
+      e("div",{className:"nlabel"},e("span",{className:"num"},"1"),"Who to screen"),
+      e("div",{className:"chips"}, SCREEN.who.map(function(x,i){return e("span",{className:"chip d",key:i},x);}))),
+    e("div",{className:"connector"}),
+    e("div",{className:"node dx"},
+      e("div",{className:"nlabel"},e("span",{className:"num"},"2"),"Look before you test"),
+      e("ul",{className:"screenlist"}, SCREEN.look.map(function(x,i){return e("li",{key:i},e("b",null,x[0]+" · "),x[1]);}))),
+    e("div",{className:"connector"}),
+    e("div",{className:"node fm"},
+      e("div",{className:"nlabel"},e("span",{className:"num"},"3"),"Then the validated screen"),
+      e("div",{className:"fmtext"}, SCREEN.screen),
+      e("a",{className:"more",href:SCREEN.formUrl,target:"_blank",rel:"noopener noreferrer"},"The 4AT, its instructions and its licence — the4at.com →")),
+    e("div",{className:"connector"}),
+    e("div",{className:"escape"}, SCREEN.positive),
+    e("div",{className:"connector"}),
+    e("div",{className:"node dx"},
+      e("div",{className:"nlabel"},e("span",{className:"num"},"4"),"What a screen does not license"),
+      e("ul",{className:"screenlist"}, SCREEN.limits.map(function(x,i){return e("li",{key:i},x);}))),
+    e("div",{className:"rounds"}, e("b",null,"On rounds · "), SCREEN.rounds),
+    e("div",{className:"note"},"Teaching, not an order. Your unit’s delirium protocol names its screen and how often it is repeated."));
+}
+/* DELIRIUM_SCREEN_END */
+
+var VIEWS=[["trees","Decision trees"],["screen","Delirium screen first"],["ladder","Agitation ladder"],["nmsss","NMS vs SS"],["withdrawal","Withdrawal timeline"],["ciwa","CIWA-Ar bands"]];
 
 function Tree(props){
   var t=props.t;
@@ -296,6 +348,7 @@ function App(){
 
   function body(){
     if(view==="trees") return e("div",null, TREES.map(function(t){return e(Tree,{key:t.id,t:t});}));
+    if(view==="screen") return e(ScreenView);
     if(view==="ladder") return e("div",{className:"card"},
       e("h2",null,"Agitation escalation ladder"),
       e("div",{className:"cap"},"Least restrictive first. Climb only as far as the risk requires — and document why."),

@@ -1,6 +1,21 @@
 import { readFileSync } from 'node:fs';
 
+import { DISABLED, loadCollection, weekCounts } from './_shared/collection.mjs';
 import { isoWeek, increment } from './_shared/counters.mjs';
+import { createCounterStore } from './_shared/blobs.mjs';
+
+// H4: register only the rate-limited route. Netlify disables the default
+// /.netlify/functions/ev endpoint when config.path is set. Do not add a rewrite
+// to that endpoint in netlify.toml. Verify routing and enforcement at first deploy.
+export const config = {
+  path: '/api/ev',
+  rateLimit: {
+    action: 'rate_limit',
+    windowLimit: 120,
+    windowSize: 60,
+    aggregateBy: ['ip', 'domain'],
+  },
+};
 
 // Runtime read + JSON.parse, resolved relative to this module's own URL.
 // NOT `import allowlistJson from '../../allowlist.json' with { type: 'json' }` —
@@ -19,10 +34,24 @@ const SITES = new Set(['ms3', 'res']);
 const MAX_KEYS = 20;
 const MAX_BODY_BYTES = 4096;
 
-const LEARNER_ORIGINS = [
-  'https://une-ms3-psychiatry.netlify.app',
-  'https://mmc-psychiatry-residents-sanford.netlify.app',
-];
+// H3: each learner origin may post counts for its OWN site only. The `site` field in the body
+// must match the origin's entry here; a mismatch is a silent 204 with no write. (A browser
+// cannot forge Origin; a non-browser caller can — see metrics/HARDENING.md, residual risk.)
+export const LEARNER_ORIGIN_SITES = Object.freeze({
+  'https://une-ms3-psychiatry.netlify.app': 'ms3',
+  'https://mmc-psychiatry-residents-sanford.netlify.app': 'res',
+});
+
+// H2: writes happen only in the CURRENTLY PUBLISHED PRODUCTION deploy. `getStore` is site-wide,
+// so without this every deploy preview, branch deploy and old production permalink
+// (`<deploy-id>--clerkship-metrics.netlify.app`, which still runs its functions) would be a
+// second live collector writing into the production store. The deploy context comes from the
+// function's trusted `context.deploy` argument — NOT the `CONTEXT` env var, which is a build
+// variable (see sp-preview/README.md and the 2026-10-14 care-packet review for the same fix).
+// Missing or partial context fails closed.
+export function isPublishedProduction(context) {
+  return context?.deploy?.context === 'production' && context?.deploy?.published === true;
+}
 
 function noContent(origin) {
   // 204 for everything the client could get wrong. A probe must not be able to
@@ -37,13 +66,26 @@ function noContent(origin) {
   });
 }
 
-export function createEv({ store, getStore, allowlist, now = () => new Date(), origins = LEARNER_ORIGINS }) {
+// `collection` defaults to DISABLED: a handler built without an explicit, enabled collection
+// writes nothing (H1). Callers — tests included — must opt in.
+export function createEv({
+  store,
+  getStore,
+  allowlist,
+  now = () => new Date(),
+  originSites = LEARNER_ORIGIN_SITES,
+  collection = DISABLED,
+}) {
   const allowed = {
     ms3: new Set(allowlist.keys.ms3),
     res: new Set(allowlist.keys.res),
   };
+  const origins = Object.keys(originSites);
 
-  return async function ev(request) {
+  return async function ev(request, context) {
+    // Defense in depth if routing ever exposes another URL: reject it before
+    // preflight, body parsing or storage. This guard is not an edge rate limiter.
+    if (new URL(request.url).pathname !== config.path) return new Response(null, { status: 404 });
     const origin = request.headers.get('origin') || '';
 
     if (request.method === 'OPTIONS') {
@@ -61,6 +103,13 @@ export function createEv({ store, getStore, allowlist, now = () => new Date(), o
     if (request.method !== 'POST') return new Response(null, { status: 405 });
     if (!origins.includes(origin)) return new Response(null, { status: 403 });
 
+    // H1: the committed switch (metrics/collection.json) is off → accept and drop. The body is
+    // not even read, and the store is never acquired. The response is the same 204 a write
+    // would get, so the switch's state is not observable from outside.
+    if (!collection.writesEnabled) return noContent(origin);
+    // H2: only the published production deploy writes.
+    if (!isPublishedProduction(context)) return noContent(origin);
+
     // Deliberately NOT read or logged: IP, user agent, referrer. There is no
     // logging in this function at all; Netlify's own function logs would
     // otherwise reintroduce the IPs this design promises never to keep.
@@ -75,6 +124,11 @@ export function createEv({ store, getStore, allowlist, now = () => new Date(), o
 
     const site = payload?.site;
     if (!SITES.has(site)) return noContent(origin);
+    // H3: the body's site must be the origin's own site.
+    if (originSites[origin] !== site) return noContent(origin);
+    // H6: never write a week before the armed week (a skewed clock cannot backfill one either).
+    const week = isoWeek(now());
+    if (!weekCounts(week, collection)) return noContent(origin);
 
     const keys = Array.isArray(payload?.keys) ? payload.keys.slice(0, MAX_KEYS) : [];
     const unique = [...new Set(keys.filter((k) => typeof k === 'string' && allowed[site].has(k)))];
@@ -98,10 +152,10 @@ export function createEv({ store, getStore, allowlist, now = () => new Date(), o
     }
     if (!resolvedStore) return noContent(origin);
 
-    const week = isoWeek(now());
     for (const key of unique) {
       try {
-        await increment(resolvedStore, { site, week, key });
+        // H5: a counter stops at collection.counterCeiling and is marked `capped`.
+        await increment(resolvedStore, { site, week, key }, { ceiling: collection.counterCeiling });
       } catch {
         // A store failure must never surface to the learner's page.
       }
@@ -143,23 +197,39 @@ export function createEv({ store, getStore, allowlist, now = () => new Date(), o
 // failure — which means a stale client would silently stop incrementing
 // counters with zero signal anywhere. `createProductionEv` is its own export
 // (rather than inlined below) precisely so a test can inject a fake
-// `getStore` and prove it is invoked once per qualifying request, never once
-// per container lifetime, and never at all for a request that was always
+// `getStore` and prove clients are fresh per qualifying request and write,
+// never cached for the container lifetime, and never acquired for a request that was always
 // going to be rejected.
-export function createProductionEv({ allowlist, getStore, now, origins }) {
+//
+// The store NAME comes from the committed collection switch, so the writer and
+// every reader always agree on it (metrics/collection.json → `store`).
+export function createProductionEv({
+  allowlist, getStore, now, originSites, collection = DISABLED, fetch = globalThis.fetch,
+}) {
   return createEv({
-    getStore: () => getStore('usage-counters'),
+    // The pinned SDK can report modified:true on failed conditional HTTP writes.
+    // Validate each write's raw HTTP status after the SDK's own operation.
+    getStore: () => createCounterStore(getStore, collection.store, fetch),
     allowlist,
     now,
-    origins,
+    originSites,
+    collection,
   });
 }
 
-export default async function ev(request) {
+// The committed switch, parsed once at module load like the allowlist. A missing or malformed
+// file yields DISABLED (writes off) rather than a boot failure.
+export const COLLECTION = loadCollection();
+
+export default async function ev(request, context) {
   // Node caches a dynamic import's module resolution after the first call,
   // so this costs nothing on repeat invocations — but nothing here caches
-  // the STORE itself. Only the allowlist (immutable, parsed once at module
-  // load above) is memoized; getStore() runs fresh every time.
+  // the STORE itself. Only the allowlist and the collection switch (immutable,
+  // parsed once at module load above) are memoized; getStore() runs fresh
+  // every time. `context` is Netlify's trusted handler context (H2).
   const { getStore } = await import('@netlify/blobs');
-  return createProductionEv({ allowlist: allowlistJson, getStore })(request);
+  return createProductionEv({ allowlist: allowlistJson, getStore, collection: COLLECTION })(
+    request,
+    context,
+  );
 }

@@ -80,7 +80,10 @@ test('readRealCounters keeps only the 4-field contract shape (fake store, flag u
     c: null,
   };
   const store = { list: async () => ({ blobs: Object.keys(rows).map((key) => ({ key })) }), get: async (k) => rows[k] };
-  assert.deepEqual(await mod.readRealCounters(store), [{ site: 'ms3', week: '2026-W37', key: 'page:x.md', n: 3 }]);
+  // An armed switch is passed explicitly: with the committed (unarmed) switch no week counts
+  // at all (H6, pinned in hardening.test.mjs). This test pins the shape filter only.
+  const armed = { writesEnabled: true, armedFromWeek: '2026-W30', store: 'usage-counters', counterCeiling: 500 };
+  assert.deepEqual(await mod.readRealCounters(store, armed), [{ site: 'ms3', week: '2026-W37', key: 'page:x.md', n: 3 }]);
 });
 
 test('UN-WIRED: no Netlify site deploys it (the metrics site does not exist yet)', () => {

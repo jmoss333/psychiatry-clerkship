@@ -44,6 +44,8 @@ import {
   CLINICAL_FINGERPRINT,
   blobSha,
   canonicalClinicalRecord,
+  canonicalCotwRegistryEntry,
+  cotwRegistryHashForSlug,
   canonicalQuestionBank,
   canonicalTopicMetaRecord,
   clinicalManifestForSlug,
@@ -82,11 +84,11 @@ for slug in payload["slugs"]:
     paths = ah.sources_for_slug(shipped, slug)
     sources = {p: (root / p).read_bytes() for p in paths}
     try:
-        manifest = ah.manifest_for_slug(slug, sources, meta.get(slug))
+        manifest = ah.manifest_for_slug(slug, sources, meta.get(slug), ah.cotw_registry_hash_for_slug(shipped, slug))
     except ah.AttestationHashError:
         out["slugs"][slug] = {"error": "AttestationHashError"}
         continue
-    clinical = ah.clinical_manifest_for_slug(slug, sources, meta.get(slug))
+    clinical = ah.clinical_manifest_for_slug(slug, sources, meta.get(slug), ah.cotw_registry_hash_for_slug(shipped, slug))
     out["slugs"][slug] = {
         "manifest": manifest,
         "digest": ah.blob_sha(manifest.encode("utf-8")),
@@ -150,7 +152,7 @@ function jsManifest(root, shipped, topicMeta, slug) {
     sources[source] = sourceBlobSha(source, fs.readFileSync(path.join(root, source)));
   }
   const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
-  return manifestForSlug(slug, sources, record);
+  return manifestForSlug(slug, sources, record, cotwRegistryHashForSlug(shipped, slug));
 }
 
 const shippedDoc = readJson(repo, SHIPPED_PAGES);
@@ -221,6 +223,31 @@ test('every shipped slug hashes identically in both implementations, reviewed or
   }
   t.diagnostic(`${shippedSlugs.length} shipped slugs compared `
     + `(${reviewedShipped.length} reviewed, ${shippedSlugs.length - reviewedShipped.length} not)`);
+});
+
+test('a Case-of-the-Week registry summary is hashed only for its rendered audience', () => {
+  const registry = Buffer.from(JSON.stringify({ weeks: [{
+    date: '2026-01-05', topic: 'demo', label: 'Demo', ms3_src: 'demo-ms3.md', res_src: 'demo-res.md',
+    tldr_ms3: 'MS3 summary.', tldr_res: 'Resident summary.',
+  }] }), 'utf8');
+  const sources = { 'demo.md': blobSha(Buffer.from('Synthetic case.\n', 'utf8')) };
+  const ms3 = 'cotw_20260105_demo_ms3.md';
+  const res = 'cotw_20260105_demo_res.md';
+  const beforeMs3Hash = blobSha(canonicalCotwRegistryEntry(ms3, registry));
+  const beforeResHash = blobSha(canonicalCotwRegistryEntry(res, registry));
+  const beforeMs3 = manifestForSlug(ms3, sources, null, beforeMs3Hash);
+  const beforeRes = manifestForSlug(res, sources, null, beforeResHash);
+  const changed = Buffer.from(JSON.stringify({ weeks: [{
+    date: '2026-01-05', topic: 'demo', label: 'Demo', ms3_src: 'demo-ms3.md', res_src: 'demo-res.md',
+    tldr_ms3: 'MS3 summary, revised.', tldr_res: 'Resident summary.',
+  }] }), 'utf8');
+
+  const changedMs3Hash = blobSha(canonicalCotwRegistryEntry(ms3, changed));
+  const changedResHash = blobSha(canonicalCotwRegistryEntry(res, changed));
+  assert.notEqual(manifestForSlug(ms3, sources, null, changedMs3Hash), beforeMs3);
+  assert.equal(manifestForSlug(res, sources, null, changedResHash), beforeRes);
+  assert.match(beforeMs3, /^cotw_registry [a-f0-9]{40}$/m);
+  assert.notEqual(beforeMs3Hash, changedMs3Hash);
 });
 
 test('the governance strings are byte-identical across the two implementations', () => {
@@ -437,7 +464,7 @@ function jsClinicalManifest(root, shipped, topicMeta, slug) {
     sources[source] = clinicalSourceSha(source, fs.readFileSync(path.join(root, source)));
   }
   const record = Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : undefined;
-  return clinicalManifestForSlug(slug, sources, record);
+  return clinicalManifestForSlug(slug, sources, record, cotwRegistryHashForSlug(shipped, slug));
 }
 
 test('every shipped Markdown source normalises to identical clinical text in both twins', (t) => {
