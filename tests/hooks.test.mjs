@@ -367,6 +367,7 @@ test('post_edit_validate blocks when a producer edit leaves shipped_pages.json s
     .flatMap(page => [page.source, ...(page.extraSources || [])]);
   for (const rel of new Set([
     '13_Faculty_Resources/_automation/site_build/shipped_pages.py',
+    '13_Faculty_Resources/_automation/attestation_hash.py',
     '13_Faculty_Resources/_automation/site_build/teaching_dependencies.py',
     '13_Faculty_Resources/_automation/site_build/site_extras.py',
     '13_Faculty_Resources/_automation/site_build/cotw_slug.py',

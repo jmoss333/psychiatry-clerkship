@@ -40,9 +40,13 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
+AUTOMATION = os.path.dirname(HERE)
+if AUTOMATION not in sys.path:
+    sys.path.insert(0, AUTOMATION)
 
 import site_extras  # noqa: E402
 import teaching_dependencies  # noqa: E402
+from attestation_hash import blob_sha, canonical_cotw_registry_entry  # noqa: E402
 from cotw_slug import COTW_DIR, COTW_REGISTRY, cotw_slug, cotw_weeks  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
@@ -161,16 +165,21 @@ def derive(root=ROOT):
                 raise ShippedPagesError(
                     "cotw_registry.json: week %r is missing %s" % (label, source_key)
                 )
-            add(
-                _page(
-                    cotw_slug(week, level),
+            slug = cotw_slug(week, level)
+            page = _page(
+                    slug,
                     "page",
                     [level],
                     "%s — %s" % (label, LEVEL_TITLES[level]),
                     os.path.join(COTW_DIR, source),
                     "cotw_registry",
                 )
+            # Consumers read only this derived listing. The value is the canonical
+            # per-edition, per-audience registry projection that the case renders.
+            page["cotwRegistryHash"] = blob_sha(
+                canonical_cotw_registry_entry(slug, {"weeks": [week]})
             )
+            add(page)
 
     # 4 -- resident-only markdown. Two entries deliberately reuse a slug the
     # manifest already ships (welcome.md, cotw_index.md): the resident build

@@ -556,6 +556,23 @@
 .fd-setupcta__kicker{display:block;font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-teal-deep)}
 .fd-setupcta__title{display:block;font-family:'Source Serif 4',Georgia,'Times New Roman',serif;font-size:var(--fd-font-2xl);font-weight:700;line-height:1.2;color:var(--fd-text);margin-top:var(--fd-space-2)}
 .fd-setupcta__cta{flex:0 0 auto}
+/* First-visit starters (fd_today.js fdTodayStarters): quiet rows under the setup card, only when
+ * no week is set. One bordered list like .fd-railkit, so three rows read as one object and the
+ * setup card's filled button stays the only primary on the screen. */
+.fd-starters{margin:var(--fd-space-9) 0 0}
+.fd-starters__list{border:1px solid var(--fd-line);border-radius:var(--fd-radius-md);background:var(--fd-surface);overflow:hidden}
+.fd-starter{
+  display:flex;align-items:center;gap:var(--fd-space-6);width:100%;min-height:44px;
+  padding:var(--fd-space-5) var(--fd-space-6);background:none;border:none;text-align:left;
+  font:inherit;color:inherit;cursor:pointer;
+  transition:background-color var(--fd-dur-fast);
+}
+.fd-starter + .fd-starter{border-top:1px solid var(--fd-line)}
+.fd-starter:hover{background:var(--fd-callout)}
+.fd-starter__body{flex:1;min-width:0}
+.fd-starter__title{display:block;font-size:var(--fd-font-md);font-weight:700;color:var(--fd-text)}
+.fd-starter__line{display:block;margin-top:var(--fd-space-1);font-size:var(--fd-font-sm);line-height:1.45;color:var(--fd-text-mid)}
+.fd-starter__go{flex:0 0 auto;font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-teal-deep);white-space:nowrap}
 
 /* Rotation edition: a compact chart-edge handoff, intentionally subordinate to Continue/setup. */
 .fd-edition-card{
