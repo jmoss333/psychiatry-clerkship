@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "25a67a30ce3f2b6394e019d967d0b01a40138dc52318fc3f5301b5c21843f9a9",
     "site_extras.py": "2ffc966d904a2e67c13b6d6c9951808098b76d02f0e4ec02d3e2b74924dae8ad",
-    "site_manifest.json": "358e288823f41cb7ddcc2b786ef687ea7ddac2eb17937fb5cef3099bf777e188"
+    "site_manifest.json": "0fd37646903b464fe9042bf5248fba01fd3c15171ff7d895a5391440643a151d"
   },
   "pages": [
     {
@@ -172,6 +172,7 @@
       "title": "Core Reading List"
     },
     {
+      "cotwRegistryHash": "d76017f879aa35dba922862df6346912e6e50c81",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -182,6 +183,7 @@
       "title": "Serotonin Syndrome vs NMS (Jul 9) — MS3"
     },
     {
+      "cotwRegistryHash": "da0448012930cfd486143dbf55476e213a2ea80f",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -192,6 +194,7 @@
       "title": "Serotonin Syndrome vs NMS (Jul 9) — Resident"
     },
     {
+      "cotwRegistryHash": "acab1eb1e6eaac44f431975e2e2a6e896bd37092",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -202,6 +205,7 @@
       "title": "Acute Agitation & Delirium (Jul 13) — MS3"
     },
     {
+      "cotwRegistryHash": "bbe7e8fca93d0804ae2a83673e6168423406dce9",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -212,6 +216,7 @@
       "title": "Acute Agitation & Delirium (Jul 13) — Resident"
     },
     {
+      "cotwRegistryHash": "a3160da887496a7c0eb4202aa63178c340639e8d",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -222,6 +227,7 @@
       "title": "Bipolar Mania (Jul 20) — MS3"
     },
     {
+      "cotwRegistryHash": "a3db3be3f88a183e464ce787896fe0c8bba2fbd4",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -232,6 +238,7 @@
       "title": "Bipolar Mania (Jul 20) — Resident"
     },
     {
+      "cotwRegistryHash": "6ba1d8e88d3a130109e67e7a26902bc545d1ea4e",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -242,6 +249,7 @@
       "title": "MDD — Treatment Selection (Jul 20) — MS3"
     },
     {
+      "cotwRegistryHash": "481773457755e431d2e29d74da3f435d90e669c6",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -252,6 +260,7 @@
       "title": "MDD — Treatment Selection (Jul 20) — Resident"
     },
     {
+      "cotwRegistryHash": "2222fb5b80cd39f58a42219bab9b818029bd8bd5",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -262,6 +271,7 @@
       "title": "Suicide Risk & Safety Planning (Jul 23) — MS3"
     },
     {
+      "cotwRegistryHash": "f821b526a0e0570e96475443ebcbc4d243c7d17b",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -272,6 +282,7 @@
       "title": "Suicide Risk & Safety Planning (Jul 23) — Resident"
     },
     {
+      "cotwRegistryHash": "b1054bc83d5e20566727f91d05785f63cf953e6e",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -282,6 +293,7 @@
       "title": "Alcohol Withdrawal & DT (Jul 26) — MS3"
     },
     {
+      "cotwRegistryHash": "d185da523f9a07da10f4ba38f12f978363356753",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -292,6 +304,7 @@
       "title": "Alcohol Withdrawal & DT (Jul 26) — Resident"
     },
     {
+      "cotwRegistryHash": "35eb5703c7133e84a34431bd0f218f3f0dd5a093",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -302,6 +315,7 @@
       "title": "Opioid Use Disorder (Jul 27) — MS3"
     },
     {
+      "cotwRegistryHash": "1f3b0fbb07dd20cc5d96daba44ee96d092d311ec",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -312,6 +326,7 @@
       "title": "Opioid Use Disorder (Jul 27) — Resident"
     },
     {
+      "cotwRegistryHash": "74513647a2441085b038957c7ba0209fdaf9d143",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -322,6 +337,7 @@
       "title": "Lithium — Monitoring & Toxicity (Aug 3) — MS3"
     },
     {
+      "cotwRegistryHash": "c5ec05b8d5ae3b40ac6de67eb06820c1ca5ccd7b",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -332,6 +348,7 @@
       "title": "Lithium — Monitoring & Toxicity (Aug 3) — Resident"
     },
     {
+      "cotwRegistryHash": "bb4bf8ada385787bae9da440cf8fd51ee63b9033",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -342,6 +359,7 @@
       "title": "Panic Disorder (Aug 10) — MS3"
     },
     {
+      "cotwRegistryHash": "5881cf8a6491556002954ccb5c46659bf5683e82",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -352,6 +370,7 @@
       "title": "Panic Disorder (Aug 10) — Resident"
     },
     {
+      "cotwRegistryHash": "4a0467bc4c891a59c7e3d18d81039fb75c0fbf16",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -362,6 +381,7 @@
       "title": "Borderline Personality Disorder (Aug 27) — MS3"
     },
     {
+      "cotwRegistryHash": "1556ec3edc4b857e630d428494f22b619a637f90",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -372,6 +392,7 @@
       "title": "Borderline Personality Disorder (Aug 27) — Resident"
     },
     {
+      "cotwRegistryHash": "b3f560edf6bd50165eb26d18acc666cc496bcb36",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -382,6 +403,7 @@
       "title": "Catatonia (Aug 31) — MS3"
     },
     {
+      "cotwRegistryHash": "cb04247ff165a1a0228cd2294624d37b69cd2f35",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -392,6 +414,7 @@
       "title": "Catatonia (Aug 31) — Resident"
     },
     {
+      "cotwRegistryHash": "2d540f49a45339055407afef5009815615fec679",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -402,6 +425,7 @@
       "title": "First-Episode Psychosis (Sep 7) — MS3"
     },
     {
+      "cotwRegistryHash": "8cc0f101c2c3e3bee5b8cd8b58e6b241a5ed0656",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -412,6 +436,7 @@
       "title": "First-Episode Psychosis (Sep 7) — Resident"
     },
     {
+      "cotwRegistryHash": "a451353c28b2987d3ba5f3c2d806547ab916aa31",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -422,6 +447,7 @@
       "title": "Serotonin Syndrome vs. NMS (Sep 14) — MS3"
     },
     {
+      "cotwRegistryHash": "51b1adb4352d844d0fa28b6089656ac238433ff5",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -432,6 +458,7 @@
       "title": "Serotonin Syndrome vs. NMS (Sep 14) — Resident"
     },
     {
+      "cotwRegistryHash": "5e880c562b85516f8f096c6c4b18e652221657cf",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -442,6 +469,7 @@
       "title": "Agitation & Delirium in the ED (Sep 23) — MS3"
     },
     {
+      "cotwRegistryHash": "ad34a2accd0830fcf53eb3b84263583e27705f5c",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -452,6 +480,7 @@
       "title": "Agitation & Delirium in the ED (Sep 23) — Resident"
     },
     {
+      "cotwRegistryHash": "7cbbda7c5259d08af0461c3f55fabb7970c78f61",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -462,6 +491,7 @@
       "title": "Bipolar Mania (Sep 28) — MS3"
     },
     {
+      "cotwRegistryHash": "7d2e5b449b99e43e66d44e8ec039ad1a38666e50",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -472,6 +502,7 @@
       "title": "Bipolar Mania (Sep 28) — Resident"
     },
     {
+      "cotwRegistryHash": "539c1a683b4848084a0839ff11425b38221f7112",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -482,6 +513,7 @@
       "title": "MDD Treatment Selection & Augmentation (Oct 5) — MS3"
     },
     {
+      "cotwRegistryHash": "bedec9abc2bf9e3df8bb438e150fecb4ac06e4bf",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -492,6 +524,7 @@
       "title": "MDD Treatment Selection & Augmentation (Oct 5) — Resident"
     },
     {
+      "cotwRegistryHash": "fad4ba5f29d576c67dbe59b949f39be9d1f70306",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -502,6 +535,7 @@
       "title": "Suicide Risk & Safety Planning (Oct 12) — MS3"
     },
     {
+      "cotwRegistryHash": "16b8710a84b3aeaa6da2d5f1df8b64ced20d2baf",
       "kind": "page",
       "producer": "cotw_registry",
       "sites": [
@@ -1165,6 +1199,17 @@
       "slug": "rp-post-event-huddle.html",
       "source": "_prototypes/post-event-huddle/rp-post-event-huddle.html",
       "title": "Post-Event Learning Huddle (2 min)"
+    },
+    {
+      "kind": "tool",
+      "producer": "site_manifest",
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "slug": "scale-chooser.html",
+      "source": "02_Clinical_Skills/Scale_Chooser/scale-chooser.html",
+      "title": "Which Scale?"
     },
     {
       "kind": "tool",

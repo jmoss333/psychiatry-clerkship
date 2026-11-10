@@ -441,7 +441,7 @@ test('the desktop preview pane follows the selected row and extends to readings'
   assert.match(dflt, /data-fd-kit-tool="t1\.html" aria-pressed="true" aria-label="Preview Tool One">Preview<\/button>/);
   assert.equal((dflt.match(/is-selected/g) || []).length, 1);
   assert.equal((dflt.match(/class="fd-kit__peek"/g) || []).length, 5, 'every Essentials row has a Preview control');
-  assert.match(dflt, /class="fd-btn fd-btn--primary fd-kit__preview-open" data-fd-open="t1\.html" aria-label="Open Tool One">Open tool<\/button><p class="fd-kit__preview-note">Preview is not saved\. Reload returns to the list\.<\/p><\/aside>/);
+  assert.match(dflt, /class="fd-btn fd-btn--primary fd-kit__preview-open" data-fd-open="t1\.html" aria-label="Open tool: Tool One">Open tool<\/button><p class="fd-kit__preview-note">Preview is not saved\. Reload returns to the list\.<\/p><\/aside>/);
   // A reading, with the case arc and pairings: "Where it is used" and "Practice with".
   const reading = F.fdEssentials(idx, { week: 1, kitToolPreview: 'm1.md', caseArc, pairings, audience: 'ms3' });
   assert.match(reading, /<div class="fd-kit__item is-selected"><button type="button" class="fd-kit__reading" data-fd-open="m1\.md">/);
@@ -453,7 +453,7 @@ test('the desktop preview pane follows the selected row and extends to readings'
   assert.match(pane, /<h3 class="fd-kit__preview-h">Practice with<\/h3><p class="fd-kit__preview-practice"><strong>Tool Two<\/strong> · tool — Compare the next step\.<\/p>/);
   assert.doesNotMatch(pane, /Tool One/, 'a pairing scoped to the other audience, and a practice ref this site does not ship, are skipped');
   assert.match(pane, /<p class="fd-kit__preview-status fd-kit__preview-attested">✓ faculty-attested<\/p>/, 'no governance projection: topic_meta facultyReview decides');
-  assert.match(pane, /class="fd-btn fd-btn--primary fd-kit__preview-open" data-fd-open="m1\.md" aria-label="Open Middle One">Open reading<\/button>/);
+  assert.match(pane, /class="fd-btn fd-btn--primary fd-kit__preview-open" data-fd-open="m1\.md" aria-label="Open reading: Middle One">Open reading<\/button>/);
   assert.deepEqual(F.fdPracticeWith(idx, pairings, 'm1.md', 'resident').map((i) => i.ref), ['t2.html', 't1.html']);
   assert.deepEqual(F.fdPracticeWith(idx, pairings, 't2.html', 'ms3').map((i) => i.ref), [], 'a tool never pairs with itself and the page is not a practice item');
   assert.deepEqual(F.fdPracticeWith(idx, null, 'm1.md', 'ms3'), []);
@@ -532,19 +532,20 @@ const REAL_PAIRINGS = readJson('../pairings.json');
 const REAL_SHIPPED = readJson('../13_Faculty_Resources/_automation/site_build/shipped_pages.json');
 const REAL_IDX = F.fdBuildIndex(REAL_CUR, REAL_META, REAL_TOOLS, REAL_MAN);
 
-test('the canonical curriculum places 88 pages across five columns and Everything renders each once', () => {
+test('the canonical curriculum places 89 pages across five columns and Everything renders each once', () => {
   const expected = (REAL_CUR.libraryColumns || []).reduce((n, c) => n + c.refs.length, 0);
   // 83 = 81 + the two 2026-08-21 therapy-curriculum pages (therapy_on_the_unit.md,
   // therapy_reading_room.md). 84 = 83 + pharmacy.html (2026-09-30, Interactive tools).
   // 86 = 84 + maine_law.md and maine-law-navigator.html (2026-10-27).
   // 87 = 86 + family-meeting-sim.html (2026-10-27).
-  // 88 = 87 + how-we-know.html (2026-11-10).
-  assert.equal(expected, 88, 'curriculum.json is expected to place 88 pages across the five columns');
+  // 88 = 87 + scale-chooser.html (2026-11-05).
+  // 89 = 88 + how-we-know.html (2026-11-10).
+  assert.equal(expected, 89, 'curriculum.json is expected to place 89 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const refs = everythingRefs(html);
   assert.equal(refs.length, expected);
-  assert.equal(new Set(refs).size, 88);
-  assert.equal(status(html), 'Showing all 88 pages.');
+  assert.equal(new Set(refs).size, 89);
+  assert.equal(status(html), 'Showing all 89 pages.');
   // The canonical file keys essentials by audience ({ms3, resident}); only a projected payload
   // resolves them, so the canonical render has no Essentials and withholds the segmented control.
   assert.doesNotMatch(html, /data-fd-library-view=/);
@@ -660,7 +661,7 @@ print(json.dumps(out))
 // pages, now curriculum.siteLibrary.resident.exclusions -- still reachable by link, not listed.
 // +2 full and +2 shipped on both sites (2026-10-27): maine_law.md and maine-law-navigator.html;
 // +1 full and +1 shipped on both sites (2026-10-27): family-meeting-sim.html.
-const SITES = { ms3: { kit: 31, full: 89, shipped: 114 }, res: { kit: 35, full: 94, shipped: 123 } };
+const SITES = { ms3: { kit: 31, full: 90, shipped: 115 }, res: { kit: 35, full: 95, shipped: 124 } };
 
 for (const site of ['ms3', 'res']) {
   const payload = projected[site];
