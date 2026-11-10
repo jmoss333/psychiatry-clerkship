@@ -1568,5 +1568,25 @@
     "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
     "at": "2026-10-27",
     "by": "Pending faculty review"
+  },
+  "cotw_20261102_moud_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Opioid use disorder - intoxication, withdrawal, MOUD; MS3) added 2026-11-02; awaiting faculty attestation.",
+    "at": "2026-11-02",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261102_moud_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Opioid use disorder - intoxication, withdrawal, MOUD; resident) added 2026-11-02; awaiting faculty attestation.",
+    "at": "2026-11-02",
+    "by": "Pending faculty review"
   }
 }
