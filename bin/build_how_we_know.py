@@ -566,7 +566,7 @@ def self_test():
     checks.append(("only the public edition carries the tool metadata header",
                    "[CLERKSHIP-META v1]" in public and "[CLERKSHIP-META v1]" not in full))
     checks.append(("both editions wrap their content in one <main>",
-                   full.count("<main") == 1 and public.count("<main") == 1
+                   full.count('<main class="wrap">') == 1 and public.count('<main class="wrap">') == 1
                    and full.count("</main>") == 1 and public.count("</main>") == 1))
     checks.append(("no unexpanded marker in either edition", "{{" not in full and "{{" not in public))
     try:

@@ -92,7 +92,9 @@ code{background:var(--fd-chip);padding:1px 6px;border-radius:5px;font-size:13px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<!-- <main>, not <div>: the build's page contract gives the skip link its #root target by
+     adding id="root" to the first <main> (common.apply_page_chrome). -->
+<main class="wrap">
 
 <header class="hero">
   <p class="kicker">Evidence &amp; Reading · Critical Appraisal</p>
@@ -224,7 +226,7 @@ by hand.</p>
   recommendations. All clinical content in this library is synthetic or de-identified.</p>
 </footer>
 
-</div>
+</main>
 <script>
 document.querySelectorAll('button.reveal').forEach(function(btn){
   btn.addEventListener('click', function(){
