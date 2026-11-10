@@ -454,7 +454,12 @@ function fdPilotFeedback(){
    data-fd-tab + data-fd-view-week pair the completed Continue card already uses, so browsing the
    thread never changes the learner's week. Labels are the week titles; a phone shows only the
    current one (CSS). The connector after a done week is teal, otherwise the control line (CSS
-   reads .is-done on the step). Renders nothing without a valid projected path. */
+   reads .is-done on the step). Renders nothing without a valid projected path.
+   Label in Name (WCAG 2.5.3): the node's name "Week N: <title>" must contain the visible text in
+   order, and that text is the mark then the label. The space between the two spans is what keeps
+   them two words ("1 Foundations", not "1Foundations") when a checker joins inline text with no
+   separator, as axe 4.14's label-content-name-mismatch does. The node is a flex column, so the
+   space renders nothing; do not drop it. */
 function fdThread(index, state){
   var idx=index||{}, st=state||{};
   if(!fdActivePathValid(idx)) return '';
@@ -469,7 +474,7 @@ function fdThread(index, state){
     out+='<li class="'+cls+'">'+
       '<button type="button" class="fd-thread__node" data-fd-tab="path" data-fd-view-week="'+fdEsc(w.n)+'"'+
         (isCur?' aria-current="step"':'')+' aria-label="'+fdEsc(name)+'">'+
-        '<span class="fd-thread__mark" aria-hidden="true">'+(isDone?'✓':fdEsc(w.n))+'</span>'+
+        '<span class="fd-thread__mark" aria-hidden="true">'+(isDone?'✓':fdEsc(w.n))+'</span> '+
         '<span class="fd-thread__label" aria-hidden="true">'+fdEsc(w.title)+'</span>'+
       '</button></li>';
   }
