@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Lima et al. · 2004 · Cochrane Database of Systematic Reviews",
-     "sourceId": "lima-2004-betablockers-akathisia",
+     "t": "Belkin et al. · 2021 · Psychiatr Serv",
+     "sourceId": "belkin-2021",
      "key": "A"
     },
     {
-     "t": "Siry et al. · 2021 · General hospital psychiatry",
-     "sourceId": "siry-2021-lethal-means-clinician-views",
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
      "key": "B"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Tetzlaff et al. · 2025 · Clin Psychol Rev",
-     "sourceId": "tetzlaff-2025",
+     "t": "Aoki et al. · 2022 · Cochrane Database Syst Rev",
+     "sourceId": "aoki-2022-cochrane-sdm",
      "key": "A"
     },
     {
-     "t": "U.S. Department of Veterans Affairs / Department of Defense · 2017",
-     "sourceId": "vadod-2017-ptsd-cpg",
+     "t": "U.S. Preventive Services Task Force · 2026",
+     "sourceId": "uspstf-mental-health",
      "key": "B"
     },
     {

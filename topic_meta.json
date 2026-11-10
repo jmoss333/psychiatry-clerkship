@@ -2957,7 +2957,7 @@
         },
         {
           "id": "high-acute",
-          "title": "Thoughts plus an acute risk factor: escalate now",
+          "title": "Ideation plus an acute risk factor: escalate now",
           "tone": "danger",
           "act": [
             "Tell the nurse and your team now.",
@@ -2987,7 +2987,8 @@
             "Recheck for active thoughts. If the wish becomes thoughts of killing themselves, tell the team before this encounter ends.",
             "Write down their exact words and the reasons for living they named."
           ],
-          "escalate": "soon"
+          "escalate": "soon",
+          "script": "soon-passive"
         },
         {
           "id": "contradicted",
@@ -3026,6 +3027,15 @@
           "situation": "I want to report a safety concern from my interview: [their exact words, or what prompted my concern].",
           "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
           "assessment": "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]. I'm not the one who decides their risk.",
+          "recommendation": "Can you assess them this shift — when? Is there anything I should do first?",
+          "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
+        },
+        "soon-passive": {
+          "label": "Ask them to see the patient this shift",
+          "identify": "This is [your name], [your role] on [team]. I'm calling about [patient initials] in room [room number].",
+          "situation": "I want to report a safety concern from my interview: [their exact words, or what prompted my concern].",
+          "background": "[Age], admitted for [reason]. Past attempts: [yes, no, or unknown]. Access to lethal means: [firearms, stockpiled medication, other, or unknown].",
+          "assessment": "What I found: a wish to be dead, no thoughts of killing themselves. No steps taken, recent attempt or discharge, or acute risk factor. Plan and intent: not asked. I'm not the one who decides their risk.",
           "recommendation": "Can you assess them this shift — when? Is there anything I should do first?",
           "readBack": "Let me read that back: [their instructions]. I'll call you again if anything changes."
         }
