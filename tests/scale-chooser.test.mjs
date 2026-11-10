@@ -75,7 +75,9 @@ test('invariant 1 — every surface and related page ships', () => {
     }
     if (r.standing === 'not-yet') assert.equal(r.surface, null, `${r.id}: "not yet in the library" cannot link a practice page`);
   }
-  assert.equal(hrefFor('screeners.html'), './screeners.html');
+  // Through the shell, not just the iframe: IFRAME_NAV in site_build/common.py intercepts only
+  // index.html?page= and index.html?tool= links (Codex P2 on #1170).
+  assert.equal(hrefFor('screeners.html'), '../index.html?tool=screeners.html');
   assert.equal(hrefFor('t_sud.md'), '../index.html?page=t_sud.md');
 });
 

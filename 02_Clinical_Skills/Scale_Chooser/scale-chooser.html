@@ -190,7 +190,9 @@ var ROWS=[
   confounds:['Delirium that comes and goes','Language and hearing'],
   evidence:[], related:[]}
 ];
-function hrefFor(slug){ return /\.md$/.test(slug) ? '../index.html?page='+slug : './'+slug; }
+/* Both kinds route through the learner shell's in-frame handler (common.py IFRAME_NAV matches
+   index.html?page= and index.html?tool=), so the parent's URL, heading and nav follow the click. */
+function hrefFor(slug){ return '../index.html?'+(/\.md$/.test(slug)?'page=':'tool=')+slug; }
 /* SCALE_CHOOSER_DATA_END */
 
 function Answer(props){
