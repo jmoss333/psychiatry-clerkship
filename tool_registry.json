@@ -275,6 +275,26 @@
         "pg_interview.md",
         "doc_oral.md"
       ]
+    },
+    {
+      "file": "scale-chooser.html",
+      "title": "Which Scale?",
+      "sourcePath": "02_Clinical_Skills/Scale_Chooser/scale-chooser.html",
+      "category": "clinical-skills",
+      "riskLevel": "moderate",
+      "disclaimerType": "screening-not-diagnosis",
+      "storageKeys": [],
+      "evidenceIds": [
+        "kroenke-2001-phq9",
+        "asam-hpso-bup-2023",
+        "lowe-2004-phq9-monitoring"
+      ],
+      "relatedPages": [
+        "t_mood.md",
+        "delirium.md",
+        "t_sud.md",
+        "pg_suicide.md"
+      ]
     }
   ]
 }

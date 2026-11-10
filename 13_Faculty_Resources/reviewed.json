@@ -1566,5 +1566,15 @@
     "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
     "at": "2026-10-27",
     "by": "Pending faculty review"
+  },
+  "scale-chooser.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Which Scale? chooser (Phase 1 of docs/superpowers/plans/2026-10-31-scale-chooser-plan.md; D1 and D2 approved 2026-11-05) added 2026-11-05; awaiting faculty attestation.",
+    "at": "2026-11-05",
+    "by": "Pending faculty review"
   }
 }

@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "25a67a30ce3f2b6394e019d967d0b01a40138dc52318fc3f5301b5c21843f9a9",
     "site_extras.py": "2ffc966d904a2e67c13b6d6c9951808098b76d02f0e4ec02d3e2b74924dae8ad",
-    "site_manifest.json": "b157aaa2d648c1f061e616c717f0a3b3a88cf4dddea4269da36a895a412aef01"
+    "site_manifest.json": "b3d1f1eca25cbf0e5c462e248fbb4cd0b398e8991b0916ef6c77c5fe827eaab0"
   },
   "pages": [
     {
@@ -1188,6 +1188,17 @@
       "slug": "rp-post-event-huddle.html",
       "source": "_prototypes/post-event-huddle/rp-post-event-huddle.html",
       "title": "Post-Event Learning Huddle (2 min)"
+    },
+    {
+      "kind": "tool",
+      "producer": "site_manifest",
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "slug": "scale-chooser.html",
+      "source": "02_Clinical_Skills/Scale_Chooser/scale-chooser.html",
+      "title": "Which Scale?"
     },
     {
       "kind": "tool",
