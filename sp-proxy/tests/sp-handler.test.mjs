@@ -1868,6 +1868,39 @@ test('a model claim that quotes words not in the exchange is withheld, counted, 
   assert.deepEqual((await json(kept)).strengths, ['Asked: \u201cHOW have  you been feeling?\u201d']);
 });
 
+test('a quoted span introduced by a coaching cue is proposed dialogue, not evidence: kept unverified, while an evidence quote beside it is still checked', async () => {
+  const value = feedback({
+    strengths: [
+      'Asked plainly: "How have you been feeling?"',
+      'You could have opened with "What would you most want us to understand today?"',
+    ],
+    growth: [
+      { t: 'Next time, after "Pretty low.", try "Have you had thoughts of suicide?"', link: 'pg_suicide.md' },
+      { t: 'Try "Could you tell me more about that?" after she said "I just want it all to stop"', link: 'pg_interview.md' },
+    ],
+    domains: {
+      alliance: { rating: 'partial', note: 'Consider "What has kept you going this week?" rather than a yes/no question.' },
+      data: { rating: 'partial', note: 'Mood was asked ("How have you been feeling?").' },
+      technique: { rating: 'observed', note: 'Try asking: \u201cWhat does a bad night look like?\u201d \u2014 one open question, then wait.' },
+      organization: { rating: 'partial', note: 'The sequence could be clearer.' },
+    },
+    selfAssessmentNote: 'You wrote "She fears judgment." and the transcript supports it.',
+  });
+  const harness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: JSON.stringify(value) }) });
+  const response = await harness.handler(learnerRequest({ body: evaluateBody() }));
+  assert.equal(response.status, 200);
+  const result = await json(response);
+  // "try …" / "could have opened with …" / "Consider …" / "Try asking: …" introduce proposed wording: not checked.
+  assert.deepEqual(result.strengths, value.strengths);
+  assert.deepEqual(result.growth.map((item) => item.t), [value.growth[0].t]);
+  assert.equal(result.domains.alliance.note, value.domains.alliance.note);
+  assert.equal(result.domains.technique.note, value.domains.technique.note);
+  // "after she said …" is an evidence claim and those words are not in the exchange: withheld as before.
+  assert.deepEqual(result.withheld, { strengths: 0, growth: 1, notes: 0 });
+  assert.deepEqual(harness.logs.filter((event) => event.event === 'evaluator_quotes_unverified'),
+    [{ event: 'evaluator_quotes_unverified', strengths: 0, growth: 1, notes: 0 }]);
+});
+
 test('an evaluator reply that does not parse is logged as evaluator_parse_failed, with the stop reason when known', async () => {
   const harness = makeHarness({ anthropicSpy: createAnthropicSpy({ text: 'Sorry, I cannot produce JSON here.' }) });
   const response = await harness.handler(learnerRequest({ body: evaluateBody() }));

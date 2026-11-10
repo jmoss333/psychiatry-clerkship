@@ -754,18 +754,33 @@ function normaliseQuote(text) {
     .replace(/\s+/g, ' ')
     .trim();
 }
-// Every double-quoted span in a feedback field, normalised; the evaluator prompt demands that
+// A quoted span is checked against the exchange only when it is offered as evidence. The
+// evaluator is told to phrase growth points "Next time, try …", so a span introduced by a
+// coaching cue (try, ask, say, instead, for example, could have asked, consider …) is proposed
+// dialogue, which the transcript cannot contain; an uncued or evidence-cued span ("you said",
+// "after", "at turn 3") must be verbatim. Until 2026-11-10 every span counted as evidence and a
+// growth point that suggested a question in quotes was withheld as fabricated.
+const PROPOSAL_CUE = /(?:^|[\s(])(?:try(?: asking| saying)?|ask(?:ing)?|say(?:ing)?|instead|such as|for (?:example|instance)|e\.g\.|consider|could (?:have )?(?:ask|asked|say|said|try|tried|open|opened|follow|followed|use|used)|might (?:ask|say|try|open|follow|use)|phras(?:e|ed|ing)|rephras(?:e|ed|ing)|reword(?:ed|ing)?|wording|open(?:ed|ing)? with|follow(?:ed|ing)? with|lead(?:ing)? with|offer(?:ed|ing)?)\s*[:,]?\s*(?:[-\u2013\u2014]\s*)?$/i;
+function isProposedDialogue(prefix) {
+  return PROPOSAL_CUE.test(prefix.slice(-48));
+}
+// Every double-quoted span offered as evidence, normalised; the evaluator prompt demands that
 // every claim quote a numbered turn verbatim, and until 2026-10-21 nothing checked that it did.
-function quotedSpans(text) {
+function evidenceSpans(text) {
+  const source = String(text);
   const spans = [];
-  for (const match of String(text).matchAll(/["\u201c\u201d]([^"\u201c\u201d]+)["\u201c\u201d]/g)) {
+  let cursor = 0;
+  for (const match of source.matchAll(/["\u201c\u201d]([^"\u201c\u201d]+)["\u201c\u201d]/g)) {
+    const prefix = source.slice(cursor, match.index);
+    cursor = match.index + match[0].length;
+    if (isProposedDialogue(prefix)) continue;
     const span = normaliseQuote(match[1]).replace(/^[\s.]+|[\s.,;:!?]+$/g, '');
     if ([...span].length >= QUOTE_CHECK_MIN_CHARS) spans.push(span);
   }
   return spans;
 }
 function quotesVerified(text, evidence) {
-  return quotedSpans(text).every((span) => evidence.includes(span));
+  return evidenceSpans(text).every((span) => evidence.includes(span));
 }
 function evidenceTextFor(input) {
   const parts = [];
