@@ -175,6 +175,7 @@ test('graph: acyclic, reachable, 6-10 decisions, every axis testable', () => {
 // and S6 `open#2` lost the validation point a stock phrase had earned; S8 `worry-answer#2` lost
 // its flag and gained a safety point (Decision 2); S8 `roles-unrouted#1/#2` are the verbatim
 // twin of `roles#1/#2`. None is a new misstep; each is an existing one re-scored or re-routed.
+// 2026-11-10 (O6-5, packet B4): `worry-answer#2` is flagged again, so it left the list.
 const I7_KNOWN = {
   'angry-parent-admission': 'repair-rules#1 repair-rules#2 share-limits#2 repair-disclosure#1 repair-disclosure#2 collateral#1 collateral#2 means#2 visit#1 visit#2 close#1 close#2',
   'ambivalent-spouse-discharge': 'open#2 repair-ready#1 repair-ready#2 feelings#1 feelings#2 plan-review#1 limits#1 repair-verdict#1 repair-verdict#2 means#2 close#1 close#2',
@@ -183,7 +184,7 @@ const I7_KNOWN = {
   'shared-decision-household': 'repair-interpreter#1 repair-interpreter#2 decisions#1 decisions#2 privacy#2 repair-disclosure#1 repair-disclosure#2 meaning#2 repair-assume#1 repair-assume#2 safety-home#1 close#1 close#2',
   'siblings-late-onset-psychosis': 'open#2 repair-open#1 repair-open#2 workup#2 repair-certainty#1 repair-certainty#2 split#2 repair-sides#1 repair-sides#2 burden#1 safety-home#2 close#1 close#2',
   'coparents-discharge-adolescent': 'open#1 open#2 riley#2 repair-over-riley#1 repair-over-riley#2 triangle#2 repair-sided#1 repair-sided#2 means-both#1 means-both#2 channel#1 close#1 close#2',
-  'parent-own-untreated-illness': 'open#1 open#2 picture#2 repair-disclosure#1 repair-disclosure#2 drinking#2 repair-diagnose#1 repair-diagnose#2 worry-answer#2 roles#1 roles#2 roles-unrouted#1 roles-unrouted#2 close#1 close#2',
+  'parent-own-untreated-illness': 'open#1 open#2 picture#2 repair-disclosure#1 repair-disclosure#2 drinking#2 repair-diagnose#1 repair-diagnose#2 roles#1 roles#2 roles-unrouted#1 roles-unrouted#2 close#1 close#2',
 };
 
 test('every rupture has a repair route back, or is flagged', () => {
@@ -683,10 +684,12 @@ test('per-scenario wording pins', () => {
   assert.ok(s8.nodes['worry-answer'].choices[0].text.includes('I\'d like my attending to talk with you now, before we go on'));
   assert.doesNotMatch(s8.nodes['worry-answer'].choices[0].text + s8.nodes.close.choices[0].text, /this page/, 'no character points at the web page (contacts are "crisis numbers that are yours")');
   assert.equal(s8.nodes['worry-answer'].choices[1].flag, 'risk-judged-by-student');
-  // Decision 2 (owner, 2026-10-28): plan/means questions are the attending's, asked privately, but
-  // asking them is not a risk judgement — no flag, one safety point, scored below the keyed answer.
-  assert.equal(s8.nodes['worry-answer'].choices[2].flag, undefined);
-  assert.deepEqual(s8.nodes['worry-answer'].choices[2].scores, { validation: 0, structure: 0, safety: 1, nonblaming: 0 });
+  // O6-5 (owner, 2026-11-10, packet B4; supersedes Decision 2 of 2026-10-28): plan/method/means
+  // questions asked by the student are an assessment spec §3.4 keeps with the attending, so the
+  // choice carries `risk-judged-by-student` and scores safety 0. Mechanics only: text and feedback
+  // are unchanged.
+  assert.equal(s8.nodes['worry-answer'].choices[2].flag, 'risk-judged-by-student');
+  assert.deepEqual(s8.nodes['worry-answer'].choices[2].scores, { validation: 0, structure: 0, safety: 0, nonblaming: 0 });
   assert.match(s8.nodes['worry-answer'].choices[2].feedback, /^Right questions, wrong setting/);
   assert.equal(s8.nodes['repair-dismiss'].choices[1].flag, 'suicide-statement-not-asked');
   assert.equal(s8.nodes['repair-dismiss'].choices[2].flag, 'suicide-statement-not-asked');

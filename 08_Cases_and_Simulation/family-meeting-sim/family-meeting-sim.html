@@ -128,7 +128,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
       "gate": {
         "required": [
           { "id": "s1-collateral-routed", "label": "Carry Dana's observations to the team as collateral", "offeredAt": ["collateral", "close"], "satisfiedBy": ["collateral#0", "close#0"], "claimTerms": [] },
-          { "id": "s1-rifle-routed", "label": "Take the rifle seriously and route it to the team", "offeredAt": ["means"], "satisfiedBy": ["means#0"], "claimTerms": ["rifle"] }
+          { "id": "s1-rifle-routed", "label": "Take the rifle seriously and route it to the team", "offeredAt": ["means", "close"], "satisfiedBy": ["means#0", "close#0"], "claimTerms": ["rifle"] }
         ]
       },
       "start": "open",
@@ -264,7 +264,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
       "gate": {
         "required": [
           { "id": "s2-plan-shared", "label": "Make the safety plan shared with Casey, with specific and realistic roles", "offeredAt": ["plan-review", "limits"], "satisfiedBy": ["plan-review#0", "limits#0"], "claimTerms": ["casey's limits"] },
-          { "id": "s2-means-addressed", "label": "Address the handgun and the old prescriptions, routed to the team", "offeredAt": ["means"], "satisfiedBy": ["means#0"], "claimTerms": ["handgun", "prescriptions", "means-safety"] }
+          { "id": "s2-means-addressed", "label": "Address the handgun and the old prescriptions, routed to the team", "offeredAt": ["means", "close"], "satisfiedBy": ["means#0", "close#0"], "claimTerms": ["handgun", "prescriptions", "means-safety"] }
         ]
       },
       "start": "open",
@@ -560,7 +560,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
       "gate": {
         "required": [
           { "id": "s4-collateral-routed", "label": "Turn Lou's observations into collateral for the team", "offeredAt": ["observations", "close"], "satisfiedBy": ["observations#0", "observations#2", "close#0"], "claimTerms": [] },
-          { "id": "s4-means-routed", "label": "Treat the rifle and the truck as clinical data for the team", "offeredAt": ["means"], "satisfiedBy": ["means#0"], "claimTerms": ["rifle", "truck"] }
+          { "id": "s4-means-routed", "label": "Treat the rifle and the truck as clinical data for the team", "offeredAt": ["means", "close"], "satisfiedBy": ["means#0", "close#0"], "claimTerms": ["rifle", "truck"] }
         ]
       },
       "start": "open",
@@ -712,7 +712,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
       "noteLink": { "label": "Culture, Disparities & Formulation", "page": "cultural_psychiatry.md" },
       "gate": {
         "required": [
-          { "id": "s5-means-and-roles", "label": "Agree who holds the medicines and how Lina says \"I'm not okay\", routed to the social worker", "offeredAt": ["safety-home"], "satisfiedBy": ["safety-home#0"], "claimTerms": ["hold the medicines", "someone to tell", "roles the adults"] },
+          { "id": "s5-means-and-roles", "label": "Agree who holds the medicines and how Lina says \"I'm not okay\", routed to the social worker", "offeredAt": ["safety-home", "close"], "satisfiedBy": ["safety-home#0", "close#0"], "claimTerms": ["hold the medicines", "someone to tell", "roles the adults"] },
           { "id": "s5-firearm-asked", "label": "Ask whether there is a gun in the house", "offeredAt": ["safety-home"], "satisfiedBy": ["safety-home#0"], "claimTerms": ["gun"] }
         ]
       },
@@ -869,7 +869,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
       "gate": {
         "required": [
           { "id": "s6-burden-routed", "label": "Treat Owen's exhaustion as clinical data and route it to the social worker", "offeredAt": ["burden"], "satisfiedBy": ["burden#0"], "claimTerms": ["support for owen"] },
-          { "id": "s6-handgun-routed", "label": "Treat the handgun as a suicide and fear risk, with a plan the team goes through with Ruth", "offeredAt": ["safety-home"], "satisfiedBy": ["safety-home#0"], "claimTerms": ["handgun"] }
+          { "id": "s6-handgun-routed", "label": "Treat the handgun as a suicide and fear risk, with a plan the team goes through with Ruth", "offeredAt": ["safety-home", "close"], "satisfiedBy": ["safety-home#0", "close#0"], "claimTerms": ["handgun"] }
         ]
       },
       "start": "open",
@@ -1282,7 +1282,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
           "choices": [
             { "text": "Thank you for telling me the truth — that took courage, and it changes what we do next. I'd like my attending to talk with you now, before we go on — in the next room, if you'd rather — and the social worker will stay here with Kai. That's what we would do for anyone who told us this. Kai's plan will still get made today, and before you leave you'll have crisis numbers that are yours, for any hour.", "next": "roles", "scores": { "validation": 2, "structure": 2, "safety": 2, "nonblaming": 2 }, "feedback": "Hears the answer and hands over now, not 'after this'. She stays with a clinician, Kai is not left alone with what he just heard, and his plan is not dropped. An MS3's job here is to ask, listen and hand over in the moment — not to decide how serious it is. Afterwards, someone on the team should check in with Kai separately: his mother's safety is part of his." },
             { "text": "Okay — as long as you wouldn't do anything, I'm glad. Let's keep going with Kai's plan, and the social worker can catch you afterwards.", "next": "roles-unrouted", "flag": "risk-judged-by-student", "scores": { "validation": 1, "structure": 1, "safety": 0, "nonblaming": 1 }, "feedback": "Treating 'I wouldn't do anything' as the end of it is a risk judgement you are not in a position to make — after drinking, without sleep, in front of her son. Tell your attending now, while she is still in the room." },
-            { "text": "Do you have a plan? How would you do it? Is there anything at home you'd use?", "next": "roles-unrouted", "scores": { "validation": 0, "structure": 0, "safety": 1, "nonblaming": 0 }, "feedback": "Right questions, wrong setting: these belong to your attending, asked privately. Asking them is not the error — doing it in front of her son, without handing over, is. Ask once, hear the answer, hand over." }
+            { "text": "Do you have a plan? How would you do it? Is there anything at home you'd use?", "next": "roles-unrouted", "flag": "risk-judged-by-student", "scores": { "validation": 0, "structure": 0, "safety": 0, "nonblaming": 0 }, "feedback": "Right questions, wrong setting: these belong to your attending, asked privately. Asking them is not the error — doing it in front of her son, without handing over, is. Ask once, hear the answer, hand over." }
           ]
         },
         "roles": {
