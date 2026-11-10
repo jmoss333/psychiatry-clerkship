@@ -499,6 +499,10 @@ _crisis.assert_no_html_marker_file(OUT+"/index.html", "final resident Front Door
 
 # Postcondition gate (architecture review rec 1.3): the rp-* tools used to bypass the
 # page pass entirely and ship degraded. This makes that impossible to reintroduce.
+# Share surface: the copytree inherited MS3's card, manifest and og: tags. install() replaces
+# all three and fails the build if the MS3 card URL survives in the resident index.
+import share_assets as _share_assets
+print("share assets: %d file(s) + share block in the shell index (res)"%_share_assets.install(OUT,"res"))
 common.assert_page_contract(OUT, label="resident")
 
 # ---------- SURFACE GOVERNANCE: direct-tool status + public artifact (resident) ----------

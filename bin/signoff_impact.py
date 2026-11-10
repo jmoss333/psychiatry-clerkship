@@ -57,6 +57,7 @@ from attestation_hash import (  # noqa: E402
     HEX40,
     AttestationHashError,
     clinical_digest,
+    cotw_registry_hash_for_slug,
     digest,
     sources_for_slug,
 )
@@ -153,11 +154,12 @@ def binding(tree, shipped, topic_meta, slug, row):
         return "removed"
     record = topic_meta.get(slug)
     try:
-        if digest(slug, sources, record) == stored:
+        cotw_registry_hash = cotw_registry_hash_for_slug(shipped, slug)
+        if digest(slug, sources, record, cotw_registry_hash) == stored:
             return "bound"
         clinical = row.get("clinicalHash")
         if isinstance(clinical, str) and HEX40.fullmatch(clinical) \
-                and clinical_digest(slug, sources, record) == clinical:
+                and clinical_digest(slug, sources, record, cotw_registry_hash) == clinical:
             return "clinical"
     except AttestationHashError:
         return "removed"
@@ -168,7 +170,17 @@ def _touched(slug, base_in, head_in, changed):
     """Could this change have moved the row's state? Only then is it recomputed."""
     (b_ledger, b_shipped, b_meta), (h_ledger, h_shipped, h_meta) = base_in, head_in
     b_paths, h_paths = sources_for_slug(b_shipped, slug), sources_for_slug(h_shipped, slug)
+    def projection_or_missing(shipped):
+        # A base predating CotW projection hashes cannot establish a bound historical
+        # signature. Still compare it as absent: adopting the coverage is relevant to
+        # that row, and binding() will count it as already awaiting rather than making
+        # this advisory report fail.
+        try:
+            return cotw_registry_hash_for_slug(shipped, slug)
+        except AttestationHashError:
+            return None
     return (b_paths != h_paths or any(path in changed for path in set(b_paths) | set(h_paths))
+            or projection_or_missing(b_shipped) != projection_or_missing(h_shipped)
             or b_meta.get(slug) != h_meta.get(slug) or b_ledger.get(slug) != h_ledger.get(slug))
 
 
