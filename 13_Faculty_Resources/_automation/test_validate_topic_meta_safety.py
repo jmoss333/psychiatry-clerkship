@@ -104,6 +104,27 @@ class SafetyTreeSchemaTest(unittest.TestCase):
         del tree["scripts"]["soon"]["readBack"]
         self.assertTrue(self.errors(tree))
 
+    def test_accepts_a_named_script_variant_and_an_action_that_picks_it(self):
+        tree = copy.deepcopy(TREE)
+        tree["scripts"]["soon-passive"] = dict(SCRIPT, label="Variant")
+        tree["nodes"][3]["script"] = "soon-passive"
+        self.assertEqual(self.errors(tree), [])
+
+    def test_a_variant_script_is_checked_through_its_ref(self):
+        tree = copy.deepcopy(TREE)
+        tree["scripts"]["soon-passive"] = {k: v for k, v in SCRIPT.items() if k != "readBack"}
+        self.assertTrue(self.errors(tree))
+
+    def test_rejects_a_malformed_variant_key_or_node_script(self):
+        for key in ("later", "soon-", "soon-Passive"):
+            with self.subTest(key=key):
+                tree = copy.deepcopy(TREE)
+                tree["scripts"][key] = SCRIPT
+                self.assertTrue(self.errors(tree))
+        tree = copy.deepcopy(TREE)
+        tree["nodes"][3]["script"] = "soon"
+        self.assertTrue(self.errors(tree), "a node script names a variant, not a plain script")
+
 
 class SafetyStepsTest(unittest.TestCase):
     def test_accepts_a_valid_safety_steps_block(self):
@@ -231,8 +252,52 @@ class SafetyTreeValidatorTest(unittest.TestCase):
         self.assert_rejects("'now' script", lambda t: t["scripts"].pop("now"))
 
     def test_rejects_an_unknown_script_key(self):
-        self.assert_rejects("'now' and 'soon' only",
-                            lambda t: t["scripts"].__setitem__("later", SCRIPT))
+        for key in ("later", "soonish", "soon-", "soon-Passive", "now-" + "x" * 17):
+            with self.subTest(key=key):
+                self.assert_rejects("script keys are 'now', 'soon', or a variant",
+                                    lambda t, key=key: t["scripts"].__setitem__(key, SCRIPT))
+
+    # Script variants (2026-11-04, Codex P2 on #1131): an action may name its own script so a
+    # branch's handoff reports only what that branch asked.
+    def with_variant(self, t, key="soon-passive", node_script="soon-passive"):
+        t["scripts"][key] = dict(SCRIPT, label="See today, variant")
+        t["nodes"][3]["script"] = node_script
+
+    def test_accepts_an_action_naming_a_variant_of_its_urgency(self):
+        r = self.run_tree(self.with_variant)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_accepts_a_variant_no_action_names(self):
+        r = self.run_tree(lambda t: t["scripts"].__setitem__("now-spare", SCRIPT))
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_rejects_a_variant_of_the_other_urgency(self):
+        self.assert_rejects("does not match its escalate",
+                            lambda t: self.with_variant(t, "now-passive", "now-passive"))
+
+    def test_rejects_an_action_naming_a_missing_variant(self):
+        self.assert_rejects("names missing script 'soon-other'",
+                            lambda t: self.with_variant(t, node_script="soon-other"))
+
+    def test_rejects_an_action_naming_a_plain_script_as_its_variant(self):
+        self.assert_rejects("script must name a variant",
+                            lambda t: self.with_variant(t, node_script="soon"))
+
+    def test_rejects_an_escalate_that_names_a_variant(self):
+        def mutate(t):
+            self.with_variant(t)
+            t["nodes"][3]["escalate"] = "soon-passive"
+        self.assert_rejects("escalate must be 'now' or 'soon'", mutate)
+
+    def test_a_variant_script_gets_every_script_check(self):
+        def mutate(t):
+            self.with_variant(t)
+            t["scripts"]["soon-passive"]["assessment"] = "Give 5 mg."
+        self.assert_rejects("safetyTree.scripts.soon-passive.assessment contains a dose literal",
+                            mutate)
+        self.assert_rejects("safetyTree.scripts.soon-passive must have exactly the keys",
+                            lambda t: (self.with_variant(t),
+                                       t["scripts"]["soon-passive"].pop("readBack")))
 
     def test_rejects_a_script_missing_a_part(self):
         self.assert_rejects("must have exactly the keys",

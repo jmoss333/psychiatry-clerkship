@@ -51,13 +51,13 @@
   # docs: "All paths defined in the netlify.toml file must be absolute paths relative to the
   # base directory." metrics/allowlist.json relative to base directory "metrics" is
   # "allowlist.json".
-  included_files = ["allowlist.json"]
+  # collection.json is the committed collection switch (writes on/off, armed week, store name,
+  # counter ceiling), read at module scope by netlify/functions/_shared/collection.mjs. Same
+  # reason as allowlist.json: listed explicitly so a missed trace can never ship without it.
+  # (If it ever did go missing, the loader fails CLOSED — writes off — not open.)
+  included_files = ["allowlist.json", "collection.json"]
 
-# Pinned explicitly: in-source route registration was observed NOT to register on the live
-# sp-proxy deploy, so the path fell through to the static 404 (which carries no CORS header)
-# and the browser reported a generic load failure. Status 200 = rewrite, not redirect.
-[[redirects]]
-  from = "/api/ev"
-  to = "/.netlify/functions/ev"
-  status = 200
-  force = true
+# The collector registers /api/ev and its edge rate limit together in ev.mjs.
+# config.path disables /.netlify/functions/ev; do not restore a rewrite to it.
+# Check route registration and rate-limit acceptance at the first authorized deploy
+# while collection remains off. See HARDENING.md for the verification checklist.
