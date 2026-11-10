@@ -21,7 +21,9 @@ sys.path.insert(0, str(ROOT / "bin"))
 from _git_env import scrub_inherited_git_env  # noqa: E402
 scrub_inherited_git_env()
 sys.path.insert(0, str(ROOT / "13_Faculty_Resources" / "_automation"))
-from attestation_hash import clinical_digest, digest  # noqa: E402
+from attestation_hash import (  # noqa: E402
+    blob_sha, canonical_cotw_registry_entry, clinical_digest, digest,
+)
 from maintenance.validate_scheduled_workflows import PINNED_ACTIONS  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("signoff_impact", ROOT / "bin" / "signoff_impact.py")
@@ -32,6 +34,7 @@ WORKFLOW = ROOT / ".github" / "workflows" / "pr-signoff-impact.yml"
 PAGE = "01_Core/page.md"
 PAGE_TEXT = "# Agitation\n\nOffer oral medication first.\n\nKey paper: doi:10.1000/one\n"
 OTHER = "01_Core/other.md"
+COTW_REGISTRY_PATH = "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
 
 
 def _git(root, *args):
@@ -150,6 +153,77 @@ class ClassificationTests(unittest.TestCase):
             "page.md", {PAGE: (PAGE_TEXT + "\nNew text.\n").encode()}, repo.meta["page.md"])
         repo.save_registries()
         self.assertEqual(repo.impact(repo.commit("edit and re-sign"))["reopened"], [])
+
+    def test_a_cotw_summary_change_reopens_only_its_rendered_audience(self):
+        repo = Repo(self)
+        ms3 = "cotw_20260105_demo_ms3.md"
+        resident = "cotw_20260105_demo_res.md"
+        registry = {
+            "weeks": [{
+                "date": "2026-01-05", "topic": "demo", "label": "Demo",
+                "ms3_src": "demo-ms3.md", "res_src": "demo-res.md",
+                "tldr_ms3": "MS3 summary.", "tldr_res": "Resident summary.",
+            }]
+        }
+        ms3_source = "08_Cases_and_Simulation/case-of-the-week/demo-ms3.md"
+        resident_source = "08_Cases_and_Simulation/case-of-the-week/demo-res.md"
+        repo.write(ms3_source, "# MS3 case\n")
+        repo.write(resident_source, "# Resident case\n")
+        repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        repo.shipped["pages"].extend([
+            {"slug": ms3, "source": ms3_source,
+             "cotwRegistryHash": blob_sha(canonical_cotw_registry_entry(ms3, registry))},
+            {"slug": resident, "source": resident_source,
+             "cotwRegistryHash": blob_sha(canonical_cotw_registry_entry(resident, registry))},
+        ])
+        for slug, source in ((ms3, ms3_source), (resident, resident_source)):
+            sources = {source: (repo.root / source).read_bytes()}
+            repo.ledger[slug] = {
+                "status": "reviewed", "by": "Joshua Moss, MD", "at": "2026-09-26",
+                "contentHash": digest(slug, sources, None, next(
+                    page["cotwRegistryHash"] for page in repo.shipped["pages"] if page["slug"] == slug
+                )),
+            }
+        repo.save_registries()
+        repo.base = repo.commit("cotw signed")
+
+        registry["weeks"][0]["tldr_ms3"] = "MS3 summary, revised."
+        repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        for page in repo.shipped["pages"]:
+            if page["slug"] in {ms3, resident}:
+                page["cotwRegistryHash"] = blob_sha(canonical_cotw_registry_entry(page["slug"], registry))
+        repo.save_registries()
+        result = repo.impact(repo.commit("revise ms3 summary"))
+        self.assertEqual([row["slug"] for row in result["reopened"]], [ms3])
+
+    def test_a_pre_projection_cotw_listing_is_already_awaiting_not_uncheckable(self):
+        repo = Repo(self)
+        slug = "cotw_20260105_demo_ms3.md"
+        source = "08_Cases_and_Simulation/case-of-the-week/demo-ms3.md"
+        registry = {"weeks": [{
+            "date": "2026-01-05", "topic": "demo", "label": "Demo",
+            "ms3_src": "demo-ms3.md", "res_src": "demo-res.md",
+            "tldr_ms3": "MS3 summary.", "tldr_res": "Resident summary.",
+        }]}
+        repo.write(source, "# MS3 case\n")
+        repo.write(COTW_REGISTRY_PATH, json.dumps(registry))
+        repo.shipped["pages"].append({"slug": slug, "source": source})
+        repo.ledger[slug] = {
+            "status": "reviewed", "by": "Joshua Moss, MD", "at": "2026-09-26",
+            # Historical CotW signatures predate the derived registry projection.
+            "contentHash": blob_sha(f"{source} {blob_sha((repo.root / source).read_bytes())}\n".encode()),
+        }
+        repo.save_registries()
+        repo.base = repo.commit("cotw signed before derived projections")
+
+        repo.shipped["pages"][-1]["cotwRegistryHash"] = blob_sha(
+            canonical_cotw_registry_entry(slug, registry)
+        )
+        repo.save_registries()
+        result = repo.impact(repo.commit("adopt derived projection"))
+        self.assertEqual(result["reopened"], [])
+        self.assertEqual(result["examined"], 1)
+        self.assertEqual(result["alreadyAwaiting"], 1)
 
     def test_an_unreadable_side_is_could_not_check_never_reopens_nothing(self):
         repo = Repo(self)

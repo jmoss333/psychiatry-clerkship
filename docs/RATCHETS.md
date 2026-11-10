@@ -6,7 +6,7 @@ gain in). A **rise fails** and blocks the push. Nobody has to drive the number t
 gate to be useful, and nobody can let it drift upward without a diff a reviewer sees. Hard
 checks — the ones that must be zero regardless — live *beside* the ratchets, never inside them.
 
-Eight tools use it (one, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
+Nine tools use it (one, `bin/qbank_blueprint_report.py`, has no pin yet -- see below). Each ships its own falsification (`--self-test`) that proves a synthetic
 regression exits 1 and the live tree exits 0, and `bin/verify.sh` runs both the self-test and the
 gate, so the pre-push hook is the enforcement.
 
@@ -55,6 +55,7 @@ entry, which warns) each have a case, plus end-to-end exit codes for stale / unl
 over-cap, and the last assertion runs the live tree against the committed cap.
 | `bin/check_editorial_leaks.py` | `bin/editorial_leaks_baseline.json` | `leaks` (16 at 2026-09-24: the three pasted-instruction audio-quiz items, both deck copies; 0 since 2026-09-25, after WP-3 #772 removed them) | could-not-check is exit 2: a required registry missing or unparsable, a listed shipped source missing, no pack, nothing examined |
 | `bin/check_qbank_length_cue.py` | `bin/qbank_length_cue_baseline.json` | `attested_uniquely_longest`, `live_uniquely_longest` — items whose keyed option is the uniquely longest (WP-7); pinned 125 of 134 / 155 of 189 on 2026-09-25, re-pinned 112 of 189 / 112 of 189 on 2026-10-18 after 36 rewrites were re-attested | none; the flagged ids it prints are the rewrite work list. Report-only lines for `topic_meta.json` quizzes and the practice-case JSONs never move the exit |
+| `bin/check_essentials_visuals.py` | `bin/essentials_visuals_baseline.json` | `pages_without_visual` — Essentials reading pages (both audiences, resolved through `shipped_pages.json`) whose source has no Markdown table and no figure; pinned 21 of 32 on 2026-11-09 | none — it counts presence, not quality; what a table says is checked by the faculty read at attestation |
 | `bin/qbank_blueprint_report.py` | `bin/qbank_blueprint_baseline.json` — **not shipped yet** | points outside the NBME/COMAT band, per dimension, over the attested pool (WP-8) | any untagged attested item exits 2 (PARTIAL), so only `--self-test` is in `verify.sh` until tagging is complete |
 
 ## Lowering the ratchet
