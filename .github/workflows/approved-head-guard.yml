@@ -11,7 +11,7 @@ name: Approved-head guard
 # out or executed. NOT a required check: making it one is a separate decision for Josh.
 on:
   pull_request_target:
-    types: [synchronize, labeled, reopened, ready_for_review]
+    types: [opened, synchronize, labeled, reopened, ready_for_review]
 
 permissions: {}
 

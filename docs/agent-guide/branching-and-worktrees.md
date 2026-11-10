@@ -60,7 +60,7 @@ most wasted work here has been one session not seeing another.
   The chat pointer must identify the specific user approval message, but it is an honest-session
   record only: it does not independently prove human identity, authenticate a reviewer, or
   authorize a change. It must never be invented or reused as approval for a different PR/head.
-- **`approved-head-guard.yml` re-checks every push and when a draft is marked ready**
+- **`approved-head-guard.yml` establishes its status when a PR opens, then re-checks every push and when a draft is marked ready**
   (trusted copy from `main`, hosted runner).
   Only the exact approved head → pass. Any new commit, a label without a current receipt, or a
   prior revocation → it writes a durable bot-authored revocation marker, removes the label,
