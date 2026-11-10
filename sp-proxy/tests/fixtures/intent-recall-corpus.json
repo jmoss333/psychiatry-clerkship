@@ -110,7 +110,10 @@
           "Have you had thoughts about not wanting to be alive?",
           "Do you ever wish you wouldn't wake up?",
           "Have you been thinking that things would be easier if you weren't around?",
-          "Have you had thoughts about not wanting to be here anymore?"
+          "Have you had thoughts about not wanting to be here anymore?",
+          "Do you ever feel like not wanting to be here with us anymore?",
+          "Have there been times you did not want to be here for much longer?",
+          "Do you sometimes not want to live with this pain anymore?"
         ],
         "si_euphemism": [
           "Have you had any thoughts of hurting yourself?",
@@ -282,6 +285,9 @@
         { "text": "Have you thought about when you want to leave?", "intents": ["si_plan"] },
         { "text": "Have you thought about where you'd go after discharge?", "intents": ["si_plan"] },
         { "text": "You mentioned not wanting to be here in the hospital. Can you tell me more?", "intents": ["si_passive", "si_direct"] },
+        { "text": "Do you not want to be here for the family meeting?", "intents": ["si_passive", "si_direct"] },
+        { "text": "You don't want to be here with your husband watching?", "intents": ["si_passive", "si_direct"] },
+        { "text": "You don't want to live with your mother anymore?", "intents": ["si_passive", "si_direct"] },
         { "text": "You mentioned not wanting to live here with your mother — can you say more about that?", "intents": ["si_passive", "si_direct"] },
         { "text": "I imagine you've wished you weren't here on the unit.", "intents": ["si_passive", "si_direct"] },
         { "text": "Are the sleeping pills still in the house?", "intents": ["sleep"] },
@@ -534,6 +540,15 @@
       "mustUnlock": [],
       "mustNotUnlock": ["si_active", "si_plan_detail"],
       "mustNotCover": ["si_passive", "si_direct"]
+    },
+    {
+      "id": "with-us-euphemism-is-a-death-wish",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the other half of the hospital boundary: \"not wanting to be here with us anymore\" is passive suicidal ideation and must open the gated disclosure (N3 re-approval pack 2026-10-29, row 15: the `with` stop added in ead14afe blocked it)",
+      "turns": ["Do you ever feel like not wanting to be here with us anymore?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
     }
   ]
 }
