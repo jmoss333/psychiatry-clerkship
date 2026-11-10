@@ -11,6 +11,7 @@ import {
   canonicalTopicMetaRecord,
   clinicalManifestForSlug,
   clinicalSourceSha,
+  cotwRegistryHashForSlug,
   digestFromManifest,
   isClinicalMarkdownSource,
   manifestForSlug,
@@ -26,6 +27,7 @@ import {
   recordDiff,
 } from '../../change-history.mjs';
 import { describeBankFile } from '../../bank-review.mjs';
+import { shipsQuestionBank } from '../../attestation-inputs.mjs';
 import { deriveContentUniverse } from '../../content-universe.mjs';
 import { assessBank } from '../../qbank-rules.mjs';
 import {
@@ -1280,7 +1282,7 @@ function digestForSlug(slug, { shipped, tree, topicMeta }) {
   // Own properties only: `topicMeta.constructor` would otherwise hand a function to a rule
   // whose "is this a record?" test is about what topic_meta.json actually contains.
   const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
-  return digestFromManifest(manifestForSlug(slug, sources, record));
+  return digestFromManifest(manifestForSlug(slug, sources, record, cotwRegistryHashForSlug(shipped, slug)));
 }
 
 // ── Fingerprint v2: `clinicalHash` ──────────────────────────────────────────────────────
@@ -1368,7 +1370,9 @@ function clinicalDigestForSlug(slug, inputs) {
   }
   const { topicMeta } = inputs;
   const record = isRecord(topicMeta) && Object.hasOwn(topicMeta, slug) ? topicMeta[slug] : null;
-  return digestFromManifest(clinicalManifestForSlug(slug, values, record));
+  return digestFromManifest(clinicalManifestForSlug(
+    slug, values, record, cotwRegistryHashForSlug(inputs.shipped, slug),
+  ));
 }
 
 /** Reviewed rows whose v1 hash no longer matches but which carry a clinicalHash to try. */
@@ -1422,19 +1426,12 @@ async function readDigestInputs(repository, shipped, branch) {
   // only when a shipped page lists it, and written into a COPY of the listing: the memoised
   // tree is keyed by commit and must stay exactly what git said.
   let tree = listed;
-  if (listed.has(QBANK_PATH) && shipsQuestionBank(shipped)) {
+  if (listed.has(QBANK_PATH) && shipsQuestionBank(shipped, QBANK_PATH)) {
     const bank = await repository.readRaw(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
     tree = new Map(listed);
     tree.set(QBANK_PATH, sourceBlobSha(QBANK_PATH, bank.bytes));
   }
   return { tree, shipped, topicMeta: topicMetaFile.json, head };
-}
-
-function shipsQuestionBank(shipped) {
-  const pages = isRecord(shipped) && Array.isArray(shipped.pages) ? shipped.pages : [];
-  return pages.some(page => isRecord(page)
-    && (page.source === QBANK_PATH
-      || (Array.isArray(page.extraSources) && page.extraSources.includes(QBANK_PATH))));
 }
 
 // ── Bank contents (2026-10-05) ──────────────────────────────────────────────────────────
@@ -1567,7 +1564,9 @@ async function buildBankView(repository, settings, slug) {
   const record = isRecord(inputs.topicMeta) && Object.hasOwn(inputs.topicMeta, slug) ? inputs.topicMeta[slug] : null;
   const digest = digestForSlug(slug, inputs);
   const verified = Boolean(digest) && Object.values(values).every(Boolean)
-    && digestFromManifest(manifestForSlug(slug, values, record)) === digest;
+    && digestFromManifest(manifestForSlug(
+      slug, values, record, cotwRegistryHashForSlug(inputs.shipped, slug),
+    )) === digest;
   const page = (isRecord(inputs.shipped) && Array.isArray(inputs.shipped.pages) ? inputs.shipped.pages : [])
     .find(entry => isRecord(entry) && entry.slug === slug) || {};
   return {
@@ -3203,7 +3202,7 @@ async function readDigestInputsAt(repository, head) {
   ]);
   if (!isRecord(shippedFile.json) || !isRecord(metaFile.json)) invalidRepositoryFile();
   let tree = listed;
-  if (listed.has(QBANK_PATH) && shipsQuestionBank(shippedFile.json)) {
+  if (listed.has(QBANK_PATH) && shipsQuestionBank(shippedFile.json, QBANK_PATH)) {
     const bank = await repository.readRaw(QBANK_PATH, { maxBytes: MAX_BANK_BYTES, ref: head });
     tree = new Map(listed);
     tree.set(QBANK_PATH, sourceBlobSha(QBANK_PATH, bank.bytes));

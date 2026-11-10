@@ -26,6 +26,7 @@ from attestation_hash import (  # noqa: E402
     STALE_REASON,
     AttestationHashError,
     blob_sha,
+    canonical_cotw_registry_entry,
     canonical_topic_meta_record,
     clinical_digest,
     clinical_manifest_for_slug,
@@ -235,6 +236,77 @@ class DigestTest(FixtureTreeTestCase):
         (self.root / "b.md").unlink()
         with self.assertRaises(FileNotFoundError):
             self.from_tree("w.md")
+
+
+class CotwRegistryCoverageTest(unittest.TestCase):
+    """A Case-of-the-Week registry row is text rendered on each audience's case page."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.ms3_slug = "cotw_20260105_demo_ms3.md"
+        self.res_slug = "cotw_20260105_demo_res.md"
+        (self.root / "ms3.md").write_text("MS3 case\n", encoding="utf-8")
+        (self.root / "res.md").write_text("Resident case\n", encoding="utf-8")
+        self.shipped = {
+            "version": 1,
+            "pages": [
+                {"kind": "page", "slug": self.ms3_slug, "source": "ms3.md", "sites": ["ms3"]},
+                {"kind": "page", "slug": self.res_slug, "source": "res.md", "sites": ["res"]},
+            ],
+        }
+        self.topic_meta = {}
+        self.registry_path = self.root / "08_Cases_and_Simulation/case-of-the-week/cotw_registry.json"
+        self.registry_path.parent.mkdir(parents=True)
+        self.registry = {
+            "weeks": [
+                {
+                    "date": "2026-01-05",
+                    "topic": "demo",
+                    "label": "Demo",
+                    "ms3_src": "ms3.md",
+                    "res_src": "res.md",
+                    "tldr_ms3": "MS3 summary.",
+                    "tldr_res": "Resident summary.",
+                },
+                {
+                    "date": "2026-01-12",
+                    "topic": "other",
+                    "label": "Other",
+                    "ms3_src": "other-ms3.md",
+                    "res_src": "other-res.md",
+                    "tldr": "An unrelated edition.",
+                },
+            ]
+        }
+        self._write_registry()
+
+    def _write_registry(self):
+        self.registry_path.write_text(json.dumps(self.registry), encoding="utf-8")
+        for page in self.shipped["pages"]:
+            page["cotwRegistryHash"] = blob_sha(
+                canonical_cotw_registry_entry(page["slug"], self.registry)
+            )
+
+    def test_per_audience_tldr_drift_reopens_only_the_rendered_case(self):
+        ms3_hash = digest_from_tree(self.root, self.shipped, self.topic_meta, self.ms3_slug)
+        res_hash = digest_from_tree(self.root, self.shipped, self.topic_meta, self.res_slug)
+        self.registry["weeks"][0]["tldr_ms3"] = "MS3 summary, revised."
+        self._write_registry()
+
+        report = ledger_hash_report(
+            self.root,
+            {
+                self.ms3_slug: reviewed_entry(ms3_hash),
+                self.res_slug: reviewed_entry(res_hash),
+            },
+            self.shipped,
+            self.topic_meta,
+        )
+
+        self.assertEqual(set(report["stale"]), {self.ms3_slug})
+        self.assertEqual(report["bound"], {self.res_slug: res_hash})
 
 
 class LedgerHashReportTest(FixtureTreeTestCase):
