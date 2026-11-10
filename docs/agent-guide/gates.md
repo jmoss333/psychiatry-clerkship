@@ -44,6 +44,17 @@ cd tests/smoke && npm ci && npx playwright test
 - CI (`.github/workflows/ci.yml`) runs on every PR: path-lint → governance/policy separation →
   citation attribution → media/topic_meta/longitudinal validators → build+QA gate (ms3 & res) →
   smoke tests. It mirrors Netlify, so breakage turns a PR red instead of only failing at deploy.
+- **A PR's range in CI is measured from the merge-base of `origin/<base branch>` and the
+  checkout, never from `github.event.pull_request.base.sha` alone.** GitHub refreshes that pointer
+  only when the merge-base moves, so on a PR held open while `main` advances it is stale and a
+  diff from it to the PR merge commit carries every commit `main` took since: on 2026-11-10
+  #1119's build went red on L1 over 26 commits of `main` it never touched, and "Update branch"
+  was the only cure. The four steps that take a base — `ci.yml`'s two separation guards and the
+  rotation-edition catalog, and `pr-signoff-impact.yml` — compute it the same way and keep the
+  event pointer as the fallback for a checkout with no base ref. The bodies are pinned by
+  `validate_scheduled_workflows.py`'s `CRITICAL_STEPS` (recompute the digest through its own
+  `_load`/`_contract_digest`) and the meaning by `tests/maintenance/test_governance_guard_pins.py`
+  and `test_signoff_impact.py`.
 
 ### A citation must carry a DOI or PMID that resolves to the paper claimed — [gate: bin/check_citation_attribution.py]
 - **A citation must carry a DOI or PMID, and it must resolve to the paper claimed.**
