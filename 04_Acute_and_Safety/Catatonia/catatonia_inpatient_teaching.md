@@ -6,6 +6,12 @@
 
 **How it presents on the unit.** Picture the patient who has stopped — mute, immobile, staring past you, holding an awkward posture, or letting you bend a limb into a position that then stays put (waxy flexibility). Watch for negativism (resisting or doing the opposite of what is asked), echolalia and echopraxia (echoing your words or movements), stereotypy, and grimacing. Catatonia is not always quiet: the *excited* subtype shows purposeless agitation, while the *retarded* subtype shows stupor and immobility. Crucially, it crosses diagnostic lines — it appears in mood disorders (often the most common driver), psychotic disorders, autism spectrum disorder, AND medical or neurologic illness (encephalitis, metabolic derangement, seizure, autoimmune disease). The emergency you must never miss is **malignant catatonia**: autonomic instability, hyperthermia, and rigidity that clinically overlaps with neuroleptic malignant syndrome (NMS). Treat it as a medical emergency.
 
+| Form | What you see |
+|---|---|
+| Retarded | Stupor and immobility |
+| Excited | Purposeless agitation |
+| Malignant | Autonomic instability, hyperthermia, and rigidity that overlaps with NMS — a medical emergency |
+
 **Recognize and screen.** The standard instrument is the **Bush-Francis Catatonia Rating Scale (BFCRS)** (Bush et al., 1996) — use its screening items to detect catatonia and its full scale to track severity over time. On exam, deliberately look for the signs it scores: immobility/stupor, mutism, staring, posturing/catalepsy, waxy flexibility, negativism, echophenomena, stereotypy, and any agitation that does not fit the environment. Naming the signs out loud forces you to actually look for them.
 
 <a class="tl-chip" href="?tool=bfcrs.html" data-tool="bfcrs.html" data-icon="bfcrs">Bush-Francis — official form &amp; how to administer</a>
