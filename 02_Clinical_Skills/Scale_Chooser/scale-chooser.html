@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- [CLERKSHIP-META v1] tool="Which Scale?" version="1.0" built="2026-11-05" category="clinical-skills" audience="trainee,ms3,resident" settings="inpatient,self-study" time="5min" summary="Start from the clinical question and get the instrument teams use today, where to practise it here or the official form, its rights standing, and what its number does and does not license. Scores nothing; stores nothing." -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Which Scale?</title>
+<meta name="description" content="A scale and screening chooser for inpatient psychiatry: pick what you need to do and see which instrument to use, where to practise it or get the official form, and what its number licenses.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+  :root{
+    --bg:#f6f3ee;--bg-alt:#faf6f0;--surface:#ffffff;--border:#ddd3c6;
+    --primary:#bc573a;--primary-dark:#a84830;--primary-light:#f3ebe5;
+    --accent:#2a6b5e;--accent-dark:#1e5248;--accent-light:#edf4f2;
+    --text:#3b332c;--text-mid:#64574b;--text-light:#87786a;
+    --font-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+    --font-head:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:16px;line-height:1.5}
+  .shell{max-width:780px;margin:0 auto;padding:24px 18px 70px}
+  h1{font-family:var(--font-head);color:var(--primary-dark);font-size:1.8rem;margin:.1em 0}
+  .kicker{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--accent-dark)}
+  .sub{color:var(--text-mid);max-width:62ch;margin:6px 0 12px}
+  .banner{font-size:.84rem;color:var(--text-mid);background:var(--bg-alt);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin:0 0 16px}
+  .moment{margin:0 0 14px}
+  .moment h2{font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--text);margin:0 0 6px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:.86rem;cursor:pointer;text-align:left}
+  .chip.on{border-color:var(--accent-dark);background:var(--accent-light);color:var(--accent-dark);font-weight:700}
+  .chip:focus-visible{outline:2px solid var(--accent-dark);outline-offset:2px}
+  .answer{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-top:18px}
+  .answer h3{font-family:var(--font-head);font-size:1.15rem;color:var(--text);margin:0 0 4px;font-weight:600}
+  .answer .use{font-size:.95rem;margin:0 0 8px}
+  .badge{display:inline-block;font-size:.8rem;font-weight:700;border-radius:999px;padding:3px 11px;border:1px solid var(--border);background:var(--bg-alt);color:var(--text)}
+  .badge.practised{background:var(--accent-light);border-color:var(--accent);color:var(--accent-dark)}
+  .badge.route{background:var(--primary-light);border-color:var(--primary-dark);color:var(--primary-dark)}
+  .badge.notyet{border-style:dashed;color:var(--text-mid)}
+  .first{margin:10px 0 0;padding:8px 11px;border-left:3px solid var(--primary-dark);background:var(--primary-light);border-radius:7px;font-size:.9rem;color:var(--text)}
+  .where{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+  .go{display:inline-block;text-decoration:none;font-weight:600;font-size:.86rem;padding:7px 12px;border-radius:7px;border:1px solid var(--accent-dark);color:var(--accent-dark);background:var(--accent-light)}
+  .go:focus-visible{outline:2px solid var(--accent-dark);outline-offset:2px}
+  .answer h4{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mid);margin:14px 0 4px}
+  .answer ul{margin:0;padding-left:1.15em;font-size:.92rem}
+  .answer li{margin:3px 0}
+  .related{font-size:.86rem;color:var(--text-mid);margin:12px 0 0}
+  .related a{color:var(--accent-dark)}
+  .src{font-size:.8rem;color:var(--text-mid);margin:12px 0 0}
+  .empty{color:var(--text-mid);font-size:.92rem;margin-top:18px}
+  .disc{font-size:.8rem;color:var(--text-mid);border-top:1px solid var(--border);margin-top:24px;padding-top:12px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement, useState=React.useState;
+
+/* SCALE_CHOOSER_DATA_BEGIN — one row per clinical question; no DOM, no storage.
+   tests/scale-chooser.test.mjs executes this block straight out of the page and checks every
+   row against instrument_rights.json, shipped_pages.json and evidence_annotations.json
+   (plan: docs/superpowers/plans/2026-10-31-scale-chooser-plan.md §3). The chooser names and
+   routes to instruments; it reproduces none and scores nothing. A number in a "licenses",
+   "doesNotLicense" or "first" line needs an evidence entry on its row. */
+var STANDING={
+  'practised-here':     {label:'Practised here', cls:'practised'},
+  'practised-own-words':{label:'Practised here — in our own words', cls:'practised'},
+  'taught-here':        {label:'Taught here — score from the official form', cls:''},
+  'route-only':         {label:'Link only — not reproduced here', cls:'route'},
+  'not-yet':            {label:'Not yet in the library', cls:'notyet'},
+  'not-a-scale':        {label:'Not a scale — a judgment', cls:''}
+};
+var MOMENTS=[
+  {id:'admission', label:'On admission'},
+  {id:'daily',     label:'Every day'},
+  {id:'safety',    label:'Safety'},
+  {id:'not-a-scale', label:'Not every question is a scale'}
+];
+var ROWS=[
+ {id:'phq-screen', moment:'admission', intent:'Screen for depression',
+  instruments:[{name:'PHQ-9', rightsId:'phq9-gad7', officialUrl:'https://www.phqscreeners.com/'}],
+  standing:'practised-here', surface:'screeners.html',
+  licenses:['Against a structured interview, a PHQ-9 of 10 or more had a sensitivity of 88% and a specificity of 88% for major depression: a reason to do the diagnostic interview.','A severity band to record now and trend later.'],
+  doesNotLicense:['A diagnosis of major depression — the interview makes that.','Safety — item 9 is read on its own, whatever the total.'],
+  confounds:['Medical illness driving the sleep, energy and appetite items','Reading level and language','Answering for the interviewer'],
+  evidence:[{sourceId:'kroenke-2001-phq9', claimId:'phq9-severity-bands', cite:'Kroenke et al., J Gen Intern Med 2001, PMID 11556941'}],
+  related:['t_mood.md']},
+ {id:'gad-screen', moment:'admission', intent:'Screen for anxiety',
+  instruments:[{name:'GAD-7', rightsId:'phq9-gad7', officialUrl:'https://www.phqscreeners.com/'}],
+  standing:'practised-here', surface:'screeners.html',
+  licenses:['A focused anxiety interview; a positive screen also flags panic, social anxiety and PTSD for questioning.'],
+  doesNotLicense:['Which anxiety disorder it is.','That anxiety explains the symptoms — rule out medical and substance causes first.'],
+  confounds:['Withdrawal and stimulant use','Thyroid disease, arrhythmia, hypoxia'],
+  evidence:[], related:['t_anxiety.md']},
+ {id:'delirium-screen', moment:'admission', intent:'Screen for delirium',
+  instruments:[{name:'4AT', rightsId:null, officialUrl:'https://www.the4at.com/'},{name:'CAM family (CAM, 3D-CAM, CAM-ICU)', rightsId:null, officialUrl:null}],
+  standing:'taught-here', surface:'decision-aids.html',
+  first:'Look at arousal and attention, and get the baseline from nursing and family, before any cognitive test.',
+  licenses:['A positive screen starts a medical workup for the cause.'],
+  doesNotLicense:['Ruling delirium out from one negative screen — it fluctuates, so rescreen each shift.','A psychiatric label for an acute change in attention.'],
+  confounds:['Sedation','Aphasia or a language barrier','Severe hearing or visual impairment'],
+  evidence:[], related:['delirium.md','mse.html']},
+ {id:'cognition', moment:'admission', intent:'Test cognition once delirium is excluded',
+  instruments:[{name:'MoCA', rightsId:null, officialUrl:'https://mocacognition.com/'}],
+  standing:'route-only', surface:'mse.html',
+  first:'Exclude delirium first: a score taken during delirium measures the delirium.',
+  licenses:['A baseline to compare against, and a reason for a fuller neurocognitive workup.'],
+  doesNotLicense:['A dementia diagnosis on its own.','Decisional capacity — that is a separate, decision-specific assessment.'],
+  confounds:['Education and literacy','Language and culture','Depression and poor effort','Hearing or visual impairment'],
+  evidence:[], related:['t_neurocog.md']},
+ {id:'substance-screen', moment:'admission', intent:'Screen substance use',
+  instruments:[{name:'AUDIT-C', rightsId:null, officialUrl:null},{name:'Single-question screens', rightsId:null, officialUrl:null}],
+  standing:'not-yet', surface:null,
+  licenses:['A fuller substance history and a withdrawal-risk check.'],
+  doesNotLicense:['A use-disorder diagnosis.','Withdrawal risk — ask about last use, past withdrawal and seizures.'],
+  confounds:['Under-reporting','Collateral that disagrees'],
+  evidence:[], related:['t_sud.md']},
+ {id:'movement-baseline', moment:'admission', intent:'Baseline movement exam before an antipsychotic',
+  instruments:[{name:'AIMS', rightsId:null, officialUrl:null}],
+  standing:'not-yet', surface:null,
+  licenses:['A documented baseline, so later movements can be compared with it.'],
+  doesNotLicense:['A tardive dyskinesia diagnosis from one exam.','That a movement is drug-induced — look for other causes.'],
+  confounds:['A movement disorder that predates treatment','Ill-fitting dentures','Anxiety'],
+  evidence:[], related:['med_monitoring.md']},
+ {id:'opioid-withdrawal', moment:'daily', intent:'Check opioid withdrawal',
+  instruments:[{name:'COWS', rightsId:'cows', officialUrl:'https://nida.nih.gov/sites/default/files/ClinicalOpiateWithdrawalScale.pdf'}],
+  standing:'practised-own-words', surface:'withdrawal.html',
+  licenses:['For people using high-potency synthetic opioids, ASAM lists COWS ≥8 with 1 objective sign of opioid withdrawal as a situation for standard or high-dose buprenorphine initiation. Teaching, not an order: the threshold your team starts on is in its protocol.'],
+  doesNotLicense:['A dose — that belongs to the protocol.','A trend from one score — log the next one.'],
+  confounds:['Anxiety, pain and other drugs push scores up','Time since last use','A pulse taken after exertion'],
+  evidence:[{sourceId:'asam-hpso-bup-2023', claimId:'hpso-cows-8-standard-or-high-dose-initiation', cite:'Weimer et al., J Addict Med 2023, PMID 37934520'}],
+  related:['t_sud.md']},
+ {id:'alcohol-withdrawal', moment:'daily', intent:'Check alcohol withdrawal',
+  instruments:[{name:'CIWA-Ar', rightsId:'ciwa-ar', officialUrl:'https://www.csam-asam.org/ciwa-ar'}],
+  standing:'route-only', surface:'withdrawal.html',
+  first:'It needs a patient who can communicate. A patient who cannot needs a different protocol.',
+  licenses:['Symptom-triggered treatment under your unit’s protocol, scored from the unit’s form.'],
+  doesNotLicense:['A score from a patient who cannot answer — most items depend on what the patient reports.','Withdrawal risk before symptoms start — that comes from the history.'],
+  confounds:['Anxiety','Other causes of tremor and tachycardia','Delirium'],
+  evidence:[], related:['t_sud.md']},
+ {id:'depression-trend', moment:'daily', intent:'Trend a depression response',
+  instruments:[{name:'PHQ-9, given twice', rightsId:'phq9-gad7', officialUrl:'https://www.phqscreeners.com/'}],
+  standing:'practised-here', surface:'screeners.html',
+  licenses:['Whether the plan is working, read from two totals of the same instrument. The PHQ-9’s minimal clinically important difference for individual change was 5 points on the 0 to 27 point scale, so a smaller change is inside one person’s measurement noise.'],
+  doesNotLicense:['Calling a change smaller than one person’s measurement noise better or worse.','Safety — item 9 is read on its own at every administration.'],
+  confounds:['A different instrument or wording between the two totals','A new medical illness'],
+  evidence:[{sourceId:'lowe-2004-phq9-monitoring', claimId:'phq9-mcid-5-points', cite:'Löwe et al., Med Care 2004, PMID 15550799'}],
+  related:['t_mood.md']},
+ {id:'agitation-level', moment:'daily', intent:'Gauge agitation or sedation',
+  instruments:[{name:'RASS', rightsId:null, officialUrl:null},{name:'BARS', rightsId:null, officialUrl:null}],
+  standing:'not-yet', surface:null,
+  licenses:['A shared word for the level of arousal, so the next person can tell whether it changed.'],
+  doesNotLicense:['The cause of the agitation — rule out the medical drivers first.'],
+  confounds:['Delirium','Intoxication','Pain'],
+  evidence:[], related:['agitation.md','decision-aids.html']},
+ {id:'item9-positive', moment:'safety', intent:'Item 9 is positive',
+  instruments:[{name:'C-SSRS', rightsId:'cssrs', officialUrl:'https://cssrs.columbia.edu/the-columbia-scale-c-ssrs/cssrs-for-communities-and-healthcare/'}],
+  standing:'route-only', surface:'cssrs.html',
+  licenses:['A structured suicide-risk inquiry now, by your team’s protocol.'],
+  doesNotLicense:['A risk level from the screen item alone.','Safety from one negative answer on one day.'],
+  confounds:['Under-reporting to a stranger','Intoxication'],
+  evidence:[], related:['pg_suicide.md']},
+ {id:'safety-plan', moment:'safety', intent:'Build a safety plan',
+  instruments:[{name:'Stanley-Brown Safety Plan', rightsId:'stanley-brown', officialUrl:'https://suicidesafetyplan.com/'}],
+  standing:'route-only', surface:null,
+  licenses:['A collaborative plan written with the patient, on the authors’ form.'],
+  doesNotLicense:['Discharge safety on its own — the plan sits inside a risk assessment.','A no-harm contract — that is not a safety plan.'],
+  confounds:[],
+  evidence:[], related:['pg_suicide.md']},
+ {id:'violence-risk', moment:'safety', intent:'Structured violence risk',
+  instruments:[{name:'In-house warning-sign list', rightsId:null, officialUrl:null},{name:'BVC and DASA, named', rightsId:null, officialUrl:null}],
+  standing:'taught-here', surface:'violence.html',
+  licenses:['A shared list of warning signs to act on and document.'],
+  doesNotLicense:['A sum or a threshold — the list is not summed.','Low risk from an unchecked list.'],
+  confounds:['Delirium and intoxication','Who is doing the observing'],
+  evidence:[], related:['agitation.md']},
+ {id:'catatonia', moment:'safety', intent:'Suspected catatonia',
+  instruments:[{name:'BFCRS', rightsId:'bfcrs', officialUrl:'https://www.urmc.rochester.edu/psychiatry/divisions/collaborative-care-and-wellness/bush-francis-catatonia-rating-scale/bfcrs'}],
+  standing:'route-only', surface:'bfcrs.html',
+  licenses:['A structured look for the signs, scored from the official form with its coding guide.'],
+  doesNotLicense:['Skipping the medical workup — check vitals and labs for malignant catatonia and NMS.'],
+  confounds:['Parkinsonism','Stupor from a medical cause','Severe depression with psychomotor slowing'],
+  evidence:[], related:['catatonia.md','decision-aids.html']},
+ {id:'capacity', moment:'not-a-scale', intent:'Decide decisional capacity',
+  instruments:[{name:'Four abilities — not a scale', rightsId:null, officialUrl:null}],
+  standing:'not-a-scale', surface:'capacity.html',
+  licenses:['A decision-specific judgment, made and documented for this decision at this time.'],
+  doesNotLicense:['Using a cognitive score as the capacity answer.'],
+  confounds:['Delirium that comes and goes','Language and hearing'],
+  evidence:[], related:[]}
+];
+/* Both kinds route through the learner shell's in-frame handler (common.py IFRAME_NAV matches
+   index.html?page= and index.html?tool=), so the parent's URL, heading and nav follow the click. */
+function hrefFor(slug){ return '../index.html?'+(/\.md$/.test(slug)?'page=':'tool=')+slug; }
+/* SCALE_CHOOSER_DATA_END */
+
+function Answer(props){
+  var r=props.row, st=STANDING[r.standing];
+  var links=[];
+  if(r.surface) links.push(e('a',{key:'s',className:'go',href:hrefFor(r.surface)},r.standing==='route-only'?'Open the route page →':'Practise it here →'));
+  r.instruments.forEach(function(i,k){ if(i.officialUrl) links.push(e('a',{key:'o'+k,className:'go',href:i.officialUrl,target:'_blank',rel:'noopener noreferrer'},'Official '+i.name+' →')); });
+  function list(title,items){ return items&&items.length? [e('h4',{key:title+'h'},title), e('ul',{key:title+'u'},items.map(function(x,k){return e('li',{key:k},x);}))] : null; }
+  return e('section',{className:'answer','aria-live':'polite'},
+    e('h3',null,r.intent),
+    e('p',{className:'use'},e('b',null,'Use: '),r.instruments.map(function(i){return i.name;}).join(' · ')),
+    e('span',{className:'badge '+st.cls},st.label),
+    r.first? e('p',{className:'first'},e('b',null,'First: '),r.first) : null,
+    links.length? e('div',{className:'where'},links) : null,
+    list('What the number licenses',r.licenses),
+    list('What it does not license',r.doesNotLicense),
+    list('Confounds — what makes it lie',r.confounds),
+    r.related.length? e('p',{className:'related'},'Read next: ',r.related.map(function(s,k){return [k?' · ':'',e('a',{key:s,href:hrefFor(s)},s.replace(/\.(md|html)$/,''))];})) : null,
+    r.evidence.length? e('p',{className:'src'},'Source: ',r.evidence.map(function(x){return x.cite;}).join('; '),'.') : null);
+}
+
+function App(){
+  var s=useState(null), sel=s[0], setSel=s[1];
+  var row=null; ROWS.forEach(function(r){ if(r.id===sel) row=r; });
+  return e('div',{className:'shell'},
+    e('div',{className:'kicker'},'Clinical Skills · choosing an instrument'),
+    e('h1',null,'Which Scale?'),
+    e('p',{className:'sub'},'Start from what you need to do. Each answer names the instrument teams use today, where to practise it here or get the official form, and what its number does and does not let you do.'),
+    e('p',{className:'banner'},'Teaching tool. Nothing is scored and nothing is saved, and no patient details are entered here. Instruments are named and linked, never reproduced.'),
+    MOMENTS.map(function(m){
+      return e('div',{className:'moment',key:m.id},
+        e('h2',null,m.label),
+        e('div',{className:'chips'}, ROWS.filter(function(r){return r.moment===m.id;}).map(function(r){
+          var on=sel===r.id;
+          return e('button',{key:r.id,type:'button',className:'chip'+(on?' on':''),'aria-pressed':on,onClick:function(){setSel(on?null:r.id);}},r.intent);
+        })));
+    }),
+    row? e(Answer,{row:row}) : e('p',{className:'empty'},'Pick a question above to see which scale fits it.'),
+    e('div',{className:'disc'},e('p',null,'Educational tool for clinical trainees. Teaching, not an order: your unit’s protocols name the instruments it uses and when. Joshua Moss, MD | Psychiatrist')));
+}
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>

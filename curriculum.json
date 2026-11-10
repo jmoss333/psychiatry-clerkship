@@ -202,14 +202,14 @@
         "communication-practice.html", "diagnostic-reasoning.html",
         "family-systems.html", "family-meeting-sim.html", "one-patient-six-weeks.html", "capacity.html",
         "maine-law-navigator.html",
-        "oral.html", "violence.html", "screeners.html",
+        "oral.html", "violence.html", "screeners.html", "scale-chooser.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
         "pharmacy.html", "reflection.html", "shelf-mode.html", "review.html",
         "question-bank-practice.html"
       ],
       "groups": [
         { "name": "Interview & present", "refs": ["mse.html", "interview-circle.html", "sp-interview.html", "communication-practice.html", "oral.html"] },
-        { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "capacity.html", "maine-law-navigator.html", "violence.html", "withdrawal.html"] },
+        { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "scale-chooser.html", "capacity.html", "maine-law-navigator.html", "violence.html", "withdrawal.html"] },
         { "name": "Medications", "refs": ["pharmacy.html", "interaction-cards.html", "decision-aids.html"] },
         { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html", "family-meeting-sim.html"] },
         { "name": "Practice & review", "refs": ["shelf-mode.html", "review.html", "question-bank-practice.html", "reflection.html"] }
@@ -465,6 +465,7 @@
   "rightsReferences": ["bfcrs.html", "cssrs.html"],
   "libraryHints": {
     "prepare-for-tomorrow.html": "Choose tomorrow's task and prepare in 5 or 15 minutes.",
+    "scale-chooser.html": "Pick the clinical question; see which scale fits and what its number licenses.",
     "mse.html": "Domain-by-domain descriptor bank and a builder that drafts a written mental status exam.",
     "interview-circle.html": "Gather every history domain by following the patient's openings instead of marching a checklist.",
     "sp-interview.html": "Interview a fictional standardized patient by text and get feedback on the exchange.",
@@ -719,6 +720,7 @@
   } ,
   "searchAliases": {
     "maine_law.md": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
+    "scale-chooser.html": ["which scale", "choose a scale", "rating scale", "screening instrument"],
     "maine-law-navigator.html": ["blue paper", "blue papers", "3863", "involuntary", "commitment", "duty to warn", "tarasoff", "minor consent", "maine law"],
     "one-patient-six-weeks.html": ["one patient six weeks", "case journeys"],
     "family-meeting-sim.html": ["family simulation", "angry parent", "ambivalent spouse", "silent teen", "discharge meeting", "interpreter", "older adult psychosis", "struggling parent"],
