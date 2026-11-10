@@ -306,8 +306,12 @@ const SCRIPT_CLAIMS = {
   now: { sha: '03eff40d8cc69e1d90bee788083df1ce27eeb68d1f60bed34cf5db500ef18551', alternatives: [[]] },
   // "What I found: [no plan, intent, preparation or acute risk factor; or: denies suicidal thoughts]"
   soon: { sha: '3e76302b3c7cd15ece082d292a9843b26f83c0ca2e038949ba36b201bf0c3934', alternatives: [['plan', 'intent', 'preparation', 'acute'], ['active', 'passive']] },
+  // "What I found: a wish to be dead, no thoughts of killing themselves. No steps taken, recent
+  // attempt or discharge, or acute risk factor. Plan and intent: not asked." (W1-a, O2 §3)
+  // No blank; reports as absent only what the passive-only path asked.
+  'soon-passive': { sha: 'ebbe540604a3a87c4c056faed42cef46c61cfbb0431f01387d98a62b878cd095', alternatives: [['active', 'preparation', 'acute']] },
 };
-const PENDING_FACULTY_WORDING = new Set(['passive-only']);
+const PENDING_FACULTY_WORDING = new Set();
 
 const sha = (s) => createHash('sha256').update(s).digest('hex');
 
