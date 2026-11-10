@@ -113,7 +113,9 @@
           "Have you had thoughts about not wanting to be here anymore?",
           "Do you ever feel like not wanting to be here with us anymore?",
           "Have there been times you did not want to be here for much longer?",
-          "Do you sometimes not want to live with this pain anymore?"
+          "Do you sometimes not want to live with this pain anymore?",
+          "Have there been times you did not want to go on anymore?",
+          "Have you felt like not wanting to go on?"
         ],
         "si_euphemism": [
           "Have you had any thoughts of hurting yourself?",
@@ -135,7 +137,10 @@
           "Is there a particular method you've thought about?",
           "Have you thought about how to kill yourself?",
           "Have you thought about how to do it?",
-          "Have you thought about when you would do it?"
+          "Have you thought about when you would do it?",
+          "Is there a specific way you would do it?",
+          "Have you thought about anything specific?",
+          "Have you thought about how to overdose?"
         ],
         "si_means": [
           "Do you have access to those pills?",
@@ -294,7 +299,18 @@
         { "text": "What happened after you lost your job?", "intents": ["psychosis_screen"] },
         { "text": "Did you get any sleep last night on the unit?", "intents": ["judgmental", "premature_reassurance", "ooc_attempt"] },
         { "text": "What's the point you're trying to make when you say that?", "intents": ["si_euphemism", "si_passive"] },
-        { "text": "Who is Ellie?", "intents": ["judgmental", "premature_reassurance"] }
+        { "text": "Who is Ellie?", "intents": ["judgmental", "premature_reassurance"] },
+        { "text": "Do you not want to go on medication?", "intents": ["si_passive", "si_direct"] },
+        { "text": "You mentioned not wanting to go on lithium — can you say more?", "intents": ["si_passive", "si_direct"] },
+        { "text": "You said you do not want to carry on with the therapy group?", "intents": ["si_passive", "si_direct"] },
+        { "text": "Is there a particular way you cope when you feel overwhelmed?", "intents": ["si_plan"] },
+        { "text": "Is there a specific way you like to be supported?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when to take your medication?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you would take your medication in the mornings?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how to take your medication safely?", "intents": ["si_plan"] },
+        { "text": "How would you take care of yourself after discharge?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when you would try to go back to work?", "intents": ["si_plan"] },
+        { "text": "Was there anything specific that set this off?", "intents": ["si_plan"] }
       ],
       "interview": {
         "turns": [
@@ -427,7 +443,8 @@
           "Have you made any plan to end your life?",
           "Have you thought about how you would do it?",
           "Have you thought about how to kill yourself?",
-          "Have you thought about when you would do it?"
+          "Have you thought about when you would do it?",
+          "Is there a specific way you would do it?"
         ],
         "si_behavior": [
           "Have you done anything since you left to act on those thoughts?",
@@ -445,6 +462,10 @@
         { "text": "Do you have a plan for when you leave the hospital?", "intents": ["si_plan"] },
         { "text": "Have you thought about when you'd like to go home?", "intents": ["si_plan"] },
         { "text": "Have you thought about how to tell your sister?", "intents": ["si_plan"] },
+        { "text": "Is there a particular way you cope when you feel overwhelmed?", "intents": ["si_plan"] },
+        { "text": "Have you thought about when to take your medication?", "intents": ["si_plan"] },
+        { "text": "Have you thought about how to take your medication safely?", "intents": ["si_plan"] },
+        { "text": "Do you not want to go on medication?", "intents": ["si_passive", "si_direct"] },
         { "text": "Did Tom take his sleeping pills to work like he said?", "intents": ["sleep"] },
         { "text": "Don't worry about taking your time with the form.", "intents": ["premature_reassurance"] }
       ]
@@ -547,6 +568,60 @@
       "reference": "the other half of the hospital boundary: \"not wanting to be here with us anymore\" is passive suicidal ideation and must open the gated disclosure (N3 re-approval pack 2026-10-29, row 15: the `with` stop added in ead14afe blocked it)",
       "turns": ["Do you ever feel like not wanting to be here with us anymore?"],
       "mustUnlock": ["si_active"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "treatment-refusal-is-not-a-death-wish",
+      "case": "sp_depression_gated_si_001",
+      "reference": "not wanting to go on medication is a treatment question, not passive ideation (Codex review of #1119, 2026-11-10)",
+      "turns": ["Do you not want to go on medication?"],
+      "mustUnlock": [],
+      "mustNotUnlock": ["si_active", "si_plan_detail"],
+      "mustNotCover": ["si_passive", "si_direct"]
+    },
+    {
+      "id": "coping-way-after-screen-does-not-open-plan",
+      "case": "sp_depression_gated_si_001",
+      "reference": "a coping question after the screen must not open plan detail (Codex review of #1119, 2026-11-10)",
+      "turns": ["Have you had thoughts of killing yourself?", "Is there a particular way you cope when you feel overwhelmed?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "medication-timing-after-screen-does-not-open-plan",
+      "case": "sp_depression_gated_si_001",
+      "reference": "medication timing after the screen must not open plan detail (Codex review of #1119, 2026-11-10)",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about when to take your medication?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "medication-how-after-screen-does-not-open-plan",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the same leak in the `how` stem: a medication question is not a method question",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about how to take your medication safely?"],
+      "mustUnlock": ["si_active"],
+      "mustNotUnlock": ["si_plan_detail"],
+      "mustNotCover": ["si_plan"]
+    },
+    {
+      "id": "method-question-with-way-still-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the other half: a method question phrased with `way` still reaches plan detail",
+      "turns": ["Have you had thoughts of killing yourself?", "Is there a specific way you would do it?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
+      "mustNotUnlock": [],
+      "mustNotCover": []
+    },
+    {
+      "id": "anything-specific-still-opens-after-screen",
+      "case": "sp_depression_gated_si_001",
+      "reference": "the bounded `anything specific` probe still reaches plan detail",
+      "turns": ["Have you had thoughts of killing yourself?", "Have you thought about anything specific?"],
+      "mustUnlock": ["si_active", "si_plan_detail"],
       "mustNotUnlock": [],
       "mustNotCover": []
     }
