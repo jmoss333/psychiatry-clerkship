@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "25a67a30ce3f2b6394e019d967d0b01a40138dc52318fc3f5301b5c21843f9a9",
     "site_extras.py": "2ffc966d904a2e67c13b6d6c9951808098b76d02f0e4ec02d3e2b74924dae8ad",
-    "site_manifest.json": "b157aaa2d648c1f061e616c717f0a3b3a88cf4dddea4269da36a895a412aef01"
+    "site_manifest.json": "358e288823f41cb7ddcc2b786ef687ea7ddac2eb17937fb5cef3099bf777e188"
   },
   "pages": [
     {
@@ -729,6 +729,17 @@
       "slug": "feedback.html",
       "source": "13_Faculty_Resources/Feedback/feedback.html",
       "title": "Improve this library — send feedback"
+    },
+    {
+      "kind": "tool",
+      "producer": "site_manifest",
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "slug": "how-we-know.html",
+      "source": "07_Evidence_and_Reading/How_We_Know/how-we-know.html",
+      "title": "How We Know"
     },
     {
       "kind": "tool",

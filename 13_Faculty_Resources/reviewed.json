@@ -1568,5 +1568,15 @@
     "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
     "at": "2026-10-27",
     "by": "Pending faculty review"
+  },
+  "how-we-know.html": {
+    "status": "pending",
+    "risk": {
+      "kind": "general",
+      "level": "moderate"
+    },
+    "reason": "New How We Know page (learner edition, without the correction history: faculty decision 2026-11-09) added 2026-11-10; awaiting faculty attestation.",
+    "at": "2026-11-10",
+    "by": "Pending faculty review"
   }
 }

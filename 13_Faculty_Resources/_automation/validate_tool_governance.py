@@ -50,7 +50,8 @@ REVIEWED_RELATIVE = Path("13_Faculty_Resources/reviewed.json")
 # 2026-09-30: +1 on both sites for pharmacy.html (the Psychiatric Pharmacy).
 # 2026-10-27: +1 on both sites for maine-law-navigator.html (the Maine Law Navigator).
 # 2026-10-27: +1 on both sites for family-meeting-sim.html (the Family Conversation Simulator).
-EXPECTED_TOOL_COUNTS = {"ms3": 25, "resident": 29}
+# 26/30 as of 2026-11-10: +how-we-know.html (How We Know, learner edition) on both sites.
+EXPECTED_TOOL_COUNTS = {"ms3": 26, "resident": 30}
 ALLOWED_AUDIENCES = frozenset({"trainee", "ms3", "resident", "faculty"})
 
 

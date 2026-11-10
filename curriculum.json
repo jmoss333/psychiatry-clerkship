@@ -205,14 +205,14 @@
         "oral.html", "violence.html", "screeners.html",
         "withdrawal.html", "decision-aids.html", "interaction-cards.html",
         "pharmacy.html", "reflection.html", "shelf-mode.html", "review.html",
-        "question-bank-practice.html"
+        "question-bank-practice.html", "how-we-know.html"
       ],
       "groups": [
         { "name": "Interview & present", "refs": ["mse.html", "interview-circle.html", "sp-interview.html", "communication-practice.html", "oral.html"] },
         { "name": "Assess & decide", "refs": ["diagnostic-reasoning.html", "screeners.html", "capacity.html", "maine-law-navigator.html", "violence.html", "withdrawal.html"] },
         { "name": "Medications", "refs": ["pharmacy.html", "interaction-cards.html", "decision-aids.html"] },
         { "name": "Cases & families", "refs": ["one-patient-six-weeks.html", "family-systems.html", "family-meeting-sim.html"] },
-        { "name": "Practice & review", "refs": ["shelf-mode.html", "review.html", "question-bank-practice.html", "reflection.html"] }
+        { "name": "Practice & review", "refs": ["shelf-mode.html", "review.html", "question-bank-practice.html", "reflection.html", "how-we-know.html"] }
       ]
     },
     {
@@ -465,6 +465,7 @@
   "rightsReferences": ["bfcrs.html", "cssrs.html"],
   "libraryHints": {
     "prepare-for-tomorrow.html": "Choose tomorrow's task and prepare in 5 or 15 minutes.",
+    "how-we-know.html": "See how each claim here is tied to the source's own words, then test whether a claim is licensed.",
     "mse.html": "Domain-by-domain descriptor bank and a builder that drafts a written mental status exam.",
     "interview-circle.html": "Gather every history domain by following the patient's openings instead of marching a checklist.",
     "sp-interview.html": "Interview a fictional standardized patient by text and get feedback on the exchange.",
