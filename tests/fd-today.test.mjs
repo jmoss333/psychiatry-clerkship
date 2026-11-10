@@ -359,6 +359,52 @@ test('Today leaves patient-care links to the dedicated top-level destination', (
     'the existing responsive Quick Tools remain intact');
 });
 
+// ---- first-visit starters (2026-11-09) -----------------------------------------------------------
+const STARTER_REFS = ['sp-interview.html', 'one-patient-six-weeks.html', 'question-bank-practice.html'];
+const starterIdx = (refs) => Object.assign({}, IDX, {
+  byRef: Object.assign({}, IDX.byRef, Object.fromEntries(refs.map((ref) => [ref, { ref, kind: 'tool', title: ref }]))),
+});
+
+test('with no week set, Today offers the shipped starters after the setup card', () => {
+  const html = F.fdToday(starterIdx(STARTER_REFS), s({ week: null }));
+  assert.equal((html.match(/class="fd-starter"/g) || []).length, 3);
+  for (const ref of STARTER_REFS) assert.match(html, new RegExp(`class="fd-starter" data-fd-open="${ref.replace('.', '\\.')}"`));
+  const setup = html.indexOf('class="fd-now fd-now--setup"');
+  const starters = html.indexOf('class="fd-starters"');
+  const also = html.indexOf('fd-also">Also today');
+  assert.ok(setup > -1 && starters > setup && also > starters, 'setup card, then starters, then Also today');
+  assert.equal((html.match(/fd-now fd-now--/g) || []).length, 1, 'still exactly one Now card');
+  assert.equal((html.match(/data-fd-dock-source=/g) || []).length, 1, 'the starters are not a second primary');
+});
+
+test('starters render only for tools the site ships, and never once a week is set', () => {
+  const one = F.fdToday(starterIdx(['question-bank-practice.html']), s({ week: null }));
+  assert.equal((one.match(/class="fd-starter"/g) || []).length, 1);
+  assert.doesNotMatch(F.fdToday(IDX, s({ week: null })), /fd-starters/, 'no shipped starter tool, no section');
+  assert.doesNotMatch(F.fdToday(starterIdx(STARTER_REFS), s({})), /fd-starter/, 'a set week owns the column');
+});
+
+test('starter copy is audience-neutral and every starter class has a rule', () => {
+  const html = F.fdToday(starterIdx(STARTER_REFS), s({ week: null }));
+  const section = html.slice(html.indexOf('<section class="fd-starters"'), html.indexOf('</section>', html.indexOf('<section class="fd-starters"')));
+  assert.doesNotMatch(section.replace(/data-fd-open="[^"]*"/g, ''), AUDIENCE_TOKEN_RE);
+  for (const cls of ['fd-starters', 'fd-starters__list', 'fd-starter', 'fd-starter__body', 'fd-starter__title', 'fd-starter__line', 'fd-starter__go']) {
+    assert.ok(frontdoorCss.includes(`.${cls}{`) || frontdoorCss.includes(`.${cls} `) || frontdoorCss.includes(`.${cls}:`), `${cls} has a rule`);
+  }
+});
+
+test('the offline receipt follows the Now card with a week and closes the column without one', () => {
+  const offline = '<aside class="fd-offline" data-test-offline></aside>';
+  const purpose = '<details class="fd-purpose" data-test-purpose></details>';
+  const noWeek = F.fdToday(starterIdx(STARTER_REFS), s({ week: null, offlineHtml: offline, purposeHtml: purpose }));
+  assert.equal((noWeek.match(/data-test-offline/g) || []).length, 1, 'rendered once');
+  assert.ok(noWeek.indexOf('data-test-offline') > noWeek.indexOf('data-test-purpose'), 'after the chooser');
+  assert.ok(noWeek.indexOf('data-test-offline') > noWeek.indexOf('class="fd-starters"'));
+  const withWeek = F.fdToday(IDX, s({ offlineHtml: offline, purposeHtml: purpose }));
+  assert.equal((withWeek.match(/data-test-offline/g) || []).length, 1);
+  assert.ok(withWeek.indexOf('data-test-offline') < withWeek.indexOf('fd-also">Also today'), 'unchanged with a week');
+});
+
 test('no week set renders the setup CTA instead of the continue card', () => {
   const html = F.fdToday(IDX, s({ week: null }));
   assert.match(html, /fd-setupcta/);
@@ -1069,7 +1115,8 @@ test('the thread has one node per projected week, marks done by real completion,
   assert.doesNotMatch(html, /data-fd-setweek|data-fd-week=|data-fd-open/, 'a node previews a week; it never sets one or opens an item');
   const done = F.fdThread(PATH_IDX, s({ week: 2, done: { 'a.md': true, 't.html': true } }));
   assert.match(done, /<li class="fd-thread__step is-done"><button[^>]*data-fd-view-week="1" aria-label="Week 1: Foundations \(done\)"><span class="fd-thread__mark" aria-hidden="true">✓<\/span>/);
-  assert.match(html, /<span class="fd-thread__mark" aria-hidden="true">1<\/span><span class="fd-thread__label" aria-hidden="true">Foundations<\/span>/);
+  assert.match(html, /<span class="fd-thread__mark" aria-hidden="true">1<\/span> <span class="fd-thread__label" aria-hidden="true">Foundations<\/span>/,
+    'the space keeps mark and label two words, so the name "Week 1: Foundations" contains the visible "1 Foundations" (WCAG 2.5.3; axe label-content-name-mismatch)');
 });
 
 test('the thread renders without a current week while browsing, and not at all without a valid path', () => {

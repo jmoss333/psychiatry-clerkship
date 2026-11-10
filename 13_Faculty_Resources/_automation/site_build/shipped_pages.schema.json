@@ -62,6 +62,11 @@
           "items": { "type": "string" },
           "description": "Further repo-relative attested inputs: resident page overrides and automatically discovered local teaching data and first-party script assets loaded by a tool. Shared tools include both audiences’ inputs. Absent on a page with one source. attestation_hash.sources_for_slug hashes `source` and these together, so an edit to either drifts the page's attestation. Unique: a path listed twice would hash twice into the manifest and change the digest without changing any text — derive() appends only a source it does not already carry (shipped_pages.py), and uniqueItems makes that convention a gate."
         },
+        "cotwRegistryHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$",
+          "description": "Canonical SHA-1 projection of the Case-of-the-Week registry fields rendered for this edition and audience. Present only for cotw_registry-produced pages; included in that page's clinical attestation digest."
+        },
         "producer": {
           "enum": [
             "site_manifest",

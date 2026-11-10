@@ -6,7 +6,20 @@
 
 **How it presents on the unit** — Three overlapping patterns. *Intoxication* can mimic or unmask psychiatric illness (stimulant-induced paranoia, alcohol-related mood lability, sedative disinhibition). *Withdrawal* is the time-sensitive one: alcohol and benzodiazepine withdrawal can progress to seizures and delirium tremens and can kill, whereas opioid and stimulant withdrawal are intensely uncomfortable but rarely lethal. *Co-occurring psychiatric illness* is the rule, not the exception — depression, anxiety, PTSD, and psychotic disorders frequently travel with substance use, and you cannot reliably diagnose a primary mood or psychotic disorder while the patient is acutely intoxicated or withdrawing.
 
+| Withdrawal from | What makes it matter |
+|---|---|
+| Alcohol, benzodiazepines | Can progress to seizures and delirium tremens, and can kill |
+| Opioids, stimulants | Intensely uncomfortable but rarely lethal |
+
 **Differential & can't-miss mimics** — Altered mental status in a patient who uses substances is never automatically "just withdrawal." Keep these live: **Wernicke encephalopathy** (confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct); **head injury / subdural hematoma** (falls and trauma are common); **occult infection / sepsis** (meningitis, pneumonia, aspiration); **hepatic encephalopathy** in the patient with alcohol-related liver disease (asterixis, elevated ammonia); and **polysubstance use masking** a more dangerous co-ingestant or an evolving metabolic, electrolyte, or anticholinergic picture. Anchor every withdrawal assessment with vitals and a neuro exam.
+
+| Can't-miss | Clues this page names |
+|---|---|
+| Wernicke encephalopathy | Confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct |
+| Head injury / subdural hematoma | Falls and trauma are common |
+| Occult infection / sepsis | Meningitis, pneumonia, aspiration |
+| Hepatic encephalopathy | Alcohol-related liver disease; asterixis, elevated ammonia |
+| Polysubstance use | A more dangerous co-ingestant, or an evolving metabolic, electrolyte, or anticholinergic picture |
 
 **Initial workup** — Focused and pragmatic: full vitals with a neurologic exam, fingerstick glucose, basic metabolic panel and magnesium, liver function tests, CBC, a urine drug screen and blood/breath alcohol, and a pregnancy test where relevant. Add ECG when QTc-affecting agents or methadone are in play. Image the head if there is trauma, a focal deficit, or unexplained or out-of-proportion altered mental status.
 
