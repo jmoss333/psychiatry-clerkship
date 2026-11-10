@@ -374,6 +374,11 @@ step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.p
 # arrived as prose only, or an edit stripped a page's only table; a fall prints the command that
 # lowers the pin. It counts presence, not quality: the faculty read at attestation is the check
 # on what a table says.
+# How We Know has two editions from one generator: the faculty prototype (with the correction
+# case studies) and the learner-facing one without them (faculty decision 2026-11-09). The
+# self-test renders both from a fixture and proves the public edition drops the history and
+# nothing else, and that assert_public() rejects the full edition.
+step "unit — how-we-know editions"          python3 bin/build_how_we_know.py --self-test
 step "unit — essentials visuals"            python3 bin/check_essentials_visuals.py --self-test
 step "essentials visuals (ratchet)"         python3 bin/check_essentials_visuals.py
 # DECISION: qbank-drafts-phone-attestable (2026-09-29). Every live draft must pass the console's
