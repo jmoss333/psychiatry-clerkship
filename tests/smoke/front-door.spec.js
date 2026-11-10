@@ -5438,6 +5438,13 @@ test('Concepts Today released count, phone keyboard recall and trusted Path cont
 test('Review companion stays hidden until reveal and opens the exact article card',async({page},info)=>{
   const companion=await (await page.request.get('/tools/review_companions.json')).json();
   const pair=companion.pairs[0];
+  // Live governance state, not a defect (docs/agent-guide/gates.md, "A test may not depend on live
+  // governance state"). A pair is published only while its clinical page is attested: the one pair
+  // today hangs on t_psychosis.md, so ANY content edit to that page withholds its Concepts card,
+  // the build ships zero pairs, and this test died on pair.clinicalCardId -- which also meant the
+  // edit could never merge and so could never be re-attested. Skip with the reason; the pairing
+  // logic itself is pinned without a build by site_build/test_review_companions.py.
+  test.skip(!pair,'no review-companion pair is published: its clinical page is awaiting faculty re-attestation');
   const concepts=await (await page.request.get('/tools/concepts.json')).json();
   const clinical=concepts.cards.find(card=>card.id===pair.clinicalCardId);
   const quizzes=await (await page.request.get('/tools/quizzes.json')).json();
@@ -5460,6 +5467,13 @@ test('Review companion stays hidden until reveal and opens the exact article car
 test('a fresh companion card waits when the shared daily new-card limit is reached',async({page},info)=>{
   const companion=await (await page.request.get('/tools/review_companions.json')).json();
   const pair=companion.pairs[0];
+  // Live governance state, not a defect (docs/agent-guide/gates.md, "A test may not depend on live
+  // governance state"). A pair is published only while its clinical page is attested: the one pair
+  // today hangs on t_psychosis.md, so ANY content edit to that page withholds its Concepts card,
+  // the build ships zero pairs, and this test died on pair.clinicalCardId -- which also meant the
+  // edit could never merge and so could never be re-attested. Skip with the reason; the pairing
+  // logic itself is pinned without a build by site_build/test_review_companions.py.
+  test.skip(!pair,'no review-companion pair is published: its clinical page is awaiting faculty re-attestation');
   await seedApp(page,info);
   await page.addInitScript(()=>{
     const now=new Date();

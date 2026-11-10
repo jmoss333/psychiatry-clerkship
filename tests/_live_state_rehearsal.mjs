@@ -37,6 +37,7 @@ import { fileURLToPath } from 'node:url';
 import {
   clinicalManifestForSlug,
   clinicalSourceSha,
+  cotwRegistryHashForSlug,
   digestFromManifest,
   manifestForSlug,
   sourceBlobSha,
@@ -72,9 +73,10 @@ function boundHashes(slug, meta, readReal) {
     clinical[source] = clinicalSourceSha(source, bytes);
   }
   const record = Object.hasOwn(meta, slug) ? meta[slug] : undefined;
+  const cotwRegistryHash = cotwRegistryHashForSlug(shipped, slug);
   return {
-    contentHash: digestFromManifest(manifestForSlug(slug, content, record)),
-    clinicalHash: digestFromManifest(clinicalManifestForSlug(slug, clinical, record)),
+    contentHash: digestFromManifest(manifestForSlug(slug, content, record, cotwRegistryHash)),
+    clinicalHash: digestFromManifest(clinicalManifestForSlug(slug, clinical, record, cotwRegistryHash)),
   };
 }
 

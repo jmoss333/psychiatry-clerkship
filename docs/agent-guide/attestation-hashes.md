@@ -8,9 +8,12 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
 - **An attestation names the text it attested, and the name has to still fit.** A reviewed row's
   `contentHash` in `13_Faculty_Resources/reviewed.json` is a **git blob SHA over a manifest** —
   one line per input, each line itself a blob SHA: the slug's shipped source file(s) (`source`
-  plus any `extraSources` in `site_build/shipped_pages.json`, sorted by path) and its
-  `topic_meta.json` record canonicalised with `facultyReview` removed, because governance state is
-  not content and attesting a page must not depend on the block that records the attesting. The
+  plus any `extraSources` in `site_build/shipped_pages.json`, sorted by path), its
+  `topic_meta.json` record canonicalised with `facultyReview` removed, and, for a Case of the
+  Week page, its canonicalised per-edition/per-audience `cotw_registry.json` projection. A
+  `tldr_ms3` edit therefore reopens the MS3 case that renders it without reopening the resident
+  twin. Governance state is not content, so attesting a page must not depend on the block that
+  records the attesting. The
   rule lives once in `13_Faculty_Resources/_automation/attestation_hash.py`;
   `python3 bin/check_attestation_hashes.py --explain SLUG [--rev REV]` prints the manifest so
   anyone can re-derive the value by hand with `git hash-object --stdin`, and
