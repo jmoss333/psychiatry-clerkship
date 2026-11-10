@@ -519,7 +519,21 @@ test('no hard-coded crisis numbers', () => {
   // Same signatures tests/crisis-block.test.mjs builds (canonicalContactSignatures, digitRunPattern).
   const compact = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const digitRun = (digits) => new RegExp(`(?<!\\d)${digits.split('').join('[^a-z0-9]*')}(?![^a-z0-9]*\\d)`, 'i');
-  const source = html.replace(/<!--[\s\S]*?-->/g, '');
+  // Drop HTML comments (the CLERKSHIP-META header) by scanning for the delimiters, not with a
+  // regex replace (CodeQL js/incomplete-multi-character-sanitization; same fix as #1166).
+  const stripComments = (s) => {
+    let out = '';
+    let i = 0;
+    for (;;) {
+      const a = s.indexOf('<!--', i);
+      if (a < 0) return out + s.slice(i);
+      out += s.slice(i, a);
+      const b = s.indexOf('-->', a + 4);
+      if (b < 0) return out;
+      i = b + 3;
+    }
+  };
+  const source = stripComments(html);
   const compactSource = compact(source);
   for (const r of crisis.resources) {
     for (const field of ['contact', 'alsoAvailable']) {
