@@ -39,19 +39,86 @@ const REQUEST = Object.freeze({
   maximumUsage: Object.freeze({ inputTokens: 100, outputTokens: 0 }),
 });
 
-// adapterWrites = calls the ledger makes into the store (one per CAS attempt); httpAttempts =
-// PUTs the SDK sends to the signed URL; apiRequests = signed-URL fetches from the Netlify API.
-// The pinned SDK (@netlify/blobs 11.1.0) performs the initial request plus five retries for 429
-// and 5xx and, since 11.0.3, for 403 as well, minting a FRESH signed URL from the API before each
-// retry — so a retried failure costs six API calls and six PUTs while the ledger still writes
-// once and fails closed. 401 is never retried; 412 is the ledger's own five-attempt CAS loop.
+// These tests drive the ledger through the REAL @netlify/blobs client against a fake HTTP
+// endpoint, so they pin what the ledger does with whatever the installed SDK reports. They do
+// not pin the SDK's own transport: it retries 403, 429 and 5xx internally (the initial PUT plus
+// five retries in 11.1.x, each on a freshly signed URL), and that count is the SDK's business.
+//
+// What the SDK reports for one conditional write falls into one of three classes:
+//   committed — modified: true with a nonempty ETag; the only answer that may advance state
+//   failed    — it threw, or it claimed modified: true with no ETag to prove the write
+//   conflict  — modified: false; another writer holds the key, so the ledger re-reads and retries
+// Which class a status lands in has changed within 11.1.x. Through 11.1.6 a conditional PUT
+// answered with any status but 412 came back as { etag: '', modified: true } — an HTTP 401
+// reported as a write, refused only by the ledger's nonempty-ETag check. 11.1.7
+// (netlify/primitives#820) throws BlobsInternalError for a non-2xx status instead, and answers
+// 409 as it answers 412, with { modified: false }. So each row lists the classes its status may
+// land in, the test observes the one it did, and the ledger must give that class's answer:
+// a failed write is refused at once with budget_unavailable; a conflict goes round the ledger's
+// own five-attempt CAS loop and is then refused with budget_contention. No row may commit.
+const LEDGER_ANSWER = Object.freeze({
+  failed: Object.freeze({ code: 'budget_unavailable', adapterWrites: 1 }),
+  conflict: Object.freeze({ code: 'budget_contention', adapterWrites: 5 }),
+});
+
+function matrixRow(label, slug, status, classes) {
+  return Object.freeze({ label, slug, status, classes: Object.freeze(classes) });
+}
+
+// A forced "status" that makes every signed PUT reject instead of answering. The SDK retries it
+// and then throws (11.1.6 and 11.1.7 alike), so this row keeps the ledger's catch path under
+// test even on an SDK that reports HTTP failures without throwing, as 11.1.6 does.
+const NETWORK_ERROR = 'network error';
+
 const FAILURE_MATRIX = Object.freeze([
-  Object.freeze({ status: 401, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 1, apiRequests: 1 }),
-  Object.freeze({ status: 403, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6, apiRequests: 6 }),
-  Object.freeze({ status: 429, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6, apiRequests: 6 }),
-  Object.freeze({ status: 500, code: 'budget_unavailable', adapterWrites: 1, httpAttempts: 6, apiRequests: 6 }),
-  Object.freeze({ status: 412, code: 'budget_contention', adapterWrites: 5, httpAttempts: 5, apiRequests: 5 }),
+  matrixRow('network error', 'network', NETWORK_ERROR, ['failed']),
+  matrixRow('HTTP 200 without an ETag', '200-no-etag', 200, ['failed']),
+  matrixRow('HTTP 401', '401', 401, ['failed']),
+  matrixRow('HTTP 403', '403', 403, ['failed']),
+  matrixRow('HTTP 409', '409', 409, ['failed', 'conflict']),
+  matrixRow('HTTP 429', '429', 429, ['failed']),
+  matrixRow('HTTP 500', '500', 500, ['failed']),
+  matrixRow('HTTP 412', '412', 412, ['conflict']),
 ]);
+
+// The ledger's own acceptance rule for an ETag (`nonempty` in sp-budget.mjs): a string, not
+// empty, with no surrounding whitespace.
+function provesWrite(etag) {
+  return typeof etag === 'string' && etag.length > 0 && etag === etag.trim();
+}
+
+function classify(outcome) {
+  if ('error' in outcome) return 'failed';
+  const { result } = outcome;
+  if (result?.modified === false) return 'conflict';
+  if (result?.modified === true && provesWrite(result.etag)) return 'committed';
+  return 'failed';
+}
+
+function observedClass(harness, entry) {
+  const classes = [...new Set(harness.sdkOutcomes.map(classify))];
+  assert.equal(classes.length, 1, `${entry.label}: one kind of SDK answer, saw [${classes}]`);
+  const allowed = entry.classes.join(' or ');
+  assert.equal(
+    entry.classes.includes(classes[0]),
+    true,
+    `${entry.label}: the SDK answered "${classes[0]}"; this row allows ${allowed}`,
+  );
+  return classes[0];
+}
+
+function assertEveryPutGot(harness, status) {
+  assert.equal(harness.signedRequests.every((request) => request.status === status), true);
+}
+
+async function rejection(promise) {
+  try {
+    await promise;
+  } catch (error) {
+    return error;
+  }
+  return assert.fail('the ledger accepted a write the store never proved');
+}
 
 function clone(value) {
   return value === null ? null : JSON.parse(JSON.stringify(value));
@@ -60,7 +127,7 @@ function clone(value) {
 function makeAdapterHarness({ forcedStatus = null, rotationId = 'adapter-matrix' } = {}) {
   const apiRequests = [];
   const signedRequests = [];
-  const observedResults = [];
+  const sdkOutcomes = [];
   let nextForcedStatus = forcedStatus;
   let serverRecord = null;
   let readableRecord = null;
@@ -95,6 +162,7 @@ function makeAdapterHarness({ forcedStatus = null, rotationId = 'adapter-matrix'
         }
       }
       signedRequests.push({ url: requestUrl, options, status });
+      if (status === NETWORK_ERROR) throw new TypeError('fetch failed');
       return new Response(null, {
         status,
         headers: etag ? { etag } : undefined,
@@ -112,14 +180,17 @@ function makeAdapterHarness({ forcedStatus = null, rotationId = 'adapter-matrix'
         metadata: null,
       };
     },
+    // Every call is recorded, including the ones the SDK answers by throwing.
     async set(...args) {
-      const result = await adapter.set(...args);
-      observedResults.push(result);
-      if (
-        result.modified === true
-        && typeof result.etag === 'string'
-        && result.etag.trim().length > 0
-      ) {
+      let result;
+      try {
+        result = await adapter.set(...args);
+      } catch (error) {
+        sdkOutcomes.push({ error });
+        throw error;
+      }
+      sdkOutcomes.push({ result });
+      if (classify({ result }) === 'committed') {
         readableRecord = {
           data: JSON.parse(args[1]),
           etag: result.etag,
@@ -144,7 +215,7 @@ function makeAdapterHarness({ forcedStatus = null, rotationId = 'adapter-matrix'
     ledger,
     apiRequests,
     signedRequests,
-    observedResults,
+    sdkOutcomes,
     readableRecord: () => clone(readableRecord),
     forceStatus(status) {
       nextForcedStatus = status;
@@ -152,7 +223,7 @@ function makeAdapterHarness({ forcedStatus = null, rotationId = 'adapter-matrix'
     resetObservations() {
       apiRequests.length = 0;
       signedRequests.length = 0;
-      observedResults.length = 0;
+      sdkOutcomes.length = 0;
     },
   };
 }
@@ -162,46 +233,37 @@ function operationStatus(harness) {
   return operations[0]?.attempts.at(-1).status ?? null;
 }
 
-function assertConditionalRequests(harness, {
-  adapterWrites,
-  httpAttempts,
-  apiRequests = adapterWrites,
-  condition,
-}) {
-  assert.equal(harness.apiRequests.length, apiRequests);
-  assert.equal(harness.observedResults.length, adapterWrites);
-  assert.equal(harness.signedRequests.length, httpAttempts);
+// The ledger's write count is its own policy and is pinned exactly. The SDK's HTTP traffic is
+// pinned only by its floor (a write is at least one PUT) and its shape: every PUT carries the
+// ledger's condition.
+function assertConditionalWrites(harness, { adapterWrites, condition }) {
+  assert.equal(harness.sdkOutcomes.length, adapterWrites);
+  assert.equal(harness.signedRequests.length >= adapterWrites, true);
   assert.equal(harness.signedRequests.every((request) => (
     request.options.headers[condition.name] === condition.value
   )), true);
 }
 
-test('Netlify Blobs 11.1.0 reserve matrix fails closed except for HTTP 200 with an ETag', async (t) => {
+test('Netlify Blobs reserve matrix fails closed except for HTTP 200 with an ETag', async (t) => {
   for (const entry of FAILURE_MATRIX) {
-    await t.test(`HTTP ${entry.status}`, async () => {
+    await t.test(entry.label, async () => {
       const harness = makeAdapterHarness({
         forcedStatus: entry.status,
-        rotationId: `reserve-${entry.status}`,
+        rotationId: `reserve-${entry.slug}`,
       });
 
-      await assert.rejects(
-        harness.ledger.reserve({ ...REQUEST, idempotencyKey: `reserve-${entry.status}` }),
-        (error) => {
-          assert.equal(error?.status, 503);
-          assert.equal(error?.code, entry.code);
-          return true;
-        },
+      const error = await rejection(
+        harness.ledger.reserve({ ...REQUEST, idempotencyKey: `reserve-${entry.slug}` }),
       );
+      const answer = LEDGER_ANSWER[observedClass(harness, entry)];
+      assert.equal(error?.status, 503);
+      assert.equal(error?.code, answer.code);
       assert.equal(harness.readableRecord(), null);
-      assertConditionalRequests(harness, {
-        ...entry,
+      assertConditionalWrites(harness, {
+        adapterWrites: answer.adapterWrites,
         condition: { name: 'if-none-match', value: '*' },
       });
-      if (entry.status === 412) {
-        assert.equal(harness.observedResults.every((result) => result.modified === false), true);
-      } else {
-        assert.deepEqual(harness.observedResults, [{ etag: '', modified: true }]);
-      }
+      assertEveryPutGot(harness, entry.status);
     });
   }
 
@@ -214,52 +276,37 @@ test('Netlify Blobs 11.1.0 reserve matrix fails closed except for HTTP 200 with 
 
     assert.equal(Object.isFrozen(reservation), true);
     assert.equal(operationStatus(harness), 'reserved');
-    assertConditionalRequests(harness, {
+    assertConditionalWrites(harness, {
       adapterWrites: 1,
-      httpAttempts: 1,
       condition: { name: 'if-none-match', value: '*' },
     });
-    assert.equal(harness.observedResults[0].modified, true);
-    assert.match(harness.observedResults[0].etag, /^sdk-etag-\d+$/);
+    assert.equal(classify(harness.sdkOutcomes[0]), 'committed');
+    assert.match(harness.sdkOutcomes[0].result.etag, /^sdk-etag-\d+$/);
   });
 });
 
-test('Netlify Blobs 11.1.0 provider-start matrix never authorizes HTTP failures or 412', async (t) => {
+test('Netlify Blobs provider-start matrix never authorizes a failed or lost CAS', async (t) => {
   for (const entry of FAILURE_MATRIX) {
-    await t.test(`HTTP ${entry.status}`, async () => {
-      const harness = makeAdapterHarness({ rotationId: `mark-${entry.status}` });
+    await t.test(entry.label, async () => {
+      const harness = makeAdapterHarness({ rotationId: `mark-${entry.slug}` });
       const reservation = await harness.ledger.reserve({
         ...REQUEST,
-        idempotencyKey: `mark-${entry.status}`,
+        idempotencyKey: `mark-${entry.slug}`,
       });
       const reservationEtag = harness.readableRecord().etag;
       harness.resetObservations();
       harness.forceStatus(entry.status);
 
-      await assert.rejects(
-        harness.ledger.markProviderStarted(reservation),
-        (error) => {
-          assert.equal(error?.status, 503);
-          assert.equal(error?.code, entry.code);
-          return true;
-        },
-      );
+      const error = await rejection(harness.ledger.markProviderStarted(reservation));
+      const answer = LEDGER_ANSWER[observedClass(harness, entry)];
+      assert.equal(error?.status, 503);
+      assert.equal(error?.code, answer.code);
       assert.equal(operationStatus(harness), 'reserved');
-      assertConditionalRequests(harness, {
-        ...entry,
+      assertConditionalWrites(harness, {
+        adapterWrites: answer.adapterWrites,
         condition: { name: 'if-match', value: reservationEtag },
       });
-      assert.equal(harness.observedResults.some((result) => (
-        result.modified === true
-        && typeof result.etag === 'string'
-        && result.etag.length > 0
-      )), false);
-      assert.equal(harness.signedRequests.every((request) => request.status === entry.status), true);
-      if (entry.status === 412) {
-        assert.equal(harness.observedResults.every((result) => result.modified === false), true);
-      } else {
-        assert.deepEqual(harness.observedResults, [{ etag: '', modified: true }]);
-      }
+      assertEveryPutGot(harness, entry.status);
     });
   }
 });
@@ -283,14 +330,14 @@ test('only one ETag-bearing HTTP 200 provider-start CAS authorizes the provider'
   assert.equal(results.find((result) => result.authorized === true).modified, true);
   assert.equal(results.find((result) => result.authorized === false).modified, false);
   assert.equal(operationStatus(harness), 'provider_started');
-  assertConditionalRequests(harness, {
+  assertConditionalWrites(harness, {
     adapterWrites: 2,
-    httpAttempts: 2,
     condition: { name: 'if-match', value: reservationEtag },
   });
-  assert.equal(harness.observedResults.filter((result) => (
-    result.modified === true && /^sdk-etag-\d+$/.test(result.etag)
-  )).length, 1);
-  assert.equal(harness.observedResults.filter((result) => result.modified === false).length, 1);
+  assert.deepEqual(harness.sdkOutcomes.map(classify).sort(), ['committed', 'conflict']);
+  assert.match(
+    harness.sdkOutcomes.find((outcome) => classify(outcome) === 'committed').result.etag,
+    /^sdk-etag-\d+$/,
+  );
   assert.deepEqual(harness.signedRequests.map((request) => request.status).sort(), [200, 412]);
 });
