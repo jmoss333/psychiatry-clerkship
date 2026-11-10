@@ -369,6 +369,18 @@ step "editorial leaks in learner text"      python3 bin/check_editorial_leaks.py
 # item whose keyed option is the UNIQUELY longest rewards test-wiseness, not knowledge (WP-7,
 # target attested <= 35%). A rise fails; a rewrite batch lowers the pin with --update-baseline.
 step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.py
+# Ratchet against bin/essentials_visuals_baseline.json (21 of 32 on 2026-11-09): the number of
+# Essentials reading pages with no table and no figure. A rise fails -- a new Essentials page
+# arrived as prose only, or an edit stripped a page's only table; a fall prints the command that
+# lowers the pin. It counts presence, not quality: the faculty read at attestation is the check
+# on what a table says.
+# How We Know has two editions from one generator: the faculty prototype (with the correction
+# case studies) and the learner-facing one without them (faculty decision 2026-11-09). The
+# self-test renders both from a fixture and proves the public edition drops the history and
+# nothing else, and that assert_public() rejects the full edition.
+step "unit — how-we-know editions"          python3 bin/build_how_we_know.py --self-test
+step "unit — essentials visuals"            python3 bin/check_essentials_visuals.py --self-test
+step "essentials visuals (ratchet)"         python3 bin/check_essentials_visuals.py
 # DECISION: qbank-drafts-phone-attestable (2026-09-29). Every live draft must pass the console's
 # own qbank-rules.mjs (gate = ready): the phone never offers Attest for a flagged question, and on
 # 2026-09-28 all five drafts had reached main flagged. `--fix` repairs the two mechanical warnings

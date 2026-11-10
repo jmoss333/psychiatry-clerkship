@@ -5,6 +5,8 @@
      1. place: eyebrow ("Week 2 of 6 · Thursday" + Change week), week-title H1, theme line
      2. the projected-week thread (.fd-thread) -- one node per week, each routing to that week on Path
      3. the Now card (.fd-now) -- ONE shell for every primary kind
+        with no week set: the first-visit starters (.fd-starters) follow it, and the offline
+        receipt moves from here to after the chooser
      4. "Also today" -- the device-store rows that did not win, as flat rows with a status mark;
         in the week a Case of the Week ships, its announcement row sits here too (fdNewCase)
      5. the preparation chooser (fdTodayPurpose; the shell owns its open state)
@@ -272,6 +274,43 @@ function fdSetupCta(primary){
   '</button>';
 }
 
+/* First-visit starters (2026-11-09). A learner with no week set saw the setup card and an empty
+   "Also today" -- nothing on the first screen said what this site can DO. These three rows name
+   the practice tools a newcomer is least likely to find alone. Rules:
+     - only when no week is set: once a week exists, Today is the week's page and One Thing First
+       owns the column. The setup card above stays the ONE filled button; these are quiet rows.
+     - only tools this site ships (index.byRef) -- a missing tool drops its row, and no rows means
+       no section, so a fixture or an edition without them renders exactly as before.
+     - data-fd-open, the same action Quick tools uses; nothing is stored and nothing is counted.
+   Copy is audience-neutral (the copy rule at the top of this file). */
+var FD_TODAY_STARTERS=[
+  {ref:'sp-interview.html',title:'Interview a patient',
+    line:'Practice an admission interview with a simulated patient, then read the feedback.'},
+  {ref:'one-patient-six-weeks.html',title:'Follow one patient',
+    line:'A fictional admission told in chapters, from the first day to discharge.'},
+  {ref:'question-bank-practice.html',title:'Answer practice questions',
+    line:'Short sets, with the reasoning behind every answer.'}
+];
+
+function fdTodayStarters(index){
+  var byRef=(index&&index.byRef)||{}, rows='', i, s;
+  for(i=0;i<FD_TODAY_STARTERS.length;i++){
+    s=FD_TODAY_STARTERS[i];
+    if(!Object.prototype.hasOwnProperty.call(byRef,s.ref)) continue;
+    rows+='<button type="button" class="fd-starter" data-fd-open="'+fdEsc(s.ref)+'">'+
+      '<span class="fd-starter__body">'+
+        '<span class="fd-starter__title">'+fdEsc(s.title)+'</span>'+
+        '<span class="fd-starter__line">'+fdEsc(s.line)+'</span>'+
+      '</span>'+
+      '<span class="fd-starter__go" aria-hidden="true">Open →</span>'+
+    '</button>';
+  }
+  if(!rows) return '';
+  return '<section class="fd-starters" aria-labelledby="fd-starters-title">'+
+    '<h2 class="fd-sectionhead" id="fd-starters-title">Or try one of these first</h2>'+
+    '<div class="fd-starters__list">'+rows+'</div></section>';
+}
+
 /* .fd-quicktool is the same element in the rail and in the pill row (CLASS-INVENTORY's ⚠) --
    this is the one function that renders it, called from both branches in fdToday. */
 /* A rail is ~250px wide, so a title with a subtitle after an em dash ("The Interview Room — AI
@@ -415,7 +454,12 @@ function fdPilotFeedback(){
    data-fd-tab + data-fd-view-week pair the completed Continue card already uses, so browsing the
    thread never changes the learner's week. Labels are the week titles; a phone shows only the
    current one (CSS). The connector after a done week is teal, otherwise the control line (CSS
-   reads .is-done on the step). Renders nothing without a valid projected path. */
+   reads .is-done on the step). Renders nothing without a valid projected path.
+   Label in Name (WCAG 2.5.3): the node's name "Week N: <title>" must contain the visible text in
+   order, and that text is the mark then the label. The space between the two spans is what keeps
+   them two words ("1 Foundations", not "1Foundations") when a checker joins inline text with no
+   separator, as axe 4.14's label-content-name-mismatch does. The node is a flex column, so the
+   space renders nothing; do not drop it. */
 function fdThread(index, state){
   var idx=index||{}, st=state||{};
   if(!fdActivePathValid(idx)) return '';
@@ -430,7 +474,7 @@ function fdThread(index, state){
     out+='<li class="'+cls+'">'+
       '<button type="button" class="fd-thread__node" data-fd-tab="path" data-fd-view-week="'+fdEsc(w.n)+'"'+
         (isCur?' aria-current="step"':'')+' aria-label="'+fdEsc(name)+'">'+
-        '<span class="fd-thread__mark" aria-hidden="true">'+(isDone?'✓':fdEsc(w.n))+'</span>'+
+        '<span class="fd-thread__mark" aria-hidden="true">'+(isDone?'✓':fdEsc(w.n))+'</span> '+
         '<span class="fd-thread__label" aria-hidden="true">'+fdEsc(w.title)+'</span>'+
       '</button></li>';
   }
@@ -584,7 +628,12 @@ function fdToday(index, state){
   } else if(typeof st.nowHtml==='string'&&st.nowHtml){
     out+='<div class="fd-primary fd-now fd-now--'+fdEsc(pk)+'">'+st.nowHtml+'</div>';
   }
-  if(st.offlineHtml)out+=st.offlineHtml;
+  /* The offline receipt follows the Now card once a week is set. On a first visit it reads "Not
+     verified" (the worker does not control the page yet), which is true and useless as the second
+     thing a newcomer sees -- so with no week it moves to the foot of the column, after the
+     starters and the chooser. Same markup, same actions; only its place changes. */
+  if(hasWeek&&st.offlineHtml)out+=st.offlineHtml;
+  if(!hasWeek)out+=fdTodayStarters(idx);
 
   /* 4. Also today: the rows that did not win, in the shell's order, then -- when the lead lost --
      the week's own Continue as a flat row with a partly filled mark. The heading always renders:
@@ -616,6 +665,7 @@ function fdToday(index, state){
 
   /* 5. The preparation chooser, open state owned by the shell. */
   if(st.purposeHtml) out+=st.purposeHtml;
+  if(!hasWeek&&st.offlineHtml)out+=st.offlineHtml;
 
   /* The exam-date nudge, below the Now card and the Also rows: One Thing First keeps its single
      primary action, and nothing here can push that card past the phone fold. The date has exactly

@@ -235,6 +235,7 @@ _TOOLKW_MS3 = {
     "withdrawal.html": "withdrawal alcohol ciwa opioid cows detox benzodiazepine taper thiamine",
     "reflection.html": "reflection professional identity formation reflective writing pif",
     "screeners.html": "phq-9 phq9 gad-7 gad7 depression anxiety screener screening score severity validated instrument cutoff",
+    "scale-chooser.html": "which scale chooser rating scale screening instrument choose select phq-9 gad-7 cows ciwa 4at cam moca c-ssrs bfcrs aims audit-c rass what the score licenses",
     "shelf-mode.html": "shelf mode comat shelf exam simulation timed vignette question bank board review mixed blueprint mock test practice questions",
     "review.html": "daily review spaced repetition srs flashcards sm-2 retention schedule due cards study streak memory test enhanced learning forgetting curve anki",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
@@ -257,6 +258,7 @@ _TOOLKW_RES = {
     "withdrawal.html": "withdrawal alcohol ciwa opioid cows benzodiazepine thiamine",
     "reflection.html": "reflection professional identity formation",
     "screeners.html": "phq-9 gad-7 depression anxiety screener cutoff",
+    "scale-chooser.html": "which scale chooser rating scale screening instrument choose select phq-9 gad-7 cows ciwa 4at cam moca c-ssrs bfcrs aims audit-c rass what the score licenses",
     "shelf-mode.html": "board style question bank exam simulation vignette mixed blueprint mock test",
     "decision-aids.html": "algorithms decision aids trees escalation ladder nms serotonin withdrawal timeline ciwa catatonia",
     "bfcrs.html": "bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge",
@@ -627,6 +629,29 @@ IFRAME_NAV = (
     "{type:'openPage',f:decodeURIComponent(m[2])},'*');}catch(_){}}}, true);})();</script>"
 )
 
+# Direct-open way back (2026-11-09). A tool opened in its own tab -- the curriculum pages link
+# several with target="_blank", and any shared tool URL lands this way -- had no route to the
+# rest of the site: no header, no nav, and the browser's Back button goes nowhere in a new tab.
+# Inside the shell the tool is framed under the shell's own header, so this does nothing there
+# (the same self/top test IFRAME_NAV uses, inverted). One in-flow link after the skip link; it
+# is not fixed, so it cannot cover a tool's own bars, and it is hidden in print.
+HUB_LINK = (
+    "<!--hub--><style>.cw-hub{display:block;padding:8px 16px;"
+    "font:600 13px/1.4 system-ui,-apple-system,'Segoe UI',sans-serif;"
+    "background:var(--surface,#fff);color:var(--text,#3b332c);"
+    "border-bottom:1px solid var(--border,#e4ded3);text-decoration:none}"
+    ".cw-hub:hover,.cw-hub:focus{text-decoration:underline}"
+    "@media(pointer:coarse){.cw-hub{padding:13px 16px}}"
+    "@media print{.cw-hub{display:none}}</style>"
+    "<script>(function(){if(window.self!==window.top)return;"
+    "function add(){var b=document.body;if(!b||b.querySelector('.cw-hub'))return;"
+    "var a=document.createElement('a');a.className='cw-hub';a.href='/?tab=library';"
+    "a.textContent='\u2190 Library';a.setAttribute('aria-label','Back to the Library');"
+    "var s=b.querySelector('.skip-link');"
+    "if(s&&s.parentNode===b){b.insertBefore(a,s.nextSibling);}else{b.insertBefore(a,b.firstChild);}}"
+    "if(document.body){add();}else{document.addEventListener('DOMContentLoaded',add);}})();</script>"
+)
+
 
 def strip_review_banners(out_dir):
     """Remove learner-facing '> **Review status:**' blockquotes from built markdown."""
@@ -828,6 +853,9 @@ def apply_dark_mode(path, is_index=False, cache_bust=None, page_slug=None, injec
 
     if not is_index and "<!--ifn-->" not in t and "</body>" in t:
         t = t.replace("</body>", IFRAME_NAV + "\n</body>", 1)
+
+    if not is_index and "<!--hub-->" not in t and "</body>" in t:
+        t = t.replace("</body>", HUB_LINK + "\n</body>", 1)
 
     if cache_bust:
         t = t.replace('"quizzes.json"', '"quizzes.json?v=' + cache_bust + '"').replace(
@@ -1118,6 +1146,8 @@ def page_contract_failures(out_dir):
             missing.append("favicon link")
         if not is_index and "<!--ifn-->" not in t:
             missing.append("in-iframe link interceptor")
+        if not is_index and "<!--hub-->" not in t:
+            missing.append("direct-open Library link")
         # Icon sprite (icon_sprite.py): the shell index carries exactly one, expanded; no page
         # may ship the raw marker. fdIcon() output points at its symbols, so a missing sprite
         # would draw nothing rather than fail loudly.
