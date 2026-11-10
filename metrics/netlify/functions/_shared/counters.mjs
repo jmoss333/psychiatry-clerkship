@@ -1,6 +1,8 @@
 // Pure counter logic. No network, no Netlify imports — the store is injected so
 // every branch is testable offline.
 
+import { CounterWriteError } from './blobs.mjs';
+
 const RETRIES = 3;
 
 /** ISO-8601 week-numbering string, e.g. "2026-W36". Weeks, never timestamps. */
@@ -21,21 +23,47 @@ export function blobKey(site, week, eventKey) {
   return `${site}/${week}/${encodeURIComponent(eventKey)}`;
 }
 
+/** A persisted cap is sticky; legacy rows at/above the configured ceiling are capped too. */
+export function isCappedCounter(row, ceiling) {
+  return row?.capped === true ||
+    (Number.isInteger(ceiling) && ceiling > 0 && Number.isInteger(row?.n) && row.n >= ceiling);
+}
+
 /**
- * Read-modify-write with bounded retries. Netlify Blobs has no atomic
- * increment; at cohort sizes of 4-10 a lost update costs one count, which is
- * cheaper than a transaction. Deliberate — see the plan's design note.
+ * Bounded optimistic concurrency using the Blobs ETag/conditional-write contract.
+ * Every write (including first creation and legacy cap normalization) is conditional:
+ * a stale request cannot overwrite a newer count or erase its contamination marker.
+ * Conflicts re-read strongly, at most RETRIES times; there is no unconditional fallback.
+ *
+ * H5: a capped counter is terminal, even if a later configuration raises/removes the ceiling.
+ * Store only the existing four fields plus optional `capped`; no per-event data or timestamps.
  */
-export async function increment(store, { site, week, key }) {
+export async function increment(store, { site, week, key }, { ceiling } = {}) {
+  const cap = Number.isInteger(ceiling) && ceiling > 0 ? ceiling : null;
+  const path = blobKey(site, week, key);
   let lastError;
   for (let attempt = 0; attempt < RETRIES; attempt += 1) {
     try {
-      const path = blobKey(site, week, key);
-      const current = await store.get(path, { type: 'json' });
-      const n = (Number.isInteger(current?.n) ? current.n : 0) + 1;
-      await store.setJSON(path, { site, week, key, n });
-      return n;
+      const snapshot = await store.getWithMetadata(path, { type: 'json', consistency: 'strong' });
+      const current = snapshot?.data;
+      const prev = Number.isInteger(current?.n) ? current.n : 0;
+      if (current?.capped === true) return cap === null ? prev : Math.min(prev, cap);
+      // An absent ETag must never turn onlyIfMatch into a truthy check's unconditional write.
+      if (snapshot !== null && (typeof snapshot?.etag !== 'string' || !snapshot.etag)) {
+        throw new Error('counter snapshot has no ETag');
+      }
+      const n = cap === null ? prev + 1 : Math.min(prev + 1, cap);
+      const row = cap !== null && n >= cap
+        ? { site, week, key, n, capped: true }
+        : { site, week, key, n };
+      const condition = snapshot === null ? { onlyIfNew: true } : { onlyIfMatch: snapshot.etag };
+      const result = await store.setJSON(path, row, condition);
+      if (result?.modified === true) return n;
+      lastError = new Error('counter write conflict');
     } catch (err) {
+      // The SDK already finished/retried this write; do not restart it on a
+      // permanent HTTP failure or an uncertain transport outcome.
+      if (err instanceof CounterWriteError) throw err;
       lastError = err;
     }
   }
