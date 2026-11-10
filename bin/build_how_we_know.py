@@ -22,6 +22,9 @@ Usage:
   python3 bin/build_how_we_know.py --check      # exit 1 if the page on disk is out of date
   python3 bin/build_how_we_know.py --ledger     # print the derived correction ledger as JSON
   python3 bin/build_how_we_know.py --out PATH   # write somewhere else
+  python3 bin/build_how_we_know.py --without-corrections           # the learner-facing edition
+  python3 bin/build_how_we_know.py --without-corrections --check   # is the shipped page current
+  python3 bin/build_how_we_know.py --self-test  # both editions from a fixture
 """
 from __future__ import annotations
 
@@ -37,6 +40,11 @@ ROOT = Path(__file__).resolve().parent.parent
 ANNOTATIONS = ROOT / "evidence_annotations.json"
 TEACHING = ROOT / "13_Faculty_Resources" / "how_we_know_teaching.json"
 DEFAULT_OUT = ROOT / "_prototypes" / "how-we-know" / "how-we-know.html"
+# The learner-facing edition (faculty decision, Joshua Moss, MD, 2026-11-09: publish the page
+# WITHOUT the library's own correction history). Same data, same rules, same exercise; the
+# per-correction case studies and the derived correction table are left out. See
+# render(..., public=True) and assert_public().
+PUBLIC_OUT = ROOT / "07_Evidence_and_Reading" / "How_We_Know" / "how-we-know.html"
 
 DIRECTION_ORDER = ["mixed", "positive", "descriptive", "negative"]
 DIRECTION_COLOR = {
@@ -202,7 +210,7 @@ def span_block(ann, note="", phrases=None, element_id=None, hidden=False):
     )
 
 
-def render(stats, by_source, teaching, ledger):
+def render(stats, by_source, teaching, ledger, public=False):
     d = stats["directions"]
     total = stats["claims"] or 1
     positive = d.get("positive", 0)
@@ -258,7 +266,10 @@ def render(stats, by_source, teaching, ledger):
     for opt in ex["options"]:
         options += (f'<label><input type="radio" name="q1" value="{opt["key"]}"> '
                     f'{esc(opt["key"].upper())} — {esc(opt["text"])}</label>\n')
-        feedback[opt["key"]] = [opt["verdict"], opt["feedback"]]
+        # A feedback line may point at a correction case study ("that is Correction 2"). The
+        # public edition has none, so such an option carries a feedbackPublic that stands alone.
+        text = opt.get("feedbackPublic", opt["feedback"]) if public else opt["feedback"]
+        feedback[opt["key"]] = [opt["verdict"], text]
 
     ledger_rows = ""
     for row in ledger:
@@ -287,7 +298,15 @@ by hand.{honest}</p>
 </div>
 """
 
+    lede_tail = "" if public else " — including the places where we got it wrong and had to correct it"
+    provenance = "Figures and spans" if public else "Figures, spans and the correction ledger"
+    if public:
+        corrections_html, ledger_section = "", ""
+
     return TEMPLATE \
+        .replace("{{LEDE_TAIL}}", lede_tail) \
+        .replace("{{PROVENANCE_SUBJECT}}", provenance) \
+        .replace("{{PROVENANCE_TAIL}}", "" if public else "\n  Corrections are derived from the repository's own commit history.") \
         .replace("{{BAR}}", bar) \
         .replace("{{LEGEND}}", legend) \
         .replace("{{N_SOURCES}}", str(stats["sources"])) \
@@ -406,7 +425,7 @@ code{background:var(--fd-chip);padding:1px 6px;border-radius:5px;font-size:13px}
   <p class="kicker">Evidence &amp; Reading · Critical Appraisal</p>
   <h1>How We Know</h1>
   <p class="lede">Every clinical claim in this library is stored next to the source's own words.
-  This page opens that ledger — including the places where we got it wrong and had to correct it.</p>
+  This page opens that ledger{{LEDE_TAIL}}.</p>
   <p style="margin-bottom:0">If you only take one thing from this page: <strong>a citation is not
   evidence.</strong> A paper can be real, peer-reviewed, correctly formatted and still not contain
   the number someone attributed to it.</p>
@@ -447,10 +466,10 @@ found a reason to doubt it. Copy that drops the second half is where most citati
 </div>
 
 <footer>
-  <p style="margin-bottom:6px"><strong>Provenance.</strong> Figures, spans and the correction ledger
+  <p style="margin-bottom:6px"><strong>Provenance.</strong> {{PROVENANCE_SUBJECT}}
   on this page are generated from <code>evidence_annotations.json</code> (faculty owner:
   {{OWNER}}; ledger last updated {{UPDATED}}) by <code>bin/build_how_we_know.py</code>.
-  Corrections are derived from the repository's own commit history.</p>
+{{PROVENANCE_TAIL}}</p>
   <p style="margin-bottom:0">Educational metadata only; faculty review remains required for clinical
   recommendations. All clinical content in this library is synthetic or de-identified.</p>
 </footer>
@@ -481,15 +500,104 @@ document.querySelectorAll('input[name="q1"]').forEach(function(input){
 """
 
 
+_PUBLIC_FORBIDDEN = re.compile(r"Correction \d|correction ledger|Every correction on the record|"
+                               r"Caught in faculty review|we got it wrong|Corrections are derived", re.IGNORECASE)
+
+
+def assert_public(page):
+    """The public edition must carry no trace of the correction history. Checked on the
+    rendered page, not on the inputs, so a teaching-file line that names a correction and has
+    no feedbackPublic fails here instead of shipping."""
+    visible = re.sub(r"<!--.*?-->", "", page, flags=re.DOTALL)
+    hit = _PUBLIC_FORBIDDEN.search(visible)
+    if hit:
+        raise SystemExit("build_how_we_know: the public edition still mentions the correction "
+                         "history (%r). Give that teaching line a feedbackPublic, or fix the "
+                         "template." % hit.group(0))
+    if "{{" in page:
+        raise SystemExit("build_how_we_know: unexpanded template marker in the public edition")
+
+
+def self_test():
+    """Render both editions from a fixture and prove the public one drops the history and
+    nothing else. No git, no repo files."""
+    ann = {"sourceId": "s1", "verifiedAgainst": {"pmid": "1", "doi": "10.1/x", "retrievedAt": "2026-01-01",
+                                                 "spanType": "abstract", "sourceSpan": "The span."},
+           "claims": [{"claimId": "c1", "claimText": "The claim.", "direction": "mixed"}]}
+    stats = {"sources": 1, "claims": 1, "maxAgeDays": 730, "backlog": 0, "owner": "Owner",
+             "updated": "2026-01-01", "directions": {"mixed": 1}}
+    teaching = {"corrections": [{"sourceId": "s1", "heading": "H", "caughtOn": "2026-01-01", "lede": "L",
+                                 "beforeLabel": "B", "before": "b", "revealLabel": "R", "fixLede": "F",
+                                 "closer": "C"}],
+                "rules": [["Rule head", "Rule body"]],
+                "exercise": {"sourceId": "s1", "prompt": "P", "options": [
+                    {"key": "a", "verdict": "no", "text": "t", "feedback": "That is Correction 2.",
+                     "feedbackPublic": "It drops the caveat."}]}}
+    ledger = [{"claimId": "c1", "sourceId": "s1", "kind": "reworded", "date": "2026-01-01", "commit": "abc"}]
+    checks = []
+    try:
+        full = render(stats, {"s1": ann}, teaching, ledger)
+        public = render(stats, {"s1": ann}, teaching, ledger, public=True)
+    except Exception as exc:  # the fixture no longer fits render(): say so rather than pass
+        print("self-test: could not render the fixture: %r" % (exc,))
+        return 2
+    checks.append(("full edition keeps the case study", "Correction 1" in full))
+    checks.append(("full edition keeps the correction table", "Every correction on the record" in full))
+    checks.append(("public edition drops the case study", "Correction 1" not in public))
+    checks.append(("public edition drops the correction table", "Every correction on the record" not in public))
+    checks.append(("public edition keeps the rules", "Rule head" in public))
+    checks.append(("public edition keeps the exercise", "It drops the caveat." in public))
+    checks.append(("public edition uses feedbackPublic", "Correction 2" not in public))
+    checks.append(("full edition keeps the original feedback", "That is Correction 2." in full))
+    checks.append(("no unexpanded marker in either edition", "{{" not in full and "{{" not in public))
+    try:
+        assert_public(public)
+        checks.append(("assert_public accepts the public edition", True))
+    except SystemExit:
+        checks.append(("assert_public accepts the public edition", False))
+    try:
+        assert_public(full)
+        checks.append(("assert_public rejects the full edition", False))
+    except SystemExit:
+        checks.append(("assert_public rejects the full edition", True))
+    failed = [name for name, ok in checks if not ok]
+    for name in failed:
+        print("SELF-TEST FAIL  %s" % name)
+    if failed:
+        return 1
+    print("self-test: OK — %d/%d checks passed" % (len(checks), len(checks)))
+    return 0
+
+
+def _shown(path):
+    """A path for messages: relative to the repo when it is inside it, as given otherwise
+    (--out to a scratch location used to crash here after the file was already written)."""
+    try:
+        return Path(path).resolve().relative_to(ROOT)
+    except ValueError:
+        return path
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--out", type=Path, default=None)
+    ap.add_argument("--without-corrections", action="store_true",
+                    help="render the learner-facing edition (no correction case studies, no "
+                         "correction table); default output is the shipped page under "
+                         "07_Evidence_and_Reading/How_We_Know/")
+    ap.add_argument("--self-test", action="store_true",
+                    help="render both editions from a fixture and check what each contains")
     ap.add_argument("--check", action="store_true",
                     help="exit 1 if the file on disk differs from what would be generated")
     ap.add_argument("--ledger", action="store_true",
                     help="print the derived correction ledger as JSON and exit")
     args = ap.parse_args(argv)
+    if args.self_test:
+        return self_test()
+    public = args.without_corrections
+    if args.out is None:
+        args.out = PUBLIC_OUT if public else DEFAULT_OUT
 
     doc = load_json(ANNOTATIONS)
     by_source, _ = index_annotations(doc)
@@ -500,20 +608,23 @@ def main(argv=None):
         print()
         return 0
 
-    page = render(ledger_stats(doc), by_source, load_json(TEACHING), ledger)
+    page = render(ledger_stats(doc), by_source, load_json(TEACHING), ledger, public=public)
+    if public:
+        assert_public(page)
 
     if args.check:
         current = args.out.read_text(encoding="utf-8") if args.out.exists() else ""
         if current != page:
-            print(f"how-we-know is out of date: {args.out.relative_to(ROOT)}", file=sys.stderr)
-            print("regenerate with: python3 bin/build_how_we_know.py", file=sys.stderr)
+            print(f"how-we-know is out of date: {_shown(args.out)}", file=sys.stderr)
+            print("regenerate with: python3 bin/build_how_we_know.py"
+                  + (" --without-corrections" if public else ""), file=sys.stderr)
             return 1
         print("how-we-know is current")
         return 0
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(page, encoding="utf-8")
-    print(f"wrote {args.out.relative_to(ROOT)} "
+    print(f"wrote {_shown(args.out)} "
           f"({len(doc['annotations'])} sources, {len(ledger)} corrections on the record)")
     return 0
 
