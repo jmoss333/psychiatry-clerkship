@@ -16,7 +16,7 @@
 |---|---|---|
 | Anxiety disorders | SSRIs; SNRIs are also first-line | Interoceptive exposure for panic |
 | OCD | SSRIs (not SNRIs) | Exposure and response prevention (ERP) |
-| PTSD | SSRIs; venlafaxine is an option | Prolonged exposure (PE) and cognitive processing therapy (CPT) |
+| PTSD | Sertraline, paroxetine, or venlafaxine, when medication is chosen | Individual trauma-focused psychotherapy, prioritized: CPT, PE, or EMDR |
 
 **Exam treatment anchors** — Panic disorder is treated first-line with an SSRI or SNRI plus CBT, especially interoceptive exposure; benzodiazepines are short-term bridges at most, not maintenance monotherapy. OCD is treated first-line with ERP and an SSRI, often at higher doses than depression; clomipramine or antipsychotic augmentation is reserved for refractory cases. PTSD care prioritizes individual trauma-focused psychotherapy with CPT, PE, or EMDR; sertraline, paroxetine, or venlafaxine are recommended when medication is chosen. The guideline recommends against benzodiazepines for PTSD and suggests prazosin specifically for PTSD-related nightmares, not for PTSD overall. Generalized social anxiety is treated with CBT/exposure and an SSRI or SNRI when medication is needed. Performance-only social anxiety is limited to discrete public performances; a PRN beta-blocker can reduce tremor, tachycardia, and sweating for those events when medically appropriate.
 
