@@ -179,11 +179,12 @@ const REGISTRY = Object.freeze({
       + 'rendered HTML, never pinned; the review-state branches use inline fixtures.',
   },
   'tests/presenting-tomorrow.test.mjs': {
-    kind: 'invariant',
+    kind: 'fixture',
     why: 'Reads real topic_meta.json only for clinicalWorkflow / firstMove / ruleOut / epa text and asserts the '
-      + 'card renders those lines verbatim; nothing reads facultyReview, the projections pin a fixed reviewed '
-      + 'governance triplet, and every count is a partition computed from the same registries (Python and JS '
-      + 'compared), so a signature or a reopened page changes no assertion.',
+      + 'card renders those lines verbatim; the projections pin a fixed reviewed governance triplet, the drift '
+      + 'cases set each hub\'s triplet and its facultyReview on a COPY of the record, and every count is a '
+      + 'partition computed from the same registries (Python and JS compared), so a signature or a reopened '
+      + 'page changes no assertion.',
   },
   'tests/fd-tool-pins.test.mjs': {
     kind: 'invariant',

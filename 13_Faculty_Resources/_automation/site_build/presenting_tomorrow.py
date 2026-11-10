@@ -20,6 +20,12 @@ clinicalWorkflow block, minus presenting_tomorrow.json `exclude`. A hub without 
 does not appear -- it is never padded. The build FAILS if any syndrome x phase cell would render
 fewer than `minItems` items on either site, so the chooser can never offer a thin card.
 
+WHAT IS OFFERED is narrower, and the shell decides it (2026-11-10): fd_today.js fdPrepBound drops
+any hub whose governance triplet -- the effective-ledger projection on the site manifest -- is not
+`reviewed`, so a hub whose attestation has drifted (or was never signed) renders no pill and no
+line. This payload stays structural on purpose: every hub's cells are still validated, so drift
+can never fail a build and a re-attested hub returns with a well-formed card.
+
 NO NEW CONTENT, NO ATTESTATION MOVEMENT: this reads registries and writes a needle into the
 built shell (build_deploy.py / resident_section.py). Deterministic: nothing reads the clock.
 """

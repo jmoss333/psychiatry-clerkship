@@ -759,8 +759,33 @@ function fdPrepareInvitation(index){
    (tests/presenting-tomorrow.test.mjs pins the parity). No new clinical text lives here: every
    label is payload data, every line is the record's. Session-only choices (the shell owns them),
    never persisted, never in the URL; the syndrome row is rendered only while "Before rounds" is
-   the active purpose, so Regular Today is unchanged. */
+   the active purpose, so Regular Today is unchanged.
+   ATTESTED MEANS BOUND, NOW (2026-11-10). A hub is offered -- and its card renders -- only while
+   its attestation still fits the text it attested: fdPrepBound reads the hub's governance triplet
+   (the build's effective-ledger projection, the one every other Front Door surface reads for
+   "Pending faculty review"), and falls back to the built facultyReview flag only on an
+   unprojected index, exactly as fdLibraryPreview does. A drifted hub (reviewed.json row stale
+   against its contentHash, projected to pending by load_effective_ledger) or one never signed
+   is simply not offered: no pill, no card, none of its workflow lines. Its page stays placed and
+   badged everywhere else -- drift warns, it never unplaces -- but this card claims "from attested
+   records only", so it shows nothing it cannot back. A link destination still awaiting review
+   (a Case of the Week, a drill) carries the compact pending mark fdNewCaseRow uses: the card
+   never outranks the destination's own review state. */
 var FD_PREP_WORKFLOW_KEYS=['ask','mse','safety','say','collateral','rounds','exam'];
+
+function fdPrepBound(index, ref){
+  var item=index&&index.byRef&&typeof ref==='string'?index.byRef[ref]:null, g=item&&item.governance;
+  if(!item) return false;
+  return g?g.status==='reviewed':item.attested===true;
+}
+
+/* The index item a card link opens: its ref, or the page/tool a query-bearing href names. */
+function fdPrepLinkItem(index, it){
+  var byRef=(index&&index.byRef)||{}, m;
+  if(it.ref) return byRef[it.ref]||null;
+  m=/^\?(?:page|tool)=([^&#]+)/.exec(it.href||'');
+  return m?(byRef[m[1]]||null):null;
+}
 
 function fdPrepPhase(prep, id){
   var phases=(prep&&Object.prototype.toString.call(prep.phases)==='[object Array]')?prep.phases:[];
@@ -810,7 +835,7 @@ function fdPrepItems(index, prep, meta, syn, phase){
 }
 
 function fdPrepCard(index, prep, meta, syn, phase, audience){
-  if(!syn||!phase) return '';
+  if(!syn||!phase||!fdPrepBound(index,syn.ref)) return '';
   var items=fdPrepItems(index,prep,meta,syn,phase), rec=(meta&&meta[syn.ref])||{}, i;
   var h='<div class="fd-prep__card" data-prep-ref="'+fdEsc(syn.ref)+'" data-prep-phase="'+fdEsc(phase.id)+'">';
   h+='<h3 class="fd-prep__title">'+fdEsc(syn.topic)+' · '+fdEsc(phase.label)+'</h3>';
@@ -823,7 +848,8 @@ function fdPrepCard(index, prep, meta, syn, phase, audience){
     /* A ref-only destination routes through data-fd-open; a destination that carries a query
        (a drill's case=, a scenario=, a tool's own parameters) is a real link, because the Front
        Door action drops query parameters (fdUnitWeek precedent). */
-    var text=fdEsc(it.label)+': '+fdEsc(it.title);
+    var target=fdPrepLinkItem(index,it);
+    var text=fdEsc(it.label)+': '+fdEsc(it.title)+governanceBadge(target&&target.governance,{compact:true});
     h+='<li>'+(it.ref?'<button type="button" class="fd-btn fd-btn--ghost" data-fd-open="'+fdEsc(it.ref)+'">'+text+'</button>'
                      :'<a class="fd-btn fd-btn--ghost" href="'+fdEsc(it.href)+'">'+text+'</a>')+'</li>';
   }
@@ -838,7 +864,7 @@ function fdPrepPicker(index, opts){
   var o=opts||{}, prep=o.prep, list, i;
   if(!prep||Object.prototype.toString.call(prep.syndromes)!=='[object Array]'||!prep.syndromes.length) return '';
   list=[];
-  for(i=0;i<prep.syndromes.length;i++){ var s=prep.syndromes[i]; if(s&&typeof s.ref==='string'&&index&&index.byRef&&index.byRef[s.ref]) list.push(s); }
+  for(i=0;i<prep.syndromes.length;i++){ var s=prep.syndromes[i]; if(s&&fdPrepBound(index,s.ref)) list.push(s); }
   if(!list.length) return '';
   var syn=fdPrepSyndrome({syndromes:list},o.prepRef), phase=fdPrepPhase(prep,o.prepPhase);
   var h='<div class="fd-prep">';

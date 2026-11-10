@@ -20,7 +20,7 @@ const read = (p) => readFileSync(new URL(`${BUILD}/${p}`, import.meta.url), 'utf
 const AUDIENCE_TOKEN_RE = /MS3|clerkship|student|shelf|resident|UNE|MMC|Sanford/i;
 
 // eslint-disable-next-line no-new-func
-const F = new Function('governanceBadge', `
+const make = (governanceBadge) => new Function('governanceBadge', `
   ${read('phase_policy.js')}
   ${read('frontdoor/fd_state.js')}
   ${read('frontdoor/fd_data.js')}
@@ -28,7 +28,8 @@ const F = new Function('governanceBadge', `
   ${read('frontdoor/fd_today.js')}
   return { fdBuildIndex: fdBuildIndex, fdTodayPurpose: fdTodayPurpose, fdPrepItems: fdPrepItems,
            fdPrepCard: fdPrepCard, fdPrepPicker: fdPrepPicker, fdPrepPhase: fdPrepPhase, fdPrepSyndrome: fdPrepSyndrome };
-`)(() => '');
+`)(governanceBadge);
+const F = make(() => '');
 
 // ---- the Python half, over the real registries -----------------------------------------------
 const PY = `
@@ -208,6 +209,113 @@ test('hostile or unknown picks render nothing dangerous: no card for an unknown 
   const ghost = JSON.parse(JSON.stringify(PREP));
   ghost.syndromes.push({ ref: 'ghost.md', topic: 'Ghost', comm: null, family: null, actions: [], epa: [] });
   assert.doesNotMatch(F.fdTodayPurpose(IDX, 'rounds', true, opts({ prep: ghost })), /data-today-prep="ghost\.md"/);
+});
+
+// ---- drift: "from attested records only" means bound NOW (2026-11-10) ---------------------------
+// The 2026-10-28 review found the card rendering clinicalWorkflow lines from four hubs whose
+// reviewed.json rows were stale (text changed after signing), with no pending mark anywhere on
+// it. Review state here is a FIXTURE, never the live ledger (tests/live-governance-state.test.mjs):
+// each case builds a fresh index over a copy of topic_meta.json and sets a hub's governance
+// triplet to the value the build projects for a drifted row (surface_governance.
+// load_effective_ledger -> pending), with the built record demoted the way
+// project_topic_meta_faculty_review demotes it (status pending, reviewer and date kept). The
+// shell's own governanceBadge is extracted from spa_index.html so the compact mark is the real one.
+const SHELL_SRC = read('spa_index.html');
+// eslint-disable-next-line no-new-func
+const realBadge = new Function(SHELL_SRC.slice(SHELL_SRC.indexOf('  function governanceBadge('),
+  SHELL_SRC.indexOf('  /* Report whether the alert')) + ';return governanceBadge;')();
+const FB = make(realBadge);
+const REVIEWED = Object.freeze({ status: 'reviewed', riskKind: 'general', riskLevel: 'low' });
+const PENDING = Object.freeze({ status: 'pending', riskKind: 'general', riskLevel: 'low' });
+const COMPACT_MARK = '<span class="fd-kit__pending" role="img" aria-label="Awaiting faculty re-review"></span>';
+
+/* A fresh ms3 world in which every ref in `drifted` reads the way the build serves a drifted
+   page; `governance: false` serves an unprojected index (no triplet), where the renderer falls
+   back to the built facultyReview flag. */
+function world(drifted, { governance = true, pendingTargets = [] } = {}) {
+  const meta = JSON.parse(JSON.stringify(REAL_META));
+  for (const syn of PREP.syndromes) {
+    const fr = meta[syn.ref].facultyReview || (meta[syn.ref].facultyReview = {});
+    fr.status = drifted.includes(syn.ref) ? 'pending' : 'reviewed';
+  }
+  const idx = FB.fdBuildIndex(ms3.curriculum, meta, REAL_TOOLS, ms3.manifest);
+  for (const syn of PREP.syndromes) {
+    assert.ok(idx.byRef[syn.ref], `${syn.ref} is in the ms3 index`);
+    idx.byRef[syn.ref].governance = governance ? (drifted.includes(syn.ref) ? PENDING : REVIEWED) : null;
+  }
+  for (const ref of pendingTargets) idx.byRef[ref].governance = PENDING;
+  return { meta, idx };
+}
+const textsOf = (meta, ref) => {
+  const out = [];
+  for (const phase of PREP.phases) {
+    for (const it of FB.fdPrepItems(null, PREP, meta, { ref, comm: null, family: null, actions: [] }, phase)) {
+      if (it.kind === 'text') out.push(it.value);
+    }
+  }
+  return out;
+};
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+test('drift: a hub whose attestation is not bound is never offered, and none of its workflow lines render -- each real hub in turn', () => {
+  assert.ok(PREP.syndromes.length >= 3);
+  for (const drifted of PREP.syndromes) {
+    const { meta, idx } = world([drifted.ref]);
+    const o = { prep: PREP, meta, prepRef: '', prepPhase: '', audience: 'ms3' };
+    // The picker offers exactly the bound hubs, in registry order.
+    const offered = attrs(FB.fdTodayPurpose(idx, 'rounds', true, o), /data-today-prep="([^"]+)"/g);
+    assert.deepEqual(offered, PREP.syndromes.map((s) => s.ref).filter((r) => r !== drifted.ref), drifted.ref);
+    // A pick of the drifted hub (a stale session value, a forged click) renders no card and no
+    // line of its text in any phase; the direct card render refuses it too.
+    const lines = textsOf(meta, drifted.ref);
+    assert.ok(lines.length >= 3, `${drifted.ref}: the fixture is not vacuous (${lines.length} lines)`);
+    for (const phase of PREP.phases) {
+      const html = FB.fdTodayPurpose(idx, 'rounds', true, Object.assign({}, o, { prepRef: drifted.ref, prepPhase: phase.id }));
+      assert.doesNotMatch(html, /fd-prep__card|data-today-prep="[^"]+" aria-pressed="true"|data-today-prep-phase/, `${drifted.ref} x ${phase.id}`);
+      for (const line of lines) assert.equal(html.indexOf(esc(line)), -1, `${drifted.ref} x ${phase.id}: drifted text rendered`);
+      assert.equal(FB.fdPrepCard(idx, PREP, meta, drifted, phase, 'ms3'), '', `${drifted.ref} x ${phase.id}: fdPrepCard`);
+    }
+    // A bound neighbour still renders its card in the same world (the filter is per hub).
+    const bound = PREP.syndromes.find((s) => s.ref !== drifted.ref);
+    assert.match(FB.fdPrepCard(idx, PREP, meta, bound, PREP.phases[0], 'ms3'), /class="fd-prep__card"/);
+  }
+});
+
+test('drift: every hub drifted leaves "Before rounds" as it was before F4; an unprojected index falls back to the built facultyReview flag', () => {
+  const all = PREP.syndromes.map((s) => s.ref);
+  const none = world(all);
+  const html = FB.fdTodayPurpose(none.idx, 'rounds', true, { prep: PREP, meta: none.meta, prepRef: all[0], prepPhase: '', audience: 'ms3' });
+  assert.doesNotMatch(html, /fd-prep\b|data-today-prep/);
+  assert.match(html, /fd-purpose__reason/, 'the purpose itself still answers');
+  // No governance triplet at all: the demoted built record decides, as in fdLibraryPreview.
+  const drifted = all[1];
+  const bare = world([drifted], { governance: false });
+  const offered = attrs(FB.fdTodayPurpose(bare.idx, 'rounds', true, { prep: PREP, meta: bare.meta, audience: 'ms3' }), /data-today-prep="([^"]+)"/g);
+  assert.deepEqual(offered, all.filter((r) => r !== drifted));
+  // ...and a record with no facultyReview block at all is not attested either.
+  delete bare.meta[all[0]].facultyReview;
+  const unsigned = FB.fdBuildIndex(ms3.curriculum, bare.meta, REAL_TOOLS, ms3.manifest);
+  for (const ref of all) unsigned.byRef[ref].governance = null;
+  assert.ok(!attrs(FB.fdTodayPurpose(unsigned, 'rounds', true, { prep: PREP, meta: bare.meta, audience: 'ms3' }), /data-today-prep="([^"]+)"/g).includes(all[0]));
+});
+
+test('drift: a link destination awaiting review carries the compact pending mark; a reviewed one carries none', () => {
+  const ref = 't_mood.md';
+  const cotw = IDX.cotwForTopic[ref][0].slug;
+  const clean = world([], { pendingTargets: [] });
+  for (const r of [cotw, 'communication-practice.html']) clean.idx.byRef[r].governance = REVIEWED;
+  const cleanRounds = FB.fdTodayPurpose(clean.idx, 'rounds', true, { prep: PREP, meta: clean.meta, prepRef: ref, prepPhase: 'rounds', audience: 'ms3' });
+  assert.match(cleanRounds, new RegExp(`data-fd-open="${cotw}">Case of the Week: [^<]*</button>`));
+  assert.equal(cleanRounds.indexOf(COMPACT_MARK), -1);
+  const marked = world([], { pendingTargets: [cotw, 'communication-practice.html'] });
+  const rounds = FB.fdTodayPurpose(marked.idx, 'rounds', true, { prep: PREP, meta: marked.meta, prepRef: ref, prepPhase: 'rounds', audience: 'ms3' });
+  assert.ok(rounds.indexOf(`data-fd-open="${cotw}">Case of the Week: `) > -1);
+  assert.match(rounds, new RegExp(`data-fd-open="${cotw}">Case of the Week: [^<]*${COMPACT_MARK.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</button>`));
+  const admit = FB.fdTodayPurpose(marked.idx, 'rounds', true, { prep: PREP, meta: marked.meta, prepRef: ref, prepPhase: 'admit', audience: 'ms3' });
+  assert.ok(admit.indexOf('href="?tool=communication-practice.html&amp;case=') > -1);
+  assert.match(admit, /href="\?tool=communication-practice\.html&amp;case=[^"]+">Rehearse the conversation: [^<]*<span class="fd-kit__pending"/);
+  // The guide is the hub itself, which is bound whenever the card renders: never marked.
+  assert.match(admit, /data-fd-open="t_mood\.md">Open the guide: [^<]*<\/button>/);
 });
 
 test('shell wiring: both needles and both pickers are validated against the payload, session-only, never persisted', () => {

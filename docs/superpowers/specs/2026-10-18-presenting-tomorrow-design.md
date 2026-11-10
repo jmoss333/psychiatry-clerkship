@@ -24,6 +24,10 @@ Measured on `origin/main` before building: **13 of 15 hub topics already carry a
 
 **No new clinical text anywhere.** Every line a learner reads is the record the page already shows; every label is payload data. **0 re-signs.**
 
+### 2a. "Attested" means bound now (2026-11-10)
+
+An independent review (2026-10-28) found the card rendering `clinicalWorkflow` lines from hubs whose `reviewed.json` rows were **stale** — the page's text had changed after signing — with no pending mark anywhere on the card (then: `toxidromes`, `catatonia`, `t_mood`, `psychopharm_primer`; the same four on 2026-11-10). Invariant 3 says drift renders as pending on every surface; a card that claims "from attested records only" cannot carry a line it cannot back. So the renderer, not the payload, now decides: `fdPrepBound` (`fd_today.js`) offers a hub only while its governance triplet reads `reviewed` — the build's effective-ledger projection (`surface_governance.load_effective_ledger` → manifest governance), the same signal every other Front Door surface reads for *Pending faculty review* — falling back to the built `facultyReview` flag only on an unprojected index, as `fdLibraryPreview` does. A drifted or never-signed hub gets no pill, no card and none of its lines; its page stays placed and badged everywhere else (drift warns, it never unplaces). A link destination still awaiting review (a Case of the Week, a drill) carries the compact pending mark `fdNewCaseRow` uses. The payload stays structural (`presenting_tomorrow.py` still validates every hub's cells, so a re-attested hub returns with a well-formed card and drift can never fail a build). Re-attesting a hub in the faculty console brings it back on the next build; nothing here writes governance state.
+
 ## 3. The matrix (items per card, both sites identical today)
 
 | Syndrome | Admission | Day 2–3 | Pre-discharge |
@@ -53,6 +57,7 @@ Minimum 5 everywhere; the gate is 3. (`python3 site_build/presenting_tomorrow.py
 | Picker only under *Before rounds*; registry order; no card until a syndrome is picked; nothing without the payload; Regular Today and the other purposes unchanged | `tests/presenting-tomorrow.test.mjs`, `tests/today-purpose.test.mjs` |
 | Card: first phase by default; lines in phase order, verbatim; guide first; page → `data-fd-open`, query → `href`; newest edition is the site's own twin; EPA on the resident build only | `tests/presenting-tomorrow.test.mjs` |
 | Hostile ref / phase / topic name: no card, first phase, escaped | `tests/presenting-tomorrow.test.mjs` |
+| **Drift (2026-11-10):** each real hub drifted in turn is not offered and none of its lines render in any phase (picker and `fdPrepCard` both refuse it); every hub drifted leaves *Before rounds* as before F4; the unprojected fallback; a pending link destination carries the compact mark | `tests/presenting-tomorrow.test.mjs` (fixture review state) + `tests/smoke/front-door.spec.js` (served-manifest fixture) |
 | Shell: needle once; both pickers validated; no storage/history/fetch; faculty preview inert; MS3 injects, resident swaps before writing | `tests/presenting-tomorrow.test.mjs`, `tests/block-wiring.test.mjs` |
 | Live, both sites: Before rounds → pick a syndrome → card → open the Case of the Week | `tests/smoke/front-door.spec.js` |
 
