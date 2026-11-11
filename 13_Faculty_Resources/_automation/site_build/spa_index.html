@@ -2246,6 +2246,7 @@
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
+  /*__FD_CAPACITY_STATION__*/
   /* The faculty preview's "Beyond this page" (fdFacultyPreviewMedia, first script): the same
      renderer and the same inlined index the learner Reader uses, read at call time. */
   fdMediaPreviewHtml=function(ref){
@@ -2867,6 +2868,7 @@
     if(state.openId){
       return fdSurface('reader',function(){
         var rstate=fdClone(live); rstate.ref=state.openId;
+        rstate.capacityStation=fdIsCapacityStation(rstate.ref,new URLSearchParams(location.search));
         rstate.readingPlaceEligible=false; /* Loading is not a mounted reading. */
         return fdReader(FD_INDEX,rstate,'<p class="loading" role="status">Loading…</p>');
       });
@@ -3278,6 +3280,10 @@
       isCurrent:options.isCurrent,governanceNotice:renderGovernanceNotice,
       signal:options.signal,
       parseMarkdown:function(markdown){
+        if(ref==='osce.md'&&!facultyPreviewRequest){
+          var station=fdCapacityStation(markdown,launchSearch,marked.parse);
+          if(station)return station;
+        }
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
         return (meta?buildTpl(meta,ref):'')+html;
       },
@@ -3291,6 +3297,8 @@
         if(toolFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(toolFrame);
         if(toolFrame&&!facultyPreviewRequest&&ref==='one-patient-six-weeks.html')fdCaseRestoreScroll(!!options.fromHistory);
         if(body){
+          var stationPanel=body.querySelector('[data-capacity-station]');
+          if(stationPanel)fdMountCapacityStation(stationPanel);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
@@ -3300,7 +3308,7 @@
         }
         if(!facultyPreviewRequest)setLearnerTitle(currentItem);
         announceRoute(currentItem); focusGovernanceNotice({fromHistory:!!options.fromHistory});
-        if(!facultyPreviewRequest&&body&&!fdIsTool(ref)){
+        if(!facultyPreviewRequest&&body&&!stationPanel&&!fdIsTool(ref)){
           var installReadingPlace=function(restore){
             var mountedReader=contentEl.querySelector('.fd-reader');
             var readingState=options.getState?options.getState():(fdController&&fdController.getState());
@@ -3531,6 +3539,7 @@
     if(el){event.preventDefault();fdOpenRef(el.getAttribute('data-f'));return;}
     el=target.closest&&target.closest('a[href]');
     if(el){
+      if(el.closest('.fd-station')&&(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey))return;
       var url;try{url=new URL(el.getAttribute('href'),location.href);}catch(_){return;}
       if(url.origin!==location.origin||url.pathname!==location.pathname)return;
       var ref=url.searchParams.get('page')||url.searchParams.get('tool');

@@ -38,10 +38,13 @@ Risk formulation, means restriction, collateral consent, tone.
 
 ## Station 2 - Capacity To Refuse Medical Treatment
 
+[Run this station](?page=osce.md&station=capacity)
+
 **Time:** 12 minutes encounter, 5 minutes oral capacity summary.
 
 **Student task**
 
+Medicine asks you to see a patient who is declining IV antibiotics.
 Assess decision-making capacity for a specific refusal.
 
 **Patient brief**
