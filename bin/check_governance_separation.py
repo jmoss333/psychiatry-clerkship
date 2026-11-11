@@ -754,7 +754,8 @@ def classify(root, base, head, head_branch, base_source=None):
     # THE STALE-BASE DIAGNOSTIC. L2 firing while L4 stays silent means every ledger promotion
     # in range was committed by the console itself — which cannot happen on a branch an agent
     # or the owner wrote. It is what a base too far back looks like: a local `origin/main`
-    # behind a merged console PR, or a re-run CI event carrying an older base.sha. The rows
+    # behind a merged console PR (CI measured from the event's stale base.sha too, until
+    # 2026-11-10, when its base became the merge-base computed at run time). The rows
     # are real, they are just already on main. Say so rather than letting the reader hunt.
     stale_base = bool("L2" in failures and ledger and not offenders
                       and head_branch != ATTEST_BRANCH)
@@ -1647,7 +1648,7 @@ def self_test():  # noqa: C901 — a flat list of cases reads better than helper
         # THE STALE-BASE DIAGNOSTIC. `stale-main` carries a promotion the console really
         # committed; `stale-child` is cut from it and edits a non-content file. Judged against
         # a base BEFORE the console commit — a local origin/main behind a merged console PR,
-        # or a re-run CI event carrying an older base.sha — L2 fires over rows this branch
+        # or, before 2026-11-10, a re-run CI event carrying an older base.sha — L2 fires over rows this branch
         # never wrote while L4 stays silent, because the console is exactly who committed
         # them. That combination is the signature; without the hint the reader has no way to
         # tell a stale base from a breach, and the honest fix is a fetch, not an edit.
