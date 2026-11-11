@@ -6,10 +6,9 @@ This repo is a **static-site builder**: one source tree publishes **two Netlify 
 serverless SP-interview proxy. Numbered `NN_Category/` dirs are **content source**; the build
 assembles them into `_build/ms3` and `_build/res`.
 
-> **Codex parity:** this repo is used by both Claude Code and Codex. `CLAUDE.md` is canonical;
-> `AGENTS.md` is a **byte-identical copy** of it (Claude reads `CLAUDE.md`, Codex reads `AGENTS.md`).
-> After editing `CLAUDE.md`, run `cp CLAUDE.md AGENTS.md` — CI fails the PR if the two diverge.
-> (No symlink: this repo has `core.symlinks=false`, so a link would check out as broken text.)
+> **Codex parity:** `CLAUDE.md` is canonical; `AGENTS.md` is a **byte-identical copy** (Claude reads
+> `CLAUDE.md`, Codex reads `AGENTS.md`). After editing `CLAUDE.md`, run `cp CLAUDE.md AGENTS.md` —
+> CI fails the PR if they diverge. (No symlink: `core.symlinks=false` checks a link out as text.)
 
 ## How this guide is organised
 
@@ -98,6 +97,7 @@ One line each; the topic page holds the why, the how, and the incident that earn
 | [interview-room](docs/agent-guide/interview-room.md) | `sp-proxy/`, the retired red-team sign-off, `bin/rotation_turnover.py` |
 | [automation-and-audit-tools](docs/agent-guide/automation-and-audit-tools.md) | subagents, `.mcp.json`, session hooks, the `bin/` audit family and currency guards, the egress probe, the queue that cannot rot, `SILENT_SHRINK_CHECKLIST.md`, the nightly runner |
 | [safety-content](docs/agent-guide/safety-content.md) | the crisis block and its two consequences, no PHI, instrument reproduction |
+| [decision-delegation](docs/agent-guide/decision-delegation.md) | who decides what (Tiers 0–3, adopted 2026-11-10), the evidence block, the re-ask rule; the gate rule (real property + a known-miss fixture that must fail; `docs/GATE_TEMPLATE.md`) |
 
 ## Standing decisions and design records
 
