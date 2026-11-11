@@ -402,9 +402,11 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** Prazosin (alpha-1 adrenergic antagonist) is suggested for trauma-related nightmares.
 
-- **Evidence:** The 2023 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD nightmares (the PACT trial was negative), but it remains a reasonable and widely used option; titrate from 1 mg at bedtime.
+- **Evidence:** The 2017 VA/DoD guideline found insufficient evidence for or against prazosin for PTSD-related nightmares (Recommendation 28b). The 2023 guideline suggests prazosin for those nightmares, with a weak recommendation (Recommendation 32), while continuing to suggest against prazosin for PTSD overall (Recommendation 18). The negative PACT trial is part of the evidence considered; it does not replace the later guideline's symptom-specific conclusion.
 
-- **Key paper:** Sartor et al., Am Fam Physician 2023.
+- **Dose:** The 2023 guideline lists an initial dose of 1 mg at bedtime, titrated to clinical response (Appendix B, p. 102).
+
+- **Key references:** VA/DoD PTSD guidelines: [2017, Version 3.0](https://www.ptsd.va.gov/professional/articles/article-pdf/id88366.pdf), Recommendation 28b (p. 35; recommendation text p. 62; discussion pp. 63–64); [2023, Version 4.0, original release](https://web.archive.org/web/20230721190354id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf), Recommendations 18 and 32 (pp. 37–38; nightmare discussion pp. 80–81), Appendix B (p. 102). The [current VA-hosted edited copy](https://www.healthquality.va.gov/HEALTHQUALITY/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG-Edited-111624-V5-81825.pdf) retains these recommendations and the initial-dose wording.
 
 - **Pearl:** Monitor for orthostatic hypotension, especially with the first dose — advise patients to sit on the edge of the bed before standing at night.
 
@@ -993,4 +995,4 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 - **Pearl:** The teaching point is the **unintended consequence** — a warning meant to improve safety was associated with reduced treatment and a possible net increase in harm. Monitor closely early in treatment rather than withholding effective care.
 
 ---
-*Educational rounds-prep reference; concise model answers, not a substitute for the primary sources named. Reviewed and attested by Joshua Moss, MD (2026-07-09); verify before clinical use. Joshua Moss, MD | Psychiatrist*
+*Educational rounds-prep reference; concise model answers, not a substitute for the primary sources named. Verify before clinical use. Joshua Moss, MD | Psychiatrist*
