@@ -466,7 +466,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Answer:** A 10-item clinician-administered scale (score 0–67) for assessing alcohol withdrawal severity. Scores <8–10: mild; 8–18: moderate (benzodiazepines indicated); ≥19: severe (close monitoring, inpatient care).
 
-- **Evidence:** Symptom-triggered dosing based on CIWA-Ar reduces total benzodiazepine dose and treatment duration (mean 9 vs. 68 hours in one RCT).
+- **Evidence:** Symptom-triggered dosing based on CIWA-Ar reduces total benzodiazepine dose and treatment duration (median 9 vs. 68 hours in one RCT).
 
 - **Key paper:** Schuckit, NEJM 2014.
 
@@ -484,7 +484,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **48. What is delirium tremens and when does it occur?**
 
-- **Answer:** Severe alcohol withdrawal with confusion, agitation, hallucinations, autonomic instability, and seizures. Typically occurs 48–96 hours after last drink, peaking at 72 hours.
+- **Answer:** Severe alcohol withdrawal with delirium — confusion, agitation, hallucinations — and autonomic instability; withdrawal seizures are a separate complication that often precedes it. Typically occurs 48–96 hours after last drink, peaking at 72 hours.
 
 - **Evidence:** Risk factors: prior DT, concurrent illness, older age, heavy prolonged use, elevated CIWA score at presentation.
 
@@ -560,7 +560,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Haber, NEJM 2025.
 
-- **Pearl:** **Wernicke's triad** (confusion, ataxia, ophthalmoplegia) is a medical emergency — all three features are present in only ~10% of cases. Treat empirically with high-dose IV thiamine if suspected.
+- **Pearl:** **Wernicke's triad** (confusion, ataxia, ophthalmoplegia) is a medical emergency — all three features are present in only a minority of cases (16% in the classic necropsy series). Treat empirically with high-dose IV thiamine if suspected.
 
 **56. What is Wernicke-Korsakoff syndrome?**
 
@@ -652,7 +652,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Oh et al., JAMA 2017.
 
-- **Pearl:** The "quiet" delirious patient is the most dangerous — hypoactive delirium is associated with higher mortality precisely because it goes unrecognized.
+- **Pearl:** The "quiet" delirious patient is the most dangerous — hypoactive delirium is associated with higher mortality, in part because it goes unrecognized.
 
 **65. What are the four components of decision-making capacity?**
 
