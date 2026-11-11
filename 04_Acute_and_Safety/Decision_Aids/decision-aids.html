@@ -381,7 +381,7 @@ function App(){
     );
     if(view==="ciwa") return e("div",{className:"card"},
       e("h2",null,"CIWA-Ar score bands"),
-      e("div",{className:"cap"},"Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules."),
+      e("div",{className:"cap"},"Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules. Valid only when the patient can report symptoms: not in delirium, where dosing is scheduled or front-loaded."),
       e("div",{className:"meter"},
         e("div",{className:"seg s1"},"≤8"), e("div",{className:"seg s2"},"9–19"), e("div",{className:"seg s3"},"≥20")),
       e("div",{className:"bands"},
