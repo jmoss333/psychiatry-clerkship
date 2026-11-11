@@ -10,10 +10,13 @@ a typo in the CI conditional simply stops running the strict attestation-hash ch
 the one branch that needs it, and the job still goes green.
 
 `validate_scheduled_workflows.py`'s `CRITICAL_STEPS` pins that step's body as exact
-text. This file pins what the text has to MEAN — that both tools are still invoked, and
-that the literal the shell compares `$HEAD_BRANCH` against is the same string the tool
-compares against — so a rewrite that keeps the digest honest still cannot quietly drop
-half the guard.
+text. This file pins what the text has to MEAN — that both tools are still invoked, that
+the literal the shell compares `$HEAD_BRANCH` against is the same string the tool
+compares against, and that the base both separation guards measure from is the
+merge-base of the base branch and the checkout rather than the event's `base.sha` (which
+GitHub refreshes only when the merge-base moves: on 2026-11-10 #1119's build went red on
+L1 over 26 commits of main it never touched) — so a rewrite that keeps the digest honest
+still cannot quietly drop half the guard or hand it a stale range.
 """
 
 import json
@@ -34,15 +37,60 @@ CONSOLE = ROOT / "faculty-console" / "netlify" / "functions" / "attest.mjs"
 CONFIG = (ROOT / "13_Faculty_Resources" / "_automation" / "maintenance"
           / "maintenance_config.json")
 STEP_NAME = "Guard — governance/content separation"
+POLICY_STEP_NAME = "Guard — policy/content separation"
 JOB = "build-test-validate"
+FALLBACK_LINE = 'BASE_SHA="$EVENT_BASE_SHA"'
+MERGE_BASE_LINE = ('if MERGE_BASE="$(git merge-base "origin/$BASE_REF" HEAD 2>/dev/null)"; '
+                   'then BASE_SHA="$MERGE_BASE"; fi')
+
+
+def _step(name):
+    workflow = yaml.safe_load(CI.read_text(encoding="utf-8"))
+    steps = workflow["jobs"][JOB]["steps"]
+    matches = [s for s in steps if isinstance(s, dict) and s.get("name") == name]
+    assert len(matches) == 1, f"{name!r} appears {len(matches)} times in {JOB}"
+    return matches[0]
 
 
 def _guard_step():
-    workflow = yaml.safe_load(CI.read_text(encoding="utf-8"))
-    steps = workflow["jobs"][JOB]["steps"]
-    matches = [s for s in steps if isinstance(s, dict) and s.get("name") == STEP_NAME]
-    assert len(matches) == 1, f"{STEP_NAME!r} appears {len(matches)} times in {JOB}"
-    return matches[0]
+    return _step(STEP_NAME)
+
+
+class PRBaseIsTheMergeBase(unittest.TestCase):
+    """Both separation guards measure from merge-base(origin/<base_ref>, HEAD).
+
+    The event's `base.sha` is kept as the fallback for a checkout with no base ref, never
+    handed to a tool directly: on a PR held open while main advances it points at the old
+    merge-base, and a diff from there to the PR merge commit carries every commit main took
+    since, so L1 reddens on governance files the PR never touched.
+    """
+
+    def check(self, name):
+        step = _step(name)
+        env, run = step.get("env") or {}, step.get("run") or ""
+        self.assertEqual(env.get("BASE_REF"), "${{ github.base_ref }}")
+        self.assertEqual(env.get("EVENT_BASE_SHA"), "${{ github.event.pull_request.base.sha }}")
+        self.assertNotIn("BASE_SHA", env, "the pointer must reach the shell only as the fallback")
+        self.assertIn(MERGE_BASE_LINE, run)
+        self.assertIn(FALLBACK_LINE, run)
+        # The pointer is the default the merge-base overrides, so it is assigned first.
+        self.assertLess(run.index(FALLBACK_LINE), run.index(MERGE_BASE_LINE))
+        # No step may mask a failure with "|| true" (ci-build-contract.test.mjs F25); the
+        # fallback is an `if` on the command substitution instead.
+        self.assertNotIn("|| true", run)
+        self.assertNotIn('--base "$EVENT_BASE_SHA"', run)
+        self.assertIn('echo "::error::no base sha"; exit 2', run)
+
+    def test_the_governance_guard(self):
+        self.check(STEP_NAME)
+
+    def test_the_policy_guard(self):
+        self.check(POLICY_STEP_NAME)
+
+    def test_the_policy_guard_still_runs_both_commands(self):
+        run = _step(POLICY_STEP_NAME).get("run") or ""
+        self.assertIn("python3 bin/check_policy_content_separation.py --self-test", run)
+        self.assertIn('python3 bin/check_policy_content_separation.py --base "$BASE_SHA"', run)
 
 
 class GuardStepCallsBothTools(unittest.TestCase):
@@ -55,9 +103,9 @@ class GuardStepCallsBothTools(unittest.TestCase):
     def test_it_runs_the_separation_gate(self):
         self.assertIn("bin/check_governance_separation.py", self.run)
 
-    def test_deck_history_uses_the_trusted_pr_base(self):
+    def test_deck_history_uses_the_same_pr_base(self):
         self.assertIn('python3 bin/check_deck_card_stability.py --base "$BASE_SHA"', self.run)
-        self.assertEqual(self.step["env"]["BASE_SHA"], "${{ github.event.pull_request.base.sha }}")
+        self.assertIn(MERGE_BASE_LINE, self.run)
 
     def test_it_runs_the_strict_attestation_hash_check(self):
         # Diff-scoped --strict is what binds a console promotion to the text it
@@ -66,8 +114,8 @@ class GuardStepCallsBothTools(unittest.TestCase):
         self.assertIn("bin/check_attestation_hashes.py --strict", self.run)
 
     def test_it_is_a_pull_request_step(self):
-        # `github.event.pull_request.base.sha` is the one base a push event does not
-        # carry; on a push the tool would exit 2, and exit 2 is a failure, not a skip.
+        # `github.base_ref` and `github.event.pull_request.base.sha` are PR-only; on a push
+        # the step would exit 2, and exit 2 is a failure, not a skip.
         self.assertEqual(self.step.get("if"), "github.event_name == 'pull_request'")
 
     def test_the_head_branch_comes_from_the_pr_head_ref(self):

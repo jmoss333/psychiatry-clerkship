@@ -3,8 +3,10 @@ name: PR sign-off impact advisory
 # Before a PR merges, say which faculty sign-offs merging it would reopen -- pages whose
 # attested text it changes, which learners then see as awaiting re-signature once the
 # release train publishes them (#865 voided sp-interview.html's 2026-09-26 signature and
-# nothing said so until after the merge). Compares the base tip with GitHub's test merge
-# commit by reading git objects only (bin/signoff_impact.py never runs the head's code) and
+# nothing said so until after the merge). Compares the base tip (the merge-base of the base
+# branch and GitHub's test merge commit; the event's base.sha is stale on a PR held open while
+# main advances, and is kept only as the fallback) with that test merge commit by reading git
+# objects only (bin/signoff_impact.py never runs the head's code) and
 # writes the neutral/success "Sign-offs (advisory)" Check Run on the PR head. It never
 # comments, pushes, labels or gates a merge. A content PR cannot also edit bin/ (governance
 # separation L1), so the reporter a content PR runs is main's.
@@ -38,7 +40,11 @@ jobs:
       - name: Report the sign-offs this PR reopens
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           MERGE_SHA: ${{ github.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 bin/signoff_impact.py --base "$BASE_SHA" --head "$MERGE_SHA" --report-sha "$HEAD_SHA" --check-run
+        run: |
+          BASE_SHA="$EVENT_BASE_SHA"
+          if MERGE_BASE="$(git merge-base "origin/$BASE_REF" "$MERGE_SHA" 2>/dev/null)"; then BASE_SHA="$MERGE_BASE"; fi
+          python3 bin/signoff_impact.py --base "$BASE_SHA" --head "$MERGE_SHA" --report-sha "$HEAD_SHA" --check-run

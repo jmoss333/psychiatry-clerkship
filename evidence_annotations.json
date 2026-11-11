@@ -2046,7 +2046,8 @@
           "direction": "positive",
           "usedBy": [
             "sp-interview",
-            "screeners.html"
+            "screeners.html",
+            "scale-chooser.html"
           ]
         }
       ]
@@ -2446,7 +2447,8 @@
             "t_sud",
             "rounds_questions",
             "rapid_review",
-            "withdrawal.html"
+            "withdrawal.html",
+            "scale-chooser.html"
           ]
         },
         {
@@ -3423,7 +3425,8 @@
           ],
           "direction": "descriptive",
           "usedBy": [
-            "screeners.html"
+            "screeners.html",
+            "scale-chooser.html"
           ]
         }
       ]

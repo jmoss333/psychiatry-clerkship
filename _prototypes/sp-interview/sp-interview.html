@@ -528,6 +528,9 @@ MockProvider.prototype.respond=function(s,text){
 };
 MockProvider.prototype.evaluate=function(){return Promise.resolve(null);};
 
+/* The mode the learner chose, as the server's two literals. Realistic makes the LIVE patient more
+   guarded (the server applies the pack's guardedShift, as the offline mock always did). */
+function learnerDifficulty(s){return (s&&s.opts&&s.opts.difficulty==='realistic')?'realistic':'supported';}
 function ProxyProvider(endpoint,passcode,bounds){this.endpoint=endpoint;this.passcode=passcode;this.mock=new MockProvider();this.rapportMin=bounds&&bounds.rapportMin;this.rapportMax=bounds&&bounds.rapportMax;}
 ProxyProvider.prototype.name='Live (proxy)';
 ProxyProvider.prototype.start=function(caseDef,opts){var s=this.mock.start(caseDef,opts);s._live=true;return s;};
@@ -570,19 +573,19 @@ ProxyProvider.prototype._applyState=function(s,j,text,signal){
 };
 ProxyProvider.prototype.open=function(s,context){
   var self=this,ctx=context||{};
-  return this._request({caseId:s.caseDef.id,mode:'open',encounterId:ctx.encounterId,turnId:0},ctx.signal)
+  return this._request({caseId:s.caseDef.id,mode:'open',encounterId:ctx.encounterId,turnId:0,difficulty:learnerDifficulty(s)},ctx.signal)
     .then(function(j){return self._applyState(s,j,null,ctx.signal);});
 };
 ProxyProvider.prototype.respond=function(s,text,context){
   var self=this,ctx=context||{};
   return this._request({caseId:s.caseDef.id,mode:'converse',encounterId:ctx.encounterId,turnId:ctx.turnId,
-    turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),message:text},ctx.signal)
+    turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),message:text,difficulty:learnerDifficulty(s)},ctx.signal)
     .then(function(j){return self._applyState(s,j,text,ctx.signal);});
 };
 ProxyProvider.prototype.evaluate=function(s,sa,context){
   var ctx=context||{};
   return this._request({caseId:s.caseDef.id,mode:'evaluate',encounterId:ctx.encounterId,
-    turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),selfAssess:sa},ctx.signal);
+    turns:s.turns.map(function(t){return{me:t.me,pt:t.pt};}),selfAssess:sa,difficulty:learnerDifficulty(s)},ctx.signal);
 };
 
 /* ============================ Deterministic debrief ============================ */
@@ -712,8 +715,11 @@ function getCoach(sess){
   open.sort(function(a,b){return (b.critical?1:0)-(a.critical?1:0);});
   if(!open.length) return 'The map has no further hints. Review what the patient actually answered and what remains unclear before summarizing and closing.';
   var h=hints[open[0].id];
-  if(sess.stepOuts>1) return h+' Say it in their own words first, then one plain question — and wait.';
-  return h;
+  // The hint comes from the same wording recogniser as the map: it can miss a topic the learner
+  // raised in other words, so it says so rather than asserting the topic was never asked.
+  var hedge=sess.turns.length?' If you already asked this in other words, the room may not have recognised it — say it plainly once more.':'';
+  if(sess.stepOuts>1) return h+hedge+' Say it in their own words first, then one plain question — and wait.';
+  return h+hedge;
 }
 function coverageProse(cov){
   var missed=cov.filter(function(c){return c.status==='missed';}).map(function(c){return coverageDisplay(c).label;});
@@ -1067,6 +1073,12 @@ function VisitNoteReview(props){
         r.note?e('p',{className:'fine'},r.note):null,
         e('p',null,r.teach));
     })));
+}
+/* The server drops a model strength or suggestion whose quoted words are not in the exchange and
+   reports the count; a note (domain or self-assessment) is replaced in place. Say so, once per card. */
+function withheldNote(fb,kind){
+  var w=fb&&fb.withheld,n=w&&w[kind];if(!n)return null;
+  return e('p',{className:'fine'},n+' model '+(kind==='strengths'?'strength':'suggestion')+(n===1?' was':'s were')+' withheld: it quoted words that are not in this exchange.');
 }
 function Ribbon(props){
   return e('div',{className:'ribbon',role:'note'},
@@ -1693,7 +1705,7 @@ function App(){
           roomUnavailable?e('div',{className:'unavailable',role:'note'},e('p',{className:'setting'},spokenWhy),e('div',{className:'acts'},e('button',{type:'button',className:'btn',onClick:function(){chooseRoomMode('typed');}},'Use the typed room'))):null,
           e('div',{className:'begin'},
             e('button',{className:'btn primary',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'supported');}},'Begin — Supported',e('span',{className:'sub'},'a door to step out — your notes + a coach')),
-            e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door — alone with the patient, like the real thing'))),
+            e('button',{className:'btn',disabled:showSpokenConsent||roomUnavailable,onClick:function(){begin(chosen,'realistic');}},'Begin — Realistic',e('span',{className:'sub'},'no door, no map — and a more guarded patient, like the real thing'))),
           e('p',{className:'fine'},roomMode==='spoken'?'Your microphone starts only after you agree to enter the spoken room. You can type at any time, and pause or end whenever you like.':'Nothing is recorded. The conversation lives in this tab until you leave.'),
           e('div',{className:'entry-tip'},e('kbd',null,'Enter'),e('span',null,'sends typed words · Shift+Enter for a new line')));
       entrance=e('div',{className:'entrance case'},accessSection,doorSection);
@@ -2033,6 +2045,7 @@ function App(){
         e('div',{className:'card'},
           e('h2',null,'What worked'),
           E.feedback&&E.feedback.strengths&&E.feedback.strengths.length?e('p',{className:'microlabel'},'Model-generated suggestions · check against the exchange'):null,
+          withheldNote(E.feedback,'strengths'),
           ((E.feedback&&E.feedback.strengths&&E.feedback.strengths.length)?E.feedback.strengths:nar.strengths).slice(0,2).map(function(s,i){
             var modelStrength=!!(E.feedback&&E.feedback.strengths&&E.feedback.strengths.length);
             return e('div',{key:i},e('p',{className:'sitem'},typeof s==='string'?s:s.t),
@@ -2040,6 +2053,7 @@ function App(){
         e('div',{className:'card'},
           e('h2',null,'Work on next'),
           E.feedback&&E.feedback.growth&&E.feedback.growth.length?e('p',{className:'microlabel'},'Model-generated suggestions · check against the exchange'):null,
+          withheldNote(E.feedback,'growth'),
           ((E.feedback&&E.feedback.growth&&E.feedback.growth.length)?E.feedback.growth:nar.growth).slice(0,2).map(function(g,i){
             var modelGrowth=!!(E.feedback&&E.feedback.growth&&E.feedback.growth.length);
             return e('div',{className:'gitem',key:i},e('p',null,g.t||String(g)),g.link?e('p',{className:'ref'},'→ '+g.link):null,

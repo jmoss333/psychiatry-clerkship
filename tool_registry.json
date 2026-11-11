@@ -275,6 +275,50 @@
         "pg_interview.md",
         "doc_oral.md"
       ]
+    },
+    {
+      "file": "family-meeting-sim.html",
+      "title": "Family Conversation Simulator",
+      "sourcePath": "08_Cases_and_Simulation/family-meeting-sim/family-meeting-sim.html",
+      "category": "family-systems",
+      "riskLevel": "high",
+      "disclaimerType": "fictional-simulation-supervision-local-policy",
+      "storageKeys": [
+        "cw_family_sim_v1"
+      ],
+      "evidenceIds": [
+        "va-dod-suicide-cpg-2024",
+        "stanley-brown-2018",
+        "anglemyer-2014-firearm-access-suicide"
+      ],
+      "relatedPages": [
+        "family_playbook.md",
+        "collateral_workflow.md",
+        "pg_suicide.md",
+        "cultural_psychiatry.md",
+        "ethics_legal.md",
+        "capacity.html"
+      ]
+    },
+    {
+      "file": "scale-chooser.html",
+      "title": "Which Scale?",
+      "sourcePath": "02_Clinical_Skills/Scale_Chooser/scale-chooser.html",
+      "category": "clinical-skills",
+      "riskLevel": "moderate",
+      "disclaimerType": "screening-not-diagnosis",
+      "storageKeys": [],
+      "evidenceIds": [
+        "kroenke-2001-phq9",
+        "asam-hpso-bup-2023",
+        "lowe-2004-phq9-monitoring"
+      ],
+      "relatedPages": [
+        "t_mood.md",
+        "delirium.md",
+        "t_sud.md",
+        "pg_suicide.md"
+      ]
     }
   ]
 }

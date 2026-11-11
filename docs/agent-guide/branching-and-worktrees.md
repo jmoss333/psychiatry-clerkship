@@ -38,6 +38,37 @@ most wasted work here has been one session not seeing another.
   `main` before acting** — the #626 handoff prescribed committing 35 MB past LFS and writing
   attestations. `13_Faculty_Resources/Handoffs/STATUS_LATEST.md` is a superseded July snapshot.
 
+### Codex review runs before a PR goes on Josh's approval list — [judgment]
+- **Run the Codex review before a PR is placed on Josh's approval list, not after.** Fold its
+  findings in first, then list the PR. On 2026-10-28 #1115 and #1119 were approved, and only
+  then did a Codex review prompt their authoring sessions to push new teaching logic and new
+  suicide-intent patterns — the approved diff was no longer the diff on the PR. A review that
+  can still change the content belongs before the approval, so the approval is the last word.
+
+### After `josh-approved`, the owning session does not push content — [report: .github/workflows/approved-head-guard.yml; bin/approved_head_guard.py]
+- **Once a PR carries `josh-approved`, its owning session must not push content to it.** A fix,
+  a Codex follow-up or a second thought goes in a **follow-up PR**, or the session comments on
+  the PR and asks Josh for re-approval. Any new commit, including a merge from `main`, requires
+  a fresh approval receipt. Every
+  session pushes as the same account and the ruleset keeps an approval through a new push, so
+  GitHub alone never shows that the approved head moved (#1115, #1119, 2026-10-28).
+- **The merging agent records the approval** with
+  `python3 bin/approved_head_guard.py receipt --pr <n> --expect-head <full sha Josh reviewed> \
+  --chat-approval-ref <chat://thread/<thread>#message/<message>> --approval-scope <owner/repo#n>`:
+  it posts a receipt comment (head SHA, merge base, fingerprint, user-chat evidence pointer and
+  scope), then adds the label. It requires the exact 40-character head SHA and exact PR scope.
+  The chat pointer must identify the specific user approval message, but it is an honest-session
+  record only: it does not independently prove human identity, authenticate a reviewer, or
+  authorize a change. It must never be invented or reused as approval for a different PR/head.
+- **`approved-head-guard.yml` establishes its status when a PR opens, then re-checks every push and when a draft is marked ready**
+  (trusted copy from `main`, hosted runner).
+  Only the exact approved head → pass. Any new commit, a label without a current receipt, or a
+  prior revocation → it writes a durable bot-authored revocation marker, removes the label,
+  returns the PR to draft, comments "head changed after approval — re-approval needed", and
+  fails. It is **not**
+  a required check (that is Josh's call), and it is a tripwire for honest sessions, not a lock:
+  the shared account and a stored review URL do not authenticate a human reviewer.
+
 ### Push the branch the day you create it — [judgment]
 - **Push the branch the day you create it, before the work is finished.** A branch that exists
   only locally is invisible to every gate, every reviewer and every automation here. The

@@ -302,11 +302,21 @@ class WorkflowTests(unittest.TestCase):
         step = [s for s in self.steps if "signoff_impact.py" in str(s.get("run", ""))]
         self.assertEqual(len(step), 1)
         env, run = step[0]["env"], step[0]["run"]
-        self.assertEqual(env["BASE_SHA"], "${{ github.event.pull_request.base.sha }}")
+        # The base tip is the merge-base of the base branch and the test merge, computed at
+        # run time; the event's base.sha refreshes only when the merge-base moves, so on a PR
+        # held open while main advances it is stale (#1119, 2026-11-10) and is the fallback only.
+        self.assertEqual(env["BASE_REF"], "${{ github.base_ref }}")
+        self.assertEqual(env["EVENT_BASE_SHA"], "${{ github.event.pull_request.base.sha }}")
+        self.assertNotIn("BASE_SHA", env)
         self.assertEqual(env["MERGE_SHA"], "${{ github.sha }}")
         self.assertEqual(env["HEAD_SHA"], "${{ github.event.pull_request.head.sha }}")
+        self.assertIn('BASE_SHA="$EVENT_BASE_SHA"', run)
+        self.assertIn('if MERGE_BASE="$(git merge-base "origin/$BASE_REF" "$MERGE_SHA" 2>/dev/null)"; '
+                      'then BASE_SHA="$MERGE_BASE"; fi', run)
+        self.assertNotIn("|| true", run)
         for flag in ('--base "$BASE_SHA"', '--head "$MERGE_SHA"', '--report-sha "$HEAD_SHA"', "--check-run"):
             self.assertIn(flag, run)
+        self.assertNotIn('--base "$EVENT_BASE_SHA"', run)
 
     def test_actions_are_pinned_and_the_checkout_holds_no_credential(self):
         checkout = [s for s in self.steps if str(s.get("uses", "")).startswith("actions/checkout@")]
