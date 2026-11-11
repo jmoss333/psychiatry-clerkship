@@ -732,6 +732,19 @@ if _spa_t.count(_cotw_newest_needle)!=1:
     print("BUILD ABORTED — FD_COTW_NEWEST needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_cotw_newest_needle,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_data,"ms3")))
+# "Presenting tomorrow" (F4, 2026-10-18): which fields and links each hospital phase shows, and
+# the syndromes that qualify on this site (presenting_tomorrow.py over topic_hubs.json, topic_meta
+# and the case registries). Validated here -- a syndrome x phase cell that would render fewer than
+# the registry's minimum items aborts the build -- then inlined like FD_MEDIA. The resident build
+# swaps in its own value. The clinical lines themselves come from FD_TOPIC_META at render time.
+import presenting_tomorrow as _presenting
+_presenting_data=_presenting.resolve(_presenting.load(LIB))
+_presenting_needle="var FD_PRESENTING=null;"
+if _spa_t.count(_presenting_needle)!=1:
+    print("BUILD ABORTED — FD_PRESENTING needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_presenting_needle,"var FD_PRESENTING=%s;"%frontdoor_catalog._inline_json(_presenting.payload(_presenting_data,"ms3")))
+print("presenting tomorrow (ms3): %d syndromes"%len(_presenting.syndromes(_presenting_data,"ms3")))
 # Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
 # copies this index.html, so both sites inherit the same value from the same CONTEXT.
 try:

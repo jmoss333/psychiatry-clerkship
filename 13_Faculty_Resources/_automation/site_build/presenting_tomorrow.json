@@ -1,0 +1,49 @@
+{
+  "_note": "Presenting tomorrow (F4, 2026-10-18) — registration data for presenting_tomorrow.py, which builds the FD_PRESENTING payload the Today page reads when a learner chooses 'Before rounds' and names the syndrome they are presenting. Nothing here is clinical text: the lines a learner reads are the hub topic's own attested clinicalWorkflow / firstMove / ruleOut fields (topic_meta.json, read in the shell from FD_TOPIC_META) and the registries' own case titles. This file decides only WHICH fields and links each hospital phase shows, in what order, and under what label. Syndromes are the topic hubs (topic_hubs.json) that carry a clinicalWorkflow block and ship on the site; `exclude` removes a hub that is not a bedside syndrome. The build fails if any syndrome x phase cell would render fewer than `minItems` items on either site.",
+  "version": 1,
+  "heading": "Presenting tomorrow",
+  "prompt": "Presenting a specific patient? Pick the syndrome.",
+  "phasePrompt": "Which hospital day?",
+  "minItems": 3,
+  "exclude": [],
+  "labels": {
+    "ask": "What to ask",
+    "mse": "What to examine",
+    "safety": "Safety",
+    "say": "What to say",
+    "collateral": "Family & collateral",
+    "rounds": "How to present it",
+    "exam": "The exam point",
+    "ruleOut": "Rule out",
+    "firstMove": "First move",
+    "guide": "Open the guide",
+    "cotw": "Case of the Week",
+    "comm": "Rehearse the conversation",
+    "family": "Rehearse the family conversation",
+    "actions": "Tools",
+    "epa": "EPA"
+  },
+  "phases": [
+    {
+      "id": "admit",
+      "label": "Admission",
+      "lead": "Tonight: what to ask, what to examine, and what to rule out before anyone says the diagnosis out loud.",
+      "fields": ["ask", "mse", "ruleOut", "firstMove", "safety"],
+      "links": ["guide", "comm"]
+    },
+    {
+      "id": "rounds",
+      "label": "Day 2–3 · presenting",
+      "lead": "Tonight: how the team wants it presented, the question that follows, and the words for the patient.",
+      "fields": ["rounds", "exam", "say"],
+      "links": ["guide", "cotw", "actions"]
+    },
+    {
+      "id": "discharge",
+      "label": "Pre-discharge",
+      "lead": "Tonight: the collateral and family plan, and the safety conversation that has to happen before the door.",
+      "fields": ["collateral", "safety", "say"],
+      "links": ["guide", "family", "cotw"]
+    }
+  ]
+}
