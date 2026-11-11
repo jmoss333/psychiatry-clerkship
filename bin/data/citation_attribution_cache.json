@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-11-02",
+  "refreshedAt": "2026-11-10",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -327,6 +327,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39331392"
+    },
+    "10.1001/jamanetworkopen.2024.58608": {
+      "title": "Lithium for Bipolar Disorder and Risk of Thyroid Dysfunction and Chronic Kidney Disease",
+      "container": "JAMA Netw Open",
+      "containerAlt": [
+        "JAMA Netw Open",
+        "JAMA Network Open",
+        "JAMA network open"
+      ],
+      "year": 2025,
+      "authors": [
+        "Chan",
+        "Solmi",
+        "Correll",
+        "Man Wong",
+        "Lo",
+        "Lai",
+        "Chang"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10",
+      "pmid": "39932712"
     },
     "10.1001/jamapsychiatry.2014.3039": {
       "title": "Dialectical Behavior Therapy for High Suicide Risk in Individuals With Borderline Personality Disorder",
@@ -1003,6 +1026,25 @@
       "status": "resolved",
       "resolvedAt": "2026-10-26",
       "pmid": "42634386"
+    },
+    "10.1007/s00210-024-03210-8": {
+      "title": "Lithium, the gold standard drug for bipolar disorder: analysis of current clinical studies",
+      "container": "Naunyn-Schmiedeberg's Arch Pharmacol",
+      "containerAlt": [
+        "Naunyn Schmiedebergs Arch Pharmacol",
+        "Naunyn-Schmiedeberg's Arch Pharmacol",
+        "Naunyn-Schmiedeberg's Archives of Pharmacology",
+        "Naunyn-Schmiedeberg's archives of pharmacology"
+      ],
+      "year": 2024,
+      "authors": [
+        "Airainer",
+        "Seifert"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10",
+      "pmid": "38916833"
     },
     "10.1007/s00406-023-01716-5": {
       "title": "Clinical predictors of suicidal ideation, suicide attempts and suicide death in depressive disorder: a systematic review and meta-analysis",
@@ -4441,6 +4483,27 @@
       "resolvedAt": "2026-10-05",
       "pmid": "38711351"
     },
+    "10.1177/0885066616651582": {
+      "title": "Lithium Poisoning",
+      "container": "J Intensive Care Med",
+      "containerAlt": [
+        "J Intensive Care Med",
+        "Journal of Intensive Care Medicine",
+        "Journal of intensive care medicine"
+      ],
+      "year": 2016,
+      "authors": [
+        "Baird-Gunning",
+        "Lea-Henry",
+        "Hoegberg",
+        "Gosselin",
+        "Roberts"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10",
+      "pmid": "27516079"
+    },
     "10.1177/08850666221114303": {
       "title": "Malignant Catatonia: A Review for the Intensivist",
       "container": "J Intensive Care Med",
@@ -5161,6 +5224,22 @@
       "source": "pubmed",
       "status": "resolved",
       "resolvedAt": "2026-09-27"
+    },
+    "33587568": {
+      "title": "Bipolar Disorders: Evaluation and Treatment",
+      "container": "Am Fam Physician",
+      "containerAlt": [
+        "Am Fam Physician",
+        "American family physician"
+      ],
+      "year": 2021,
+      "authors": [
+        "Marzani",
+        "Price Neff"
+      ],
+      "source": "pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10"
     }
   }
 }
