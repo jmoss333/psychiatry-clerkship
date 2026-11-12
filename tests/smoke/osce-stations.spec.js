@@ -123,7 +123,14 @@ test('family-agenda roles share the intended briefing and reveal the debrief on 
   await expect(page).toHaveURL(url => url.search === FAMILY);
 
   const presenterTask = page.getByText(/Prepare a family meeting agenda for a synthetic patient nearing discharge/i);
-  const familyPrompt = page.getByText(/Choose one of the two parents in the brief/i);
+  const cardCues = {
+    presenter: [page.getByText('Close with a handoff.', { exact: true })],
+    family: [
+      page.getByRole('heading', { name: 'If you want a firm plan' }),
+      page.getByRole('heading', { name: 'If you want to avoid another argument' }),
+    ],
+    observer: [page.getByText('Give one piece of feedback.', { exact: true })],
+  };
   const caseBrief = page.getByText(/one parent wants strict control/i);
   const observerFocus = page.getByText(/Structure, boundaries, patient autonomy, family support/i);
   const behavior = page.getByText('Names one unresolved discharge barrier.', { exact: true }).filter({ visible: true });
@@ -140,15 +147,19 @@ test('family-agenda roles share the intended briefing and reveal the debrief on 
     await expect(page.getByRole('heading', { name: label, exact: true })).toBeVisible();
     await expect(page.locator('.fd-article__head')).toContainText('OSCE practice');
     await expect(page.locator('.fd-article__meta')).toBeEmpty();
-    if (key === 'family') await expect(familyPrompt).toBeVisible();
-    else await expect(familyPrompt).toBeHidden();
+    await expect(caseBrief).toBeVisible();
+    for (const [owner, cues] of Object.entries(cardCues)) {
+      for (const cue of cues) {
+        if (owner === key) await expect(cue).toBeVisible();
+        else await expect(cue).toHaveCount(0);
+      }
+    }
     if (key === 'presenter') await expect(presenterTask).toBeVisible();
     else await expect(presenterTask).toBeHidden();
     if (key === 'observer') {
       await expect(observerFocus).toBeVisible();
       await expect(behavior).toHaveCount(1);
     } else {
-      await expect(caseBrief).toBeVisible();
       await expect(observerFocus).toBeHidden();
       await expect(behavior).toHaveCount(0);
     }

@@ -18,9 +18,9 @@ var FD_OSCE_STATIONS = {
     timing: /^(\d+) minutes prep\/presentation\.$/,
     phases: ['Preparation and presentation'],
     roles: {
-      presenter: {label: 'Presenter', fields: ['Student task', 'Case brief']},
+      presenter: {label: 'Presenter', fields: ['Student task', 'Case brief', 'Presenter role']},
       family: {label: 'Family member', fields: ['Case brief', 'Family member role']},
-      observer: {label: 'Observer', instruction: 'Listen to the agenda and be ready to give one specific example in the debrief.', fields: ['Behaviors to practice', 'Rater focus']}
+      observer: {label: 'Observer', fields: ['Case brief', 'Observer role', 'Behaviors to practice', 'Rater focus']}
     }
   }
 };

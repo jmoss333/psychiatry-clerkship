@@ -134,11 +134,42 @@ Prepare a family meeting agenda for a synthetic patient nearing discharge.
 Family is frightened and divided: one parent wants strict control, another wants
 to avoid conflict. Patient wants discharge and refuses to discuss warning signs.
 
+**Presenter role**
+
+You are the medical student. Prepare your agenda, present it to one parent,
+and talk through one point where you disagree.
+
+- **Open the meeting.** Introduce yourself and ask, “What would you most like us to figure out before we finish?” Explain that you will bring unresolved questions to the supervising team.
+- **Make room for the patient.** The patient wants to go home and has declined to discuss warning signs. In this three-person exercise, say what you would ask the patient directly about the agenda and what they agree to share. Leave those questions open for the team to revisit with the patient.
+- **Work through one disagreement.** When the parent raises a concern, ask what worries them most. Use their answer to propose one practical item, such as who they could call if sleep becomes a concern at home. Ask whether that would help.
+- **Close with a handoff.** Summarize what the parent offered, one point still unsettled, and who will take it up with the patient or supervising team. The discharge decision belongs to the treating team.
+
 **Family member role**
 
-Choose one of the two parents in the brief. Listen to the proposed agenda from
-that parent's perspective. When invited, tell the presenter which concern you
-want the meeting to address.
+Choose one of the two parents in the brief and stay in that role. Use the
+opening line in your own words. Let what the presenter says change your reply.
+
+### If you want a firm plan
+
+Open with “When we get home, am I supposed to make sure every pill gets taken?”
+If asked what worries you, say, “I'm scared I'll miss the first sign that
+something is wrong.” If the presenter leaves monitoring entirely to you, ask
+who on the team you can turn to. If they ask what help feels manageable, offer,
+“I could help with a ride to a follow-up visit, if that's what my kid wants.”
+
+### If you want to avoid another argument
+
+Open with “We finally had a calm visit. Can we leave the warning signs out of
+this meeting?” If asked why, say, “I want my kid to keep talking to me after
+we get home.” If pressed to agree, say what still feels uncomfortable. If the
+presenter acknowledges your concern, ask, “Could we start by asking what they
+want help with?”
+
+If someone asks you to speak for the patient, you can say, “I can tell you
+what I’m worried about. You’d have to ask them what they want.”
+
+In the debrief, name one thing the presenter said that made it easier or harder
+to speak honestly as this parent.
 
 **Behaviors to practice**
 
@@ -152,6 +183,15 @@ want the meeting to address.
 **Rater focus**
 
 Structure, boundaries, patient autonomy, family support.
+
+**Observer role**
+
+Watch the exchange between the student and the parent. Keep track of one
+sentence you actually hear and how the other person responds.
+
+- **Whose agenda is it?** Listen for the patient's stated goal, what still needs their permission, and the parent's own worry. Notice whether the parent gets to answer before the student offers a solution.
+- **Who owns the next step?** Listen for what the family volunteers, what the team will do, and one unresolved question. If the student says “we'll follow up,” could the parent say who “we” means?
+- **Give one piece of feedback.** Ask the presenter which moment felt hardest. Quote their words and describe the parent's response. Invite a retry with “How else could you ask that?” and let the family member respond once more.
 
 ## Station 6 - Oral Presentation Of A New Admission
 
