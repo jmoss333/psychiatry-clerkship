@@ -1422,6 +1422,6 @@ hidden, everywhere else.
 | `.fd-usage-notice__btn` | `<button data-fd-settings>` | Text-style link that opens Settings › Usage — the only opt-out writer stays the emitter. |
 
 
-### OSCE capacity station
+### OSCE stations
 
-The reader's `.fd-station` section contains role links in `.fd-station__roles`. The facilitator timer uses `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.
+The reader's `.fd-station` section contains role links in `.fd-station__roles`. The capacity station has two timed phases. The family meeting agenda uses a single timer. Both use `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.

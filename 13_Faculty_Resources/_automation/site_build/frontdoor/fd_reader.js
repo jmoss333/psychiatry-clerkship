@@ -546,6 +546,11 @@ function fdReader(index, state, bodyHtml){
   var kindLabel=isRights?'Reference':(isTool?'Interactive tool':'Reading');
   var metaText=isRights?'instrument not reproduced here'
     :(isTool?'self-paced':((typeof item.minutes==='number')?(item.minutes+' min'):''));
+  var station=item.ref==='osce.md'&&st.osceStation;
+  if(station){
+    kindLabel='OSCE practice';
+    metaText='';
+  }
   var weekPos=0;
   for(w=0;w<weekItems.length;w++){ if(weekItems[w].ref===item.ref){ weekPos=w+1; break; } }
 
@@ -567,10 +572,9 @@ function fdReader(index, state, bodyHtml){
      under the article (2026-09-29, the owner's call -- same rule as the protocol sheet's "From:"
      line), but the smoke crawler and faculty feedback still need to know which page is open.
      A pending or unavailable notice leads the article, above the status line and H1. */
-  var station=st.capacityStation===true&&item.ref==='osce.md';
   var article='<div class="fd-article" data-ref="'+fdEsc(item.ref)+'">'+
     (split.notice&&!split.receipt?split.notice:'')+head+
-    '<h1 class="fd-article__h1">'+(station?'Capacity to refuse medical treatment':fdEsc(item.title))+'</h1>';
+    '<h1 class="fd-article__h1">'+fdEsc(station ? station.title : item.title)+'</h1>';
   if(!station)article+='<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
   /* bodyHtml: verbatim, unescaped -- see header comment. Omitted entirely (no empty wrapper) when
      the caller has none, e.g. a render taken before Plan 3 wires marked() in. */

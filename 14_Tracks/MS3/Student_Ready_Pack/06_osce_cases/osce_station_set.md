@@ -120,6 +120,8 @@ Withdrawal history and escalation.
 
 ## Station 5 - Family Meeting Agenda Before Discharge
 
+[Run this station](?page=osce.md&station=family-agenda)
+
 **Time:** 15 minutes prep/presentation.
 
 **Student task**
@@ -131,6 +133,12 @@ Prepare a family meeting agenda for a synthetic patient nearing discharge.
 22-year-old admitted for first manic episode. Sleep and agitation have improved.
 Family is frightened and divided: one parent wants strict control, another wants
 to avoid conflict. Patient wants discharge and refuses to discuss warning signs.
+
+**Family member role**
+
+Choose one of the two parents in the brief. Listen to the proposed agenda from
+that parent's perspective. When invited, tell the presenter which concern you
+want the meeting to address.
 
 **Behaviors to practice**
 

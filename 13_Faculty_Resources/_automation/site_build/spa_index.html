@@ -2246,7 +2246,7 @@
   /*__FD_CARE__*/
 
   /*__FD_READER__*/
-  /*__FD_CAPACITY_STATION__*/
+  /*__FD_OSCE_STATION__*/
   /* The faculty preview's "Beyond this page" (fdFacultyPreviewMedia, first script): the same
      renderer and the same inlined index the learner Reader uses, read at call time. */
   fdMediaPreviewHtml=function(ref){
@@ -2868,7 +2868,7 @@
     if(state.openId){
       return fdSurface('reader',function(){
         var rstate=fdClone(live); rstate.ref=state.openId;
-        rstate.capacityStation=fdIsCapacityStation(rstate.ref,new URLSearchParams(location.search));
+        rstate.osceStation=fdStationForRoute(rstate.ref,new URLSearchParams(location.search));
         rstate.readingPlaceEligible=false; /* Loading is not a mounted reading. */
         return fdReader(FD_INDEX,rstate,'<p class="loading" role="status">Loading…</p>');
       });
@@ -3281,7 +3281,7 @@
       signal:options.signal,
       parseMarkdown:function(markdown){
         if(ref==='osce.md'&&!facultyPreviewRequest){
-          var station=fdCapacityStation(markdown,launchSearch,marked.parse);
+          var station=fdOsceStation(markdown,launchSearch,marked.parse);
           if(station)return station;
         }
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
@@ -3297,8 +3297,8 @@
         if(toolFrame&&!facultyPreviewRequest&&typeof fdSizeToolFrame==='function')fdSizeToolFrame(toolFrame);
         if(toolFrame&&!facultyPreviewRequest&&ref==='one-patient-six-weeks.html')fdCaseRestoreScroll(!!options.fromHistory);
         if(body){
-          var stationPanel=body.querySelector('[data-capacity-station]');
-          if(stationPanel)fdMountCapacityStation(stationPanel);
+          var stationPanel=body.querySelector('[data-osce-station]');
+          if(stationPanel)fdMountOsceStation(stationPanel);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
