@@ -1,0 +1,7 @@
+{
+  "v": 2,
+  "scenarios": {
+    "coparents-discharge-adolescent": { "runs": 2, "last": "2026-11-11", "best": { "validation": 100, "structure": 100, "safety": 80, "nonblaming": 100 }, "safetyRun": "after-miss" },
+    "shared-decision-household": { "runs": 1, "last": "2026-11-11", "best": { "validation": 67, "structure": 50, "nonblaming": 50 }, "safetyRun": "missed" }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "scenarios": {
+    "coparents-discharge-adolescent": { "runs": 3, "last": "2026-11-02", "best": { "validation": 100, "structure": 83, "safety": 80, "nonblaming": 100 } },
+    "parent-own-untreated-illness": { "runs": 2, "last": "2026-10-28", "best": { "validation": 71, "structure": 86, "safety": 100, "nonblaming": 86 } },
+    "angry-parent-admission": { "runs": 1, "last": "2026-11-10", "best": { "validation": 100, "structure": 100, "safety": 100, "nonblaming": 100 } },
+    "ambivalent-spouse-discharge": { "runs": 4, "last": "2026-11-09", "best": { "validation": 89, "structure": 78, "safety": 78, "nonblaming": 90 } },
+    "silent-teen-guardian-present": { "runs": 1, "last": "2026-11-01", "best": { "validation": 50, "structure": 40, "safety": 86, "nonblaming": 60 } },
+    "siblings-late-onset-psychosis": { "runs": 2, "last": "2026-11-03", "best": { "validation": 80, "structure": 75 } },
+    "retired-scenario-x": { "runs": 1, "last": "2026-10-20", "best": { "validation": 40, "safety": 100 } }
+  },
+  "extra": "kept as is"
+}
