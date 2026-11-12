@@ -68,6 +68,8 @@ Decision-specific reasoning and delirium recognition.
 
 ## Station 3 - Possible Catatonia
 
+[Run this station](?page=osce.md&station=possible-catatonia)
+
 **Time:** 10 minutes observation/interview, 5 minutes team presentation.
 
 **Student task**
@@ -80,6 +82,36 @@ Identify catatonia concern and escalate.
 and intermittently holds the same posture. Nursing reports the patient is
 "refusing everything." Vital signs are stable but oral intake is poor.
 
+**Interviewer role**
+
+You are the medical student on the unit. The nurse has asked you to see a
+35-year-old admitted with depression who has barely eaten today.
+
+- **Start at the bedside.** Introduce yourself to the patient, explain why you came, and give them time to respond. Notice how they sit, move, and respond to one simple question. If they say little, describe what you saw and heard before asking the nurse for context.
+- Ask the nurse, “When you say ‘refusing,’ what happened when you offered breakfast?” Find out what is known about fluids, movement, vital signs, and recent medication changes. Keep your observations separate from the nurse's report.
+- **Call for help during the encounter.** Tell the nurse when you would contact the supervising resident or attending and what you want them to assess at the bedside. The presentation timer is for rehearsing the call. You can make the call as soon as you are concerned.
+- In the team presentation, give your first-hand observations, the nurse's information, your concern for possible catatonia, and one fact that still needs checking. End with a specific request and listen to what the nurse heard.
+
+**Patient role**
+
+You are seated when the student arrives. Choose a comfortable position with
+your hands resting in your lap. You can describe a movement aloud if you
+prefer. Nobody needs to touch you or move your limbs for this exercise.
+
+- **How to play the pauses.** When greeted, look toward the interviewer after a pause. For most questions, give a small nod, a short answer, or no reply. If asked what it feels like to move, you can quietly say, “It’s hard to get started.”
+- If asked about breakfast, say “A little” after a pause. Let the nurse describe the tray. If the student talks over you, stay in character. If they explain what they are doing and allow time, give one brief response. Keep the difficulty moving and speaking present in both versions.
+- In the debrief, step out of character. Quote one thing the interviewer did that gave you room to answer, or identify a moment when you wanted a little more time.
+
+**Nurse role**
+
+You asked the student to come because little has changed since breakfast.
+Open with “I'm worried. They seem to be refusing everything today.” Give the
+details below in your own words as the student asks.
+
+- **What you saw this shift.** You offered breakfast and a drink. The patient took a few bites and sips. You did not hear them say no. When you came back for the tray, they were still seated with their hands in the same position. You have not seen them walk this shift. Their baseline mobility is unknown.
+- The last set of vital signs was stable. You have no newer set to report. If asked about medication exposure, say, “I haven't checked the administration record yet. What changes do you want me to look for?” If the student proposes waiting, bring up the poor intake and ask who should come see the patient now.
+- During the team presentation, listen to the student's call to the supervising clinician. Read back what you heard: “You want me to ___ while you contact ___.” Ask for clarification if you missed the action or its urgency.
+
 **Behaviors to practice**
 
 - Describes motor signs objectively.
@@ -91,6 +123,12 @@ and intermittently holds the same posture. Nursing reports the patient is
 **Rater focus**
 
 Recognition and language.
+
+**Handoff debrief**
+
+1. **Repeat the first sentence.** The nurse repeats the student's opening line. The interviewer tries it again, replacing any assumption about “refusal” with one thing they observed directly and one fact the nurse reported.
+2. **Finish the call.** Use the response you actually observed in the first sentence. Then make your request. For example, “The nurse reports only a few sips this morning. I'm concerned about possible catatonia and the risk of dehydration. Could you come assess them now? I'll ask the nurse to recheck vitals and help confirm recent medication changes.”
+3. **Check what landed.** The nurse says what they would do after the revised call. The patient role-player names the moment when the interviewer made it easiest to respond. Retry that moment once.
 
 ## Station 4 - Alcohol Withdrawal Risk On Psychiatry Unit
 

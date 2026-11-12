@@ -4,6 +4,9 @@ import { pinVisualGovernance } from './governance-fixture.js';
 const CAPACITY = '?page=osce.md&station=capacity';
 const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
+const CATATONIA = '?page=osce.md&station=possible-catatonia';
+const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
+const SHARED_DEBRIEF = 'What would you document in one sentence?';
 const roles = [
   { label: 'Interviewer', cue: /Assess decision-making capacity for a specific refusal/i },
   { label: 'Patient', cue: /antibiotics are poison/i },
@@ -19,11 +22,12 @@ function stationLink(page, href) {
     .and(page.locator(`a[href="${href}"]`));
 }
 
-async function openDebrief(page) {
-  const prompt = page.getByText('What would you document in one sentence?', { exact: true }).filter({ visible: true });
+async function openSharedDebriefOnly(page) {
+  const prompt = page.getByText(SHARED_DEBRIEF, { exact: true }).filter({ visible: true });
   await expect(prompt).toHaveCount(0);
   await page.getByRole('button', { name: 'Open debrief', exact: true }).click();
   await expect(prompt).toHaveCount(1);
+  await expect(page.getByText(CATATONIA_DEBRIEF, { exact: true })).toHaveCount(0);
 }
 
 test('open the capacity station from the OSCE reader and share each role independently', async ({ page }) => {
@@ -55,7 +59,7 @@ test('open the capacity station from the OSCE reader and share each role indepen
         await expect(page.getByText(privateCue.cue).filter({ visible: true })).toHaveCount(0);
       }
     }
-    await openDebrief(page);
+    await openSharedDebriefOnly(page);
     await page.getByRole('link', { name: 'Back to station', exact: true }).click();
     await expect(page.getByRole('link', { name: role.label, exact: true })).toBeVisible();
     if (role.label === 'Patient') {
@@ -164,7 +168,7 @@ test('family-agenda roles share the intended briefing and reveal the debrief on 
       await expect(observerFocus).toBeHidden();
       await expect(behavior).toHaveCount(0);
     }
-    await openDebrief(page);
+    await openSharedDebriefOnly(page);
     await page.getByRole('link', { name: 'Back to station', exact: true }).click();
     await expect(page).toHaveURL(url => url.search === FAMILY);
   }
@@ -211,7 +215,7 @@ test('admission presentation share links open the shared case and only the selec
       if (key === participant.key) await expect(instruction).toBeVisible();
       else await expect(instruction).toBeHidden();
     }
-    await openDebrief(page);
+    await openSharedDebriefOnly(page);
     await page.getByRole('link', { name: 'Back to station', exact: true }).click();
     await expect(page).toHaveURL(url => url.search === ADMISSION);
   }
@@ -233,4 +237,77 @@ test('admission presentation runs six minutes of presentation followed by four m
   await expect(timer).toHaveText('0:00');
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await expect(timer).toHaveText('4:00');
+});
+
+test.describe('possible catatonia on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('open the station, share role cards, and reveal both debrief prompts', async ({ page, context }) => {
+    const participants = [
+      { key: 'interviewer', label: 'Interviewer', cue: 'Start at the bedside.' },
+      { key: 'patient', label: 'Patient', cue: 'How to play the pauses.' },
+      { key: 'nurse', label: 'Nurse', cue: 'What you saw this shift.' },
+    ];
+    await page.goto('/?page=osce.md');
+    await stationLink(page, CATATONIA).tap();
+    await expect(page).toHaveURL(url => url.search === CATATONIA);
+    for (const participant of participants) {
+      const link = page.getByRole('link', { name: participant.label, exact: true });
+      const url = new URL(await link.getAttribute('href'), page.url());
+      expect(url.origin).toBe(new URL(page.url()).origin);
+      expect(url.search).toBe(`${CATATONIA}&role=${participant.key}`);
+
+      const card = await context.newPage();
+      await pinVisualGovernance(card);
+      await card.goto(url.href);
+      await expect(card.getByRole('heading', { name: participant.label, exact: true })).toBeVisible();
+      for (const { key, cue } of participants) {
+        const instruction = card.getByText(cue, { exact: true });
+        if (key === participant.key) await expect(instruction).toBeVisible();
+        else await expect(instruction).toBeHidden();
+      }
+      const stationPrompt = card.getByText(CATATONIA_DEBRIEF, { exact: true });
+      const sharedPrompt = card.getByText(SHARED_DEBRIEF, { exact: true });
+      await expect(stationPrompt).toBeHidden();
+      await expect(sharedPrompt).toBeHidden();
+      await card.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+      await expect(stationPrompt).toBeVisible();
+      await expect(sharedPrompt).toBeVisible();
+      await card.getByRole('link', { name: 'Back to station', exact: true }).tap();
+      await expect(card).toHaveURL(current => current.search === CATATONIA);
+      await expect(card.getByRole('link', { name: participant.label, exact: true })).toBeVisible();
+      await card.close();
+    }
+  });
+
+  test('pause, resume, reset, and finish the observation and presentation timers', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/' + CATATONIA);
+    const timer = page.getByRole('timer');
+    await expect(page.getByRole('radio', { name: 'Observation and interview', exact: true })).toBeChecked();
+    await expect(timer).toHaveText('10:00');
+    await page.getByRole('button', { name: 'Start', exact: true }).tap();
+    await page.clock.fastForward(10_000);
+    await page.getByRole('button', { name: 'Pause', exact: true }).tap();
+    await expect(timer).toHaveText(/^9:\d{2}$/);
+    const paused = await timer.innerText();
+    await page.clock.fastForward(60_000);
+    await expect(timer).toHaveText(paused);
+    await page.getByRole('button', { name: 'Resume', exact: true }).tap();
+    await page.clock.fastForward(60_000);
+    await expect(timer).toHaveText(/^8:\d{2}$/);
+    await page.getByRole('button', { name: 'Reset', exact: true }).tap();
+    await expect(timer).toHaveText('10:00');
+    await page.getByRole('button', { name: 'Start', exact: true }).tap();
+    await page.clock.fastForward(600_000);
+    await expect(timer).toHaveText('0:00');
+    await expect(page.getByText(/Time is up/)).toBeVisible();
+    await page.getByRole('radio', { name: 'Team presentation', exact: true }).tap();
+    await expect(timer).toHaveText('5:00');
+    await page.getByRole('button', { name: 'Start', exact: true }).tap();
+    await page.clock.fastForward(300_000);
+    await expect(timer).toHaveText('0:00');
+    await page.getByRole('button', { name: 'Reset', exact: true }).tap();
+    await expect(timer).toHaveText('5:00');
+  });
 });
