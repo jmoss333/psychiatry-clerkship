@@ -1,0 +1,1227 @@
+{
+  "schemaVersion": 1,
+  "status": "PROPOSED — not approved. Every clinical line needs Joshua Moss, MD to accept it by its CE id. Regex strings are JSON-escaped exactly as they go into sp-interview.pack.json.",
+  "spec": "docs/superpowers/specs/2026-11-11-interview-room-usefulness-clinical-edits.md",
+  "generatedFrom": "machine-checked against sp-proxy/tests/fixtures/intent-recall-corpus.json and benchmarks/interview-room/corpus.json at f8ad7c90",
+  "waveA": {
+    "allCases": {
+      "si_direct.removePatternsMatching": "^take \\(your\\|",
+      "si_direct.addPatterns": [
+        "tak(?:e|es|en|ing) your (?:own )?life",
+        "(?:think(?:ing)?|thought|thoughts) (?:about|of) taking their (?:own )?life\\b"
+      ],
+      "screenExcludePatterns (si_direct, si_passive, si_euphemism)": [
+        "\\b(?:chart|notes?|records?|paperwork|report|intake)\\b[^?]{0,40}\\b(?:says?|said|shows?|showed|mentions?|mentioned|documents?|documented|states?|stated)\\b",
+        "\\bi (?:read|saw|see|heard) (?:in|from|that)\\b",
+        "^\\s*(?:so,? )?you(?:'ve| have| had|'re| are| were)\\b[^?]*$",
+        "\\b(?:earlier|yesterday|last (?:night|time|week)|before)\\b[^.?!]{0,30}\\b(?:i|we|they|he|she|someone|the (?:doctor|nurse|team)) asked\\b",
+        "\\bnot asking (?:you )?(?:now|today|that)\\b",
+        "(?:\\bnot|\\b(?:do|does|did|wo|ca|are|is|was|were|would|could|should|have|has|had)n'?t) (?:be )?(?:to |going to |gonna |here to |planning to |supposed to |allowed to )?(?:ask(?:ing)?|discuss(?:ing)?|talk(?:ing)? about|get(?:ting)? into|go(?:ing)? into)\\b[^.?!]{0,60}\\b(?:suicid|kill|end(?:ing)? your|tak(?:e|ing) your|dying|dead|hurt|harm)",
+        "\\byou\\b[^.?!]{0,14}(?:\\bnot\\b|\\bnever\\b|\\b(?:do|does|did|wo|ca|are|is|was|were|would|could|should|have|has|had)n'?t\\b)[^.?!]{0,70}(?:,\\s*(?:are|have|were|do|did|would|will|could|can) you|,?\\s*right|,?\\s*correct)\\s*\\?",
+        "(?:^|[.!?]\\s+)(?:so,? |and |but )?you\\b[^.?!]{0,14}(?:\\bnot\\b|\\bnever\\b|\\b(?:do|does|did|wo|ca|are|is|was|were|would|could|should|have|has|had)n'?t\\b)(?:(?!\\b(?:are|have|were|do|did|would|will|could|can) you\\b)[^.?!]){0,80}\\?"
+      ],
+      "newIntents": [
+        {
+          "id": "si_leading",
+          "label": "Asked about suicide as a leading negative",
+          "category": "safety",
+          "coverage": "bonus",
+          "patterns": [
+            "\\byou\\b[^.?!]{0,14}(?:\\bnot\\b|\\bnever\\b|\\b(?:do|does|did|wo|ca|are|is|was|were|would|could|should|have|has|had)n'?t\\b)[^.?!]{0,50}(?:kill(?:ing)? yourself|suicid|end(?:ing)? your (?:own )?life|tak(?:e|ing) your (?:own )?life|hurt(?:ing)? yourself|harm(?:ing)? yourself|do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly))[^.?!]{0,30}(?:,\\s*(?:are|have|were|do|did|would|will|could|can) you|,?\\s*right|,?\\s*correct)\\s*\\?",
+            "(?:^|[.!?]\\s+)(?:so,? |and |but )?you\\b[^.?!]{0,14}(?:\\bnot\\b|\\bnever\\b|\\b(?:do|does|did|wo|ca|are|is|was|were|would|could|should|have|has|had)n'?t\\b)(?:(?!\\b(?:are|have|were|do|did|would|will|could|can) you\\b)[^.?!]){0,50}(?:kill(?:ing)? yourself|suicid|end(?:ing)? your (?:own )?life|tak(?:e|ing) your (?:own )?life|hurt(?:ing)? yourself|harm(?:ing)? yourself|do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly))(?:(?!\\b(?:are|have|were|do|did|would|will|could|can) you\\b)[^.?!]){0,30}\\?"
+          ],
+          "excludePatterns": [
+            "\\b(?:chart|notes?|records?|paperwork|report|intake)\\b[^?]{0,40}\\b(?:says?|said|shows?|showed|mentions?|mentioned|documents?|documented|states?|stated)\\b",
+            "\\bi (?:read|saw|see|heard) (?:in|from|that)\\b",
+            "^\\s*(?:so,? )?you(?:'ve| have| had|'re| are| were)\\b[^?]*$",
+            "\\b(?:earlier|yesterday|last (?:night|time|week)|before)\\b[^.?!]{0,30}\\b(?:i|we|they|he|she|someone|the (?:doctor|nurse|team)) asked\\b",
+            "\\bnot asking (?:you )?(?:now|today|that)\\b",
+            "(?:\\bnot|\\b(?:do|does|did|wo|ca|are|is|was|were|would|could|should|have|has|had)n'?t) (?:be )?(?:to |going to |gonna |here to |planning to |supposed to |allowed to )?(?:ask(?:ing)?|discuss(?:ing)?|talk(?:ing)? about|get(?:ting)? into|go(?:ing)? into)\\b[^.?!]{0,60}\\b(?:suicid|kill|end(?:ing)? your|tak(?:e|ing) your|dying|dead|hurt|harm)"
+          ]
+        },
+        {
+          "id": "empathy_statement",
+          "label": "Offered an empathic statement",
+          "category": "alliance",
+          "coverage": "bonus",
+          "patterns": [
+            "\\bi(?:'m| am) (?:so |really |very |truly )?sorry (?:that |you|to hear|this|it|about)",
+            "\\bi can(?:'t|not| only)? (?:even |begin to )?imagine\\b",
+            "\\bthank you for (?:telling|sharing|trusting|being (?:so )?(?:open|honest))\\b"
+          ]
+        }
+      ],
+      "checklist.c_si.partialIfOnly.add": [
+        "si_leading"
+      ],
+      "rapportRules.raises.add": [
+        {
+          "intent": "empathy_statement",
+          "delta": 1,
+          "onlyFirstTime": true,
+          "note": "an empathic statement helps once; it is not a reflection"
+        }
+      ],
+      "reflection.addPatterns (cases that have a reflection intent)": [
+        "\\b(?:it|that) makes (?:a lot of |total |complete |perfect )?sense\\b",
+        "\\bno wonder\\b",
+        "\\byou (?:seem|look|sound) (?:really |so |pretty |very |a little |a bit )?(?:tired|worn|down|sad|exhausted|overwhelmed|scared|worried|frustrated|upset|hurt|alone|lonely|ashamed|embarrassed|drained)\\b",
+        "\\bthat(?:'s| is| was| must have been) (?:a |an )?(?:real |huge |big |enormous |terrible |hard )?(?:loss|blow|shock)\\b"
+      ],
+      "judgmental.addPatterns (cases that have it)": [
+        "\\bwhy would you (?:do|say|think|want) (?:that|this|something like that)\\b",
+        "\\bhow could you (?:do|say|think|even|not|be so)\\b",
+        "\\bselfish\\b",
+        "\\b(?:think|thought) (?:about|of) (?:how|what) (?:this|that|it) (?:would|will|does|did) (?:do to|affect|hurt) (?:your|tom|him|her|them)\\b"
+      ],
+      "premature_reassurance.addPatterns (cases that have it)": [
+        "\\b(?:so|too) much to live for\\b",
+        "\\byou have (?:a lot|plenty|everything|so much) (?:going for you|to (?:live|be (?:grateful|thankful)) for)\\b",
+        "\\bit(?:'s| is) not (?:that|so) bad\\b",
+        "\\bthings (?:will|are going to) get better\\b"
+      ],
+      "sleep.addPatterns (cases that have a sleep intent)": [
+        "\\bwak(?:e|ing) up\\b[^.?!]{0,30}\\b(?:night|early|morning)\\b",
+        "\\bmiddle of the night\\b"
+      ],
+      "concentration.addPatterns (cases that have it)": [
+        "\\bthink(?:ing)? (?:straight|clearly)\\b",
+        "\\bmak(?:e|ing) decisions\\b"
+      ]
+    },
+    "sp_psychosis_paranoid_001": {
+      "violence_screen.addPatterns": [
+        "(?:hurt|harm)(?:ing)? yourself,? (?:or|and) (?:anyone|someone|anybody|others?|other people)"
+      ]
+    },
+    "patientCopy": {
+      "sp_depression_gated_si_001": {
+        "gated.si_active.deflectByIntent.si_leading": "No. *quickly* No — nothing like that. I'm just tired.",
+        "responses.empathy_statement": {
+          "guarded": [
+            "Thanks. I guess."
+          ],
+          "open": [
+            "...Thanks. You don't have to say that. But thanks."
+          ]
+        },
+        "responses._default.open[1]": {
+          "old": "Huh. Nobody's asked me that. Give me a second.",
+          "new": "I'm not following. Can you put that another way?"
+        },
+        "debriefTeachingPoints[4] first sentence": {
+          "old": "Asking about suicide early and plainly was right.",
+          "new": "Asking about suicide early and plainly is right."
+        }
+      },
+      "sp_depression_followup_001": {
+        "gated.si_active.deflectByIntent.si_leading": "No. *glances at the tablet* I put zero.",
+        "responses.empathy_statement": {
+          "guarded": [
+            "Thanks."
+          ],
+          "open": [
+            "Thank you. That helps, actually."
+          ]
+        },
+        "responses._default.open[1]": {
+          "old": "Huh. Give me a second with that one.",
+          "new": "I'm not sure what you mean. Can you ask it another way?"
+        }
+      },
+      "sp_mania_redirect_001": {
+        "gated.g_si_mixed.deflectByIntent.si_leading": "Me? No! *laughs, too fast* Why would— no. Next question.",
+        "responses.empathy_statement": {
+          "guarded": [
+            "Sorry? Don't be SORRY, be FAST. Kidding. Mostly."
+          ],
+          "open": [
+            "...Huh. Okay. Thanks. Nobody's said that today."
+          ]
+        }
+      },
+      "sp_psychosis_paranoid_001": {
+        "responses.si_leading": {
+          "guarded": [
+            "*flat* No."
+          ],
+          "open": [
+            "No. *watches you* ...You asked that like you wanted me to say no."
+          ]
+        },
+        "responses.empathy_statement": {
+          "guarded": [
+            "*watches you* ...People say that."
+          ],
+          "open": [
+            "*quietly* ...Okay. Thank you."
+          ]
+        }
+      },
+      "sp_alcohol_ambivalence_001": {
+        "responses.si_leading": {
+          "guarded": [
+            "No."
+          ],
+          "open": [
+            "No. If you want to know, ask me straight — I'll answer straight."
+          ]
+        },
+        "responses.empathy_statement": {
+          "guarded": [
+            "Appreciate it."
+          ],
+          "open": [
+            "Thanks. That's decent of you to say."
+          ]
+        }
+      }
+    }
+  },
+  "waveB": {
+    "sp_depression_gated_si_001": {
+      "insertIntentsBeforeMood": [
+        {
+          "id": "mania_screen",
+          "label": "Screened for past mania or hypomania",
+          "category": "data",
+          "coverage": "core",
+          "patterns": [
+            "\\bmani(?:a|c)\\b|\\bhypomani",
+            "\\bbipolar\\b",
+            "\\bneed(?:ed|ing)? (?:very |much |a lot |far )?(?:little|less|no|hardly any) sleep\\b",
+            "\\b(?:did|do)(?:n'?t| not) need (?:much |any |to )?sleep\\b",
+            "\\b(?:on top of the world|unusually (?:high|energetic|good)|too much energy|more energy than (?:usual|normal)|wired|hyper)\\b",
+            "\\bopposite of (?:this|depress|how you(?:'re| are) feeling)",
+            "\\bracing thoughts\\b|\\bthoughts? (?:were |are |been )?racing\\b",
+            "\\bspending sprees?\\b|\\btalk(?:ing|ed) (?:much |way |a lot )?(?:faster|more) than usual\\b"
+          ]
+        },
+        {
+          "id": "fhx",
+          "label": "Asked about family psychiatric history",
+          "category": "data",
+          "coverage": "core",
+          "patterns": [
+            "runs? in (?:the|your) family",
+            "\\banyone (?:else )?in (?:your|the) family\\b",
+            "\\bfamily (?:history|members?)\\b",
+            "\\b(?:mother|father|mom|dad|parents?|sister|brother|relatives?)\\b[^.?!]{0,40}\\b(?:depress|anxi|bipolar|mental|psychiatr|suicid|drink|alcohol|hospitali[sz]ed)"
+          ]
+        },
+        {
+          "id": "precipitant",
+          "label": "Asked what Tom overheard",
+          "category": "data",
+          "coverage": "bonus",
+          "patterns": [
+            "\\bwhat (?:did|was it that) (?:tom|he|your husband) (?:hear|overhear|heard)\\b",
+            "\\bwhat (?:did you|were you) (?:say|saying|said)\\b",
+            "\\bwhat (?:was|were) (?:it )?(?:that )?you (?:said|were saying)\\b",
+            "\\b(?:the |those )?(?:things|stuff) you (?:said|were saying)\\b",
+            "\\bwhat (?:tom|he|your husband) (?:heard|overheard)\\b",
+            "\\bwhat (?:was it that |is it that )?(?:worried|scared|frightened|upset) (?:tom|him|your husband)\\b"
+          ]
+        },
+        {
+          "id": "firearms",
+          "label": "Asked about firearms",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\bguns?\\b",
+            "\\bfirearms?\\b",
+            "\\bweapons?\\b",
+            "\\brifles?\\b|\\bshotguns?\\b|\\bhandguns?\\b|\\bpistols?\\b"
+          ]
+        }
+      ],
+      "insertIntentsBeforeFirstFlag": [
+        {
+          "id": "anxiety_screen",
+          "label": "Asked about anxiety",
+          "category": "data",
+          "coverage": "bonus",
+          "patterns": [
+            "\\banxi(?:ous|ety)\\b",
+            "\\bpanic\\b",
+            "\\bworr(?:y|ier|ying) (?:a lot|all the time|constantly|too much)\\b",
+            "\\bon edge\\b|\\bnervous\\b"
+          ]
+        },
+        {
+          "id": "trauma_screen",
+          "label": "Asked about trauma or being harmed",
+          "category": "data",
+          "coverage": "bonus",
+          "patterns": [
+            "\\btrauma",
+            "\\babus(?:e|ed|ive)\\b",
+            "\\bassault",
+            "\\b(?:anyone|someone|anybody) (?:ever )?(?:hurt|hit|harmed|threatened|frightened) you\\b",
+            "\\b(?:frightening|terrifying|violent) (?:thing|event|experience)s?\\b"
+          ]
+        },
+        {
+          "id": "probe",
+          "label": "Invited her to say more",
+          "category": "technique",
+          "coverage": "bonus",
+          "patterns": [
+            "^\\s*(?:can you |could you )?(?:say|tell me) (?:a (?:little|bit) )?more(?: about (?:that|it|this))?\\s*[.?]?\\s*$",
+            "^\\s*go on\\b[.\\u2026]*\\s*$",
+            "^\\s*(?:what|how) do you mean(?: by that)?\\s*\\??\\s*$",
+            "\\bwhat goes through your (?:mind|head)\\b",
+            "\\bwhat(?:'s| is| was) that like\\b"
+          ]
+        }
+      ],
+      "insertIntentBefore_si_intent_protective": {
+        "id": "si_intent",
+        "label": "Asked about intent to act",
+        "category": "safety",
+        "coverage": "core",
+        "patterns": [
+          "\\bintent",
+          "\\bact(?:ed|ing)? on\\b",
+          "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
+          "\\b(?:think|feel like|believe|worried|afraid|scared) (?:that )?you (?:would|will|might|could)(?: actually| really| ever)? (?:do it|go through with it|act|follow through)\\b",
+          "\\bhow likely\\b",
+          "\\b(?:are|were) you going to (?:do it|go through with it|act)\\b",
+          "\\bgo(?:ing|ne)? through with\\b"
+        ],
+        "excludePatterns": [
+          "\\b(?:kept|keeps?|keeping|stops?|stopped|stopping|holds?|held|prevent(?:s|ed)?) you\\b"
+        ]
+      },
+      "si_intent_protective.removePatterns": [
+        "\\bintent",
+        "\\bact(?:ed|ing)? on\\b",
+        "(the pattern beginning \\bhow close)"
+      ],
+      "si_intent_protective.label": {
+        "old": "Explored intent / what keeps her going",
+        "new": "Explored what keeps her going (protective factors)"
+      },
+      "si_means.removePattern": "\\b(?:guns?|firearms?|weapons?|rifles?|pistols?)\\b",
+      "si_means.pattern[0].removeAlternatives": "firearms?|guns?|weapons?|",
+      "excludePatterns.add": {
+        "family_social": [
+          "\\b(?:runs? in (?:the|your) family|anyone (?:else )?in (?:your|the) family|family (?:history|members?))\\b"
+        ],
+        "mood": [
+          "\\b(?:runs? in (?:the|your) family|anyone (?:else )?in (?:your|the) family|family (?:history|members?))\\b"
+        ],
+        "si_direct": [
+          "\\b(?:runs? in (?:the|your) family|anyone (?:else )?in (?:your|the) family|family (?:history|members?))\\b"
+        ],
+        "si_passive": [
+          "\\b(?:runs? in (?:the|your) family|anyone (?:else )?in (?:your|the) family|family (?:history|members?))\\b"
+        ],
+        "si_euphemism": [
+          "\\b(?:runs? in (?:the|your) family|anyone (?:else )?in (?:your|the) family|family (?:history|members?))\\b"
+        ],
+        "sleep": [
+          "\\bneed(?:ed|ing)? (?:very |much |a lot |far )?(?:little|less|no|hardly any) sleep\\b",
+          "\\b(?:did|do)(?:n'?t| not) need (?:much |any |to )?sleep\\b"
+        ]
+      },
+      "responses": {
+        "mania_screen": {
+          "guarded": [
+            "No. I wish. I can't remember the last time I had too much of anything."
+          ],
+          "open": [
+            "No — never anything like that. No stretches of barely sleeping and feeling great, no big plans, no spending. Even at my best I'm the careful one. This is the only direction I go."
+          ]
+        },
+        "fhx": {
+          "guarded": [
+            "My family's fine. We're not really a talk-about-it family."
+          ],
+          "open": [
+            "My mom had what she called her nerves. There were stretches when I was a kid when she mostly stayed in bed, and nobody named it. No one's been in a hospital for it. And nobody in my family has killed themselves, if that's what you're asking."
+          ]
+        },
+        "anxiety_screen": {
+          "guarded": [
+            "I've always been a worrier. That's not new."
+          ],
+          "open": [
+            "I've always been the list-maker, the worrier. Lately it isn't really worry — it's more like dread, mostly at three in the morning. No panic attacks."
+          ]
+        },
+        "trauma_screen": {
+          "guarded": [
+            "No. Nothing like that."
+          ],
+          "open": [
+            "No. Nobody's hurt me — not growing up, not now. Tom's a good man. This isn't that."
+          ]
+        },
+        "firearms": {
+          "guarded": [
+            "No. No guns."
+          ],
+          "open": [
+            "No. No guns in the house. Tom's never wanted one."
+          ]
+        },
+        "precipitant": {
+          "guarded": [
+            "Just... stuff. That I was tired of all of it. He took it the wrong way."
+          ],
+          "open": [
+            "*looks away* Something about him being better off. I was doing the dishes — I didn't know he was standing there. He's made it into a much bigger thing than it was."
+          ]
+        },
+        "cue_three_am": {
+          "guarded": [
+            "I just lie there. Thinking."
+          ],
+          "open": [
+            "I lie there and do the math on what I cost everybody. It's very quiet at three."
+          ]
+        }
+      },
+      "gatedInsertBefore_si_protective_detail": {
+        "id": "si_intent_detail",
+        "requiresIntents": [
+          "si_intent"
+        ],
+        "requiresGate": "si_active",
+        "reveal": "*shakes head* No. I don't think I'd do it. I don't want to die — I want the tired to stop. ...But at three in the morning I'm not sure I'm the one choosing what I think about.",
+        "deflectIfLocked": "Intend to do what? *frowns* I'm not following."
+      },
+      "gated.si_active.unlocks": [
+        "si_plan",
+        "si_means",
+        "firearms",
+        "si_intent",
+        "si_intent_protective",
+        "si_behavior"
+      ],
+      "gated.si_protective_detail.reveal": {
+        "old": "Ellie. My niece. She's eight and she thinks I hung the moon. Every time the thought gets loud I picture her asking where I went. That's what's kept the bottle closed. That, and I don't actually want to die — I want the tired to stop.",
+        "new": "Ellie. My niece. She's eight and she thinks I hung the moon. Every time the thought gets loud I picture her asking where I went. That's what's kept the bottle closed."
+      },
+      "checklist": {
+        "insertAfter_c_cognitive": {
+          "id": "c_bipolar",
+          "label": "Past mania or hypomania, and family history",
+          "intents": [
+            "mania_screen",
+            "fhx"
+          ]
+        },
+        "c_si_followup": {
+          "label": {
+            "old": "After disclosure: plan, means, intent, past attempts or preparations, protective factors",
+            "new": "After disclosure: plan, means, firearms, intent, past attempts or preparations, protective factors"
+          },
+          "intents": [
+            "si_plan",
+            "si_means",
+            "firearms",
+            "si_intent",
+            "si_intent_protective",
+            "si_behavior"
+          ]
+        }
+      },
+      "hints": {
+        "c_bipolar": "You have the depressive picture. Has she ever had the opposite — and does any of this run in the family?",
+        "c_si_followup": {
+          "old": "She told you something important. Plan, means, intent, whether she has ever tried or taken any steps before, and what keeps her going all still need airtime.",
+          "new": "She told you something important. Plan, means, firearms, whether she intends to act, whether she has ever tried or taken any steps before, and what keeps her going all still need airtime."
+        }
+      },
+      "debriefTeachingPoints.append": "A depressive episode is not yet a formulation. Ask every depressed patient about past mania or hypomania and about family history before you commit to one. Dana's \"never, even at my best\" is a pertinent negative you only have if you asked."
+    },
+    "sp_depression_followup_001": {
+      "insertIntentBefore_si_intent_protective": {
+        "id": "si_intent",
+        "label": "Asked about intent to act",
+        "category": "safety",
+        "coverage": "core",
+        "patterns": [
+          "\\bintent",
+          "\\bact(?:ed|ing)? on\\b",
+          "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
+          "\\b(?:think|feel like|believe|worried|afraid|scared) (?:that )?you (?:would|will|might|could)(?: actually| really| ever)? (?:do it|go through with it|act|follow through)\\b",
+          "\\bhow likely\\b",
+          "\\b(?:are|were) you going to (?:do it|go through with it|act)\\b",
+          "\\bgo(?:ing|ne)? through with\\b"
+        ],
+        "excludePatterns": [
+          "\\b(?:kept|keeps?|keeping|stops?|stopped|stopping|holds?|held|prevent(?:s|ed)?) you\\b"
+        ]
+      },
+      "si_intent_protective.removePatterns": [
+        "\\bintent",
+        "\\bact(?:ed|ing)? on\\b",
+        "(the pattern beginning \\bhow close)"
+      ],
+      "si_intent_protective.label": {
+        "old": "Explored intent / what keeps her going",
+        "new": "Explored what keeps her going (protective factors)"
+      },
+      "gatedInsertBefore_si_protective_detail": {
+        "id": "si_intent_detail",
+        "requiresIntents": [
+          "si_intent"
+        ],
+        "requiresGate": "si_active",
+        "reveal": "No. It's a thought that shows up, not something I'm going to do. I'd tell you if that changed. ...I think I would.",
+        "deflectIfLocked": "Intend to do what? I'm not sure what you mean."
+      },
+      "checklist.c_si_followup.intents": [
+        "si_plan",
+        "si_means",
+        "si_intent",
+        "si_intent_protective",
+        "si_behavior"
+      ]
+    },
+    "expectedCorpusReBuckets": [
+      {
+        "case": "sp_depression_gated_si_001",
+        "text": "Are there any guns in the home?",
+        "from": "si_means",
+        "to": "firearms"
+      },
+      {
+        "case": "sp_depression_gated_si_001",
+        "text": "Are there firearms or weapons at home?",
+        "from": "si_means",
+        "to": "firearms"
+      },
+      {
+        "case": "sp_depression_gated_si_001",
+        "text": "Do you intend to act on these thoughts?",
+        "from": "si_intent_protective",
+        "to": "si_intent"
+      },
+      {
+        "case": "sp_depression_gated_si_001",
+        "text": "How close have you come?",
+        "from": "si_intent_protective",
+        "to": "si_intent"
+      }
+    ]
+  },
+  "waveC": {
+    "sp_depression_gated_si_001": {
+      "cues": [
+        {
+          "id": "cue_overheard",
+          "label": "Tom overheard something",
+          "patientPatterns": [
+            "heard me say",
+            "overreact",
+            "something bigger than it is"
+          ],
+          "responseKey": "precipitant",
+          "followIntents": [
+            "precipitant",
+            "si_direct",
+            "si_passive",
+            "probe",
+            "reflection"
+          ]
+        },
+        {
+          "id": "cue_three_am",
+          "label": "Awake at three every morning",
+          "patientPatterns": [
+            "three or four every morning",
+            "me and the ceiling",
+            "worst part of the day"
+          ],
+          "responseKey": "cue_three_am",
+          "followIntents": [
+            "probe",
+            "reflection",
+            "si_direct",
+            "si_passive",
+            "mood"
+          ]
+        },
+        {
+          "id": "cue_burden",
+          "label": "The word “burden”",
+          "patientPatterns": [
+            "\\bburden\\b",
+            "didn'?t sign up for"
+          ],
+          "responseKey": null,
+          "followIntents": [
+            "reflection",
+            "probe",
+            "si_direct",
+            "si_passive"
+          ]
+        },
+        {
+          "id": "cue_work",
+          "label": "Work is “on pause”",
+          "patientPatterns": [
+            "on pause",
+            "school nurse\\. was",
+            "it'?s complicated"
+          ],
+          "responseKey": "work_stressor",
+          "followIntents": [
+            "work_stressor",
+            "probe",
+            "reflection"
+          ]
+        }
+      ]
+    }
+  },
+  "probes": {
+    "note": "Known-miss fixtures (G-2). c_si rows: [learner text, expected c_si after wave A] — every case. recognition rows: [caseId, text, mustRecognise[], mustNotRecognise[]]. danaWaveB rows: [text, mustRecognise[], mustNotRecognise[]] on the admission case after waves A+B.",
+    "c_si": [
+      [
+        "Do you ever think about taking your own life?",
+        "observed"
+      ],
+      [
+        "Have you ever thought about taking your life?",
+        "observed"
+      ],
+      [
+        "Sometimes when people feel this low they think about taking their own life. Has that happened to you?",
+        "observed"
+      ],
+      [
+        "Have you had thoughts of killing yourself?",
+        "observed"
+      ],
+      [
+        "Are you having any suicidal thoughts?",
+        "observed"
+      ],
+      [
+        "I want to ask you directly: have you been thinking about suicide?",
+        "observed"
+      ],
+      [
+        "I'm not asking to judge you. Have you had thoughts of killing yourself?",
+        "observed"
+      ],
+      [
+        "You mentioned feeling like a burden. Have you thought about ending your life?",
+        "observed"
+      ],
+      [
+        "You've been carrying a lot. Have you had thoughts of suicide?",
+        "observed"
+      ],
+      [
+        "You're not thinking of killing yourself, are you?",
+        "partial"
+      ],
+      [
+        "You are not thinking about killing yourself, are you?",
+        "partial"
+      ],
+      [
+        "You wouldn't kill yourself, would you?",
+        "partial"
+      ],
+      [
+        "You're not suicidal, right?",
+        "partial"
+      ],
+      [
+        "You don't have thoughts of hurting yourself, do you?",
+        "partial"
+      ],
+      [
+        "You're not going to do anything stupid, right?",
+        "partial"
+      ],
+      [
+        "The chart says you have had thoughts of killing yourself.",
+        "missed"
+      ],
+      [
+        "I read in the chart you denied thoughts of killing yourself.",
+        "missed"
+      ],
+      [
+        "You have had thoughts of killing yourself.",
+        "missed"
+      ],
+      [
+        "Earlier I asked, 'Have you had thoughts of killing yourself?' I am describing yesterday's conversation, not asking now.",
+        "missed"
+      ],
+      [
+        "We are not discussing thoughts of killing yourself today.",
+        "missed"
+      ],
+      [
+        "My attending told me not to ask about suicide today.",
+        "missed"
+      ],
+      [
+        "Did he take his own life?",
+        "missed"
+      ],
+      [
+        "You haven't had thoughts of killing yourself, have you?",
+        "partial"
+      ],
+      [
+        "You don't want to kill yourself?",
+        "partial"
+      ],
+      [
+        "You're not having thoughts of suicide?",
+        "partial"
+      ],
+      [
+        "We won't be discussing suicide today.",
+        "missed"
+      ],
+      [
+        "You said you can't sleep. Have you had thoughts of killing yourself?",
+        "observed"
+      ],
+      [
+        "You aren't alone in this. Have you had thoughts of killing yourself?",
+        "observed"
+      ],
+      [
+        "I know you didn't want to come in. Are you thinking about suicide?",
+        "observed"
+      ],
+      [
+        "You told me you're not eating. Have you thought about ending your life?",
+        "observed"
+      ],
+      [
+        "You've thought about suicide, haven't you?",
+        "observed"
+      ],
+      [
+        "Have you had thoughts of killing yourself, or not really?",
+        "observed"
+      ],
+      [
+        "The chart says you were admitted last night. Have you had thoughts of killing yourself?",
+        "observed"
+      ],
+      [
+        "I read in your chart that you've been feeling low. Are you having thoughts of suicide?",
+        "observed"
+      ],
+      [
+        "You're not sleeping, right? Have you had thoughts of ending your life?",
+        "observed"
+      ],
+      [
+        "You have been through a lot. Have you thought about suicide?",
+        "observed"
+      ]
+    ],
+    "recognition": [
+      [
+        "sp_depression_gated_si_001",
+        "It makes sense that you'd feel that way.",
+        [
+          "reflection"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "You seem really worn down.",
+        [
+          "reflection"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Losing a job you loved after twelve years - that's a real loss.",
+        [
+          "reflection"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "No wonder you are exhausted.",
+        [
+          "reflection"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "I'm so sorry you're going through this.",
+        [
+          "empathy_statement"
+        ],
+        [
+          "reflection"
+        ]
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "I can only imagine how hard that is.",
+        [
+          "empathy_statement"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Thank you for telling me that.",
+        [
+          "empathy_statement"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Sorry, I didn't catch that.",
+        [],
+        [
+          "empathy_statement"
+        ]
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "I'm sorry to keep you waiting.",
+        [],
+        [
+          "reflection"
+        ]
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Does that make sense?",
+        [],
+        [
+          "reflection"
+        ]
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Why would you do that to your husband?",
+        [
+          "judgmental"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "How could you think that?",
+        [
+          "judgmental"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "How could you tell things were getting worse?",
+        [],
+        [
+          "judgmental"
+        ]
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "You have so much to live for.",
+        [
+          "premature_reassurance"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Things will get better.",
+        [
+          "premature_reassurance"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "It's not that bad, is it?",
+        [
+          "premature_reassurance"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Do you wake up in the middle of the night?",
+        [
+          "sleep"
+        ],
+        []
+      ],
+      [
+        "sp_depression_gated_si_001",
+        "Is it hard to think straight or make decisions?",
+        [
+          "concentration"
+        ],
+        []
+      ],
+      [
+        "sp_psychosis_paranoid_001",
+        "Have the voices ever told you to hurt yourself or anyone else?",
+        [
+          "violence_screen",
+          "command_content"
+        ],
+        []
+      ],
+      [
+        "sp_psychosis_paranoid_001",
+        "Have you thought about hurting yourself?",
+        [],
+        [
+          "violence_screen"
+        ]
+      ]
+    ],
+    "danaWaveB": [
+      [
+        "Have you ever had a period where you needed very little sleep and felt on top of the world?",
+        [
+          "mania_screen"
+        ],
+        [
+          "sleep"
+        ]
+      ],
+      [
+        "Have you ever been told you have bipolar disorder?",
+        [
+          "mania_screen"
+        ],
+        []
+      ],
+      [
+        "Have there been times you didn't need sleep and had tons of energy?",
+        [
+          "mania_screen"
+        ],
+        [
+          "sleep"
+        ]
+      ],
+      [
+        "Have you ever felt the opposite of this, unusually energetic or wired?",
+        [
+          "mania_screen"
+        ],
+        []
+      ],
+      [
+        "How have you been sleeping?",
+        [
+          "sleep"
+        ],
+        [
+          "mania_screen"
+        ]
+      ],
+      [
+        "How's your energy?",
+        [
+          "energy"
+        ],
+        [
+          "mania_screen"
+        ]
+      ],
+      [
+        "Does anyone in your family have depression?",
+        [
+          "fhx"
+        ],
+        [
+          "family_social",
+          "mood"
+        ]
+      ],
+      [
+        "Does depression run in your family?",
+        [
+          "fhx"
+        ],
+        [
+          "family_social"
+        ]
+      ],
+      [
+        "Has anyone in your family died by suicide?",
+        [
+          "fhx"
+        ],
+        [
+          "family_social",
+          "si_direct"
+        ]
+      ],
+      [
+        "Has anyone in your family ever tried to kill themselves?",
+        [
+          "fhx"
+        ],
+        [
+          "si_direct"
+        ]
+      ],
+      [
+        "Did your mom ever struggle with depression?",
+        [
+          "fhx"
+        ],
+        []
+      ],
+      [
+        "Tell me about your family.",
+        [
+          "family_social"
+        ],
+        [
+          "fhx"
+        ]
+      ],
+      [
+        "Who is at home with you?",
+        [
+          "family_social"
+        ],
+        [
+          "fhx"
+        ]
+      ],
+      [
+        "Do you get anxious or have panic attacks?",
+        [
+          "anxiety_screen"
+        ],
+        []
+      ],
+      [
+        "Don't worry about the time.",
+        [],
+        [
+          "anxiety_screen"
+        ]
+      ],
+      [
+        "Has anyone ever hurt you or made you feel afraid?",
+        [
+          "trauma_screen"
+        ],
+        [
+          "si_euphemism"
+        ]
+      ],
+      [
+        "Have you been through anything traumatic?",
+        [
+          "trauma_screen"
+        ],
+        []
+      ],
+      [
+        "Have you thought about hurting yourself?",
+        [
+          "si_euphemism"
+        ],
+        [
+          "trauma_screen"
+        ]
+      ],
+      [
+        "Are there any guns in the home?",
+        [
+          "firearms"
+        ],
+        [
+          "si_means"
+        ]
+      ],
+      [
+        "Do you have access to any firearms?",
+        [
+          "firearms"
+        ],
+        [
+          "si_means"
+        ]
+      ],
+      [
+        "Do you have access to those pills?",
+        [
+          "si_means"
+        ],
+        [
+          "firearms"
+        ]
+      ],
+      [
+        "What did Tom hear you say?",
+        [
+          "precipitant"
+        ],
+        []
+      ],
+      [
+        "What were you saying that worried him?",
+        [
+          "precipitant"
+        ],
+        []
+      ],
+      [
+        "What was it that worried Tom?",
+        [
+          "precipitant"
+        ],
+        []
+      ],
+      [
+        "Say more about that.",
+        [
+          "probe"
+        ],
+        []
+      ],
+      [
+        "Go on.",
+        [
+          "probe"
+        ],
+        []
+      ],
+      [
+        "What do you mean?",
+        [
+          "probe"
+        ],
+        []
+      ],
+      [
+        "What goes through your mind at three in the morning?",
+        [
+          "probe"
+        ],
+        []
+      ],
+      [
+        "Tell me more about your sleep.",
+        [
+          "sleep"
+        ],
+        [
+          "probe"
+        ]
+      ],
+      [
+        "Do you intend to act on these thoughts?",
+        [
+          "si_intent"
+        ],
+        [
+          "si_intent_protective"
+        ]
+      ],
+      [
+        "Do you think you would actually do it?",
+        [
+          "si_intent"
+        ],
+        [
+          "si_intent_protective"
+        ]
+      ],
+      [
+        "How likely is it that you would act on this?",
+        [
+          "si_intent"
+        ],
+        []
+      ],
+      [
+        "How close have you come?",
+        [
+          "si_intent"
+        ],
+        []
+      ],
+      [
+        "What has kept you from acting on these thoughts?",
+        [
+          "si_intent_protective"
+        ],
+        [
+          "si_intent"
+        ]
+      ],
+      [
+        "What keeps you going?",
+        [
+          "si_intent_protective"
+        ],
+        [
+          "si_intent"
+        ]
+      ],
+      [
+        "What are your reasons for living?",
+        [
+          "si_intent_protective"
+        ],
+        [
+          "si_intent"
+        ]
+      ]
+    ],
+    "typographicApostrophe": [
+      [
+        "Do you ever feel like life isn’t worth living?",
+        [
+          "si_passive"
+        ]
+      ],
+      [
+        "Do you ever wish you wouldn’t wake up?",
+        [
+          "si_passive"
+        ]
+      ],
+      [
+        "What’s been going on?",
+        [
+          "open_invite"
+        ]
+      ],
+      [
+        "Don’t worry, you’ll be fine.",
+        [
+          "premature_reassurance"
+        ]
+      ],
+      [
+        "You’ve been carrying a lot.",
+        [
+          "reflection"
+        ]
+      ]
+    ]
+  }
+}
