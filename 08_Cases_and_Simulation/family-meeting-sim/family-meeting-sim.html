@@ -1468,6 +1468,20 @@ var FMSEngine = (function () {
     return { items: items, flags: flags };
   }
   function itemMet(status) { return status === 'met' || status === 'met-after-miss'; }
+  /* Best percentage per skill for the scenario picker, after one finished run. The picker shows
+     these numbers with no safety-steps record beside them, so the safety-actions best is kept
+     only from a run on which no required safety action was missed: skill points never offset the
+     gate (the same rule as the debrief's safety-bar override). Other skills update as before.
+     Pure; returns a new object. */
+  function updateBest(best, t, g) {
+    var out = {}, anyMissed = g.items.some(function (it) { return it.status === 'missed'; });
+    Object.keys(best || {}).forEach(function (k) { out[k] = best[k]; });
+    AXES.forEach(function (a) {
+      if (t[a].pct === null || (a === 'safety' && anyMissed)) return;
+      out[a] = Math.max(out[a] || 0, t[a].pct);
+    });
+    return out;
+  }
   function whenHolds(when, byId) {
     var ok = true;
     (when.met || []).forEach(function (id) { if (!byId[id] || !itemMet(byId[id].status)) ok = false; });
@@ -1616,7 +1630,8 @@ var FMSEngine = (function () {
   }
   return { AXES: AXES, TOOL_VERSION: TOOL_VERSION, newRun: newRun, choose: choose, rewind: rewind, tally: tally, band: band,
     strongest: strongest, total: total, displayOrder: displayOrder, paths: paths, validate: validate,
-    itemId: itemId, gateStatus: gateStatus, itemMet: itemMet, composeEnding: composeEnding, runRecord: runRecord };
+    itemId: itemId, gateStatus: gateStatus, itemMet: itemMet, updateBest: updateBest, composeEnding: composeEnding,
+    runRecord: runRecord };
 })();
 </script>
 <script id="fms-render">
@@ -1787,7 +1802,6 @@ var FMSRender = (function () {
   var DATA = null, ERRS = [];
   try { DATA = JSON.parse(document.getElementById('fms-scenarios').textContent); } catch (_) { DATA = null; }
   ERRS = DATA ? FMSEngine.validate(DATA) : ['Scenario data could not be read.'];
-  var AXES = FMSEngine.AXES;
   var state = { view: 'pick', sc: null, run: null, recorded: false, focus: null };
   function today() { return new Date().toISOString().slice(0, 10); }
   function loadStore() {
@@ -1795,11 +1809,11 @@ var FMSRender = (function () {
   }
   function saveStore(s) { try { localStorage.setItem('cw_family_sim_v1', JSON.stringify(s)); } catch (_) {} }
   function clearStore() { try { localStorage.removeItem('cw_family_sim_v1'); } catch (_) {} }
-  function recordRun(sc, t) {
+  function recordRun(sc, steps) {
     var s = loadStore(); s.v = 1; s.scenarios = (s.scenarios && typeof s.scenarios === 'object') ? s.scenarios : {};
     var r = s.scenarios[sc.id] || { runs: 0, best: {} };
     r.runs = (r.runs || 0) + 1; r.last = today(); r.best = r.best || {};
-    AXES.forEach(function (a) { if (t[a].pct !== null) r.best[a] = Math.max(r.best[a] || 0, t[a].pct); });
+    r.best = FMSEngine.updateBest(r.best, FMSEngine.tally(sc, steps), FMSEngine.gateStatus(sc, steps, DATA.flagDefs));
     s.scenarios[sc.id] = r; saveStore(s);
   }
   function byId(id) { for (var i = 0; i < DATA.scenarios.length; i++) if (DATA.scenarios[i].id === id) return DATA.scenarios[i]; return null; }
@@ -1827,7 +1841,7 @@ var FMSRender = (function () {
     if (act === 'choose') {
       state.run = FMSEngine.choose(state.sc, state.run, Number(t.getAttribute('data-choice')));
       if (state.run.ended) {
-        if (!state.recorded) { recordRun(state.sc, FMSEngine.tally(state.sc, state.run.steps)); state.recorded = true; }
+        if (!state.recorded) { recordRun(state.sc, state.run.steps); state.recorded = true; }
         state.view = 'debrief'; state.focus = 'fms-debrief-title'; render(); say('Scenario finished. Debrief shown.');
       } else {
         state.focus = 'fms-moment'; render(); say('Decision ' + (state.run.steps.length + 1) + '.');
