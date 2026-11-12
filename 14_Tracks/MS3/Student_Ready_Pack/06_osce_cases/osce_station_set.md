@@ -132,6 +132,8 @@ Recognition and language.
 
 ## Station 4 - Alcohol Withdrawal Risk On Psychiatry Unit
 
+[Run this station](?page=osce.md&station=alcohol-withdrawal)
+
 **Time:** 10 minutes encounter, 5 minutes presentation.
 
 **Student task**
@@ -144,6 +146,30 @@ Screen for alcohol withdrawal risk and escalate appropriately.
 "more than usual." Last drink was yesterday morning. Prior tremors and one
 possible withdrawal seizure years ago, revealed only if asked.
 
+**Interviewer role**
+
+You are the medical student on the psychiatry unit. A 48-year-old was admitted after losing their job and reporting suicidal thoughts. The nurse asks you to see them because their hands are shaking.
+
+- **Ask about a usual drinking day.** Start with the patient's concern. Explain why it helps to know what they drink, how much, how often, and when they last had a drink. Ask what happened other times they cut down. Use everyday words to ask about shaking, seizures, or becoming very confused.
+- Ask how they feel now. Compare what the patient tells you with what the nurse observed. Ask for vital signs and whether they have changed since admission.
+- When you recognize risk, call your supervising resident or attending during the encounter. Ask for a bedside assessment now and a plan for monitoring and treatment under the unit's protocol. The five-minute presentation gives you time to rehearse that call. Tell the patient what will happen next.
+
+**Patient role**
+
+Start with “My hands won't settle down. Is it just nerves?” You are worried that if you talk about drinking, the team will forget what brought you into hospital.
+
+- If asked about drinking, start with “More than usual.” If the student asks what that means, say you drink beer every day, usually six ordinary 12-ounce cans. Your last beer was yesterday morning. Today you feel shaky, sweaty, and queasy. You know where you are and haven't seen or heard anything unusual.
+- **What happened years ago.** If asked what happened when you stopped or cut back, say your hands shook badly. If asked about a seizure, a fit, or passing out, say, “Once my brother said I fell down and shook all over. I don't remember it. I never found out if it was a seizure.” That happened after you stopped drinking. If asked about getting very confused during withdrawal, say you don't remember that happening.
+- Before the student leaves, ask, “Will somebody come see me? I still want help with how I've been feeling.” In the debrief, tell them what you understood about the next step.
+
+**Nurse role**
+
+Open with “They asked for help holding their cup. Can you come take a look?” Stay in the room for the handoff.
+
+- **Your bedside observations.** You saw both hands shaking when the patient lifted the cup. Their forehead was damp. They recognized you and knew they were on the psychiatry unit.
+- When asked for vital signs, give the readings from just now: pulse 112, blood pressure 154/94. At admission the pulse was 88 and blood pressure was 132/82. You have no record of the earlier withdrawal history. The student can ask the patient directly.
+- If the student suggests waiting, ask, “With the pulse going up, who should see them now?” When the student makes the call, repeat who is coming and what you will do while waiting. Clarify any missing action with the student.
+
 **Behaviors to practice**
 
 - Asks amount/frequency/last drink.
@@ -155,6 +181,12 @@ possible withdrawal seizure years ago, revealed only if asked.
 **Rater focus**
 
 Withdrawal history and escalation.
+
+**Handoff debrief**
+
+1. **Rehearse the call.** The interviewer has 30 seconds to tell the supervising resident when the patient last drank, what has changed at the bedside, and why they are concerned. Identify who supplied each fact. If an important detail never came up, ask for it now and try the call again.
+2. **Name the uncertainty.** The patient repeats what they actually said about past withdrawal. The interviewer describes what is known and what still needs confirmation. End by asking the supervisor to assess the patient now and guide monitoring and treatment.
+3. **Close the loop.** The nurse repeats who is contacting the supervisor and who will stay with the patient and recheck vital signs. The patient explains in their own words what will happen next and whether they felt their original concern was heard.
 
 ## Station 5 - Family Meeting Agenda Before Discharge
 
@@ -366,7 +398,7 @@ and present clearly.
 - Asks about prior withdrawal, **seizure, and DTs** (revealed only if asked) — 2
 - Checks current symptoms and vital signs — 2
 - Recognizes elevated withdrawal/seizure risk — 2
-- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before or with glucose** — 1
+- Asks the supervising team to assess now, guide withdrawal treatment under the unit protocol, and provide thiamine. If glucose is urgently needed, the team can give it immediately, including before thiamine — 1
 - Does **not** propose unsupervised management — 1
 
 **Critical-fail:** proposes unsupervised/self-directed management or discharge · never asks the withdrawal-seizure history (misses it) · fails to escalate a high-risk withdrawal.
