@@ -8,6 +8,10 @@ for it) out of pharmacy_public.json, which is the only pharmacy data the site sh
   * status "reviewed" with no hash, a wrong hash, or a hash for a different drug
   * a valid J review but an edited ask mapping (asks withheld, defaults kept)
 The projection's own verify() must also catch a hand-tampered projection.
+
+A card's practice-question links follow the learner question bank: a question withheld from
+learners (a draft under revision, or retired) is not listed, and comes back by itself when it
+is attested again. The registry keeps the link either way.
 """
 
 import copy
@@ -127,6 +131,58 @@ class ProjectionSelfCheck(unittest.TestCase):
     def test_review_stamp_is_shown(self):
         agent = pub.project({"records": [signed(record("lithium"))]})["agents"][0]
         self.assertEqual(agent["review"], {"reviewer": "T", "lastReviewed": "2026-09-29"})
+
+
+class WithheldQuestionsAreNotLinked(unittest.TestCase):
+    """PR #1197: demoting a linked question to draft failed both site builds."""
+
+    def setUp(self):
+        self.rec = signed(record("lithium"))
+        self.linked = list(self.rec["qbankIds"])
+        self.assertGreaterEqual(len(self.linked), 2, "fixture needs a card with two linked questions")
+
+    def test_a_withheld_question_drops_off_the_card_and_the_rest_stay(self):
+        released = frozenset(self.linked[1:])
+        agent = pub.project({"records": [self.rec]}, released)["agents"][0]
+        self.assertEqual(agent["qbankIds"], self.linked[1:])
+        self.assertNotIn(self.linked[0], json.dumps(agent))
+
+    def test_it_returns_when_released_again_and_the_registry_is_untouched(self):
+        before = copy.deepcopy(self.rec)
+        pub.project({"records": [self.rec]}, frozenset())
+        self.assertEqual(self.rec, before)
+        agent = pub.project({"records": [self.rec]}, frozenset(self.linked))["agents"][0]
+        self.assertEqual(agent["qbankIds"], self.linked)
+
+    def test_a_card_with_no_released_question_has_no_link_list(self):
+        agent = pub.project({"records": [self.rec]}, frozenset())["agents"][0]
+        self.assertNotIn("qbankIds", agent)
+
+    def test_the_drug_and_its_cards_ship_regardless(self):
+        full = pub.project({"records": [self.rec]}, frozenset(self.linked))
+        none = pub.project({"records": [self.rec]}, frozenset())
+        self.assertEqual(none["cards"], full["cards"])
+        self.assertEqual([a["id"] for a in none["agents"]], ["lithium"])
+
+    def test_verify_catches_a_smuggled_withheld_link(self):
+        projection = pub.project({"records": [self.rec]}, frozenset(self.linked))
+        problems = pub.verify(projection, {"records": [self.rec]}, frozenset(self.linked[1:]))
+        self.assertTrue(any("withholds" in p for p in problems), problems)
+
+    def test_shipped_bytes_list_only_released_questions(self):
+        released = pub.released_qbank_ids()
+        for agent in json.loads(pub.feed_bytes())["agents"]:
+            self.assertLessEqual(set(agent.get("qbankIds", [])), released, agent["id"])
+
+    def test_an_unreadable_bank_fails_closed(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "pharmacy.json").write_text(json.dumps(SOURCE), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                pub.feed_bytes(tmp)
+            (Path(tmp) / "question_bank.json").write_text("{not json", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                pub.feed_bytes(tmp)
 
 
 if __name__ == "__main__":
