@@ -3,6 +3,7 @@ import { pinVisualGovernance } from './governance-fixture.js';
 
 const CAPACITY = '?page=osce.md&station=capacity';
 const FAMILY = '?page=osce.md&station=family-agenda';
+const ADMISSION = '?page=osce.md&station=admission-presentation';
 const roles = [
   { label: 'Interviewer', cue: /Assess decision-making capacity for a specific refusal/i },
   { label: 'Patient', cue: /antibiotics are poison/i },
@@ -181,4 +182,55 @@ test('a capacity-only role falls back to the family launcher and its single 15-m
   await expect(timer).toHaveText('0:00');
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await expect(timer).toHaveText('15:00');
+});
+
+test('admission presentation share links open the shared case and only the selected role instructions', async ({ page }) => {
+  const participants = [
+    { key: 'presenter', label: 'Presenter', cue: 'Open with the timeline.' },
+    { key: 'resident', label: 'Supervising resident', cue: 'Ask what would change the plan.' },
+    { key: 'observer', label: 'Observer', cue: 'Give feedback on one sentence.' },
+  ];
+  await page.goto('/?page=osce.md');
+  await stationLink(page, ADMISSION).click();
+  await expect(page).toHaveURL(url => url.search === ADMISSION);
+
+  for (const participant of participants) {
+    const link = page.getByRole('link', { name: participant.label, exact: true });
+    const url = new URL(await link.getAttribute('href'), page.url());
+    expect(url.origin).toBe(new URL(page.url()).origin);
+    expect(url.search).toBe(`${ADMISSION}&role=${participant.key}`);
+    await page.goto(url.href);
+    await expect(page.getByRole('heading', { name: participant.label, exact: true })).toBeVisible();
+    const caseBrief = page.getByText(/insomnia, paranoia, weight loss, and new stimulant use/i);
+    await expect(caseBrief).toBeVisible();
+    await expect(caseBrief).toContainText('a corticosteroid burst.');
+    await expect(page.getByText(/twice stopped speaking when someone passed the door/i)).toBeVisible();
+    await expect(page.getByText(/gives no direct assessment of suicidal thoughts/i)).toBeVisible();
+    for (const { key, cue } of participants) {
+      const instruction = page.getByText(cue, { exact: true });
+      if (key === participant.key) await expect(instruction).toBeVisible();
+      else await expect(instruction).toBeHidden();
+    }
+    await openDebrief(page);
+    await page.getByRole('link', { name: 'Back to station', exact: true }).click();
+    await expect(page).toHaveURL(url => url.search === ADMISSION);
+  }
+});
+
+test('admission presentation runs six minutes of presentation followed by four minutes of questions', async ({ page }) => {
+  await page.clock.install();
+  await page.goto('/' + ADMISSION);
+  const timer = page.getByRole('timer');
+  await expect(page.getByRole('radio', { name: 'Presentation', exact: true })).toBeChecked();
+  await expect(timer).toHaveText('6:00');
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await page.clock.fastForward(360_000);
+  await expect(timer).toHaveText('0:00');
+  await page.getByRole('radio', { name: 'Questions', exact: true }).check();
+  await expect(timer).toHaveText('4:00');
+  await page.getByRole('button', { name: 'Start', exact: true }).click();
+  await page.clock.fastForward(240_000);
+  await expect(timer).toHaveText('0:00');
+  await page.getByRole('button', { name: 'Reset', exact: true }).click();
+  await expect(timer).toHaveText('4:00');
 });

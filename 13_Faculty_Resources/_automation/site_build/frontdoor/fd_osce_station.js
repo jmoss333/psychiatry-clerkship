@@ -22,6 +22,17 @@ var FD_OSCE_STATIONS = {
       family: {label: 'Family member', fields: ['Case brief', 'Family member role']},
       observer: {label: 'Observer', fields: ['Case brief', 'Observer role', 'Behaviors to practice', 'Rater focus']}
     }
+  },
+  'admission-presentation': {
+    title: 'Oral presentation of a new admission',
+    heading: 'Station 6 - Oral Presentation Of A New Admission',
+    timing: /^(\d+)-minute presentation, (\d+)-minute questions\.$/,
+    phases: ['Presentation', 'Questions'],
+    roles: {
+      presenter: {label: 'Presenter', fields: ['Student task', 'Case brief', 'Admission handoff', 'Presenter role']},
+      resident: {label: 'Supervising resident', fields: ['Case brief', 'Admission handoff', 'Supervising resident role']},
+      observer: {label: 'Observer', fields: ['Case brief', 'Admission handoff', 'Observer role', 'Behaviors to practice', 'Rater focus']}
+    }
   }
 };
 

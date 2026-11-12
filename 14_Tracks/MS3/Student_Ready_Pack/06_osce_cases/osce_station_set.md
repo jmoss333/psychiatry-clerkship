@@ -195,6 +195,8 @@ sentence you actually hear and how the other person responds.
 
 ## Station 6 - Oral Presentation Of A New Admission
 
+[Run this station](?page=osce.md&station=admission-presentation)
+
 **Time:** 6-minute presentation, 4-minute questions.
 
 **Student task**
@@ -206,6 +208,41 @@ Present a synthetic admission with differential, risk, formulation, and plan.
 40-year-old with insomnia, paranoia, weight loss, and new stimulant use. Family
 history includes bipolar disorder. Patient has hypertension and recently started
 a corticosteroid burst.
+
+**Admission handoff**
+
+- **Patient's account in the emergency department.** “I've barely slept for four nights. I'm exhausted, but when I lie down I keep thinking someone is listening outside.” The patient reports using a stimulant for the first time this week. They cannot place the first use before or after the first sleepless night.
+- **Nurse's observation.** The patient answered questions in short sentences, twice stopped speaking when someone passed the door, and asked for the door to be closed. They agreed to stay to meet the admitting team.
+- **Referral information.** A recent outpatient note lists hypertension and a short course of a corticosteroid. The handoff gives no first or last dose date. It mentions weight loss without an amount or time course. The patient's own history of similar episodes is unknown.
+- **Still to assess.** The handoff gives no direct assessment of suicidal thoughts or thoughts of harming others. Current vital signs, exam findings, and test results are missing. The team has yet to ask whom the patient would like them to call about their usual sleep and behavior.
+
+**Presenter role**
+
+You are the medical student bringing this admission to rounds. The resident
+has not heard the case. Use the handoff as your source.
+
+- **Open with the timeline.** Give a one-sentence introduction, then explain what changed over the past four nights. Say whose account you are giving. If you cannot tell which exposure came first, say so.
+- **Show your reasoning.** Pick one observed behavior for your mental status description. Give your leading explanation, a plausible alternative, and a finding that would change your ranking.
+- **Make a request.** Tell the resident what you know about immediate safety, what you still need to ask or examine with supervision, and what you want the team to do first. Pause for questions. If a fact is missing, name who could help verify it.
+
+**Supervising resident role**
+
+Listen as the receiving resident. Let the presenter finish their opening and
+write down one decision you would still need help making. Use the question
+period to explore their reasoning.
+
+- If the presenter attributes everything to stimulant use, ask, “Which came first, the change in sleep or the first use? Where did that information come from?” If they have already named the uncertainty, ask how they would clarify the medication timeline.
+- **Ask what would change the plan.** “What would you want to know about the patient's safety right now, and what answer would make you call me back immediately?” If they suggest the patient is safe because they agreed to stay, ask what the patient was actually asked.
+- Close by saying back the presenter's first proposed action. Give them a chance to correct your understanding. When asked for a detail outside the handoff, say, “We don't have that yet. How would you find out?”
+
+**Observer role**
+
+Follow the presentation as someone who will need to act on it. Listen for the
+moment the student moves from a fact to an interpretation.
+
+- Write down the opening one-liner. Could you repeat the reason for admission and identify one event whose timing is still uncertain?
+- Listen for what the nurse actually saw and how the presenter interpreted it. Did the presenter tell the resident which safety questions still need answers? Note which next step the resident heard.
+- **Give feedback on one sentence.** Quote the student's words and say what you understood. Ask them to repeat that sentence with its source or uncertainty made explicit. Have the resident say whether the revision changes what they would do first.
 
 **Behaviors to practice**
 
