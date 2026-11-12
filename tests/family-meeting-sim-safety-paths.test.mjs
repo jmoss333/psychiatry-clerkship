@@ -9,7 +9,8 @@
 // `build-test-validate` job, a required context in the committed ruleset fixture.
 // Known-miss fixtures (G-2): tests/fixtures/family-meeting-sim/ holds the two real past-miss files
 // verbatim (v1 main 61530b10: 10 defect classes incl. the 3 never-ask S8 paths at 86 % "often";
-// #1149 head 91958ce8: 5 O1 over-penalty classes). The gate must report exactly those, or it is
+// #1149 head 91958ce8: 5 O1 over-penalty classes; main f8ad7c90: the S8 handover credited for a
+// promise that the attending will come back later, 2,250 paths). The gate must report exactly those, or it is
 // broken whatever else is green.
 //
 // Walks every complete path of every scenario and fails if any path on which a safety-critical
@@ -152,8 +153,8 @@ const SAFETY_MODEL = {
     'parent-own-untreated-illness': [
       { id: 'ask-directly', gate: 's8-ask-directly', at: ['worry', 'repair-dismiss'], done: ['worry#0', 'repair-dismiss#0'],
         why: 'the direct question' },
-      { id: 'handover', gate: 's8-handover', at: ['worry-answer', 'close'], done: ['worry-answer#0', 'close#0'],
-        why: 'attending now (worry-answer#0); close#0 "my attending will come back to you today" read as a late handover' },
+      { id: 'handover', gate: 's8-handover', at: ['worry-answer', 'close'], done: ['worry-answer#0'],
+        why: 'attending now (worry-answer#0) is the only handover. close#0 "my attending will come back to you today" is a promise of a later contact, not an immediate handover, and on 900 paths it follows a question never asked (O3-D1, 2026-11-11; supersedes the O6-4 reading)' },
       { id: 'means-asked', gate: 's8-means-asked', at: ['roles', 'roles-unrouted'], done: ['roles#0', 'roles-unrouted#0'],
         why: 'quick-harm things held by someone else + firearm question' },
     ],
@@ -221,7 +222,8 @@ const KNOWN_MISSES = {
   },
   // #1149 head 91958ce8 (2026-11-05), data v2, 30,510 paths, before FY3 §3.2: close#0 names and
   // routes the means item but the simulator's gate offered it only at the means node, so the
-  // debrief told learners they skipped a step they took. Fixed in #1149 before merge (O6-3).
+  // debrief told learners they skipped a step they took. Fixed in #1149 before merge (O6-3). Under
+  // the corrected handover reading (O3-D1) it also credits the close#0 promise (U1/U2/U3 handover).
   'v2pre-91958ce8.html': {
     sha: '256462b3f2010ab07142cfadd598b2a0e41b041d61b0a020b059c2f62fe9873c',
     paths: 30510,
@@ -229,8 +231,24 @@ const KNOWN_MISSES = {
       'ambivalent-spouse-discharge|O1 gate-misses-done|means-routed': 450,
       'angry-parent-admission|O1 gate-misses-done|rifle-routed': 630,
       'hold-disagreement-admission|O1 gate-misses-done|means-routed': 1050,
+      'parent-own-untreated-illness|U1 safety-shown-as-pass|handover': 90,
+      'parent-own-untreated-illness|U2 best-ending-silent|handover': 225,
+      'parent-own-untreated-illness|U3 gate-credits-miss|handover': 2250,
       'shared-decision-household|O1 gate-misses-done|means-and-roles': 1050,
       'siblings-late-onset-psychosis|O1 gate-misses-done|handgun-routed': 750,
+    },
+  },
+  // origin/main f8ad7c90 (2026-11-11), data v2 rubric 2.0-draft, 30,510 paths: the S8 handover is
+  // credited when the student only promises "my attending will come back to you today" (close#0).
+  // On 900 paths the suicide question was never asked and the handover still read "Done"; on 1,350
+  // more it read "Done ... after it was missed" and the ending said Joanne "is with your attending".
+  // Under the corrected reading (handover = worry-answer#0 only; O3-D1) the gate must report it.
+  'v2-f8ad7c90.html': {
+    sha: '61aa1211d3800962a72bed8f3359c884aa1edf948d2a2daf744e8216c5dc06e3',
+    paths: 30510,
+    found: {
+      'parent-own-untreated-illness|U1 safety-shown-as-pass|handover': 30,
+      'parent-own-untreated-illness|U3 gate-credits-miss|handover': 2250,
     },
   },
 };

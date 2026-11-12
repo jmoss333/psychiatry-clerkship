@@ -323,7 +323,46 @@ test('gate status is pure and deterministic', () => {
   const st = Object.fromEntries(E.gateStatus(s8, run.steps).items.map((it) => [it.id, it]));
   assert.equal(st['s8-ask-directly'].status, 'met-after-miss');
   assert.deepEqual([st['s8-ask-directly'].missedAt, st['s8-ask-directly'].satisfiedAt], [[3], 4], 'missed at 4, done at 5 (1-based)');
-  assert.equal(st['s8-handover'].status, 'met-after-miss');
+  // A promise that the attending will come back later today (close#0) is not the immediate
+  // handover, so it cannot turn the miss at worry-answer into "done" (O3-D1, 2026-11-11). This
+  // line asserted 'met-after-miss' before; that was the defect.
+  assert.equal(st['s8-handover'].status, 'missed');
+  assert.deepEqual([st['s8-handover'].missedAt, st['s8-handover'].satisfiedAt], [[5, 7], null], 'missed at 6 and 8 (1-based); never done');
+});
+
+test('S8: a later promise never erases an earlier omission, and only the immediate handover counts', () => {
+  // Real property: on every S8 path, the handover is reported done only if the student brought the
+  // attending in at the moment Joanne answered (worry-answer#0), which itself requires that she
+  // was asked; a promise that the attending will come back later never counts, and once the
+  // handover is missed no later step changes that. Known-miss: main f8ad7c90 reports the
+  // handover done on 2,250 paths through close#0 (900 of them never asked the question).
+  const E = engine(), d = data();
+  const s8 = byId(d, 'parent-own-untreated-illness');
+  const gate = s8.gate.required.find((g) => g.id === 's8-handover');
+  assert.deepEqual(gate.satisfiedBy, ['worry-answer#0'], 'only the immediate handover satisfies s8-handover');
+  let checked = 0, viaPromise = 0;
+  for (const p of E.paths(s8)) {
+    const st = Object.fromEntries(E.gateStatus(s8, p.steps, d.flagDefs).items.map((it) => [it.id, it]));
+    const ho = st['s8-handover'], ask = st['s8-ask-directly'];
+    const refs = p.steps.map((s) => `${s.node}#${s.choice}`);
+    if (refs.includes('close#0') && !refs.includes('worry-answer#0')) {
+      viaPromise += 1;
+      assert.equal(ho.status, 'missed', `promise only, never handed over: ${refs.join(' ')}`);
+    }
+    if (E.itemMet(ho.status)) {
+      checked += 1;
+      assert.ok(refs.includes('worry-answer#0'), `handover credited without the immediate handover: ${refs.join(' ')}`);
+      assert.ok(E.itemMet(ask.status) && ask.satisfiedAt < ho.satisfiedAt, `handover credited before the question was asked: ${refs.join(' ')}`);
+    }
+    const wa = p.steps.findIndex((s) => s.node === 'worry-answer');
+    if (wa >= 0 && p.steps[wa].choice !== 0) {
+      assert.ok(ho.missedAt.includes(wa), `the miss at worry-answer is recorded: ${refs.join(' ')}`);
+      assert.equal(ho.status, 'missed', `no later step erases the miss at worry-answer: ${refs.join(' ')}`);
+    }
+    if (ask.status === 'missed') assert.equal(ho.status, 'missed', `question never asked, so nothing was handed over: ${refs.join(' ')}`);
+  }
+  assert.equal(viaPromise, 2250, 'the 2,250 promise-only paths were all checked');
+  assert.ok(checked > 0, 'some paths do hand over');
 });
 
 test('a missed required safety action cannot be offset by skill points', () => {
