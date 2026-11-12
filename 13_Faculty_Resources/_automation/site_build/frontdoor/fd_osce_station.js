@@ -12,6 +12,18 @@ var FD_OSCE_STATIONS = {
       observer: {label: 'Observer', instruction: 'Watch the interview and oral summary. Be ready to describe one specific example in the debrief.', fields: ['Behaviors to practice', 'Rater focus']}
     }
   },
+  'possible-catatonia': {
+    title: 'Possible catatonia',
+    heading: 'Station 3 - Possible Catatonia',
+    timing: /^(\d+) minutes observation\/interview, (\d+) minutes team presentation\.$/,
+    phases: ['Observation and interview', 'Team presentation'],
+    roles: {
+      interviewer: {label: 'Interviewer', fields: ['Interviewer role']},
+      patient: {label: 'Patient', fields: ['Patient role']},
+      nurse: {label: 'Nurse', fields: ['Nurse role']}
+    },
+    debriefField: 'Handoff debrief'
+  },
   'family-agenda': {
     title: 'Family meeting agenda before discharge',
     heading: 'Station 5 - Family Meeting Agenda Before Discharge',
@@ -54,7 +66,9 @@ function fdOsceParts(markdown, station) {
   var complete = Object.keys(station.roles).every(function(key) {
     return station.roles[key].fields.every(function(label) { return !!fields[label]; });
   });
-  return complete ? {minutes: minutes, fields: fields, questions: questions[1]} : null;
+  if (!complete || !fields['Behaviors to practice']) return null;
+  if (station.debriefField && !fields[station.debriefField]) return null;
+  return {minutes: minutes, fields: fields, questions: questions[1]};
 }
 
 function fdOsceLauncher(station, url, minutes) {
@@ -102,7 +116,9 @@ function fdOsceStation(markdown, search, parse) {
     body += fdOsceLauncher(station, url, parts.minutes);
   }
   return body + '<button type="button" class="fd-btn fd-btn--ghost" data-station-debrief aria-expanded="false" aria-controls="station-debrief">Open debrief</button>' +
-    '<div id="station-debrief" hidden><h3>Debrief</h3>' + parse(parts.fields['Behaviors to practice']) +
+    '<div id="station-debrief" hidden><h3>Debrief</h3>' +
+    (station.debriefField ? '<h4>' + station.debriefField + '</h4>' + parse(parts.fields[station.debriefField]) : '') +
+    parse(parts.fields['Behaviors to practice']) +
     '<h4>Discuss together</h4>' + parse(parts.questions) + '</div><p>' + full + '</p></section>' + contacts;
 }
 
