@@ -2794,3 +2794,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 @media (max-width:640px){
   .fd-usage-foot{padding:0 20px calc(88px + env(safe-area-inset-bottom))}
 }
+
+.fd-station{max-width:40rem}
+.fd-article__body .fd-station__roles{padding:0;list-style:none}
+.fd-station__roles li,.fd-station__actions{display:flex;align-items:center;gap:var(--fd-space-7);flex-wrap:wrap}
+.fd-station__roles li{justify-content:space-between;padding:var(--fd-space-4) 0;border-bottom:1px solid var(--fd-line)}
+.fd-station fieldset{margin:var(--fd-space-9) 0 var(--fd-space-4);padding:var(--fd-space-6) var(--fd-space-7);border:1px solid var(--fd-line)}
+.fd-station legend{font-weight:700}
+.fd-station fieldset label{display:inline-flex;align-items:center;gap:var(--fd-space-3);min-height:44px;margin-right:var(--fd-space-7)}
+.fd-station input[type=url]{width:100%;box-sizing:border-box;font:inherit}
+.fd-station__clock{font-variant-numeric:tabular-nums;font-size:var(--fd-font-3xl);line-height:1.4}
+.fd-station [hidden]{display:none}

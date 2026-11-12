@@ -567,25 +567,30 @@ function fdReader(index, state, bodyHtml){
      under the article (2026-09-29, the owner's call -- same rule as the protocol sheet's "From:"
      line), but the smoke crawler and faculty feedback still need to know which page is open.
      A pending or unavailable notice leads the article, above the status line and H1. */
+  var station=st.capacityStation===true&&item.ref==='osce.md';
   var article='<div class="fd-article" data-ref="'+fdEsc(item.ref)+'">'+
     (split.notice&&!split.receipt?split.notice:'')+head+
-    '<h1 class="fd-article__h1">'+fdEsc(item.title)+'</h1>'+
-    '<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
+    '<h1 class="fd-article__h1">'+(station?'Capacity to refuse medical treatment':fdEsc(item.title))+'</h1>';
+  if(!station)article+='<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
   /* bodyHtml: verbatim, unescaped -- see header comment. Omitted entirely (no empty wrapper) when
      the caller has none, e.g. a render taken before Plan 3 wires marked() in. */
   if(split.body) article+='<div class="fd-article__body"'+
     (isTool?' id="fd-tool-region"':'')+'>'+split.body+'</div>';
-  article+=fdReaderKeyPoints(item.points);
-  article+=fdReaderTryNow(item, idx);
-  if(!isTool&&st.readingPlaceEligible!==false){
-    article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
-      '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';
+  // Station views have their own navigation and debrief. The full reading's study
+  // aids name the clinical reasoning the interviewer is supposed to discover.
+  if(!station){
+    article+=fdReaderKeyPoints(item.points);
+    article+=fdReaderTryNow(item, idx);
+    if(!isTool&&st.readingPlaceEligible!==false){
+      article+='<p class="fd-reading-place" data-fd-reading-status></p>'+
+        '<button type="button" class="fd-reading-place__top" data-fd-reading-top hidden>Start at top</button>';
+    }
+    article+=fdReaderActions(item, doneLabel, backLabel, isDone,
+      inWeek?fdReaderNextLink(neighbours.next, readerWeek):'');
+    article+=fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours);
+    if(!isTool) article+=fdReaderMedia((st.thread||{}).media, item.ref, fdReaderIsSafetyPage(idx, item.ref));
+    article+=fdReaderPrevNext(neighbours);
   }
-  article+=fdReaderActions(item, doneLabel, backLabel, isDone,
-    inWeek?fdReaderNextLink(neighbours.next, readerWeek):'');
-  article+=fdReaderThread(idx, st, item, readerWeek, inWeek, neighbours);
-  if(!isTool) article+=fdReaderMedia((st.thread||{}).media, item.ref, fdReaderIsSafetyPage(idx, item.ref));
-  article+=fdReaderPrevNext(neighbours);
   article+='</div>'; /* .fd-article */
 
   var expanded=isTool&&st.toolExpanded===true;
@@ -603,10 +608,10 @@ function fdReader(index, state, bodyHtml){
   } else out+=back;
   out+='<div class="fd-reader__cols">';
   out+=article;
-  if(inWeek) out+=fdReaderRailNav(weekItems, {ref:st.ref,done:doneMap}, readerWeek);
+  if(inWeek&&!station) out+=fdReaderRailNav(weekItems, {ref:st.ref,done:doneMap}, readerWeek);
   out+='</div>';
   out+='<div class="fd-actionbar__spacer"></div>';
   out+='</article>';
-  out+=fdReaderActionBar(item, doneLabel, isDone, backLabel);
+  if(!station)out+=fdReaderActionBar(item, doneLabel, isDone, backLabel);
   return out;
 }
