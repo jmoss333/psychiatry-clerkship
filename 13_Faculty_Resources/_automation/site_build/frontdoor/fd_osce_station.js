@@ -1,6 +1,18 @@
 /* Each station projects named sections of the OSCE guide onto role cards.
    Clinical facts, timing and debrief questions come from that reading. */
 var FD_OSCE_STATIONS = {
+  'suicide-risk-collateral': {
+    title: 'Suicide risk with collateral hesitation',
+    heading: 'Station 1 - Suicide Risk With Collateral Hesitation',
+    timing: /^(\d+) minutes encounter, (\d+) minutes summary, (\d+) minutes feedback\.$/,
+    phases: ['Patient encounter', 'Risk summary', 'Feedback'],
+    roles: {
+      interviewer: {label: 'Interviewer', fields: ['Interviewer role']},
+      patient: {label: 'Patient', fields: ['Patient role']},
+      sibling: {label: 'Sibling', fields: ['Sibling role']}
+    },
+    debriefField: 'Handoff debrief'
+  },
   capacity: {
     title: 'Capacity to refuse medical treatment',
     heading: 'Station 2 - Capacity To Refuse Medical Treatment',
