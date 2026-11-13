@@ -3539,7 +3539,7 @@
     if(el){event.preventDefault();fdOpenRef(el.getAttribute('data-f'));return;}
     el=target.closest&&target.closest('a[href]');
     if(el){
-      if(el.closest('.fd-station')&&(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey))return;
+      if(el.closest('.fd-station')&&(el.target==='_blank'||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey))return;
       var url;try{url=new URL(el.getAttribute('href'),location.href);}catch(_){return;}
       if(url.origin!==location.origin||url.pathname!==location.pathname)return;
       var ref=url.searchParams.get('page')||url.searchParams.get('tool');

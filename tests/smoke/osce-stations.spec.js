@@ -4,6 +4,7 @@ import { pinVisualGovernance } from './governance-fixture.js';
 const CAPACITY = '?page=osce.md&station=capacity';
 const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
+const CIRCUIT = 'catatonia-withdrawal-circuit';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
 const COLLATERAL_DEBRIEF = 'Give the handoff.';
@@ -358,5 +359,109 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
     await page.getByRole('button', { name: 'Reset', exact: true }).tap();
     const [, lastMinutes] = station.phases.at(-1);
     await expect(timer).toHaveText(`${lastMinutes}:00`);
+  });
+});
+
+test.describe('two-station circuit on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  const cases = [
+    touchStations.find(station => station.name === 'possible catatonia'),
+    touchStations.find(station => station.name === 'alcohol withdrawal'),
+  ];
+  const seats = [
+    { id: 'a', label: 'Learner A', rotation: ['interviewer', 'nurse'] },
+    { id: 'b', label: 'Learner B', rotation: ['patient', 'interviewer'] },
+    { id: 'c', label: 'Learner C', rotation: ['nurse', 'patient'] },
+  ];
+
+  function nextCase(page) {
+    return page.getByRole('link', { name: 'Next case', exact: true })
+      .or(page.getByRole('button', { name: 'Next case', exact: true }));
+  }
+
+  async function checkRole(card, seat, round) {
+    const current = cases[round];
+    for (const { key, label, cue } of current.participants) {
+      const instruction = card.getByText(cue, { exact: true });
+      if (key === seat.rotation[round]) {
+        await expect(card.getByRole('heading', { name: label, level: 2, exact: true })).toBeVisible();
+        await expect(instruction).toBeVisible();
+      } else {
+        await expect(instruction).toBeHidden();
+      }
+    }
+  }
+
+  test('share the three seats once and keep each seat as its role changes', async ({ page, context }) => {
+    await page.goto('/?page=osce.md');
+    await page.getByRole('link', { name: 'Run a circuit', exact: true }).tap();
+    await expect(page).toHaveURL(url => url.search === '?page=osce.md&station=' + CIRCUIT);
+    for (const seat of seats) {
+      const link = page.getByRole('link', { name: seat.label, exact: true });
+      const address = new URL(await link.getAttribute('href'), page.url());
+      expect(address.origin).toBe(new URL(page.url()).origin);
+      expect(address.searchParams.get('station')).toBe(CIRCUIT);
+      expect(address.searchParams.get('role')).toBe(seat.id);
+      const card = await context.newPage();
+      await pinVisualGovernance(card);
+      await card.goto(address.href);
+      for (const [round, current] of cases.entries()) {
+        if (round === 1) {
+          await nextCase(card).tap();
+          await expect(card).toHaveURL(url => url.searchParams.get('round') === '2' && url.searchParams.get('role') === seat.id);
+        }
+        await checkRole(card, seat, round);
+        const prompt = card.getByText(current.debrief[0], { exact: true });
+        await expect(prompt).toBeHidden();
+        await card.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+        await expect(prompt).toBeVisible();
+        await expect(card.getByText(cases[1 - round].debrief[0], { exact: true })).toBeHidden();
+      }
+      if (seat.id === 'a') {
+        await card.reload();
+        await checkRole(card, seat, 1);
+        await card.goBack();
+        await checkRole(card, seat, 0);
+        await card.goForward();
+        await checkRole(card, seat, 1);
+      }
+      await card.close();
+    }
+  });
+
+  test('facilitator keeps the timer while sharing a QR code and reading the debrief', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/?page=osce.md&station=' + CIRCUIT);
+    const timer = page.getByRole('timer');
+    await expect(page.getByRole('radio', { name: 'Observation and interview', exact: true })).toBeChecked();
+    await expect(timer).toHaveText('10:00');
+    await page.getByRole('button', { name: 'Start', exact: true }).tap();
+    await page.clock.fastForward(65_000);
+    await expect(timer).toHaveText(/^8:\d{2}$/);
+    const showQr = page.getByRole('button', { name: 'Show QR for Learner A', exact: true });
+    await showQr.tap();
+    const qr = page.getByRole('img', { name: /Learner A/i });
+    await expect(qr).toBeVisible();
+    await page.getByRole('button', { name: /^Hide QR/i }).tap();
+    await expect(qr).toBeHidden();
+    await page.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+    const endOfDebrief = page.getByText(SHARED_DEBRIEF, { exact: true });
+    await expect(endOfDebrief).toBeVisible();
+    await endOfDebrief.evaluate(node => node.scrollIntoView({ block: 'center' }));
+    await expect(timer).toBeInViewport({ ratio: 1 });
+    await page.clock.fastForward(60_000);
+    await expect(timer).toHaveText(/^7:\d{2}$/);
+    await page.getByRole('radio', { name: 'Team presentation', exact: true }).tap();
+    await expect(timer).toHaveText('5:00');
+    await nextCase(page).tap();
+    await expect(page).toHaveURL(url => url.searchParams.get('round') === '2');
+    await expect(page.getByRole('radio', { name: 'Patient encounter', exact: true })).toBeChecked();
+    await expect(timer).toHaveText('10:00');
+    await page.getByRole('radio', { name: 'Team presentation', exact: true }).tap();
+    await expect(timer).toHaveText('5:00');
+    await page.getByRole('button', { name: 'Start', exact: true }).tap();
+    await page.clock.fastForward(300_000);
+    await expect(timer).toHaveText('0:00');
   });
 });

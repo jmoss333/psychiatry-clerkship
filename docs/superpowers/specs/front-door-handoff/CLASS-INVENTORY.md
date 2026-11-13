@@ -1425,3 +1425,5 @@ hidden, everywhere else.
 ### OSCE stations
 
 The reader's `.fd-station` section contains role links in `.fd-station__roles`. The capacity station has two timed phases. The family meeting agenda uses a single timer. Both use `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.
+
+The two-case circuit labels the current case with `.fd-circuit__case`. Its facilitator uses `.fd-circuit__timer` for a fixed clock and controls above the phone dock. Each learner link has an expandable `.fd-circuit__qr` and keeps its role assignment across both cases.

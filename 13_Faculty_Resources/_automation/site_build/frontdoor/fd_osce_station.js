@@ -72,6 +72,13 @@ var FD_OSCE_STATIONS = {
   }
 };
 
+var FD_OSCE_CIRCUIT = {
+  slug: 'catatonia-withdrawal-circuit',
+  title: 'Possible Catatonia → Alcohol Withdrawal',
+  cases: ['possible-catatonia', 'alcohol-withdrawal'],
+  roles: {a: ['interviewer', 'nurse'], b: ['patient', 'interviewer'], c: ['nurse', 'patient']}
+};
+
 function fdOsceParts(markdown, station) {
   var sections = markdown.split(/^## /m);
   var section = sections.find(function(text) { return text.startsWith(station.heading + '\n'); });
@@ -102,35 +109,89 @@ function fdOsceLauncher(station, url, minutes) {
       '<button type="button" class="fd-btn fd-btn--ghost" data-station-copy aria-label="Copy ' +
       label.toLowerCase() + ' link">Copy link</button></li>';
   });
+  return '<h2>Run this station</h2><p>Share one role link with each participant. Keep this page open to run the timer on this device.</p>' +
+    fdOsceShareList(links) + fdOsceTimer(station, minutes);
+}
+
+function fdOsceShareList(links) {
+  return '<ul class="fd-station__roles">' + links.join('') + '</ul><p data-copy-status role="status"></p>' +
+    '<label data-copy-fallback hidden>Copy role link<input type="url" readonly></label>';
+}
+
+function fdOsceTimer(station, minutes, circuit) {
   var phases = station.phases.map(function(label, index) {
     if (minutes.length === 1) return label;
     return '<label><input type="radio" name="station-phase" value="' + minutes[index] + '"' +
       (index === 0 ? ' checked' : '') + '> ' + label + '</label>';
   });
-  return '<h2>Run this station</h2><p>Share one role link with each participant. Keep this page open to run the timer on this device.</p>' +
-    '<ul class="fd-station__roles">' + links.join('') + '</ul><p data-copy-status role="status"></p>' +
-    '<label data-copy-fallback hidden>Copy role link<input type="url" readonly></label>' +
-    '<fieldset><legend>Facilitator timer</legend>' + phases.join('') + '</fieldset>' +
+  return '<fieldset><legend>Facilitator timer</legend>' + phases.join('') + '</fieldset>' +
+    '<div' + (circuit ? ' class="fd-circuit__timer" role="group" aria-label="Facilitator timer controls"' : '') + '>' +
+    (circuit ? '<span data-current-phase></span>' : '') +
     '<div class="fd-station__clock" role="timer" aria-label="Time remaining" data-initial-minutes="' + minutes[0] + '">' + minutes[0] + ':00</div>' +
     '<div class="fd-station__actions"><button type="button" class="fd-btn fd-btn--primary" data-timer-toggle>Start</button>' +
-    '<button type="button" class="fd-btn fd-btn--ghost" data-timer-reset>Reset</button></div><p role="status" data-timer-status></p>';
+    '<button type="button" class="fd-btn fd-btn--ghost" data-timer-reset>Reset</button></div></div><p role="status" data-timer-status></p>';
+}
+
+function fdCircuitView(circuit, current, rounds, round, seat, url, parse) {
+  var title = 'Case ' + (round + 1) + ' of ' + rounds.length + ' · ' + current.title;
+  var body = '<p class="fd-circuit__case"><strong>' + title + '</strong></p>';
+  var minutes = rounds[round].minutes;
+  if (seat) {
+    var assigned = current.roles[circuit.roles[seat][round]];
+    body += '<p>Learner ' + seat.toUpperCase() + '</p><h2>' + assigned.label + '</h2>';
+    assigned.fields.forEach(function(field) { body += parse(rounds[round].fields[field]); });
+  } else {
+    var total = rounds.reduce(function(sum, part) {
+      return sum + part.minutes.reduce(function(a,b) { return a+b; }, 0);
+    }, 0);
+    body += '<p>' + total + ' timed minutes across both cases, plus debriefs.</p>' +
+      fdOsceTimer(current, minutes, true) + '<h3>Learner links</h3>' +
+      '<p>Give each learner one link for both cases. Ask everyone to tap Next case together after the first debrief.</p>';
+    body += fdOsceShareList(Object.keys(circuit.roles).map(function(key) {
+      var label = 'Learner ' + key.toUpperCase();
+      var assignment = circuit.roles[key].map(function(role, i) {
+        return FD_OSCE_STATIONS[circuit.cases[i]].roles[role].label;
+      }).join(' → ');
+      return '<li><div><a href="' + url + '&amp;role=' + key + '" target="_blank" rel="noopener">' + label + '</a><br>' +
+        assignment + '</div><button type="button" class="fd-btn fd-btn--ghost" data-seat-qr aria-expanded="false" aria-controls="qr-' + key +
+        '" aria-label="Show QR for ' + label + '">Show QR</button>' +
+        '<button type="button" class="fd-btn fd-btn--ghost" data-station-copy aria-label="Copy ' + label +
+        ' link">Copy link</button><div class="fd-circuit__qr" id="qr-' + key + '" hidden></div></li>';
+    }));
+  }
+  return body;
 }
 
 function fdOsceStation(markdown, search, parse) {
   var params = new URLSearchParams(search);
   var station = fdStationForRoute('osce.md', params);
   if (!station) return '';
-  var parts = fdOsceParts(markdown, station);
+  var circuit = station===FD_OSCE_CIRCUIT;
+  var round = params.get('round')==='2' ? 1 : 0;
+  var rounds;
+  if (circuit) {
+    rounds = station.cases.map(function(slug) { return fdOsceParts(markdown, FD_OSCE_STATIONS[slug]); });
+    station = FD_OSCE_STATIONS[station.cases[round]];
+  }
+  var parts = circuit ? rounds[round] : fdOsceParts(markdown, station);
   var full = '<a href="?page=osce.md">Full OSCE station set</a>';
   // Retain the reading's centrally generated crisis contacts on each view.
   var crisis = markdown.match(/^> <div class="crisis-block-hook"[^\n]*(?:\n>[^\n]*)*/m);
   var contacts = crisis ? parse(crisis[0]) : '';
-  if (!parts) return '<p role="status">The station could not be opened. ' + full + '</p>' + contacts;
+  if (!parts || (circuit && !rounds.every(Boolean))) return '<p role="status">The station could not be opened. ' + full + '</p>' + contacts;
 
   var url = '?page=osce.md&amp;station=' + params.get('station');
   var key = params.get('role');
   var body = '<section class="fd-station" data-osce-station><p>Fictional practice case.</p>';
-  if (fdOwn(station.roles, key)) {
+  var navigation = '';
+  if (circuit) {
+    var seat = fdOwn(FD_OSCE_CIRCUIT.roles, key) ? key : null;
+    body += fdCircuitView(FD_OSCE_CIRCUIT, station, rounds, round, seat, url, parse);
+    var seatUrl = url + (seat ? '&amp;role=' + seat : '');
+    navigation = round ? '<p>Final case · End with the handoff debrief.</p><a href="' + seatUrl + '">Back to first case</a>'
+      : '<p>' + (seat ? 'When your facilitator calls the rotation, open your next role.' : 'After the debrief, move the group to Alcohol Withdrawal.') +
+        '</p><a class="fd-btn fd-btn--primary" href="' + seatUrl + '&amp;round=2">Next case</a>';
+  } else if (fdOwn(station.roles, key)) {
     var role = station.roles[key];
     body += '<h2>' + role.label + '</h2>';
     if (role.instruction) body += '<p>' + role.instruction + '</p>';
@@ -143,7 +204,7 @@ function fdOsceStation(markdown, search, parse) {
     '<div id="station-debrief" hidden><h3>Debrief</h3>' +
     (station.debriefField ? '<h4>' + station.debriefField + '</h4>' + parse(parts.fields[station.debriefField]) : '') +
     parse(parts.fields['Behaviors to practice']) +
-    '<h4>Discuss together</h4>' + parse(parts.questions) + '</div><p>' + full + '</p></section>' + contacts;
+    '<h4>Discuss together</h4>' + parse(parts.questions) + '</div>' + navigation + '<p>' + full + '</p></section>' + contacts;
 }
 
 function fdMountOsceStation(panel){
@@ -181,6 +242,8 @@ function fdMountOsceStation(panel){
   function resetPhase(){
     stop();
     var selected=panel.querySelector('input[name="station-phase"]:checked');
+    var phaseLabel=panel.querySelector('[data-current-phase]');
+    if(phaseLabel && selected)phaseLabel.textContent=selected.parentNode.textContent.trim();
     remaining=Number(selected ? selected.value : display.dataset.initialMinutes)*60000;
     toggle.disabled=false;
     toggle.textContent='Start';
@@ -209,10 +272,28 @@ function fdMountOsceStation(panel){
   var copyStatus=panel.querySelector('[data-copy-status]'),fallback=panel.querySelector('[data-copy-fallback]');
   var latestCopy=0;
   panel.querySelector('.fd-station__roles').onclick=async function(event){
+    var qrButton=event.target.closest('[data-seat-qr]');
+    if(qrButton){
+      var row=qrButton.closest('li'), learner=row.querySelector('a'), output=row.querySelector('.fd-circuit__qr');
+      if(output.hidden && !output.firstChild){
+        try{
+          var qr=qrcode(0,'M');
+          qr.addData(learner.href,'Byte');
+          qr.make();
+          output.innerHTML=qr.createSvgTag({scalable:true,title:{id:output.id+'-title',text:'QR code for '+learner.textContent}});
+        }catch(error){output.textContent='QR unavailable. Use Copy link.';}
+      }
+      output.hidden=!output.hidden;
+      var action=output.hidden?'Show QR':'Hide QR';
+      qrButton.textContent=action;
+      qrButton.setAttribute('aria-expanded',String(!output.hidden));
+      qrButton.setAttribute('aria-label',action+' for '+learner.textContent);
+      return;
+    }
     var button=event.target.closest('[data-station-copy]');
     if(!button)return;
     var attempt=++latestCopy;
-    var link=button.parentNode.querySelector('a');
+    var link=button.closest('li').querySelector('a');
     fallback.hidden=true;
     copyStatus.textContent='';
     try{
