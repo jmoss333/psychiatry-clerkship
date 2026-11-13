@@ -24,6 +24,18 @@ var FD_OSCE_STATIONS = {
     },
     debriefField: 'Handoff debrief'
   },
+  'alcohol-withdrawal': {
+    title: 'Alcohol withdrawal risk on the psychiatry unit',
+    heading: 'Station 4 - Alcohol Withdrawal Risk On Psychiatry Unit',
+    timing: /^(\d+) minutes encounter, (\d+) minutes presentation\.$/,
+    phases: ['Patient encounter', 'Team presentation'],
+    roles: {
+      interviewer: {label: 'Interviewer', fields: ['Interviewer role']},
+      patient: {label: 'Patient', fields: ['Patient role']},
+      nurse: {label: 'Nurse', fields: ['Nurse role']}
+    },
+    debriefField: 'Handoff debrief'
+  },
   'family-agenda': {
     title: 'Family meeting agenda before discharge',
     heading: 'Station 5 - Family Meeting Agenda Before Discharge',

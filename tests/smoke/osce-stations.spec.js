@@ -4,8 +4,8 @@ import { pinVisualGovernance } from './governance-fixture.js';
 const CAPACITY = '?page=osce.md&station=capacity';
 const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
-const CATATONIA = '?page=osce.md&station=possible-catatonia';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
+const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
 const SHARED_DEBRIEF = 'What would you document in one sentence?';
 const roles = [
   { label: 'Interviewer', cue: /Assess decision-making capacity for a specific refusal/i },
@@ -28,6 +28,7 @@ async function openSharedDebriefOnly(page) {
   await page.getByRole('button', { name: 'Open debrief', exact: true }).click();
   await expect(prompt).toHaveCount(1);
   await expect(page.getByText(CATATONIA_DEBRIEF, { exact: true })).toHaveCount(0);
+  await expect(page.getByText(WITHDRAWAL_DEBRIEF, { exact: true })).toHaveCount(0);
 }
 
 test('open the capacity station from the OSCE reader and share each role independently', async ({ page }) => {
@@ -239,52 +240,80 @@ test('admission presentation runs six minutes of presentation followed by four m
   await expect(timer).toHaveText('4:00');
 });
 
-test.describe('possible catatonia on a touch phone', () => {
-  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-
-  test('open the station, share role cards, and reveal both debrief prompts', async ({ page, context }) => {
-    const participants = [
+const touchStations = [
+  {
+    name: 'possible catatonia',
+    href: '?page=osce.md&station=possible-catatonia',
+    firstPhase: 'Observation and interview',
+    debrief: CATATONIA_DEBRIEF,
+    otherDebrief: WITHDRAWAL_DEBRIEF,
+    participants: [
       { key: 'interviewer', label: 'Interviewer', cue: 'Start at the bedside.' },
       { key: 'patient', label: 'Patient', cue: 'How to play the pauses.' },
       { key: 'nurse', label: 'Nurse', cue: 'What you saw this shift.' },
-    ];
+    ],
+  },
+  {
+    name: 'alcohol withdrawal',
+    href: '?page=osce.md&station=alcohol-withdrawal',
+    firstPhase: 'Patient encounter',
+    debrief: WITHDRAWAL_DEBRIEF,
+    otherDebrief: CATATONIA_DEBRIEF,
+    participants: [
+      { key: 'interviewer', label: 'Interviewer', cue: 'Ask about a usual drinking day.' },
+      { key: 'patient', label: 'Patient', cue: 'What happened years ago.', facts: [/yesterday morning/i, /my brother said I fell down and shook all over/i] },
+      { key: 'nurse', label: 'Nurse', cue: 'Your bedside observations.', facts: [/pulse 112, blood pressure 154\/94/i] },
+    ],
+  },
+];
+
+for (const station of touchStations) test.describe(station.name + ' on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('open the station, share role cards, and reveal both debrief prompts', async ({ page, context }) => {
     await page.goto('/?page=osce.md');
-    await stationLink(page, CATATONIA).tap();
-    await expect(page).toHaveURL(url => url.search === CATATONIA);
-    for (const participant of participants) {
+    await stationLink(page, station.href).tap();
+    await expect(page).toHaveURL(url => url.search === station.href);
+    for (const participant of station.participants) {
       const link = page.getByRole('link', { name: participant.label, exact: true });
       const url = new URL(await link.getAttribute('href'), page.url());
       expect(url.origin).toBe(new URL(page.url()).origin);
-      expect(url.search).toBe(`${CATATONIA}&role=${participant.key}`);
+      expect(url.search).toBe(`${station.href}&role=${participant.key}`);
 
       const card = await context.newPage();
       await pinVisualGovernance(card);
       await card.goto(url.href);
       await expect(card.getByRole('heading', { name: participant.label, exact: true })).toBeVisible();
-      for (const { key, cue } of participants) {
+      for (const { key, cue, facts = [] } of station.participants) {
         const instruction = card.getByText(cue, { exact: true });
         if (key === participant.key) await expect(instruction).toBeVisible();
         else await expect(instruction).toBeHidden();
+        for (const fact of facts) {
+          const answers = card.getByText(fact).filter({ visible: true });
+          if (key === participant.key) await expect(answers).not.toHaveCount(0);
+          else await expect(answers).toHaveCount(0);
+        }
       }
-      const stationPrompt = card.getByText(CATATONIA_DEBRIEF, { exact: true });
+      const stationPrompt = card.getByText(station.debrief, { exact: true });
       const sharedPrompt = card.getByText(SHARED_DEBRIEF, { exact: true });
       await expect(stationPrompt).toBeHidden();
       await expect(sharedPrompt).toBeHidden();
       await card.getByRole('button', { name: 'Open debrief', exact: true }).tap();
       await expect(stationPrompt).toBeVisible();
       await expect(sharedPrompt).toBeVisible();
+      await expect(card.getByText(station.otherDebrief, { exact: true })).toHaveCount(0);
       await card.getByRole('link', { name: 'Back to station', exact: true }).tap();
-      await expect(card).toHaveURL(current => current.search === CATATONIA);
+      await expect(card).toHaveURL(current => current.search === station.href);
       await expect(card.getByRole('link', { name: participant.label, exact: true })).toBeVisible();
       await card.close();
     }
   });
 
-  test('pause, resume, reset, and finish the observation and presentation timers', async ({ page }) => {
+  test('pause, resume, reset, and finish the encounter and presentation timers', async ({ page }) => {
     await page.clock.install();
-    await page.goto('/' + CATATONIA);
+    await page.goto('/' + station.href);
     const timer = page.getByRole('timer');
-    await expect(page.getByRole('radio', { name: 'Observation and interview', exact: true })).toBeChecked();
+    await expect(page.getByRole('radio', { name: station.firstPhase, exact: true })).toBeChecked();
     await expect(timer).toHaveText('10:00');
     await page.getByRole('button', { name: 'Start', exact: true }).tap();
     await page.clock.fastForward(10_000);
