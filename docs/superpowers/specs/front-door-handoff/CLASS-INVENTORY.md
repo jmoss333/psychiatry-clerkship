@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(789 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(793 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1421,3 +1421,7 @@ hidden, everywhere else.
 | `.fd-usage-notice` | `<p>` | One muted line (`--fd-font-xs`, `--fd-text-mid`). |
 | `.fd-usage-notice__btn` | `<button data-fd-settings>` | Text-style link that opens Settings › Usage — the only opt-out writer stays the emitter. |
 
+
+### OSCE stations
+
+The reader's `.fd-station` section contains role links in `.fd-station__roles`. The capacity station has two timed phases. The family meeting agenda uses a single timer. Both use `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.

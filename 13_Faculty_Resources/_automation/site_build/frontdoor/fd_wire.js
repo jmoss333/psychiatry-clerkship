@@ -352,6 +352,10 @@ function fdParamsWithoutRoute(search){
   /* Passage context belongs to the current reading, never the next activity iframe. */
   params.delete('guideFind');
   params.delete('guideSection');
+  if(params.has('station')){
+    params.delete('station');
+    params.delete('role');
+  }
   params.delete('prepareTask');params.delete('prepareMinutes');
   return params;
 }
@@ -382,10 +386,22 @@ function fdRouteForTab(tab, search, libraryView){
   return '?tab='+encodeURIComponent(tab)+(extra?'&'+extra:'');
 }
 
+function fdStationForRoute(ref,params){
+  if(ref!=='osce.md'||params.get('page')!==ref||!params.has('station'))return null;
+  var key=params.get('station');
+  return fdOwn(FD_OSCE_STATIONS,key) ? FD_OSCE_STATIONS[key] : null;
+}
+
 function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
   var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
   var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  var station=fdStationForRoute(ref,previous);
+  if(station){
+    params.set('station',previous.get('station'));
+    var stationRole=previous.get('role');
+    if(fdOwn(station.roles,stationRole))params.set('role',stationRole);
+  }
   if(ref==='prepare-for-tomorrow.html'){
     var preparation=new URLSearchParams(fdPrepareFrameParams(search));
     preparation.forEach(function(value,key){params.set(key,value);});
@@ -1219,6 +1235,7 @@ function fdOpenResource(ref, opts){
     var latest=typeof o.getState==='function'?o.getState():state;
     var mounted=fdClone(latest||{});
     mounted.ref=ref;
+    mounted.osceStation=fdStationForRoute(ref,new URLSearchParams(search));
     if(!mounted.fromTab) mounted.fromTab=state.fromTab||mounted.tab||'today';
     return mounted;
   }
