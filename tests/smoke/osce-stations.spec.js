@@ -6,6 +6,7 @@ const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
+const COLLATERAL_DEBRIEF = 'Give the handoff.';
 const SHARED_DEBRIEF = 'What would you document in one sentence?';
 const roles = [
   { label: 'Interviewer', cue: /Assess decision-making capacity for a specific refusal/i },
@@ -29,6 +30,7 @@ async function openSharedDebriefOnly(page) {
   await expect(prompt).toHaveCount(1);
   await expect(page.getByText(CATATONIA_DEBRIEF, { exact: true })).toHaveCount(0);
   await expect(page.getByText(WITHDRAWAL_DEBRIEF, { exact: true })).toHaveCount(0);
+  await expect(page.getByText(COLLATERAL_DEBRIEF, { exact: true })).toHaveCount(0);
 }
 
 test('open the capacity station from the OSCE reader and share each role independently', async ({ page }) => {
@@ -242,11 +244,22 @@ test('admission presentation runs six minutes of presentation followed by four m
 
 const touchStations = [
   {
+    name: 'suicide risk with collateral hesitation',
+    href: '?page=osce.md&station=suicide-risk-collateral',
+    phases: [['Patient encounter', 12], ['Risk summary', 3], ['Feedback', 10]],
+    debrief: [COLLATERAL_DEBRIEF, 'Check the sources.', 'Try the next sentence.'],
+    verifyCrisisBlock: true,
+    participants: [
+      { key: 'interviewer', label: 'Interviewer', cue: 'Ask about safety today.' },
+      { key: 'patient', label: 'Patient', cue: 'What you tell the student.', facts: [/I wrote a goodbye letter last night/i] },
+      { key: 'sibling', label: 'Sibling', cue: 'What you heard on the phone.', facts: [/I didn't want to be alone tonight/i] },
+    ],
+  },
+  {
     name: 'possible catatonia',
     href: '?page=osce.md&station=possible-catatonia',
-    firstPhase: 'Observation and interview',
-    debrief: CATATONIA_DEBRIEF,
-    otherDebrief: WITHDRAWAL_DEBRIEF,
+    phases: [['Observation and interview', 10], ['Team presentation', 5]],
+    debrief: [CATATONIA_DEBRIEF],
     participants: [
       { key: 'interviewer', label: 'Interviewer', cue: 'Start at the bedside.' },
       { key: 'patient', label: 'Patient', cue: 'How to play the pauses.' },
@@ -256,9 +269,8 @@ const touchStations = [
   {
     name: 'alcohol withdrawal',
     href: '?page=osce.md&station=alcohol-withdrawal',
-    firstPhase: 'Patient encounter',
-    debrief: WITHDRAWAL_DEBRIEF,
-    otherDebrief: CATATONIA_DEBRIEF,
+    phases: [['Patient encounter', 10], ['Team presentation', 5]],
+    debrief: [WITHDRAWAL_DEBRIEF],
     participants: [
       { key: 'interviewer', label: 'Interviewer', cue: 'Ask about a usual drinking day.' },
       { key: 'patient', label: 'Patient', cue: 'What happened years ago.', facts: [/yesterday morning/i, /my brother said I fell down and shook all over/i] },
@@ -267,13 +279,20 @@ const touchStations = [
   },
 ];
 
+async function expectCrisisBlock(page) {
+  const block = page.locator('.fd-article__body blockquote:has(.crisis-block-hook)');
+  await expect(block.getByRole('heading', { name: 'If someone is in crisis' })).toBeVisible();
+  await expect(block.getByRole('listitem').first()).toBeVisible();
+}
+
 for (const station of touchStations) test.describe(station.name + ' on a touch phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
-  test('open the station, share role cards, and reveal both debrief prompts', async ({ page, context }) => {
+  test('open the station, share role cards, and reveal the station and shared debriefs', async ({ page, context }) => {
     await page.goto('/?page=osce.md');
     await stationLink(page, station.href).tap();
     await expect(page).toHaveURL(url => url.search === station.href);
+    if (station.verifyCrisisBlock) await expectCrisisBlock(page);
     for (const participant of station.participants) {
       const link = page.getByRole('link', { name: participant.label, exact: true });
       const url = new URL(await link.getAttribute('href'), page.url());
@@ -284,6 +303,7 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
       await pinVisualGovernance(card);
       await card.goto(url.href);
       await expect(card.getByRole('heading', { name: participant.label, exact: true })).toBeVisible();
+      if (station.verifyCrisisBlock) await expectCrisisBlock(card);
       for (const { key, cue, facts = [] } of station.participants) {
         const instruction = card.getByText(cue, { exact: true });
         if (key === participant.key) await expect(instruction).toBeVisible();
@@ -294,14 +314,13 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
           else await expect(answers).toHaveCount(0);
         }
       }
-      const stationPrompt = card.getByText(station.debrief, { exact: true });
-      const sharedPrompt = card.getByText(SHARED_DEBRIEF, { exact: true });
-      await expect(stationPrompt).toBeHidden();
-      await expect(sharedPrompt).toBeHidden();
+      const prompts = [...station.debrief, SHARED_DEBRIEF].map(text => card.getByText(text, { exact: true }));
+      for (const prompt of prompts) await expect(prompt).toBeHidden();
       await card.getByRole('button', { name: 'Open debrief', exact: true }).tap();
-      await expect(stationPrompt).toBeVisible();
-      await expect(sharedPrompt).toBeVisible();
-      await expect(card.getByText(station.otherDebrief, { exact: true })).toHaveCount(0);
+      for (const prompt of prompts) await expect(prompt).toBeVisible();
+      for (const other of touchStations.filter(item => item !== station)) {
+        await expect(card.getByText(other.debrief[0], { exact: true })).toHaveCount(0);
+      }
       await card.getByRole('link', { name: 'Back to station', exact: true }).tap();
       await expect(card).toHaveURL(current => current.search === station.href);
       await expect(card.getByRole('link', { name: participant.label, exact: true })).toBeVisible();
@@ -309,34 +328,35 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
     }
   });
 
-  test('pause, resume, reset, and finish the encounter and presentation timers', async ({ page }) => {
+  test('pause, resume, reset, and finish each timed phase', async ({ page }) => {
     await page.clock.install();
     await page.goto('/' + station.href);
     const timer = page.getByRole('timer');
-    await expect(page.getByRole('radio', { name: station.firstPhase, exact: true })).toBeChecked();
-    await expect(timer).toHaveText('10:00');
+    const [firstPhase, firstMinutes] = station.phases[0];
+    await expect(page.getByRole('radio', { name: firstPhase, exact: true })).toBeChecked();
+    await expect(timer).toHaveText(`${firstMinutes}:00`);
     await page.getByRole('button', { name: 'Start', exact: true }).tap();
     await page.clock.fastForward(10_000);
     await page.getByRole('button', { name: 'Pause', exact: true }).tap();
-    await expect(timer).toHaveText(/^9:\d{2}$/);
+    await expect(timer).toHaveText(new RegExp('^' + (firstMinutes - 1) + ':\\d{2}$'));
     const paused = await timer.innerText();
     await page.clock.fastForward(60_000);
     await expect(timer).toHaveText(paused);
     await page.getByRole('button', { name: 'Resume', exact: true }).tap();
     await page.clock.fastForward(60_000);
-    await expect(timer).toHaveText(/^8:\d{2}$/);
+    await expect(timer).toHaveText(new RegExp('^' + (firstMinutes - 2) + ':\\d{2}$'));
     await page.getByRole('button', { name: 'Reset', exact: true }).tap();
-    await expect(timer).toHaveText('10:00');
-    await page.getByRole('button', { name: 'Start', exact: true }).tap();
-    await page.clock.fastForward(600_000);
-    await expect(timer).toHaveText('0:00');
-    await expect(page.getByText(/Time is up/)).toBeVisible();
-    await page.getByRole('radio', { name: 'Team presentation', exact: true }).tap();
-    await expect(timer).toHaveText('5:00');
-    await page.getByRole('button', { name: 'Start', exact: true }).tap();
-    await page.clock.fastForward(300_000);
-    await expect(timer).toHaveText('0:00');
+    await expect(timer).toHaveText(`${firstMinutes}:00`);
+    for (const [phase, minutes] of station.phases) {
+      await page.getByRole('radio', { name: phase, exact: true }).tap();
+      await expect(timer).toHaveText(`${minutes}:00`);
+      await page.getByRole('button', { name: 'Start', exact: true }).tap();
+      await page.clock.fastForward(minutes * 60_000);
+      await expect(timer).toHaveText('0:00');
+      await expect(page.getByText(/Time is up/)).toBeVisible();
+    }
     await page.getByRole('button', { name: 'Reset', exact: true }).tap();
-    await expect(timer).toHaveText('5:00');
+    const [, lastMinutes] = station.phases.at(-1);
+    await expect(timer).toHaveText(`${lastMinutes}:00`);
   });
 });

@@ -6,6 +6,8 @@ All cases are synthetic. No real patient details are used.
 
 ## Station 1 - Suicide Risk With Collateral Hesitation
 
+[Run this station](?page=osce.md&station=suicide-risk-collateral)
+
 **Time:** 12 minutes encounter, 3 minutes summary, 10 minutes feedback.
 
 **Student task**
@@ -22,6 +24,30 @@ The patient says the ED overreacted. Sleep has been 3-4 hours nightly. Cannabis
 use increased. A goodbye letter exists but is not volunteered unless asked
 directly. Firearm access is at a parent's home.
 
+**Interviewer role**
+
+You are the medical student on the inpatient team. A 29-year-old was admitted after a text worried their sibling. Start with the patient in private. Explain your role, who on the team will hear your concerns, and why you want to hear the patient's version of last night.
+
+- **Ask about safety today.** Ask directly about suicidal thoughts last night and now, plan, intent, preparation, prior attempts, and access to lethal means, including firearms. Ask what has changed recently, what helps them get through a hard night, and who could help today. Give them time to answer.
+- Ask how they feel about involving their sibling. Explore what worries them. Agree on whom you may contact, what you may ask, and what you may share. If they decline, respect that boundary. The team can listen if family offers information. Bring any concern about serious, imminent harm to your supervisor to decide whether a limited disclosure is needed for safety.
+- As soon as you are concerned about immediate safety, stay with the patient and ask unit staff to bring your supervising clinician now. You can make that request before finishing the questions or speaking with family. Use the summary time to rehearse the handoff to the resident. Include your acute risk impression, the evidence for it, what remains unknown, and who will do what next.
+
+**Patient role**
+
+Open with “The ED overreacted. I text my sibling all the time.” You worry that talking openly will leave your sibling feeling responsible for keeping you safe.
+
+- **What you tell the student.** You've had low moods on and off for years. This week you slept three to four hours a night and used more cannabis than usual. If asked directly, say, “Last night part of me wanted to die. The thoughts still come and go today.” You have no specific plan or intention to act on the unit. You are unsure how safe you would feel alone at home. You have never attempted suicide. You picked up when your sibling called because you wanted to hear a familiar voice.
+- If asked whether you did anything to prepare or say goodbye, say, “I wrote a goodbye letter last night.” If asked about access to firearms, say there is a firearm at your parent's home and you could access it on a visit. You do not know whether anyone has secured it since your admission.
+- When asked about calling family, say, “They already worry enough.” If the student hears that concern and asks for a limited call, agree that they may ask your sibling about the text and the phone call. Say, “Please keep my treatment details between me and the team.” If pressed for broader permission, decline. In feedback, tell the student what you thought they had agreed to share.
+
+**Sibling role**
+
+Wait outside the interview until the student has discussed permission with the patient. If the patient agrees to a call, play the sibling on the phone. If no call is agreed, skip the call. The clinical handoff is private. Rejoin as a role-player for feedback after the call and handoff are over.
+
+- **What you heard on the phone.** You received a text that felt unusually final. You called back. Your sibling picked up and said, “I didn't want to be alone tonight.” That was different from your usual conversations, so you encouraged them to get help.
+- You can describe that conversation. You did not see what happened before the text or visit the parent's home. Say “I don't know” if asked what the patient intended or whether anyone has secured the firearm.
+- Ask, “Can you tell me what they're being treated for?” Listen for whether the student acknowledges your worry and stays within the agreed purpose of the call. If asked how you might help, offer to answer another call from the team if the patient agrees.
+
 **Behaviors to practice**
 
 - Opens with role and purpose.
@@ -35,6 +61,14 @@ directly. Firearm access is at a parent's home.
 **Rater focus**
 
 Risk formulation, means restriction, collateral consent, tone.
+
+**Handoff debrief**
+
+1. **Give the handoff.** After the private summary to the supervising resident, step out of character and replay it for the group. Compare the patient's recent change with their usual baseline. Give your acute risk impression, an available support, and one safety concern that still needs checking. Ask the resident to assess the patient now and state who will stay with them in the meantime.
+2. **Check the sources.** The patient names what they actually disclosed and what contact they agreed to. The sibling says what they personally heard, if contacted. If no call happened, say that collateral is still unavailable. Identify who on the clinical team will follow up on access to lethal means and confirm a safety plan.
+3. **Try the next sentence.** The patient chooses a moment when they felt heard or pressured. Repeat that part of the conversation, then retry the handoff using only what you learned. The sibling listens for one clear action the team owns.
+
+If the patient disclosed recent preparation, one possible opening is: “I'm worried their risk has increased since last night. They described preparing to say goodbye and still have suicidal thoughts today. I'm staying with them. Can you come assess them now?” Add what you know about access, any unanswered safety question, and what the patient agreed you could discuss with family.
 
 ## Station 2 - Capacity To Refuse Medical Treatment
 
