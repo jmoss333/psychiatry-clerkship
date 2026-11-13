@@ -4,6 +4,8 @@ Generated: 2026-06-27
 
 All cases are synthetic. No real patient details are used.
 
+[Run a circuit](?page=osce.md&station=catatonia-withdrawal-circuit) · Possible Catatonia → Alcohol Withdrawal · 3 learners
+
 ## Station 1 - Suicide Risk With Collateral Hesitation
 
 [Run this station](?page=osce.md&station=suicide-risk-collateral)
