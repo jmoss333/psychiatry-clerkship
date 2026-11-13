@@ -464,7 +464,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **46. What is the CIWA-Ar and how is it used?**
 
-- **Answer:** A 10-item clinician-administered scale (score 0–67) for assessing alcohol withdrawal severity. Scores <8–10: mild; 8–18: moderate (benzodiazepines indicated); ≥19: severe (close monitoring, inpatient care).
+- **Answer:** A 10-item clinician-administered scale (score 0–67) for assessing alcohol withdrawal severity. ASAM 2020 bands: under 10 mild; 10–18 moderate (benzodiazepines indicated); 19 or above severe (close monitoring, inpatient care). Protocols differ on the cut-offs, and a low score does not withhold treatment after a prior withdrawal seizure or delirium tremens.
 
 - **Evidence:** Symptom-triggered dosing based on CIWA-Ar reduces total benzodiazepine dose and treatment duration (median 9 vs. 68 hours in one RCT).
 
@@ -480,7 +480,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Haber, NEJM 2025.
 
-- **Pearl:** Give **thiamine before or with glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy. The one thing this rule never licenses is withholding emergency dextrose from a hypoglycemic patient while thiamine is located.
+- **Pearl:** Give **thiamine before or with glucose** in suspected alcohol use disorder — glucose metabolism consumes thiamine and can precipitate Wernicke's encephalopathy. The one thing this rule never licenses is withholding emergency dextrose from a hypoglycemic patient while thiamine is located. The "thiamine first" order rests on case reports, and ASAM 2020 accepts either order or both together; what matters is that an at-risk patient is not given carbohydrate without thiamine.
 
 **48. What is delirium tremens and when does it occur?**
 
