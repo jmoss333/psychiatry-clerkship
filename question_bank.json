@@ -1375,7 +1375,7 @@
     },
     {
       "id": "qb_cog_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1397,7 +1397,7 @@
           "t": "Start scheduled haloperidol — antipsychotics prevent delirium progression in post-surgical patients.",
           "trap": {
             "name": "Agitation = antipsychotic",
-            "note": "Scheduled antipsychotics are not indicated for delirium prevention and carry a black-box mortality warning in older patients."
+            "note": "Scheduled antipsychotics are not indicated for delirium prevention, and the class carries a boxed warning for increased mortality in older adults with dementia-related psychosis."
           }
         },
         {
@@ -3524,7 +3524,7 @@
     },
     {
       "id": "qb_pha_005",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "pharm",
       "competency": [
@@ -3560,7 +3560,7 @@
           "t": "Lithium is first-line only for acute mania; its anti-suicidal and maintenance evidence are not strong enough to justify its monitoring burden.",
           "trap": {
             "name": "Narrow = second-line",
-            "note": "Lithium has robust maintenance and anti-suicidal evidence — its narrow window is a monitoring challenge, not a reason to avoid it in patients like this one."
+            "note": "Lithium has robust maintenance evidence and a meaningful, if uncertain, anti-suicidal signal — its narrow window is a monitoring challenge, not a reason to avoid it in patients like this one."
           }
         },
         {
@@ -3574,7 +3574,7 @@
       ],
       "why": "Anti-suicidal = just mood stabilization, Narrow = second-line, and Monitoring = optional all undermine the case for lithium in the highest-risk patient. Lithium's anti-suicidal evidence is cited on the page as worth remembering specifically when the team is weighing risk. For a patient with two prior suicide attempts, this is the discriminating consideration.",
       "pearl": "Lithium: strongest anti-suicidal evidence in the mood stabilizer class + narrow window demanding renal/thyroid monitoring — both sides of the profile matter.",
-      "evidence": "psychopharm_primer.md — Lithium has a narrow therapeutic window — too little does nothing, too much is toxic — and demands renal and thyroid monitoring over time; it also carries the strongest anti-suicidal evidence in the class, which is worth remembering when the team weighs risk.",
+      "evidence": "psychopharm_primer.md — Lithium: Narrow therapeutic window. Check kidney/thyroid function, calcium, pregnancy considerations and timed levels. Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides with lithium than placebo, based on few events. More recent randomized evidence is mixed.",
       "tier2": {
         "q": "Why does lithium's narrow therapeutic window require renal monitoring specifically?",
         "options": [
@@ -4420,7 +4420,7 @@
     },
     {
       "id": "qb_mood_007",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -4455,7 +4455,7 @@
           "t": "Lithium's anti-suicidal effect is limited to acute suicidality and does not apply to maintenance treatment.",
           "trap": {
             "name": "Narrow = second-line",
-            "note": "Lithium's anti-suicidal evidence encompasses both acute and long-term prevention; the page's framing applies specifically to maintenance decisions when risk history matters."
+            "note": "Lithium's anti-suicidal signal comes from long-term treatment trials, and newer randomized evidence is mixed — so it bears on maintenance choices when risk history matters, not on managing an acute crisis."
           }
         },
         {
@@ -4468,8 +4468,8 @@
         }
       ],
       "why": "Anti-suicidal = interchangeable, Narrow = second-line, and Monitoring = disqualifying all undervalue lithium in the highest-risk patient. The page specifically names lithium's anti-suicidal effect (Cipriani 2013) and BALANCE maintenance evidence as reasons to 'use it, and monitor it' — the monitoring is the price of the unique therapeutic profile, not a drawback.",
-      "pearl": "Lithium: strongest anti-suicidal evidence (Cipriani 2013) + strongest maintenance evidence (BALANCE trial) — use it in high-risk patients, and monitor it.",
-      "evidence": "t_mood.md — Lithium deserves specific emphasis — it carries a distinct anti-suicidal effect (Cipriani 2013) and is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial).",
+      "pearl": "Lithium: strongest maintenance evidence (BALANCE trial) plus an anti-suicidal signal that is meaningful but uncertain (Cipriani 2013; later trials mixed) — use it in high-risk patients, and monitor it.",
+      "evidence": "t_mood.md — Lithium is the mood stabilizer with the best maintenance evidence — use it, and monitor it. Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides than with placebo, based on few events. More recent randomized evidence is mixed.",
       "tier2": {
         "q": "What was the primary finding of the BALANCE trial regarding lithium and valproate for bipolar maintenance?",
         "options": [
