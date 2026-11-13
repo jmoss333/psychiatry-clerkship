@@ -1,10 +1,6 @@
 {
-  "_note": "Shipped files that state the thiamine-before-glucose rule with no hypoglycemia carve-out anywhere in the file (2026-11-10 audit). The list may only shrink; guard G1 fails on any file not listed here.",
+  "_note": "Shipped files that state the thiamine-before-glucose rule with no hypoglycemia carve-out anywhere in the file. One left after Batch 2 of the 2026-11-10 audit: the Leah case journey is projected from a faculty-reviewed snapshot (docs/case-journeys/reviewed-snapshot/), so its wording changes there, by the case-journey review route, not by editing the learner file. The list may only shrink; guard G1 fails on any file not listed here.",
   "files": [
-    "05_Psychopharmacology/Protocol_Library/protocol_library_inpatient.md",
-    "07_Evidence_and_Reading/Landmark_Trials/shelf-mode.html",
-    "08_Cases_and_Simulation/case-journeys/leah-depression-trauma.json",
-    "14_Tracks/MS3/Student_Ready_Pack/06_osce_cases/osce_station_set.md",
-    "14_Tracks/MS3/Student_Ready_Pack/core_reading_list.md"
+    "08_Cases_and_Simulation/case-journeys/leah-depression-trauma.json"
   ]
 }

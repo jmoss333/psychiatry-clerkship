@@ -34,6 +34,11 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 - **Activated charcoal does not bind lithium** — consider whole-bowel irrigation for sustained-release ingestions.
 - Recheck levels after dialysis — **rebound** from tissue redistribution is expected.
 
+## Alcohol withdrawal (CIWA-Ar)
+- **ASAM 2020 bands:** under 10 mild; 10–18 moderate; 19 or above severe. Protocols differ on the cut-offs — confirm your unit's.
+- **Not valid in delirium** or in a patient who cannot report symptoms; there, dosing is scheduled or front-loaded and titrated to light sedation.
+- A low score does not withhold treatment after a prior withdrawal seizure or delirium tremens.
+
 ## QTc / torsades de pointes
 - **Act at QTc ≥500 ms, or an increase ≥60 ms** from baseline.
 - Replete **K⁺ >4.0 mEq/L** and **Mg²⁺ >2.0 mg/dL**; reconcile every QT-prolonging drug and interaction.

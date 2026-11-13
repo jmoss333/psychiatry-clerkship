@@ -24,7 +24,7 @@
 | Substances | Withdrawal — ask explicitly |
 | Quiet, fixable drivers | Urinary retention, constipation, uncontrolled pain, disrupted sleep |
 
-**Management.** Non-pharmacologic measures come **first**, not as an afterthought: reorient the patient, protect the sleep–wake cycle, mobilize early, restore sensory aids (get the glasses and hearing aids on), and bring family to the bedside. This is the work captured in the **ABCDEF** and HELP bundles. In parallel, identify and treat the underlying cause and deprescribe the deliriogenic medications you found. Antipsychotics are reserved for dangerous agitation only — lowest effective dose, time-limited — and are **not** for prevention; respect the dementia boxed warning when an older patient is involved. Avoid benzodiazepines, with the single exception of alcohol or sedative withdrawal, where they are the treatment.
+**Management.** Non-pharmacologic measures come **first**, not as an afterthought: reorient the patient, protect the sleep–wake cycle, mobilize early, restore sensory aids (get the glasses and hearing aids on), and bring family to the bedside. This is the work captured in the **ABCDEF** and HELP bundles. In parallel, identify and treat the underlying cause and deprescribe the deliriogenic medications you found. Antipsychotics are reserved for dangerous agitation only — lowest effective dose, time-limited — and are **not** for prevention; respect the dementia boxed warning when an older patient is involved. Avoid benzodiazepines, with the main exception of alcohol or sedative withdrawal, where they are the treatment; seizures, catatonia and some toxidromes are separate indications the team decides.
 
 **What the student does.**
 - Test attention every day — months-of-the-year backward or digit span — and document the result, not a vague "alert and oriented."
@@ -37,7 +37,7 @@
 - Hypoactive delirium is the dangerous one: commonly missed, worse outcomes, and easily mislabeled as depression.
 - New "psychiatric" symptoms in an older medical patient are delirium until proven otherwise.
 - Treat the cause and deprescribe; antipsychotics are for dangerous agitation only, never for prevention.
-- Avoid benzodiazepines unless the cause is alcohol or sedative withdrawal — they otherwise deepen delirium.
+- Avoid benzodiazepines unless the cause is alcohol or sedative withdrawal, or the team is treating a seizure, catatonia or a specific toxidrome — they otherwise deepen delirium.
 
 **Pair with** the Differential Diagnosis scaffolds, the Geriatric page, and the agitation & restraint guidance.
 

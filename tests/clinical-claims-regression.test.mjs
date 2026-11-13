@@ -98,3 +98,17 @@ test('G2 no shipped page teaches a no-suicide contract as protective, and EXTRIP
   const bad = ALL.filter(u => /lithium/i.test(u.text) && />\s?4\.0/.test(u.text) && /dialysis|extracorporeal|EXTRIP/i.test(u.text) && !/(at any level|irrespective of the level|regardless of the level|irrespective)/i.test(u.text)).map(u => `${u.file} ${u.where}`);
   assert.deepEqual(bad, [], 'EXTRIP: decreased consciousness, seizures or life-threatening dysrhythmias qualify irrespective of the level');
 });
+// ---------- Batch 2: the judgment calls Joshua Moss, MD, decided on 2026-11-10 (J1, J2, J5) -----
+test('J1 no question tests the thiamine-glucose ORDER as a must', () => {
+  const bad = QB.filter(i => /thiamine/i.test(JSON.stringify(i.options)) && /must occur before the glucose|most important step before administering the glucose/i.test(i.stem)).map(i => i.id);
+  assert.deepEqual(bad, [], 'the order rests on case reports and ASAM 2020 accepts either; test that thiamine accompanies the glucose');
+});
+test('J2 the MS3 decision aid carries no numeric CIWA-Ar cut-offs, and resident surfaces use the ASAM 2020 bands', () => {
+  const aid = read('04_Acute_and_Safety/Decision_Aids/decision-aids.html');
+  assert.doesNotMatch(aid, /className:"bk"\},"(≤ ?8|9–19|≥ ?20)"/, 'three different band sets shipped; the decision aid now defers to the unit protocol');
+  assert.match(aid, /A low score does not withhold treatment after a prior withdrawal seizure/);
+  none(/Scores <8–10: mild; 8–18: moderate/, 'rounds questions use the ASAM 2020 bands (<10, 10–18, ≥19)');
+});
+test('J5 benzodiazepines in delirium: withdrawal is the main exception, not the single one', () => {
+  none(/single exception of alcohol or sedative withdrawal/i, 'the library itself teaches benzodiazepines for seizures, catatonia and some toxidromes', u => !u.file.endsWith('question_bank.json'));
+});
