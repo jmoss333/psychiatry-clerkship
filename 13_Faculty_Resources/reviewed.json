@@ -1586,5 +1586,25 @@
     "reason": "New How We Know page (learner edition, without the correction history: faculty decision 2026-11-09) added 2026-11-10; awaiting faculty attestation.",
     "at": "2026-11-10",
     "by": "Pending faculty review"
+  },
+  "cotw_20261109_lithium_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, MS3) added 2026-11-09; awaiting faculty attestation.",
+    "at": "2026-11-09",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261109_lithium_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, resident) added 2026-11-09; awaiting faculty attestation.",
+    "at": "2026-11-09",
+    "by": "Pending faculty review"
   }
 }
