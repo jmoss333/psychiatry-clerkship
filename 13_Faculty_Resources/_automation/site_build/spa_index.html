@@ -783,7 +783,11 @@
     });
     requestAnimationFrame(refreshTableScrollCues);
   }
-  function progLoad(){ try{ return JSON.parse(localStorage.getItem('cw_progress_v1'))||{}; }catch(_){ return {}; } }
+  function localProgress(){ try{ return JSON.parse(localStorage.getItem('cw_progress_v1'))||{}; }catch(_){ return {}; } }
+  function progLoad(){
+    var local=localProgress();
+    return fdOSReading?fdOSReading.view(local):local;
+  }
   function progSave(o){ try{ localStorage.setItem('cw_progress_v1',JSON.stringify(o)); }catch(_){ } }
   function reviewableItems(){ var out=[],seen={}, cols=(typeof FD_INDEX!=='undefined'&&FD_INDEX.columns)||[]; for(var c=0;c<cols.length;c++){ var items=cols[c].items||[]; for(var i=0;i<items.length;i++){ var it=items[i]; if(!it||it.kind!=='read'||seen[it.ref])continue; seen[it.ref]=1; out.push({f:it.ref,t:it.title}); } } return out; }
   function reviewStats(p){ p=p||progLoad(); var items=reviewableItems(), done=0; if(items.length){ for(var i=0;i<items.length;i++){ if(p[items[i].f]&&p[items[i].f].done)done++; } return {done:done,total:items.length}; } for(var k in p){ if(p[k]&&p[k].done)done++; } return {done:done,total:done||1}; }
@@ -802,13 +806,13 @@
   }
   function buildReviewLedger(file){
     var p=progLoad(), stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
-    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Study progress</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' pages read</span><span class="review-date">'+(at?(' · read '+esc(at)):' · not yet read')+'</span></span></div>';
-    return h;
+    var h='<div class="review-ledger" data-review-for="'+esc(file||'')+'"><span class="k">Study progress</span><span class="v"><span class="revcount">'+stats.done+' of '+stats.total+' pages read</span><span class="review-date">'+(at?(' · read '+esc(at)):(done?' · read':' · not yet read'))+'</span></span></div>';
+    return h.replace('</div>',osReadingMarkup(file,false)+'</div>');
   }
   function refreshReviewLedger(file,p){
     p=p||progLoad(); var stats=reviewStats(p), done=!!(p[file]&&p[file].done), at=done&&p[file].at;
     [].forEach.call(contentEl.querySelectorAll('.revcount'),function(el){ el.textContent=stats.done+' of '+stats.total+' pages read'; });
-    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · read '+at):' · not yet read'; });
+    [].forEach.call(contentEl.querySelectorAll('.review-date'),function(el){ el.textContent=at?(' · read '+at):(done?' · read':' · not yet read'); });
     [].forEach.call(contentEl.querySelectorAll('.markrev'),function(el){ if(el.getAttribute('data-f')!==file)return; el.classList.toggle('on',done); el.setAttribute('aria-pressed',String(done)); el.textContent=done?'✓ Read':'Mark as read'; });
   }
   function topicHasQuiz(file){ var m=(typeof TOPIC_META!=='undefined'&&TOPIC_META)?TOPIC_META[file]:null; return !!(m&&m.quiz&&m.quiz.q&&m.quiz.o&&m.quiz.o.length); }
@@ -991,6 +995,34 @@
     return null;
   }
   var facultyPreviewRequest=readFacultyPreviewRequest();
+  var FD_OS_READING_CONFIG=null;
+  /*__FD_OS_READING__*/
+  var fdOSReadingChanged=null;
+  var fdOSReading=facultyPreviewRequest||!FD_OS_READING_CONFIG?null:
+    fdCreateLibraryReading(FD_OS_READING_CONFIG,window,function(){
+      if(fdOSReadingChanged)fdOSReadingChanged();
+    });
+  function osReadingMarkup(ref, includeMark){
+    if(!fdOSReading||!fdOSReading.allowed(ref))return '';
+    var s=fdOSReading.status(), marked=!!(progLoad()[ref]||{}).done;
+    var button=function(action,label,pressed){
+      return '<button type="button" class="fd-btn fd-btn--ghost" data-os-reading="'+action+
+        '"'+(pressed===undefined?'':' aria-pressed="'+pressed+'"')+'>'+esc(label)+'</button>';
+    };
+    return '<div data-os-reading-for="'+esc(ref)+'"'+(includeMark?' data-os-reading-mark':'')+'>'+
+      (includeMark?button('mark',marked?'✓ Read':'Mark as read',marked)+' ':'')+
+      (s.connected?(s.failed?button('retry','Retry sync')+' ':'')+button('disconnect','Disconnect'):
+        button('connect',marked&&fdOSReading.canOffer(ref)?'Connect & sync this page':'Connect to ClerkshipOS'))+
+      ' <small role="status">'+esc(s.text)+'</small></div>';
+  }
+  function saveReadToggle(ref,done){
+    var local=localProgress();
+    if(done){local[ref]={done:true,at:new Date().toISOString().slice(0,10)};seedSRS(ref);}
+    else delete local[ref];
+    progSave(local);
+    if(fdOSReading)fdOSReading.record(ref,done);
+    refreshReviewLedger(ref,progLoad());
+  }
   /* Service-worker registration (SW_REGISTER) goes here, not up by the theme/banner boot
      code: this script has no wrapping IIFE, so facultyPreviewRequest — declared with `var`
      right above — reads as `undefined` (not a ReferenceError, but not the real value either)
@@ -3209,6 +3241,29 @@
     if(rail&&nextRail)rail.innerHTML=nextRail.innerHTML;
   }
 
+  fdOSReadingChanged=function(){
+    if(!fdOSReading||!contentEl)return;
+    var widgets=contentEl.querySelectorAll('[data-os-reading-for]');
+    for(var i=0;i<widgets.length;i++){
+      var widget=widgets[i], ref=widget.getAttribute('data-os-reading-for');
+      var fresh=document.createElement('div');
+      fresh.innerHTML=osReadingMarkup(ref,widget.hasAttribute('data-os-reading-mark'));
+      var action=document.activeElement&&widget.contains(document.activeElement)?
+        document.activeElement.getAttribute('data-os-reading'):null;
+      if(fresh.firstChild&&widget.innerHTML!==fresh.firstChild.innerHTML){
+        widget.innerHTML=fresh.firstChild.innerHTML;
+        var retained=action&&widget.querySelector('[data-os-reading="'+action+'"]');
+        if(retained)retained.focus({preventScroll:true});
+      }
+    }
+    if(fdController&&fdController.getState().openId){
+      var state=fdController.getState();
+      fdPatchCompletion(state);
+      if(currentItem)refreshReviewLedger(currentItem.f);
+    }
+  };
+  if(fdOSReading)fdOSReading.sync();
+
   function fdRenderTransient(state,detail){
     var d=detail||{}, surfaces=d.surfaces||{};
     fdSyncSafetyPause(state);
@@ -3466,6 +3521,18 @@
 
   function fdAuxClick(event){
     var target=event.target, el,localIdentity;
+    el=target.closest&&target.closest('[data-os-reading]');
+    if(el&&fdOSReading&&!facultyPreviewRequest){
+      event.preventDefault();
+      var box=el.closest('[data-os-reading-for]'), ref=box&&box.getAttribute('data-os-reading-for');
+      if(!fdOSReading.allowed(ref))return;
+      var action=el.getAttribute('data-os-reading'), marked=!!(progLoad()[ref]||{}).done;
+      if(action==='mark'){saveReadToggle(ref,!marked);fdOSReadingChanged();}
+      if(action==='connect')fdOSReading.ask(marked?ref:null);
+      if(action==='retry')fdOSReading.sync();
+      if(action==='disconnect')fdOSReading.disconnect();
+      return;
+    }
     el=target.closest&&target.closest('[data-fd-local-toggle]');
     if(el){
       event.preventDefault();
@@ -3499,7 +3566,7 @@
     el=target.closest&&target.closest('.pgfb-b');
     if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}try{localStorage.setItem('cw_fb_ctx',el.getAttribute('data-fb-context')||(currentItem?currentItem.t:''));}catch(_){}fdOpenRef('feedback.html');return;}
     el=target.closest&&target.closest('.markrev');
-    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var mf=el.getAttribute('data-f'),pp=progLoad(),nd=!(pp[mf]&&pp[mf].done);if(nd){pp[mf]={done:true,at:new Date().toISOString().slice(0,10)};seedSRS(mf);}else delete pp[mf];progSave(pp);refreshReviewLedger(mf,pp);return;}
+    if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var mf=el.getAttribute('data-f'),pp=progLoad();saveReadToggle(mf,!(pp[mf]&&pp[mf].done));if(fdOSReadingChanged)fdOSReadingChanged();return;}
     el=target.closest&&target.closest('.tyo');
     if(el){event.preventDefault();if(facultyPreviewRequest){showFacultyPreviewLockNotice();return;}var wrap=el.closest('.tyourself');if(wrap&&!wrap.getAttribute('data-done')){wrap.setAttribute('data-done','1');var os=wrap.querySelectorAll('.tyo');for(var z=0;z<os.length;z++){if(os[z].getAttribute('data-c')==='1')os[z].classList.add('correct');}if(el.getAttribute('data-c')!=='1')el.classList.add('wrong');try{var qf=currentItem&&currentItem.f;if(qf){var qs=JSON.parse(localStorage.getItem('cw_quiz_v1')||'{}'),qe=qs[qf]||{seen:0,wrong:0};qe.seen++;if(el.getAttribute('data-c')!=='1')qe.wrong++;qe.last=new Date().toISOString().slice(0,10);qs[qf]=qe;localStorage.setItem('cw_quiz_v1',JSON.stringify(qs));}}catch(_){}var quizfb=wrap.querySelector('.tyfb');if(quizfb)quizfb.classList.add('show');}return;}
     el=target.closest&&target.closest('[data-progress-action]');
@@ -3859,6 +3926,14 @@
     }
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
+      progressView:fdOSReading?progLoad:null,
+      recordToggle:fdOSReading?function(effect){
+        var local=localProgress();
+        if(effect.raw[effect.ref])local[effect.ref]=effect.raw[effect.ref];else delete local[effect.ref];
+        progSave(local);
+        fdOSReading.record(effect.ref,effect.done);
+        fdOSReadingChanged();
+      }:null,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
       readingPlaceSession:function(){return fdReadingPlaceSession;},

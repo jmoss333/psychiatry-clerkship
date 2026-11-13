@@ -1845,6 +1845,7 @@ function fdWire(root, initialState, opts){
     try{ return fdThemeMode(localStorage.getItem('cw_theme')); }catch(_){ return 'system'; }
   }
   function progressRaw(){
+    if(o.progressView)return o.progressView();
     try{ return JSON.parse(localStorage.getItem('cw_progress_v1')||'{}')||{}; }
     catch(_){ return {}; }
   }
@@ -2346,7 +2347,8 @@ function fdWire(root, initialState, opts){
        Persist this toggle before rendering for the same reason; resource opening and the
        remaining effects still follow render, when their fresh host exists. */
     if(result.effect&&result.effect.type==='toggle-progress'){
-      try{ localStorage.setItem('cw_progress_v1',JSON.stringify(result.effect.raw)); }catch(_){}
+      if(o.recordToggle)o.recordToggle(result.effect);
+      else try{ localStorage.setItem('cw_progress_v1',JSON.stringify(result.effect.raw)); }catch(_){}
     }
     /* A feedback note is visit-only: leaving Path, opening a resource or moving to another week
        closes it, exactly as leaving Care clears its task. The store writes below follow the

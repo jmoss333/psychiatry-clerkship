@@ -645,6 +645,21 @@ _cc=json.load(open(LIB+"/communication_cases.json",encoding="utf-8"))
 _case_titles={c["id"]:c["title"] for c in _cc.get("cases",[]) if c.get("id") and c.get("title")}
 _spa_out=OUT+"/index.html"
 _spa_t=open(_spa_out,encoding="utf-8").read()
+# An enabled deployment opts in to exactly one HTTPS ClerkshipOS origin.
+_reading_origin=os.environ.get("CLERKSHIPOS_ORIGIN", "").strip().rstrip("/")
+if _reading_origin and not _re2.fullmatch(r"https://[a-zA-Z0-9.-]+(?::[0-9]{1,5})?", _reading_origin):
+    raise ValueError("CLERKSHIPOS_ORIGIN must be an HTTPS origin without a path")
+_reading_config=None
+if _reading_origin:
+    _reading_config={"origin":_reading_origin, "pages":[row["slug"] for row in
+        shipped_pages.load_shipped_pages()["pages"] if row["kind"]=="page" and row["slug"].endswith(".md")]}
+_reading_marker="var FD_OS_READING_CONFIG=null;"
+_reading_script="/*__FD_OS_READING__*/"
+if _spa_t.count(_reading_marker)!=1 or _spa_t.count(_reading_script)!=1:
+    raise ValueError("ClerkshipOS reading config marker missing or duplicated")
+_spa_t=_spa_t.replace(_reading_marker, "var FD_OS_READING_CONFIG="+json.dumps(_reading_config)+";")
+_spa_t=_spa_t.replace(_reading_script,
+    Path(HERE,"frontdoor","fd_library_reading.js").read_text(encoding="utf-8") if _reading_config else "")
 for _needle,_ids,_label in ((
         "var RELEASED_QB_IDS=[];",_released_ids,"RELEASED_QB_IDS"),(
         "var PRACTICE_CASE_TITLES={};",_case_titles,"PRACTICE_CASE_TITLES")):
@@ -819,6 +834,13 @@ open(OUT+"/_headers","w",encoding="utf-8").write("/*\n  Strict-Transport-Securit
 # tests/faculty-console-handler.test.mjs); this re-reads the written file and widens frame-src
 # ONLY when CONTEXT=deploy-preview. Production and branch-deploy stay byte-identical.
 common.apply_preview_headers(OUT, label="ms3")
+if _reading_origin:
+    _headers_file=Path(OUT, "_headers")
+    _headers_text=_headers_file.read_text(encoding="utf-8")
+    _connect="connect-src 'self'"
+    if _headers_text.count(_connect)!=1:
+        raise ValueError("ClerkshipOS reading CSP directive missing or duplicated")
+    _headers_file.write_text(_headers_text.replace(_connect,_connect+" "+_reading_origin),encoding="utf-8")
 
 print("polish pass: banners stripped, contrast darkened, <main>+favicon on tools, robots/404/_headers written")
 
