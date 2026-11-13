@@ -575,6 +575,7 @@ function fdReader(index, state, bodyHtml){
   var article='<div class="fd-article" data-ref="'+fdEsc(item.ref)+'">'+
     (split.notice&&!split.receipt?split.notice:'')+head+
     '<h1 class="fd-article__h1">'+fdEsc(station ? station.title : item.title)+'</h1>';
+  if(!station&&!isTool&&typeof osReadingMarkup==='function')article+=osReadingMarkup(item.ref,true);
   if(!station)article+='<p class="fd-article__lead">'+fdEsc(item.summary)+'</p>';
   /* bodyHtml: verbatim, unescaped -- see header comment. Omitted entirely (no empty wrapper) when
      the caller has none, e.g. a render taken before Plan 3 wires marked() in. */
