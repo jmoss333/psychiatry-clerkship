@@ -283,11 +283,37 @@ function resolveReviewedCase(governance, pack, caseId, now) {
 
 /* --------------- deterministic state derivation (mirrors MockProvider) ---------------
    Re-run over the full student transcript on every request. The client is untrusted. */
-function compileIntents(caseDef) {
-  return caseDef.intents.map(it => ({ ...it, rx: it.patterns.map(p => new RegExp(p, 'i')) }));
+// A learner turn split into sentences, for intents that carry excludePatterns. Never empty.
+function segments(text) {
+  return String(text).match(/[^.?!]+[.?!]*/g) || [String(text)];
 }
+// excludePatterns is optional per intent. A malformed value (anything truthy without .map) throws
+// here, as an invalid pattern already does: silently dropping an exclusion would credit a turn the
+// pack meant to veto, and a false pass is the worse error (decision D6).
+function compileIntents(caseDef) {
+  return caseDef.intents.map(it => ({ ...it,
+    rx: it.patterns.map(p => new RegExp(p, 'i')),
+    ex: (it.excludePatterns || []).map(p => new RegExp(p, 'i')) }));
+}
+// An intent WITHOUT excludes is matched against the whole turn, exactly as before. An intent WITH
+// excludes is credited only when some sentence matches a pattern and matches no exclude: a frame
+// in one sentence ("The chart says ...") must not veto a real question in the next, and a pattern
+// of such an intent therefore cannot reach across a sentence boundary.
 function matchIntents(compiled, text) {
-  return compiled.filter(it => it.rx.some(r => r.test(text))).map(it => it.id);
+  let segs = null;
+  return compiled.filter(it => {
+    if (!it.ex.length) return it.rx.some(r => r.test(text));
+    segs = segs || segments(text);
+    return segs.some(seg => it.rx.some(r => r.test(seg)) && !it.ex.some(r => r.test(seg)));
+  }).map(it => it.id);
+}
+// The gate's own line for one specific intent the learner just said (gate.deflectByIntent,
+// { intentId: line }), or undefined. An empty line counts as absent, like every other gate line.
+function intentDeflection(g, hits) {
+  const lines = g.deflectByIntent;
+  if (!lines || typeof lines !== 'object') return undefined;
+  const id = Object.keys(lines).find(k => hits.includes(k) && lines[k]);
+  return id === undefined ? undefined : lines[id];
 }
 function deriveState(caseDef, studentMsgs) {
   const compiled = compileIntents(caseDef);
@@ -356,6 +382,13 @@ function deriveState(caseDef, studentMsgs) {
           } else { consumed = !!(gd.deflectLowRapport || gd.deflectIfLocked); }
         } else if (gd.euphemismIntent && hits.includes(gd.euphemismIntent) && !s.unlocked[gd.id]) {
           consumed = !!gd.deflectEuphemism;
+        } else if (intentDeflection(gd, hits)) {
+          // deflectByIntent: locked, the gate answers with its per-intent line and opens nothing;
+          // already open, the turn is a repeated ask. Kept so this cascade reads branch for
+          // branch like the client's. It cannot change state here: only an opening writes state,
+          // and PASS 1 has already decided that. What the server does with the line is in
+          // lockedDeflection.
+          consumed = s.unlocked[gd.id] ? !!gd.repeatAsk : true;
         }
       }
     }
@@ -386,7 +419,11 @@ function computeCoverage(caseDef, s) {
 // the learner for asking ("a very direct question for someone I met four minutes ago") -- the
 // misattribution #565 removed for Dana's direct suicide question. Rapport-gated gates keep it.
 const RAPPORT_FLOOR = -3;
-function lockedDeflection(g) {
+// A gate may also carry a line for one specific intent (deflectByIntent). It outranks the lines
+// below only on the turn the learner said that intent, and only while the gate is locked.
+function lockedDeflection(g, s) {
+  const byIntent = intentDeflection(g, s?.lastIntents || []);
+  if (byIntent) return byIntent;
   const rapportLocked = (g.requiresRapport || 0) > RAPPORT_FLOOR;
   return (rapportLocked && g.deflectLowRapport) || g.deflectIfLocked || g.deflectEuphemism || 'deflect naturally';
 }
@@ -406,7 +443,7 @@ function actorSystem(caseDef, s, { rapportShown = s.rapport, tier = null } = {})
   const gates = caseDef.gated.map(g => s.unlocked[g.id]
     ? { id: g.id, status: 'UNLOCKED', reveal: g.reveal, ifAskedAgain: g.repeatAsk || null }
     : { id: g.id, status: 'LOCKED — you do not know this content exists; if probed, use the deflection',
-        deflection: lockedDeflection(g) });
+        deflection: lockedDeflection(g, s) });
   const personaBlock = JSON.stringify({
     persona: caseDef.persona,
     hiddenAgendaToneOnly: caseDef.hiddenAgendaTone || '',
