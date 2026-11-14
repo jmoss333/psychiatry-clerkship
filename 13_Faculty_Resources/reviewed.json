@@ -324,10 +324,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "d2299a0cdf6b88020692aa57d574f0e98949036d",
-    "clinicalHash": "bb4694c447af0d76acae9ff8027eaec1eeb2c0ac"
+    "contentHash": "3de3df836b81fedec6608ae3b296a1dbd34ecfd4",
+    "clinicalHash": "4a37395a015fb0f9c8a095e0616fcb4e44481854"
   },
   "cotw_20260720_bipolar_res.md": {
     "status": "reviewed",
