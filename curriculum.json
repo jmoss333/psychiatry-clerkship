@@ -497,7 +497,7 @@
   },
   "safetyKit": [
     { "ref": "pg_suicide.md", "sub": "Screen · stratify · safety plan",
-      "triggers": ["suicidal", "suicide", "kill myself", "killing myself", "kill herself",
+      "triggers": ["suicidal", "suicide", "suicidality", "si", "kill myself", "killing myself", "kill herself",
         "kill himself", "kill themselves", "want to die", "wants to die", "wanted to die",
         "better off dead", "end my life", "end her life", "end his life", "end it all",
         "self harm", "self-harm", "hurt myself", "hurt herself", "hurt himself",
@@ -763,6 +763,7 @@
     "oral.html": [
       "rounds",
       "rounds prep",
+      "rounding prep",
       "oral presentation",
       "present a patient"
     ],

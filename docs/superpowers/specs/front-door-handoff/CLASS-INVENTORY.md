@@ -1127,7 +1127,7 @@ patient information, or an attestation, and it never turns a website action into
           .fd-result__title
           governanceBadge
           .fd-result__meta
-      .fd-searchpanel__empty          (no-results state, replaces the results)
+      .fd-searchpanel__empty          (no-results state; long pasted words wrap within the panel)
       .fd-searchpanel__related        (up to three curated equivalent-query buttons after results)
       .fd-searchpanel__recovery       (zero matches: Edit search / Browse Library / blank Capture)
     .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
