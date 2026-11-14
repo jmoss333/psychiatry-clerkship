@@ -778,10 +778,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "af1394194955019b7c0bb4e923cd56b5515beb6e",
-    "clinicalHash": "766dba03df8fcd0f4d7fc86674b056cb5f79e9dd"
+    "contentHash": "dee65c32602d1bf2a01ddb7fdd9b3107d3a8fcae",
+    "clinicalHash": "0053f45af410c68c8f65b1f831fca3f71ed7efff"
   },
   "suicide.md": {
     "status": "reviewed",
