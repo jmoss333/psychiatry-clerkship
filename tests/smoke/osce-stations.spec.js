@@ -5,6 +5,7 @@ const CAPACITY = '?page=osce.md&station=capacity';
 const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
 const CIRCUIT = 'catatonia-withdrawal-circuit';
+const FULL_CIRCUIT = 'full-six-station-circuit';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
 const COLLATERAL_DEBRIEF = 'Give the handoff.';
@@ -22,6 +23,11 @@ test.beforeEach(async ({ page }) => {
 function stationLink(page, href) {
   return page.getByRole('link', { name: 'Run this station', exact: true })
     .and(page.locator(`a[href="${href}"]`));
+}
+
+function nextCase(page) {
+  return page.getByRole('link', { name: 'Next case', exact: true })
+    .or(page.getByRole('button', { name: 'Next case', exact: true }));
 }
 
 async function openSharedDebriefOnly(page) {
@@ -375,11 +381,6 @@ test.describe('two-station circuit on a touch phone', () => {
     { id: 'c', label: 'Learner C', rotation: ['nurse', 'patient'] },
   ];
 
-  function nextCase(page) {
-    return page.getByRole('link', { name: 'Next case', exact: true })
-      .or(page.getByRole('button', { name: 'Next case', exact: true }));
-  }
-
   async function checkRole(card, seat, round) {
     const current = cases[round];
     for (const { key, label, cue } of current.participants) {
@@ -463,5 +464,139 @@ test.describe('two-station circuit on a touch phone', () => {
     await page.getByRole('button', { name: 'Start', exact: true }).tap();
     await page.clock.fastForward(300_000);
     await expect(timer).toHaveText('0:00');
+  });
+});
+
+test.describe('full six-station circuit on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  // Expected assignments in seat order A, B, C. The cues distinguish identically
+  // named roles that appear in several stations.
+  const rounds = [
+    [['Sibling', 'What you heard on the phone.'], ['Interviewer', 'Ask about safety today.'], ['Patient', 'What you tell the student.']],
+    [['Patient', /antibiotics are poison/i], ['Observer', /Decision-specific reasoning and delirium recognition/i], ['Interviewer', /Assess decision-making capacity for a specific refusal/i]],
+    [['Interviewer', 'Start at the bedside.'], ['Patient', 'How to play the pauses.'], ['Nurse', 'What you saw this shift.']],
+    [['Nurse', 'Your bedside observations.'], ['Interviewer', 'Ask about a usual drinking day.'], ['Patient', 'What happened years ago.']],
+    [['Family member', 'If you want a firm plan'], ['Observer', 'Give one piece of feedback.'], ['Presenter', 'Close with a handoff.']],
+    [['Presenter', 'Open with the timeline.'], ['Supervising resident', 'Ask what would change the plan.'], ['Observer', 'Give feedback on one sentence.']],
+  ];
+  const seatIds = ['a', 'b', 'c'];
+
+  async function expectSeat(page, id, round) {
+    const seatIndex = seatIds.indexOf(id);
+    const [label] = rounds[round - 1][seatIndex];
+    const heading = page.getByRole('heading', { name: label, level: 2, exact: true });
+    await expect(heading).toBeVisible();
+    for (const [i, [, cue]] of rounds[round - 1].entries()) {
+      const instruction = page.getByText(cue, { exact: typeof cue === 'string' }).filter({ visible: true });
+      if (i === seatIndex) await expect(instruction).toHaveCount(1);
+      else await expect(instruction).toHaveCount(0);
+    }
+    return heading.innerText();
+  }
+
+  async function seatAddress(page, id) {
+    const link = page.getByRole('link', { name: 'Learner ' + id.toUpperCase(), exact: true });
+    const url = new URL(await link.getAttribute('href'), page.url());
+    expect(url.origin).toBe(new URL(page.url()).origin);
+    expect(url.searchParams.get('page')).toBe('osce.md');
+    expect(url.searchParams.get('station')).toBe(FULL_CIRCUIT);
+    expect(url.searchParams.get('role')).toBe(id);
+    expect(url.searchParams.has('round')).toBe(false);
+    return url.href;
+  }
+
+  for (const id of seatIds) {
+    test('seat ' + id.toUpperCase() + ' rotates through six roles and leads twice', async ({ page }) => {
+      await page.goto('/?page=osce.md');
+      await page.getByRole('link', { name: 'Full six-station circuit', exact: true }).tap();
+      const original = await seatAddress(page, id);
+      await page.goto(original);
+      const observedRoles = [];
+      for (let round = 1; round <= rounds.length; round++) {
+        if (round > 1) {
+          await nextCase(page).tap();
+          await expect(page).toHaveURL(url =>
+            url.searchParams.get('round') === String(round) && url.searchParams.get('role') === id);
+        }
+        observedRoles.push(await expectSeat(page, id, round));
+      }
+      expect(observedRoles.filter(label => label === 'Interviewer' || label === 'Presenter')).toHaveLength(2);
+      await expect(nextCase(page)).toHaveCount(0);
+    });
+  }
+
+  test('rescan a stable seat link after closing the tab, independently of other seats and devices', async ({ page, context, browser }) => {
+    await page.goto('/?page=osce.md&station=' + FULL_CIRCUIT);
+    const a = await seatAddress(page, 'a');
+    const b = await seatAddress(page, 'b');
+    const first = await context.newPage();
+    await pinVisualGovernance(first);
+    await first.goto(a + '&round=2');
+    await expectSeat(first, 'a', 2);
+    await nextCase(first).tap();
+    await expectSeat(first, 'a', 3);
+    await first.close();
+
+    await page.goto(a);
+    await expectSeat(page, 'a', 3);
+    await page.goto(b);
+    await expectSeat(page, 'b', 1);
+    await page.goto(a);
+    await expectSeat(page, 'a', 3);
+
+    const fresh = await browser.newContext({
+      viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, serviceWorkers: 'block',
+    });
+    try {
+      const device = await fresh.newPage();
+      await pinVisualGovernance(device);
+      await device.goto(a);
+      await expectSeat(device, 'a', 1);
+    } finally {
+      await fresh.close();
+    }
+    await page.getByRole('link', { name: 'Start at station 1', exact: true }).tap();
+    await expectSeat(page, 'a', 1);
+    await page.goto(a);
+    await expectSeat(page, 'a', 1);
+  });
+
+  test('facilitator shares stable seats on later rounds and keeps the clock visible in each debrief', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/?page=osce.md&station=' + FULL_CIRCUIT + '&round=1');
+    const original = [];
+    for (const id of seatIds) original.push(await seatAddress(page, id));
+    const timer = page.getByRole('timer');
+    const phases = [
+      [['Patient encounter', 12], ['Risk summary', 3], ['Feedback', 10]],
+      [['Interview', 12], ['Oral summary', 5]],
+      [['Observation and interview', 10], ['Team presentation', 5]],
+      [['Patient encounter', 10], ['Team presentation', 5]],
+      [['Preparation and presentation', 15]],
+      [['Presentation', 6], ['Questions', 4]],
+    ];
+    for (const [index, stationPhases] of phases.entries()) {
+      if (index > 0) {
+        await nextCase(page).tap();
+        await expect(page).toHaveURL(url => url.searchParams.get('round') === String(index + 1));
+      }
+      for (const [seatIndex, id] of seatIds.entries()) {
+        expect(await seatAddress(page, id)).toBe(original[seatIndex]);
+      }
+      for (const [label, minutes] of stationPhases) {
+        if (stationPhases.length > 1) await page.getByRole('radio', { name: label, exact: true }).tap();
+        await expect(timer).toHaveText(minutes + ':00');
+      }
+      const [, lastMinutes] = stationPhases.at(-1);
+      await page.getByRole('button', { name: 'Start', exact: true }).tap();
+      await page.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+      const prompt = page.getByText(SHARED_DEBRIEF, { exact: true });
+      await expect(prompt).toBeVisible();
+      await prompt.evaluate(node => node.scrollIntoView({ block: 'center' }));
+      await expect(timer).toBeInViewport({ ratio: 1 });
+      await page.clock.fastForward(10_000);
+      await expect(timer).toHaveText(new RegExp('^' + (lastMinutes - 1) + ':\\d{2}$'));
+    }
   });
 });

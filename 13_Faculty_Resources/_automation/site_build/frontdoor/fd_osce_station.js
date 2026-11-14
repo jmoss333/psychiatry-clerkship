@@ -72,12 +72,35 @@ var FD_OSCE_STATIONS = {
   }
 };
 
-var FD_OSCE_CIRCUIT = {
-  slug: 'catatonia-withdrawal-circuit',
-  title: 'Possible Catatonia → Alcohol Withdrawal',
-  cases: ['possible-catatonia', 'alcohol-withdrawal'],
-  roles: {a: ['interviewer', 'nurse'], b: ['patient', 'interviewer'], c: ['nurse', 'patient']}
+var FD_OSCE_CIRCUITS = {
+  'catatonia-withdrawal-circuit': {
+    title: 'Possible Catatonia → Alcohol Withdrawal',
+    cases: ['possible-catatonia', 'alcohol-withdrawal'],
+    roles: {a: ['interviewer', 'nurse'], b: ['patient', 'interviewer'], c: ['nurse', 'patient']}
+  },
+  'full-six-station-circuit': {
+    title: 'Full six-station circuit',
+    cases: ['suicide-risk-collateral', 'capacity', 'possible-catatonia', 'alcohol-withdrawal', 'family-agenda', 'admission-presentation'],
+    roles: {
+      a: ['sibling', 'patient', 'interviewer', 'nurse', 'family', 'presenter'],
+      b: ['interviewer', 'observer', 'patient', 'interviewer', 'observer', 'resident'],
+      c: ['patient', 'interviewer', 'nurse', 'patient', 'presenter', 'observer']
+    },
+    rememberSeat: true,
+    timingNote: "Includes Station 1's feedback. Allow extra time for the other five debriefs and transitions."
+  }
 };
+
+// Round numbers in links and bookmarks are one-based. Explicit links also work without storage.
+function fdCircuitRound(value, count) {
+  var number = Number(value);
+  return String(number) === value && Number.isInteger(number) && number >= 1 && number <= count ? number : 0;
+}
+
+function fdCircuitSavedRound(slug, seat, count) {
+  try { return fdCircuitRound(localStorage.getItem('cw_osce_round_v1_' + slug + '_' + seat), count); }
+  catch (_) { return 0; }
+}
 
 function fdOsceParts(markdown, station) {
   var sections = markdown.split(/^## /m);
@@ -126,27 +149,34 @@ function fdOsceTimer(station, minutes, circuit) {
   });
   return '<fieldset><legend>Facilitator timer</legend>' + phases.join('') + '</fieldset>' +
     '<div' + (circuit ? ' class="fd-circuit__timer" role="group" aria-label="Facilitator timer controls"' : '') + '>' +
-    (circuit ? '<span data-current-phase></span>' : '') +
+    (circuit ? '<span data-current-phase>' + station.phases[0] + '</span>' : '') +
     '<div class="fd-station__clock" role="timer" aria-label="Time remaining" data-initial-minutes="' + minutes[0] + '">' + minutes[0] + ':00</div>' +
     '<div class="fd-station__actions"><button type="button" class="fd-btn fd-btn--primary" data-timer-toggle>Start</button>' +
     '<button type="button" class="fd-btn fd-btn--ghost" data-timer-reset>Reset</button></div></div><p role="status" data-timer-status></p>';
 }
 
+function fdOsceRoleCard(role, parts, parse) {
+  var card = '<h2>' + role.label + '</h2>';
+  if (role.instruction) card += '<p>' + role.instruction + '</p>';
+  return card + role.fields.map(function(field) { return parse(parts.fields[field]); }).join('');
+}
+
 function fdCircuitView(circuit, current, rounds, round, seat, url, parse) {
   var title = 'Case ' + (round + 1) + ' of ' + rounds.length + ' · ' + current.title;
   var body = '<p class="fd-circuit__case"><strong>' + title + '</strong></p>';
+  var next = circuit.cases[round + 1];
+  if (next) body += '<p>Up next: ' + FD_OSCE_STATIONS[next].title + '</p>';
   var minutes = rounds[round].minutes;
   if (seat) {
     var assigned = current.roles[circuit.roles[seat][round]];
-    body += '<p>Learner ' + seat.toUpperCase() + '</p><h2>' + assigned.label + '</h2>';
-    assigned.fields.forEach(function(field) { body += parse(rounds[round].fields[field]); });
+    body += '<p>Learner ' + seat.toUpperCase() + '</p>' + fdOsceRoleCard(assigned, rounds[round], parse);
   } else {
     var total = rounds.reduce(function(sum, part) {
       return sum + part.minutes.reduce(function(a,b) { return a+b; }, 0);
     }, 0);
-    body += '<p>' + total + ' timed minutes across both cases, plus debriefs.</p>' +
+    body += '<p>' + total + ' timed minutes. ' + (circuit.timingNote || 'Allow extra time for debriefs.') + '</p>' +
       fdOsceTimer(current, minutes, true) + '<h3>Learner links</h3>' +
-      '<p>Give each learner one link for both cases. Ask everyone to tap Next case together after the first debrief.</p>';
+      '<p>Give each learner one link for the circuit. After each debrief, cue everyone to tap Next case.</p>';
     body += fdOsceShareList(Object.keys(circuit.roles).map(function(key) {
       var label = 'Learner ' + key.toUpperCase();
       var assignment = circuit.roles[key].map(function(role, i) {
@@ -162,16 +192,41 @@ function fdCircuitView(circuit, current, rounds, round, seat, url, parse) {
   return body;
 }
 
+function fdCircuitNavigation(circuit, round, seatUrl, seat) {
+  var next = circuit.cases[round + 1];
+  var navigation = next
+    ? '<p>On the facilitator’s cue, move to ' + FD_OSCE_STATIONS[next].title + '.</p>' +
+      '<a class="fd-btn fd-btn--primary" href="' + seatUrl + '&amp;round=' + (round + 2) + '">Next case</a>'
+    : '<p>Final case · End with the debrief.</p>';
+  if (circuit.rememberSeat) {
+    navigation += '<details><summary>Go to a station</summary>' +
+      (seat ? '<p>Reopen your QR link in this browser to resume. On a new device, choose the station your group is on.</p>' : '') +
+      '<ol>' + circuit.cases.map(function(slug, index) {
+      return '<li><a href="' + seatUrl + '&amp;round=' + (index + 1) + '"' +
+        (round === index ? ' aria-current="step"' : '') + '>' + FD_OSCE_STATIONS[slug].title + '</a></li>';
+    }).join('') + '</ol></details>';
+    if (round > 0) navigation += '<p><a href="' + seatUrl + '&amp;round=1">Start at station 1</a></p>';
+  } else if (!next) navigation += '<a href="' + seatUrl + '">Back to first case</a>';
+  return navigation;
+}
+
 function fdOsceStation(markdown, search, parse) {
   var params = new URLSearchParams(search);
   var station = fdStationForRoute('osce.md', params);
   if (!station) return '';
-  var circuit = station===FD_OSCE_CIRCUIT;
-  var round = params.get('round')==='2' ? 1 : 0;
+  var slug = params.get('station');
+  var circuit = station.cases ? station : null;
+  var key = params.get('role');
+  var seat = circuit && fdOwn(circuit.roles, key) ? key : null;
+  var remember = circuit && circuit.rememberSeat && seat;
+  var round = 0;
   var rounds;
   if (circuit) {
-    rounds = station.cases.map(function(slug) { return fdOsceParts(markdown, FD_OSCE_STATIONS[slug]); });
-    station = FD_OSCE_STATIONS[station.cases[round]];
+    var number = fdCircuitRound(params.get('round'), circuit.cases.length);
+    if (!params.has('round') && remember) number = fdCircuitSavedRound(slug, seat, circuit.cases.length);
+    round = (number || 1) - 1;
+    rounds = circuit.cases.map(function(id) { return fdOsceParts(markdown, FD_OSCE_STATIONS[id]); });
+    station = FD_OSCE_STATIONS[circuit.cases[round]];
   }
   var parts = circuit ? rounds[round] : fdOsceParts(markdown, station);
   var full = '<a href="?page=osce.md">Full OSCE station set</a>';
@@ -180,23 +235,16 @@ function fdOsceStation(markdown, search, parse) {
   var contacts = crisis ? parse(crisis[0]) : '';
   if (!parts || (circuit && !rounds.every(Boolean))) return '<p role="status">The station could not be opened. ' + full + '</p>' + contacts;
 
-  var url = '?page=osce.md&amp;station=' + params.get('station');
-  var key = params.get('role');
-  var body = '<section class="fd-station" data-osce-station><p>Fictional practice case.</p>';
+  var url = '?page=osce.md&amp;station=' + slug;
+  var bookmark = remember ? ' data-circuit-slug="' + slug + '" data-circuit-seat="' + seat + '" data-circuit-round="' + (round + 1) + '"' : '';
+  var body = '<section class="fd-station" data-osce-station' + bookmark + '><p>Fictional practice case.</p>';
   var navigation = '';
   if (circuit) {
-    var seat = fdOwn(FD_OSCE_CIRCUIT.roles, key) ? key : null;
-    body += fdCircuitView(FD_OSCE_CIRCUIT, station, rounds, round, seat, url, parse);
+    body += fdCircuitView(circuit, station, rounds, round, seat, url, parse);
     var seatUrl = url + (seat ? '&amp;role=' + seat : '');
-    navigation = round ? '<p>Final case · End with the handoff debrief.</p><a href="' + seatUrl + '">Back to first case</a>'
-      : '<p>' + (seat ? 'When your facilitator calls the rotation, open your next role.' : 'After the debrief, move the group to Alcohol Withdrawal.') +
-        '</p><a class="fd-btn fd-btn--primary" href="' + seatUrl + '&amp;round=2">Next case</a>';
+    navigation = fdCircuitNavigation(circuit, round, seatUrl, seat);
   } else if (fdOwn(station.roles, key)) {
-    var role = station.roles[key];
-    body += '<h2>' + role.label + '</h2>';
-    if (role.instruction) body += '<p>' + role.instruction + '</p>';
-    role.fields.forEach(function(label) { body += parse(parts.fields[label]); });
-    body += '<p><a href="' + url + '">Back to station</a></p>';
+    body += fdOsceRoleCard(station.roles[key], parts, parse) + '<p><a href="' + url + '">Back to station</a></p>';
   } else {
     body += fdOsceLauncher(station, url, parts.minutes);
   }
@@ -208,6 +256,16 @@ function fdOsceStation(markdown, search, parse) {
 }
 
 function fdMountOsceStation(panel){
+  if(panel.dataset.circuitSeat){
+    var address = new URL(location.href);
+    var round = panel.dataset.circuitRound;
+    try { localStorage.setItem('cw_osce_round_v1_' + panel.dataset.circuitSlug + '_' + panel.dataset.circuitSeat, round); } catch (_) {}
+    // Pin this history entry to the displayed round so Back still returns there after a rotation.
+    if(address.searchParams.get('round') !== round){
+      address.searchParams.set('round', round);
+      try { history.replaceState(history.state, '', address); } catch (_) {}
+    }
+  }
   var debrief=panel.querySelector('[data-station-debrief]');
   debrief.onclick=function(){
     var content=panel.querySelector('#station-debrief');
