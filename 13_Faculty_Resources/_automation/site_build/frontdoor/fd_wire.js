@@ -353,7 +353,7 @@ function fdParamsWithoutRoute(search){
   params.delete('guideFind');
   params.delete('guideSection');
   if(params.has('station')){
-    if(params.get('station')===FD_OSCE_CIRCUIT.slug) params.delete('round');
+    if(fdOwn(FD_OSCE_CIRCUITS,params.get('station'))) params.delete('round');
     params.delete('station');
     params.delete('role');
   }
@@ -390,7 +390,7 @@ function fdRouteForTab(tab, search, libraryView){
 function fdStationForRoute(ref,params){
   if(ref!=='osce.md'||params.get('page')!==ref||!params.has('station'))return null;
   var key=params.get('station');
-  if(key===FD_OSCE_CIRCUIT.slug)return FD_OSCE_CIRCUIT;
+  if(fdOwn(FD_OSCE_CIRCUITS,key))return FD_OSCE_CIRCUITS[key];
   return fdOwn(FD_OSCE_STATIONS,key) ? FD_OSCE_STATIONS[key] : null;
 }
 
@@ -403,7 +403,9 @@ function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
     params.set('station',previous.get('station'));
     var stationRole=previous.get('role');
     if(fdOwn(station.roles,stationRole))params.set('role',stationRole);
-    if(station===FD_OSCE_CIRCUIT && previous.get('round')==='2')params.set('round','2');
+    if(station.cases && previous.has('round')){
+      params.set('round',String(fdCircuitRound(previous.get('round'),station.cases.length)||1));
+    }
   }
   if(ref==='prepare-for-tomorrow.html'){
     var preparation=new URLSearchParams(fdPrepareFrameParams(search));
