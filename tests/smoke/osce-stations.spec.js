@@ -6,6 +6,7 @@ const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
 const CIRCUIT = 'catatonia-withdrawal-circuit';
 const FULL_CIRCUIT = 'full-six-station-circuit';
+const TEACHING_TIME_45 = 'teaching-time-45';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
 const COLLATERAL_DEBRIEF = 'Give the handoff.';
@@ -597,6 +598,112 @@ test.describe('full six-station circuit on a touch phone', () => {
       await expect(timer).toBeInViewport({ ratio: 1 });
       await page.clock.fastForward(10_000);
       await expect(timer).toHaveText(new RegExp('^' + (lastMinutes - 1) + ':\\d{2}$'));
+    }
+  });
+});
+
+test.describe('45-minute teaching preset on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  const startUrl = '/?page=osce.md&station=' + TEACHING_TIME_45 + '&round=1';
+  const cases = [
+    { encounter: 'Observation and interview', debrief: CATATONIA_DEBRIEF },
+    { encounter: 'Patient encounter', debrief: WITHDRAWAL_DEBRIEF },
+  ];
+
+  test('open the agenda and run all 45 minutes with time for debrief and transition', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/?page=osce.md');
+    await page.getByRole('link', { name: 'Fit my teaching time', exact: true }).tap();
+    await expect(page).toHaveURL(url => url.searchParams.get('station') === TEACHING_TIME_45 && !url.searchParams.has('round'));
+    await expect(page.getByRole('heading', { name: '45-minute session plan', exact: true })).toBeVisible();
+    const agenda = page.getByRole('list', { name: 'Session agenda' });
+    await expect(agenda).toBeVisible();
+    const rows = agenda.getByRole('listitem');
+    const schedule = [
+      ['0–15', /catatonia/i], ['15–20', /debrief/i], ['20–25', /transition/i],
+      ['25–40', /alcohol withdrawal/i], ['40–45', /debrief/i],
+    ];
+    await expect(rows).toHaveCount(schedule.length);
+    for (const [index, [range, activity]] of schedule.entries()) {
+      await expect(rows.nth(index)).toContainText(range, { useInnerText: true });
+      await expect(rows.nth(index)).toContainText(activity, { useInnerText: true });
+    }
+    await page.getByRole('link', { name: 'Start session', exact: true }).tap();
+    await expect(page).toHaveURL(url => url.pathname + url.search === startUrl);
+
+    let actualMinutes = 0;
+    const timer = page.getByRole('timer');
+    for (const [index, current] of cases.entries()) {
+      const phases = [[current.encounter, 10], ['Team presentation', 5], ['Debrief', 5]];
+      if (index === 0) phases.push(['Transition', 5]);
+      await expect(page.getByRole('radio')).toHaveCount(phases.length);
+      await expect(page.getByRole('radio', { name: current.encounter, exact: true })).toBeChecked();
+      const debrief = page.getByText(current.debrief, { exact: true });
+      await expect(debrief).toBeHidden();
+      for (const [phase, minutes] of phases) {
+        await page.getByRole('radio', { name: phase, exact: true }).tap();
+        await expect(timer).toHaveText(minutes + ':00');
+        actualMinutes += Number((await timer.innerText()).split(':')[0]);
+        await page.getByRole('button', { name: 'Start', exact: true }).tap();
+        if (phase === 'Debrief' || phase === 'Transition') {
+          if (phase === 'Debrief') await expect(debrief).toBeVisible();
+          const end = phase === 'Debrief' ? page.getByText(SHARED_DEBRIEF, { exact: true }) : nextCase(page);
+          await end.evaluate(node => node.scrollIntoView({ block: 'center' }));
+          await expect(timer).toBeInViewport({ ratio: 1 });
+          await page.clock.fastForward(10_000);
+          await expect(timer).toHaveText(/^4:\d{2}$/);
+          await page.clock.fastForward((minutes * 60 - 10) * 1000);
+        } else {
+          await page.clock.fastForward(minutes * 60_000);
+        }
+        await expect(timer).toHaveText('0:00');
+      }
+      if (index === 0) {
+        await expect(page.getByText('Transition complete. Cue everyone to tap Next case.', { exact: true })).toBeVisible();
+        await expect(page).toHaveURL(url => url.searchParams.get('round') === '1');
+        await nextCase(page).tap();
+        await expect(page).toHaveURL(url => url.searchParams.get('round') === '2');
+      }
+    }
+    expect(actualMinutes).toBe(45);
+    await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
+    await expect(nextCase(page)).toHaveCount(0);
+  });
+
+  test('all seat links stay stable across the facilitator cue and open the assigned roles', async ({ page, context }) => {
+    const seats = [
+      ['a', 'Interviewer', 'Start at the bedside.', 'Nurse', 'Your bedside observations.'],
+      ['b', 'Patient', 'How to play the pauses.', 'Interviewer', 'Ask about a usual drinking day.'],
+      ['c', 'Nurse', 'What you saw this shift.', 'Patient', 'What happened years ago.'],
+    ];
+    await page.goto(startUrl);
+    const addresses = [];
+    for (const [id, firstRole, firstCue, secondRole, secondCue] of seats) {
+      const label = 'Learner ' + id.toUpperCase();
+      const link = page.getByRole('link', { name: label, exact: true });
+      const address = new URL(await link.getAttribute('href'), page.url());
+      expect(address.origin).toBe(new URL(page.url()).origin);
+      expect(address.searchParams.get('station')).toBe(TEACHING_TIME_45);
+      expect(address.searchParams.get('role')).toBe(id);
+      expect(address.searchParams.has('round')).toBe(false);
+      addresses.push([label, address.href]);
+
+      const card = await context.newPage();
+      await pinVisualGovernance(card);
+      await card.goto(address.href);
+      await expect(card.getByRole('heading', { name: firstRole, level: 2, exact: true })).toBeVisible();
+      await expect(card.getByText(firstCue, { exact: true })).toBeVisible();
+      await nextCase(card).tap();
+      await expect(card).toHaveURL(url => url.searchParams.get('role') === id && url.searchParams.get('round') === '2');
+      await expect(card.getByRole('heading', { name: secondRole, level: 2, exact: true })).toBeVisible();
+      await expect(card.getByText(secondCue, { exact: true })).toBeVisible();
+      await card.close();
+    }
+    await nextCase(page).tap();
+    for (const [label, original] of addresses) {
+      const href = await page.getByRole('link', { name: label, exact: true }).getAttribute('href');
+      expect(new URL(href, page.url()).href).toBe(original);
     }
   });
 });

@@ -91,6 +91,15 @@ var FD_OSCE_CIRCUITS = {
   }
 };
 
+// The teaching-time preset uses the same two cases and learner rotation as the short circuit.
+var fdShortCircuit = FD_OSCE_CIRCUITS['catatonia-withdrawal-circuit'];
+FD_OSCE_CIRCUITS['teaching-time-45'] = {
+  title: 'Fit my teaching time',
+  cases: fdShortCircuit.cases,
+  roles: fdShortCircuit.roles,
+  session: {minutes: 45, debrief: 5, transition: 5}
+};
+
 // Round numbers in links and bookmarks are one-based. Explicit links also work without storage.
 function fdCircuitRound(value, count) {
   var number = Number(value);
@@ -133,7 +142,7 @@ function fdOsceLauncher(station, url, minutes) {
       label.toLowerCase() + ' link">Copy link</button></li>';
   });
   return '<h2>Run this station</h2><p>Share one role link with each participant. Keep this page open to run the timer on this device.</p>' +
-    fdOsceShareList(links) + fdOsceTimer(station, minutes);
+    fdOsceShareList(links) + fdOsceTimer(station.phases, minutes);
 }
 
 function fdOsceShareList(links) {
@@ -141,15 +150,16 @@ function fdOsceShareList(links) {
     '<label data-copy-fallback hidden>Copy role link<input type="url" readonly></label>';
 }
 
-function fdOsceTimer(station, minutes, circuit) {
-  var phases = station.phases.map(function(label, index) {
+function fdOsceTimer(labels, minutes, circuit, endMessage) {
+  var phases = labels.map(function(label, index) {
     if (minutes.length === 1) return label;
     return '<label><input type="radio" name="station-phase" value="' + minutes[index] + '"' +
-      (index === 0 ? ' checked' : '') + '> ' + label + '</label>';
+      (endMessage && index === labels.length - 1 ? ' data-end-message="' + endMessage + '"' : '') +
+      (index === 0 ? ' checked' : '') + (label === 'Debrief' ? ' data-open-debrief' : '') + '> ' + label + '</label>';
   });
   return '<fieldset><legend>Facilitator timer</legend>' + phases.join('') + '</fieldset>' +
     '<div' + (circuit ? ' class="fd-circuit__timer" role="group" aria-label="Facilitator timer controls"' : '') + '>' +
-    (circuit ? '<span data-current-phase>' + station.phases[0] + '</span>' : '') +
+    (circuit ? '<span data-current-phase>' + labels[0] + '</span>' : '') +
     '<div class="fd-station__clock" role="timer" aria-label="Time remaining" data-initial-minutes="' + minutes[0] + '">' + minutes[0] + ':00</div>' +
     '<div class="fd-station__actions"><button type="button" class="fd-btn fd-btn--primary" data-timer-toggle>Start</button>' +
     '<button type="button" class="fd-btn fd-btn--ghost" data-timer-reset>Reset</button></div></div><p role="status" data-timer-status></p>';
@@ -161,7 +171,41 @@ function fdOsceRoleCard(role, parts, parse) {
   return card + role.fields.map(function(field) { return parse(parts.fields[field]); }).join('');
 }
 
-function fdCircuitView(circuit, current, rounds, round, seat, url, parse) {
+function fdSessionSchedule(circuit, rounds) {
+  var elapsed = 0;
+  return rounds.map(function(parts, index) {
+    var current = FD_OSCE_STATIONS[circuit.cases[index]];
+    var phases = current.phases.slice();
+    var minutes = parts.minutes.slice();
+    var blocks = [];
+    function addBlock(label, length) {
+      blocks.push({label: label, start: elapsed, end: elapsed + length});
+      elapsed += length;
+    }
+    function addPhase(label, length, description) {
+      phases.push(label);
+      minutes.push(length);
+      addBlock(description, length);
+    }
+    addBlock(current.title, minutes.reduce(function(a,b) { return a+b; }, 0));
+    addPhase('Debrief', circuit.session.debrief, 'Handoff debrief');
+    if (index + 1 < rounds.length) addPhase('Transition', circuit.session.transition, 'Transition · switch roles and prepare for the next case');
+    return {phases: phases, minutes: minutes, blocks: blocks, end: elapsed};
+  });
+}
+
+function fdSessionPlan(circuit, schedule, url) {
+  var rows = schedule.map(function(round) {
+    return round.blocks.map(function(block) {
+      return '<li><strong>' + block.start + '–' + block.end + ' min</strong> · ' + block.label + '</li>';
+    }).join('');
+  }).join('');
+  return '<h2>' + circuit.session.minutes + '-minute session plan</h2><p>Three learners, two cases. Share the learner links before starting the clock.</p>' +
+    '<ol aria-label="Session agenda">' + rows + '</ol>' +
+    '<p><a class="fd-btn fd-btn--primary" href="' + url + '&amp;round=1">Start session</a></p>' + fdCircuitSeats(circuit, url);
+}
+
+function fdCircuitView(circuit, current, rounds, round, seat, url, parse, schedule) {
   var title = 'Case ' + (round + 1) + ' of ' + rounds.length + ' · ' + current.title;
   var body = '<p class="fd-circuit__case"><strong>' + title + '</strong></p>';
   var next = circuit.cases[round + 1];
@@ -171,13 +215,28 @@ function fdCircuitView(circuit, current, rounds, round, seat, url, parse) {
     var assigned = current.roles[circuit.roles[seat][round]];
     body += '<p>Learner ' + seat.toUpperCase() + '</p>' + fdOsceRoleCard(assigned, rounds[round], parse);
   } else {
-    var total = rounds.reduce(function(sum, part) {
-      return sum + part.minutes.reduce(function(a,b) { return a+b; }, 0);
-    }, 0);
-    body += '<p>' + total + ' timed minutes. ' + (circuit.timingNote || 'Allow extra time for debriefs.') + '</p>' +
-      fdOsceTimer(current, minutes, true) + '<h3>Learner links</h3>' +
-      '<p>Give each learner one link for the circuit. After each debrief, cue everyone to tap Next case.</p>';
-    body += fdOsceShareList(Object.keys(circuit.roles).map(function(key) {
+    var labels = current.phases;
+    if (schedule) {
+      var plan = schedule[round];
+      labels = plan.phases;
+      minutes = plan.minutes;
+      body += '<p>Minutes ' + plan.blocks[0].start + '–' + plan.end + ' of ' + circuit.session.minutes +
+        '. Select and start each phase in order.</p>';
+    } else {
+      var total = rounds.reduce(function(sum, part) {
+        return sum + part.minutes.reduce(function(a,b) { return a+b; }, 0);
+      }, 0);
+      body += '<p>' + total + ' timed minutes. ' + (circuit.timingNote || 'Allow extra time for debriefs.') + '</p>';
+    }
+    var endMessage = schedule && (next ? 'Transition complete. Cue everyone to tap Next case.' : 'Session complete.');
+    body += fdOsceTimer(labels, minutes, true, endMessage) + fdCircuitSeats(circuit, url);
+  }
+  return body;
+}
+
+function fdCircuitSeats(circuit, url) {
+  return '<h3>Learner links</h3><p>Give each learner one link for the circuit. Cue everyone when it is time to tap Next case.</p>' +
+    fdOsceShareList(Object.keys(circuit.roles).map(function(key) {
       var label = 'Learner ' + key.toUpperCase();
       var assignment = circuit.roles[key].map(function(role, i) {
         return FD_OSCE_STATIONS[circuit.cases[i]].roles[role].label;
@@ -188,8 +247,6 @@ function fdCircuitView(circuit, current, rounds, round, seat, url, parse) {
         '<button type="button" class="fd-btn fd-btn--ghost" data-station-copy aria-label="Copy ' + label +
         ' link">Copy link</button><div class="fd-circuit__qr" id="qr-' + key + '" hidden></div></li>';
     }));
-  }
-  return body;
 }
 
 function fdCircuitNavigation(circuit, round, seatUrl, seat) {
@@ -206,7 +263,8 @@ function fdCircuitNavigation(circuit, round, seatUrl, seat) {
         (round === index ? ' aria-current="step"' : '') + '>' + FD_OSCE_STATIONS[slug].title + '</a></li>';
     }).join('') + '</ol></details>';
     if (round > 0) navigation += '<p><a href="' + seatUrl + '&amp;round=1">Start at station 1</a></p>';
-  } else if (!next) navigation += '<a href="' + seatUrl + '">Back to first case</a>';
+  } else if (!next && circuit.session && !seat) navigation += '<a href="' + seatUrl + '">Back to session plan</a>';
+  else if (!next) navigation += '<a href="' + seatUrl + '">Back to first case</a>';
   return navigation;
 }
 
@@ -240,7 +298,12 @@ function fdOsceStation(markdown, search, parse) {
   var body = '<section class="fd-station" data-osce-station' + bookmark + '><p>Fictional practice case.</p>';
   var navigation = '';
   if (circuit) {
-    body += fdCircuitView(circuit, station, rounds, round, seat, url, parse);
+    var schedule = circuit.session && fdSessionSchedule(circuit, rounds);
+    if (schedule && schedule[schedule.length - 1].end !== circuit.session.minutes)
+      return '<p role="status">The current station timings no longer fit this session. ' + full + '</p>' + contacts;
+    if (schedule && !seat && !params.has('round'))
+      return body + fdSessionPlan(circuit, schedule, url) + '<p>' + full + '</p></section>' + contacts;
+    body += fdCircuitView(circuit, station, rounds, round, seat, url, parse, schedule);
     var seatUrl = url + (seat ? '&amp;role=' + seat : '');
     navigation = fdCircuitNavigation(circuit, round, seatUrl, seat);
   } else if (fdOwn(station.roles, key)) {
@@ -256,6 +319,8 @@ function fdOsceStation(markdown, search, parse) {
 }
 
 function fdMountOsceStation(panel){
+  var shares=panel.querySelector('.fd-station__roles');
+  if(shares)fdMountOsceShareLinks(panel, shares);
   if(panel.dataset.circuitSeat){
     var address = new URL(location.href);
     var round = panel.dataset.circuitRound;
@@ -267,6 +332,7 @@ function fdMountOsceStation(panel){
     }
   }
   var debrief=panel.querySelector('[data-station-debrief]');
+  if(!debrief)return;
   debrief.onclick=function(){
     var content=panel.querySelector('#station-debrief');
     content.hidden=!content.hidden;
@@ -293,8 +359,9 @@ function fdMountOsceStation(panel){
       stop();
       toggle.textContent='Start';
       toggle.disabled=true;
-      status.textContent=panel.querySelector('input[name="station-phase"]')
-        ? 'Time is up. Reset the timer or select the next phase.' : 'Time is up. Reset the timer to start again.';
+      var selected=panel.querySelector('input[name="station-phase"]:checked');
+      status.textContent=selected ? selected.dataset.endMessage || 'Time is up. Reset the timer or select the next phase.'
+        : 'Time is up. Reset the timer to start again.';
     }else tick=setTimeout(update,remaining%1000||1000);
   }
   function resetPhase(){
@@ -309,7 +376,10 @@ function fdMountOsceStation(panel){
     paint();
   }
   reset.onclick=resetPhase;
-  panel.querySelector('fieldset').onchange=resetPhase;
+  panel.querySelector('fieldset').onchange=function(event){
+    resetPhase();
+    if(event.target.hasAttribute('data-open-debrief') && debrief.getAttribute('aria-expanded')==='false')debrief.click();
+  };
   toggle.onclick=function(){
     if(deadline!==null){
       remaining=Math.max(0,deadline-Date.now());
@@ -326,10 +396,12 @@ function fdMountOsceStation(panel){
     }
   };
   resetPhase();
+}
 
+function fdMountOsceShareLinks(panel, shares){
   var copyStatus=panel.querySelector('[data-copy-status]'),fallback=panel.querySelector('[data-copy-fallback]');
   var latestCopy=0;
-  panel.querySelector('.fd-station__roles').onclick=async function(event){
+  shares.onclick=async function(event){
     var qrButton=event.target.closest('[data-seat-qr]');
     if(qrButton){
       var row=qrButton.closest('li'), learner=row.querySelector('a'), output=row.querySelector('.fd-circuit__qr');
