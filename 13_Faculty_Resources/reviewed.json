@@ -546,10 +546,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "23273f1f41e862ab156319d9e2cbc55d7f3cb454",
-    "clinicalHash": "6c349b6227a9d9b66d67cccdca7b493668840189"
+    "contentHash": "072ef315f63b9b37eb37d248ede0b3e8d338489f",
+    "clinicalHash": "41a728d852c3fa9055c246a0cf15d105f9fcf3a4"
   },
   "t_sud.md": {
     "status": "reviewed",
