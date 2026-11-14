@@ -4,6 +4,8 @@ Generated: 2026-06-27
 
 All cases are synthetic. No real patient details are used.
 
+[Fit my teaching time](?page=osce.md&station=teaching-time-45) · 45 minutes for Possible Catatonia and Alcohol Withdrawal, including two debriefs and a role change
+
 [Run a circuit](?page=osce.md&station=catatonia-withdrawal-circuit) · Possible Catatonia → Alcohol Withdrawal · 3 learners
 
 [Full six-station circuit](?page=osce.md&station=full-six-station-circuit) · Stations 1–6 in order · Each learner leads twice
