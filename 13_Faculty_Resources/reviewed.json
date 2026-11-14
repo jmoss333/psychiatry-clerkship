@@ -557,11 +557,11 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
     "note": "Volkow 2016 stigma clause reworded to the paper's hedge (may help to moderate some of the moral judgment); reviewed and attested by Joshua Moss, MD in session 2026-09-18 (#695). Prior attestation 2026-07-01.",
-    "contentHash": "c781e2aa1382bba297257fb71507d039174e824c",
-    "clinicalHash": "ee13425ae5fa25abe319a6fd6d99f314adf2378e"
+    "contentHash": "0948409278051a11eda816980504e4d883c006bf",
+    "clinicalHash": "5cb5ed6f30b92ede57fd7d492d23aec66165b9df"
   },
   "t_personality.md": {
     "status": "reviewed",
