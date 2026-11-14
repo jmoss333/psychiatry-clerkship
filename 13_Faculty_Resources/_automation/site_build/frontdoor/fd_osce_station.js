@@ -88,6 +88,12 @@ var FD_OSCE_CIRCUITS = {
     },
     rememberSeat: true,
     timingNote: "Includes Station 1's feedback. Allow extra time for the other five debriefs and transitions."
+  },
+  'communication-handoff-45': {
+    title: 'Fit my teaching time',
+    cases: ['family-agenda', 'admission-presentation'],
+    roles: {a: ['presenter', 'observer'], b: ['family', 'presenter'], c: ['observer', 'resident']},
+    session: {goal: 'Communication and handoff', minutes: 45, debrief: 5, transition: 5, repeat: 5}
   }
 };
 
@@ -97,7 +103,7 @@ FD_OSCE_CIRCUITS['teaching-time-45'] = {
   title: 'Fit my teaching time',
   cases: fdShortCircuit.cases,
   roles: fdShortCircuit.roles,
-  session: {minutes: 45, debrief: 5, transition: 5}
+  session: {goal: 'Acute assessment', minutes: 45, debrief: 5, transition: 5}
 };
 
 // Round numbers in links and bookmarks are one-based. Explicit links also work without storage.
@@ -155,6 +161,7 @@ function fdOsceTimer(labels, minutes, circuit, endMessage) {
     if (minutes.length === 1) return label;
     return '<label><input type="radio" name="station-phase" value="' + minutes[index] + '"' +
       (endMessage && index === labels.length - 1 ? ' data-end-message="' + endMessage + '"' : '') +
+      (label === 'Repeat the handoff' ? ' data-repeat-phase' : '') +
       (index === 0 ? ' checked' : '') + (label === 'Debrief' ? ' data-open-debrief' : '') + '> ' + label + '</label>';
   });
   return '<fieldset><legend>Facilitator timer</legend>' + phases.join('') + '</fieldset>' +
@@ -190,17 +197,28 @@ function fdSessionSchedule(circuit, rounds) {
     addBlock(current.title, minutes.reduce(function(a,b) { return a+b; }, 0));
     addPhase('Debrief', circuit.session.debrief, 'Handoff debrief');
     if (index + 1 < rounds.length) addPhase('Transition', circuit.session.transition, 'Transition · switch roles and prepare for the next case');
+    else if (circuit.session.repeat) addPhase('Repeat the handoff', circuit.session.repeat, 'Repeat the handoff');
     return {phases: phases, minutes: minutes, blocks: blocks, end: elapsed};
   });
 }
 
 function fdSessionPlan(circuit, schedule, url) {
+  var choices = Object.keys(FD_OSCE_CIRCUITS).filter(function(slug) {
+    return !!FD_OSCE_CIRCUITS[slug].session;
+  }).map(function(slug) {
+    var option = FD_OSCE_CIRCUITS[slug];
+    var active = option === circuit;
+    var label = option.session.goal;
+    return '<a href="?page=osce.md&amp;station=' + slug + '"' + (active ? ' aria-current="page"' : '') + '>' +
+      (active ? '<strong>' + label + '</strong>' : label) + '</a>';
+  });
   var rows = schedule.map(function(round) {
     return round.blocks.map(function(block) {
       return '<li><strong>' + block.start + '–' + block.end + ' min</strong> · ' + block.label + '</li>';
     }).join('');
   }).join('');
-  return '<h2>' + circuit.session.minutes + '-minute session plan</h2><p>Three learners, two cases. Share the learner links before starting the clock.</p>' +
+  return '<h2>' + circuit.session.minutes + '-minute session plan</h2><nav aria-label="Teaching goal"><p>Teaching goal · ' +
+    choices.join(' · ') + '</p></nav><p>Three learners, two cases. Share the learner links before starting the clock.</p>' +
     '<ol aria-label="Session agenda">' + rows + '</ol>' +
     '<p><a class="fd-btn fd-btn--primary" href="' + url + '&amp;round=1">Start session</a></p>' + fdCircuitSeats(circuit, url);
 }
@@ -254,7 +272,9 @@ function fdCircuitNavigation(circuit, round, seatUrl, seat) {
   var navigation = next
     ? '<p>On the facilitator’s cue, move to ' + FD_OSCE_STATIONS[next].title + '.</p>' +
       '<a class="fd-btn fd-btn--primary" href="' + seatUrl + '&amp;round=' + (round + 2) + '">Next case</a>'
-    : '<p>Final case · End with the debrief.</p>';
+    : (circuit.session && circuit.session.repeat
+      ? '<p>After the debrief, keep your roles for the handoff rehearsal.</p>'
+      : '<p>Final case · End with the debrief.</p>');
   if (circuit.rememberSeat) {
     navigation += '<details><summary>Go to a station</summary>' +
       (seat ? '<p>Reopen your QR link in this browser to resume. On a new device, choose the station your group is on.</p>' : '') +
@@ -292,11 +312,13 @@ function fdOsceStation(markdown, search, parse) {
   var crisis = markdown.match(/^> <div class="crisis-block-hook"[^\n]*(?:\n>[^\n]*)*/m);
   var contacts = crisis ? parse(crisis[0]) : '';
   if (!parts || (circuit && !rounds.every(Boolean))) return '<p role="status">The station could not be opened. ' + full + '</p>' + contacts;
+  if (circuit && circuit.session && circuit.session.repeat && !rounds[rounds.length - 1].fields['Repeat the handoff'])
+    return '<p role="status">The handoff rehearsal could not be opened. ' + full + '</p>' + contacts;
 
   var url = '?page=osce.md&amp;station=' + slug;
   var bookmark = remember ? ' data-circuit-slug="' + slug + '" data-circuit-seat="' + seat + '" data-circuit-round="' + (round + 1) + '"' : '';
   var body = '<section class="fd-station" data-osce-station' + bookmark + '><p>Fictional practice case.</p>';
-  var navigation = '';
+  var navigation = '', repeatAction = '', repeatInstructions = '';
   if (circuit) {
     var schedule = circuit.session && fdSessionSchedule(circuit, rounds);
     if (schedule && schedule[schedule.length - 1].end !== circuit.session.minutes)
@@ -306,6 +328,11 @@ function fdOsceStation(markdown, search, parse) {
     body += fdCircuitView(circuit, station, rounds, round, seat, url, parse, schedule);
     var seatUrl = url + (seat ? '&amp;role=' + seat : '');
     navigation = fdCircuitNavigation(circuit, round, seatUrl, seat);
+    if (schedule && circuit.session.repeat && round === rounds.length - 1) {
+      if (!seat) repeatAction = '<p><button type="button" class="fd-btn fd-btn--primary" data-start-repeat>Repeat the handoff</button></p>';
+      repeatInstructions = '<section' + (seat ? '' : ' data-repeat-coaching hidden') + '><h3 tabindex="-1">Repeat the handoff</h3>' +
+        parse(parts.fields['Repeat the handoff']) + '</section>';
+    }
   } else if (fdOwn(station.roles, key)) {
     body += fdOsceRoleCard(station.roles[key], parts, parse) + '<p><a href="' + url + '">Back to station</a></p>';
   } else {
@@ -315,7 +342,8 @@ function fdOsceStation(markdown, search, parse) {
     '<div id="station-debrief" hidden><h3>Debrief</h3>' +
     (station.debriefField ? '<h4>' + station.debriefField + '</h4>' + parse(parts.fields[station.debriefField]) : '') +
     parse(parts.fields['Behaviors to practice']) +
-    '<h4>Discuss together</h4>' + parse(parts.questions) + '</div>' + navigation + '<p>' + full + '</p></section>' + contacts;
+    '<h4>Discuss together</h4>' + parse(parts.questions) + repeatAction + '</div>' + repeatInstructions +
+    navigation + '<p>' + full + '</p></section>' + contacts;
 }
 
 function fdMountOsceStation(panel){
@@ -343,6 +371,8 @@ function fdMountOsceStation(panel){
   if(!toggle)return;
   var display=panel.querySelector('[role="timer"]'),status=panel.querySelector('[data-timer-status]');
   var reset=panel.querySelector('[data-timer-reset]'),remaining=0,deadline=null,tick=null;
+  var repeatButton=panel.querySelector('[data-start-repeat]'), repeatPhase=panel.querySelector('[data-repeat-phase]');
+  var coaching=panel.querySelector('[data-repeat-coaching]');
   function stop(){
     clearTimeout(tick);
     deadline=null;
@@ -362,11 +392,16 @@ function fdMountOsceStation(panel){
       var selected=panel.querySelector('input[name="station-phase"]:checked');
       status.textContent=selected ? selected.dataset.endMessage || 'Time is up. Reset the timer or select the next phase.'
         : 'Time is up. Reset the timer to start again.';
+      if(repeatPhase && selected.hasAttribute('data-open-debrief'))status.textContent='Debrief complete. Select Repeat the handoff.';
     }else tick=setTimeout(update,remaining%1000||1000);
   }
   function resetPhase(){
     stop();
     var selected=panel.querySelector('input[name="station-phase"]:checked');
+    if(coaching){
+      coaching.hidden=selected!==repeatPhase;
+      repeatButton.hidden=selected===repeatPhase;
+    }
     var phaseLabel=panel.querySelector('[data-current-phase]');
     if(phaseLabel && selected)phaseLabel.textContent=selected.parentNode.textContent.trim();
     remaining=Number(selected ? selected.value : display.dataset.initialMinutes)*60000;
@@ -379,6 +414,12 @@ function fdMountOsceStation(panel){
   panel.querySelector('fieldset').onchange=function(event){
     resetPhase();
     if(event.target.hasAttribute('data-open-debrief') && debrief.getAttribute('aria-expanded')==='false')debrief.click();
+  };
+  if(repeatButton)repeatButton.onclick=function(){
+    repeatPhase.checked=true;
+    resetPhase();
+    toggle.click();
+    coaching.querySelector('h3').focus();
   };
   toggle.onclick=function(){
     if(deadline!==null){
