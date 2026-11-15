@@ -2837,7 +2837,9 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   max-width:calc(100vw - 2rem);background:var(--fd-surface);border:1px solid var(--fd-line-strong);
   border-radius:var(--fd-radius-md);box-shadow:var(--fd-shadow-bar)
 }
-.fd-circuit__timer [data-current-phase]{font-size:var(--fd-font-sm);line-height:1.2}
+.fd-circuit__timer [data-timer-caption]{min-width:0;font-size:var(--fd-font-sm);line-height:1.2}
+.fd-circuit__timer [data-timer-focus]{display:block;margin-top:var(--fd-space-2);color:var(--fd-teal-deep)}
+.fd-circuit__timer [data-timer-focus][hidden]{display:none}
 .fd-circuit__timer .fd-station__clock{font-weight:700;color:var(--fd-teal-deep)}
 .fd-circuit__qr{flex-basis:100%;padding:var(--fd-space-5) 0}
 .fd-circuit__qr svg{display:block;width:min(100%,14rem);height:auto}
