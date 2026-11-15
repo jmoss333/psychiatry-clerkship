@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(796 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(797 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -870,6 +870,8 @@ the Library.
       .fd-article__h1                    (tool: clipped, never removed — the outer document keeps its heading)
       .fd-article__lead                  (tool: hidden when empty)
       .fd-article__body                  (rendered long-form content)
+        figure.fd-case-timeline          (Case Formulation, before the MS3 prompt)
+          figcaption + ol > li ×3        (illustration and text per event, stacked at ≤640px)
       .fd-keypoints
         .fd-keypoints__label
         .fd-keypoints__item ×N

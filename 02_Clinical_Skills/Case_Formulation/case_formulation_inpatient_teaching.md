@@ -14,6 +14,15 @@ Read across each row to consider biological, psychological, and social factors. 
 
 **A worked example (fictional composite).** A 34-year-old man with bipolar I disorder is admitted for mania. He lost his insurance three weeks ago and stopped taking lithium because he could no longer obtain it. He uses cannabis nightly. When he felt well, he said, "I'm fine, I don't need medication." His marriage is strained, and his spouse is willing to attend a family meeting.
 
+<figure class="fd-case-timeline">
+  <figcaption>Why this episode, why now?</figcaption>
+  <ol role="list">
+    <li><img src="illustrations/formulation-insurance.webp" width="400" height="248" alt=""><span>Lost insurance three weeks ago</span></li>
+    <li><img src="illustrations/formulation-pharmacy.webp" width="400" height="248" alt=""><span>Could no longer obtain lithium</span></li>
+    <li><img src="illustrations/formulation-admission.webp" width="399" height="248" alt=""><span>Admitted with mania</span></li>
+  </ol>
+</figure>
+
 **MS3 prompt.** Give a one-sentence formulation for rounds. What changed three weeks ago? What support could help now? Name one action the team could take today and the case detail that makes it worth doing.
 
 <details>
