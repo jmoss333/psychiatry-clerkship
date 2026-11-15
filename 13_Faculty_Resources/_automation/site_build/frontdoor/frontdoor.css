@@ -2268,6 +2268,29 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));line-height:1.4;margin-top:var(--fd-space-10);margin-bottom:var(--fd-space-6);
 }
 .fd-reader--guide .fd-article__body li{margin-top:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
+.fd-case-timeline{
+  margin:var(--fd-space-9) 0;overflow:hidden;break-inside:avoid;
+  border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface-warm);
+}
+.fd-case-timeline figcaption{
+  padding:var(--fd-space-7) var(--fd-space-8);
+  font:600 calc(var(--fd-font-xl) * var(--fd-reading-scale,1))/1.4 'Iowan Old Style',Georgia,serif;
+}
+.fd-article__body .fd-case-timeline ol{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;margin:0;padding:0;
+}
+.fd-reader--guide .fd-case-timeline li{display:flex;flex-direction:column;margin:0}
+.fd-case-timeline img{display:block;width:100%;height:auto;aspect-ratio:400/248;object-fit:cover}
+.fd-case-timeline li span{
+  padding:var(--fd-space-5) var(--fd-space-7);color:var(--fd-teal-deep);
+  font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));font-weight:600;line-height:1.4;
+}
+@media(max-width:640px){
+  .fd-article__body .fd-case-timeline ol{grid-template-columns:1fr}
+  .fd-reader--guide .fd-case-timeline li{
+    display:grid;grid-template-columns:31% minmax(0,1fr);align-items:center;border-top:1px solid var(--fd-line);
+  }
+}
 .fd-reader--guide .fd-article__body a{overflow-wrap:anywhere;text-underline-offset:.2em}
 .fd-reader--guide .fd-article__body :is(h2,h3,[tabindex="-1"]):focus{
   outline:2px solid var(--fd-focus);outline-offset:var(--fd-space-3);
