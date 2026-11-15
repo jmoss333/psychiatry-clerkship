@@ -7,6 +7,7 @@ const ADMISSION = '?page=osce.md&station=admission-presentation';
 const CIRCUIT = 'catatonia-withdrawal-circuit';
 const FULL_CIRCUIT = 'full-six-station-circuit';
 const TEACHING_TIME_45 = 'teaching-time-45';
+const COMMUNICATION_45 = 'communication-handoff-45';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
 const COLLATERAL_DEBRIEF = 'Give the handoff.';
@@ -671,20 +672,28 @@ test.describe('45-minute teaching preset on a touch phone', () => {
     await expect(nextCase(page)).toHaveCount(0);
   });
 
-  test('all seat links stay stable across the facilitator cue and open the assigned roles', async ({ page, context }) => {
-    const seats = [
+  const seatAssignments = {
+    [TEACHING_TIME_45]: [
       ['a', 'Interviewer', 'Start at the bedside.', 'Nurse', 'Your bedside observations.'],
       ['b', 'Patient', 'How to play the pauses.', 'Interviewer', 'Ask about a usual drinking day.'],
       ['c', 'Nurse', 'What you saw this shift.', 'Patient', 'What happened years ago.'],
-    ];
-    await page.goto(startUrl);
+    ],
+    [COMMUNICATION_45]: [
+      ['a', 'Presenter', 'Close with a handoff.', 'Observer', 'Give feedback on one sentence.'],
+      ['b', 'Family member', 'If you want a firm plan', 'Presenter', 'Open with the timeline.'],
+      ['c', 'Observer', 'Give one piece of feedback.', 'Supervising resident', 'Ask what would change the plan.'],
+    ],
+  };
+  for (const [slug, seats] of Object.entries(seatAssignments)) test(slug + ' shares stable seats across both cases', async ({ page, context }) => {
+    await page.goto('/?page=osce.md&station=' + slug + '&round=1');
     const addresses = [];
+    const participantCards = [];
     for (const [id, firstRole, firstCue, secondRole, secondCue] of seats) {
       const label = 'Learner ' + id.toUpperCase();
       const link = page.getByRole('link', { name: label, exact: true });
       const address = new URL(await link.getAttribute('href'), page.url());
       expect(address.origin).toBe(new URL(page.url()).origin);
-      expect(address.searchParams.get('station')).toBe(TEACHING_TIME_45);
+      expect(address.searchParams.get('station')).toBe(slug);
       expect(address.searchParams.get('role')).toBe(id);
       expect(address.searchParams.has('round')).toBe(false);
       addresses.push([label, address.href]);
@@ -698,12 +707,93 @@ test.describe('45-minute teaching preset on a touch phone', () => {
       await expect(card).toHaveURL(url => url.searchParams.get('role') === id && url.searchParams.get('round') === '2');
       await expect(card.getByRole('heading', { name: secondRole, level: 2, exact: true })).toBeVisible();
       await expect(card.getByText(secondCue, { exact: true })).toBeVisible();
-      await card.close();
+      participantCards.push({ card, secondRole, address: card.url() });
     }
     await nextCase(page).tap();
     for (const [label, original] of addresses) {
       const href = await page.getByRole('link', { name: label, exact: true }).getAttribute('href');
       expect(new URL(href, page.url()).href).toBe(original);
     }
+    if (slug === COMMUNICATION_45) {
+      await page.getByRole('radio', { name: 'Debrief', exact: true }).tap();
+      await page.getByRole('button', { name: 'Repeat the handoff', exact: true }).tap();
+      for (const { card, secondRole, address } of participantCards) {
+        await expect(card).toHaveURL(address);
+        await expect(card.getByRole('heading', { name: secondRole, level: 2, exact: true })).toBeVisible();
+        await expect(nextCase(card)).toHaveCount(0);
+      }
+    }
+    for (const { card } of participantCards) await card.close();
+  });
+
+  test('switch teaching goals and use the final five minutes to repeat the handoff', async ({ page }) => {
+    await page.clock.install();
+    const goal = name => page.getByRole('link', { name, exact: true });
+    await page.goto('/?page=osce.md&station=' + TEACHING_TIME_45);
+    await goal('Communication and handoff').tap();
+    const onPlan = slug => url => url.searchParams.get('station') === slug && !url.searchParams.has('round');
+    await expect(page).toHaveURL(onPlan(COMMUNICATION_45));
+    await expect(goal('Communication and handoff')).toHaveAttribute('aria-current', 'page');
+    await goal('Acute assessment').tap();
+    await expect(page).toHaveURL(onPlan(TEACHING_TIME_45));
+    await expect(goal('Acute assessment')).toHaveAttribute('aria-current', 'page');
+    await goal('Communication and handoff').tap();
+    const rows = page.getByRole('list', { name: 'Session agenda' }).getByRole('listitem');
+    const agenda = [
+      ['0–15', /family meeting/i], ['15–20', /debrief/i], ['20–25', /transition/i],
+      ['25–35', /oral presentation/i], ['35–40', /debrief/i], ['40–45', /repeat the handoff/i],
+    ];
+    await expect(rows).toHaveCount(agenda.length);
+    for (const [i, [range, activity]] of agenda.entries()) {
+      await expect(rows.nth(i)).toContainText(range, { useInnerText: true });
+      await expect(rows.nth(i)).toContainText(activity, { useInnerText: true });
+    }
+    await goal('Start session').tap();
+    const timer = page.getByRole('timer');
+    const phase = name => page.getByRole('radio', { name, exact: true });
+    const button = name => page.getByRole('button', { name, exact: true });
+    const repeat = 'Repeat the handoff';
+    const coaching = page.getByText(/Repeat the handoff using one change from feedback\./i);
+    const rounds = [
+      [['Preparation and presentation', 15], ['Debrief', 5], ['Transition', 5]],
+      [['Presentation', 6], ['Questions', 4], ['Debrief', 5], [repeat, 5]],
+    ];
+    for (const [i, phases] of rounds.entries()) {
+      if (i === 1) await nextCase(page).tap();
+      await expect(page).toHaveURL(url => url.searchParams.get('round') === String(i + 1) && url.searchParams.get('station') === COMMUNICATION_45);
+      await expect(page.getByRole('radio')).toHaveCount(phases.length);
+      for (const [label, minutes] of phases) {
+        await phase(label).tap();
+        await expect(timer).toHaveText(minutes + ':00');
+        if (i === 1 && label === 'Debrief') {
+          await expect(button(repeat)).toBeVisible();
+          await expect(coaching).toBeHidden();
+          await button('Start').tap();
+          await page.clock.fastForward(300_000);
+          await expect(timer).toHaveText('0:00');
+          await expect(page.getByText('Debrief complete. Select Repeat the handoff.', { exact: true })).toBeVisible();
+          await expect(page.getByText('Session complete.', { exact: true })).toBeHidden();
+        }
+        if (label === repeat) {
+          await expect(coaching).toBeVisible();
+          await page.clock.fastForward(10_000);
+          await expect(timer).toHaveText('5:00');
+          await button('Start').tap();
+          await page.clock.fastForward(10_000);
+          await expect(timer).toHaveText(/^4:\d{2}$/);
+        }
+      }
+    }
+    await phase('Debrief').tap();
+    const beforeRetry = page.url();
+    await button(repeat).tap();
+    await expect(phase(repeat)).toBeChecked();
+    await expect(coaching).toBeVisible();
+    await expect(button('Pause')).toBeVisible();
+    await page.clock.fastForward(300_000);
+    await expect(timer).toHaveText('0:00');
+    await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
+    expect(page.url()).toBe(beforeRetry);
+    await expect(nextCase(page)).toHaveCount(0);
   });
 });

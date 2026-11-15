@@ -4,7 +4,7 @@ Generated: 2026-06-27
 
 All cases are synthetic. No real patient details are used.
 
-[Fit my teaching time](?page=osce.md&station=teaching-time-45) · 45 minutes for Possible Catatonia and Alcohol Withdrawal, including two debriefs and a role change
+[Fit my teaching time](?page=osce.md&station=teaching-time-45) · Choose a 45-minute session for acute assessment or communication and handoff.
 
 [Run a circuit](?page=osce.md&station=catatonia-withdrawal-circuit) · Possible Catatonia → Alcohol Withdrawal · 3 learners
 
@@ -353,6 +353,10 @@ moment the student moves from a fact to an interpretation.
 - Write down the opening one-liner. Could you repeat the reason for admission and identify one event whose timing is still uncertain?
 - Listen for what the nurse actually saw and how the presenter interpreted it. Did the presenter tell the resident which safety questions still need answers? Note which next step the resident heard.
 - **Give feedback on one sentence.** Quote the student's words and say what you understood. Ask them to repeat that sentence with its source or uncertainty made explicit. Have the resident say whether the revision changes what they would do first.
+
+**Repeat the handoff**
+
+Repeat the handoff using one change from feedback. The observer quotes one sentence from the first attempt. The presenter revises it and gives the handoff again. The supervising resident says what they would do first. The observer names what became clearer.
 
 **Behaviors to practice**
 
