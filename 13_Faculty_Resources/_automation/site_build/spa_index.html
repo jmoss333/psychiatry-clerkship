@@ -3006,7 +3006,18 @@
     body.scrollTop=top;
     /* A ranked row may have moved or fallen outside the top eight. Keep its action when
        available, and return to the field if it disappeared so Enter cannot open a different row. */
-    if(focus)fdRestoreHydrationFocus(focus,dialog);
+    if(focus){
+      fdRestoreHydrationFocus(focus,dialog);
+      var active=document.activeElement;
+      if(body.contains(active)){
+        /* Reranking can move the selected action outside the saved viewport. Scroll only
+           the results list, by the nearest edge, so the learner can see what Enter opens. */
+        var row=active.getBoundingClientRect(), viewTop=body.getBoundingClientRect().top+body.clientTop;
+        var above=row.top-viewTop, below=row.bottom-(viewTop+body.clientHeight);
+        if(above<0&&below<0)body.scrollTop+=Math.floor(Math.max(above,below));
+        else if(above>0&&below>0)body.scrollTop+=Math.ceil(Math.min(above,below));
+      }
+    }
   }
 
   function fdRenderOverlays(state){

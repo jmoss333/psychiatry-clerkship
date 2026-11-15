@@ -998,6 +998,7 @@ async function delaySearchIndex(page, term) {
   const delayed = new Promise(resolve => { releaseIndex = resolve; });
   await page.route('**/search-index.json', async route => {
     await delayed;
+    if (!term) return route.continue();
     await route.fulfill({ json: {
       n: 1, avgLen: 10, synonyms: {}, df: { [term]: 1 }, postings: { [term]: [[0, 1]] },
       docs: [{ f: 't_mood.md', t: 'Mood Disorders', L: 10 }],
@@ -1046,27 +1047,39 @@ test('phone search: delayed Search hydration shows page-text matches and preserv
   await expectHealthy(page);
 });
 
-test('Library search: delayed page-text results preserve expanded matches and the keyboard-selected resource', async ({ page }, testInfo) => {
-  const releaseIndex = await delaySearchIndex(page, 'treatment');
+test('Library search: delayed page-text results keep the keyboard-selected tool visible on a phone', async ({ page }, testInfo) => {
+  const releaseIndex = await delaySearchIndex(page);
+  await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=library');
-  await page.locator('.fd-header .fd-searchbtn').click();
+  await openHeaderSearch(page);
   const dialog = page.getByRole('dialog', { name: 'Search' });
   const input = dialog.getByRole('textbox', { name: 'Search resources' });
   await input.fill('treatment');
   await dialog.getByRole('button', { name: 'Show all matches' }).click();
-  const bodyHit = dialog.locator('[data-fd-open="t_mood.md"]');
-  await expect(bodyHit).toHaveCount(0);
-  await input.press('Enter');
-  const selected = dialog.locator('.fd-result').first();
-  await expect(selected).toBeFocused();
-  const ref = await selected.getAttribute('data-fd-open');
-  expect(ref).toBeTruthy();
-  releaseIndex();
-  await expect(bodyHit).toBeAttached();
+  const tool = dialog.locator('[data-fd-open="oral.html"]');
+  const position = () => dialog.locator('.fd-result').evaluateAll(rows => rows.findIndex(row => row.dataset.fdOpen === 'oral.html'));
+  const before = await position();
+  try {
+    expect(before).toBeGreaterThanOrEqual(0);
+    await input.press('Enter');
+    for (let i = 0; i < before; i++) await page.keyboard.press('Tab');
+    await expect(tool).toBeFocused();
+    await expect(tool).toBeInViewport({ ratio: 1 });
+  } finally {
+    releaseIndex();
+  }
+  // The real index inserts page-text hits above the tool. Wait for that visible change before
+  // checking focus and clipping by the scrollable results panel.
+  await expect.poll(position).toBeGreaterThan(before);
   await expect(dialog.getByRole('button', { name: 'Show top 8' })).toHaveAttribute('aria-expanded', 'true');
-  await expect(dialog.locator(`[data-fd-open="${ref}"]`)).toBeFocused();
+  await expect(tool).toBeFocused();
+  await expect(tool).toBeInViewport({ ratio: 1 });
   expect(new URL(page.url()).searchParams.get('tab')).toBe('library');
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get('tool')).toBe('oral.html');
+  await expect(page.frameLocator('iframe.toolframe').getByRole('heading', { name: 'Your 60-second update' })).toBeVisible();
   await expectHealthy(page);
 });
 
@@ -6257,9 +6270,7 @@ test('shared Library navigation: the phone dock\'s Library slot survives delayed
   // One-thread (2026-10-04): the dock's Browse <details> is gone; the Library slot is a plain button
   // and the in-Library view switch chooses Essentials / Everything. A dock refresh mid-hydration
   // must leave the focused slot focused (same-route focus restoration) and never re-add a menu.
-  let releaseIndex;
-  const delayed = new Promise(resolve => { releaseIndex = resolve; });
-  await page.route('**/search-index.json', async route => { await delayed; await route.continue(); });
+  const releaseIndex = await delaySearchIndex(page);
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
