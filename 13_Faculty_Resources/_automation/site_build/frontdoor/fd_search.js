@@ -367,7 +367,8 @@ function fdSearchTriggerHit(triggers, paddedQuery){
 
 /* Care vocabulary is deliberately separate from synonyms and safety triggers. A match only
    selects a static, canonical URL; the typed phrase never becomes a query parameter or fragment. */
-function fdSearchCareHit(resource, normalizedQuery){
+function fdSearchCareHit(resource, normalizedQuery, readingQuery){
+  if(readingQuery&&fdSearchNormalize(resource.title)===readingQuery) return true;
   var padded=' '+normalizedQuery+' ', terms=resource.searchTerms||[];
   for(var i=0;i<terms.length;i++){
     var term=fdSearchNormalize(terms[i]);
@@ -403,7 +404,13 @@ function fdSearchNextUnread(index, state){
 function fdSearchMatches(index, query, synonyms, state){
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var kit=idx.kit||[];
-  var rawQuery=String(query||'').trim().toLowerCase();
+  var typedQuery=String(query||'').trim().toLowerCase();
+  /* Route the dotted spelling through the same SI vocabulary, without picking
+     the letters out of a longer initialism or a resource filename. */
+  var rawQuery=typedQuery.replace(/(^|[^a-z0-9_.])s\.i\.?(?=$|[^a-z0-9_.])/g,'$1si');
+  /* Rank a request to open or use a resource by the words that name it. Keeping
+     this at the start of the query preserves those same words inside a title. */
+  rawQuery=rawQuery.replace(/^(?:show\s+me|where\s+can\s+i\s+find|how\s+do\s+i\s+(?:use|do(?:\s+an?)?)|open)\s+(?=\S)/,'');
   var seenRefs={};
 
   if(!rawQuery){
@@ -496,6 +503,7 @@ function fdSearchMatches(index, query, synonyms, state){
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
     var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
+       (typedQuery!==rawQuery&&fdSearchTriggerHit(kit[kk].triggers, ' '+typedQuery+' '))||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
        fdSearchTriggerHit(kit[kk].triggers, ' '+readingQuery+' ')||
        fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords, true);
@@ -513,7 +521,7 @@ function fdSearchMatches(index, query, synonyms, state){
 
   var careResults=[], care=idx.careResources||[];
   for(var ci=0;ci<care.length;ci++){
-    if(fdSearchCareHit(care[ci],normalizedQuery)){
+    if(fdSearchCareHit(care[ci],normalizedQuery,readingQuery)){
       careResults.push({item:care[ci],kind:'care',meta:'External care resource'});
     }
   }

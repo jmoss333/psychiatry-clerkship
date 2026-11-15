@@ -2531,7 +2531,10 @@
   try{
     var fdBodyPromise=window.cwSearchIndexPromise;
     if(fdBodyPromise&&typeof fdBodyPromise.then==='function'){
-      fdBodyPromise.then(function(d){ fdBodyIndex=(d&&d.postings&&Array.isArray(d.docs))?d:null; },
+      fdBodyPromise.then(function(d){
+        fdBodyIndex=(d&&d.postings&&Array.isArray(d.docs))?d:null;
+        if(fdBodyIndex&&fdController)fdRefreshSearchResults(fdController.getState());
+      },
         function(){ fdBodyIndex=null; });
     }
   }catch(_){ fdBodyIndex=null; }
@@ -2932,15 +2935,94 @@
   }
   /* ---- safety pause (end) ---- */
 
-  function fdRenderOverlays(state){
-    var live=fdLiveState(state), overlays='';
-    if(state.searchOpen)overlays+=fdSurface('search',function(){
-      /* Page-text evidence (fd_search.js fdSearchBodyScores): the same search-index.json the
-         ＋Ask matcher reads. Absent until it loads, and search then ranks exactly as before. */
+  function fdHydrationFocusSnapshot(searchDialog){
+    var active=document.activeElement;
+    if(!active||active===document.body||active===document.documentElement)return null;
+    var classes=[],attrs=[],i,name,value;
+    if(active.classList){
+      for(i=0;i<active.classList.length;i++){
+        value=active.classList[i];
+        if(/^(fd-|cap-)/.test(value))classes.push('.'+value);
+      }
+    }
+    for(i=0;active.attributes&&i<active.attributes.length;i++){
+      name=active.attributes[i].name;
+      if(name==='id'||name==='href'||name==='data-capture-open'||/^data-(fd|cap)-/.test(name)){
+        value=String(active.attributes[i].value||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
+        attrs.push('['+name+'="'+value+'"]');
+      }
+    }
+    var selector=String(active.tagName||'').toLowerCase()+(searchDialog&&attrs.length?'':classes.join(''))+attrs.join('');
+    var matches=[];
+    try{matches=(searchDialog||document).querySelectorAll(selector);}catch(_){matches=[];}
+    var index=0;
+    for(i=0;i<matches.length;i++){if(matches[i]===active){index=i;break;}}
+    return {
+      node:active,selector:selector,index:index,
+      start:typeof active.selectionStart==='number'?active.selectionStart:null,
+      end:typeof active.selectionEnd==='number'?active.selectionEnd:null,
+      direction:active.selectionDirection||'none'
+    };
+  }
+  function fdRestoreHydrationFocus(snapshot,searchDialog){
+    if(!snapshot)return;
+    var target=snapshot.node;
+    if(!target||!target.isConnected){
+      var matches=[];
+      try{matches=(searchDialog||document).querySelectorAll(snapshot.selector);}catch(_){matches=[];}
+      target=matches[snapshot.index]||matches[0]||(searchDialog&&searchDialog.querySelector('.fd-searchpanel__input'));
+    }
+    if(!target||!target.focus)return;
+    try{target.focus({preventScroll:true});}catch(_){try{target.focus();}catch(__){return;}}
+    if(snapshot.start!==null&&target.setSelectionRange){
+      try{target.setSelectionRange(snapshot.start,snapshot.end,snapshot.direction);}catch(_){ }
+    }
+  }
+
+  function fdSearchMarkup(live){
+    return fdSurface('search',function(){
       live.bodyIndex=fdBodyIndex;
       live.facultyPreview=!!facultyPreviewRequest;
-      return fdSearchOverlay(FD_INDEX,state.query||'',FD_CURRICULUM.synonyms||{},live);
+      return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},live);
     });
+  }
+
+  function fdRefreshSearchResults(state){
+    if(!state.searchOpen||!String(state.query||'').trim())return;
+    var dialog=fdOverlayMount&&fdOverlayMount.querySelector('.fd-search');
+    var body=dialog&&dialog.querySelector('.fd-searchpanel__body');
+    if(!body)return;
+    var next=document.createElement('div');
+    next.innerHTML=fdSearchMarkup(fdLiveState(state));
+    var nextBody=next.querySelector('.fd-searchpanel__body');
+    if(!nextBody||body.isEqualNode(nextBody))return;
+    var focus=body.contains(document.activeElement)?fdHydrationFocusSnapshot(dialog):null;
+    var top=body.scrollTop, browse=dialog.querySelector('.fd-searchpanel__browse');
+    var nextBrowse=next.querySelector('.fd-searchpanel__browse');
+    if(nextBrowse&&!browse)body.before(nextBrowse);
+    if(browse&&!nextBrowse)browse.remove();
+    body.setAttribute('aria-label',nextBody.getAttribute('aria-label'));
+    body.innerHTML=nextBody.innerHTML;
+    body.scrollTop=top;
+    /* A ranked row may have moved or fallen outside the top eight. Keep its action when
+       available, and return to the field if it disappeared so Enter cannot open a different row. */
+    if(focus){
+      fdRestoreHydrationFocus(focus,dialog);
+      var active=document.activeElement;
+      if(body.contains(active)){
+        /* Reranking can move the selected action outside the saved viewport. Scroll only
+           the results list, by the nearest edge, so the learner can see what Enter opens. */
+        var row=active.getBoundingClientRect(), viewTop=body.getBoundingClientRect().top+body.clientTop;
+        var above=row.top-viewTop, below=row.bottom-(viewTop+body.clientHeight);
+        if(above<0&&below<0)body.scrollTop+=Math.floor(Math.max(above,below));
+        else if(above>0&&below>0)body.scrollTop+=Math.ceil(Math.min(above,below));
+      }
+    }
+  }
+
+  function fdRenderOverlays(state){
+    var live=fdLiveState(state), overlays='';
+    if(state.searchOpen)overlays+=fdSearchMarkup(live);
     if(state.sheet)overlays+=fdSurface('sheet',function(){ return fdSheet(FD_INDEX,FD_TOPIC_META,live); });
     if(state.careShareId)overlays+=fdSurface('care-share',function(){
       return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
@@ -3169,7 +3251,9 @@
     fdPatchToolLayout(state);
     fdRenderCapture(state);
     fdRenderDock(state,!!hydrate);
-    fdRenderOverlays(state);
+    /* Search updates its results when the text index arrives. Keep the live field, native
+       selection, and modal controls mounted while Today picks up its background data. */
+    if(!hydrate||!state.searchOpen)fdRenderOverlays(state);
     if(typeof fdRenderUsageNotice==='function')fdRenderUsageNotice();
     if(app&&!state.openId)announceRoute(fdSpecialItemForState(state));
     fdUpdateCareNavigatorStatus(state);
@@ -3917,49 +4001,6 @@
   catch(ignoreFirstRender){
     fdEditionRuntimeFallback(fdEditionRuntimeReceipt(FD_SITE_CONTEXT,'EDITION_RUNTIME'),fdInitial);
     return;
-  }
-  function fdHydrationFocusSnapshot(){
-    var active=document.activeElement;
-    if(!active||active===document.body||active===document.documentElement)return null;
-    var classes=[],attrs=[],i,name,value;
-    if(active.classList){
-      for(i=0;i<active.classList.length;i++){
-        value=active.classList[i];
-        if(/^(fd-|cap-)/.test(value))classes.push('.'+value);
-      }
-    }
-    for(i=0;active.attributes&&i<active.attributes.length;i++){
-      name=active.attributes[i].name;
-      if(name==='id'||name==='href'||name==='data-capture-open'||/^data-(fd|cap)-/.test(name)){
-        value=String(active.attributes[i].value||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"');
-        attrs.push('['+name+'="'+value+'"]');
-      }
-    }
-    var selector=String(active.tagName||'').toLowerCase()+classes.join('')+attrs.join('');
-    var matches=[];
-    try{matches=document.querySelectorAll(selector);}catch(_){matches=[];}
-    var index=0;
-    for(i=0;i<matches.length;i++){if(matches[i]===active){index=i;break;}}
-    return {
-      node:active,selector:selector,index:index,
-      start:typeof active.selectionStart==='number'?active.selectionStart:null,
-      end:typeof active.selectionEnd==='number'?active.selectionEnd:null,
-      direction:active.selectionDirection||'none'
-    };
-  }
-  function fdRestoreHydrationFocus(snapshot){
-    if(!snapshot)return;
-    var target=snapshot.node;
-    if(!target||!target.isConnected){
-      var matches=[];
-      try{matches=document.querySelectorAll(snapshot.selector);}catch(_){matches=[];}
-      target=matches[snapshot.index]||matches[0]||null;
-    }
-    if(!target||!target.focus)return;
-    try{target.focus({preventScroll:true});}catch(_){try{target.focus();}catch(__){return;}}
-    if(snapshot.start!==null&&target.setSelectionRange){
-      try{target.setSelectionRange(snapshot.start,snapshot.end,snapshot.direction);}catch(_){ }
-    }
   }
   specialRefresh=function(){
     if(!fdController)return;
