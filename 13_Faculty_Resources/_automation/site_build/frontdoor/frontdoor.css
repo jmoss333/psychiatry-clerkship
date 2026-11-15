@@ -2796,6 +2796,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 
 .fd-station{max-width:40rem}
+.fd-session__choices a{display:inline-flex;align-items:center;min-height:44px;padding:0 var(--fd-space-6);margin-bottom:var(--fd-space-3);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm)}
+.fd-session__choices a[aria-current]{background:var(--fd-teal-wash);border-color:var(--fd-teal);font-weight:700;text-decoration:none}
 .fd-article__body .fd-station__roles{padding:0;list-style:none}
 .fd-station__roles li,.fd-station__actions{display:flex;align-items:center;gap:var(--fd-space-7);flex-wrap:wrap}
 .fd-station__roles li{justify-content:space-between;padding:var(--fd-space-4) 0;border-bottom:1px solid var(--fd-line)}

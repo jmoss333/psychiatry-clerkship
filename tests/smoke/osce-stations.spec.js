@@ -8,6 +8,8 @@ const CIRCUIT = 'catatonia-withdrawal-circuit';
 const FULL_CIRCUIT = 'full-six-station-circuit';
 const TEACHING_TIME_45 = 'teaching-time-45';
 const COMMUNICATION_45 = 'communication-handoff-45';
+const TEACHING_TIME_20 = 'teaching-time-20';
+const COMMUNICATION_20 = 'communication-handoff-20';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
 const COLLATERAL_DEBRIEF = 'Give the handoff.';
@@ -30,6 +32,17 @@ function stationLink(page, href) {
 function nextCase(page) {
   return page.getByRole('link', { name: 'Next case', exact: true })
     .or(page.getByRole('button', { name: 'Next case', exact: true }));
+}
+
+async function expectAgenda(page, schedule) {
+  const agenda = page.getByRole('list', { name: 'Session agenda' });
+  await expect(agenda).toBeVisible();
+  const rows = agenda.getByRole('listitem');
+  await expect(rows).toHaveCount(schedule.length);
+  for (const [index, [range, activity]] of schedule.entries()) {
+    await expect(rows.nth(index)).toContainText(range, { useInnerText: true });
+    await expect(rows.nth(index)).toContainText(activity, { useInnerText: true });
+  }
 }
 
 async function openSharedDebriefOnly(page) {
@@ -618,18 +631,10 @@ test.describe('45-minute teaching preset on a touch phone', () => {
     await page.getByRole('link', { name: 'Fit my teaching time', exact: true }).tap();
     await expect(page).toHaveURL(url => url.searchParams.get('station') === TEACHING_TIME_45 && !url.searchParams.has('round'));
     await expect(page.getByRole('heading', { name: '45-minute session plan', exact: true })).toBeVisible();
-    const agenda = page.getByRole('list', { name: 'Session agenda' });
-    await expect(agenda).toBeVisible();
-    const rows = agenda.getByRole('listitem');
-    const schedule = [
+    await expectAgenda(page, [
       ['0–15', /catatonia/i], ['15–20', /debrief/i], ['20–25', /transition/i],
       ['25–40', /alcohol withdrawal/i], ['40–45', /debrief/i],
-    ];
-    await expect(rows).toHaveCount(schedule.length);
-    for (const [index, [range, activity]] of schedule.entries()) {
-      await expect(rows.nth(index)).toContainText(range, { useInnerText: true });
-      await expect(rows.nth(index)).toContainText(activity, { useInnerText: true });
-    }
+    ]);
     await page.getByRole('link', { name: 'Start session', exact: true }).tap();
     await expect(page).toHaveURL(url => url.pathname + url.search === startUrl);
 
@@ -738,16 +743,10 @@ test.describe('45-minute teaching preset on a touch phone', () => {
     await expect(page).toHaveURL(onPlan(TEACHING_TIME_45));
     await expect(goal('Acute assessment')).toHaveAttribute('aria-current', 'page');
     await goal('Communication and handoff').tap();
-    const rows = page.getByRole('list', { name: 'Session agenda' }).getByRole('listitem');
-    const agenda = [
+    await expectAgenda(page, [
       ['0–15', /family meeting/i], ['15–20', /debrief/i], ['20–25', /transition/i],
       ['25–35', /oral presentation/i], ['35–40', /debrief/i], ['40–45', /repeat the handoff/i],
-    ];
-    await expect(rows).toHaveCount(agenda.length);
-    for (const [i, [range, activity]] of agenda.entries()) {
-      await expect(rows.nth(i)).toContainText(range, { useInnerText: true });
-      await expect(rows.nth(i)).toContainText(activity, { useInnerText: true });
-    }
+    ]);
     await goal('Start session').tap();
     const timer = page.getByRole('timer');
     const phase = name => page.getByRole('radio', { name, exact: true });
@@ -794,6 +793,102 @@ test.describe('45-minute teaching preset on a touch phone', () => {
     await expect(timer).toHaveText('0:00');
     await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
     expect(page.url()).toBe(beforeRetry);
+    await expect(nextCase(page)).toHaveCount(0);
+  });
+});
+
+test.describe('20-minute teaching presets on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('duration and goal links preserve the other selection', async ({ page }) => {
+    const acute = 'Acute assessment', communication = 'Communication and handoff';
+    const link = name => page.getByRole('link', { name, exact: true });
+    await page.goto('/?page=osce.md');
+    await link('Fit my teaching time').tap();
+    for (const [action, slug, duration, goal] of [
+      [null, TEACHING_TIME_45, 45, acute],
+      ['20 minutes', TEACHING_TIME_20, 20, acute],
+      [communication, COMMUNICATION_20, 20, communication],
+      ['45 minutes', COMMUNICATION_45, 45, communication],
+      [acute, TEACHING_TIME_45, 45, acute],
+    ]) {
+      if (action) await link(action).tap();
+      await expect(page).toHaveURL(url => url.searchParams.get('station') === slug && !url.searchParams.has('round'));
+      await expect(page.getByRole('heading', { name: duration + '-minute session plan', exact: true })).toBeVisible();
+      const durations = page.getByRole('navigation', { name: 'Session duration' });
+      const goals = page.getByRole('navigation', { name: 'Teaching goal' });
+      await expect(durations.getByRole('link', { name: duration + ' minutes', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(goals.getByRole('link', { name: goal, exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(link((duration === 20 ? 45 : 20) + ' minutes')).not.toHaveAttribute('aria-current', 'page');
+      await expect(link(goal === acute ? communication : acute)).not.toHaveAttribute('aria-current', 'page');
+    }
+  });
+
+  const plans = [
+    {
+      slug: TEACHING_TIME_20, title: /possible catatonia/i,
+      agenda: [['0–10', /observation and interview/i], ['10–15', /team presentation/i], ['15–20', /handoff debrief/i]],
+      phases: [['Observation and interview', 10], ['Team presentation', 5], ['Debrief', 5]],
+      seats: [['Interviewer', 'Start at the bedside.'], ['Patient', 'How to play the pauses.'], ['Nurse', 'What you saw this shift.']],
+    },
+    {
+      slug: COMMUNICATION_20, title: /oral presentation of a new admission/i,
+      agenda: [['0–6', /presentation/i], ['6–10', /questions/i], ['10–15', /handoff debrief/i], ['15–20', /repeat the handoff/i]],
+      phases: [['Presentation', 6], ['Questions', 4], ['Debrief', 5], ['Repeat the handoff', 5]],
+      seats: [['Presenter', 'Open with the timeline.'], ['Supervising resident', 'Ask what would change the plan.'], ['Observer', 'Give feedback on one sentence.']],
+    },
+  ];
+  for (const plan of plans) test(plan.slug + ' gives each seat one private role and finishes in one case', async ({ page, context }) => {
+    await page.goto('/?page=osce.md&station=' + plan.slug);
+    const body = page.locator('.fd-article__body');
+    await expect(body).toContainText(plan.title, { useInnerText: true });
+    await expect(body).toContainText('Learner A leads', { useInnerText: true });
+    await expectAgenda(page, plan.agenda);
+    const card = await context.newPage();
+    await pinVisualGovernance(card);
+    for (const [index, [role]] of plan.seats.entries()) {
+      const seat = ['a', 'b', 'c'][index];
+      const link = page.getByRole('link', { name: 'Learner ' + seat.toUpperCase(), exact: true });
+      const address = new URL(await link.getAttribute('href'), page.url());
+      expect(address.origin).toBe(new URL(page.url()).origin);
+      expect(address.searchParams.get('station')).toBe(plan.slug);
+      expect(address.searchParams.get('role')).toBe(seat);
+      await card.goto(address.href);
+      await expect(card.getByRole('heading', { name: role, exact: true, level: 2 })).toBeVisible();
+      for (const [owner, cue] of plan.seats) {
+        const instruction = card.getByText(cue, { exact: true });
+        if (owner === role) await expect(instruction).toBeVisible();
+        else await expect(instruction).toBeHidden();
+      }
+      await expect(nextCase(card)).toHaveCount(0);
+    }
+    await card.close();
+    await page.clock.install();
+    await page.getByRole('link', { name: 'Start session', exact: true }).tap();
+    const timer = page.getByRole('timer');
+    const button = name => page.getByRole('button', { name, exact: true });
+    await expect(page.getByRole('radio')).toHaveCount(plan.phases.length);
+    for (const [label, minutes] of plan.phases) {
+      const radio = page.getByRole('radio', { name: label, exact: true });
+      if (label === 'Repeat the handoff') {
+        await expect(page.getByText('Session complete.', { exact: true })).toBeHidden();
+        await button(label).tap();
+        await expect(radio).toBeChecked();
+        await expect(button('Pause')).toBeVisible();
+        await expect(page.getByText(/Repeat the handoff using one change from feedback\./i)).toBeVisible();
+        await page.clock.fastForward((minutes - 1) * 60_000 + 10_000);
+        await expect(timer).toHaveText(/^0:[4-5]\d$/);
+        await page.clock.fastForward(50_000);
+      } else {
+        await radio.tap();
+        await expect(timer).toHaveText(minutes + ':00');
+        if (label === 'Debrief') await expect(page.getByText(SHARED_DEBRIEF, { exact: true })).toBeVisible();
+        await button('Start').tap();
+        await page.clock.fastForward(minutes * 60_000);
+      }
+      await expect(timer).toHaveText('0:00');
+    }
+    await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
     await expect(nextCase(page)).toHaveCount(0);
   });
 });

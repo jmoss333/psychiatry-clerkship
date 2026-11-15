@@ -89,11 +89,17 @@ var FD_OSCE_CIRCUITS = {
     rememberSeat: true,
     timingNote: "Includes Station 1's feedback. Allow extra time for the other five debriefs and transitions."
   },
-  'communication-handoff-45': {
+  'teaching-time-20': {
     title: 'Fit my teaching time',
-    cases: ['family-agenda', 'admission-presentation'],
-    roles: {a: ['presenter', 'observer'], b: ['family', 'presenter'], c: ['observer', 'resident']},
-    session: {goal: 'Communication and handoff', minutes: 45, debrief: 5, transition: 5, repeat: 5}
+    cases: ['possible-catatonia'],
+    roles: {a: ['interviewer'], b: ['patient'], c: ['nurse']},
+    session: {goal: 'Acute assessment', minutes: 20, debrief: 5}
+  },
+  'communication-handoff-20': {
+    title: 'Fit my teaching time',
+    cases: ['admission-presentation'],
+    roles: {a: ['presenter'], b: ['resident'], c: ['observer']},
+    session: {goal: 'Communication and handoff', minutes: 20, debrief: 5, repeat: 5}
   }
 };
 
@@ -104,6 +110,12 @@ FD_OSCE_CIRCUITS['teaching-time-45'] = {
   cases: fdShortCircuit.cases,
   roles: fdShortCircuit.roles,
   session: {goal: 'Acute assessment', minutes: 45, debrief: 5, transition: 5}
+};
+FD_OSCE_CIRCUITS['communication-handoff-45'] = {
+  title: 'Fit my teaching time',
+  cases: ['family-agenda', 'admission-presentation'],
+  roles: {a: ['presenter', 'observer'], b: ['family', 'presenter'], c: ['observer', 'resident']},
+  session: {goal: 'Communication and handoff', minutes: 45, debrief: 5, transition: 5, repeat: 5}
 };
 
 // Round numbers in links and bookmarks are one-based. Explicit links also work without storage.
@@ -194,7 +206,11 @@ function fdSessionSchedule(circuit, rounds) {
       minutes.push(length);
       addBlock(description, length);
     }
-    addBlock(current.title, minutes.reduce(function(a,b) { return a+b; }, 0));
+    if (rounds.length === 1) {
+      current.phases.forEach(function(label, i) { addBlock(label, parts.minutes[i]); });
+    } else {
+      addBlock(current.title, minutes.reduce(function(a,b) { return a+b; }, 0));
+    }
     addPhase('Debrief', circuit.session.debrief, 'Handoff debrief');
     if (index + 1 < rounds.length) addPhase('Transition', circuit.session.transition, 'Transition · switch roles and prepare for the next case');
     else if (circuit.session.repeat) addPhase('Repeat the handoff', circuit.session.repeat, 'Repeat the handoff');
@@ -203,28 +219,39 @@ function fdSessionSchedule(circuit, rounds) {
 }
 
 function fdSessionPlan(circuit, schedule, url) {
-  var choices = Object.keys(FD_OSCE_CIRCUITS).filter(function(slug) {
-    return !!FD_OSCE_CIRCUITS[slug].session;
-  }).map(function(slug) {
-    var option = FD_OSCE_CIRCUITS[slug];
-    var active = option === circuit;
-    var label = option.session.goal;
-    return '<a href="?page=osce.md&amp;station=' + slug + '"' + (active ? ' aria-current="page"' : '') + '>' +
-      (active ? '<strong>' + label + '</strong>' : label) + '</a>';
+  var durations = [], goals = [];
+  Object.keys(FD_OSCE_CIRCUITS).forEach(function(slug) {
+    var option = FD_OSCE_CIRCUITS[slug].session;
+    if (!option) return;
+    var link = '<a href="?page=osce.md&amp;station=' + slug + '"' +
+      (option === circuit.session ? ' aria-current="page"' : '') + '>';
+    if (option.goal === circuit.session.goal) durations.push(link + option.minutes + ' minutes</a>');
+    if (option.minutes === circuit.session.minutes) goals.push(link + option.goal + '</a>');
+  });
+  function choices(label, links) {
+    return '<nav class="fd-session__choices" aria-label="' + label + '"><h3>' + label + '</h3>' + links.join(' ') + '</nav>';
+  }
+  var caseSummary = circuit.cases.map(function(id, index) {
+    var lead = Object.keys(circuit.roles).find(function(seat) {
+      var role = circuit.roles[seat][index];
+      return role === 'interviewer' || role === 'presenter';
+    });
+    return FD_OSCE_STATIONS[id].title + ' · Learner ' + lead.toUpperCase() + ' leads';
   });
   var rows = schedule.map(function(round) {
     return round.blocks.map(function(block) {
       return '<li><strong>' + block.start + '–' + block.end + ' min</strong> · ' + block.label + '</li>';
     }).join('');
   }).join('');
-  return '<h2>' + circuit.session.minutes + '-minute session plan</h2><nav aria-label="Teaching goal"><p>Teaching goal · ' +
-    choices.join(' · ') + '</p></nav><p>Three learners, two cases. Share the learner links before starting the clock.</p>' +
+  return '<h2>' + circuit.session.minutes + '-minute session plan</h2>' +
+    choices('Session duration', durations) + choices('Teaching goal', goals) +
+    '<p>' + caseSummary.join('<br>') + '</p>' +
     '<ol aria-label="Session agenda">' + rows + '</ol>' +
     '<p><a class="fd-btn fd-btn--primary" href="' + url + '&amp;round=1">Start session</a></p>' + fdCircuitSeats(circuit, url);
 }
 
 function fdCircuitView(circuit, current, rounds, round, seat, url, parse, schedule) {
-  var title = 'Case ' + (round + 1) + ' of ' + rounds.length + ' · ' + current.title;
+  var title = (rounds.length > 1 ? 'Case ' + (round + 1) + ' of ' + rounds.length + ' · ' : '') + current.title;
   var body = '<p class="fd-circuit__case"><strong>' + title + '</strong></p>';
   var next = circuit.cases[round + 1];
   if (next) body += '<p>Up next: ' + FD_OSCE_STATIONS[next].title + '</p>';
@@ -253,7 +280,9 @@ function fdCircuitView(circuit, current, rounds, round, seat, url, parse, schedu
 }
 
 function fdCircuitSeats(circuit, url) {
-  return '<h3>Learner links</h3><p>Give each learner one link for the circuit. Cue everyone when it is time to tap Next case.</p>' +
+  var instructions = circuit.cases.length === 1 ? 'Share one role link with each learner before starting the clock.' :
+    'Give each learner one link for the circuit. Cue everyone when it is time to tap Next case.';
+  return '<h3>Learner links</h3><p>' + instructions + '</p>' +
     fdOsceShareList(Object.keys(circuit.roles).map(function(key) {
       var label = 'Learner ' + key.toUpperCase();
       var assignment = circuit.roles[key].map(function(role, i) {
@@ -284,7 +313,7 @@ function fdCircuitNavigation(circuit, round, seatUrl, seat) {
     }).join('') + '</ol></details>';
     if (round > 0) navigation += '<p><a href="' + seatUrl + '&amp;round=1">Start at station 1</a></p>';
   } else if (!next && circuit.session && !seat) navigation += '<a href="' + seatUrl + '">Back to session plan</a>';
-  else if (!next) navigation += '<a href="' + seatUrl + '">Back to first case</a>';
+  else if (!next && circuit.cases.length > 1) navigation += '<a href="' + seatUrl + '">Back to first case</a>';
   return navigation;
 }
 

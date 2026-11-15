@@ -4,7 +4,7 @@ Generated: 2026-06-27
 
 All cases are synthetic. No real patient details are used.
 
-[Fit my teaching time](?page=osce.md&station=teaching-time-45) · Choose a 45-minute session for acute assessment or communication and handoff.
+[Fit my teaching time](?page=osce.md&station=teaching-time-45) · Choose 20 or 45 minutes for acute assessment or communication and handoff.
 
 [Run a circuit](?page=osce.md&station=catatonia-withdrawal-circuit) · Possible Catatonia → Alcohol Withdrawal · 3 learners
 
