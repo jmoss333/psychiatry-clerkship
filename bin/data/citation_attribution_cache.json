@@ -5143,6 +5143,28 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37236789"
+    },
+    "10.1111/acer.14843": {
+      "title": "What is the optimum thiamine dose to treat or prevent Wernicke's encephalopathy or Wernicke–Korsakoff syndrome? Results of a randomized controlled trial",
+      "container": "Alcoholism Clin &amp; Exp Res",
+      "containerAlt": [
+        "Alcohol Clin Exp Res",
+        "Alcoholism Clin &amp; Exp Res",
+        "Alcoholism, clinical and experimental research",
+        "Alcoholism: Clinical and Experimental Research"
+      ],
+      "year": 2022,
+      "authors": [
+        "Dingwall",
+        "Delima",
+        "Binks",
+        "Batey",
+        "Bowden"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-15",
+      "pmid": "35428992"
     }
   },
   "pmids": {
