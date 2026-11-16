@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-11-09T08:02:29+00:00",
+  "checked_at": "2026-11-16T08:09:18+00:00",
   "effective_time": "20250228",
   "sections": {
     "boxed_warning": {
@@ -26,5 +26,5 @@
     }
   },
   "set_id": "7ea3c60a-45c7-44cc-afc2-d87fa53993c0",
-  "version": "35"
+  "version": "36"
 }
