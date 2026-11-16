@@ -55,6 +55,18 @@ for (const site of ['ms3', 'res']) {
   const p = projections[site];
   const index = F.fdBuildIndex(p.curriculum, meta, tools, p.manifest);
   const results = q => F.fdSearchResults(index, q, p.curriculum.synonyms, {});
+  for (const [query, ref, kind] of [
+    ['I need to call family', 'collateral_workflow.md', 'item'],
+    ['Call family?', 'collateral_workflow.md', 'item'],
+    ['call family about suicidal thoughts', 'pg_suicide.md', 'protocol'],
+    ['I need to call family about delirium', 'delirium.md', 'protocol'],
+  ]) {
+    test(`${site}: "${query}" opens first on ${ref}`, () => {
+      const [first] = results(query);
+      assert.equal(first?.item.ref, ref);
+      assert.equal(first.kind, kind);
+    });
+  }
   test(`${site}: suicidality and dotted SI lead with the safety card`, () => {
     for (const q of ['suicidality', 'S.I.', 'S.I.?', 'concern about S.I.', 'rounding prep for suicidality']) {
       const [first] = results(q);
