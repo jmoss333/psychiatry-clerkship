@@ -585,8 +585,9 @@ illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "ill
 os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
 for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
     _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
-_copy_required(os.path.join(LIB, "03_Core_Topics", "Anxiety", "illustrations", "pacing-hallway.webp"),
-               os.path.join(OUT, "illustrations", "pacing-hallway.webp"), _missing_req)
+for topic, scene in (("Anxiety", "pacing-hallway.webp"), ("Mood", "mood-breakfast.webp")):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", topic, "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)

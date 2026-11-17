@@ -1,6 +1,30 @@
 # Mood Disorders on the Inpatient Unit
 
-> **Review status:** Reviewed and attested by Joshua Moss, MD (2026-07-09). Educational; fictional composites only, no PHI.
+> Educational; fictional composites only, no PHI.
+
+<figure class="fd-bedside-case" aria-labelledby="sleep-title">
+  <figcaption>
+    <span class="fd-bedside-case__label">Fictional bedside cases</span>
+    <strong id="sleep-title">Both slept three hours.</strong>
+  </figcaption>
+  <img src="illustrations/mood-breakfast.webp" width="1368" height="456" alt="Maya and Alex each speak with a clinician over breakfast in two separate scenes.">
+  <div class="fd-sleep-record" role="img" aria-label="Overnight nursing record. Maya and Alex were each estimated to have slept three hours, from 1 to 4 a.m.">
+    <strong>Overnight nursing record · estimated sleep</strong>
+    <div class="fd-sleep-record__row"><span class="fd-bedside-case__label">Maya</span><span class="fd-sleep-record__rail"></span><b>3 h</b></div>
+    <div class="fd-sleep-record__row"><span class="fd-bedside-case__label">Alex</span><span class="fd-sleep-record__rail"></span><b>3 h</b></div>
+    <div class="fd-sleep-record__row" aria-hidden="true"><div class="fd-sleep-record__axis"><span>10 pm</span><span>1 am</span><span>4 am</span><span>6 am</span></div></div>
+  </div>
+  <p class="fd-bedside-case__prompt"><span class="fd-bedside-case__label">MS3 prompt</span> What would you ask each patient at breakfast to learn what those three hours meant?</p>
+  <details>
+    <summary><span class="fd-bedside-case__closed">Hear from both patients</span><span class="fd-bedside-case__open">Hide the patients’ accounts</span></summary>
+    <dl>
+      <div><dt>Maya</dt><dd>“I kept trying to fall back asleep. I’m exhausted.”</dd></div>
+      <div><dt>Alex</dt><dd>“I felt rested. I got up and started planning three projects.”</dd></div>
+    </dl>
+    <p><span class="fd-bedside-case__label">Compare the accounts</span> Who wanted more sleep? Whose account suggests a decreased need for sleep?</p>
+    <p class="fd-bedside-case__follow"><span class="fd-bedside-case__label">Resident follow-up</span> Before calling this a manic episode, what would you ask Alex and someone who knows him about the duration and change from his usual functioning?</p>
+  </details>
+</figure>
 
 **In one line** — Inpatient mood work is about safety, getting the diagnosis right (especially separating unipolar from bipolar), and starting an effective, measured treatment while the milieu and sleep do half the work.
 

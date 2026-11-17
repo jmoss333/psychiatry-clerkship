@@ -2821,6 +2821,38 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
   });
 
+  test('the Mood bedside case shows both sleep records before the patients’ accounts', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await page.goto('/?page=t_mood.md');
+
+    const bedside = page.locator('.fd-guide-header .fd-article__h1 + .fd-bedside-case');
+    await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
+    const art = bedside.locator('img');
+    await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
+    await art.evaluate(img => img.decode());
+    const record = bedside.getByRole('img', { name: /Maya and Alex.*three hours.*1 to 4 a.m/ });
+    await expect(record).toBeVisible();
+    await expect(record.locator('b')).toHaveText(['3 h', '3 h']);
+    const prompt = bedside.locator('.fd-bedside-case__prompt');
+    await expect(prompt).toContainText('What would you ask each patient at breakfast');
+    const disclosure = bedside.locator('.fd-bedside-case__prompt + details');
+    const toggle = disclosure.locator('summary');
+    const accounts = disclosure.locator('dd');
+    const follow = disclosure.getByText('Resident follow-up', { exact: true });
+    await expect(accounts).toHaveText([/kept trying to fall back asleep/, /felt rested/]);
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await toggle.focus();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeVisible();
+    await expect(disclosure.getByText('Compare the accounts', { exact: true })).toBeVisible();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await expect(record).toBeVisible();
+    await expect(prompt).toBeVisible();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.
