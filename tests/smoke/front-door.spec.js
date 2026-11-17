@@ -2924,6 +2924,105 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  async function openPersonalityCrisis(page, testInfo) {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, 't_personality.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_personality.md&guideSection=initial-workup');
+    const card = page.locator('#personality-crisis');
+    await expect(card).toBeVisible();
+    return { card, plan: page.locator('#personality-response'), follow: page.locator('#personality-followup') };
+  }
+
+  test('Personality crisis map keeps the three teaching moments in their requested sections', async ({ page }, testInfo) => {
+    const { card, plan, follow } = await openPersonalityCrisis(page, testInfo);
+    for (const [block, section] of [[card, 'Initial workup'], [plan, 'Acute inpatient management'], [follow, 'What the student does']]) {
+      const lead = block.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]').locator('> .fd-guide-lead');
+      await expect(lead).toContainText(section);
+    }
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(card.locator('[data-personality-answer]')).toBeHidden();
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    expect(await follow.evaluate(el => el.open)).toBe(false);
+    expect(await card.locator('img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    await expect(page.locator('.fd-reader [role="alert"]').filter({ hasText: /faculty review/i })).toHaveCount(1);
+    await expectHealthy(page);
+  });
+
+  test('Personality crisis map uses explicit inquiry and a visit-only response', async ({ page }, testInfo) => {
+    const { card, plan, follow } = await openPersonalityCrisis(page, testInfo);
+    const answer = card.locator('[data-personality-answer]');
+    await card.locator('[data-personality-question="leading"]').click();
+    await expect(card.locator('[data-personality-question-feedback]')).toContainText('supplies an explanation');
+    await expect(answer.locator('[data-personality-answer-body]')).toBeEmpty();
+    await answer.locator('> summary').press('Enter');
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('May miss the chance');
+    await expect(card.locator('[data-personality-node="feeling"]')).toContainText('Sam reports');
+    await plan.locator('[data-personality-response="promise"]').click();
+    await expect(plan.locator('[data-personality-response-feedback]')).toContainText('not confirmed');
+    await plan.locator('[data-personality-response="plan"]').click();
+    await expect(plan.locator('[data-personality-response-feedback]')).toContainText('does not guarantee immediate calm');
+    await follow.locator('> summary').click();
+    await follow.locator('textarea').fill('Fictional rehearsal, not saved.');
+    await page.setViewportSize({ width: 600, height: 900 });
+    await card.locator('[data-personality-reset]').click();
+    await expect(card.locator('[data-personality-question="open"]')).toBeFocused();
+    expect(await card.locator('[data-personality-question="open"]').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+    })).toBe(true);
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    await expect(follow.locator('textarea')).toHaveValue('');
+    const findAfterReset = page.locator('.fd-guide-find');
+    await findAfterReset.getByRole('searchbox').fill('May miss the chance');
+    await findAfterReset.getByRole('button', { name: 'Find passages' }).click();
+    await expect(page.locator('.fd-guide-results button')).toHaveCount(0);
+    await card.locator('[data-personality-question="open"]').click();
+    await answer.locator('> summary').click();
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.reload();
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    const find = page.locator('.fd-guide-find');
+    await find.getByRole('searchbox').fill('only chance to speak');
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expectHealthy(page);
+  });
+
+  test('Personality resident response follows the selected account and clears the prior answer', async ({ page }, testInfo) => {
+    const { follow } = await openPersonalityCrisis(page, testInfo);
+    await follow.locator('> summary').click();
+    const worked = follow.locator('[data-personality-worked]');
+    const body = worked.locator('[data-personality-worked-body]');
+    await expect(body).toBeEmpty();
+    for (const [key, expected, absent] of [
+      ['practical', 'closing time window', 'experience of being overlooked'],
+      ['forgotten', 'experience of being overlooked', 'closing time window'],
+      ['practical', 'closing time window', 'experience of being overlooked'],
+    ]) {
+      await follow.locator(`[data-personality-account="${key}"]`).click();
+      await expect(follow.locator('[data-personality-account][aria-pressed="true"]')).toHaveCount(1);
+      await expect(body).toBeEmpty();
+      expect(await worked.evaluate(el => el.open)).toBe(false);
+      // Search/printing can expand native details but must not mount an unrequested answer.
+      await worked.evaluate(el => { el.open = true; });
+      await expect(body).toBeEmpty();
+      await worked.evaluate(el => { el.open = false; });
+      await worked.locator('> summary').press('Enter');
+      await expect(body).toContainText(expected);
+      await expect(body).not.toContainText(absent);
+      await expect(body).toContainText('Do not promise the sister will answer.');
+    }
+    await page.setViewportSize({ width: 320, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await expectHealthy(page);
+  });
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.
