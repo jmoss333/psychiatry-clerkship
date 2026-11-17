@@ -259,18 +259,22 @@ test('interruption keeps listening through a long unfinished interim and sends o
   assert.equal(h.calls[1].body.text,'Let me ask about how you have been sleeping');c.end();await flush();
 });
 
-test('faculty settings travel only with the start and are not applied to moment starts',async()=>{
-  const h=environment(),c=createController(h.env),work=c.start('key',false,undefined,{deliveryIntensity:'expressive'});await until(()=>h.calls.length===1);
+test('faculty settings travel only with the start of the chosen portrayal',async()=>{
+  const h=environment(),c=createController(h.env),work=c.start('key',false,'sp_alcohol_ambivalence_001',{deliveryIntensity:'expressive',replyDetail:'one-point'});await until(()=>h.calls.length===1);
+  assert.equal(h.calls[0].body.replyDetail,'one-point');
   assert.equal(h.calls[0].body.deliveryIntensity,'expressive');await finishAudio(h,0);await finishAudio(h,1);await work;
-  c.send('Tell me more');await until(()=>h.calls.length===2);assert.equal(Object.hasOwn(h.calls[1].body,'deliveryIntensity'),false);c.end();await flush();
+  c.send('Tell me more');await until(()=>h.calls.length===2);
+  assert.equal(Object.hasOwn(h.calls[1].body,'replyDetail'),false);
+  assert.equal(Object.hasOwn(h.calls[1].body,'deliveryIntensity'),false);c.end();await flush();
 });
 
 test('moment starts ignore full-encounter voice settings and spoken team formulation remains separate',async()=>{
   const h=environment(),scenarioId='moment_priya_formulation_001',c=createController(h.env,{getMomentProfile:id=>id===scenarioId?{}:null});
-  const opening=c.start('key',true,scenarioId,{spokenInterrupt:true,deliveryIntensity:'expressive'});
+  const opening=c.start('key',true,scenarioId,{spokenInterrupt:true,deliveryIntensity:'expressive',replyDetail:'one-point'});
   await until(()=>h.audios[0]?.plays===1);
   assert.equal(c.getSnapshot().spokenInterrupt,false);assert.equal(c.getSnapshot().deliveryIntensity,'standard');assert.equal(h.live(),undefined);
   assert.equal(h.calls[0].body.scenarioId,scenarioId);assert.equal(Object.hasOwn(h.calls[0].body,'deliveryIntensity'),false);
+  assert.equal(Object.hasOwn(h.calls[0].body,'replyDetail'),false);
   await finishAudio(h,0);await finishAudio(h,1);await opening;
   const question=c.send('Tell me what I have misunderstood.');await finishAudio(h,2);await finishAudio(h,3);await question;c.end();
   assert.equal(c.recordTeamFormulation(),true);h.live().final('Hello. What would you like to discuss?');h.advance(4500);await flush();

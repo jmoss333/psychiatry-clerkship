@@ -4,6 +4,10 @@
 // The underlying sources remain sp-interview.pack.json, local-cases.js, and
 // family-visit-case.mjs; a new case must receive its own reviewed directions.
 const MORGAN='Morgan keeps their mixed feelings and their own choices. A useful reflection can be acknowledged without a promise to change, gratitude, or an automatic shift toward agreement. Preserve both benefits and concerns when relevant, without reciting both in every reply.';
+const MORGAN_ONE_POINT="When the learner offers a broad, open invitation, volunteer one relevant point in Morgan's own words and leave room for a follow-up. For direct, specific, compound or safety questions, answer each part completely within the permitted case facts. Preserve Morgan's ambivalence, every required disclosure and the existing reply limits. These take precedence over volunteering one point.";
+export function isSupportedReplyDetail(caseId,value){
+  return caseId==='sp_alcohol_ambivalence_001'&&value==='one-point';
+}
 const CASE_GUIDANCE=Object.freeze({
   sp_depression_gated_si_001:'Dana remains tired and reserved. Embarrassment or a concern already expressed may remain relevant after an acknowledgement. She can answer warmly, with irritation, or with a small self-deprecating joke when grounded in the actual exchange; one supportive phrase does not resolve her depression or unlock a disclosure.',
   sp_mania_redirect_001:'Marcus keeps the existing forward momentum. A clear redirect can focus his next answer without removing his urgency or making him hostile. Respond to the new question without restarting the interrupted monologue. Keep connected ideas within the permitted case inventory. Do not invent or deny a safety-based reason for admission. Do not make a global claim about being safe or dangerous unless that exact meaning is supported by a currently permitted case fact. His belief that this is a misunderstanding does not establish a safety conclusion. Sleep-onset and waking experiences are unspecified: do not add what happens at bedtime or on waking, why he sleeps so little, or new quantities or activities to convey his energy. Use only his known short sleep, lack of tiredness, and established thought experiences. Do not invent other people\'s reactions to connect these facts; keep an established reaction attributed to its actual source.',
@@ -59,11 +63,15 @@ function checkedContext(context){
 export function applyInteractionGuidance(context,caseId,options={}){
   checkedContext(context);
   if(typeof caseId!=='string'||!Object.hasOwn(CASE_GUIDANCE,caseId))throw new Error('Unsupported interaction case.');
-  if(!object(options)||Object.keys(options).some(key=>key!=='roleId'))throw new Error('Invalid interaction options.');
+  if(!object(options)||Object.keys(options).some(key=>key!=='roleId'&&key!=='replyDetail'))throw new Error('Invalid interaction options.');
   let portrayal=CASE_GUIDANCE[caseId];
   if(caseId==='family_morgan_maya_001'){
     if(!Object.hasOwn(options,'roleId')||typeof options.roleId!=='string'||!Object.hasOwn(FAMILY_GUIDANCE,options.roleId))throw new Error('Invalid interaction family role.');
     portrayal=FAMILY_GUIDANCE[options.roleId]+' Do not speak for the other family participant, infer agreement from their silence, or expose private context in the shared meeting.';
   }else if(options.roleId!==undefined)throw new Error('Invalid interaction family role.');
+  if(Object.hasOwn(options,'replyDetail')){
+    if(!isSupportedReplyDetail(caseId,options.replyDetail))throw new Error('Invalid interaction reply detail.');
+    portrayal+=' '+MORGAN_ONE_POINT;
+  }
   return {...context,system:context.system+'\n'+COMMON+'\nCURRENT ROLE CONTINUITY: '+portrayal};
 }

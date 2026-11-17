@@ -498,6 +498,62 @@ test('family refuses a second speaker label hidden in a later sentence',async()=
 
 function encounterCodec(caseId){return createStateCodec({key:env.DANA_PREVIEW_STATE_KEY,binding:`hosted-sp-v2:${caseId}:${getCase(caseId).binding}:${env.DEPLOY_ID}:${origin}:${hash(env.DANA_PREVIEW_PASSCODE)}`,withDeliveryIntensity:true});}
 
+test('solo Morgan’s optional reply detail changes only actor directions and follows the alternative',async()=>{
+ const caseId='sp_alcohol_ambivalence_001',codec=encounterCodec(caseId);
+ async function encounter(settings){
+  const speech=[],s=setup({provider:{speak:async({text,caseId,deliveryIntensity})=>{speech.push({text,caseId,deliveryIntensity});return mp3;}}});
+  async function submit(body){
+   const output=await events(await s.handler()(request({caseId,...body})));
+   const state=output.at(-1).state,receipt=codec.open(state);
+   assert.equal(receipt.replyDetail,settings.replyDetail);
+   assert.equal(Object.hasOwn(receipt,'replyDetail'),Object.hasOwn(settings,'replyDetail'));
+   return state;
+  }
+  let state=await submit({action:'start',requestId:crypto.randomUUID(),...settings});
+  state=await submit({action:'turn',state,text:'What brought you in?',previousPlayback:'played',previousCompletedSegments:1});
+  await submit({action:'retry',state,turnId:1,text:'What do you enjoy about drinking and what concerns you?'});
+  assert.deepEqual(s.calls.map(claim=>claim.units),[1,3,3]);
+  return {contexts:s.contexts,speech};
+ }
+ const standard=await encounter({}),chosen=await encounter({replyDetail:'one-point'});
+ assert.deepEqual(chosen.speech,standard.speech);
+ assert.equal(chosen.contexts.length,2);
+ chosen.contexts.forEach((ctx,index)=>{
+  const usual=standard.contexts[index];
+  assert.deepEqual(ctx.messages,usual.messages);
+  assert.ok(ctx.system.startsWith(usual.system));
+  const directions=ctx.system.slice(usual.system.length);
+  assert.match(directions,/broad, open invitation, volunteer one relevant point/);
+  assert.match(directions,/direct, specific, compound or safety questions, answer each part completely/);
+  assert.match(directions,/ambivalence, every required disclosure and the existing reply limits/);
+ });
+});
+
+test('unsupported reply detail, mid-encounter overrides and invalid sealed settings are rejected before reserving work',async()=>{
+ const caseId='sp_alcohol_ambivalence_001',s=setup();
+ const startBody=(id,replyDetail)=>({action:'start',caseId:id,requestId:crypto.randomUUID(),replyDetail});
+ for(const value of [null,false,1,{},['one-point'],'standard','ONE-POINT','']){
+  assert.equal((await s.handler()(request(startBody(caseId,value)))).status,400);
+ }
+ for(const id of [DANA,'sp_mania_redirect_001','sp_psychosis_paranoid_001',FAMILY]){
+  assert.equal((await s.handler()(request(startBody(id,'one-point')))).status,400);
+  const codec=encounterCodec(id);
+  const invalid=codec.seal({...initialState('Opening.',Date.now,id),replyDetail:'one-point'});
+  assert.throws(()=>codec.open(invalid),{code:'preview_state_invalid'});
+ }
+ assert.equal(s.calls.length,0);
+ const first=(await events(await s.handler()(request(startBody(caseId,'one-point'))))).at(-1).state;
+ const turn={caseId,action:'turn',state:first,text:'Tell me more.',previousPlayback:'played',previousCompletedSegments:1};
+ const codec=encounterCodec(caseId);
+ const invalid=codec.seal({...codec.open(first),replyDetail:'other'});
+ assert.equal((await s.handler()(request({...turn,state:invalid}))).status,400);
+ assert.equal((await s.handler()(request({...turn,replyDetail:'one-point'}))).status,400);
+ assert.equal(s.calls.length,1);
+ const state=(await events(await s.handler()(request(turn)))).at(-1).state;
+ assert.equal((await s.handler()(request({action:'retry',caseId,state,turnId:1,text:'What happened?',replyDetail:'one-point'}))).status,400);
+ assert.equal(s.calls.length,2);
+});
+
 test('voice intensity is sealed at Start and preserved through turns and the alternative',async()=>{
  for(const caseId of [DANA,'sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY]){
   let actorContexts;

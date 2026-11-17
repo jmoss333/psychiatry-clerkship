@@ -45,6 +45,8 @@ alone and is never applied to another case.
 
 Faculty can choose **Gentler expression / Current portrayal / More pronounced expression** before a full encounter. Only the expression of the existing dialogue changes; the server binds this allowlisted setting for the whole encounter, including family speakers and an alternative. Standard preserves the accepted profiles exactly. Presets do not change numeric speed, facts, symptoms, disclosure rules, actor instructions, learner feedback, or interruption controls. Practice a Moment retains Standard and its existing capture flow. Actual nonstandard voices are drafts for listening review.
 
+For the individual Morgan encounter, faculty can also choose **One point, then room for a follow-up** under **Faculty · patient delivery and setup link**. This trial asks Morgan to volunteer one point after a broad invitation. Specific, compound and safety questions take precedence. The server binds the selection at Start and carries it through a retry. Use **Get link for this setup** to copy a reusable entrance with the selected patient, expression, communication goal, coaching depth and applicable Morgan setting. The recipient enters the passcode and chooses when to begin. The family-visit doorway selects both people and opens their briefing. [API, voice and case review](INTERVIEW_ROOM_REVIEW.md)
+
 See the [case-by-case research](../docs/superpowers/specs/2026-09-09-sp-voice-evidence.md) and [spoken interruption pilot design and trial sequence](../docs/superpowers/specs/2026-09-09-spoken-interruption-pilot.md). No production activation or clinical attestation follows from automated checks.
 
 ## Practice goals and coaching

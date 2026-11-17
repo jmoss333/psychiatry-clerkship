@@ -11,12 +11,43 @@
   var ROOM_BED_GAIN=0.035,ROOM_BED_PHASES=['ready','connecting','listening','responding','speaking'];
   var ROOM_CUES={door_knock:'A brief knock at the closed door. No one enters.',hallway_chime:'A short chime sounds in the hallway and stops.',door_tap:'Two quick taps at the closed door, then footsteps move away down the hallway. The door stays closed.',overhead_page:'An overhead page sounds in the hallway and stops. The words do not carry into the room.'};
   var FAMILY_CASE_ID='family_morgan_maya_001',FAMILY_NAMES={morgan:'Morgan',maya:'Maya'};
+  var STATION_PATIENTS=Object.freeze({
+    dana:'sp_depression_gated_si_001', marcus:'sp_mania_redirect_001', ray:'sp_psychosis_paranoid_001',
+    morgan:'sp_alcohol_ambivalence_001', family:FAMILY_CASE_ID
+  });
+  function selectEntry(control,value){
+    if(!control||value===null||control.options&&!Array.from(control.options).some(function(option){return option.value===value;}))return;
+    control.value=value;
+    control.dispatchEvent(new Event('change',{bubbles:true}));
+  }
   function applyLaunchPreset(search,controls){
-    var preset=new URLSearchParams(String(search||'')).get('preset');
-    if(preset!=='trainee'||!controls||!controls.format||!controls.coachingDepth)return false;
-    controls.format.value='full';controls.format.dispatchEvent(new Event('change',{bubbles:true}));
-    controls.coachingDepth.value='student';controls.coachingDepth.dispatchEvent(new Event('change',{bubbles:true}));
+    var params=new URLSearchParams(search),preset=params.get('preset');
+    if(!controls||!controls.format||!['trainee','family','station'].includes(preset))return false;
+    var patient=preset==='family'?'family':params.get('patient');
+    if(preset==='station'&&!Object.hasOwn(STATION_PATIENTS,patient))return false;
+    selectEntry(controls.format,'full');
+    if(preset!=='trainee')selectEntry(controls.patient,STATION_PATIENTS[patient]);
+    // Changing the patient rebuilds their goal list and resets the coaching depth.
+    if(preset==='station'){
+      selectEntry(controls.goal,params.get('goal'));
+      selectEntry(controls.expression,params.get('expression'));
+      selectEntry(controls.coachingDepth,params.get('depth'));
+      if(patient==='morgan')selectEntry(controls.replyDetail,params.get('detail'));
+    }else selectEntry(controls.coachingDepth,'student');
     return true;
+  }
+  function stationLink(location,controls){
+    var patient=Object.keys(STATION_PATIENTS).find(function(name){return STATION_PATIENTS[name]===controls.patient.value;});
+    if(controls.format.value!=='full'||!patient)return null;
+    // Build from the page path. Never carry an incoming query, fragment, or form contents.
+    var url=new URL(location.pathname,location.origin);
+    url.searchParams.set('preset','station');
+    url.searchParams.set('patient',patient);
+    url.searchParams.set('expression',controls.expression.value);
+    if(controls.goal&&controls.goal.value)url.searchParams.set('goal',controls.goal.value);
+    if(controls.coachingDepth)url.searchParams.set('depth',controls.coachingDepth.value);
+    if(patient==='morgan'&&controls.replyDetail.value==='one-point')url.searchParams.set('detail','one-point');
+    return url.href;
   }
   function addressedFamilyRole(text){
     // Only a direct address at the beginning changes the addressee. Mentioning
@@ -252,7 +283,7 @@
   // Registration alone is not attestation. Morgan and the family meeting were
   // attested by Joshua Moss, MD on 2026-09-09; every case listed here now carries
   // faculty-attested content.
-  var CASE_IDS=['sp_depression_gated_si_001','sp_mania_redirect_001','sp_psychosis_paranoid_001','sp_alcohol_ambivalence_001',FAMILY_CASE_ID];
+  var CASE_IDS=Object.values(STATION_PATIENTS);
   function createController(env,options){
     options=options||{};var phase='gate',key='',receipt=null,turn=0,startedAt=null,quietSerial=0,sharedAudio=null,cueNodes=null,roomBed=null,roomSoundWanted=false,caseId=CASE_IDS[0],messages=[],draft='',interim='',problem='',voice=true,thinking=false,hold=false,task=null,player=null,disposed=false,ended=false,restartRequired=false,retryUsed=false;
     var mode='full',maxTurns=10,endpoint='/api/dana-preview',momentStage='dialogue',captureTarget='patient',reflectionOpen=false,review=null,teamFormulation='',summaryUncertain=false,uncertainTurnIds=[],reviewAttempted=false,closedReceiptAvailable=false,alternativeTurnId=null,endReason='learner_end';
@@ -404,7 +435,11 @@
       voice=!!useVoice&&!!(env.SpeechRecognition||env.webkitSpeechRecognition);coachingOpen=false;coachingUnfinished='';problem='';receipt=null;messages=[];turn=0;ended=false;restartRequired=false;startedAt=Date.now();
       settings=settings||{};roomCue=null;cuePending=false;familyBid=null;targetRoleId='morgan';spokenInterrupt=mode==='full'&&voice&&settings.spokenInterrupt===true;deliveryIntensity=mode==='full'&&['gentle','standard','expressive'].includes(settings.deliveryIntensity)?settings.deliveryIntensity:'standard';
       positioning.select(caseId===FAMILY_CASE_ID&&settings.familyPositioning===true,true);
-      var body={action:'start',requestId:env.crypto.randomUUID()};body[mode==='moment'?'scenarioId':'caseId']=caseId;if(mode==='full'&&deliveryIntensity!=='standard')body.deliveryIntensity=deliveryIntensity;return request(body,null);
+      var body={action:'start',requestId:env.crypto.randomUUID()};
+      body[mode==='moment'?'scenarioId':'caseId']=caseId;
+      if(mode==='full'&&deliveryIntensity!=='standard')body.deliveryIntensity=deliveryIntensity;
+      if(mode==='full'&&caseId===STATION_PATIENTS.morgan&&settings.replyDetail==='one-point')body.replyDetail='one-point';
+      return request(body,null);
     }
     async function send(text,automatic){
       if(captureTarget!=='patient'){if(text!==undefined)draft=String(text);return submitCapture();}if(task||disposed||ended||restartRequired||!receipt||reflectionOpen||coachingOpen)return false;
@@ -757,7 +792,11 @@
     function momentProfile(id){return env.MomentContent&&env.MomentContent.getProfile(id);}
     function selectedProfile(){return momentProfile(el('case-choice').value)||(env.DanaStationContent&&env.DanaStationContent.getProfile(el('case-choice').value));}
     function familyPreflight(reset){var family=el('case-choice').value===FAMILY_CASE_ID;el('family-preflight').hidden=!family;el('family-brief-ack').disabled=!family;el('family-brief-ack').required=family;el('family-positioning-entry-option').hidden=!family;el('family-positioning-entry').disabled=!family;if(reset){el('family-brief-ack').checked=false;el('family-positioning-entry').checked=false;}el('start').disabled=family&&!el('family-brief-ack').checked;}
-    function previewCase(){var profile=selectedProfile();if(!profile)return;var moment=!!momentProfile(profile.id||el('case-choice').value);el('door-title').textContent=moment?profile.title:'Begin with '+profile.displayName+'’s story.';el('door-lede').textContent=moment?profile.task:'Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.';el('access-lede').textContent=moment?'Up to four responses. About 3–5 minutes; you can end early.':'Up to ten questions, at your pace.';el('case-preview-note').textContent=moment?profile.setup:profile.doorNote;el('case-preview-task').textContent=profile.task;if(el('case-review-note')){el('case-review-note').hidden=!profile.reviewLabel;el('case-review-note').textContent=profile.reviewLabel||'';}el('start').textContent=moment?'Start moment':'Start encounter';el('voice-experiment-options').hidden=el('faculty-voice-options').hidden=moment;if(practice)practice.preview(el('case-choice').value,!moment);}
+    function previewCase(){var profile=selectedProfile();if(!profile)return;var moment=!!momentProfile(profile.id||el('case-choice').value);el('door-title').textContent=moment?profile.title:'Begin with '+profile.displayName+'’s story.';el('door-lede').textContent=moment?profile.task:'Introduce yourself and your role, invite the patient’s account, and close with a summary they can correct.';el('access-lede').textContent=moment?'Up to four responses. About 3–5 minutes; you can end early.':'Up to ten questions, at your pace.';el('case-preview-note').textContent=moment?profile.setup:profile.doorNote;el('case-preview-task').textContent=profile.task;if(el('case-review-note')){el('case-review-note').hidden=!profile.reviewLabel;el('case-review-note').textContent=profile.reviewLabel||'';}el('start').textContent=moment?'Start moment':'Start encounter';el('voice-experiment-options').hidden=el('faculty-voice-options').hidden=moment;
+      var soloMorgan=el('case-choice').value===STATION_PATIENTS.morgan;
+      el('morgan-detail-options').hidden=!soloMorgan;
+      if(!soloMorgan)el('reply-detail').value='standard';
+      if(practice)practice.preview(el('case-choice').value,!moment);}
     function chooseFormat(){var moment=momentsEnabled&&el('experience-choice').value==='moment';if(!moment)el('experience-choice').value='full';el('case-choice').replaceChildren();var choices=moment&&env.MomentContent?env.MomentContent.ids().map(function(id){var p=momentProfile(id);return {value:id,text:p.displayName+' — '+p.title+(p.reviewLabel?' ('+p.reviewLabel.toLowerCase()+')':'')};}):fullChoices;choices.forEach(function(c){var o=doc.createElement('option');o.value=c.value;o.textContent=c.text;el('case-choice').appendChild(o);});previewCase();}
     previewCase();familyPreflight(true);el('case-choice').addEventListener('change',function(){previewCase();familyPreflight(true);});el('experience-choice').addEventListener('change',function(){chooseFormat();familyPreflight(true);});el('family-brief-ack').addEventListener('change',function(){familyPreflight(false);});
     var followTranscript=true;
@@ -770,8 +809,20 @@
     if(env.PracticeCoach&&env.PracticeContent&&el('practice-entry')&&el('practice-room')){
       practice=env.PracticeCoach.mount(env,{entry:el('practice-entry'),room:el('practice-room'),content:env.PracticeContent,onOpen:controller.openCoaching,onClose:controller.closeCoaching});
       practice.preview(el('case-choice').value,!momentProfile(el('case-choice').value));
-      applyLaunchPreset(env.location&&env.location.search,{format:el('experience-choice'),coachingDepth:el('practice-depth')});
     }
+    var setupControls={format:el('experience-choice'),patient:el('case-choice'),expression:el('delivery-intensity'),goal:el('practice-goal'),coachingDepth:el('practice-depth'),replyDetail:el('reply-detail')};
+    applyLaunchPreset(env.location&&env.location.search,setupControls);
+    var setupField=el('station-link-field'),setupLink=el('station-link');
+    el('get-station-link').addEventListener('click',function(){
+      var url=stationLink(env.location,setupControls);
+      if(!url)return;
+      setupLink.value=url;setupField.hidden=false;setupLink.focus();setupLink.select();
+    });
+    function clearSetupLink(){setupField.hidden=true;setupLink.value='';}
+    Object.values(setupControls).forEach(function(control){
+      if(control)control.addEventListener('change',clearSetupLink);
+    });
+    el('access-form').addEventListener('submit',clearSetupLink);
     // The station is a projection of the snapshot: it never calls the controller.
     var station=null;
     function mountStation(caseId){
@@ -867,7 +918,7 @@
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var chosen=el('case-choice').value,ack=el('family-brief-ack').checked;if(chosen===FAMILY_CASE_ID&&!ack){el('family-brief-ack').focus();return;}var passcode=el('preview-key').value;el('preview-key').value='';el('family-brief-ack').checked=false;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}roomProfile=momentProfile(chosen)?null:profile;mountStation(chosen);if(practice)practice.begin();controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value,familyBriefAcknowledged:ack,familyPositioning:chosen===FAMILY_CASE_ID&&el('family-positioning-entry').checked});});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var chosen=el('case-choice').value,ack=el('family-brief-ack').checked;if(chosen===FAMILY_CASE_ID&&!ack){el('family-brief-ack').focus();return;}var passcode=el('preview-key').value;el('preview-key').value='';el('family-brief-ack').checked=false;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}roomProfile=momentProfile(chosen)?null:profile;mountStation(chosen);if(practice)practice.begin();controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value,replyDetail:el('reply-detail').value,familyBriefAcknowledged:ack,familyPositioning:chosen===FAMILY_CASE_ID&&el('family-positioning-entry').checked});});
     el('cue-knock').addEventListener('click',function(){controller.triggerRoomCue('door_knock');});el('cue-chime').addEventListener('click',function(){controller.triggerRoomCue('hallway_chime');});el('cue-tap').addEventListener('click',function(){controller.triggerRoomCue('door_tap');});el('cue-page').addEventListener('click',function(){controller.triggerRoomCue('overhead_page');});
     el('family-bid-invite').addEventListener('click',function(){controller.inviteFamilyBid();});el('family-bid-defer').addEventListener('click',function(){controller.deferFamilyBid();});
     if(el('family-speaker-choice'))el('family-speaker-choice').addEventListener('change',function(){controller.setTargetRole(this.value);});
