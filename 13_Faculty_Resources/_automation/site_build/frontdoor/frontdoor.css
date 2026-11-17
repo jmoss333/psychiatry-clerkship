@@ -2904,5 +2904,9 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
   html:has(.fd-circuit__timer){scroll-padding-bottom:calc(11rem + env(safe-area-inset-bottom))}
 }
 @media(max-width:430px){
+  .fd-circuit__timer:has([data-timer-focus]:not([hidden])){
+    display:grid;grid-template-columns:minmax(0,1fr) auto;row-gap:var(--fd-space-2)
+  }
+  .fd-circuit__timer .fd-station__actions{grid-column:1 / -1}
   .fd-circuit__timer .fd-btn{min-width:var(--fd-target-touch);padding-inline:var(--fd-space-4)}
 }

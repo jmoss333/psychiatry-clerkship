@@ -1435,4 +1435,4 @@ Both circuits label the current case with `.fd-circuit__case`. The facilitator u
 
 During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
 
-When the repeat ends, the primary timer button takes the facilitator to the receiver read-back. At the small-screen breakpoint, the timer buttons use narrower padding to leave room for the focus and countdown.
+When the repeat ends, the primary timer button takes the facilitator to the receiver read-back. On phones up to 430px wide, a selected feedback focus shares the first row with the countdown. The controls sit on a separate row so switching from Start to Read-back leaves the focus and time readable.
