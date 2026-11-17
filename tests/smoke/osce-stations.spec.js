@@ -17,6 +17,7 @@ const SHARED_DEBRIEF = 'What would you document in one sentence?';
 const HANDOFF_FOCUSES = ['Name the source', 'State the uncertainty', 'Make the request'];
 const focusNames = new RegExp(HANDOFF_FOCUSES.join('|'));
 const focusOptions = page => page.getByRole('radio', { name: focusNames });
+const receiverSummary = page => page.locator('summary').filter({ hasText: /^Receiver read-back$/ });
 const roles = [
   { label: 'Interviewer', cue: /Assess decision-making capacity for a specific refusal/i },
   { label: 'Patient', cue: /antibiotics are poison/i },
@@ -245,6 +246,7 @@ test('admission presentation share links open the shared case and only the selec
     }
     await openSharedDebriefOnly(page);
     await expect(focusOptions(page)).toHaveCount(0);
+    await expect(receiverSummary(page)).toHaveCount(0);
     await page.getByRole('link', { name: 'Back to station', exact: true }).click();
     await expect(page).toHaveURL(url => url.search === ADMISSION);
   }
@@ -713,11 +715,13 @@ test.describe('45-minute teaching preset on a touch phone', () => {
       await expect(card.getByRole('heading', { name: firstRole, level: 2, exact: true })).toBeVisible();
       await expect(card.getByText(firstCue, { exact: true })).toBeVisible();
       await expect(focusOptions(card)).toHaveCount(0);
+      await expect(receiverSummary(card)).toHaveCount(0);
       await nextCase(card).tap();
       await expect(card).toHaveURL(url => url.searchParams.get('role') === id && url.searchParams.get('round') === '2');
       await expect(card.getByRole('heading', { name: secondRole, level: 2, exact: true })).toBeVisible();
       await expect(card.getByText(secondCue, { exact: true })).toBeVisible();
       if (secondRole !== 'Observer') await expect(focusOptions(card)).toHaveCount(0);
+      if (secondRole !== 'Supervising resident') await expect(receiverSummary(card)).toHaveCount(0);
       participantCards.push({ card, secondRole, address: card.url() });
     }
     await nextCase(page).tap();
@@ -863,6 +867,7 @@ test.describe('20-minute teaching presets on a touch phone', () => {
       await card.goto(address.href);
       await expect(card.getByRole('heading', { name: role, exact: true, level: 2 })).toBeVisible();
       if (role !== 'Observer') await expect(focusOptions(card)).toHaveCount(0);
+      if (role !== 'Supervising resident') await expect(receiverSummary(card)).toHaveCount(0);
       for (const [owner, cue] of plan.seats) {
         const instruction = card.getByText(cue, { exact: true });
         if (owner === role) await expect(instruction).toBeVisible();
@@ -967,6 +972,89 @@ test.describe('observer feedback on a touch phone', () => {
       const controls = page.getByRole('group', { name: 'Facilitator timer controls' });
       await expect(controls).toContainText('State the uncertainty', { useInnerText: true });
       await expect(controls.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+    });
+  }
+});
+
+test.describe('receiver read-back on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  const choices = [
+    ['My first action changed', 'Say what you would do first now. Quote the sentence that changed your plan.'],
+    ['My first action stayed the same', 'Say what you would still do first. Quote the sentence that confirmed your plan.'],
+  ];
+
+  for (const [slug, round, seat] of [[COMMUNICATION_20, 1, 'b'], [COMMUNICATION_45, 2, 'c']]) {
+    test(slug + ' lets the receiving resident rehearse either first action on cue', async ({ page }) => {
+      const path = '/?page=osce.md&station=' + slug + '&round=' + round + '&role=' + seat;
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name: 'Supervising resident', exact: true })).toBeVisible();
+      const summary = receiverSummary(page);
+      const details = page.locator('details').filter({ has: summary });
+      await expect(summary).toBeVisible();
+      await expect(details).toHaveJSProperty('open', false);
+      await summary.tap();
+      await expect(details.getByRole('textbox', { includeHidden: true })).toHaveCount(0);
+      await expect(details.getByRole('radio')).toHaveCount(2);
+      await expect(details.locator('input:checked')).toHaveCount(0);
+      const originalUrl = page.url();
+      for (const [label] of choices) {
+        const choice = details.getByRole('radio', { name: label, exact: true });
+        await choice.tap();
+        await expect(choice).toBeChecked();
+        await expect(details.locator('input:checked')).toHaveCount(1);
+        for (const [owner, cue] of choices) {
+          const prompt = details.getByText(cue, { exact: true });
+          if (owner === label) await expect(prompt).toBeVisible();
+          else await expect(prompt).toBeHidden();
+        }
+      }
+      await expect(page).toHaveURL(originalUrl);
+      await page.reload();
+      await expect(summary).toBeVisible();
+      await expect(details.locator('input:checked')).toHaveCount(0);
+    });
+
+    test(slug + ' opens the read-back at time and returns focus from the pinned timer', async ({ page }) => {
+      await page.clock.install();
+      await page.goto('/?page=osce.md&station=' + slug + '&round=' + round);
+      const summary = receiverSummary(page);
+      const details = page.locator('details').filter({ has: summary });
+      const controls = page.getByRole('group', { name: 'Facilitator timer controls' });
+      const jump = controls.getByRole('button', { name: 'Go to read-back', exact: true });
+      await expect(controls.getByRole('timer')).toHaveText('6:00');
+      for (const phase of ['Presentation', 'Questions', 'Debrief']) {
+        await page.getByRole('radio', { name: phase, exact: true }).tap();
+        await expect(summary).toBeHidden();
+        await expect(jump).toBeHidden();
+      }
+      await page.getByRole('radio', { name: 'State the uncertainty', exact: true }).tap();
+      await page.getByRole('button', { name: 'Repeat the handoff', exact: true }).tap();
+      await expect(summary).toBeVisible();
+      await page.clock.fastForward(290_000);
+      await expect(details).toHaveJSProperty('open', false);
+      await page.clock.fastForward(10_000);
+      await expect(controls.getByRole('timer')).toHaveText('0:00');
+      await expect(details).toHaveJSProperty('open', true);
+      await page.setViewportSize({ width: 320, height: 660 });
+      await expect(jump).toBeInViewport({ ratio: 1 });
+      const focus = controls.getByText('State the uncertainty', { exact: true });
+      const textRight = await focus.evaluate(element => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return range.getBoundingClientRect().right;
+      });
+      const clock = await controls.getByRole('timer').boundingBox();
+      expect(textRight).toBeLessThanOrEqual(clock.x);
+      await jump.tap();
+      await expect(summary).toBeFocused();
+      await expect(summary).toBeInViewport();
+      await details.getByRole('radio', { name: choices[0][0], exact: true }).tap();
+      await expect(details.getByText(choices[0][1], { exact: true })).toBeVisible();
+      await controls.getByRole('button', { name: 'Reset', exact: true }).tap();
+      await expect(controls.getByRole('timer')).toHaveText('5:00');
+      await expect(details.locator('input:checked')).toHaveCount(0);
+      await expect(details.getByText(choices[0][1], { exact: true })).toBeHidden();
     });
   }
 });

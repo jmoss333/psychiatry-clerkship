@@ -1435,3 +1435,5 @@ The reader's `.fd-station` section contains role links in `.fd-station__roles`. 
 Both circuits label the current case with `.fd-circuit__case`. The facilitator uses `.fd-circuit__timer` for a fixed clock and controls above the phone dock. Each learner link has an expandable `.fd-circuit__qr` and follows its assigned roles as the group advances. The full circuit remembers the last station for each learner link on that browser.
 
 During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
+
+When the repeat ends, the primary timer button takes the facilitator to the receiver read-back. On phones up to 430px wide, a selected feedback focus shares the first row with the countdown. The controls sit on a separate row so switching from Start to Read-back leaves the focus and time readable.

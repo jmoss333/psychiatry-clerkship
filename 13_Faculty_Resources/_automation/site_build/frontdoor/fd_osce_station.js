@@ -188,6 +188,7 @@ function fdOsceTimer(labels, minutes, circuit, endMessage) {
       (labels.indexOf('Repeat the handoff') !== -1 ? '<strong data-timer-focus hidden></strong>' : '') + '</div>' : '') +
     '<div class="fd-station__clock" role="timer" aria-label="Time remaining" data-initial-minutes="' + minutes[0] + '">' + minutes[0] + ':00</div>' +
     '<div class="fd-station__actions"><button type="button" class="fd-btn fd-btn--primary" data-timer-toggle>Start</button>' +
+    (labels.indexOf('Repeat the handoff') !== -1 ? '<button type="button" class="fd-btn fd-btn--primary" data-open-readback aria-label="Go to read-back" hidden>Read-back</button>' : '') +
     '<button type="button" class="fd-btn fd-btn--ghost" data-timer-reset>Reset</button></div></div><p role="status" data-timer-status></p>';
 }
 
@@ -317,6 +318,17 @@ function fdHandoffPicker(selected, shareUrl) {
     radios.join('') + '</fieldset>' + (shareUrl ? '<div data-focus-share="' + shareUrl + '" hidden></div>' : '');
 }
 
+function fdReceiverReadback(fields) {
+  var changed = fields['Receiver read-back if your first action changed'];
+  var same = fields['Receiver read-back if your first action stayed the same'];
+  if (!changed || !same) return '';
+  return '<details data-receiver-readback><summary>Receiver read-back</summary>' +
+    '<fieldset><legend>Receiving resident, did the repeat change your first action?</legend>' +
+    '<label><input type="radio" name="readback-action" value="changed" data-cue="' + fdEsc(changed) + '"> My first action changed</label>' +
+    '<label><input type="radio" name="readback-action" value="same" data-cue="' + fdEsc(same) + '"> My first action stayed the same</label></fieldset>' +
+    '<p role="status" data-readback-prompt></p></details>';
+}
+
 function fdCircuitNavigation(circuit, round, seatUrl, seat) {
   var next = circuit.cases[round + 1];
   var navigation = next
@@ -382,7 +394,8 @@ function fdOsceStation(markdown, search, parse) {
       if (!seat) repeatAction = fdHandoffPicker(params.get('handoffFocus')) +
         '<p><button type="button" class="fd-btn fd-btn--primary" data-start-repeat>Repeat the handoff</button></p>';
       repeatInstructions = '<section' + (seat ? '' : ' data-repeat-coaching hidden') + '><h3 tabindex="-1">Repeat the handoff</h3>' +
-        parse(parts.fields['Repeat the handoff']) + '</section>';
+        parse(parts.fields['Repeat the handoff']) +
+        (!seat || circuit.roles[seat][round] === 'resident' ? fdReceiverReadback(parts.fields) : '') + '</section>';
       if (seat && circuit.roles[seat][round] === 'observer')
         repeatInstructions += fdHandoffPicker(null, url + '&amp;round=' + (round + 1));
     }
@@ -431,12 +444,22 @@ function fdMountOsceStation(panel){
     share.hidden=false;
     fdMountOsceShareLinks(share,share.querySelector('ul'));
   };
+  var readback=panel.querySelector('[data-receiver-readback]');
+  var prompt=readback && readback.querySelector('[data-readback-prompt]');
+  if(readback)readback.onchange=function(event){
+    prompt.textContent=event.target.dataset.cue;
+  };
   var toggle=panel.querySelector('[data-timer-toggle]');
   if(!toggle)return;
   var display=panel.querySelector('[role="timer"]'),status=panel.querySelector('[data-timer-status]');
   var reset=panel.querySelector('[data-timer-reset]'),remaining=0,deadline=null,tick=null;
   var repeatButton=panel.querySelector('[data-start-repeat]'), repeatPhase=panel.querySelector('[data-repeat-phase]');
   var coaching=panel.querySelector('[data-repeat-coaching]');
+  var openReadback=readback && panel.querySelector('[data-open-readback]');
+  if(openReadback)openReadback.onclick=function(){
+    readback.open=true;
+    readback.querySelector('summary').focus();
+  };
   var timerFocus=panel.querySelector('[data-timer-focus]');
   function showFocus(){
     if(!timerFocus)return;
@@ -475,6 +498,11 @@ function fdMountOsceStation(panel){
       status.textContent=selected ? selected.dataset.endMessage || 'Time is up. Reset the timer or select the next phase.'
         : 'Time is up. Reset the timer to start again.';
       if(repeatPhase && selected.hasAttribute('data-open-debrief'))status.textContent='Debrief complete. Select Repeat the handoff.';
+      if(openReadback && selected===repeatPhase){
+        readback.open=true;
+        toggle.hidden=true;
+        openReadback.hidden=false;
+      }
     }else tick=setTimeout(update,remaining%1000||1000);
   }
   function resetPhase(){
@@ -483,6 +511,14 @@ function fdMountOsceStation(panel){
     if(coaching){
       coaching.hidden=selected!==repeatPhase;
       repeatButton.hidden=selected===repeatPhase;
+    }
+    if(openReadback){
+      readback.open=false;
+      var previous=readback.querySelector('input:checked');
+      if(previous)previous.checked=false;
+      prompt.textContent='';
+      toggle.hidden=false;
+      openReadback.hidden=true;
     }
     var phaseLabel=panel.querySelector('[data-current-phase]');
     if(phaseLabel && selected)phaseLabel.textContent=selected.parentNode.textContent.trim();
