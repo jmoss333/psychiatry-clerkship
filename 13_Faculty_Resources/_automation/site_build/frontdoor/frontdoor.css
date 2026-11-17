@@ -2268,6 +2268,57 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));line-height:1.4;margin-top:var(--fd-space-10);margin-bottom:var(--fd-space-6);
 }
 .fd-reader--guide .fd-article__body li{margin-top:var(--fd-space-4);margin-bottom:var(--fd-space-4)}
+.fd-bedside-case{
+  --case-pad:var(--fd-space-8);
+  margin:var(--fd-space-6) 0 var(--fd-space-11);overflow:hidden;
+  border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);
+  background:var(--fd-surface-warm);color:var(--fd-text);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));
+  line-height:var(--fd-reading-leading,1.5);
+}
+.fd-bedside-case figcaption{padding:var(--fd-space-7) var(--case-pad) var(--fd-space-5)}
+.fd-bedside-case figcaption strong{
+  display:block;margin-top:var(--fd-space-1);
+  font-family:'Source Serif 4',Georgia,serif;font-weight:600;
+  font-size:calc(var(--fd-font-3xl) * var(--fd-reading-scale,1));line-height:1.24;
+  letter-spacing:-.02em;
+}
+.fd-bedside-case img{display:block;width:100%;height:auto}
+.fd-bedside-case__label,.fd-bedside-case dt{
+  display:block;margin:0;font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));font-weight:650;color:var(--fd-teal-deep);
+}
+.fd-bedside-case p{margin:0;padding:var(--fd-space-6) var(--case-pad)}
+.fd-bedside-case__note,.fd-bedside-case__follow{border-top:1px solid var(--fd-line-strong);background:var(--fd-teal-wash)}
+.fd-bedside-case__note{border-bottom:1px solid var(--fd-line-strong)}
+.fd-bedside-case__note .fd-bedside-case__label{display:inline-block;margin-right:var(--fd-space-6)}
+.fd-bedside-case details{margin:0;padding:0;border:0;border-top:1px solid var(--fd-line-strong);border-radius:0}
+.fd-bedside-case summary{
+  display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-6);cursor:pointer;list-style:none;
+  padding:var(--fd-space-5) var(--case-pad);min-height:var(--fd-target-touch);color:var(--fd-teal-deep);
+  font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));font-weight:650;
+}
+.fd-bedside-case summary::-webkit-details-marker{display:none}
+.fd-bedside-case summary::after{
+  content:'';width:var(--fd-space-4);height:var(--fd-space-4);
+  border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.fd-bedside-case details[open] summary::after{transform:rotate(225deg)}
+.fd-bedside-case summary:hover,.fd-bedside-case summary:focus-visible{background:var(--fd-teal-wash)}
+.fd-bedside-case summary:focus-visible{outline-offset:-3px}
+.fd-bedside-case__open,.fd-bedside-case details[open] .fd-bedside-case__closed{display:none}
+.fd-bedside-case details[open] .fd-bedside-case__open{display:inline}
+.fd-bedside-case dl{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--case-pad);
+  margin:0;padding:var(--fd-space-6) var(--case-pad);border-top:1px solid var(--fd-line-strong);
+}
+.fd-bedside-case dl>div+div{padding-left:var(--case-pad);border-left:1px solid var(--fd-line-strong)}
+.fd-bedside-case dd{margin:var(--fd-space-1) 0 0}
+@media(max-width:640px){
+  .fd-bedside-case{--case-pad:var(--fd-space-7)}
+  .fd-bedside-case figcaption strong{font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1))}
+  .fd-bedside-case__note .fd-bedside-case__label{display:block}
+  .fd-bedside-case dl{grid-template-columns:1fr;gap:var(--fd-space-5)}
+  .fd-bedside-case dl>div+div{padding-left:0;border:0}
+}
 .fd-case-timeline{
   margin:var(--fd-space-9) 0;overflow:hidden;break-inside:avoid;
   border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface-warm);
@@ -2837,7 +2888,9 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   max-width:calc(100vw - 2rem);background:var(--fd-surface);border:1px solid var(--fd-line-strong);
   border-radius:var(--fd-radius-md);box-shadow:var(--fd-shadow-bar)
 }
-.fd-circuit__timer [data-current-phase]{font-size:var(--fd-font-sm);line-height:1.2}
+.fd-circuit__timer [data-timer-caption]{min-width:0;font-size:var(--fd-font-sm);line-height:1.2}
+.fd-circuit__timer [data-timer-focus]{display:block;margin-top:var(--fd-space-2);color:var(--fd-teal-deep)}
+.fd-circuit__timer [data-timer-focus][hidden]{display:none}
 .fd-circuit__timer .fd-station__clock{font-weight:700;color:var(--fd-teal-deep)}
 .fd-circuit__qr{flex-basis:100%;padding:var(--fd-space-5) 0}
 .fd-circuit__qr svg{display:block;width:min(100%,14rem);height:auto}

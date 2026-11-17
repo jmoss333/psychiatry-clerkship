@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(797 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(804 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1017,6 +1017,7 @@ preview. Full behavior and content-preservation contract:
 |---|---|
 | `.fd-reader--guide` | Modifier on the existing reader. Removes the enclosing article card; 18px/1.75 prose, 720px maximum reading column, serif display title and section headings. Existing activity layout remains separate. |
 | `.fd-guide-header` | Original identity, H1 and lead nodes move into this semantic header. First in DOM; desktop column two/row one, centered in natural narrow-screen flow. |
+| `.fd-bedside-case` | Authored bedside exercise moved below the guide title, before its lead. The observation and MS3 prompt remain visible. One native disclosure holds both clues and the resident follow-up. |
 | `.fd-guide-margin` | Sticky 180–220px desktop column with bounded scrolling, spanning header/article rows. Natural document flow below 1000px. Follows `.fd-guide-header` and precedes `.fd-article` in DOM; CSS never reverses keyboard order. |
 | `.fd-guide-practice` | Full-width shortcut to the existing related activity; long canonical titles wrap. Uses the real `data-fd-open` route and carries no simulated activity. |
 | `.fd-guide-contents` | Native `<details>` containing a labeled section `<nav>`. Desktop starts expanded; narrow views start collapsed. Links expose current location with `aria-current="location"`. |
@@ -1431,3 +1432,5 @@ The teaching plan uses two `.fd-session__choices` navigation groups for duration
 The reader's `.fd-station` section contains role links in `.fd-station__roles`. The capacity station has two timed phases. The family meeting agenda uses a single timer. Both use `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.
 
 Both circuits label the current case with `.fd-circuit__case`. The facilitator uses `.fd-circuit__timer` for a fixed clock and controls above the phone dock. Each learner link has an expandable `.fd-circuit__qr` and follows its assigned roles as the group advances. The full circuit remembers the last station for each learner link on that browser.
+
+During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
