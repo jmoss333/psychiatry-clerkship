@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(804 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(822 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -872,6 +872,25 @@ the Library.
       .fd-article__body                  (rendered long-form content)
         figure.fd-case-timeline          (Case Formulation, before the MS3 prompt)
           figcaption + ol > li ×3        (illustration and text per event, stacked at ≤640px)
+        [Delirium guide body, under How it presents on the unit]
+        .fd-shift-case#delirium-shift
+          .fd-shift-case__head > .fd-shift-case__label + h3 + p
+          .fd-shift-case__times [role=group] > button[data-shift-time][aria-pressed] ×3
+          .fd-shift-case__encounter[data-shift-encounter] [aria-live=polite]
+            .fd-shift-case__picture + --morning | --midday | --afternoon (one cropped triptych)
+            .fd-shift-case__observation > dl ×2 + p
+          .fd-shift-case__practice
+            .fd-shift-case__label / .fd-shift-case__question / .fd-shift-case__hint
+            .fd-shift-case__choices > button[data-shift-choice][aria-pressed] ×2
+            .fd-shift-case__feedback[data-shift-feedback] [hidden until choice]
+            details[data-shift-comparison] [hidden until choice; closed until explicit reveal]
+              summary + [data-shift-comparison-body] > .fd-shift-case__patterns > div ×3
+              (answer template mounts only on explicit summary activation; one column at ≤640px)
+            .fd-shift-case__reset[data-shift-reset]
+        [Delirium guide body, under Recognize and screen]
+        .fd-shift-followup#delirium-shift-followup <details>
+          summary + .fd-shift-followup__body (draft and native worked-response disclosure)
+          (visit-local choices and text; Settings preserves them, reset/new visit clears them)
       .fd-keypoints
         .fd-keypoints__label
         .fd-keypoints__item ×N

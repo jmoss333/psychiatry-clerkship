@@ -2821,6 +2821,209 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
   });
 
+  async function openDeliriumShift(page, testInfo) {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 'delirium.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=delirium.md');
+    await expect(page.locator('.fd-reader--guide .governance-notice.pending-high').first()).toBeVisible();
+    const root = page.locator('#delirium-shift');
+    await expect(root).toBeVisible();
+    return {
+      root,
+      time: key => root.locator(`[data-shift-time="${key}"]`),
+      choice: key => root.locator(`[data-shift-choice="${key}"]`),
+      encounter: root.locator('#delirium-shift-encounter'),
+      feedback: root.locator('[data-shift-feedback]'),
+      comparison: root.locator('details[data-shift-comparison]'),
+      patterns: root.locator('[data-shift-patterns]'),
+      followup: page.locator('details#delirium-shift-followup'),
+      draft: page.locator('#delirium-shift-draft'),
+      worked: page.locator('details[data-shift-worked]'),
+    };
+  }
+
+  test('Delirium shift separates quiet movement from attention and reveals comparison after a choice', async ({ page }, testInfo) => {
+    const shift = await openDeliriumShift(page, testInfo);
+    const { root, time, choice, encounter, feedback, comparison, patterns, followup } = shift;
+    await expect(root.locator('[data-shift-time]')).toHaveCount(3);
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(encounter).toContainText('Drifts asleep mid-sentence; needs repeated prompts to re-engage.');
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    expect(await root.evaluate(node => node.closest('.fd-guide-section')?.querySelector('.fd-guide-lead')?.textContent))
+      .toMatch(/^How it presents on the unit/);
+    expect(await followup.evaluate(node => node.closest('.fd-guide-section')?.querySelector('.fd-guide-lead')?.textContent))
+      .toMatch(/^Recognize and screen/);
+
+    // A guide search must not pre-open a gated answer and expose it when a choice is made.
+    const find = page.locator('.fd-guide-find');
+    await find.getByRole('searchbox').fill('diagnostic score');
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await expect(comparison).not.toHaveAttribute('open');
+
+    const scene = encounter.locator('img');
+    const sceneAlts = new Set();
+    for (const [key, observation] of [
+      ['morning', 'Follows this brief exchange.'],
+      ['midday', 'Loses the thread of a short conversation.'],
+      ['afternoon', 'Drifts asleep mid-sentence; needs repeated prompts to re-engage.'],
+    ]) {
+      await time(key).focus();
+      await time(key).press('Enter');
+      await expect(time(key)).toHaveAttribute('aria-pressed', 'true');
+      await expect(root.locator('[data-shift-time][aria-pressed="true"]')).toHaveCount(1);
+      await expect(encounter).toContainText(observation);
+      await expect(scene).toBeVisible();
+      expect(await scene.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+      const alt = await scene.getAttribute('alt');
+      expect(alt).toBeTruthy();
+      sceneAlts.add(alt);
+      await expect(feedback).toBeHidden();
+      await expect(comparison).toBeHidden();
+    }
+    expect(sceneAlts.size, 'each selected time describes its own patient scene').toBe(3);
+
+    await time('midday').press('Enter');
+    await choice('quiet').press('Enter');
+    await expect(choice('quiet')).toHaveAttribute('aria-pressed', 'true');
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toBeVisible();
+    await expect(feedback).toContainText('That describes his movement. What changed in his engagement?');
+    await expect(feedback).toContainText('prompt bedside reassessment');
+    await expect(comparison).toBeVisible();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await expect(comparison).not.toHaveAttribute('open');
+
+    await choice('attention').press('Space');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(1);
+    await expect(feedback).toContainText('Lead with the change in attention and wakefulness.');
+    await expect(feedback).toContainText('prompt bedside reassessment');
+    await expect(comparison).not.toHaveAttribute('open');
+    await comparison.locator(':scope > summary').press('Enter');
+    await expect(patterns).toBeVisible();
+    await comparison.locator(':scope > summary').press('Enter');
+    await expect(patterns).toBeHidden();
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `case fits ${width}px`).toBe(true);
+      expect(await followup.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `follow-up fits ${width}px`).toBe(true);
+    }
+    await expectHealthy(page);
+  });
+
+  test('Delirium shift preserves independent follow-up during reading changes and clears it on reset or a new visit', async ({ page }, testInfo) => {
+    const { root, time, choice, feedback, comparison, followup, draft, worked } = await openDeliriumShift(page, testInfo);
+    const workedBody = worked.locator(':scope > :not(summary)').first();
+    await expect(draft).toBeHidden();
+    await expect(worked.locator(':scope > summary')).toBeHidden();
+    await followup.locator(':scope > summary').press('Enter');
+    await expect(draft).toBeVisible();
+    await draft.fill('Synthetic handoff: new drowsiness and difficulty staying engaged.');
+    await expect(workedBody).toBeHidden();
+    await worked.locator(':scope > summary').press('Enter');
+    await expect(workedBody).toBeVisible();
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+
+    await choice('attention').click();
+    await comparison.locator(':scope > summary').click();
+    await time('midday').click();
+    const selectedFeedback = await feedback.innerText();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
+    await settings.getByRole('group', { name: 'Reading text size', exact: true })
+      .getByRole('button', { name: 'Largest', exact: true }).click();
+    await settings.getByRole('button', { name: 'Close side sheet', exact: true }).click();
+    await expect(draft).toHaveValue('Synthetic handoff: new drowsiness and difficulty staying engaged.');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(time('midday')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toHaveText(selectedFeedback, { useInnerText: true });
+    await expect(comparison).toHaveAttribute('open', '');
+    await expect(followup).toHaveAttribute('open', '');
+    await expect(workedBody).toBeVisible();
+    expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    expect(await followup.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+
+    await root.locator('[data-shift-reset]').click();
+    await expect(time('afternoon')).toBeFocused();
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+
+    await choice('quiet').click();
+    await time('morning').click();
+    await followup.locator(':scope > summary').click();
+    await draft.fill('Synthetic draft that must not persist to the next visit.');
+    await worked.locator(':scope > summary').click();
+    // Keep app storage intact so an accidentally persisted answer or draft cannot be masked.
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.goto('/?page=orientation.md');
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 'orientation.md');
+    await page.goto('/?page=delirium.md');
+    await expect(root).toBeVisible();
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+    await expectHealthy(page);
+  });
+
+  test('Delirium shift printing restores disclosures without answering or unlocking comparison', async ({ page }, testInfo) => {
+    const { root, time, choice, feedback, comparison, patterns, followup, draft, worked } = await openDeliriumShift(page, testInfo);
+    const printEvent = name => page.evaluate(async eventName => {
+      window.dispatchEvent(new Event(eventName));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }, name);
+
+    await time('morning').click();
+    await printEvent('beforeprint');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await printEvent('afterprint');
+    await expect(time('morning')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+
+    await choice('attention').click();
+    await followup.locator(':scope > summary').click();
+    await draft.fill('Synthetic print-state draft.');
+    await worked.locator(':scope > summary').click();
+    const selectedFeedback = await feedback.innerText();
+    await printEvent('beforeprint');
+    await printEvent('afterprint');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toHaveText(selectedFeedback, { useInnerText: true });
+    await expect(comparison).toBeVisible();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).toHaveAttribute('open', '');
+    await expect(worked).toHaveAttribute('open', '');
+    await expect(draft).toHaveValue('Synthetic print-state draft.');
+    await expectHealthy(page);
+  });
+
   const referralSources = ['weight', 'symptoms', 'vitals'];
   const referralSubsets = [[], ['weight'], ['symptoms'], ['vitals'], ['weight', 'symptoms'],
     ['weight', 'vitals'], ['symptoms', 'vitals'], referralSources];
