@@ -580,11 +580,13 @@ _ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
 if _ANALYTICS_MS3:
     _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
-# Both editions use the illustrated timeline in the Case Formulation reading.
+# Reading illustrations ship at the same relative URL in both editions.
 illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "illustrations")
 os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
 for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
     _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Anxiety", "illustrations", "pacing-hallway.webp"),
+               os.path.join(OUT, "illustrations", "pacing-hallway.webp"), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
