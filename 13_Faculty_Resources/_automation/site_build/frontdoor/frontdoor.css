@@ -2261,6 +2261,47 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   font-size:calc(var(--fd-guide-section-size) * var(--fd-reading-scale,1));line-height:1.3;letter-spacing:-.015em;
   margin-top:0;margin-bottom:var(--fd-space-8);scroll-margin-top:140px;
 }
+/* In-page referral exercise. Its compact observations table fits in the reading column. */
+#referral-call{
+  --referral-pad:var(--fd-space-8);
+  margin:var(--fd-space-8) 0;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden;
+  background:var(--fd-surface-warm);color:var(--fd-text);font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.5);
+}
+#referral-call p,#referral-call ol,#referral-call li,#referral-call blockquote{margin:0}
+#referral-call .referral-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);background:var(--fd-bg);border-bottom:1px solid var(--fd-line-strong)}
+#referral-call .referral-hero>div{align-self:center;padding:var(--fd-space-7) var(--fd-space-4) var(--fd-space-7) var(--referral-pad)}
+#referral-call .fd-bedside-case__label{text-transform:uppercase;letter-spacing:.05em}
+#referral-call h3{font-family:'Source Serif 4',Georgia,serif;font-size:calc(var(--fd-font-3xl) * var(--fd-reading-scale,1));line-height:1.1;letter-spacing:-.025em;margin:var(--fd-space-3) 0 var(--fd-space-5);text-wrap:balance}
+#referral-call img{display:block;align-self:stretch;width:100%;height:100%;max-height:calc(var(--fd-target-touch) * 5);object-fit:cover}
+#referral-call .referral-body{padding:var(--fd-space-7) var(--referral-pad)}
+#referral-call .referral-weight{display:flex;align-items:baseline;justify-content:space-between;gap:var(--fd-space-6);padding-bottom:var(--fd-space-5);border-bottom:1px solid var(--fd-line-strong);color:var(--fd-text-mid)}
+#referral-call .referral-weight strong{white-space:nowrap;font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:var(--fd-font-2xl);line-height:1.2;color:var(--fd-text)}
+#referral-call .referral-prompt{margin:var(--fd-space-6) 0}
+#referral-call details{margin:0;padding:0;border:0;border-radius:0;background:transparent}
+#referral-call .referral-body>details{border-top:1px solid var(--fd-line-strong)}
+#referral-call summary{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-5);list-style:none;min-height:var(--fd-target-touch);padding:var(--fd-space-4) 0;color:var(--fd-teal-deep);font-weight:650;cursor:pointer}
+#referral-call summary::-webkit-details-marker{display:none}
+#referral-call summary::after{content:'+';font:400 var(--fd-font-xl)/1 system-ui;color:var(--fd-teal-deep)}
+#referral-call details[open]>summary::after{content:'−'}
+#referral-call [data-referral-call]>summary{text-decoration:underline;text-underline-offset:.2em}
+#referral-call .referral-record{padding:var(--fd-space-5) var(--fd-space-6);margin-bottom:var(--fd-space-4);border-radius:var(--fd-radius-xs);background:var(--fd-teal-wash)}
+#referral-call ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--fd-space-4);list-style:none;padding:0}
+#referral-call li{border-bottom:2px solid var(--fd-line-strong);padding-bottom:var(--fd-space-3)}
+#referral-call small{display:block;color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+#referral-call ol,#referral-call table{font-variant-numeric:tabular-nums}
+#referral-call blockquote{font:italic var(--fd-font-lg)/1.5 Georgia,serif;border:0;padding:0;color:var(--fd-text);background:transparent}
+#referral-call table{display:table;width:100%;min-width:0;border-collapse:collapse;margin:0;font-size:var(--fd-font-base)}
+#referral-call :is(th,td){padding:var(--fd-space-2) var(--fd-space-3);border:0;border-bottom:1px solid var(--fd-line-strong);text-align:left;color:var(--fd-text);background:transparent;vertical-align:bottom;white-space:normal}
+#referral-call button{border:1px solid var(--fd-teal-deep);border-radius:var(--fd-radius-xs);color:var(--fd-teal-deep);background:var(--fd-surface-warm);padding:var(--fd-space-3) var(--fd-space-5);margin-top:var(--fd-space-5);min-height:var(--fd-target-touch);font:inherit;font-weight:650;cursor:pointer}
+#referral-call button[aria-pressed="true"]{background:var(--fd-teal-deep);color:var(--fd-surface-warm)}
+#referral-call [data-referral-line]{font:var(--fd-font-lg)/1.5 Georgia,serif}
+@media(max-width:430px){
+  #referral-call{--referral-pad:var(--fd-space-6)}
+  #referral-call .referral-hero{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+  #referral-call h3{font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1))}
+  #referral-call img{align-self:center;height:auto;object-fit:contain}
+}
+
 /* A promoted bold lead (fd_guide.js) stays the authored paragraph; it only gains a landing offset. */
 .fd-reader--guide .fd-article__body .fd-guide-lead{scroll-margin-top:140px}
 .fd-reader--guide .fd-article__body h3{
@@ -2602,6 +2643,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 
 @media print{
+  #referral-call [data-referral-lead]{display:none !important}
   .fd-care-builder{display:none !important}
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */
   body:has(.fd-reader--guide){--fd-guide-print-ink:CanvasText;--fd-guide-print-paper:Canvas;color-scheme:light;background:var(--fd-guide-print-paper) !important;color:var(--fd-guide-print-ink) !important}
