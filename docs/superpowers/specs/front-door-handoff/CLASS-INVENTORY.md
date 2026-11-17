@@ -1432,3 +1432,5 @@ The teaching plan uses two `.fd-session__choices` navigation groups for duration
 The reader's `.fd-station` section contains role links in `.fd-station__roles`. The capacity station has two timed phases. The family meeting agenda uses a single timer. Both use `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.
 
 Both circuits label the current case with `.fd-circuit__case`. The facilitator uses `.fd-circuit__timer` for a fixed clock and controls above the phone dock. Each learner link has an expandable `.fd-circuit__qr` and follows its assigned roles as the group advances. The full circuit remembers the last station for each learner link on that browser.
+
+During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
