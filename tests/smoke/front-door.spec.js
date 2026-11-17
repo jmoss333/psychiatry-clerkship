@@ -2915,6 +2915,11 @@ test.describe('Clinical field guide', () => {
         await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
         await page.reload();
         await checkReferral(page, []);
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('104/66');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(page.locator('#referral-call [data-referral-source="vitals"]')).toHaveAttribute('open', '');
+        await expect(page.locator('[data-referral-line]')).toContainText(referralFacts.vitals[0]);
       }
     });
   }

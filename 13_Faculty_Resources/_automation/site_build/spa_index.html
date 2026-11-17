@@ -789,6 +789,15 @@
         return (brief?t.content.lastElementChild:t.content.firstElementChild).textContent;
       }).join(' ');
     }
+    function record(source){
+      var key=source.dataset.referralSource;
+      if(!seen.has(key)){seen.add(key);render();}
+    }
+    // A result in "Find in this guide" can open a disclosure and focus the passage directly.
+    card.addEventListener('focusin',function(event){
+      var source=event.target.closest('details[open][data-referral-source]');
+      if(source)record(source);
+    });
     card.addEventListener('click',function(event){
       var choice=event.target.closest('[data-referral-lead]');
       if(choice){
@@ -802,7 +811,7 @@
       var summary=event.target.closest('summary');
       var source=summary&&summary.parentElement;
       if(source&&source.hasAttribute('data-referral-source')&&!source.open){
-        seen.add(source.dataset.referralSource);render();
+        record(source);
       }
     });
   }
