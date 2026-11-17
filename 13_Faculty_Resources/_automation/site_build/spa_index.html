@@ -815,6 +815,93 @@
       }
     });
   }
+  /* The interview and note sit in separate reading sections. All clinical wording is
+     authored in the page. Explicitly opened answers belong to this mounted visit only. */
+  function fdMountCulturalChart(body){
+    var card=body.querySelector('#cultural-chart');
+    var follow=body.querySelector('#cultural-chart-followup');
+    if(!card||!follow)return;
+    var doc=body.ownerDocument;
+    var sources=[].slice.call(card.querySelectorAll('[data-culture-source]'));
+    var templates=[].slice.call(follow.querySelectorAll('template[data-culture-clause]'));
+    var interview=card.querySelector('[data-culture-interview]');
+    var line=follow.querySelector('[data-culture-line]');
+    var excerpt=follow.querySelector('#cultural-chart-excerpt');
+    var feedback=card.querySelector('[data-culture-feedback]');
+    var seen=new Set(), traced=null;
+
+    function renderTrace(){
+      follow.querySelectorAll('[data-culture-trace]').forEach(function(b){
+        b.setAttribute('aria-pressed',String(b.dataset.cultureTrace===traced));
+      });
+      excerpt.hidden=!traced;
+      if(!traced)return;
+      var source=card.querySelector('[data-culture-source="'+traced+'"]');
+      var quote=source?source.querySelector('blockquote p'):card.querySelector('[data-culture-opening]');
+      var label=source?source.querySelector('.cultural-chart__question-type'):card.querySelector('.cultural-chart__voice .fd-bedside-case__label');
+      excerpt.querySelector('[data-culture-quote]').textContent=quote.textContent;
+      excerpt.querySelector('[data-culture-quote-label]').textContent=label.textContent;
+    }
+    function renderNote(){
+      var opened=templates.filter(function(t){return t.dataset.cultureClause==='opening'||seen.has(t.dataset.cultureClause);});
+      line.replaceChildren();
+      opened.forEach(function(t,index){
+        var last=index===opened.length-1;
+        var phrase=doc.createElement('button');
+        phrase.type='button';
+        phrase.dataset.cultureTrace=t.dataset.cultureClause;
+        phrase.setAttribute('aria-controls',excerpt.id);
+        phrase.textContent=(index>0&&last?'and ':'')+t.content.textContent.trim()+(last?'.':opened.length>2?',':'');
+        if(index)line.appendChild(doc.createTextNode(' '));
+        line.appendChild(phrase);
+      });
+      var missing=sources.find(function(s){return !seen.has(s.dataset.cultureSource);});
+      var challenge=follow.querySelector('[data-culture-challenge-for="'+(missing?missing.dataset.cultureSource:'all')+'"]');
+      follow.querySelector('[data-culture-challenge]').textContent=challenge.content.textContent;
+      renderTrace();
+    }
+    function record(source){
+      var key=source.dataset.cultureSource;
+      if(!seen.has(key)){seen.add(key);renderNote();}
+    }
+    // Guide search opens the answer disclosure and focuses its actual passage.
+    card.addEventListener('focusin',function(event){
+      var source=event.target.closest('details[open][data-culture-source]');
+      if(source)record(source);
+    });
+    card.addEventListener('click',function(event){
+      var word=event.target.closest('[data-culture-word]');
+      if(word){
+        card.querySelectorAll('[data-culture-word]').forEach(function(b){
+          b.setAttribute('aria-pressed',String(b===word));
+        });
+        feedback.textContent=card.querySelector('[data-culture-feedback-for="'+word.dataset.cultureWord+'"]').content.textContent;
+        feedback.hidden=false;
+        if(word.dataset.cultureWord==='hallucinations')interview.open=true;
+        return;
+      }
+      // Native summary activation covers pointer and keyboard. Print-only expansion
+      // must never add an answer to the learner's note.
+      var summary=event.target.closest('summary');
+      var source=summary&&summary.parentElement;
+      if(source&&source.hasAttribute('data-culture-source')&&!source.open)record(source);
+    });
+    follow.addEventListener('click',function(event){
+      var phrase=event.target.closest('[data-culture-trace]');
+      if(phrase){traced=phrase.dataset.cultureTrace;renderTrace();return;}
+      if(!event.target.closest('[data-culture-reset]'))return;
+      seen.clear();traced=null;
+      card.querySelectorAll('details').forEach(function(d){d.open=false;});
+      follow.querySelectorAll('details').forEach(function(d){d.open=false;});
+      follow.open=false;
+      follow.querySelector('textarea').value='';
+      card.querySelectorAll('[data-culture-word]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      feedback.hidden=true;feedback.textContent='';
+      renderNote();
+      card.querySelector('[data-culture-word]').focus();
+    });
+    renderNote();
+  }
   function enhanceTables(body){
     if(!body)return;
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
@@ -1528,6 +1615,7 @@
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       fdMountReferralCall(contentEl);
+      fdMountCulturalChart(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3429,6 +3517,7 @@
           var stationPanel=body.querySelector('[data-osce-station]');
           if(stationPanel)fdMountOsceStation(stationPanel);
           fdMountReferralCall(body);
+          fdMountCulturalChart(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
