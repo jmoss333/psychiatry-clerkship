@@ -2824,9 +2824,14 @@ test.describe('Clinical field guide', () => {
   test('the Mood bedside case shows both sleep records before the patients’ accounts', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 't_mood.md', { status: 'pending', riskLevel: 'high' });
     await page.goto('/?page=t_mood.md');
 
-    const bedside = page.locator('.fd-guide-header .fd-article__h1 + .fd-bedside-case');
+    const header = page.locator('.fd-guide-header');
+    const warning = page.locator('.fd-reader .governance-notice.pending-high');
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toBeVisible();
+    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 + .fd-bedside-case');
     await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
     const art = bedside.locator('img');
     await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
@@ -4309,6 +4314,8 @@ test('Care status clears on Home, browser history, and resource opening', async 
 test('phone chrome: one dock stays at the bottom and the first screen belongs to the page', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
+  // Measure the ordinary header here. The Mood bedside case test covers the warning above the title.
+  await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
   const dock = page.locator('.fd-dock:visible');
