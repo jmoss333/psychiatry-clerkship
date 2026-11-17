@@ -2821,6 +2821,104 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
   });
 
+  const referralSources = ['weight', 'symptoms', 'vitals'];
+  const referralSubsets = [[], ['weight'], ['symptoms'], ['vitals'], ['weight', 'symptoms'],
+    ['weight', 'vitals'], ['symptoms', 'vitals'], referralSources];
+
+  // Match either wording of each finding. The complete case shortens the two supporting findings.
+  const referralFacts = {
+    weight: ['Their weight fell from 69 to 61 kg in eight weeks.', 'They lost 8 kg in eight weeks.'],
+    symptoms: ['Their vision went dark on standing this morning and they had to sit down.', 'They nearly fainted on standing.'],
+    vitals: ['On standing, their blood pressure fell from 104/66 to 82/52 and their pulse rose from 54 to 94.',
+      'Standing BP was 82/52 with a pulse of 94.'],
+  };
+
+  async function checkReferral(page, reviewed) {
+    const root = page.locator('#referral-call');
+    const sources = root.locator('details[data-referral-source]');
+    const source = key => root.locator(`details[data-referral-source="${key}"]`);
+    const lead = key => root.locator(`button[data-referral-lead="${key}"]`);
+    const line = root.locator('[data-referral-line]');
+    const call = root.locator('details[data-referral-call] > summary');
+    const worked = root.locator('details[data-referral-worked] > summary');
+
+    await expect(root).toBeVisible();
+    await expect(sources).toHaveCount(3);
+    await expect(root.locator('details[open]')).toHaveCount(0);
+    await expect(line).toBeHidden();
+    expect(await root.evaluate(node => {
+      const sections = [...node.closest('.fd-article__body').querySelectorAll('.fd-guide-lead,h2,.sec-h')];
+      const before = sections.find(s => s.textContent.trim().startsWith('Medical instability'));
+      const after = sections.find(s => s.textContent.trim().startsWith('Refeeding syndrome'));
+      const precedes = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return Boolean(before && after && precedes(before, node) && precedes(node, after));
+    }), 'the exercise follows medical instability and precedes refeeding').toBe(true);
+
+    await call.click();
+    await expect(line).toBeHidden();
+    await worked.press('Enter');
+    await expect(line).toBeVisible();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('I have one weight of 61 kg.');
+    const assertFindings = (sample, chosen) => {
+      const match = sample.match(/^“Robin, 26, was referred for restrictive intake\. (.+) Can we assess medical stability together now\?”$/);
+      expect(match, sample).toBeTruthy();
+      if (!reviewed.length) {
+        expect(match[1]).toBe('I have one weight of 61 kg.');
+        return;
+      }
+      const sentences = match[1].split(/(?<=\.) /);
+      const findings = sentences.map(sentence => referralSources.find(key => referralFacts[key].includes(sentence)));
+      expect([...findings].sort(), sample).toEqual([...reviewed].sort());
+      if (chosen) expect(findings[0], sample).toBe(chosen);
+    };
+
+    for (const key of reviewed) await source(key).locator('summary').click();
+    assertFindings(await line.innerText());
+    for (const key of reviewed) {
+      await lead(key).click();
+      await expect(lead(key)).toHaveAttribute('aria-pressed', 'true');
+      await expect(root.locator('[data-referral-lead][aria-pressed="true"]')).toHaveCount(1);
+      assertFindings(await line.innerText(), key);
+    }
+    const selectedSample = await line.innerText();
+    for (const key of reviewed) await source(key).locator('summary').press('Enter');
+    await expect(root.locator('details[data-referral-source][open]')).toHaveCount(0);
+    await expect(line).toHaveText(selectedSample);
+
+    // Print may expand disclosures. Those programmatic changes must never count as learner review.
+    await page.emulateMedia({ media: 'print' });
+    await page.evaluate(async () => {
+      window.dispatchEvent(new Event('beforeprint'));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await expect(line).toHaveText(selectedSample);
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await page.emulateMedia({ media: 'screen' });
+    await expect(root.locator('details[data-referral-source][open]')).toHaveCount(0);
+    await expect(line).toBeVisible();
+    await expect(line).toHaveText(selectedSample);
+    expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  }
+
+  for (const reviewed of referralSubsets) {
+    test(`Eating Disorders referral call uses only reviewed sources (${reviewed.join(', ') || 'none'})`, async ({ page }, testInfo) => {
+      const ref = 't_eating.md';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+      await page.goto(`/?page=${ref}`);
+      await checkReferral(page, reviewed);
+
+      // Preserve ordinary app storage across this reload so a mistakenly saved answer would surface.
+      if (reviewed.length === referralSources.length) {
+        await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+        await page.reload();
+        await checkReferral(page, []);
+      }
+    });
+  }
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.
