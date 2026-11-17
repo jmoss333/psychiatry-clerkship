@@ -2853,6 +2853,64 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
   });
 
+  test('Mood rounds uses only the case sources opened on this visit', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const family = workup.locator('[data-rounds-source="family"] > summary');
+    const medication = workup.locator('[data-rounds-source="med"] > summary');
+    const interview = page.locator('.fd-bedside-case [data-rounds-source="interview"] > summary');
+    const rounds = student.locator('[data-rounds-sample]');
+    const line = rounds.locator('p');
+
+    await page.goto('/?page=t_mood.md');
+    await expect(workup.locator('details[data-rounds-source]')).toHaveCount(2);
+    await rounds.locator('summary').click();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('how he felt on waking');
+    await page.emulateMedia({ media: 'print' });
+    expect(await page.locator('.fd-rounds-jump').evaluateAll(buttons =>
+      buttons.every(button => getComputedStyle(button).display === 'none'))).toBe(true);
+    await page.emulateMedia({ media: 'screen' });
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(2);
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(0);
+    await expect(line).toHaveText(baseline);
+
+    await medication.focus();
+    await medication.press('Enter');
+    await expect(line).toContainText('prednisone');
+    await expect(line).not.toContainText('sister');
+    await expect(line).not.toContainText('feels rested');
+    await medication.press('Enter');
+    await workup.getByRole('button', { name: 'Present Alex on rounds' }).click();
+    await expect(student.locator('#mood-rounds')).toBeFocused();
+    await expect(line).toContainText('prednisone');
+
+    await student.getByRole('button', { name: 'Try the other source' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await family.click();
+    await expect(line).toContainText('late-night calls his sister described');
+    await expect(line).toContainText('prednisone');
+    await interview.click();
+    await expect(line).toContainText('he says he feels rested');
+
+    await page.reload();
+    await expect(rounds.locator('p')).toBeHidden();
+    await family.click();
+    await rounds.locator('summary').click();
+    await expect(line).toContainText('his sister reports');
+    await expect(line).not.toContainText('prednisone');
+    await expect(line).not.toContainText('feels rested');
+    await interview.click();
+    await page.getByRole('button', { name: 'Choose what to check next' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await expect(line).toContainText('he says he feels rested');
+  });
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.

@@ -15,7 +15,7 @@
     <div class="fd-sleep-record__row" aria-hidden="true"><div class="fd-sleep-record__axis"><span>10 pm</span><span>1 am</span><span>4 am</span><span>6 am</span></div></div>
   </div>
   <p class="fd-bedside-case__prompt"><span class="fd-bedside-case__label">MS3 prompt</span> What would you ask each patient at breakfast to learn what those three hours meant?</p>
-  <details>
+  <details data-rounds-source="interview">
     <summary><span class="fd-bedside-case__closed">Hear from both patients</span><span class="fd-bedside-case__open">Hide the patients’ accounts</span></summary>
     <dl>
       <div><dt>Maya</dt><dd>“I kept trying to fall back asleep. I’m exhausted.”</dd></div>
@@ -23,6 +23,7 @@
     </dl>
     <p><span class="fd-bedside-case__label">Compare the accounts</span> Who wanted more sleep? Whose account suggests a decreased need for sleep?</p>
     <p class="fd-bedside-case__follow"><span class="fd-bedside-case__label">Resident follow-up</span> Before calling this a manic episode, what would you ask Alex and someone who knows him about the duration and change from his usual functioning?</p>
+    <button type="button" class="fd-rounds-jump" data-rounds-target="mood-workup">Choose what to check next →</button>
   </details>
 </figure>
 
@@ -42,6 +43,22 @@
 
 **Initial workup** — Keep it focused and decision-relevant: a full MSE with explicit suicide assessment, collateral history (the single highest-yield diagnostic move for distinguishing bipolar from unipolar), medication reconciliation, TSH, CBC, CMP, and urine drug screen. Add a pregnancy test in patients who can become pregnant before starting teratogenic agents, and a head CT/MRI when the picture is atypical, late-onset, or has focal findings.
 
+<section aria-labelledby="mood-workup" class="fd-rounds-exercise">
+  <span class="fd-bedside-case__label">Alex · Before rounds</span>
+  <h3 id="mood-workup" tabindex="-1">What would you check first?</h3>
+  <p>Choose a source and say what you hope it will clarify. You can check both.</p>
+  <details data-rounds-source="family">
+    <summary>Ask his sister about baseline</summary>
+    <p class="fd-rounds-quote"><span class="fd-bedside-case__label">His sister, with Alex’s permission</span> “He usually sleeps seven hours. He hardly ever calls at night, but three nights this week he called me around three in the morning. I don’t know how long he slept afterward.”</p>
+  </details>
+  <details data-rounds-source="med">
+    <summary>Review recent medication changes</summary>
+    <p class="fd-rounds-quote"><span class="fd-bedside-case__label">Medication record</span> Alex started prednisone five days ago. The record doesn’t say when his sleep changed.</p>
+  </details>
+  <p>What did that source add? What is still uncertain?</p>
+  <button type="button" class="fd-rounds-jump" data-rounds-target="mood-rounds">Present Alex on rounds →</button>
+</section>
+
 **Acute inpatient management** — Treatment is medications plus milieu plus safety, layered deliberately. Before starting an antidepressant for depression, screen for bipolarity (e.g., Mood Disorder Questionnaire plus collateral) so you do not destabilize an unrecognized bipolar patient. For unipolar depression, practice measurement-based, sequential treatment in the spirit of STAR*D: pick an agent, dose it adequately, track response with a scale, and switch or augment by protocol rather than by impression. For suicidality and for bipolar illness, lithium deserves specific emphasis — meta-analysis of randomized trials supports an anti-suicidal effect (Cipriani 2013), though more recent randomized evidence is mixed (Katz 2022; Wang 2025), and it is a first-line maintenance mood stabilizer with the strongest long-term evidence (BALANCE trial). Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires. Pregnancy is not itself an ECT indication: for uncomplicated moderate depression in pregnancy, first-line remains psychotherapy and/or an SSRI. The milieu is therapeutic, not incidental: protect sleep and circadian rhythm actively, since sleep loss both worsens depression and precipitates mania (Harvey; IPSRT/Frank). For acute mania, reduce stimulation, restore sleep, and start or optimize a mood stabilizer or antipsychotic. Throughout, maintain a safe environment — contraband removal, appropriate observation level, and a collaboratively developed safety plan.
 
 **What the student does** —
@@ -50,6 +67,22 @@
 - Track symptoms with a standardized measure so the team can see trajectory, not just snapshots.
 - Reconcile medications and verify labs (TSH, UDS, pregnancy test) are back and reviewed.
 - Round on the milieu: check sleep, oral intake, and whether the safety plan is current.
+
+<section aria-labelledby="mood-rounds" class="fd-rounds-exercise">
+  <span class="fd-bedside-case__label">Alex · On rounds</span>
+  <h3 id="mood-rounds" tabindex="-1">Give a one-sentence update</h3>
+  <p>Say what nursing observed, what you learned from the sources you checked, and one thing you still need to verify.</p>
+  <details data-rounds-sample>
+    <summary>Compare with a sample one-liner</summary>
+    <p class="fd-rounds-quote" aria-live="polite">Nursing estimates that Alex slept three hours<span data-rounds-account></span><span data-rounds-next>, so I’d ask how he felt on waking and how that compares with his usual sleep.</span></p>
+    <template data-rounds-add="interview"> and he says he feels rested</template>
+    <template data-rounds-when="family med">, so I’d clarify when the late-night calls his sister described began in relation to his new prednisone prescription and how he is functioning during the day.</template>
+    <template data-rounds-when="family">, and since his sister reports several unusual late-night calls, I’d ask how much he slept on those nights and how he felt the next day.</template>
+    <template data-rounds-when="med">, and given that he started prednisone five days ago, I’d clarify when his sleep began to change.</template>
+    <template data-rounds-when="interview">, so I’d ask how long this has lasted and whether his functioning has changed.</template>
+  </details>
+  <button type="button" class="fd-rounds-jump" data-rounds-target="mood-workup">Try the other source ↑</button>
+</section>
 
 **Practice what to say next** — Rehearse
 [offering a sleep-restoring plan in mania](?tool=communication-practice.html&case=mania_limit_sleep_001)
