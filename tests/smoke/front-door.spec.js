@@ -81,14 +81,17 @@ async function openHeaderSearch(page) {
 test('search recovery edits and browses with usable targets at phone and desktop widths', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
+  const unbrokenQuery = 'z'.repeat(256);
   for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     await openHeaderSearch(page);
     const search = page.getByRole('dialog', { name: 'Search', exact: true });
     const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
-    await input.fill('zzzzqqq');
+    await input.fill(unbrokenQuery);
     const recovery = search.getByRole('group', { name: 'Search recovery', exact: true });
     await expect(recovery).toBeVisible();
+    await expect(search.locator('.fd-searchpanel__empty')).toContainText(unbrokenQuery);
+    expect(await search.locator('.fd-searchpanel__body').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     for (const button of await recovery.getByRole('button').all()) {
       const box = await button.boundingBox();
       expect(box.width).toBeGreaterThanOrEqual(44);
@@ -97,7 +100,7 @@ test('search recovery edits and browses with usable targets at phone and desktop
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await recovery.getByRole('button', { name: 'Edit search', exact: true }).click();
     await expect(input).toBeFocused();
-    await expect(input).toHaveValue('zzzzqqq');
+    await expect(input).toHaveValue(unbrokenQuery);
     await input.fill('suicide');
     await expect(recovery).toHaveCount(0);
     await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
@@ -990,13 +993,23 @@ for (const mutation of ['save', 'delete']) {
   });
 }
 
-test('phone search: delayed Search hydration preserves input focus and the header invoker', async ({ page }, testInfo) => {
+async function delaySearchIndex(page, term) {
   let releaseIndex;
   const delayed = new Promise(resolve => { releaseIndex = resolve; });
   await page.route('**/search-index.json', async route => {
     await delayed;
-    await route.continue();
+    if (!term) return route.continue();
+    await route.fulfill({ json: {
+      n: 1, avgLen: 10, synonyms: {}, df: { [term]: 1 }, postings: { [term]: [[0, 1]] },
+      docs: [{ f: 't_mood.md', t: 'Mood Disorders', L: 10 }],
+    } });
   });
+  return releaseIndex;
+}
+
+test('phone search: delayed Search hydration shows page-text matches and preserves the selection and invoker', async ({ page }, testInfo) => {
+  const query = 'wordmarker';
+  const releaseIndex = await delaySearchIndex(page, query);
   await page.setViewportSize(DOCK_PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
@@ -1009,12 +1022,16 @@ test('phone search: delayed Search hydration preserves input focus and the heade
   await search.click();
   const dialog = page.getByRole('dialog', { name: 'Search' });
   const input = dialog.getByRole('textbox', { name: 'Search resources' });
-  await input.fill('sleep');
+  await input.fill(query);
+  await expect(dialog.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+  await input.evaluate(el => el.setSelectionRange(2, 6, 'backward'));
   await expect(input).toBeFocused();
   releaseIndex();
-  await expect.poll(() => page.evaluate(() => Boolean(window.SI && Object.keys(window.SI.postings).length))).toBe(true);
+  await expect(dialog.locator('[data-fd-open="t_mood.md"]')).toBeVisible();
+  await expect(dialog.locator('#fd-search-results')).toHaveAccessibleName('1 result');
   await expect(input).toBeFocused();
-  await expect(input).toHaveValue('sleep');
+  await expect(input).toHaveValue(query);
+  expect(await input.evaluate(el => [el.selectionStart, el.selectionEnd, el.selectionDirection])).toEqual([2, 6, 'backward']);
   // The header is not re-rendered by hydration while search is open: the opener object survives,
   // and is where focus must return.
   expect(await page.evaluate(() => window.__dockSearchInvoker.isConnected)).toBe(true);
@@ -1027,6 +1044,65 @@ test('phone search: delayed Search hydration preserves input focus and the heade
   await expect(dialog).toHaveCount(0);
   await expect(search).toBeFocused();
   expect(await page.evaluate(() => document.activeElement === window.__dockSearchInvoker)).toBe(true);
+  await expectHealthy(page);
+});
+
+test('Library search: delayed page-text results keep the keyboard-selected tool visible on a phone', async ({ page }, testInfo) => {
+  const releaseIndex = await delaySearchIndex(page);
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=library');
+  await openHeaderSearch(page);
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  await input.fill('treatment');
+  await dialog.getByRole('button', { name: 'Show all matches' }).click();
+  const tool = dialog.locator('[data-fd-open="oral.html"]');
+  const position = () => dialog.locator('.fd-result').evaluateAll(rows => rows.findIndex(row => row.dataset.fdOpen === 'oral.html'));
+  const before = await position();
+  try {
+    expect(before).toBeGreaterThanOrEqual(0);
+    await input.press('Enter');
+    for (let i = 0; i < before; i++) await page.keyboard.press('Tab');
+    await expect(tool).toBeFocused();
+    await expect(tool).toBeInViewport({ ratio: 1 });
+  } finally {
+    releaseIndex();
+  }
+  // The real index inserts page-text hits above the tool. Wait for that visible change before
+  // checking focus and clipping by the scrollable results panel.
+  await expect.poll(position).toBeGreaterThan(before);
+  await expect(dialog.getByRole('button', { name: 'Show top 8' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(tool).toBeFocused();
+  await expect(tool).toBeInViewport({ ratio: 1 });
+  expect(new URL(page.url()).searchParams.get('tab')).toBe('library');
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get('tool')).toBe('oral.html');
+  await expect(page.frameLocator('iframe.toolframe').getByRole('heading', { name: 'Your 60-second update' })).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('Library search: delayed page-text results respect dismissal and are ready on reopening', async ({ page }, testInfo) => {
+  const releaseIndex = await delaySearchIndex(page, 'wordmarker');
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=library');
+  const opener = page.locator('.fd-header .fd-searchbtn');
+  await opener.click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  await input.fill('wordmarker');
+  await expect(dialog.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+  await input.press('Escape');
+  await expect(opener).toBeFocused();
+  releaseIndex();
+  await page.evaluate(() => window.cwSearchIndexPromise.then(() => true));
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+  await opener.click();
+  await expect(input).toHaveValue('');
+  await input.fill('wordmarker');
+  await expect(dialog.locator('[data-fd-open="t_mood.md"]')).toBeVisible();
   await expectHealthy(page);
 });
 
@@ -1430,6 +1506,19 @@ test('learner-language search finds tasks, safety abbreviations and complete res
       row.getAttribute('data-fd-open') || row.getAttribute('data-fd-safety')));
     expect(refs.slice(0, 3)).toContain(ref);
     expect(new Set(refs).size).toBe(refs.length);
+  }
+  for (const query of ['suicidality', 'S.I.']) {
+    await input.fill(query);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+  }
+  for (const [query, ref] of [['show me mental status exam', 'mse.html'], ['rounding prep', 'oral.html']]) {
+    await input.fill(query);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', ref);
+  }
+  for (const [title, id] of [['Find a podcast to share', 'podcast-navigator'],
+    ['Find services and community supports', 'resource-finder']]) {
+    await input.fill(title);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', id);
   }
   await input.fill('BFCRS');
   await expect(page.getByRole('button', {
@@ -2697,6 +2786,40 @@ test.describe('Clinical field guide', () => {
       await expectHealthy(page);
     });
   }
+
+  test('the Anxiety bedside case keeps both clues and the resident question behind one reveal', async ({ page }, testInfo) => {
+    const ref = 't_anxiety.md';
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+    await page.goto(`/?page=${ref}`);
+
+    const header = page.locator('.fd-guide-header');
+    const bedside = header.locator('.fd-article__h1 + .fd-bedside-case');
+    await expect(header.locator('.governance-notice.pending-high ~ .fd-article__h1')).toBeVisible();
+    await expect(bedside.locator('figcaption')).toContainText('What’s behind the pacing?');
+    await expect(bedside.locator('img')).toBeVisible();
+    expect(await bedside.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+    await expect(bedside.locator('.fd-bedside-case__prompt + details')).toHaveCount(1);
+    const prompt = bedside.getByText('What would you ask the patient first?', { exact: false });
+    await expect(prompt).toBeVisible();
+
+    const reveal = bedside.locator('summary');
+    const hidden = [bedside.getByText('I feel like I have to keep moving.', { exact: false }),
+      bedside.getByText('The antipsychotic dose was increased yesterday.'), bedside.getByText('Resident follow-up')];
+    for (const text of hidden) await expect(text).toBeHidden();
+    await reveal.click();
+    for (const text of hidden) await expect(text).toBeVisible();
+    await expect(bedside.getByText('What moves up your differential?', { exact: false })).toBeVisible();
+    await reveal.press('Enter');
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(prompt).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    for (const text of hidden) await expect(text).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
 
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
@@ -6181,9 +6304,7 @@ test('shared Library navigation: the phone dock\'s Library slot survives delayed
   // One-thread (2026-10-04): the dock's Browse <details> is gone; the Library slot is a plain button
   // and the in-Library view switch chooses Essentials / Everything. A dock refresh mid-hydration
   // must leave the focused slot focused (same-route focus restoration) and never re-add a menu.
-  let releaseIndex;
-  const delayed = new Promise(resolve => { releaseIndex = resolve; });
-  await page.route('**/search-index.json', async route => { await delayed; await route.continue(); });
+  const releaseIndex = await delaySearchIndex(page);
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');

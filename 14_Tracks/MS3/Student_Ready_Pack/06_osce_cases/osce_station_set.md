@@ -4,7 +4,15 @@ Generated: 2026-06-27
 
 All cases are synthetic. No real patient details are used.
 
+[Fit my teaching time](?page=osce.md&station=teaching-time-45) · Choose 20 or 45 minutes for acute assessment or communication and handoff.
+
+[Run a circuit](?page=osce.md&station=catatonia-withdrawal-circuit) · Possible Catatonia → Alcohol Withdrawal · 3 learners
+
+[Full six-station circuit](?page=osce.md&station=full-six-station-circuit) · Stations 1–6 in order · Each learner leads twice
+
 ## Station 1 - Suicide Risk With Collateral Hesitation
+
+[Run this station](?page=osce.md&station=suicide-risk-collateral)
 
 **Time:** 12 minutes encounter, 3 minutes summary, 10 minutes feedback.
 
@@ -22,6 +30,30 @@ The patient says the ED overreacted. Sleep has been 3-4 hours nightly. Cannabis
 use increased. A goodbye letter exists but is not volunteered unless asked
 directly. Firearm access is at a parent's home.
 
+**Interviewer role**
+
+You are the medical student on the inpatient team. A 29-year-old was admitted after a text worried their sibling. Start with the patient in private. Explain your role, who on the team will hear your concerns, and why you want to hear the patient's version of last night.
+
+- **Ask about safety today.** Ask directly about suicidal thoughts last night and now, plan, intent, preparation, prior attempts, and access to lethal means, including firearms. Ask what has changed recently, what helps them get through a hard night, and who could help today. Give them time to answer.
+- Ask how they feel about involving their sibling. Explore what worries them. Agree on whom you may contact, what you may ask, and what you may share. If they decline, respect that boundary. The team can listen if family offers information. Bring any concern about serious, imminent harm to your supervisor to decide whether a limited disclosure is needed for safety.
+- As soon as you are concerned about immediate safety, stay with the patient and ask unit staff to bring your supervising clinician now. You can make that request before finishing the questions or speaking with family. Use the summary time to rehearse the handoff to the resident. Include your acute risk impression, the evidence for it, what remains unknown, and who will do what next.
+
+**Patient role**
+
+Open with “The ED overreacted. I text my sibling all the time.” You worry that talking openly will leave your sibling feeling responsible for keeping you safe.
+
+- **What you tell the student.** You've had low moods on and off for years. This week you slept three to four hours a night and used more cannabis than usual. If asked directly, say, “Last night part of me wanted to die. The thoughts still come and go today.” You have no specific plan or intention to act on the unit. You are unsure how safe you would feel alone at home. You have never attempted suicide. You picked up when your sibling called because you wanted to hear a familiar voice.
+- If asked whether you did anything to prepare or say goodbye, say, “I wrote a goodbye letter last night.” If asked about access to firearms, say there is a firearm at your parent's home and you could access it on a visit. You do not know whether anyone has secured it since your admission.
+- When asked about calling family, say, “They already worry enough.” If the student hears that concern and asks for a limited call, agree that they may ask your sibling about the text and the phone call. Say, “Please keep my treatment details between me and the team.” If pressed for broader permission, decline. In feedback, tell the student what you thought they had agreed to share.
+
+**Sibling role**
+
+Wait outside the interview until the student has discussed permission with the patient. If the patient agrees to a call, play the sibling on the phone. If no call is agreed, skip the call. The clinical handoff is private. Rejoin as a role-player for feedback after the call and handoff are over.
+
+- **What you heard on the phone.** You received a text that felt unusually final. You called back. Your sibling picked up and said, “I didn't want to be alone tonight.” That was different from your usual conversations, so you encouraged them to get help.
+- You can describe that conversation. You did not see what happened before the text or visit the parent's home. Say “I don't know” if asked what the patient intended or whether anyone has secured the firearm.
+- Ask, “Can you tell me what they're being treated for?” Listen for whether the student acknowledges your worry and stays within the agreed purpose of the call. If asked how you might help, offer to answer another call from the team if the patient agrees.
+
 **Behaviors to practice**
 
 - Opens with role and purpose.
@@ -35,6 +67,14 @@ directly. Firearm access is at a parent's home.
 **Rater focus**
 
 Risk formulation, means restriction, collateral consent, tone.
+
+**Handoff debrief**
+
+1. **Give the handoff.** After the private summary to the supervising resident, step out of character and replay it for the group. Compare the patient's recent change with their usual baseline. Give your acute risk impression, an available support, and one safety concern that still needs checking. Ask the resident to assess the patient now and state who will stay with them in the meantime.
+2. **Check the sources.** The patient names what they actually disclosed and what contact they agreed to. The sibling says what they personally heard, if contacted. If no call happened, say that collateral is still unavailable. Identify who on the clinical team will follow up on access to lethal means and confirm a safety plan.
+3. **Try the next sentence.** The patient chooses a moment when they felt heard or pressured. Repeat that part of the conversation, then retry the handoff using only what you learned. The sibling listens for one clear action the team owns.
+
+If the patient disclosed recent preparation, one possible opening is: “I'm worried their risk has increased since last night. They described preparing to say goodbye and still have suicidal thoughts today. I'm staying with them. Can you come assess them now?” Add what you know about access, any unanswered safety question, and what the patient agreed you could discuss with family.
 
 ## Station 2 - Capacity To Refuse Medical Treatment
 
@@ -132,6 +172,8 @@ Recognition and language.
 
 ## Station 4 - Alcohol Withdrawal Risk On Psychiatry Unit
 
+[Run this station](?page=osce.md&station=alcohol-withdrawal)
+
 **Time:** 10 minutes encounter, 5 minutes presentation.
 
 **Student task**
@@ -144,6 +186,30 @@ Screen for alcohol withdrawal risk and escalate appropriately.
 "more than usual." Last drink was yesterday morning. Prior tremors and one
 possible withdrawal seizure years ago, revealed only if asked.
 
+**Interviewer role**
+
+You are the medical student on the psychiatry unit. A 48-year-old was admitted after losing their job and reporting suicidal thoughts. The nurse asks you to see them because their hands are shaking.
+
+- **Ask about a usual drinking day.** Start with the patient's concern. Explain why it helps to know what they drink, how much, how often, and when they last had a drink. Ask what happened other times they cut down. Use everyday words to ask about shaking, seizures, or becoming very confused.
+- Ask how they feel now. Compare what the patient tells you with what the nurse observed. Ask for vital signs and whether they have changed since admission.
+- When you recognize risk, call your supervising resident or attending during the encounter. Ask for a bedside assessment now and a plan for monitoring and treatment under the unit's protocol. The five-minute presentation gives you time to rehearse that call. Tell the patient what will happen next.
+
+**Patient role**
+
+Start with “My hands won't settle down. Is it just nerves?” You are worried that if you talk about drinking, the team will forget what brought you into hospital.
+
+- If asked about drinking, start with “More than usual.” If the student asks what that means, say you drink beer every day, usually six ordinary 12-ounce cans. Your last beer was yesterday morning. Today you feel shaky, sweaty, and queasy. You know where you are and haven't seen or heard anything unusual.
+- **What happened years ago.** If asked what happened when you stopped or cut back, say your hands shook badly. If asked about a seizure, a fit, or passing out, say, “Once my brother said I fell down and shook all over. I don't remember it. I never found out if it was a seizure.” That happened after you stopped drinking. If asked about getting very confused during withdrawal, say you don't remember that happening.
+- Before the student leaves, ask, “Will somebody come see me? I still want help with how I've been feeling.” In the debrief, tell them what you understood about the next step.
+
+**Nurse role**
+
+Open with “They asked for help holding their cup. Can you come take a look?” Stay in the room for the handoff.
+
+- **Your bedside observations.** You saw both hands shaking when the patient lifted the cup. Their forehead was damp. They recognized you and knew they were on the psychiatry unit.
+- When asked for vital signs, give the readings from just now: pulse 112, blood pressure 154/94. At admission the pulse was 88 and blood pressure was 132/82. You have no record of the earlier withdrawal history. The student can ask the patient directly.
+- If the student suggests waiting, ask, “With the pulse going up, who should see them now?” When the student makes the call, repeat who is coming and what you will do while waiting. Clarify any missing action with the student.
+
 **Behaviors to practice**
 
 - Asks amount/frequency/last drink.
@@ -155,6 +221,12 @@ possible withdrawal seizure years ago, revealed only if asked.
 **Rater focus**
 
 Withdrawal history and escalation.
+
+**Handoff debrief**
+
+1. **Rehearse the call.** The interviewer has 30 seconds to tell the supervising resident when the patient last drank, what has changed at the bedside, and why they are concerned. Identify who supplied each fact. If an important detail never came up, ask for it now and try the call again.
+2. **Name the uncertainty.** The patient repeats what they actually said about past withdrawal. The interviewer describes what is known and what still needs confirmation. End by asking the supervisor to assess the patient now and guide monitoring and treatment.
+3. **Close the loop.** The nurse repeats who is contacting the supervisor and who will stay with the patient and recheck vital signs. The patient explains in their own words what will happen next and whether they felt their original concern was heard.
 
 ## Station 5 - Family Meeting Agenda Before Discharge
 
@@ -282,6 +354,10 @@ moment the student moves from a fact to an interpretation.
 - Listen for what the nurse actually saw and how the presenter interpreted it. Did the presenter tell the resident which safety questions still need answers? Note which next step the resident heard.
 - **Give feedback on one sentence.** Quote the student's words and say what you understood. Ask them to repeat that sentence with its source or uncertainty made explicit. Have the resident say whether the revision changes what they would do first.
 
+**Repeat the handoff**
+
+Repeat the handoff using one change from feedback. The observer quotes one sentence from the first attempt. The presenter revises it and gives the handoff again. The supervising resident says what they would do first. The observer names what became clearer.
+
 **Behaviors to practice**
 
 - Organized timeline.
@@ -366,7 +442,7 @@ and present clearly.
 - Asks about prior withdrawal, **seizure, and DTs** (revealed only if asked) — 2
 - Checks current symptoms and vital signs — 2
 - Recognizes elevated withdrawal/seizure risk — 2
-- Escalates to a protocol (symptom-triggered benzodiazepine per team) and names **thiamine before or with glucose** (without delaying dextrose for hypoglycemia) — 1
+- Asks the supervising team to assess now, guide withdrawal treatment under the unit protocol, and provide thiamine. If glucose is urgently needed, the team can give it immediately, including before thiamine — 1
 - Does **not** propose unsupervised management — 1
 
 **Critical-fail:** proposes unsupervised/self-directed management or discharge · never asks the withdrawal-seizure history (misses it) · fails to escalate a high-risk withdrawal.

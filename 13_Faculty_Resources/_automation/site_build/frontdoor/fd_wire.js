@@ -352,7 +352,9 @@ function fdParamsWithoutRoute(search){
   /* Passage context belongs to the current reading, never the next activity iframe. */
   params.delete('guideFind');
   params.delete('guideSection');
+  params.delete('handoffFocus');
   if(params.has('station')){
+    if(fdOwn(FD_OSCE_CIRCUITS,params.get('station'))) params.delete('round');
     params.delete('station');
     params.delete('role');
   }
@@ -389,6 +391,7 @@ function fdRouteForTab(tab, search, libraryView){
 function fdStationForRoute(ref,params){
   if(ref!=='osce.md'||params.get('page')!==ref||!params.has('station'))return null;
   var key=params.get('station');
+  if(fdOwn(FD_OSCE_CIRCUITS,key))return FD_OSCE_CIRCUITS[key];
   return fdOwn(FD_OSCE_STATIONS,key) ? FD_OSCE_STATIONS[key] : null;
 }
 
@@ -401,6 +404,13 @@ function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
     params.set('station',previous.get('station'));
     var stationRole=previous.get('role');
     if(fdOwn(station.roles,stationRole))params.set('role',stationRole);
+    if(station.cases && previous.has('round')){
+      params.set('round',String(fdCircuitRound(previous.get('round'),station.cases.length)||1));
+      var focus=previous.get('handoffFocus');
+      if(station.session && station.session.repeat && !previous.has('role') &&
+         previous.get('round')===String(station.cases.length) && fdOwn(FD_HANDOFF_FOCUSES,focus))
+        params.set('handoffFocus',focus);
+    }
   }
   if(ref==='prepare-for-tomorrow.html'){
     var preparation=new URLSearchParams(fdPrepareFrameParams(search));
