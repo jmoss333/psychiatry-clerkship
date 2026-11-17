@@ -1553,14 +1553,15 @@
     "clinicalHash": "251658da7e0033c251557b925e9c61b6a87cd705"
   },
   "maine_law.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "legal",
       "level": "high"
     },
-    "reason": "New Maine law & capacity statute page added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
-    "at": "2026-10-27",
-    "by": "Pending faculty review"
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "fc51df7a94744c8ed9341c1be684a5fdb285d72a",
+    "clinicalHash": "6bc67d867db17247f39bd76f6e08833828c811e4"
   },
   "maine-law-navigator.html": {
     "status": "reviewed",
