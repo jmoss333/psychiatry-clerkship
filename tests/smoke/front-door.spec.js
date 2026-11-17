@@ -111,6 +111,54 @@ test('search recovery edits and browses with usable targets at phone and desktop
   }
 });
 
+test.describe('phone search spelling suggestions', () => {
+  test.use({ viewport: PHONE, hasTouch: true });
+
+  for (const [typo, correction, result] of [
+    ['delerium', 'delirium', '[data-fd-safety="delirium.md"]'],
+    ['akathesia', 'akathisia', '[data-fd-open="med_monitoring.md"]'],
+  ]) {
+    test(`tapping the correction for ${typo} reruns the search`, async ({ page }, testInfo) => {
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=today');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill(typo);
+      const suggestion = search.getByRole('button', { name: `Did you mean ${correction}?`, exact: true });
+      await expect(suggestion).toBeVisible();
+      await expect(input).toHaveValue(typo);
+      await expect(search.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+      await suggestion.tap();
+      await expect(input).toHaveValue(correction);
+      await expect(search.locator(result)).toBeVisible();
+      await expect(search.getByRole('button', { name: /^Did you mean / })).toHaveCount(0);
+      await expectHealthy(page);
+    });
+  }
+
+  test('a late page-text match for the original spelling suppresses the correction', async ({ page }, testInfo) => {
+    const typo = 'akathesia';
+    const releaseIndex = await delaySearchIndex(page, typo);
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=today');
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    try {
+      await input.fill(typo);
+      await expect(search.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+      await expect(search.getByRole('button', { name: 'Did you mean akathisia?', exact: true })).toBeVisible();
+    } finally {
+      releaseIndex();
+    }
+    await expect(search.locator('[data-fd-open="t_mood.md"]')).toBeVisible();
+    await expect(input).toHaveValue(typo);
+    await expect(search.getByRole('button', { name: /^Did you mean / })).toHaveCount(0);
+    await expectHealthy(page);
+  });
+});
+
 test('related search terms update the transient query with safety first on phone and desktop', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');

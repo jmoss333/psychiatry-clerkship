@@ -56,6 +56,10 @@
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
 var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
+var FD_SEARCH_SPELLING_CORRECTIONS = new Map([
+  ['delerium', 'delirium'],
+  ['akathesia', 'akathisia']
+]);
 
 /* Discovery aliases never expand the safety haystack. Short ambiguous abbreviations must
    be the entire query. Normalize punctuation so PHQ-9 / PHQ 9 and trailing ? work alike. */
@@ -790,10 +794,17 @@ function fdSearchOverlay(index, query, synonyms, state){
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */
   if(trimmed&&!results.length){
+    var correction=FD_SEARCH_SPELLING_CORRECTIONS.get(trimmed.toLowerCase());
+    var canSuggest=correction&&fdSearchMatches(index,correction,synonyms,state).length>0;
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
-    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
-      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search="">Edit search</button>';
+    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">';
+    if(canSuggest){
+      out+='<button type="button" class="fd-btn fd-btn--primary" data-fd-search="" data-fd-search-query="'+
+        fdEsc(correction)+'">Did you mean '+fdEsc(correction)+'?</button>';
+    }
+    out+='<button type="button" class="fd-btn '+(canSuggest?'fd-btn--ghost':'fd-btn--primary')+
+      '" data-fd-search="">Edit search</button>';
     if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>';
     if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
     out+='</div>';
