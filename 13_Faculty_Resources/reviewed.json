@@ -1365,10 +1365,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "83761aa2b66b0c2f2091e3c1582125ee72bc91d7",
-    "clinicalHash": "5fb9e04ac67658504a0a879ddf38a282576ef7d3"
+    "contentHash": "cff440c28c69ea2c01839ba193a078ec402777e1",
+    "clinicalHash": "0aadb0656deb9cc83edc296b17b5dd8262fa00d4"
   },
   "medical_workup.md": {
     "status": "reviewed",
