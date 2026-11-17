@@ -2787,6 +2787,40 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('the Anxiety bedside case keeps both clues and the resident question behind one reveal', async ({ page }, testInfo) => {
+    const ref = 't_anxiety.md';
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+    await page.goto(`/?page=${ref}`);
+
+    const header = page.locator('.fd-guide-header');
+    const bedside = header.locator('.fd-article__h1 + .fd-bedside-case');
+    await expect(header.locator('.governance-notice.pending-high ~ .fd-article__h1')).toBeVisible();
+    await expect(bedside.locator('figcaption')).toContainText('What’s behind the pacing?');
+    await expect(bedside.locator('img')).toBeVisible();
+    expect(await bedside.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+    await expect(bedside.locator('.fd-bedside-case__prompt + details')).toHaveCount(1);
+    const prompt = bedside.getByText('What would you ask the patient first?', { exact: false });
+    await expect(prompt).toBeVisible();
+
+    const reveal = bedside.locator('summary');
+    const hidden = [bedside.getByText('I feel like I have to keep moving.', { exact: false }),
+      bedside.getByText('The antipsychotic dose was increased yesterday.'), bedside.getByText('Resident follow-up')];
+    for (const text of hidden) await expect(text).toBeHidden();
+    await reveal.click();
+    for (const text of hidden) await expect(text).toBeVisible();
+    await expect(bedside.getByText('What moves up your differential?', { exact: false })).toBeVisible();
+    await reveal.press('Enter');
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(prompt).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    for (const text of hidden) await expect(text).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.

@@ -167,8 +167,11 @@ function fdGuideMount(body,options){
   }
   var columns=reader.querySelector('.fd-reader__cols'), article=reader.querySelector('.fd-article');
   var guideHeader=el('header','fd-guide-header');
+  var bedsideCase=body.querySelector(':scope > .fd-bedside-case');
   each([].slice.call(article.children),function(node){
-    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead'))guideHeader.appendChild(node);
+    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead')||
+        (bedsideCase&&node.classList.contains('governance-notice')))guideHeader.appendChild(node);
+    if(bedsideCase&&node.classList.contains('fd-article__h1'))guideHeader.appendChild(bedsideCase);
   });
   columns.insertBefore(guideHeader,article);columns.insertBefore(margin,article);
 
@@ -281,7 +284,7 @@ function fdGuideMount(body,options){
     updateCurrent();
   }
   function beforePrint(){
-    printOpened=[];each(body.querySelectorAll('details:not([open])'),function(d){printOpened.push(d);d.open=true;});
+    printOpened=[];each(reader.querySelectorAll('.fd-article__body details:not([open]),.fd-bedside-case details:not([open])'),function(d){printOpened.push(d);d.open=true;});
   }
   function afterPrint(){printOpened.forEach(function(d){d.open=false;});printOpened=[];}
   win.addEventListener('scroll',onScroll,{passive:true});win.addEventListener('resize',onResize);
