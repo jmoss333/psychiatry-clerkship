@@ -2964,8 +2964,13 @@ test.describe('Clinical field guide', () => {
     await expect(plan.locator('[data-personality-response-feedback]')).toContainText('does not guarantee immediate calm');
     await follow.locator('> summary').click();
     await follow.locator('textarea').fill('Fictional rehearsal, not saved.');
+    await page.setViewportSize({ width: 600, height: 900 });
     await card.locator('[data-personality-reset]').click();
     await expect(card.locator('[data-personality-question="open"]')).toBeFocused();
+    expect(await card.locator('[data-personality-question="open"]').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+    })).toBe(true);
     await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
     await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
     await expect(follow.locator('textarea')).toHaveValue('');

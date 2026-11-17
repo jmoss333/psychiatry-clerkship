@@ -868,7 +868,9 @@
       planBody.replaceChildren();locked.hidden=false;
       follow.open=false;worked.open=false;workedBody.replaceChildren();
       follow.querySelector('textarea').value='';
-      showAccount();card.querySelector('[data-personality-question="open"]').focus();
+      showAccount();
+      var opening=card.querySelector('[data-personality-question="open"]');
+      opening.focus({preventScroll:true});opening.scrollIntoView({block:'center'});
     });
     plan.addEventListener('click',function(event){
       var choice=event.target.closest('[data-personality-response]');

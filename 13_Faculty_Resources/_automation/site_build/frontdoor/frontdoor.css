@@ -2362,7 +2362,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-before-compare-row b{font-weight:600;color:var(--fd-text-mid)}
 .fd-before-footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--fd-space-5);margin-top:var(--fd-space-6);font-size:var(--fd-font-xs);color:var(--fd-text-mid)}
 .fd-before-restart{border:0;background:none;color:var(--fd-teal-deep);min-height:var(--fd-target-touch);padding:var(--fd-space-4) 0;text-decoration:underline;text-underline-offset:.2em;font:inherit;cursor:pointer}
-@media(max-width:560px){
+@media(max-width:640px){
   .fd-before-casehead,.fd-before-body,#personality-response{padding:var(--fd-space-6)}
   #personality-crisis h3{font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1))}
   .fd-before-scene{grid-template-columns:1fr;margin:0 var(--fd-space-6)}
