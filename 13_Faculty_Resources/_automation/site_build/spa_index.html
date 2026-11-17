@@ -815,6 +815,56 @@
       }
     });
   }
+  /* Clinical wording stays in the authored page. Only this visit's display state lives here. */
+  function fdMountDeliriumShift(body){
+    var card=body.querySelector('#delirium-shift'), follow=body.querySelector('#delirium-shift-followup');
+    if(!card||!follow||card._shiftMounted)return;
+    card._shiftMounted=true;
+    var encounter=card.querySelector('[data-shift-encounter]');
+    var afternoon=document.createDocumentFragment();
+    [].forEach.call(encounter.childNodes,function(node){afternoon.appendChild(node.cloneNode(true));});
+    var scenes={afternoon:afternoon};
+    card.querySelectorAll('template[data-shift-scene]').forEach(function(t){scenes[t.dataset.shiftScene]=t.content;});
+    var feedback=card.querySelector('[data-shift-feedback]'), comparison=card.querySelector('[data-shift-comparison]');
+    var time='afternoon';
+    function showTime(key){
+      if(!scenes[key])return;
+      card.querySelectorAll('[data-shift-time]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.shiftTime===key));});
+      if(time!==key){encounter.replaceChildren(scenes[key].cloneNode(true));time=key;}
+    }
+    card.addEventListener('click',function(event){
+      var reveal=event.target.closest('summary');
+      if(reveal&&reveal.parentElement===comparison){
+        var comparisonBody=comparison.querySelector('[data-shift-comparison-body]');
+        // Only explicit pointer/keyboard reveal mounts the answer. Guide find and print
+        // may open native details programmatically; neither supplies the comparison.
+        if(!comparisonBody.childNodes.length)comparisonBody.appendChild(comparison.querySelector('template').content.cloneNode(true));
+        return;
+      }
+      var observation=event.target.closest('[data-shift-time]');
+      if(observation){showTime(observation.dataset.shiftTime);return;}
+      var choice=event.target.closest('[data-shift-choice]');
+      if(choice){
+        var answer=card.querySelector('[data-shift-feedback-for="'+choice.dataset.shiftChoice+'"]');
+        if(!answer)return;
+        showTime('afternoon');
+        card.querySelectorAll('[data-shift-choice]').forEach(function(b){b.setAttribute('aria-pressed',String(b===choice));});
+        feedback.replaceChildren(answer.content.cloneNode(true));feedback.hidden=false;
+        if(comparison.hidden)comparison.open=false;
+        comparison.hidden=false;
+        return;
+      }
+      if(!event.target.closest('[data-shift-reset]'))return;
+      showTime('afternoon');
+      card.querySelectorAll('[data-shift-choice]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      feedback.replaceChildren();feedback.hidden=true;
+      comparison.open=false;comparison.hidden=true;
+      comparison.querySelector('[data-shift-comparison-body]').replaceChildren();
+      follow.open=false;follow.querySelector('[data-shift-worked]').open=false;
+      follow.querySelector('textarea').value='';
+      card.querySelector('[data-shift-time="afternoon"]').focus();
+    });
+  }
   function enhanceTables(body){
     if(!body)return;
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
@@ -1528,6 +1578,7 @@
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       fdMountReferralCall(contentEl);
+      fdMountDeliriumShift(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3429,6 +3480,7 @@
           var stationPanel=body.querySelector('[data-osce-station]');
           if(stationPanel)fdMountOsceStation(stationPanel);
           fdMountReferralCall(body);
+          fdMountDeliriumShift(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
