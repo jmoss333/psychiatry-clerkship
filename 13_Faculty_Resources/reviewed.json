@@ -1311,10 +1311,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-10-05",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "68b6bbaeda10240ab054de9faeb955707065504a",
-    "clinicalHash": "370dfd3ab095511fc0dcee4c495f7e18dc07ab6e"
+    "contentHash": "4912cc4794617cb3d9a35e5b48898d2ab3cf0a35",
+    "clinicalHash": "3f3a3798fe101cb7e2413887a2bd5b990684aab5"
   },
   "rp-agitation.html": {
     "status": "reviewed",
