@@ -2821,6 +2821,101 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
   });
 
+  test('the Mood bedside case shows both sleep records before the patients’ accounts', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 't_mood.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_mood.md');
+
+    const header = page.locator('.fd-guide-header');
+    const warning = page.locator('.fd-reader .governance-notice.pending-high');
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toBeVisible();
+    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 + .fd-bedside-case');
+    await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
+    const art = bedside.locator('img');
+    await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
+    await art.evaluate(img => img.decode());
+    const record = bedside.getByRole('img', { name: /Maya and Alex.*three hours.*1 to 4 a.m/ });
+    await expect(record).toBeVisible();
+    await expect(record.locator('b')).toHaveText(['3 h', '3 h']);
+    const prompt = bedside.locator('.fd-bedside-case__prompt');
+    await expect(prompt).toContainText('What would you ask each patient at breakfast');
+    const disclosure = bedside.locator('.fd-bedside-case__prompt + details');
+    const toggle = disclosure.locator('summary');
+    const accounts = disclosure.locator('dd');
+    const follow = disclosure.getByText('Resident follow-up', { exact: true });
+    await expect(accounts).toHaveText([/kept trying to fall back asleep/, /felt rested/]);
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await toggle.focus();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeVisible();
+    await expect(disclosure.getByText('Compare the accounts', { exact: true })).toBeVisible();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await expect(record).toBeVisible();
+    await expect(prompt).toBeVisible();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
+  test('Mood rounds uses only the case sources opened on this visit', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const family = workup.locator('[data-rounds-source="family"] > summary');
+    const medication = workup.locator('[data-rounds-source="med"] > summary');
+    const interview = page.locator('.fd-bedside-case [data-rounds-source="interview"] > summary');
+    const rounds = student.locator('[data-rounds-sample]');
+    const line = rounds.locator('p');
+
+    await page.goto('/?page=t_mood.md');
+    await expect(workup.locator('details[data-rounds-source]')).toHaveCount(2);
+    await rounds.locator('summary').click();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('how he felt on waking');
+    await page.emulateMedia({ media: 'print' });
+    expect(await page.locator('.fd-rounds-jump').evaluateAll(buttons =>
+      buttons.every(button => getComputedStyle(button).display === 'none'))).toBe(true);
+    await page.emulateMedia({ media: 'screen' });
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(2);
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(0);
+    await expect(line).toHaveText(baseline);
+
+    await medication.focus();
+    await medication.press('Enter');
+    await expect(line).toContainText('prednisone');
+    await expect(line).not.toContainText('sister');
+    await expect(line).not.toContainText('feels rested');
+    await medication.press('Enter');
+    await workup.getByRole('button', { name: 'Present Alex on rounds' }).click();
+    await expect(student.locator('#mood-rounds')).toBeFocused();
+    await expect(line).toContainText('prednisone');
+
+    await student.getByRole('button', { name: 'Try the other source' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await family.click();
+    await expect(line).toContainText('late-night calls his sister described');
+    await expect(line).toContainText('prednisone');
+    await interview.click();
+    await expect(line).toContainText('he says he feels rested');
+
+    await page.reload();
+    await expect(rounds.locator('p')).toBeHidden();
+    await family.click();
+    await rounds.locator('summary').click();
+    await expect(line).toContainText('his sister reports');
+    await expect(line).not.toContainText('prednisone');
+    await expect(line).not.toContainText('feels rested');
+    await interview.click();
+    await page.getByRole('button', { name: 'Choose what to check next' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await expect(line).toContainText('he says he feels rested');
+  });
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.
@@ -4219,6 +4314,8 @@ test('Care status clears on Home, browser history, and resource opening', async 
 test('phone chrome: one dock stays at the bottom and the first screen belongs to the page', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
+  // Measure the ordinary header here. The Mood bedside case test covers the warning above the title.
+  await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
   const dock = page.locator('.fd-dock:visible');

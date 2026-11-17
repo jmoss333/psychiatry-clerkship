@@ -2319,6 +2319,57 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-bedside-case dl{grid-template-columns:1fr;gap:var(--fd-space-5)}
   .fd-bedside-case dl>div+div{padding-left:0;border:0}
 }
+.fd-rounds-exercise{
+  margin:var(--fd-space-8) 0;padding:var(--fd-space-7) var(--fd-space-8);
+  border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface-warm);
+}
+.fd-reader--guide .fd-article__body .fd-rounds-exercise h3{
+  margin:var(--fd-space-1) 0 var(--fd-space-5);scroll-margin-top:160px;
+}
+.fd-reader--guide .fd-article__body .fd-rounds-exercise p{margin:var(--fd-space-4) 0 var(--fd-space-6)}
+.fd-rounds-exercise details{
+  margin:0;padding:0;border:0;border-top:1px solid var(--fd-line-strong);border-radius:0;
+}
+.fd-rounds-exercise summary{
+  display:list-item;min-height:var(--fd-target-touch);padding:var(--fd-space-5) var(--fd-space-2);
+  cursor:pointer;color:var(--fd-teal-deep);font-weight:650;
+}
+.fd-rounds-quote{border-left:3px solid var(--fd-teal-deep);padding:var(--fd-space-5) var(--fd-space-6);background:var(--fd-teal-wash)}
+.fd-rounds-jump{
+  display:inline-block;min-height:var(--fd-target-touch);padding:var(--fd-space-3) 0;border:0;background:transparent;
+  color:var(--fd-teal-deep);font:inherit;font-weight:650;text-align:start;text-decoration:underline;cursor:pointer;
+}
+.fd-bedside-case .fd-rounds-jump{margin:0 var(--case-pad) var(--fd-space-3)}
+@media(max-width:999px){
+  .fd-reader--guide .fd-article__body .fd-rounds-exercise h3{scroll-margin-top:calc(var(--fd-target-touch) * 4 + var(--fd-space-9))}
+}
+
+.fd-sleep-record{
+  --sleep-start:37.5%;--sleep-end:75%; /* 1 and 4 a.m. on the 10 p.m.–6 a.m. axis */
+  padding:var(--fd-space-6) var(--case-pad);border-block:1px solid var(--fd-line-strong);
+  background:var(--fd-callout);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));
+}
+.fd-sleep-record>strong{display:block;margin-bottom:var(--fd-space-3);color:var(--fd-text-mid)}
+.fd-sleep-record__row{
+  display:grid;grid-template-columns:5ch minmax(0,1fr) 4ch;gap:var(--fd-space-4);align-items:center;
+}
+.fd-sleep-record__row+.fd-sleep-record__row{margin-top:var(--fd-space-1)}
+.fd-sleep-record__row>b{text-align:right;font-weight:600}
+.fd-sleep-record__rail{
+  position:relative;height:var(--fd-space-4);border-radius:var(--fd-radius-2xs);background:var(--fd-line-strong);
+}
+.fd-sleep-record__rail::after{
+  content:'';position:absolute;inset:0 calc(100% - var(--sleep-end)) 0 var(--sleep-start);
+  border-radius:inherit;background:var(--fd-teal-deep);
+}
+.fd-sleep-record__axis{grid-column:2;position:relative;min-height:1.5em;color:var(--fd-text-mid);font-size:calc(var(--fd-font-xs) * var(--fd-reading-scale,1))}
+.fd-sleep-record__axis>span{position:absolute;white-space:nowrap}
+.fd-sleep-record__axis>span:first-child{left:0}
+.fd-sleep-record__axis>span:nth-child(2){left:var(--sleep-start);transform:translateX(-50%)}
+.fd-sleep-record__axis>span:nth-child(3){left:var(--sleep-end);transform:translateX(-50%)}
+.fd-sleep-record__axis>span:last-child{right:0}
+.fd-bedside-case:has(.fd-sleep-record) dd{font-family:Georgia,serif}
+
 .fd-case-timeline{
   margin:var(--fd-space-9) 0;overflow:hidden;break-inside:avoid;
   border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface-warm);
@@ -2618,6 +2669,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .fd-reader--guide p,.fd-reader--guide li{orphans:3;widows:3}
   .fd-reader--guide :is(.fd-guide-section,.sec-c){break-inside:auto;border:0 !important}
   .fd-reader--guide .sec-b,.fd-reader--guide details,.fd-reader--guide details>:not(summary),.fd-reader--guide details::details-content{display:block !important;content-visibility:visible !important;height:auto !important}
+  .fd-reader--guide details>.fd-rounds-jump,.fd-rounds-jump{display:none !important}
   .fd-reader--guide :is(.governance-notice,.crisis-block-hook){visibility:visible !important}
   .fd-reader--guide .governance-notice{border:1px solid var(--fd-guide-print-ink) !important;break-inside:avoid-page}
   .fd-reader--guide .fd-guide-match{outline:0 !important}
