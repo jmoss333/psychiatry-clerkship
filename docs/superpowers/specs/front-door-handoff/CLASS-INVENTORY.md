@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(804 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(835 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1024,6 +1024,9 @@ preview. Full behavior and content-preservation contract:
 | `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
 | `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
 | `#referral-call` | Eating Disorders exercise within Medical instability. The three source disclosures, lead-selection buttons and sample handoff share visit-local state. The compact vitals table fits the phone reading column. |
+| `#personality-crisis`, `.fd-before-*` | Personality exercise under Initial workup. Four-node map separates observed behavior from unknown meaning/feeling; explicit patient-account summary activation supplies the two reported cells. Native question buttons expose authored feedback and the initially closed answer. Warm/teal/olive surfaces use existing tokens and stack at phone widths. |
+| `#personality-response` | Acute inpatient management continuation. The response-choice template mounts only after the patient account is explicitly opened. Feedback, choices and map are visit-only and reset together. |
+| `#personality-followup` | What the student does continuation. The resident account selector updates the quote, clears and closes any prior worked response, and mounts only the selected account's template on explicit reveal. Programmatic guide-find/print expansion does not supply answers. Rehearsal is neither saved nor scored. |
 | `.fd-guide-section` | Wrapper preserving a non-collapsible authored heading and its following content. `.sec-c` keeps the existing explicit disclosure behavior where allowed. |
 | `.fd-guide-lead` | The authored paragraph that opens a section on a page with no H2: its first element is a bold label followed by a separator (`—`, `:`) or ending in `.`/`:`, or standing alone. It stays a `<p>` with its inline `<strong>` untouched; the class adds only the landing scroll margin. The section's navigation label is the bold text without trailing punctuation. A page qualifies only with no H2 anywhere (an embedded component's own heading keeps it out), at least four leads and 500 words — the rotation week pages stay plain. **Trap:** such a page keeps its reading place (`[data-fd-reading-status]`, Start at top), unlike an H2 guide, and the reading-place anchor is the lead's `<strong>`, not the paragraph, so editing the prose keeps a saved place. |
 | `.fd-guide-orientation` | Teal summary/orientation treatment applied to an authored section by a narrow heading match. |
