@@ -2346,7 +2346,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   #cultural-chart [data-culture-source]>summary::after{grid-column:2;grid-row:1/3}
   #cultural-chart-followup [data-culture-trace]{display:block;padding:var(--fd-space-3) 1px}
 }
-@media(max-width:400px){
+@media(max-width:430px){
   #cultural-chart .cultural-chart__hero{grid-template-columns:1fr}
   #cultural-chart .cultural-chart__hero>div{padding-right:var(--culture-pad)}
   #cultural-chart img{max-height:calc(var(--fd-target-touch) * 3);object-fit:cover;object-position:center 60%}
