@@ -2924,6 +2924,113 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  const culturalAnswers = ['experience', 'meaning', 'impact'];
+  const culturalClauses = {
+    opening: 'Since the funeral, the patient sometimes feels their mother nearby',
+    experience: 'describes a sense of presence without seeing or hearing her during these moments',
+    meaning: 'says the feeling helps them stay close to her',
+    impact: 'sometimes pauses briefly before carrying on',
+  };
+
+  for (let mask = 0; mask < 8; mask++) {
+    const opened = culturalAnswers.filter((key, i) => mask & (1 << i));
+    test(`Cultural chart uses only opened answers (${opened.join(', ') || 'none'})`, async ({ page }, testInfo) => {
+      const ref = 'cultural_psychiatry.md';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+      await page.goto(`/?page=${ref}`);
+      const card = page.locator('#cultural-chart');
+      const follow = page.locator('#cultural-chart-followup');
+      const interview = card.locator('[data-culture-interview]');
+      const note = follow.locator('[data-culture-line]');
+      const source = key => card.locator(`[data-culture-source="${key}"]`);
+
+      await expect(card).toBeVisible();
+      await expect(card.locator('img')).toBeVisible();
+      expect(await card.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+      await expect(card.locator('[data-culture-prompt]')).toBeVisible();
+      await expect(card.locator('details[open]')).toHaveCount(0);
+      await expect(note).toBeHidden();
+      await expect(card.locator('..')).toContainText('Religion, spirituality & community');
+      await expect(follow.locator('..')).toContainText('What the student does');
+      expect(await card.evaluate(node => node.closest('.fd-guide-section').querySelector('.fd-guide-lead').textContent.startsWith('Religion, spirituality & community'))).toBe(true);
+      expect(await follow.evaluate(node => node.closest('.fd-guide-section').querySelector('.fd-guide-lead').textContent.startsWith('What the student does'))).toBe(true);
+
+      if (mask === 0) {
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('experience has changed over time');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(page.locator('.fd-guide-results [role="status"]')).toHaveText('No matching passage in this guide.');
+      }
+      await card.locator('[data-culture-word="reports"]').press('Enter');
+      await expect(interview).not.toHaveAttribute('open', '');
+      await card.locator('[data-culture-word="hallucinations"]').press('Enter');
+      await expect(interview).toHaveAttribute('open', '');
+      for (const key of opened) await source(key).locator('summary').press('Enter');
+
+      await follow.locator(':scope > summary').press('Enter');
+      const draft = follow.locator('textarea');
+      await draft.fill('Fictional practice note <draft>.');
+      await expect(note).toBeHidden();
+      await follow.locator('[data-culture-worked] > summary').press('Enter');
+
+      const expected = ['opening', ...opened];
+      await expect(note.locator('[data-culture-trace]')).toHaveCount(expected.length);
+      for (const key of ['opening', ...culturalAnswers]) {
+        const phrase = note.locator(`[data-culture-trace="${key}"]`);
+        if (expected.includes(key)) {
+          await expect(phrase).toContainText(culturalClauses[key]);
+          await phrase.press('Enter');
+          await expect(phrase).toHaveAttribute('aria-pressed', 'true');
+          const quote = key === 'opening' ? card.locator('[data-culture-opening]') : source(key).locator('blockquote p');
+          await expect(follow.locator('[data-culture-quote]')).toHaveText(await quote.textContent());
+        } else {
+          await expect(phrase).toHaveCount(0);
+          await expect(note).not.toContainText(culturalClauses[key]);
+        }
+      }
+      const sample = await note.innerText();
+      for (const key of opened) await source(key).locator('summary').click();
+      await expect(note).toHaveText(sample);
+      await page.emulateMedia({ media: 'print' });
+      await page.evaluate(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      await expect(note).toHaveText(sample);
+      await expect(note.locator('[data-culture-trace="opening"]')).toBeVisible();
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await page.emulateMedia({ media: 'screen' });
+      await expect(card.locator('[data-culture-source][open]')).toHaveCount(0);
+      await expect(draft).toHaveValue('Fictional practice note <draft>.');
+      expect(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      expect(await follow.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+
+      await follow.locator('[data-culture-reset]').click();
+      await expect(card.locator('[data-culture-word="reports"]')).toBeFocused();
+      await expect(card.locator('details[open]')).toHaveCount(0);
+      await expect(follow).not.toHaveAttribute('open', '');
+      await expect(draft).toHaveValue('');
+      await expect(note.locator('[data-culture-trace]')).toHaveCount(1);
+
+      if (mask === 7) {
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('one way I stay close');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(interview).toHaveAttribute('open', '');
+        await expect(source('meaning')).toHaveAttribute('open', '');
+        await expect(note.locator('[data-culture-trace]')).toHaveCount(2);
+        await expect(note).toContainText(culturalClauses.meaning);
+        await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+        await page.goto('/?page=cultural_psychiatry.md');
+        await expect(page.locator('#cultural-chart details[open]')).toHaveCount(0);
+        await expect(page.locator('[data-culture-line] [data-culture-trace]')).toHaveCount(1);
+        await expect(page.locator('#cultural-chart-draft')).toHaveValue('');
+      }
+    });
+  }
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.

@@ -2261,6 +2261,97 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   font-size:calc(var(--fd-guide-section-size) * var(--fd-reading-scale,1));line-height:1.3;letter-spacing:-.015em;
   margin-top:0;margin-bottom:var(--fd-space-8);scroll-margin-top:140px;
 }
+/* One fictional interview spans the cultural reading's two authored sections. */
+.cultural-chart{
+  --culture-pad:var(--fd-space-8);
+  margin:var(--fd-space-8) 0;border:1px solid var(--fd-line-strong);
+  border-radius:var(--fd-radius-md);background:var(--fd-surface-warm);overflow:hidden;color:var(--fd-text);
+}
+:is(#cultural-chart,#cultural-chart-followup) p{margin:0}
+:is(#cultural-chart,#cultural-chart-followup) blockquote{
+  border:0;background:transparent;padding:0;margin:0;color:var(--fd-text);
+  font-family:Georgia,serif;font-style:normal;
+}
+:is(#cultural-chart,#cultural-chart-followup) .fd-bedside-case__label{text-transform:uppercase;letter-spacing:.055em}
+#cultural-chart .cultural-chart__hero{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);background:var(--fd-bg);border-bottom:1px solid var(--fd-line-strong)}
+#cultural-chart .cultural-chart__hero>div{align-self:center;padding:var(--fd-space-7) var(--fd-space-4) var(--fd-space-7) var(--culture-pad)}
+#cultural-chart h3{
+  font-family:'Source Serif 4',Georgia,serif;font-size:calc(var(--fd-font-3xl) * var(--fd-reading-scale,1));
+  line-height:1.1;letter-spacing:-.025em;margin:var(--fd-space-3) 0 var(--fd-space-5);text-wrap:balance;
+}
+#cultural-chart .cultural-chart__hero p{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:1.5;color:var(--fd-text-mid)}
+#cultural-chart img{display:block;align-self:stretch;width:100%;height:100%;max-height:calc(var(--fd-target-touch) * 5);object-fit:cover}
+.cultural-chart__body{padding:var(--fd-space-7) var(--culture-pad)}
+#cultural-chart [data-culture-prompt]{margin-bottom:var(--fd-space-6);font-weight:600}
+#cultural-chart .cultural-chart__pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-5)}
+#cultural-chart .cultural-chart__pair>div{padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);min-width:0}
+#cultural-chart .cultural-chart__voice{background:var(--fd-teal-wash);border-left:3px solid var(--fd-teal-deep)}
+#cultural-chart .cultural-chart__note{background:var(--fd-bg);border-left:3px solid var(--fd-olive-deep)}
+#cultural-chart .cultural-chart__note .fd-bedside-case__label{color:var(--fd-olive-deep)}
+#cultural-chart .cultural-chart__pair p{font-family:Georgia,serif;line-height:1.5;margin-top:var(--fd-space-3)}
+:is(#cultural-chart,#cultural-chart-followup) button{font:inherit;cursor:pointer;min-height:var(--fd-target-touch)}
+#cultural-chart [data-culture-word]{
+  display:inline;border:0;padding:0;background:transparent;color:inherit;
+  text-decoration:underline dotted var(--fd-olive-deep);text-underline-offset:.2em;
+}
+#cultural-chart [data-culture-word][aria-pressed="true"]{background:var(--fd-olive-wash);text-decoration-style:solid}
+#cultural-chart [data-culture-feedback]{margin-top:var(--fd-space-5);font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));color:var(--fd-olive-deep)}
+:is(#cultural-chart,#cultural-chart-followup) details{margin:0;padding:0;border:0;border-radius:0;background:transparent}
+:is(#cultural-chart,#cultural-chart-followup) summary{
+  display:flex;align-items:center;gap:var(--fd-space-5);list-style:none;
+  min-height:var(--fd-target-touch);padding:var(--fd-space-4) 0;color:var(--fd-teal-deep);font-weight:650;cursor:pointer;
+}
+:is(#cultural-chart,#cultural-chart-followup) summary::-webkit-details-marker{display:none}
+:is(#cultural-chart,#cultural-chart-followup) summary::after{content:'+';font:400 var(--fd-font-xl)/1 system-ui;margin-left:auto}
+:is(#cultural-chart,#cultural-chart-followup) details[open]>summary::after,
+#cultural-chart-followup[open]>summary::after{content:'−'}
+#cultural-chart [data-culture-interview]{margin-top:var(--fd-space-6);border-top:1px solid var(--fd-line-strong)}
+#cultural-chart [data-culture-source]{border-top:1px solid var(--fd-line-strong)}
+#cultural-chart [data-culture-source]>summary{font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1))}
+#cultural-chart .cultural-chart__question-type{min-width:5.4em;color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+:is(#cultural-chart,#cultural-chart-followup) .cultural-chart__answer{
+  background:var(--fd-teal-wash);border-left:3px solid var(--fd-teal-deep);
+  padding:var(--fd-space-5);margin-bottom:var(--fd-space-4);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:1.5;
+}
+#cultural-chart-followup{padding:0}
+#cultural-chart-followup>summary{padding:var(--fd-space-5) var(--culture-pad)}
+#cultural-chart-followup .cultural-chart__body{padding-top:0}
+#cultural-chart-followup label{display:block;font-weight:600;margin:var(--fd-space-3) 0 var(--fd-space-4)}
+#cultural-chart-followup textarea{
+  display:block;width:100%;resize:vertical;padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);
+  border-radius:var(--fd-radius-xs);background:var(--fd-surface-warm);color:var(--fd-text);
+  font:inherit;min-height:calc(var(--fd-target-touch) * 2);overflow-wrap:anywhere;
+}
+#cultural-chart-followup [data-culture-challenge]{color:var(--fd-text-mid);font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));margin:var(--fd-space-5) 0}
+#cultural-chart-followup [data-culture-worked]>summary{text-decoration:underline;text-underline-offset:.2em}
+#cultural-chart-followup .cultural-chart__examples{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.45fr);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);overflow:hidden}
+#cultural-chart-followup .cultural-chart__examples>div{padding:var(--fd-space-5);background:var(--fd-bg);min-width:0}
+#cultural-chart-followup .cultural-chart__examples>div+div{background:var(--fd-teal-wash);border-left:1px solid var(--fd-line-strong)}
+#cultural-chart-followup .cultural-chart__examples p{font-family:Georgia,serif;line-height:1.6;margin-top:var(--fd-space-3)}
+#cultural-chart-followup [data-culture-trace]{
+  display:inline;text-align:left;border:0;padding:0 1px;margin:0;background:transparent;color:var(--fd-text);
+  text-decoration:underline;text-decoration-color:var(--fd-teal-deep);text-underline-offset:.2em;
+}
+#cultural-chart-followup [data-culture-trace][aria-pressed="true"]{background:var(--fd-surface-warm);outline:1px solid var(--fd-teal-deep);border-radius:var(--fd-radius-xs)}
+#cultural-chart-followup .cultural-chart__hint{color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));margin:var(--fd-space-4) 0}
+#cultural-chart-followup [data-culture-reset]{display:block;background:none;border:0;color:var(--fd-teal-deep);text-decoration:underline;text-underline-offset:.2em;font-size:var(--fd-font-sm);padding:var(--fd-space-3) 0;margin-top:var(--fd-space-4)}
+@media(max-width:640px){
+  .cultural-chart{--culture-pad:var(--fd-space-6)}
+  #cultural-chart h3{font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1))}
+  #cultural-chart img{align-self:center;height:auto;object-fit:contain}
+  #cultural-chart .cultural-chart__pair,#cultural-chart-followup .cultural-chart__examples{grid-template-columns:1fr}
+  #cultural-chart-followup .cultural-chart__examples>div+div{border:0;border-top:1px solid var(--fd-line-strong)}
+  #cultural-chart [data-culture-source]>summary{display:grid;grid-template-columns:1fr auto;gap:var(--fd-space-2) var(--fd-space-4)}
+  #cultural-chart .cultural-chart__question-type{grid-column:1}
+  #cultural-chart [data-culture-source]>summary::after{grid-column:2;grid-row:1/3}
+  #cultural-chart-followup [data-culture-trace]{display:block;padding:var(--fd-space-3) 1px}
+}
+@media(max-width:430px){
+  #cultural-chart .cultural-chart__hero{grid-template-columns:1fr}
+  #cultural-chart .cultural-chart__hero>div{padding-right:var(--culture-pad)}
+  #cultural-chart img{max-height:calc(var(--fd-target-touch) * 3);object-fit:cover;object-position:center 60%}
+}
+
 /* In-page referral exercise. Its compact observations table fits in the reading column. */
 #referral-call{
   --referral-pad:var(--fd-space-8);
@@ -2643,6 +2734,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 
 @media print{
+  #cultural-chart-followup [data-culture-trace]{display:inline!important;text-decoration:none;border:0;outline:0;padding:0}
+  #cultural-chart-followup [data-culture-reset],#cultural-chart-followup .cultural-chart__hint{display:none!important}
   #referral-call [data-referral-lead]{display:none !important}
   .fd-care-builder{display:none !important}
   /* System print ink/paper tokens remain legible even when the screen is in dark mode. */

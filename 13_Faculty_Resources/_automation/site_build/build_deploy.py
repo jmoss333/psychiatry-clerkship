@@ -594,6 +594,8 @@ for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustrations", "referral-call.webp"),
                os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", "cultural-chart.webp"),
+               os.path.join(OUT, "illustrations", "cultural-chart.webp"), _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 # Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms
