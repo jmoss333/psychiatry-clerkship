@@ -2924,6 +2924,72 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('Sleep case keeps observations in their sections and ties the formulation to the opened sources and first step', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, 't_sleep.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_sleep.md&guideSection=initial-workup');
+    const workup = page.locator('#sleep-workup');
+    const plan = page.locator('#sleep-plan');
+    const followup = page.locator('#sleep-followup');
+    const worked = followup.locator('[data-worked]');
+    const note = worked.locator('[data-note]');
+    for (const [block, section] of [[workup, 'Initial workup'], [plan, 'Acute inpatient management'], [followup, 'What the student does']]) {
+      await expect(block.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]').locator('> .fd-guide-lead')).toContainText(section);
+    }
+    const ask = source => workup.locator('[data-source="' + source + '"]').click();
+    const choose = priority => plan.locator('[data-priority="' + priority + '"]').click();
+    const compare = async () => {
+      await expect(note).toBeEmpty();
+      expect(await worked.evaluate(el => el.open)).toBe(false);
+      await worked.locator('> summary').press('Enter');
+      await expect(note).toBeVisible();
+    };
+    await ask('nurse');
+    await expect(workup.locator('[data-track=nurse] .sn-marker')).toHaveCount(3);
+    await expect(workup.locator('[data-track=patient] .sn-marker')).toHaveCount(0);
+    await followup.locator('> summary').click();
+    // Expanding disclosures for print must not generate an answer.
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(note).toBeEmpty();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await compare();
+    await expect(note).toContainText('From the nursing record');
+    await expect(note).not.toContainText('lying awake worrying');
+    await expect(note).not.toContainText('breathing pauses');
+    await expect(note).toContainText('not yet selected');
+    await choose('care');
+    await compare();
+    await expect(note).toContainText('coordinating nonurgent care');
+    await ask('home');
+    await expect(workup.locator('.sn-marker')).toHaveCount(3);
+    await compare();
+    await expect(note).toContainText('breathing pauses');
+    await expect(note).not.toContainText('lying awake worrying');
+    await choose('contributors');
+    await compare();
+    await expect(note).toContainText('My first step is to ask more');
+    await expect(note).not.toContainText('coordinating nonurgent care');
+    await ask('patient');
+    await compare();
+    await expect(note).toContainText('lying awake worrying');
+    await expect(note).toContainText('breathing pauses');
+    await expect(note).toContainText('From the nursing record');
+    await expect(worked.locator('[data-coverage]')).toContainText('3 of 3');
+    await workup.locator('[data-reset]').click();
+    await expect(note).toBeEmpty();
+    await expect(workup.locator('.sn-marker')).toHaveCount(0);
+    await expect(plan.locator('[aria-pressed=true]')).toHaveCount(0);
+    await expect(workup.locator('[data-source=patient]')).toBeFocused();
+    await followup.locator('> summary').click();
+    await compare();
+    await expect(note).not.toContainText('From Nora:');
+    await expect(note).not.toContainText('From the nursing record');
+    await expect(note).not.toContainText('breathing pauses');
+    await expect(worked.locator('[data-coverage]')).toContainText('0 of 3');
+    await expectHealthy(page);
+  });
+
   async function openPersonalityCrisis(page, testInfo) {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
