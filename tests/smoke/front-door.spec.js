@@ -2578,6 +2578,57 @@ async function guideRenderedInventory(page) {
 }
 
 test.describe('Clinical field guide', () => {
+  test('OARS reflection follows the chosen ending and coaches the resident on the reply Ren gave', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=motivational_interviewing.md&guideSection=your-core-moves-oars');
+    const card = page.locator('#last-words-on-rounds');
+    const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > h2')).toContainText('Your core moves — OARS');
+    await expect(card).toBeVisible();
+    const line = card.locator('[data-line]');
+    const reply = card.locator('[data-reply-text]');
+    const sample = card.locator('[data-note-copy]');
+    const worked = card.locator('[data-note]');
+    const cases = [
+      { quote: 'Nobody ever asked', coach: ['Ask the question Ren was missing', 'You heard the discharge preference', 'Check where Ren wants to go next'], handoff: 'previous visits focused on the voices' },
+      { quote: 'tell them I said yes', coach: ['Answer the concern about today’s rounds', 'Check the words you will carry into rounds', 'Check your understanding first'], handoff: 'clear on rounds that they have not agreed' },
+      { quote: 'Could I be there', coach: ['Connect the past experience to this request', 'Carry the invitation forward', 'Make room for Ren on rounds'], handoff: 'join the discussion of alternatives' },
+    ];
+    await expect(card.locator('#lw-reply')).toBeHidden();
+    for (const [ending, last] of [['weight', 'your jeans didn’t fit'], ['call', 'hear your sister again']]) {
+      await card.locator('[data-order="' + ending + '"]').click();
+      await expect(line).toContainText('You don’t want to go home on this medicine.');
+      await expect(line).toContainText('hear your sister again');
+      await expect(line).toContainText('your jeans didn’t fit');
+      await expect(line.locator('.lw-accent')).toContainText(last);
+      expect((await line.innerText()).endsWith(last + '.”')).toBe(true);
+      await expect(reply).toBeEmpty();
+      await card.locator('[data-reveal]').press('Enter');
+      for (const current of cases) {
+        await expect(reply).toContainText(current.quote);
+        await expect(card.locator('[data-coach]')).toBeHidden();
+        await expect(worked).toBeHidden();
+        for (const [i, move] of ['evoke','repair','plan'].entries()) {
+          await card.locator('[data-move="' + move + '"]').click();
+          await expect(card.locator('[data-coach] h6')).toHaveText(current.coach[i]);
+          await expect(sample).toBeEmpty();
+          await worked.locator('summary').press('Enter');
+          await expect(sample).toBeVisible();
+          await expect(sample).toContainText(current.handoff);
+          for (const other of cases.filter(item => item !== current)) await expect(sample).not.toContainText(other.handoff);
+        }
+        await card.locator('[data-another]').click();
+        await expect(sample).toBeEmpty();
+      }
+    }
+    await card.locator('[data-reset]').click();
+    await expect(card.locator('[data-order=weight]')).toBeFocused();
+    await expect(line).toHaveText('Pick an ending to build your reflection.');
+    await expect(card.locator('#lw-reply')).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('resource aliases and dated titles arrive honestly when no passage matches', async ({ page }, testInfo) => {
     const resident = isResidentProject(testInfo.project.name);
     const cases = [
@@ -2786,6 +2837,242 @@ test.describe('Clinical field guide', () => {
       await expectHealthy(page);
     });
   }
+
+  test('the Anxiety bedside case keeps both clues and the resident question behind one reveal', async ({ page }, testInfo) => {
+    const ref = 't_anxiety.md';
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+    await page.goto(`/?page=${ref}`);
+
+    const header = page.locator('.fd-guide-header');
+    const bedside = header.locator('.fd-article__h1 + .fd-bedside-case');
+    await expect(header.locator('.governance-notice.pending-high ~ .fd-article__h1')).toBeVisible();
+    await expect(bedside.locator('figcaption')).toContainText('What’s behind the pacing?');
+    await expect(bedside.locator('img')).toBeVisible();
+    expect(await bedside.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+    await expect(bedside.locator('.fd-bedside-case__prompt + details')).toHaveCount(1);
+    const prompt = bedside.getByText('What would you ask the patient first?', { exact: false });
+    await expect(prompt).toBeVisible();
+
+    const reveal = bedside.locator('summary');
+    const hidden = [bedside.getByText('I feel like I have to keep moving.', { exact: false }),
+      bedside.getByText('The antipsychotic dose was increased yesterday.'), bedside.getByText('Resident follow-up')];
+    for (const text of hidden) await expect(text).toBeHidden();
+    await reveal.click();
+    for (const text of hidden) await expect(text).toBeVisible();
+    await expect(bedside.getByText('What moves up your differential?', { exact: false })).toBeVisible();
+    await reveal.press('Enter');
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(prompt).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    for (const text of hidden) await expect(text).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
+  const referralSources = ['weight', 'symptoms', 'vitals'];
+  const referralSubsets = [[], ['weight'], ['symptoms'], ['vitals'], ['weight', 'symptoms'],
+    ['weight', 'vitals'], ['symptoms', 'vitals'], referralSources];
+
+  // Match either wording of each finding. The complete case shortens the two supporting findings.
+  const referralFacts = {
+    weight: ['Their weight fell from 69 to 61 kg in eight weeks.', 'They lost 8 kg in eight weeks.'],
+    symptoms: ['Their vision went dark on standing this morning and they had to sit down.', 'They nearly fainted on standing.'],
+    vitals: ['On standing, their blood pressure fell from 104/66 to 82/52 and their pulse rose from 54 to 94.',
+      'Standing BP was 82/52 with a pulse of 94.'],
+  };
+
+  async function checkReferral(page, reviewed) {
+    const root = page.locator('#referral-call');
+    const sources = root.locator('details[data-referral-source]');
+    const source = key => root.locator(`details[data-referral-source="${key}"]`);
+    const lead = key => root.locator(`button[data-referral-lead="${key}"]`);
+    const line = root.locator('[data-referral-line]');
+    const call = root.locator('details[data-referral-call] > summary');
+    const worked = root.locator('details[data-referral-worked] > summary');
+
+    await expect(root).toBeVisible();
+    await expect(sources).toHaveCount(3);
+    await expect(root.locator('details[open]')).toHaveCount(0);
+    await expect(line).toBeHidden();
+    expect(await root.evaluate(node => {
+      const sections = [...node.closest('.fd-article__body').querySelectorAll('.fd-guide-lead,h2,.sec-h')];
+      const before = sections.find(s => s.textContent.trim().startsWith('Medical instability'));
+      const after = sections.find(s => s.textContent.trim().startsWith('Refeeding syndrome'));
+      const precedes = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return Boolean(before && after && precedes(before, node) && precedes(node, after));
+    }), 'the exercise follows medical instability and precedes refeeding').toBe(true);
+
+    await call.click();
+    await expect(line).toBeHidden();
+    await worked.press('Enter');
+    await expect(line).toBeVisible();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('I have one weight of 61 kg.');
+    const assertFindings = (sample, chosen) => {
+      const match = sample.match(/^“Robin, 26, was referred for restrictive intake\. (.+) Can we assess medical stability together now\?”$/);
+      expect(match, sample).toBeTruthy();
+      if (!reviewed.length) {
+        expect(match[1]).toBe('I have one weight of 61 kg.');
+        return;
+      }
+      const sentences = match[1].split(/(?<=\.) /);
+      const findings = sentences.map(sentence => referralSources.find(key => referralFacts[key].includes(sentence)));
+      expect([...findings].sort(), sample).toEqual([...reviewed].sort());
+      if (chosen) expect(findings[0], sample).toBe(chosen);
+    };
+
+    for (const key of reviewed) await source(key).locator('summary').click();
+    assertFindings(await line.innerText());
+    for (const key of reviewed) {
+      await lead(key).click();
+      await expect(lead(key)).toHaveAttribute('aria-pressed', 'true');
+      await expect(root.locator('[data-referral-lead][aria-pressed="true"]')).toHaveCount(1);
+      assertFindings(await line.innerText(), key);
+    }
+    const selectedSample = await line.innerText();
+    for (const key of reviewed) await source(key).locator('summary').press('Enter');
+    await expect(root.locator('details[data-referral-source][open]')).toHaveCount(0);
+    await expect(line).toHaveText(selectedSample);
+
+    // Print may expand disclosures. Those programmatic changes must never count as learner review.
+    await page.emulateMedia({ media: 'print' });
+    await page.evaluate(async () => {
+      window.dispatchEvent(new Event('beforeprint'));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await expect(line).toHaveText(selectedSample);
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await page.emulateMedia({ media: 'screen' });
+    await expect(root.locator('details[data-referral-source][open]')).toHaveCount(0);
+    await expect(line).toBeVisible();
+    await expect(line).toHaveText(selectedSample);
+    expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  }
+
+  for (const reviewed of referralSubsets) {
+    test(`Eating Disorders referral call uses only reviewed sources (${reviewed.join(', ') || 'none'})`, async ({ page }, testInfo) => {
+      const ref = 't_eating.md';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+      await page.goto(`/?page=${ref}`);
+      await checkReferral(page, reviewed);
+
+      // Preserve ordinary app storage across this reload so a mistakenly saved answer would surface.
+      if (reviewed.length === referralSources.length) {
+        await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+        await page.reload();
+        await checkReferral(page, []);
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('104/66');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(page.locator('#referral-call [data-referral-source="vitals"]')).toHaveAttribute('open', '');
+        await expect(page.locator('[data-referral-line]')).toContainText(referralFacts.vitals[0]);
+      }
+    });
+  }
+
+  async function openPersonalityCrisis(page, testInfo) {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, 't_personality.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_personality.md&guideSection=initial-workup');
+    const card = page.locator('#personality-crisis');
+    await expect(card).toBeVisible();
+    return { card, plan: page.locator('#personality-response'), follow: page.locator('#personality-followup') };
+  }
+
+  test('Personality crisis map keeps the three teaching moments in their requested sections', async ({ page }, testInfo) => {
+    const { card, plan, follow } = await openPersonalityCrisis(page, testInfo);
+    for (const [block, section] of [[card, 'Initial workup'], [plan, 'Acute inpatient management'], [follow, 'What the student does']]) {
+      const lead = block.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]').locator('> .fd-guide-lead');
+      await expect(lead).toContainText(section);
+    }
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(card.locator('[data-personality-answer]')).toBeHidden();
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    expect(await follow.evaluate(el => el.open)).toBe(false);
+    expect(await card.locator('img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    await expect(page.locator('.fd-reader [role="alert"]').filter({ hasText: /faculty review/i })).toHaveCount(1);
+    await expectHealthy(page);
+  });
+
+  test('Personality crisis map uses explicit inquiry and a visit-only response', async ({ page }, testInfo) => {
+    const { card, plan, follow } = await openPersonalityCrisis(page, testInfo);
+    const answer = card.locator('[data-personality-answer]');
+    await card.locator('[data-personality-question="leading"]').click();
+    await expect(card.locator('[data-personality-question-feedback]')).toContainText('supplies an explanation');
+    await expect(answer.locator('[data-personality-answer-body]')).toBeEmpty();
+    await answer.locator('> summary').press('Enter');
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('May miss the chance');
+    await expect(card.locator('[data-personality-node="feeling"]')).toContainText('Sam reports');
+    await plan.locator('[data-personality-response="promise"]').click();
+    await expect(plan.locator('[data-personality-response-feedback]')).toContainText('not confirmed');
+    await plan.locator('[data-personality-response="plan"]').click();
+    await expect(plan.locator('[data-personality-response-feedback]')).toContainText('does not guarantee immediate calm');
+    await follow.locator('> summary').click();
+    await follow.locator('textarea').fill('Fictional rehearsal, not saved.');
+    await page.setViewportSize({ width: 600, height: 900 });
+    await card.locator('[data-personality-reset]').click();
+    await expect(card.locator('[data-personality-question="open"]')).toBeFocused();
+    expect(await card.locator('[data-personality-question="open"]').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+    })).toBe(true);
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    await expect(follow.locator('textarea')).toHaveValue('');
+    const findAfterReset = page.locator('.fd-guide-find');
+    await findAfterReset.getByRole('searchbox').fill('May miss the chance');
+    await findAfterReset.getByRole('button', { name: 'Find passages' }).click();
+    await expect(page.locator('.fd-guide-results button')).toHaveCount(0);
+    await card.locator('[data-personality-question="open"]').click();
+    await answer.locator('> summary').click();
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.reload();
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    const find = page.locator('.fd-guide-find');
+    await find.getByRole('searchbox').fill('only chance to speak');
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expectHealthy(page);
+  });
+
+  test('Personality resident response follows the selected account and clears the prior answer', async ({ page }, testInfo) => {
+    const { follow } = await openPersonalityCrisis(page, testInfo);
+    await follow.locator('> summary').click();
+    const worked = follow.locator('[data-personality-worked]');
+    const body = worked.locator('[data-personality-worked-body]');
+    await expect(body).toBeEmpty();
+    for (const [key, expected, absent] of [
+      ['practical', 'closing time window', 'experience of being overlooked'],
+      ['forgotten', 'experience of being overlooked', 'closing time window'],
+      ['practical', 'closing time window', 'experience of being overlooked'],
+    ]) {
+      await follow.locator(`[data-personality-account="${key}"]`).click();
+      await expect(follow.locator('[data-personality-account][aria-pressed="true"]')).toHaveCount(1);
+      await expect(body).toBeEmpty();
+      expect(await worked.evaluate(el => el.open)).toBe(false);
+      // Search/printing can expand native details but must not mount an unrequested answer.
+      await worked.evaluate(el => { el.open = true; });
+      await expect(body).toBeEmpty();
+      await worked.evaluate(el => { el.open = false; });
+      await worked.locator('> summary').press('Enter');
+      await expect(body).toContainText(expected);
+      await expect(body).not.toContainText(absent);
+      await expect(body).toContainText('Do not promise the sister will answer.');
+    }
+    await page.setViewportSize({ width: 320, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await expectHealthy(page);
+  });
 
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an

@@ -352,6 +352,7 @@ function fdParamsWithoutRoute(search){
   /* Passage context belongs to the current reading, never the next activity iframe. */
   params.delete('guideFind');
   params.delete('guideSection');
+  params.delete('handoffFocus');
   if(params.has('station')){
     if(fdOwn(FD_OSCE_CIRCUITS,params.get('station'))) params.delete('round');
     params.delete('station');
@@ -405,6 +406,10 @@ function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
     if(fdOwn(station.roles,stationRole))params.set('role',stationRole);
     if(station.cases && previous.has('round')){
       params.set('round',String(fdCircuitRound(previous.get('round'),station.cases.length)||1));
+      var focus=previous.get('handoffFocus');
+      if(station.session && station.session.repeat && !previous.has('role') &&
+         previous.get('round')===String(station.cases.length) && fdOwn(FD_HANDOFF_FOCUSES,focus))
+        params.set('handoffFocus',focus);
     }
   }
   if(ref==='prepare-for-tomorrow.html'){
