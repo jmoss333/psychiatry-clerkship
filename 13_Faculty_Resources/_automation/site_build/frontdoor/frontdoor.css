@@ -2397,8 +2397,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #sleep-workup .sn-prompt { border-block: 1px solid var(--fd-line); }
 :is(#sleep-workup,#sleep-plan,#sleep-followup) :is(h3,h4,p,ol,li,blockquote) { margin: 0; }
 :is(#sleep-workup,#sleep-plan) :is(h3,h4) {
-  font-family: 'Source Serif 4',Georgia,serif;
-  font-weight: 600;
+  font-family:'Source Serif 4',Georgia,serif;
+  font-weight:600;
   line-height: 1.3;
   margin-bottom: var(--fd-space-3);
 }
