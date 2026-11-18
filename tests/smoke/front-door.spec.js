@@ -3263,6 +3263,84 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('Jules’s lithium handoff follows the collection time, nurse report, and selected lead', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=med_monitoring.md&guideSection=baseline-and-ongoing-by-agent');
+    const baseline = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-baseline-and-ongoing-by-agent') });
+    const timing = baseline.locator('#li-eight-am');
+    const table = baseline.locator('table').filter({ hasText: 'Lithium' });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const resident = student.locator('#li-resident');
+    await expect(timing).toBeVisible();
+    await expect(table).toBeVisible();
+    const timingBox = await timing.boundingBox();
+    expect(timingBox.y + timingBox.height).toBeLessThanOrEqual((await table.boundingBox()).y + 1);
+    await expect(resident).toBeVisible();
+    await expect(resident.getByText(/return to the timing exercise/i)).toBeVisible();
+
+    const posted = timing.locator('[data-time="posted"]');
+    const collection = timing.locator('[data-time="collection"]');
+    const interval = timing.locator('[data-interval]');
+    const hear = resident.locator('[data-hear]');
+    const voice = resident.locator('[data-voice]');
+    const coach = resident.locator('[data-coach]');
+    const worked = resident.locator('details[data-worked]');
+    const note = resident.locator('[data-note]');
+    await expect(hear).toBeHidden();
+    await posted.click();
+    await expect(interval).toHaveText('12 hours from dose to report');
+    await expect(hear).toBeHidden();
+    await collection.press('Enter');
+    await expect(interval).toHaveText('8 hours from dose to draw');
+    await hear.click();
+
+    const reports = [
+      {
+        voice: 'walked down to breakfast', timing: 'Give the collection time', bedside: 'Add that the sample was drawn eight hours',
+        handoff: 'walked to breakfast, ate', plan: 'coordinate a 12-hour pre-dose level', otherHandoff: 'newly need help walking',
+      },
+      {
+        voice: 'vomited twice', timing: 'Go to Jules now and alert your supervisor', bedside: 'Lead with the new vomiting and gait change',
+        handoff: 'newly need help walking', plan: 'hold lithium, alert the supervising clinician', otherHandoff: 'walked to breakfast, ate',
+      },
+    ];
+    for (const report of reports) {
+      await expect(voice).toContainText(report.voice);
+      await expect(resident.locator('[data-first][aria-pressed="true"]')).toHaveCount(0);
+      await expect(coach).toBeEmpty();
+      await expect(worked).toBeHidden();
+      await expect(note).toBeEmpty();
+      for (const lead of ['timing', 'bedside']) {
+        await resident.locator(`[data-first="${lead}"]`).click();
+        await expect(coach).toBeVisible();
+        await expect(coach).toContainText(report[lead]);
+        await expect(worked).toHaveJSProperty('open', false);
+        await expect(note).toBeEmpty();
+        await worked.locator('summary').press('Enter');
+        await expect(note).toBeVisible();
+        await expect(note).toContainText(report.handoff);
+        await expect(note).toContainText(report.plan);
+        await expect(note).not.toContainText(report.otherHandoff);
+      }
+      if (report === reports[0]) await resident.locator('[data-switch]').click();
+    }
+
+    await posted.click();
+    await expect(resident.getByText(/return to the timing exercise/i)).toBeVisible();
+    await expect(hear).toBeHidden();
+    await expect(voice).toBeEmpty();
+    await expect(coach).toBeEmpty();
+    await expect(note).toBeEmpty();
+    await expect(worked).toBeHidden();
+    await collection.click();
+    await expect(hear).toHaveAttribute('aria-expanded', 'false');
+    await hear.click();
+    await expect(voice).toContainText(reports[0].voice);
+    await expect(resident.locator('[data-first][aria-pressed="true"]')).toHaveCount(0);
+    await expectHealthy(page);
+  });
+
   test('print reveals the complete guide and safety context while hiding interactive chrome', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await openClinicalGuide(page, testInfo);

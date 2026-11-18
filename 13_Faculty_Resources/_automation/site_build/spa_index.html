@@ -980,6 +980,73 @@
       }
     });
   }
+  function fdMountLithiumHandoff(body) {
+    const timing = body.querySelector('#li-eight-am');
+    const resident = body.querySelector('#li-resident');
+    if (!timing || !resident || timing.dataset.mounted) return;
+    timing.dataset.mounted = 'true';
+    const axis = timing.querySelector('[data-axis]');
+    const choices = timing.querySelectorAll('[data-time]');
+    const next = timing.querySelector('[data-continue]');
+    const hear = resident.querySelector('[data-hear]');
+    const hearLabel = hear.textContent;
+    const call = resident.querySelector('#li-call');
+    const leads = call.querySelectorAll('[data-first]');
+    const worked = call.querySelector('[data-worked]');
+    const note = worked.querySelector('[data-note]');
+    let report;
+
+    function selectLead(choice) {
+      for (const button of leads) button.setAttribute('aria-pressed', String(button === choice));
+      call.querySelector('#li-feedback').hidden = !choice;
+      call.querySelector('[data-coach]').textContent = choice ? report.content.querySelector('[data-lead="' + choice.dataset.first + '"]').textContent : '';
+      worked.hidden = !choice;
+      worked.open = false;
+      note.textContent = '';
+    }
+
+    function showReport(key) {
+      report = key && resident.querySelector('template[data-report="' + key + '"]');
+      call.hidden = !report;
+      hear.textContent = report ? hear.dataset.closeLabel : hearLabel;
+      hear.setAttribute('aria-expanded', String(Boolean(report)));
+      call.querySelector('[data-voice]').textContent = report ? report.content.querySelector('blockquote').textContent : '';
+      selectLead(null);
+    }
+
+    for (const choice of choices) {
+      choice.addEventListener('click', () => {
+        if (choice.getAttribute('aria-pressed') === 'true') return;
+        for (const other of choices) other.setAttribute('aria-pressed', String(other === choice));
+        const end = choice.dataset.time;
+        const interval = timing.querySelector('template[data-interval-for="' + end + '"]').content;
+        const label = interval.querySelector('h5').textContent;
+        axis.dataset.end = end;
+        axis.setAttribute('aria-label', label);
+        timing.querySelector('[data-interval]').textContent = label;
+        timing.querySelector('[data-explain]').textContent = interval.querySelector('p').textContent;
+        timing.querySelector('#li-read').hidden = false;
+        next.hidden = hear.hidden = end !== 'collection';
+        showReport(null);
+      });
+    }
+    function goTo(button) {
+      const collapsed = button.closest('.sec-c:not(.open)');
+      if (collapsed) collapsed.querySelector('.sec-h button').click();
+      button.focus({preventScroll:true});
+      button.scrollIntoView({block:'center'});
+    }
+    next.addEventListener('click', () => goTo(hear));
+    resident.querySelector('[data-back]').addEventListener('click', () => goTo(timing.querySelector('[data-time][aria-pressed=true]') || choices[0]));
+    hear.addEventListener('click', () => showReport(report ? null : 'breakfast'));
+    call.querySelector('[data-switch]').addEventListener('click', () => showReport(report.dataset.report === 'breakfast' ? 'change' : 'breakfast'));
+    for (const lead of leads) lead.addEventListener('click', () => selectLead(lead));
+    // Guide search and print also expand disclosures. Only a learner's reveal supplies a handoff.
+    worked.querySelector('summary').addEventListener('click', () => {
+      note.textContent = report && !worked.open ? report.content.querySelector('[data-handoff]').textContent : '';
+    });
+  }
+
   function enhanceTables(body){
     if(!body)return;
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
@@ -1695,6 +1762,7 @@
       fdMountRoundsReflection(contentEl);
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
+      fdMountLithiumHandoff(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3598,6 +3666,7 @@
           fdMountRoundsReflection(body);
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);
+          fdMountLithiumHandoff(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
