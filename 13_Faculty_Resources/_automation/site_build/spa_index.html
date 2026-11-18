@@ -898,6 +898,119 @@
       }
     });
   }
+  function fdMountSleepNight(body) {
+    const workup = body.querySelector('#sleep-workup');
+    const plan = body.querySelector('#sleep-plan');
+    const followup = body.querySelector('#sleep-followup');
+    if (!workup || !plan || !followup || workup.dataset.sleepMounted) return;
+    workup.dataset.sleepMounted = 'true';
+
+    const opened = new Set();
+    const sources = Array.from(workup.querySelectorAll('button[data-source]'));
+    const priorities = plan.querySelectorAll('button[data-priority]');
+    const feedback = plan.querySelector('[data-feedback]');
+    const baseline = workup.querySelector('[data-baseline]');
+    const evidence = workup.querySelector('#sn-evidence');
+    const tracks = workup.querySelectorAll('[data-track]');
+    const timeline = workup.querySelector('[data-night]');
+    const initialDescription = timeline.getAttribute('aria-label');
+    const worked = followup.querySelector('[data-worked]');
+    const note = worked.querySelector('[data-note]');
+    const coverage = worked.querySelector('[data-coverage]');
+    let priority = null;
+
+    const initialContents = new Map();
+    for (const node of [feedback, baseline, evidence, ...tracks]) {
+      initialContents.set(node, Array.from(node.childNodes, child => child.cloneNode(true)));
+    }
+    const captions = new Map(sources.map(button => [button, button.querySelector('small').textContent]));
+
+    function copy(section, selector) {
+      return section.querySelector(selector).content.cloneNode(true);
+    }
+    function choiceCopy(kind, key) {
+      const section = kind === 'note' ? followup : plan;
+      return copy(section, 'template[data-' + kind + '-copy="' + key + '"]');
+    }
+    function clearSample() {
+      worked.open = false;
+      note.replaceChildren();
+      coverage.textContent = '';
+    }
+    function showFeedback() {
+      if (!priority) return;
+      let key = priority + '-base';
+      if (priority === 'care' && opened.has('nurse')) key = 'care-nurse';
+      else if (opened.has('patient')) key = priority + '-patient';
+      feedback.replaceChildren(choiceCopy('plan', key));
+      if (opened.has('home')) feedback.append(' ', choiceCopy('plan', 'home'));
+    }
+    function openSource(button) {
+      const key = button.dataset.source;
+      if (!opened.has(key)) clearSample();
+      opened.add(key);
+      sources.forEach(source => source.setAttribute('aria-pressed', String(source === button)));
+      button.querySelector('small').textContent = 'Opened';
+      evidence.replaceChildren(copy(workup, 'template[data-evidence="' + key + '"]'));
+      const track = workup.querySelector('[data-track="' + key + '"]');
+      if (track) {
+        track.replaceChildren(copy(workup, 'template[data-markers="' + key + '"]'));
+        const descriptions = Array.from(workup.querySelectorAll('template[data-markers]'))
+          .filter(template => opened.has(template.dataset.markers))
+          .map(template => template.dataset.description);
+        timeline.setAttribute('aria-label', [timeline.querySelector('.sn-nightcaption').textContent, ...descriptions].join(' '));
+      }
+      if (key === 'home') baseline.replaceChildren(copy(workup, 'template[data-home-baseline]'));
+      showFeedback();
+    }
+    function showSample() {
+      const fragments = [choiceCopy('note', 'intro')];
+      const missing = [];
+      for (const button of sources) {
+        if (opened.has(button.dataset.source)) fragments.push(choiceCopy('note', button.dataset.source));
+        else missing.push(button.querySelector('[data-source-label]').textContent);
+      }
+      if (priority === 'care') fragments.push(choiceCopy('note', opened.has('nurse') ? 'care-nurse' : 'care-base'));
+      if (priority === 'contributors') fragments.push(choiceCopy('note', 'contributors'));
+      if (missing.length) {
+        const remaining = document.createElement('p');
+        remaining.textContent = 'Still to obtain: ' + missing.join(', ') + '.';
+        fragments.push(remaining);
+      } else {
+        fragments.push(choiceCopy('note', 'missing-all-known'));
+      }
+      if (!priority) fragments.push(choiceCopy('note', 'no-priority'));
+      note.replaceChildren(...fragments);
+      coverage.textContent = opened.size + ' of ' + sources.length + ' sources opened.';
+    }
+    function reset() {
+      clearSample();
+      opened.clear();
+      priority = null;
+      followup.open = false;
+      timeline.setAttribute('aria-label', initialDescription);
+      followup.querySelector('textarea').value = '';
+      for (const [node, children] of initialContents) node.replaceChildren(...children.map(child => child.cloneNode(true)));
+      for (const [button, caption] of captions) button.querySelector('small').textContent = caption;
+      for (const button of [...sources, ...priorities]) button.setAttribute('aria-pressed', 'false');
+      sources[0].focus({preventScroll:true});
+      sources[0].scrollIntoView({block:'center'});
+    }
+    for (const button of sources) button.addEventListener('click', () => openSource(button));
+    for (const button of priorities) {
+      button.addEventListener('click', () => {
+        if (priority !== button.dataset.priority) clearSample();
+        priority = button.dataset.priority;
+        priorities.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+        showFeedback();
+      });
+    }
+    workup.querySelector('[data-reset]').addEventListener('click', reset);
+    // Print and guide search can expand details. Build the example only on explicit activation.
+    worked.querySelector('summary').addEventListener('click', () => {
+      if (!worked.open) showSample();
+    });
+  }
   function enhanceTables(body){
     if(!body)return;
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
@@ -1612,6 +1725,7 @@
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
+      fdMountSleepNight(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3514,6 +3628,7 @@
           if(stationPanel)fdMountOsceStation(stationPanel);
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);
+          fdMountSleepNight(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
