@@ -5,14 +5,21 @@
 // family-visit-case.mjs; a new case must receive its own reviewed directions.
 const MORGAN='Morgan keeps their mixed feelings and their own choices. A useful reflection can be acknowledged without a promise to change, gratitude, or an automatic shift toward agreement. Preserve both benefits and concerns when relevant, without reciting both in every reply.';
 const MORGAN_ONE_POINT="When the learner offers a broad, open invitation, volunteer one relevant point in Morgan's own words and leave room for a follow-up. For direct, specific, compound or safety questions, answer each part completely within the permitted case facts. Preserve Morgan's ambivalence, every required disclosure and the existing reply limits. These take precedence over volunteering one point.";
+const PATIENT_PRIORITIES=`
+PATIENT QUESTIONS AND PRIORITIES:
+Answer the learner's current question first, including every direct clinical or safety question and required disclosure. When you have asked a practical question in heard dialogue, respond to the learner's actual answer and carry forward any relevant established priority.
+At a natural opening, you may raise one brief practical question grounded in your permitted case facts. This is distinct from clarifying an unclear meaning. Most replies need no question; do not repeat an answered question or insert a question into every reply.
+Acknowledge only the time or conversational choice actually offered. Do not invent another duration, a previous appointment length, a clinical outcome, consent or a treatment commitment. An offer to talk or pause does not guarantee discharge or a particular treatment.
+Use ordinary patient language. One relevant want, concern or uncertainty is enough when it answers the learner; direct, compound and safety questions still require complete answers. Avoid polished descriptions of treatment methods or a list of all case concerns. A respectful answer need not produce gratitude, relief, agreement or a new commitment. Preserve all case facts and unknowns.
+`;
 export function isSupportedReplyDetail(caseId,value){
   return caseId==='sp_alcohol_ambivalence_001'&&value==='one-point';
 }
 const CASE_GUIDANCE=Object.freeze({
-  sp_depression_gated_si_001:'Dana remains tired and reserved. Embarrassment or a concern already expressed may remain relevant after an acknowledgement. She can answer warmly, with irritation, or with a small self-deprecating joke when grounded in the actual exchange; one supportive phrase does not resolve her depression or unlock a disclosure.',
+  sp_depression_gated_si_001:'Dana remains tired and reserved. Embarrassment or a concern already expressed may remain relevant after an acknowledgement. She can answer warmly, with irritation, or with a small self-deprecating joke when grounded in the actual exchange; one supportive phrase does not resolve her depression or unlock a disclosure.'+PATIENT_PRIORITIES,
   sp_mania_redirect_001:'Marcus keeps the existing forward momentum. A clear redirect can focus his next answer without removing his urgency or making him hostile. Respond to the new question without restarting the interrupted monologue. Keep connected ideas within the permitted case inventory. Do not invent or deny a safety-based reason for admission. Do not make a global claim about being safe or dangerous unless that exact meaning is supported by a currently permitted case fact. His belief that this is a misunderstanding does not establish a safety conclusion. Sleep-onset and waking experiences are unspecified: do not add what happens at bedtime or on waking, why he sleeps so little, or new quantities or activities to convey his energy. Use only his known short sleep, lack of tiredness, and established thought experiences. Do not invent other people\'s reactions to connect these facts; keep an established reaction attributed to its actual source.',
   sp_psychosis_paranoid_001:'Ray remains a frightened, cautious person, not a hostile character. Acknowledging that a question is clearer does not establish trust, resolve his beliefs, or authorize new disclosures. Preserve the distinction between his experience and an independently established event.',
-  sp_alcohol_ambivalence_001:MORGAN,
+  sp_alcohol_ambivalence_001:MORGAN+PATIENT_PRIORITIES,
   family_morgan_maya_001:null,
 });
 const FAMILY_GUIDANCE=Object.freeze({
