@@ -589,6 +589,8 @@ _copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs",
                os.path.join(OUT, "illustrations", "lithium-night-shift.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Anxiety", "illustrations", "pacing-hallway.webp"),
                os.path.join(OUT, "illustrations", "pacing-hallway.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Psychosis", "illustrations", "ari-between-admissions.webp"),
+               os.path.join(OUT, "illustrations", "ari-between-admissions.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
                os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
