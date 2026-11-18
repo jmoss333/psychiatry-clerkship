@@ -1,7 +1,7 @@
 import {createCipheriv, createDecipheriv, createHash, randomBytes} from 'node:crypto';
 import {isDeliveryIntensity} from './portrayal.mjs';
 import {isRoomCue} from './room-cues.mjs';
-import {isSupportedReplyDetail} from './interaction-guidance.mjs';
+import {isSupportedReplyDetail,isSupportedConcernInitiative} from './interaction-guidance.mjs';
 
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const problem = (status, code) => Object.assign(new Error(code), {status, code});
@@ -57,6 +57,7 @@ export function createStateCodec({key, binding, now=Date.now,withDeliveryIntensi
       // an authenticated but invalid value is not silently repaired.
       ||(Object.hasOwn(value,'deliveryIntensity')&&!isDeliveryIntensity(value.deliveryIntensity))
       ||(Object.hasOwn(value,'replyDetail')&&!isSupportedReplyDetail(value.caseId,value.replyDetail))
+      ||(Object.hasOwn(value,'concernInitiative')&&!isSupportedConcernInitiative(value.caseId,value.concernInitiative))
       ||(Object.hasOwn(value,'roomCue')&&(!value.roomCue||Object.keys(value.roomCue).sort().join(',')!=='id,turn'||!isRoomCue(value.roomCue.id)||!Number.isInteger(value.roomCue.turn)||value.roomCue.turn<1||value.roomCue.turn>value.turn))
       // One alternative per encounter, carried in the sealed state so a reload
       // cannot restore it. Present means spent; any value but true is a forgery.

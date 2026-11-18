@@ -15,6 +15,12 @@
     dana:'sp_depression_gated_si_001', marcus:'sp_mania_redirect_001', ray:'sp_psychosis_paranoid_001',
     morgan:'sp_alcohol_ambivalence_001', family:FAMILY_CASE_ID
   });
+  function supportsConcernInitiative(caseId){return caseId===STATION_PATIENTS.dana||caseId===STATION_PATIENTS.morgan;}
+  var CONCERN_HELP={
+    invited:'Waits for an invitation before adding a concern beyond the question asked.',
+    natural:'May raise a brief concern at a natural opening in the conversation.',
+    forthcoming:'More readily raises one relevant concern when the conversation allows.'
+  };
   function selectEntry(control,value){
     if(!control||value===null||control.options&&!Array.from(control.options).some(function(option){return option.value===value;}))return;
     control.value=value;
@@ -33,6 +39,7 @@
       selectEntry(controls.expression,params.get('expression'));
       selectEntry(controls.coachingDepth,params.get('depth'));
       if(patient==='morgan')selectEntry(controls.replyDetail,params.get('detail'));
+      if(supportsConcernInitiative(STATION_PATIENTS[patient]))selectEntry(controls.concernInitiative,params.get('concerns'));
     }else selectEntry(controls.coachingDepth,'student');
     return true;
   }
@@ -47,6 +54,7 @@
     if(controls.goal&&controls.goal.value)url.searchParams.set('goal',controls.goal.value);
     if(controls.coachingDepth)url.searchParams.set('depth',controls.coachingDepth.value);
     if(patient==='morgan'&&controls.replyDetail.value==='one-point')url.searchParams.set('detail','one-point');
+    if(supportsConcernInitiative(STATION_PATIENTS[patient])&&controls.concernInitiative&&['invited','forthcoming'].includes(controls.concernInitiative.value))url.searchParams.set('concerns',controls.concernInitiative.value);
     return url.href;
   }
   function addressedFamilyRole(text){
@@ -439,6 +447,7 @@
       body[mode==='moment'?'scenarioId':'caseId']=caseId;
       if(mode==='full'&&deliveryIntensity!=='standard')body.deliveryIntensity=deliveryIntensity;
       if(mode==='full'&&caseId===STATION_PATIENTS.morgan&&settings.replyDetail==='one-point')body.replyDetail='one-point';
+      if(mode==='full'&&supportsConcernInitiative(caseId)&&['invited','forthcoming'].includes(settings.concernInitiative))body.concernInitiative=settings.concernInitiative;
       return request(body,null);
     }
     async function send(text,automatic){
@@ -796,7 +805,13 @@
       var soloMorgan=el('case-choice').value===STATION_PATIENTS.morgan;
       el('morgan-detail-options').hidden=!soloMorgan;
       if(!soloMorgan)el('reply-detail').value='standard';
+      var concernsSupported=!moment&&supportsConcernInitiative(el('case-choice').value);
+      el('concern-initiative-options').hidden=!concernsSupported;el('concern-initiative').disabled=!concernsSupported;
+      if(!concernsSupported)el('concern-initiative').value='natural';
+      updateConcernHelp();
       if(practice)practice.preview(el('case-choice').value,!moment);}
+    function updateConcernHelp(){el('concern-initiative-help').textContent=CONCERN_HELP[el('concern-initiative').value]+' Direct and safety questions still receive complete answers. The voice and case facts stay the same. Choose before starting; this setting lasts for the encounter.';}
+    el('concern-initiative').addEventListener('change',updateConcernHelp);
     function chooseFormat(){var moment=momentsEnabled&&el('experience-choice').value==='moment';if(!moment)el('experience-choice').value='full';el('case-choice').replaceChildren();var choices=moment&&env.MomentContent?env.MomentContent.ids().map(function(id){var p=momentProfile(id);return {value:id,text:p.displayName+' — '+p.title+(p.reviewLabel?' ('+p.reviewLabel.toLowerCase()+')':'')};}):fullChoices;choices.forEach(function(c){var o=doc.createElement('option');o.value=c.value;o.textContent=c.text;el('case-choice').appendChild(o);});previewCase();}
     previewCase();familyPreflight(true);el('case-choice').addEventListener('change',function(){previewCase();familyPreflight(true);});el('experience-choice').addEventListener('change',function(){chooseFormat();familyPreflight(true);});el('family-brief-ack').addEventListener('change',function(){familyPreflight(false);});
     var followTranscript=true;
@@ -810,7 +825,7 @@
       practice=env.PracticeCoach.mount(env,{entry:el('practice-entry'),room:el('practice-room'),content:env.PracticeContent,onOpen:controller.openCoaching,onClose:controller.closeCoaching});
       practice.preview(el('case-choice').value,!momentProfile(el('case-choice').value));
     }
-    var setupControls={format:el('experience-choice'),patient:el('case-choice'),expression:el('delivery-intensity'),goal:el('practice-goal'),coachingDepth:el('practice-depth'),replyDetail:el('reply-detail')};
+    var setupControls={format:el('experience-choice'),patient:el('case-choice'),expression:el('delivery-intensity'),goal:el('practice-goal'),coachingDepth:el('practice-depth'),replyDetail:el('reply-detail'),concernInitiative:el('concern-initiative')};
     applyLaunchPreset(env.location&&env.location.search,setupControls);
     var setupField=el('station-link-field'),setupLink=el('station-link');
     el('get-station-link').addEventListener('click',function(){
@@ -918,7 +933,7 @@
       if(active&&lastPhase==='gate'){el('encounter-title').setAttribute('tabindex','-1');el('encounter-title').focus();}
       lastPhase=snapshot.phase;
     }
-    el('access-form').addEventListener('submit',function(event){event.preventDefault();var chosen=el('case-choice').value,ack=el('family-brief-ack').checked;if(chosen===FAMILY_CASE_ID&&!ack){el('family-brief-ack').focus();return;}var passcode=el('preview-key').value;el('preview-key').value='';el('family-brief-ack').checked=false;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}roomProfile=momentProfile(chosen)?null:profile;mountStation(chosen);if(practice)practice.begin();controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value,replyDetail:el('reply-detail').value,familyBriefAcknowledged:ack,familyPositioning:chosen===FAMILY_CASE_ID&&el('family-positioning-entry').checked});});
+    el('access-form').addEventListener('submit',function(event){event.preventDefault();var chosen=el('case-choice').value,ack=el('family-brief-ack').checked;if(chosen===FAMILY_CASE_ID&&!ack){el('family-brief-ack').focus();return;}var passcode=el('preview-key').value;el('preview-key').value='';el('family-brief-ack').checked=false;var profile=selectedProfile();if(profile){patientName=profile.displayName;applyIdentity(doc,profile);}roomProfile=momentProfile(chosen)?null:profile;mountStation(chosen);if(practice)practice.begin();controller.start(passcode,el('voice-mode').checked,chosen,{spokenInterrupt:el('spoken-interrupt-entry').checked,deliveryIntensity:el('delivery-intensity').value,replyDetail:el('reply-detail').value,concernInitiative:el('concern-initiative').value,familyBriefAcknowledged:ack,familyPositioning:chosen===FAMILY_CASE_ID&&el('family-positioning-entry').checked});});
     el('cue-knock').addEventListener('click',function(){controller.triggerRoomCue('door_knock');});el('cue-chime').addEventListener('click',function(){controller.triggerRoomCue('hallway_chime');});el('cue-tap').addEventListener('click',function(){controller.triggerRoomCue('door_tap');});el('cue-page').addEventListener('click',function(){controller.triggerRoomCue('overhead_page');});
     el('family-bid-invite').addEventListener('click',function(){controller.inviteFamilyBid();});el('family-bid-defer').addEventListener('click',function(){controller.deferFamilyBid();});
     if(el('family-speaker-choice'))el('family-speaker-choice').addEventListener('change',function(){controller.setTargetRole(this.value);});
