@@ -2927,7 +2927,7 @@ test.describe('Clinical field guide', () => {
   test('Sleep case keeps observations in their sections and ties the formulation to the opened sources and first step', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
-    await pinGovernance(page, 't_sleep.md', { status: 'pending', riskLevel: 'high' });
+    await pinGovernance(page, 't_sleep.md', { status: 'pending', riskLevel: 'moderate' });
     await page.goto('/?page=t_sleep.md&guideSection=initial-workup');
     const workup = page.locator('#sleep-workup');
     const plan = page.locator('#sleep-plan');
@@ -2987,6 +2987,10 @@ test.describe('Clinical field guide', () => {
     await expect(note).not.toContainText('From the nursing record');
     await expect(note).not.toContainText('breathing pauses');
     await expect(worked.locator('[data-coverage]')).toContainText('0 of 3');
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.locator('.fd-reader').evaluate(el => el.style.setProperty('--fd-reading-scale', '2'));
+    const clockRow = workup.locator('.sn-clockrow');
+    expect(await clockRow.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
     await expectHealthy(page);
   });
 
