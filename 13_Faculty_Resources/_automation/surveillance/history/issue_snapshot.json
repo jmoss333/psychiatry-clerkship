@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-11-09T08:03:39+00:00",
+  "capturedAt": "2026-11-16T08:10:43+00:00",
   "issues": [
     {
       "number": 8,
@@ -1787,6 +1787,30 @@
       "labels": [
         "P1",
         "link-source-monitor",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 1224,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/1224",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "openfda:diazepam::modified::75e75c4de0360212",
+      "labels": [
+        "P0",
+        "evidence-watch",
+        "surveillance"
+      ]
+    },
+    {
+      "number": 1225,
+      "url": "https://github.com/jmoss333/psychiatry-clerkship/issues/1225",
+      "state": "OPEN",
+      "closedAt": null,
+      "fingerprint": "openfda:olanzapine::modified::adc00248dce50626",
+      "labels": [
+        "P0",
+        "evidence-watch",
         "surveillance"
       ]
     }
