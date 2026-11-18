@@ -2582,7 +2582,11 @@ test.describe('Clinical field guide', () => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
     await page.goto('/?page=brief_psychotherapy.md&guideSection=match-the-skill-to-the-mechanism');
-    const dayroom = page.locator('#guide-match-the-skill-to-the-mechanism').locator('..').locator('#noor-dayroom');
+    const mechanismSection = page.locator('#guide-match-the-skill-to-the-mechanism').locator('..');
+    const dayroom = mechanismSection.locator('#noor-dayroom');
+    const mechanismTable = mechanismSection.locator('table').filter({
+      has: page.locator('th', { hasText: /^Likely mechanism$/ }),
+    });
     const checkin = page.locator('#guide-what-the-student-does').locator('..').locator('#noor-checkin');
     const result = checkin.locator('[data-result]');
     const answer = checkin.locator('[data-answer]');
@@ -2591,6 +2595,7 @@ test.describe('Clinical field guide', () => {
     await expect(dayroom).toBeVisible();
     await expect(checkin).toHaveCount(1);
     await expect(dayroom.locator('button[data-place]')).toHaveCount(3);
+    await expect(mechanismTable.and(dayroom.locator('xpath=following::table'))).toHaveCount(1);
     await expect(result).toBeHidden();
 
     const paths = [
