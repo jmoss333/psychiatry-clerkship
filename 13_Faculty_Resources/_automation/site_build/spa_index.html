@@ -772,6 +772,75 @@
       shell.classList.toggle('is-scrollable',!!viewport&&viewport.scrollWidth>viewport.clientWidth+1);
     });
   }
+  function fdMountNoorDayroom(body) {
+    const morning = body.querySelector('#noor-dayroom');
+    const afternoon = body.querySelector('#noor-checkin');
+    if (!morning || !afternoon || morning.dataset.mounted) return;
+    morning.dataset.mounted = 'true';
+    const invitations = morning.querySelectorAll('[data-place]');
+    const agreement = morning.querySelector('#nd-agreement');
+    const check = afternoon.querySelector('[data-check]');
+    const showLabel = check.textContent;
+    const later = afternoon.querySelector('#nd-later');
+    const questions = later.querySelector('.nd-questions');
+    const answer = later.querySelector('[data-answer]');
+    const rounds = later.querySelector('[data-rounds]');
+    const sample = rounds.querySelector('[data-sample]');
+    const back = afternoon.querySelector('[data-return]');
+    let visit, reply;
+
+    function showCheckin(open) {
+      later.hidden = !open;
+      check.setAttribute('aria-expanded', String(open));
+      check.textContent = open ? check.dataset.hideLabel : showLabel;
+      later.querySelector('[data-checkin-line]').textContent = open ? visit.querySelector('[data-afternoon] p').textContent : '';
+      later.querySelector('[data-result]').textContent = open ? visit.querySelector('[data-afternoon] blockquote').textContent : '';
+      questions.replaceChildren();
+      if (open) questions.append(...visit.querySelector('[data-questions]').cloneNode(true).children);
+      showReply(null);
+    }
+
+    function showReply(choice) {
+      for (const button of questions.children) button.setAttribute('aria-pressed', String(button === choice));
+      reply = choice && visit.querySelector('[data-reply="' + choice.dataset.ask + '"]');
+      answer.textContent = reply ? reply.querySelector('[data-quote]').textContent : '';
+      answer.parentElement.hidden = !reply;
+      rounds.open = false;
+      rounds.hidden = !reply;
+      sample.textContent = '';
+    }
+
+    for (const invitation of invitations) {
+      invitation.addEventListener('click', () => {
+        if (invitation.getAttribute('aria-pressed') === 'true') return;
+        for (const button of invitations) button.setAttribute('aria-pressed', String(button === invitation));
+        visit = afternoon.querySelector('template[data-visit="' + invitation.dataset.place + '"]').content;
+        morning.querySelector('[data-exchange]').replaceChildren(...visit.querySelector('[data-morning]').cloneNode(true).children);
+        agreement.hidden = false;
+        check.hidden = false;
+        back.textContent = back.dataset.changeLabel;
+        showCheckin(false);
+      });
+    }
+    function jump(target) {
+      const section = target.closest('.sec-c:not(.open)');
+      if (section) section.querySelector('.sec-h button').click();
+      target.focus({preventScroll:true});
+      target.scrollIntoView({block:'center'});
+    }
+    morning.querySelector('[data-continue]').addEventListener('click', () => jump(check));
+    back.addEventListener('click', () => jump(morning.querySelector('[data-place][aria-pressed=true]') || invitations[0]));
+    check.addEventListener('click', () => showCheckin(later.hidden));
+    questions.addEventListener('click', event => {
+      const choice = event.target.closest('button[data-ask]');
+      if (choice) showReply(choice);
+    });
+    // A guide search or print can expand details without a learner asking for the sample.
+    rounds.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = reply && !rounds.open ? reply.querySelector('[data-rounds-text]').textContent : '';
+    });
+  }
+
   function fdMountRoundsReflection(body) {
     const card = body.querySelector('#last-words-on-rounds');
     if (!card || card.dataset.mounted) return;
@@ -1692,6 +1761,7 @@
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      fdMountNoorDayroom(contentEl);
       fdMountRoundsReflection(contentEl);
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
@@ -3595,6 +3665,7 @@
         if(body){
           var stationPanel=body.querySelector('[data-osce-station]');
           if(stationPanel)fdMountOsceStation(stationPanel);
+          fdMountNoorDayroom(body);
           fdMountRoundsReflection(body);
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);
