@@ -585,6 +585,8 @@ illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "ill
 os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
 for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
     _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
+               os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),
                os.path.join(OUT, "illustrations", "lithium-night-shift.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Anxiety", "illustrations", "pacing-hallway.webp"),

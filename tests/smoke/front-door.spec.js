@@ -3263,6 +3263,84 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('Mara’s pillbox handoff follows the Sunday history and preserves the Tuesday account', async ({ page }, testInfo) => {
+    const ref = 't_neurocog.md';
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}&guideSection=initial-workup`);
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const interview = workup.locator('#mara-pillbox');
+    const handoff = student.locator('#mara-handoff');
+    await expect(interview).toBeVisible();
+    await expect(handoff).toBeVisible();
+
+    const sunday = interview.locator('[data-day="sunday"]');
+    const tuesday = interview.locator('[data-day="tuesday"]');
+    const sundayAnswer = interview.locator(`[id="${await sunday.getAttribute('aria-controls')}"]`);
+    const tuesdayAnswer = interview.locator(`[id="${await tuesday.getAttribute('aria-controls')}"]`);
+    const ready = handoff.locator('[data-ready]');
+    const feedback = handoff.locator('[data-feedback]');
+    const model = handoff.locator('details[data-model]');
+    const sample = model.locator('[data-sample]');
+    const claims = ['opens', 'fills', 'all'];
+    const histories = [
+      {
+        sunday: 'those stubborn caps', coaching: ['choosing and sorting', 'Nina opens the caps', 'leaves to Nina'],
+        sample: 'Nina helping to open the bottles', other: 'two mix-ups',
+      },
+      {
+        sunday: 'Nina filled the whole thing', coaching: ['Nina sorts the pills', 'recent change', 'recently handed over sorting'],
+        sample: 'Nina started filling the box last month after two mix-ups', other: 'Nina helping to open the bottles',
+      },
+    ];
+    await expect(sundayAnswer).toBeHidden();
+    await expect(tuesdayAnswer).toBeHidden();
+    await expect(ready).toBeHidden();
+    await sunday.press('Enter');
+    await expect(sundayAnswer).toContainText(histories[0].sunday);
+    await expect(ready).toBeHidden();
+    await tuesday.click();
+    await expect(tuesdayAnswer).toBeVisible();
+    await expect(tuesdayAnswer).toContainText('took what was there');
+    const morning = await tuesdayAnswer.innerText();
+
+    for (const [index, history] of histories.entries()) {
+      if (index === 1) {
+        await handoff.locator('[data-swap]').click();
+        await expect(sunday).toHaveAttribute('aria-expanded', 'false');
+        await expect(sundayAnswer).toBeHidden();
+        await expect(tuesday).toHaveAttribute('aria-expanded', 'true');
+        await expect(tuesdayAnswer).toBeVisible();
+        await expect(tuesdayAnswer).toHaveText(morning);
+        await expect(ready).toBeHidden();
+        await expect(feedback).toBeEmpty();
+        await expect(sample).toBeEmpty();
+        await expect(model).toHaveJSProperty('open', false);
+        await sunday.click();
+      }
+      await expect(sundayAnswer).toBeVisible();
+      await expect(sundayAnswer).toContainText(history.sunday);
+      await expect(ready).toBeVisible();
+      await expect(ready.locator('[data-claim][aria-pressed="true"]')).toHaveCount(0);
+      await expect(model).toBeHidden();
+      for (const [i, claim] of claims.entries()) {
+        const choice = ready.locator(`[data-claim="${claim}"]`);
+        await choice.click();
+        await expect(choice).toHaveAttribute('aria-pressed', 'true');
+        await expect(feedback).toBeVisible();
+        await expect(feedback).toContainText(history.coaching[i]);
+        await expect(sample).toBeEmpty();
+        await model.locator('summary').press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toContainText(history.sample);
+        await expect(sample).not.toContainText(history.other);
+      }
+    }
+    await expectHealthy(page);
+  });
+
   test('Jules’s lithium handoff follows the collection time, nurse report, and selected lead', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);

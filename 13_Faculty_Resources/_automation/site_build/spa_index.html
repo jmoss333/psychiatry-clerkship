@@ -980,6 +980,65 @@
       }
     });
   }
+  function fdFocusGuideControl(button) {
+    const collapsed = button.closest('.sec-c:not(.open)');
+    if (collapsed) collapsed.querySelector('.sec-h button').click();
+    button.focus({preventScroll:true});
+    button.scrollIntoView({block:'center'});
+  }
+
+  function fdMountPillboxHandoff(body) {
+    const interview = body.querySelector('#mara-pillbox');
+    const handoff = body.querySelector('#mara-handoff');
+    if (!interview || !handoff || interview.dataset.mounted) return;
+    interview.dataset.mounted = 'true';
+    const days = Array.from(interview.querySelectorAll('[data-day]'));
+    const sunday = interview.querySelector('[data-day=sunday]');
+    const claims = handoff.querySelectorAll('[data-claim]');
+    const feedback = handoff.querySelector('[data-feedback]');
+    const model = handoff.querySelector('[data-model]');
+    const sample = model.querySelector('[data-sample]');
+    const next = interview.querySelector('[data-continue]');
+    const swap = handoff.querySelector('[data-swap]');
+    const hint = interview.querySelector('[data-hint]');
+    const initialHint = hint.textContent;
+    let history = handoff.querySelector('template[data-history=caps]');
+
+    function selectClaim(choice) {
+      for (const button of claims) button.setAttribute('aria-pressed', String(button === choice));
+      feedback.textContent = choice ? history.content.querySelector('[data-for="' + choice.dataset.claim + '"]').textContent : '';
+      feedback.hidden = model.hidden = swap.hidden = !choice;
+      model.open = false;
+      sample.textContent = '';
+    }
+
+    function setAnswer(button, open) {
+      button.setAttribute('aria-expanded', String(open));
+      interview.querySelector('#' + button.getAttribute('aria-controls')).hidden = !open;
+      button.querySelector('[data-indicator]').textContent = open ? '−' : '+';
+      button.querySelector('[data-action]').textContent = open ? 'Close answer' : 'Hear Mara';
+      interview.querySelector('[data-words=sunday]').textContent = sunday.getAttribute('aria-expanded') === 'true' ? history.content.querySelector('blockquote').textContent : '';
+      const left = days.filter(day => day.getAttribute('aria-expanded') === 'false');
+      handoff.querySelector('[data-ready]').hidden = next.hidden = left.length > 0;
+      handoff.querySelector('[data-locked]').hidden = hint.hidden = !left.length;
+      hint.textContent = left.length === 1 ? 'Now ask about ' + left[0].querySelector('.mp-dayname').textContent + '.' : initialHint;
+      selectClaim(null);
+    }
+
+    for (const button of days) button.addEventListener('click', () => setAnswer(button, button.getAttribute('aria-expanded') !== 'true'));
+    for (const button of claims) button.addEventListener('click', () => selectClaim(button));
+    next.addEventListener('click', () => fdFocusGuideControl(claims[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => fdFocusGuideControl(days.find(day => day.getAttribute('aria-expanded') === 'false') || sunday));
+    model.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = !model.open && !model.hidden ? history.content.querySelector('[data-handoff]').textContent : '';
+    });
+    swap.addEventListener('click', () => {
+      history = handoff.querySelector(history.dataset.history === 'caps' ? 'template[data-history=setup]' : 'template[data-history=caps]');
+      setAnswer(sunday, false);
+      fdFocusGuideControl(sunday);
+    });
+  }
+
   function fdMountLithiumHandoff(body) {
     const timing = body.querySelector('#li-eight-am');
     const resident = body.querySelector('#li-resident');
@@ -1030,14 +1089,8 @@
         showReport(null);
       });
     }
-    function goTo(button) {
-      const collapsed = button.closest('.sec-c:not(.open)');
-      if (collapsed) collapsed.querySelector('.sec-h button').click();
-      button.focus({preventScroll:true});
-      button.scrollIntoView({block:'center'});
-    }
-    next.addEventListener('click', () => goTo(hear));
-    resident.querySelector('[data-back]').addEventListener('click', () => goTo(timing.querySelector('[data-time][aria-pressed=true]') || choices[0]));
+    next.addEventListener('click', () => fdFocusGuideControl(hear));
+    resident.querySelector('[data-back]').addEventListener('click', () => fdFocusGuideControl(timing.querySelector('[data-time][aria-pressed=true]') || choices[0]));
     hear.addEventListener('click', () => showReport(report ? null : 'breakfast'));
     call.querySelector('[data-switch]').addEventListener('click', () => showReport(report.dataset.report === 'breakfast' ? 'change' : 'breakfast'));
     for (const lead of leads) lead.addEventListener('click', () => selectLead(lead));
@@ -1763,6 +1816,7 @@
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
       fdMountLithiumHandoff(contentEl);
+      fdMountPillboxHandoff(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3667,6 +3721,7 @@
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);
           fdMountLithiumHandoff(body);
+          fdMountPillboxHandoff(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
