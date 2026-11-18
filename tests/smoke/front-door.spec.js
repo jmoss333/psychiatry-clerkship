@@ -2578,6 +2578,57 @@ async function guideRenderedInventory(page) {
 }
 
 test.describe('Clinical field guide', () => {
+  test('OARS reflection follows the chosen ending and coaches the resident on the reply Ren gave', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=motivational_interviewing.md&guideSection=your-core-moves-oars');
+    const card = page.locator('#last-words-on-rounds');
+    const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > h2')).toContainText('Your core moves — OARS');
+    await expect(card).toBeVisible();
+    const line = card.locator('[data-line]');
+    const reply = card.locator('[data-reply-text]');
+    const sample = card.locator('[data-note-copy]');
+    const worked = card.locator('[data-note]');
+    const cases = [
+      { quote: 'Nobody ever asked', coach: ['Ask the question Ren was missing', 'You heard the discharge preference', 'Check where Ren wants to go next'], handoff: 'previous visits focused on the voices' },
+      { quote: 'tell them I said yes', coach: ['Answer the concern about today’s rounds', 'Check the words you will carry into rounds', 'Check your understanding first'], handoff: 'clear on rounds that they have not agreed' },
+      { quote: 'Could I be there', coach: ['Connect the past experience to this request', 'Carry the invitation forward', 'Make room for Ren on rounds'], handoff: 'join the discussion of alternatives' },
+    ];
+    await expect(card.locator('#lw-reply')).toBeHidden();
+    for (const [ending, last] of [['weight', 'your jeans didn’t fit'], ['call', 'hear your sister again']]) {
+      await card.locator('[data-order="' + ending + '"]').click();
+      await expect(line).toContainText('You don’t want to go home on this medicine.');
+      await expect(line).toContainText('hear your sister again');
+      await expect(line).toContainText('your jeans didn’t fit');
+      await expect(line.locator('.lw-accent')).toContainText(last);
+      expect((await line.innerText()).endsWith(last + '.”')).toBe(true);
+      await expect(reply).toBeEmpty();
+      await card.locator('[data-reveal]').press('Enter');
+      for (const current of cases) {
+        await expect(reply).toContainText(current.quote);
+        await expect(card.locator('[data-coach]')).toBeHidden();
+        await expect(worked).toBeHidden();
+        for (const [i, move] of ['evoke','repair','plan'].entries()) {
+          await card.locator('[data-move="' + move + '"]').click();
+          await expect(card.locator('[data-coach] h6')).toHaveText(current.coach[i]);
+          await expect(sample).toBeEmpty();
+          await worked.locator('summary').press('Enter');
+          await expect(sample).toBeVisible();
+          await expect(sample).toContainText(current.handoff);
+          for (const other of cases.filter(item => item !== current)) await expect(sample).not.toContainText(other.handoff);
+        }
+        await card.locator('[data-another]').click();
+        await expect(sample).toBeEmpty();
+      }
+    }
+    await card.locator('[data-reset]').click();
+    await expect(card.locator('[data-order=weight]')).toBeFocused();
+    await expect(line).toHaveText('Pick an ending to build your reflection.');
+    await expect(card.locator('#lw-reply')).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('resource aliases and dated titles arrive honestly when no passage matches', async ({ page }, testInfo) => {
     const resident = isResidentProject(testInfo.project.name);
     const cases = [

@@ -587,6 +587,8 @@ for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formul
     _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Anxiety", "illustrations", "pacing-hallway.webp"),
                os.path.join(OUT, "illustrations", "pacing-hallway.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
+               os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
