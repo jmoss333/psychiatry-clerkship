@@ -1036,6 +1036,7 @@ preview. Full behavior and content-preservation contract:
 | `.fd-guide-references` | Ruled reference region with 14px/1.7 text and long citation wrapping. |
 | `.fd-guide-match` | Temporary passage outline and wash; no completion or review meaning. Scroll margin keeps it below sticky chrome. |
 | `.fd-guide-arrival` | Visible context for passage arrival. Hidden on paper, while the passage itself remains. |
+| `.mp-case` | Neurocognitive Disorders. The Sunday and Tuesday question buttons in `#mara-pillbox` reveal Mara’s answers in Initial workup. Both answers unlock the three rounds claims in `#mara-handoff`. Changing Sunday preserves the open Tuesday answer and clears the selected claim, feedback and worked note. The scene buttons stack in a narrow reading column and follow reader type scaling. |
 | `.li-case` | Medication Monitoring & Labs. The timeline in `#li-eight-am` ends at the selected clock time. The resident exercise in `#li-resident` uses the current nurse report for its coaching and worked handoff. The illustrated timing and handoff cards inherit the reader’s type size and stack their controls in a narrow reading column. |
 | `.fd-guide-table-controls` | Wrapping buttons with real `aria-pressed` state. Minimum 44px height. |
 | `.fd-guide-table-rows` | Derived row reading view, one `<dl>` per original row; exact source header/cell text. The semantic table remains the print representation. |
