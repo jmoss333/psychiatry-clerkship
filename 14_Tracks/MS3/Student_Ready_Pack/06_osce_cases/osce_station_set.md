@@ -358,6 +358,14 @@ moment the student moves from a fact to an interpretation.
 
 Repeat the handoff using one change from feedback. The observer quotes one sentence from the first attempt. The presenter revises it and gives the handoff again. The supervising resident says what they would do first. The observer names what became clearer.
 
+**Receiver read-back if your first action changed**
+
+Say what you would do first now. Quote the sentence that changed your plan.
+
+**Receiver read-back if your first action stayed the same**
+
+Say what you would still do first. Quote the sentence that confirmed your plan.
+
 **Behaviors to practice**
 
 - Organized timeline.

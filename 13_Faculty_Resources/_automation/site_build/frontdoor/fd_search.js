@@ -547,13 +547,16 @@ function fdSearchMatches(index, query, synonyms, state){
     altWords.push(fdSearchContentWords(fdExpandQuery(alternatives[aw], synonyms).split(/\s+/)));
   }
   var body=literalFile?{}:fdSearchBodyScores(state&&state.bodyIndex, readingQuery, alternatives);
+  /* Only a standalone family-call request means the existing "collateral call" alias.
+     A longer query such as "call family about delirium" needs its own clinical ranking. */
+  var aliasQuery=(readingQuery==='call family'||readingQuery==='i need to call family')?'collateral call':rawQuery;
   var kitRefs={};
   for(var kr=0;kr<kit.length;kr++){ if(kit[kr].item) kitRefs[kit[kr].item.ref]=true; }
   var itemResults=[], bodyOnly=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
-    var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var aliasHit=fdSearchAliasHit(it, aliasQuery);
     var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
     var literal=aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
