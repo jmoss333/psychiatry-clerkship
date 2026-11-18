@@ -3136,3 +3136,39 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
   .fd-circuit__timer .fd-station__actions{grid-column:1 / -1}
   .fd-circuit__timer .fd-btn{min-width:var(--fd-target-touch);padding-inline:var(--fd-space-4)}
 }
+
+/* Noor's two conversations live in separate sections of the Brief Psychotherapy reading. */
+.noor-case{
+  --nd-pad:clamp(var(--fd-space-6),3.8%,var(--fd-space-10));
+  container:noor / inline-size;margin:var(--fd-space-8) 0;padding:var(--nd-pad);
+  border:1px solid var(--fd-line-strong);border-top:4px solid var(--fd-teal);border-radius:var(--fd-radius-lg);
+  background:var(--fd-surface-warm);color:var(--fd-text);
+  font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.5);
+}
+.noor-case [hidden]{display:none!important}
+.noor-case :is(h3,h4,p,blockquote,details){margin:0}
+.noor-case h3,.noor-case h4,.noor-case blockquote,.noor-case .nd-invitations strong{font-family:Georgia,'Times New Roman',serif;color:var(--fd-text)}
+.noor-case h3,.noor-case h4{font-weight:500;letter-spacing:-.025em;line-height:var(--fd-reading-leading,1.2)}
+.noor-case h3{font-size:calc(var(--fd-font-3xl) * var(--fd-reading-scale,1));margin-bottom:var(--fd-space-4)}
+.noor-case h4{font-size:calc(var(--fd-font-2xl) * var(--fd-reading-scale,1));margin:var(--fd-space-1) 0 var(--fd-space-5)}
+.noor-case .nd-tag{display:block;color:var(--fd-teal-deep);font-weight:650;letter-spacing:.035em;font-size:calc(var(--fd-font-xs) * var(--fd-reading-scale,1))}
+.noor-case .nd-voice,.noor-case .nd-follow{border-left:3px solid var(--fd-olive);padding-inline-start:var(--fd-space-6);margin-block:var(--fd-space-6)}
+.noor-case blockquote{padding:0;background:transparent;border:0;font-size:calc(var(--fd-font-section) * var(--fd-reading-scale,1));font-weight:400;font-style:normal;line-height:var(--fd-reading-leading,1.4)}
+.noor-case .nd-plate{display:block;width:100%;height:auto;border-radius:var(--fd-radius-sm)}
+.noor-case .nd-invitations,.noor-case .nd-questions{display:grid;gap:var(--fd-space-3);margin-block:var(--fd-space-5)}
+.noor-case .nd-invitations{grid-template-columns:repeat(3,minmax(0,1fr))}
+.noor-case button,.noor-case summary{min-height:var(--fd-target-touch);font:inherit;text-align:start;color:var(--fd-teal-deep);cursor:pointer;touch-action:manipulation}
+.noor-case .nd-invitations button,.noor-case .nd-questions button,.noor-case .nd-check{border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);padding:var(--fd-space-5);background:var(--fd-surface);color:var(--fd-text)}
+.noor-case .nd-invitations button{display:flex;flex-direction:column;align-items:flex-start;gap:var(--fd-space-2);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+.noor-case .nd-invitations strong{display:flex;align-items:center;gap:var(--fd-space-3);color:var(--fd-teal-deep);font-weight:500;font-size:calc(var(--fd-font-section) * var(--fd-reading-scale,1))}
+.noor-case .nd-invitations svg{flex:none}
+.noor-case button[aria-pressed=true]{border-color:var(--fd-teal-deep);background:var(--fd-teal-wash);box-shadow:inset 3px 0 var(--fd-teal-deep)}
+.noor-case :is(button,summary,a):focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.noor-case .nd-exchange{display:grid;gap:var(--fd-space-4)}
+.noor-case .nd-link{display:block;background:transparent;border:0;padding:var(--fd-space-3) 0;text-decoration:underline;text-underline-offset:.18em}
+.noor-case .nd-check{background:var(--fd-teal-wash);color:var(--fd-teal-deep);font-weight:600}
+.noor-case .nd-checkin{margin-block:var(--fd-space-6);padding:var(--fd-space-6);background:var(--fd-olive-wash);border-radius:var(--fd-radius-sm)}
+.noor-case details{background:transparent;border:0;border-top:1px solid var(--fd-line-strong);padding:0}
+.noor-case summary{padding-block:var(--fd-space-4);font-weight:600}
+.noor-case footer{margin-top:var(--fd-space-5);font-size:calc(var(--fd-font-xs) * var(--fd-reading-scale,1))}
+@container noor (max-width:560px){.noor-case .nd-invitations{grid-template-columns:1fr}}

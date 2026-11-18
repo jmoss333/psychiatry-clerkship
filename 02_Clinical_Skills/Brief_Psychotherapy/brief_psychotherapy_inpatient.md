@@ -18,6 +18,23 @@
 | Confused or frightened by the illness itself | Knowledge/coping gap | **Psychoeducation** — illness model + warning-signs plan, include family | Among the best-supported inpatient psychological interventions: relapse **NNT 9**, readmission **NNT 5** — the latter on only 206 participants, in studies the reviewers called limited quality (Xia, *Cochrane* 2011) |
 | Actively suicidal | Acute risk state | **Safety planning (Stanley-Brown)** + crisis response planning | Safety Planning Intervention with follow-up was associated with ≈ **45% fewer suicidal behaviors** (Stanley 2018, cohort comparison); **abandon no-suicide "contracts"** — they don't work |
 
+<section class="noor-case" id="noor-dayroom" aria-labelledby="nd-title">
+  <header><h3 id="nd-title">What counts as a start?</h3><p>Noor is on the unit for depression. She usually heads back to bed after breakfast. Today she stops beside you at the dayroom door.</p></header>
+  <div class="nd-voice"><span class="nd-tag">Noor · Fictional patient</span><blockquote>“My niece and I draw birds on napkins. Hers look like they’re wearing boots. I was going to draw her one yesterday. Got as far as finding the paper.”</blockquote></div>
+  <p class="nd-tag">MS3 · At the dayroom door</p>
+  <h4 id="nd-first">What small step would you offer?</h4>
+  <img class="nd-plate" src="illustrations/noor-dayroom.webp" width="1400" height="467" alt="Noor pauses in the dayroom doorway. A bird is perched outside the window, and two people sit at the art table.">
+  <div class="nd-invitations" role="group" aria-labelledby="nd-first">
+    <button type="button" data-place="window" aria-pressed="false" aria-controls="nd-agreement"><strong><svg aria-hidden="true" focusable="false" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-sun"></use></svg>The window seat</strong><span>“Want to sit by the window with me? Sometimes the birds land pretty close.”</span></button>
+    <button type="button" data-place="lap" aria-pressed="false" aria-controls="nd-agreement"><strong><svg aria-hidden="true" focusable="false" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-footprints"></use></svg>A lap on the unit</strong><span>“Feel like walking a lap with me? We can turn back whenever you want.”</span></button>
+    <button type="button" data-place="table" aria-pressed="false" aria-controls="nd-agreement"><strong><svg aria-hidden="true" focusable="false" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><use href="#ic-pen-line"></use></svg>The art table</strong><span>“They’ve got crayons out. Want to go look at the colors together?”</span></button>
+  </div>
+  <div id="nd-agreement" hidden>
+    <div class="nd-exchange" data-exchange aria-live="polite" aria-atomic="true"></div>
+    <button type="button" class="nd-link" data-continue>Continue to the after-lunch check-in ↓</button>
+  </div>
+</section>
+
 ## The bedside frame (MGH-style)
 When you have five minutes, not fifty: lead with **support**, name the **affect**, do a quick **chain analysis** of what just happened, and notice the **relational pattern** playing out on the unit (Stein & Jacobo). A useful daily scaffold — three quick **assessments** (safety, sleep, function), three **interventions** (one skill, one activity, one connection), three **discharge tasks** (appointment, means safety, warning-signs plan).
 
@@ -27,6 +44,53 @@ When you have five minutes, not fifty: lead with **support**, name the **affect*
 - For any patient at risk, build a **collaborative** safety plan in the patient's words — never a no-suicide contract.
 - Give psychoeducation as a conversation, not a packet dump; loop in family when you can.
 - Write the handoff so the outpatient clinician can continue the thread — the point of inpatient therapy is to *start* it and secure the follow-up.
+
+<section class="noor-case" id="noor-checkin" aria-labelledby="nd-checkin-title">
+  <p class="nd-tag">Behavioral activation · Noor’s case</p>
+  <h3 id="nd-checkin-title">Check in with Noor after lunch</h3>
+  <button type="button" class="nd-link" data-return data-change-label="Change the morning invitation ↑">Choose a morning invitation ↑</button>
+  <button type="button" class="nd-check" data-check hidden aria-expanded="false" aria-controls="nd-later" data-hide-label="Close the after-lunch check-in">Check in after lunch</button>
+  <div id="nd-later" hidden>
+    <div class="nd-checkin nd-exchange" aria-live="polite" aria-atomic="true"><div><span class="nd-tag">You · After lunch</span><p data-checkin-line></p></div><div><span class="nd-tag">Noor</span><blockquote data-result></blockquote></div></div>
+    <p class="nd-tag">Resident · Before rounds</p>
+    <h4 id="nd-resident">The team asks, “Did it help?”</h4>
+    <p>What would you want to hear from Noor before you answer?</p>
+    <div class="nd-questions" role="group" aria-labelledby="nd-resident"></div>
+    <div class="nd-follow" hidden><span class="nd-tag">Noor</span><blockquote data-answer aria-live="polite"></blockquote></div>
+    <details data-rounds hidden><summary>Compare your rounds summary</summary><p data-sample></p></details>
+  </div>
+  <footer><a href="https://www.nice.org.uk/guidance/ng222/chapter/Recommendations" target="_blank" rel="noopener noreferrer">Teaching reference · NICE NG222</a></footer>
+  <template data-visit="window">
+    <div data-morning><div><span class="nd-tag">Noor</span><blockquote>“Sure. Can we leave the paper here, though? I kind of just want to sit.”</blockquote></div><div><span class="nd-tag">You</span><p>“Sure. I’ll sit with you.”</p></div></div>
+    <div data-afternoon><p>“How’d the rest of your morning go after we sat by the window?”</p><blockquote>“I went back to bed. Still felt pretty low. We did see that little brown bird, though.”</blockquote></div>
+    <div data-questions>
+      <button type="button" data-ask="meaning" aria-pressed="false">“You remember that bird. What caught your eye?”</button>
+      <button type="button" data-ask="next" aria-pressed="false">“Would you want to sit there together again?”</button>
+    </div>
+    <div data-reply="meaning"><p data-quote>“It had these skinny legs. My niece would’ve given it enormous boots. I almost called her to tell her that.”</p><p data-rounds-text>We sat by the window after breakfast. Noor said she still felt low and went back to bed. The bird reminded her of her niece, and for a moment she wanted to call her.</p></div>
+    <div data-reply="next"><p data-quote>“Yeah. Come find me after breakfast tomorrow? We can leave the paper here again.”</p><p data-rounds-text>Noor sat by the window with me and saw a bird. She still felt low afterward. She asked me to sit with her there after breakfast tomorrow and to leave the paper behind.</p></div>
+  </template>
+  <template data-visit="lap">
+    <div data-morning><div><span class="nd-tag">Noor</span><blockquote>“A whole lap sounds like a lot. Maybe just to the clock?”</blockquote></div><div><span class="nd-tag">You</span><p>“Sure. We can stop at the clock.”</p></div></div>
+    <div data-afternoon><p>“How was that walk for you this morning?”</p><blockquote>“To the clock was plenty. I still had a rough morning, but I’m glad you came with me.”</blockquote></div>
+    <div data-questions>
+      <button type="button" data-ask="meaning" aria-pressed="false">“What was it like having someone along?”</button>
+      <button type="button" data-ask="next" aria-pressed="false">“Would you want company on another walk sometime?”</button>
+    </div>
+    <div data-reply="meaning"><p data-quote>“We could just walk. Everyone’s been asking me questions. It was nice to have company and not have to talk.”</p><p data-rounds-text>Noor and I walked to the clock, where she wanted to stop. She still had a rough morning. What she liked was having someone beside her without having to make conversation.</p></div>
+    <div data-reply="next"><p data-quote>“Maybe tomorrow. Ask me after breakfast? I’ll see how I feel then.”</p><p data-rounds-text>Noor walked with me to the clock this morning. She said that was far enough and was glad I came along. She asked me to check in after breakfast tomorrow and will decide about another walk then.</p></div>
+  </template>
+  <template data-visit="table">
+    <div data-morning><div><span class="nd-tag">Noor</span><blockquote>“I’ll look. You’ll come too, right? I don’t really want to sit through group.”</blockquote></div><div><span class="nd-tag">You</span><p>“Yeah, I’ll come. We can just look.”</p></div></div>
+    <div data-afternoon><p>“How’d it go at the art table?”</p><blockquote>“I picked the yellow one. Then everybody started dragging their chairs over and I left. Didn’t draw a thing.”</blockquote></div>
+    <div data-questions>
+      <button type="button" data-ask="meaning" aria-pressed="false">“How come you picked yellow?”</button>
+      <button type="button" data-ask="next" aria-pressed="false">“Would somewhere quieter suit you better?”</button>
+    </div>
+    <div data-reply="meaning"><p data-quote>“My niece has this rule. The feet have to be yellow. Made me smile when I saw that crayon.”</p><p data-rounds-text>Noor picked a yellow crayon and left when the chairs got noisy. She said the color made her smile because her niece always draws the feet in yellow.</p></div>
+    <div data-reply="next"><p data-quote>“That window seat, maybe. Can we take the yellow one there after breakfast tomorrow? I could start with the feet.”</p><p data-rounds-text>Noor picked up a yellow crayon and left when the chairs got noisy. She’d like to try the window seat after breakfast tomorrow. She thinks she might start by drawing the feet.</p></div>
+  </template>
+</section>
 
 ## High-yield pearls
 - Match the skill to the mechanism; the modality matters less than the fit (no clear winner across schools).

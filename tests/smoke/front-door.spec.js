@@ -2578,6 +2578,70 @@ async function guideRenderedInventory(page) {
 }
 
 test.describe('Clinical field guide', () => {
+  test('Noor’s dayroom check-in carries only her selected reply into rounds', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=brief_psychotherapy.md&guideSection=match-the-skill-to-the-mechanism');
+    const dayroom = page.locator('#guide-match-the-skill-to-the-mechanism').locator('..').locator('#noor-dayroom');
+    const checkin = page.locator('#guide-what-the-student-does').locator('..').locator('#noor-checkin');
+    const result = checkin.locator('[data-result]');
+    const answer = checkin.locator('[data-answer]');
+    const rounds = checkin.locator('details[data-rounds]');
+    const sample = rounds.locator('[data-sample]');
+    await expect(dayroom).toBeVisible();
+    await expect(checkin).toHaveCount(1);
+    await expect(dayroom.locator('button[data-place]')).toHaveCount(3);
+    await expect(result).toBeHidden();
+
+    const paths = [
+      {
+        place: 'window', account: 'We did see that little brown bird',
+        questions: [
+          ['meaning', 'enormous boots', 'We sat by the window after breakfast. Noor said she still felt low and went back to bed. The bird reminded her of her niece, and for a moment she wanted to call her.'],
+          ['next', 'Come find me after breakfast tomorrow', 'Noor sat by the window with me and saw a bird. She still felt low afterward. She asked me to sit with her there after breakfast tomorrow and to leave the paper behind.'],
+        ],
+      },
+      {
+        place: 'lap', account: 'To the clock was plenty',
+        questions: [
+          ['meaning', 'nice to have company and not have to talk', 'Noor and I walked to the clock, where she wanted to stop. She still had a rough morning. What she liked was having someone beside her without having to make conversation.'],
+          ['next', 'I’ll see how I feel then', 'Noor walked with me to the clock this morning. She said that was far enough and was glad I came along. She asked me to check in after breakfast tomorrow and will decide about another walk then.'],
+        ],
+      },
+      {
+        place: 'table', account: 'Didn’t draw a thing',
+        questions: [
+          ['meaning', 'The feet have to be yellow', 'Noor picked a yellow crayon and left when the chairs got noisy. She said the color made her smile because her niece always draws the feet in yellow.'],
+          ['next', 'I could start with the feet', 'Noor picked up a yellow crayon and left when the chairs got noisy. She’d like to try the window seat after breakfast tomorrow. She thinks she might start by drawing the feet.'],
+        ],
+      },
+    ];
+    for (const path of paths) {
+      const choice = dayroom.locator(`[data-place="${path.place}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(dayroom.locator('[data-place][aria-pressed="true"]')).toHaveCount(1);
+      await expect(result).toBeHidden();
+      await expect(result).toBeEmpty();
+      await expect(answer).toBeEmpty();
+      await expect(sample).toBeEmpty();
+      await checkin.locator('[data-check]').click();
+      await expect(result).toBeVisible();
+      await expect(result).toContainText(path.account);
+      await expect(rounds).toBeHidden();
+      for (const [question, reply, summary] of path.questions) {
+        await checkin.locator(`[data-ask="${question}"]`).click();
+        await expect(answer).toBeVisible();
+        await expect(answer).toContainText(reply);
+        await expect(sample).toBeHidden();
+        await rounds.locator('summary').press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toHaveText(summary);
+      }
+    }
+    await expectHealthy(page);
+  });
+
   test('OARS reflection follows the chosen ending and coaches the resident on the reply Ren gave', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
