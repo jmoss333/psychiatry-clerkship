@@ -3304,7 +3304,7 @@ test.describe('Clinical field guide', () => {
     await tuesday.click();
     await expect(tuesdayAnswer).toBeVisible();
     await expect(tuesdayAnswer).toContainText('took what was there');
-    const morning = await tuesdayAnswer.innerText();
+    const morning = await tuesdayAnswer.textContent();
 
     for (const [index, history] of histories.entries()) {
       if (index === 1) {
