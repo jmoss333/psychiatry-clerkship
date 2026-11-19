@@ -772,6 +772,74 @@
       shell.classList.toggle('is-scrollable',!!viewport&&viewport.scrollWidth>viewport.clientWidth+1);
     });
   }
+  function fdMountLunchInterview(body) {
+    const interview = body.querySelector('#alex-lunch');
+    const handoff = body.querySelector('#al-res');
+    if (!interview || !handoff || interview.dataset.mounted) return;
+    interview.dataset.mounted = 'true';
+
+    const choices = interview.querySelectorAll('[data-mode]');
+    const phrases = handoff.querySelectorAll('[data-phrase]');
+    const ask = interview.querySelector('#al-ask');
+    const askLabel = ask.textContent;
+    const answer = interview.querySelector('#al-answer');
+    const next = interview.querySelector('[data-continue]');
+    const ready = handoff.querySelector('[data-ready]');
+    const worked = handoff.querySelector('details');
+    const sample = handoff.querySelector('#al-sample');
+    const interpretation = handoff.querySelector('#al-interpret');
+    const rounds = handoff.querySelector('template[data-rounds]').content;
+    let choice;
+    let history;
+
+    function selectPhrase(button) {
+      for (const phrase of phrases) phrase.setAttribute('aria-pressed', String(button === phrase));
+      const correct = button?.dataset.phrase === 'appetite';
+      const feedback = handoff.querySelector('#al-feedback');
+      feedback.textContent = button ? rounds.querySelector(correct ? '[data-correct]' : '[data-retry]').textContent : '';
+      handoff.querySelector('#al-finish').hidden = !correct;
+      worked.open = false;
+      sample.textContent = interpretation.textContent = '';
+    }
+
+    function showAnswer(open) {
+      ask.setAttribute('aria-expanded', String(open));
+      ask.textContent = open ? 'Hide Alex’s reply' : askLabel;
+      answer.hidden = next.hidden = ready.hidden = !open;
+      handoff.querySelector('[data-locked]').hidden = open;
+      answer.querySelector('#al-by').textContent = open ? history.querySelector('[data-by]').textContent : '';
+      answer.querySelector('blockquote').textContent = open ? interview.querySelector('[data-answer]').content.textContent : '';
+      selectPhrase(null);
+    }
+
+    for (const button of choices) button.addEventListener('click', () => {
+      if (choice === button) return;
+      choice = button;
+      history = interview.querySelector('template[data-history="' + button.dataset.mode + '"]').content;
+      for (const option of choices) option.setAttribute('aria-pressed', String(option === choice));
+      interview.querySelector('#al-adapt').hidden = false;
+      interview.querySelector('#al-support').textContent = history.querySelector('[data-support]').textContent;
+      showAnswer(false);
+    });
+    ask.addEventListener('click', () => showAnswer(answer.hidden));
+    for (const button of phrases) button.addEventListener('click', () => selectPhrase(button));
+    function jump(control) {
+      control.focus({preventScroll:true});
+      control.scrollIntoView({block:'center'});
+    }
+    next.addEventListener('click', () => jump(phrases[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => jump(choice || choices[0]));
+    // Printing and in-page search can expand details. Only a learner action supplies the answers.
+    worked.querySelector('summary').addEventListener('click', () => {
+      const reveal = !worked.open && !handoff.querySelector('#al-finish').hidden;
+      sample.textContent = reveal ? '“' + [
+        rounds.querySelector('[data-opening]').textContent, history.querySelector('[data-report]').textContent,
+        rounds.querySelector('[data-inference]').textContent, history.querySelector('[data-next]').textContent
+      ].join(' ') + '”' : '';
+      interpretation.textContent = reveal ? rounds.querySelector('[data-meaning]').textContent : '';
+    });
+  }
+
   function fdMountPsychosisTimeline(body) {
     const timeline = body.querySelector('#ari-weeks');
     const handoff = body.querySelector('#aw-handoff');
@@ -1840,6 +1908,7 @@
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       fdMountPsychosisTimeline(contentEl);
+      fdMountLunchInterview(contentEl);
       fdMountRoundsReflection(contentEl);
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
@@ -3745,6 +3814,7 @@
           var stationPanel=body.querySelector('[data-osce-station]');
           if(stationPanel)fdMountOsceStation(stationPanel);
           fdMountPsychosisTimeline(body);
+          fdMountLunchInterview(body);
           fdMountRoundsReflection(body);
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);

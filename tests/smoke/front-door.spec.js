@@ -3420,6 +3420,87 @@ test.describe('Clinical field guide', () => {
     await expectHealthy(page);
   });
 
+  test('Alex’s lunch handoff follows the accommodation and distinguishes chewing pain from appetite', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=t_neurodev.md&guideSection=initial-workup');
+    const interview = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') }).locator('#alex-lunch');
+    const handoff = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') }).locator('#al-res');
+    const ask = interview.locator('#al-ask');
+    const answer = interview.locator('#al-answer');
+    const seen = handoff.locator('[data-phrase="seen"]');
+    const appetite = handoff.locator('[data-phrase="appetite"]');
+    const summary = handoff.locator('details > summary');
+    const sample = handoff.locator('#al-sample');
+    const interpretation = handoff.locator('#al-interpret');
+    await expect(interview).toBeVisible();
+    await expect(ask).toBeHidden();
+    await expect(appetite).toBeHidden();
+
+    const accommodations = [
+      { mode: 'type', speaker: 'Alex types', used: /asked to type/i, other: /quiet table/i },
+      { mode: 'quiet', speaker: 'Alex says', used: /quiet table, one question at a time/i, other: /asked to type/i },
+    ];
+    for (const accommodation of accommodations) {
+      const choice = interview.locator(`[data-mode="${accommodation.mode}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(answer).toBeHidden();
+      await expect(appetite).toBeHidden();
+      await expect(sample).toBeEmpty();
+      await expect(interpretation).toBeEmpty();
+      await ask.press('Enter');
+      await expect(answer).toBeVisible();
+      await expect(answer).toContainText(accommodation.speaker);
+      await expect(answer).toContainText(/wanted the sandwich/i);
+      await expect(answer).toContainText(/hurts when I bite down/i);
+      await interview.locator('[data-continue]').click();
+      await expect(seen).toBeFocused();
+      await seen.press('Enter');
+      await expect(handoff.locator('#al-feedback')).toContainText(/observation/i);
+      await expect(summary).toBeHidden();
+      await appetite.click();
+      await expect(summary).toBeVisible();
+      // The print handler expands guide disclosures. Only a learner may request the worked answer.
+      await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+      await expect(sample).toBeEmpty();
+      await expect(interpretation).toBeEmpty();
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await summary.press('Enter');
+      await expect(sample).toBeVisible();
+      await expect(sample).toContainText(/saw Alex push the tray aside/i);
+      await expect(sample).toContainText(accommodation.used);
+      await expect(sample).not.toContainText(accommodation.other);
+      await expect(sample).toContainText(/pain with chewing is why they set it aside/i);
+      await expect(sample).not.toContainText(/abscess|caries|cracked tooth/i);
+      await expect(sample).toContainText(/examine their mouth/i);
+      await expect(sample).toContainText(/eat and drink|intake/i);
+      await expect(interpretation).toBeVisible();
+      await expect(interpretation).toContainText(/diagnostic overshadowing/i);
+      await handoff.locator('[data-back]').click();
+      await expect(choice).toBeFocused();
+    }
+
+    await seen.click();
+    await expect(summary).toBeHidden();
+    await expect(sample).toBeEmpty();
+    await expect(interpretation).toBeEmpty();
+    await appetite.click();
+    await summary.click();
+    await ask.click();
+    await expect(answer).toBeHidden();
+    await expect(sample).toBeEmpty();
+    await expect(interpretation).toBeEmpty();
+    await ask.click();
+    await expect(seen).toBeVisible();
+    await expect(summary).toBeHidden();
+    await page.goto('/?page=t_neurodev.md&guideSection=what-the-student-does');
+    await handoff.locator('[data-back]').click();
+    await expect(interview.locator('[data-mode="type"]')).toBeFocused();
+    await expect(ask).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('print reveals the complete guide and safety context while hiding interactive chrome', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await openClinicalGuide(page, testInfo);
