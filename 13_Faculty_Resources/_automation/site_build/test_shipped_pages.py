@@ -51,7 +51,10 @@ def synthetic_root(tmp):
     (build / "site_manifest.json").write_text(
         json.dumps(
             {
-                "md": [["01_Core/t_mood.md", "t_mood.md", "Mood"]],
+                "md": [["01_Core/t_mood.md", "t_mood.md", "Mood"]] + [
+                    ["01_Core/" + slug, slug, "MS3 page"]
+                    for slug in shipped_pages.site_extras.MS3_ONLY_PAGES
+                ],
                 "tools": [["04_Assessment/mse.html", "mse.html", "MSE"]],
             }
         ),
@@ -86,6 +89,18 @@ def synthetic_root(tmp):
 
 
 class DeriveTests(unittest.TestCase):
+    def test_ms3_only_manifest_page_is_scoped_and_preserves_shared_page(self):
+        pages = {p["slug"]: p for p in shipped_pages.derive(ROOT)["pages"]}
+        self.assertEqual(pages["ms3_book_catalog.md"]["sites"], ["ms3"])
+        self.assertEqual(pages["book_library.md"]["sites"], ["ms3", "res"])
+        self.assertNotIn("extraSources", pages["book_library.md"])
+
+    def test_ms3_only_scope_fails_closed_for_unknown_or_duplicate_pages(self):
+        for names in (["not-registered.md"], ["book_library.md", "book_library.md"]):
+            with mock.patch.object(shipped_pages.site_extras, "MS3_ONLY_PAGES", names):
+                with self.assertRaises(shipped_pages.ShippedPagesError):
+                    shipped_pages.derive(ROOT)
+
     def test_real_repository_derivation_is_byte_identical_twice(self):
         first = shipped_pages.serialize(shipped_pages.derive(ROOT))
         second = shipped_pages.serialize(shipped_pages.derive(ROOT))

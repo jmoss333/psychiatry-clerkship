@@ -138,11 +138,18 @@ def derive(root=ROOT):
             )
         by_slug[page["slug"]] = page
 
-    # 1 -- site_manifest.json: the shared pages and tools, on BOTH sites. The
-    # resident build starts as a copytree of the MS3 build, so every shared page
-    # reaches both deploys.
-    for source, slug, title in _manifest_entries(manifest, "md"):
-        add(_page(slug, "page", BOTH_SITES, title, source, "site_manifest"))
+    # 1 -- site_manifest.json: shared by default. The resident build starts as
+    # a copytree of MS3 and removes the explicitly MS3-only manifest pages
+    # named in site_extras, so their derived audience must match that removal.
+    ms3_only = getattr(site_extras, "MS3_ONLY_PAGES", [])
+    manifest_pages = list(_manifest_entries(manifest, "md"))
+    if (not isinstance(ms3_only, list) or any(not isinstance(slug, str) for slug in ms3_only)
+            or len(ms3_only) != len(set(ms3_only))
+            or set(ms3_only) - {row[1] for row in manifest_pages}):
+        raise ShippedPagesError("MS3_ONLY_PAGES must uniquely name registered manifest pages")
+    for source, slug, title in manifest_pages:
+        sites = ["ms3"] if slug in ms3_only else BOTH_SITES
+        add(_page(slug, "page", sites, title, source, "site_manifest"))
     for source, slug, title in _manifest_entries(manifest, "tools"):
         add(_page(slug, "tool", BOTH_SITES, title, source, "site_manifest"))
 
