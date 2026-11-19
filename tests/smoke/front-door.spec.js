@@ -3341,6 +3341,85 @@ test.describe('Clinical field guide', () => {
     await expectHealthy(page);
   });
 
+  test('Ari’s psychosis timeline carries each patient reply and chosen record into the rounds handoff', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=t_psychosis.md&guideSection=duration-and-mood-anchors');
+    const duration = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-duration-and-mood-anchors') });
+    const timeline = duration.locator('#ari-weeks');
+    const table = duration.locator('table').filter({ hasText: 'Schizophreniform disorder' });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const handoff = student.locator('#aw-handoff');
+    await expect(timeline).toBeVisible();
+    await expect(table).toBeVisible();
+    const timelineBox = await timeline.boundingBox();
+    expect(timelineBox.y + timelineBox.height).toBeLessThanOrEqual((await table.boundingBox()).y + 1);
+    await expect(handoff).toHaveCount(1);
+
+    const gap = timeline.locator('[data-gap]');
+    const reply = timeline.locator('[data-reply]');
+    const ready = handoff.locator('[data-ready]');
+    const record = handoff.locator('[data-record]');
+    const summary = handoff.locator('summary');
+    const sentence = handoff.locator('[data-sentence]');
+    const histories = [
+      { mark: 'heard', words: 'Every day, all three weeks', rounds: 'daily for three weeks' },
+      { mark: 'quiet', words: 'quiet the whole time', rounds: 'only during periods of major depression' },
+      { mark: 'uncertain', words: 'before or after I went back', rounds: 'outside a major mood episode remains open' },
+    ];
+    const records = [
+      { source: 'course', text: '18 months earlier', next: 'how much of the full illness' },
+      { source: 'exposures', text: 'using cannabis some evenings', next: 'when Ari used cannabis relative to the voice' },
+    ];
+    for (const history of histories) {
+      await expect(reply).toBeEmpty();
+      await expect(timeline.locator('[data-mark-choice][aria-pressed="true"]')).toHaveCount(0);
+      await expect(ready).toBeHidden();
+      await expect(handoff.locator('[data-source][aria-pressed="true"]')).toHaveCount(0);
+      await expect(record).toBeEmpty();
+      await expect(sentence).toBeEmpty();
+      await expect(summary).toBeHidden();
+      await gap.press('Enter');
+      await expect(reply).toBeVisible();
+      await expect(reply).toContainText(history.words);
+      const choice = timeline.locator(`[data-mark-choice="${history.mark}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(ready).toBeVisible();
+      for (const evidence of records) {
+        const source = handoff.locator(`[data-source="${evidence.source}"]`);
+        await source.click();
+        await expect(source).toHaveAttribute('aria-pressed', 'true');
+        await expect(handoff.locator('[data-source][aria-pressed="true"]')).toHaveCount(1);
+        await expect(record).toBeVisible();
+        await expect(record).toContainText(evidence.text);
+        await expect(sentence).toBeEmpty();
+        await expect(sentence).toBeHidden();
+        await summary.press('Enter');
+        await expect(sentence).toBeVisible();
+        await expect(sentence).toContainText(history.rounds);
+        await expect(sentence).toContainText(evidence.next);
+        await expect(sentence).not.toContainText(records.find(other => other !== evidence).next);
+      }
+      if (history === histories[0]) {
+        // Correcting a previously matched interval invalidates even an opened sample.
+        await timeline.locator('[data-mark-choice="quiet"]').click();
+        await expect(ready).toBeHidden();
+        await expect(record).toBeEmpty();
+        await expect(sentence).toBeEmpty();
+        await choice.click();
+        await expect(handoff.locator('[data-source][aria-pressed="true"]')).toHaveCount(0);
+        await expect(summary).toBeHidden();
+      }
+      await handoff.locator('[data-another]').click();
+    }
+    await expect(reply).toBeEmpty();
+    await gap.click();
+    await expect(reply).toContainText(histories[0].words);
+    await expect(ready).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('print reveals the complete guide and safety context while hiding interactive chrome', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await openClinicalGuide(page, testInfo);
