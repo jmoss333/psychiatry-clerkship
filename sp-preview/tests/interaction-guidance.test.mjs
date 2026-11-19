@@ -164,3 +164,27 @@ test('English patient guidance leaves multilingual learner dialogue untouched an
  assert.equal(validateInteractionReply('No lo sé.'),'No lo sé.');
  assert.equal(validateInteractionReply('An unsupported invented fact.'),'An unsupported invented fact.');
 });
+
+test('solo Morgan keeps unspecified safety history unknown while speaking as the patient',async()=>{
+ const question='Have you had thoughts of hurting yourself or ending your life?';
+ const source=fullContext(MORGAN,question),before=structuredClone(source);
+ const context=applyInteractionGuidance(source,MORGAN,{concernInitiative:'invited'});
+ let sent;
+ const provider=createOpenAIProvider({env:{OPENAI_API_KEY:'test-only-key'},fetchImpl:async(_url,options)=>{
+  sent=JSON.parse(options.body);
+  return Response.json({status:'completed',output:[{type:'message',role:'assistant',content:[{type:'output_text',text:'I am not sure how to answer that.'}]}]});
+ }});
+ await provider.reply(context);
+ assert.deepEqual(source,before);
+ assert.deepEqual(sent.input,source.messages);
+ assert.ok(sent.instructions.startsWith(source.system));
+ assert.match(sent.instructions,/self-harm, violence, and broader substance-use histories are not established/);
+ assert.match(sent.instructions,/ordinary first-person patient language/);
+ assert.match(sent.instructions,/Do not explain the simulation, script, supplied facts/);
+ assert.match(sent.instructions,/Do not invent why you are uncertain, imply a known negative/);
+ assert.match(sent.instructions,/For a clear question about unknown safety history, say directly that you are unsure/);
+ assert.match(sent.instructions,/Do not evade it by saying we have not discussed it/);
+ for(const id of [DANA,MARCUS,RAY])assert.doesNotMatch(applyInteractionGuidance(fullContext(id,'What remains unclear?'),id).system,/what is established in this focused conversation/);
+ const family=familyContext([{who:'pt',speakerId:'morgan',text:getCase(FAMILY).caseDef.persona.opening,playbackStatus:'played'}], 'morgan');
+ assert.doesNotMatch(applyInteractionGuidance(family,FAMILY,{roleId:'morgan'}).system,/what is established in this focused conversation/);
+});

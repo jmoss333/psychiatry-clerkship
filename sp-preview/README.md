@@ -147,6 +147,8 @@ After either solo visit ends, **Did we address what mattered?** pairs a selected
 
 The learner or faculty chooses **Addressed**, **Partly addressed**, or **Still open**, and writes what remains to ask or clarify. No outcome is pre-scored. The review freezes the original encounter at its end, so a later retry cannot rewrite it. Review selections and notes stay in this page's memory, are never sent to a model or stored in the browser, and clear with the encounter. Other cases and short Moments retain their existing closing activities.
 
+The full-visit rehearsal also prompted a narrow solo-Morgan portrayal correction: an unspecified safety history is answered with ordinary first-person uncertainty, without explaining the simulation or redirecting to the consultation topic. This supplies no new clinical findings or safety denial. The speech provider and voice profiles are unchanged.
+
 ## Diagnosing a real microphone session
 
 `DanaPreview.session.getDiagnostics()` returns fixed state codes, counts and timings only — no speech, no transcript, no draft text — and is the intended way to establish what happened on a physical microphone without recording anything. `nativeRecognition` distinguishes the browser's own recognition from a synthetic replacement; `automaticSubmissions` and `explicitSubmissions` distinguish turns that sent themselves from turns sent by Space, Done or the composer; `counts.voice_wordless`, `counts.unfinished` and `counts.reconnect` name the three lifecycle paths that previously ended hands-free operation.
