@@ -173,3 +173,19 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 /* Realism 4 — the opt-in room sound chip sits beside the microphone chip. */
 .room-bed{justify-self:center;align-self:center;font-size:.72rem;color:var(--green);background:var(--pale);border:1px solid #a9c2bc;border-radius:999px;padding:3px 9px;white-space:nowrap}
 @media print{.room-bed{display:none}}
+
+/* Full-visit priority review: quoted dialogue and the reviewer's own judgment. */
+.selected-visits{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:4px;font-size:.85rem}
+.selected-visits>span{font-weight:650;width:100%;color:var(--muted)}
+.selected-visits>a{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;color:var(--green);background:var(--card);text-decoration:none;box-sizing:border-box;max-width:100%;overflow-wrap:anywhere}
+.selected-visits>a:hover,.selected-visits>a:focus-visible{background:var(--pale)}
+.priority-review{min-width:0;overflow-wrap:anywhere}
+.priority-review h3{font:500 1.55rem/1.25 var(--serif);margin:0 0 12px}
+.priority-field{margin:18px 0}
+.priority-review label{display:block;font-weight:600;font-size:.9rem;line-height:1.5;margin-bottom:8px}
+.priority-review select,.priority-review textarea{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:16px;min-height:44px}
+.priority-review textarea{min-height:112px;resize:vertical}
+.priority-review blockquote{margin:12px 0;padding:14px 16px;border-left:3px solid var(--green);background:var(--pale);white-space:pre-wrap;font-size:.94rem;line-height:1.65;overflow-wrap:anywhere}
+.priority-review .priority-help,.priority-review .priority-status,.priority-review .priority-empty{font-size:.82rem;line-height:1.55;color:var(--muted)}
+.priority-review details{margin:12px 0}
+.priority-review summary{min-height:44px;box-sizing:border-box;line-height:1.5}

@@ -139,6 +139,14 @@ The ledger stores operation hashes, binding hashes, timestamps, and unit counts 
 - Private source paths are absent from published assets; public failures contain no provider details or keys.
 - Canonical production voice flags and learner routes remain unchanged.
 
+## Full-visit concern review
+
+The entry links **Dana · natural openings** and **Morgan · wait for an invitation** restore the owner-selected concern settings for full encounters. They keep current vocal expression and the existing voice profiles. These are explicit setup links; older links and the general setting defaults still work.
+
+After either solo visit ends, **Did we address what mattered?** pairs a selected patient quote with a later learner response. It initially shows the first heard patient words (including the opening when heard) and the first following response; that is a chronological starting point, not a claim that the concern was answered. Choose another exchange when needed. Only patient words confirmed played are eligible, with interrupted prefixes identified separately. Unsent or failed learner questions and alternative retry dialogue are excluded.
+
+The learner or faculty chooses **Addressed**, **Partly addressed**, or **Still open**, and writes what remains to ask or clarify. No outcome is pre-scored. The review freezes the original encounter at its end, so a later retry cannot rewrite it. Review selections and notes stay in this page's memory, are never sent to a model or stored in the browser, and clear with the encounter. Other cases and short Moments retain their existing closing activities.
+
 ## Diagnosing a real microphone session
 
 `DanaPreview.session.getDiagnostics()` returns fixed state codes, counts and timings only — no speech, no transcript, no draft text — and is the intended way to establish what happened on a physical microphone without recording anything. `nativeRecognition` distinguishes the browser's own recognition from a synthetic replacement; `automaticSubmissions` and `explicitSubmissions` distinguish turns that sent themselves from turns sent by Space, Done or the composer; `counts.voice_wordless`, `counts.unfinished` and `counts.reconnect` name the three lifecycle paths that previously ended hands-free operation.

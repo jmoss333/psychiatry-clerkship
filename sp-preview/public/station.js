@@ -238,6 +238,8 @@
     var markList=el('div',null,marks);
     markButton.addEventListener('click',function(){if(latest){store.add(latest);draw();}});
 
+    var priorityHost=el('section',null,host,{class:'panel priority-review','data-station':'priority-review',hidden:''});
+    var priorityReview=env.PriorityReview&&env.PriorityReview.createReview(env,priorityHost,{caseId:options.caseId,patientName:profile.displayName});
     var closing=el('section',null,host,{class:'panel','data-station':'closing',hidden:''});
     el('h2','Present to your attending',closing);
     el('p',family?'Give a brief presentation in your own words: who you met and why, each person’s priorities, whose account each finding came from, what remains uncertain, and what you would ask your supervisor to help decide.':'Give a brief presentation in your own words: who you met and why, the patient’s priorities, key findings and uncertainties, your working formulation, and what you would ask your supervisor to help decide.',closing);
@@ -297,6 +299,8 @@
     }
     function update(hostedSnapshot){
       if(disposed)return;
+      priorityHost.hidden=!priorityReview||hostedSnapshot.phase!=='ended'||!!hostedSnapshot.busy;
+      if(priorityReview)priorityReview.update(hostedSnapshot);
       latest=stationSnapshot(hostedSnapshot);
       store.sync(latest);
       // An interruption cue is a behavioural claim about the patient. It belongs to an
@@ -324,6 +328,7 @@
       requestRetry:function(turnId,text){return typeof options.onRetry==='function'?options.onRetry(turnId,text):false;},
       dispose:function(){
         disposed=true;
+        if(priorityReview)priorityReview.dispose();
         chartTimers.forEach(function(id){clock.clearTimeout(id);clock.clearInterval(id);});chartTimers=[];
         store.clear();notes=Object.create(null);presentation='';requested=Object.create(null);latest=null;lastCue='';
         if(handoff)handoff.value='';
