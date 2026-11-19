@@ -20,6 +20,29 @@ Climb in order, and document why you moved up.
 4. **Involuntary medication.** Reserved for imminent danger to the patient or others — not for refusal alone, and not for convenience.
 5. **Physical restraint or seclusion.** The genuine last resort, only when lesser measures have failed or are clearly inadequate to prevent imminent harm.
 
+<section class="bedside-case visual-practice" id="vp-dayroom" aria-labelledby="vp-dayroom-title">
+<header><p class="case-kicker">Agitation · Fictional dayroom encounter</p>
+<h3 id="vp-dayroom-title">“It’s too loud in here.”</h3>
+<p>The TV is on. Two staff members start asking Jules questions at the same time. Jules presses a hand to one ear. “I can’t hear what you want from me.” You’re with the nurse. Jules wants to talk.</p></header>
+<h4>What would you change first?</h4>
+<p class="vp-intro">Choose something in the room. Each choice lets you try a different start to this conversation.</p>
+<div class="vp-room" role="group" aria-label="Choose a first change in the dayroom">
+<img src="illustrations/dayroom-first-change.webp" width="1200" height="398" alt="Jules is seated between the television on the left and two staff in conversation. An empty chair sits by the window on the right.">
+<div class="vp-room-controls">
+<button type="button" data-vp-place="tv" aria-pressed="false" aria-controls="vp-tv"><span class="vp-before">Lower TV volume</span><span class="vp-changed">TV turned down</span></button>
+<button type="button" data-vp-place="voices" aria-pressed="false" aria-controls="vp-voices"><span class="vp-before">One speaker</span><span class="vp-changed">Nurse speaking</span></button>
+<button type="button" data-vp-place="chair" aria-pressed="false" aria-controls="vp-chair"><span class="vp-before">Offer window seat</span><span class="vp-changed">Seat offered</span></button>
+</div></div>
+<span class="vp-announcement fd-visually-hidden" role="status"></span>
+<div id="vp-tv" class="vp-result" hidden><p class="vp-time">You turn the TV down with Jules’s permission</p><blockquote>“Thanks. I can hear you now. Can you ask me one thing at a time?”</blockquote><p><strong>MS3</strong> Try your next sentence aloud. What is Jules still asking for?</p>
+<details class="vp-handoff"><summary>Compare a next step on rounds</summary><p>“Turning down the TV helped Jules hear us. They still have trouble with two people asking questions. I’d ask the nurse to take the lead and check whether that helps.”</p></details></div>
+<div id="vp-voices" class="vp-result" hidden><p class="vp-time">The team agrees that the nurse will speak</p><blockquote>“Okay, I can follow you. That game on TV is still getting to me, though.”</blockquote><p><strong>MS3</strong> How would you check what Jules wants done about the TV?</p>
+<details class="vp-handoff"><summary>Compare a next step on rounds</summary><p>“Jules said one speaker was easier to follow. The TV still bothers them. I’d ask whether they want it turned down and have the nurse check back.”</p></details></div>
+<div id="vp-chair" class="vp-result" hidden><p class="vp-time">You offer the quieter seat by the window</p><blockquote>“I’d rather stay here. Could you turn the TV down instead?”</blockquote><p><strong>MS3</strong> How would you respond while respecting Jules’s choice to stay?</p>
+<details class="vp-handoff"><summary>Compare a next step on rounds</summary><p>“Jules wants to stay in this chair and asked us to lower the volume. I’d honor that request and ask how the room feels afterward. We haven’t heard whether it helped yet.”</p></details></div>
+<p class="vp-safety">The nurse continues to assess what is driving the distress. If Jules or anyone else becomes unsafe, get the unit team’s help immediately.</p>
+</section>
+
 ## Practice What To Say Next
 
 Use the communication practice tool to rehearse high-friction moments before

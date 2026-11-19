@@ -12,6 +12,21 @@
 | Excited | Purposeless agitation |
 | Malignant | Autonomic instability, hyperthermia, and rigidity that overlaps with NMS — a medical emergency |
 
+<section class="bedside-case visual-practice" id="vp-catatonia" aria-labelledby="vp-catatonia-title">
+<header><p class="case-kicker">Catatonia · Fictional morning shift</p>
+<h3 id="vp-catatonia-title">What did you actually see?</h3>
+<p>A handoff describes Kit as “withdrawn today.” The nurse is already asking the resident to assess this change. Open each moment to hear what someone at the table observed.</p></header>
+<div class="vp-options vp-frames">
+<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-breakfast.webp" width="640" height="426" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><span class="vp-time">08:10 · Breakfast</span><strong>At the table with Kit</strong></summary>
+<p class="vp-reply">The nurse says, “Kit lifted the mug, took a sip and set it down. When I asked about breakfast they said, ‘The coffee’s good.’”</p></details>
+<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-later.webp" width="640" height="426" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><span class="vp-time">09:00 · Same table</span><strong>Back at Kit’s side</strong></summary>
+<p class="vp-reply">You see Kit hold their forearm in the same position throughout your conversation with the nurse. You greet Kit and ask how they feel. You hear no spoken response.</p></details>
+</div>
+<p data-vp-compare-hint>Open both moments to practice calling the resident.</p>
+<div class="vp-result" data-vp-compare hidden><h4>Replace “withdrawn” in your call</h4><p>Describe one change in movement and one in speech. What needs a bedside assessment now?</p>
+<details class="vp-handoff"><summary>Compare one way to call the resident</summary><p>“The nurse saw Kit drink and heard them speak at breakfast. Now I see them holding their forearm out, and I heard no reply when I spoke to them. Can you assess Kit with us now for possible catatonia and other causes of this acute change? I’ll help the nurse get current vitals.”</p></details></div>
+</section>
+
 **Recognize and screen.** The standard instrument is the **Bush-Francis Catatonia Rating Scale (BFCRS)** (Bush et al., 1996) — use its screening items to detect catatonia and its full scale to track severity over time. On exam, deliberately look for the signs it scores: immobility/stupor, mutism, staring, posturing/catalepsy, waxy flexibility, negativism, echophenomena, stereotypy, and any agitation that does not fit the environment. Naming the signs out loud forces you to actually look for them.
 
 <a class="tl-chip" href="?tool=bfcrs.html" data-tool="bfcrs.html" data-icon="bfcrs">Bush-Francis — official form &amp; how to administer</a>

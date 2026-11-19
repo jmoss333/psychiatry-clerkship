@@ -4,6 +4,55 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
+  fdMountDayroomChoices(body);
+  fdMountCatatoniaFrames(body);
+  fdMountPerinatalComparison(body);
+}
+
+function fdMountPerinatalComparison(body) {
+  const interview = body.querySelector('#vp-perinatal');
+  if (!interview || interview.dataset.mounted) return;
+  interview.dataset.mounted = 'true';
+  for (const button of interview.querySelectorAll('[data-vp-ask-other]')) {
+    button.addEventListener('click', () => {
+      const question = interview.querySelector('#' + button.dataset.vpAskOther);
+      question.closest('.vp-card').open = true;
+      question.open = true;
+      question.querySelector('details').open = false;
+      fdBedsideFocus(question.querySelector('summary'));
+    });
+  }
+}
+
+function fdMountDayroomChoices(body) {
+  const room = body.querySelector('#vp-dayroom');
+  if (!room || room.dataset.mounted) return;
+  room.dataset.mounted = 'true';
+  const choices = room.querySelectorAll('[data-vp-place]');
+  for (const choice of choices) choice.addEventListener('click', () => {
+    for (const option of choices) {
+      const selected = option === choice;
+      option.setAttribute('aria-pressed', String(selected));
+      const result = room.querySelector('#' + option.getAttribute('aria-controls'));
+      result.hidden = !selected;
+      if (!selected) result.querySelector('details').open = false;
+    }
+    room.querySelector('.vp-announcement').textContent = room.querySelector('#' + choice.getAttribute('aria-controls') + ' blockquote').textContent;
+  });
+}
+
+function fdMountCatatoniaFrames(body) {
+  const caseCard = body.querySelector('#vp-catatonia');
+  if (!caseCard || caseCard.dataset.mounted) return;
+  caseCard.dataset.mounted = 'true';
+  const frames = Array.from(caseCard.querySelectorAll('[data-vp-frame]'));
+  const compare = caseCard.querySelector('[data-vp-compare]');
+  for (const frame of frames) frame.addEventListener('toggle', () => {
+    const bothOpen = frames.every(item => item.open);
+    compare.hidden = !bothOpen;
+    caseCard.querySelector('[data-vp-compare-hint]').hidden = bothOpen;
+    if (!bothOpen) compare.querySelector('details').open = false;
+  });
 }
 
 function fdBedsideFocus(control) {

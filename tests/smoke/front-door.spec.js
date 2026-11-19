@@ -2577,6 +2577,184 @@ async function guideRenderedInventory(page) {
   });
 }
 
+test.describe('Interactive readings', () => {
+  test.beforeEach(async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+  });
+
+  async function openActivity(page, ref, id, heading) {
+    await page.goto('/?page=' + ref);
+    const activity = page.locator('.fd-article__body #' + id);
+    const section = activity.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > :is(h2, .fd-guide-lead, .sec-h)')).toContainText(heading);
+    await expect(activity).toBeVisible();
+    return activity;
+  }
+
+  async function toggleWithKeyboard(details) {
+    await details.locator(':scope > summary').press('Enter');
+  }
+
+  test('dayroom choices reveal the requested change and reset the previous handoff', async ({ page }) => {
+    const activity = await openActivity(page, 'agitation.md', 'vp-dayroom', 'The least-restrictive ladder');
+    const paths = [
+      ['tv', 'ask me one thing at a time', 'ask the nurse to take the lead'],
+      ['voices', 'That game on TV', 'ask whether they want it turned down'],
+      ['chair', 'I’d rather stay here', 'wants to stay in this chair'],
+    ];
+    await expect(activity.locator('.vp-result:visible')).toHaveCount(0);
+    for (const [place, reply, sample] of paths) {
+      const button = activity.locator('[data-vp-place="' + place + '"]');
+      const panel = activity.locator('#vp-' + place);
+      await expect(button).toHaveAttribute('aria-controls', 'vp-' + place);
+      await button.press('Enter');
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+      await expect(activity.locator('[data-vp-place][aria-pressed="true"]')).toHaveCount(1);
+      await expect(activity.locator('.vp-result:visible')).toHaveCount(1);
+      await expect(activity.locator('.vp-handoff[open]')).toHaveCount(0);
+      await expect(panel.locator('blockquote')).toBeVisible();
+      await expect(panel.locator('blockquote')).toContainText(reply);
+      const handoff = panel.locator('.vp-handoff');
+      await toggleWithKeyboard(handoff);
+      await expect(handoff.locator('p')).toBeVisible();
+      await expect(handoff.locator('p')).toContainText(sample);
+    }
+  });
+
+  test('catatonia comparison requires both moments and clears the sample on close', async ({ page }) => {
+    const activity = await openActivity(page, 'catatonia.md', 'vp-catatonia', 'How it presents on the unit');
+    const frames = activity.locator('details[data-vp-frame]');
+    const compare = activity.locator('[data-vp-compare]');
+    await expect(frames).toHaveCount(2);
+    await expect(compare).toBeHidden();
+    await toggleWithKeyboard(frames.last());
+    await expect(frames.last().locator('.vp-reply')).toBeVisible();
+    await expect(compare).toBeHidden();
+    await toggleWithKeyboard(frames.first());
+    await expect(compare).toBeVisible();
+    const handoff = compare.locator('.vp-handoff');
+    await toggleWithKeyboard(handoff);
+    await expect(handoff.locator('p')).toContainText('nurse saw Kit drink');
+    await expect(handoff.locator('p')).toContainText('I heard no reply');
+    await toggleWithKeyboard(frames.last());
+    await expect(compare).toBeHidden();
+    await expect(handoff).toHaveJSProperty('open', false);
+    await toggleWithKeyboard(frames.last());
+    await expect(compare).toBeVisible();
+    await expect(handoff.locator('p')).toBeHidden();
+  });
+
+  test('medical workup distinguishes copied text, firsthand findings and the opening line', async ({ page }) => {
+    const activity = await openActivity(page, 'medical_workup.md', 'vp-workup', 'When to suspect a medical cause');
+    await expect(activity.locator('.vp-safety')).toBeVisible();
+    const sources = activity.locator('details[name="vp-workup-source"]');
+    for (const [index, provenance] of ['copied this line from yesterday', 'nurse saw both conversations'].entries()) {
+      await toggleWithKeyboard(sources.nth(index));
+      await expect(sources.nth(index).locator('.vp-reply')).toBeVisible();
+      await expect(sources.nth(index).locator('.vp-reply')).toContainText(provenance);
+    }
+    const paths = [
+      { finding: 'Check attention', observation: 'need your voice to re-engage', lines: 'vp-workup-attention-line',
+        feedback: ['establish orientation', 'raises concern for delirium'], assessment: 'measurements are still pending' },
+      { finding: 'Repeat the vital signs', observation: '86% on room air', lines: 'vp-workup-vitals-line',
+        feedback: ['give the numbers', 'cannot tell you its cause'], assessment: 'immediate respiratory and medical assessment' },
+    ];
+    for (const path of paths) {
+      const card = activity.locator('details[name="vp-workup-finding"]').filter({ has: page.locator('summary').filter({ hasText: path.finding }) });
+      await toggleWithKeyboard(card);
+      await expect(activity.locator('details[name="vp-workup-finding"][open]')).toHaveCount(1);
+      await expect(card.locator('.vp-reply > p').first()).toContainText(path.observation);
+      for (const [index, response] of path.feedback.entries()) {
+        const line = card.locator('details[name="' + path.lines + '"]').nth(index);
+        await toggleWithKeyboard(line);
+        await expect(line.locator('p')).toBeVisible();
+        await expect(line.locator('p')).toContainText(response);
+      }
+      const handoff = card.locator('details.vp-handoff:not([name])');
+      await toggleWithKeyboard(handoff);
+      await expect(handoff.locator('p')).toBeVisible();
+      await expect(handoff.locator('p')).toContainText(path.assessment);
+    }
+  });
+
+  test('metabolic chart selection precedes the monitoring table and changes the discharge handoff', async ({ page }) => {
+    const activity = await openActivity(page, 'nutrition_metabolic.md', 'vp-metabolic', 'Metabolic monitoring you should know cold');
+    const measures = activity.locator('details[name="vp-measure"]');
+    const tableFollows = await activity.evaluate(node => {
+      const section = node.closest('.fd-guide-section, .sec-c');
+      const table = section.querySelector('table');
+      return Boolean(table && table.textContent.includes('Blood pressure') && (node.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING));
+    });
+    expect(tableFollows).toBe(true);
+    await expect(measures).toHaveCount(2);
+    for (const [index, values, reply, sample] of [
+      [0, '72 → 74 → 76 kg', 'helps me sleep', 'repeat weight together'],
+      [1, '124 → 122 → 124 mmHg', 'right after dinner', 'pressure is back at its baseline'],
+    ]) {
+      const measure = measures.nth(index);
+      const summary = measure.locator(':scope > summary');
+      await expect(summary.locator('svg.vp-plot')).toBeVisible();
+      await expect(summary).toContainText(values);
+      await toggleWithKeyboard(measure);
+      await expect(activity.locator('details[name="vp-measure"][open]')).toHaveCount(1);
+      await expect(measure.locator('.vp-reply > p').first()).toContainText(reply);
+      const handoff = measure.locator('.vp-handoff');
+      await toggleWithKeyboard(handoff);
+      await expect(handoff.locator('p')).toBeVisible();
+      await expect(handoff.locator('p')).toContainText(sample);
+    }
+  });
+
+  test('perinatal accounts answer the same questions with distinct safety assessments', async ({ page }) => {
+    const activity = await openActivity(page, 't_perinatal.md', 'vp-perinatal', 'Initial workup');
+    await expect(activity.locator('.vp-safety')).toBeVisible();
+    await expect(activity.locator('.vp-safety')).toContainText('get help now');
+    const prompts = ['What was happening the last time', 'Who is with your baby now'];
+    const accounts = [
+      { name: 'Robin', replies: ['picture in my head', 'checking her crib'], assessments: ['intent to harm the infant', 'sister’s availability'] },
+      { name: 'Morgan', replies: ['baby monitor spoke to me', 'take him away right now'], assessments: ['Emergency psychiatric and obstetric assessment', 'immediate risk'] },
+    ];
+    for (const account of accounts) {
+      const chart = activity.locator('details[name="vp-perinatal-parent"]').filter({ has: page.locator('summary').filter({ hasText: 'Open ' + account.name }) });
+      await toggleWithKeyboard(chart);
+      await expect(activity.locator('details[name="vp-perinatal-parent"][open]')).toHaveCount(1);
+      const questions = chart.locator('details[name="vp-perinatal-' + account.name.toLowerCase() + '-question"]');
+      await expect(questions).toHaveCount(2);
+      for (const [index, prompt] of prompts.entries()) {
+        const question = questions.nth(index);
+        await expect(question.locator(':scope > summary')).toContainText(prompt);
+        await toggleWithKeyboard(question);
+        await expect(question.locator(':scope > p').first()).toBeVisible();
+        await expect(question.locator(':scope > p').first()).toContainText(account.replies[index]);
+        const handoff = question.locator('.vp-handoff');
+        await toggleWithKeyboard(handoff);
+        await expect(handoff.locator('p')).toBeVisible();
+        await expect(handoff.locator('p')).toContainText(account.assessments[index]);
+      }
+    }
+    for (const turn of ['next', 'moment']) {
+      const morgan = activity.locator('#vp-morgan-' + turn);
+      const robin = activity.locator('#vp-robin-' + turn);
+      if (!(await morgan.evaluate(node => node.open))) await toggleWithKeyboard(morgan);
+      await morgan.locator('[data-vp-ask-other]').press('Enter');
+      await expect(robin.locator(':scope > summary')).toBeFocused();
+      await expect(robin.locator(':scope > p').first()).toBeVisible();
+      await expect(robin.locator('.vp-handoff')).toHaveJSProperty('open', false);
+      await robin.locator('[data-vp-ask-other]').press('Enter');
+      await expect(morgan.locator(':scope > summary')).toBeFocused();
+      await expect(morgan.locator(':scope > p').first()).toBeVisible();
+    }
+
+    const openBeforePrinting = await activity.locator('details').evaluateAll(items => items.map(item => item.open));
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(activity.locator('details:not([open])')).toHaveCount(0);
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    expect(await activity.locator('details').evaluateAll(items => items.map(item => item.open))).toEqual(openBeforePrinting);
+    await expect(activity.locator('details[name="vp-perinatal-parent"]')).toHaveCount(2);
+  });
+});
+
 test.describe('Clinical field guide', () => {
   test('Noor’s dayroom check-in carries only her selected reply into rounds', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
