@@ -29,6 +29,7 @@ DECISION: shipped-pages-single-source
 
 __all__ = [
     "MS3_EXTRA_TOOLS",
+    "MS3_ONLY_PAGES",
     "RESIDENT_COTW_INDEX",
     "RESIDENT_TRACK_PAGES",
     "RESIDENT_EXTRA_PAGES",
@@ -116,3 +117,8 @@ RESIDENT_PROTO_TOOLS = [
         "Post-Event Learning Huddle (2 min)",
     ),
 ]
+
+# Manifest pages are shared by default. These explicitly MS3-only pages are
+# copied normally by build_deploy.py and removed from the resident copytree.
+# shipped_pages.py derives their audience from this same list.
+MS3_ONLY_PAGES = ["ms3_book_catalog.md"]
