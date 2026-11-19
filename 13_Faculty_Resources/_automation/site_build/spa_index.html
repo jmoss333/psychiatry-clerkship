@@ -1843,6 +1843,7 @@
       fdMountRoundsReflection(contentEl);
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
+      fdMountBedsideCases(contentEl);
       fdMountLithiumHandoff(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
@@ -2615,6 +2616,7 @@
     return fdReaderMedia(FD_MEDIA,ref,typeof FD_INDEX!=='undefined'&&fdReaderIsSafetyPage(FD_INDEX,ref));
   };
 
+  /*__FD_BEDSIDE_CASES__*/
   /*__FD_GUIDE__*/
 
   /*__FD_SEARCH__*/
@@ -3748,6 +3750,7 @@
           fdMountRoundsReflection(body);
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);
+          fdMountBedsideCases(body);
           fdMountLithiumHandoff(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
