@@ -3263,6 +3263,110 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('bedside reading · Jo limits the handoff to opened observations', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=collateral_workflow.md&guideFind=How+much+of+the+night+did+Jo+see');
+    const card = page.locator('#jo-night');
+    const note = page.locator('#jo-note');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#jo-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=preceding-sibling::h3[1]')).toHaveText('Baseline And Timeline');
+    await expect(note.locator('xpath=ancestor::section[h2][1]/h2')).toContainText('Bring It Back To The Team');
+    const sample = note.locator('#jo-sample');
+    const call = card.locator('[data-source="call"]');
+    const home = card.locator('[data-source="home"]');
+    await expect(note.locator('[data-ready]')).toBeHidden();
+    for (const [change, withCall, withHome] of [[call, true, false], [home, true, true], [call, false, true]]) {
+      await change.click();
+      await expect(sample).toBeEmpty();
+      await expect(card.locator('.call')).toBeVisible({ visible: withCall });
+      await expect(card.locator('.visit')).toBeVisible({ visible: withHome });
+      await card.locator('[data-continue]').click();
+      await expect(note.locator('[data-claim="night"]')).toBeFocused();
+      await note.locator('[data-claim="night"]').click();
+      await expect(note.locator('summary')).toBeHidden();
+      await note.locator('[data-claim="contact"]').click();
+      await note.locator('summary').click();
+      const text = await sample.innerText();
+      expect(text.includes('for six minutes')).toBe(withCall);
+      expect(text.includes('making coffee at seven')).toBe(withHome);
+      expect(text).toContain('We still don’t know how long Sam slept');
+    }
+    await home.click();
+    await expect(note.locator('[data-ready]')).toBeHidden();
+    await expect(sample).toBeEmpty();
+  });
+
+  test('bedside reading · Lee matches onset and follow-up in each formulation', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=t_adjustment.md&guideFind=Did+it+start+with+the+letter');
+    const card = page.locator('#lee-letter');
+    const resident = page.locator('#lee-res');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#lee-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]')).toContainText('Initial workup');
+    await expect(resident.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]')).toContainText('What the student does');
+    const sample = resident.locator('#lee-sample');
+    await card.locator('#lee-ask').click();
+    for (const [onset, work, mood] of [['after', 'missed two shifts', 'enjoy the call'], ['before', 'difficulty concentrating at work', 'loss of enjoyment']]) {
+      if (onset === 'before') await card.locator('#lee-switch').click();
+      await expect(sample).toBeEmpty();
+      await card.locator('[data-onset="' + (onset === 'before' ? 'after' : 'before') + '"]').click();
+      await expect(resident.locator('[data-ready]')).toBeHidden();
+      await card.locator('[data-onset="' + onset + '"]').click();
+      await card.locator('[data-continue]').click();
+      await expect(resident.locator('[data-follow="function"]')).toBeFocused();
+      for (const [follow, phrase] of [['function', work], ['mood', mood]]) {
+        await resident.locator('[data-follow="' + follow + '"]').click();
+        await expect(sample).toBeEmpty();
+        await resident.locator('summary').click();
+        await expect(sample).toContainText(phrase);
+      }
+    }
+    await card.locator('#lee-ask').click();
+    await expect(sample).toBeEmpty();
+    await expect(resident.locator('[data-ready]')).toBeHidden();
+  });
+
+  test('bedside reading · Robin’s counseling and handoff follow the memory concern', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=ect_neuromodulation.md&guideFind=Which+memory+matters+to+you');
+    const card = page.locator('#ect-memory-conversation');
+    const resident = page.locator('#em-resident');
+    const model = resident.locator('[data-em-model-body]');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#ect-memory-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=preceding-sibling::p[1]')).toContainText('Workup & safety');
+    await expect(resident.locator('xpath=preceding-sibling::p[1]')).toContainText('What the student does');
+    await expect(card.locator('img')).toBeVisible();
+    await expect.poll(() => card.locator('img').evaluate(i => i.naturalWidth)).toBe(1320);
+    for (const [concern, general, specific, handoff, other] of [
+      ['event', 'toast back', 'part of that day', 'wedding toast today', 'evening calls'],
+      ['calls', 'fine on a test', 'pick up where we left off', 'remembering evening calls', 'wedding toast']
+    ]) {
+      await card.locator('[data-em-concern="' + concern + '"]').click();
+      await expect(resident.locator('[data-em-ready]')).toBeHidden();
+      await expect(model).toBeEmpty();
+      for (const [reply, response] of [['general', general], ['specific', specific]]) {
+        await card.locator('[data-em-reply="' + reply + '"]').click();
+        await expect(card.locator('[data-em-interpretation]')).toContainText(response);
+        await expect(model).toBeEmpty();
+        await card.locator('[data-em-continue]').click();
+        await expect(resident.locator('#em-resident-title')).toBeFocused();
+        await resident.locator('summary').click();
+        await expect(model).toContainText(handoff);
+        await expect(model).not.toContainText(other);
+      }
+    }
+    await card.locator('[data-em-reset]').click();
+    await expect(model).toBeEmpty();
+    await expect(resident.locator('[data-em-ready]')).toBeHidden();
+  });
+
+
   test('Jules’s lithium handoff follows the collection time, nurse report, and selected lead', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
