@@ -3030,6 +3030,43 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   .li-case .li-slip{display:flex;align-items:center;flex-wrap:wrap;gap:var(--fd-space-2) var(--fd-space-5)}
 }
 
+/* Alex's lunch interview and its linked handoff share the reading's type and spacing. */
+.al-case {
+  container:alex-lunch / inline-size; margin-block:var(--fd-space-8); overflow-wrap:anywhere;
+  color:var(--fd-text); background:var(--fd-surface-warm); border-block:1px solid var(--fd-line-strong);
+  font-size:calc(var(--fd-font-base) * var(--fd-reading-scale,1)); line-height:var(--fd-reading-leading,1.5);
+}
+.al-case [hidden]{display:none!important}
+.al-case :is(p,h3,h4,blockquote,details){margin:0}
+.al-case .al-top{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:center;border-bottom:1px solid var(--fd-line-strong)}
+.al-case .al-intro,.al-case .al-body,#al-res{padding:clamp(var(--fd-space-5),4%,var(--fd-space-8))}
+.al-case .al-hero{display:block;width:100%;height:100%;min-height:0;object-fit:cover;object-position:50% 52%}
+.al-case .al-kicker,.al-case .al-voice{color:var(--fd-teal-deep);font-weight:650}
+.al-case .al-kicker{font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1));letter-spacing:.055em;text-transform:uppercase}
+.al-case :is(h3,h4,.al-quote){font-family:Georgia,'Times New Roman',serif;font-weight:400}
+.al-case :is(h3,h4){font-size:calc(var(--fd-font-2xl)*var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,1.2)}
+.al-case #al-title{font-size:calc(var(--fd-font-3xl)*var(--fd-reading-scale,1));letter-spacing:-.025em;margin-block:var(--fd-space-3)}
+.al-case .al-body,.al-case .al-step,#al-res,.al-case .al-exchange{display:grid;min-width:0;gap:var(--fd-space-4)}
+.al-case .al-options,.al-case .al-note{display:flex;gap:var(--fd-space-3);flex-wrap:wrap}
+.al-case :is(button,summary){min-height:var(--fd-target-touch);max-width:100%;font:inherit;color:var(--fd-teal-deep);cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+.al-case button{justify-self:start;text-align:left;padding:var(--fd-space-3) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);font-weight:600}
+.al-case button[aria-pressed=true]{background:var(--fd-teal-wash);border-color:var(--fd-teal);box-shadow:inset 0 -2px var(--fd-teal-deep)}
+.al-case .al-link{border:0;padding-inline:0;background:transparent;text-decoration:underline;text-underline-offset:.15em}
+.al-case .al-exchange,.al-case .al-handoff{border:0;border-left:3px solid var(--fd-teal);padding:var(--fd-space-4) var(--fd-space-5);background:var(--fd-teal-wash)}
+.al-case .al-quote{padding:0;border:0;background:transparent;color:var(--fd-text);font-size:calc(var(--fd-font-section)*var(--fd-reading-scale,1));font-style:normal}
+.al-case .al-note{align-items:baseline;background:var(--fd-surface);padding:var(--fd-space-5);border-block:1px solid var(--fd-line-strong)}
+.al-case .al-note p{width:100%}
+.al-case .al-note button{font-family:Georgia,'Times New Roman',serif;font-weight:400;text-decoration:underline dotted;text-underline-offset:.24em;padding-inline:var(--fd-space-2);border:0}
+.al-case [data-phrase=appetite][aria-pressed=true]{text-decoration:line-through}
+.al-case summary{padding-block:var(--fd-space-3);font-weight:650}
+.al-case .al-handoff .al-voice{margin-top:var(--fd-space-4)}
+.al-case footer,.al-case [data-locked]{color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+.al-case :is(button,summary,a):focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+@container alex-lunch (max-width:540px){
+  .al-case .al-top{grid-template-columns:1fr}
+  .al-case .al-hero{height:auto;max-height:240px;object-position:center 60%}
+}
+
 /* Ari's illness timeline uses the same proportional weeks for both symptom rows. */
 .aw-case{
   container:ari / inline-size;margin-block:var(--fd-space-8);padding:clamp(var(--fd-space-6),4%,var(--fd-space-10));
