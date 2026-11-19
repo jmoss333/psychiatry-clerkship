@@ -3,6 +3,7 @@ function fdMountBedsideCases(body) {
   fdMountJoCall(body);
   fdMountLeeTimeline(body);
   fdMountEctMemory(body);
+  fdMountRaeReturnVisit(body);
 }
 
 function fdBedsideFocus(control) {
@@ -10,6 +11,90 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountRaeReturnVisit(body) {
+  const card = body.querySelector('#rae-visit');
+  const handoff = body.querySelector('#rae-handoff');
+  if (!card || !handoff || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const questions = card.querySelectorAll('[data-ask]');
+  const plans = card.querySelectorAll('[data-plan]');
+  const leads = handoff.querySelectorAll('[data-lead]');
+  const next = card.querySelector('[data-visit]');
+  const time = card.querySelector('[data-time]');
+  const who = card.querySelector('[data-who]');
+  const timeOpen = time.textContent;
+  const teamOpen = who.textContent;
+  const booking = card.querySelector('template[data-booking]').content;
+  const worked = handoff.querySelector('details');
+  const sample = handoff.querySelector('[data-handoff-sample]');
+  const copy = (source, field) => source.querySelector('[data-' + field + ']').textContent;
+  let morning;
+  let outcome;
+
+  function select(buttons, current) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === current));
+  }
+  function chooseLead(button) {
+    select(leads, button);
+    const matched = button && button.dataset.lead === outcome.dataset.outcome;
+    handoff.querySelector('[data-feedback]').textContent = button ? copy(outcome.content, matched ? 'match' : 'hint') : '';
+    worked.hidden = !matched;
+    worked.open = false;
+    sample.textContent = '';
+  }
+  function showUpdate(key) {
+    outcome = key && handoff.querySelector('template[data-outcome="' + key + '"]');
+    handoff.querySelector('[data-ready]').hidden = !outcome;
+    handoff.querySelector('[data-locked]').hidden = Boolean(outcome);
+    const update = handoff.querySelector('[data-update]');
+    update.textContent = !outcome ? '' : key === 'change' ? copy(outcome.content, 'words') : copy(morning, 'afternoon');
+    chooseLead(null);
+  }
+  function closeVisit(button) {
+    select(plans, button);
+    const booked = button && button.dataset.plan === 'return';
+    time.textContent = booked ? copy(booking, 'agreed-time') : timeOpen;
+    who.textContent = booked ? copy(booking, 'team') : teamOpen;
+    card.querySelector('[data-plan-note]').textContent = button ? copy(booking, button.dataset.plan) : '';
+    next.hidden = !booked;
+    showUpdate(null);
+  }
+  for (const button of questions) button.addEventListener('click', () => {
+    if (button.getAttribute('aria-pressed') === 'true') return;
+    morning = card.querySelector('template[data-morning="' + button.dataset.ask + '"]').content;
+    select(questions, button);
+    card.querySelector('[data-answer]').hidden = card.querySelector('[data-closing]').hidden = false;
+    card.querySelector('[data-reply]').textContent = copy(morning, 'words');
+    card.querySelector('[data-priority]').textContent = copy(morning, 'card');
+    closeVisit(null);
+  });
+  for (const button of plans) button.addEventListener('click', () => {
+    if (button.getAttribute('aria-pressed') !== 'true') closeVisit(button);
+  });
+  next.addEventListener('click', () => {
+    if (!outcome) showUpdate('function');
+    fdBedsideFocus(leads[0]);
+  });
+  handoff.querySelector('[data-switch]').addEventListener('click', () => {
+    showUpdate(outcome.dataset.outcome === 'change' ? 'function' : 'change');
+    fdBedsideFocus(leads[0]);
+  });
+  for (const button of leads) button.addEventListener('click', () => chooseLead(button));
+  handoff.querySelector('[data-back]').addEventListener('click', () => {
+    fdBedsideFocus(card.querySelector('[data-ask][aria-pressed="true"]') || questions[0]);
+  });
+  worked.querySelector('summary').addEventListener('click', () => {
+    sample.textContent = '';
+    if (worked.open || worked.hidden) return;
+    const nextStep = copy(outcome.content, 'next');
+    const report = outcome.dataset.outcome === 'change'
+      ? nextStep + ' ' + copy(morning, 'history')
+      : copy(morning, 'progress') + ' ' + nextStep;
+    sample.textContent = '“' + report + '”';
+  });
 }
 
 function fdMountJoCall(body) {

@@ -3853,6 +3853,90 @@ test.describe('Clinical field guide', () => {
     await expect(sample).toBeEmpty();
   });
 
+  test('bedside reading · Rae’s return visit and handoff follow the morning question and afternoon update', async ({ page }, info) => {
+    const ref = 't_somatic.md';
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto(`/?page=${ref}&guideSection=acute-inpatient-management`);
+    const management = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-acute-inpatient-management') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const card = management.locator('#rae-visit');
+    const handoff = student.locator('#rae-handoff');
+    const call = card.locator('[data-plan="call"]');
+    const book = card.locator('[data-plan="return"]');
+    const visit = card.locator('[data-visit]');
+    const update = handoff.locator('[data-update]');
+    const compare = handoff.locator('details > summary');
+    const sample = handoff.locator('[data-handoff-sample]');
+    await expect(card.getByText('Will you still come back?', { exact: true })).toBeVisible();
+    await expect(handoff).toHaveCount(1);
+    await expect(card.locator('[data-reply]')).toBeHidden();
+    await expect(call).toBeHidden();
+    await expect(book).toBeHidden();
+    const expectUnbooked = async () => {
+      await expect(visit).toBeHidden();
+      await expect(update).toBeHidden();
+      await expect(handoff.locator('[data-lead]:visible')).toHaveCount(0);
+      await expect(handoff.locator('[data-switch]')).toBeHidden();
+      await expect(compare).toBeHidden();
+      await expect(sample).toBeEmpty();
+    };
+    await expectUnbooked();
+    const questions = [
+      {
+        ask: 'goal', reply: 'niece’s birthday', priority: 'birthday card', afternoon: 'outgoing mail',
+        progress: 'line they wrote in the birthday card', history: 'niece’s birthday card', other: /dayroom|next shift/,
+      },
+      {
+        ask: 'worry', reply: 'We already checked', priority: 'who will listen', afternoon: 'dayroom',
+        progress: 'dayroom', history: 'next shift might dismiss', other: /birthday card/,
+      },
+    ];
+    for (const question of questions) {
+      await card.locator(`[data-ask="${question.ask}"]`).click();
+      await expect(card.locator('[data-reply]')).toContainText(question.reply);
+      await expect(card.locator('[data-priority]')).toContainText(question.priority);
+      await expect(card.locator('[data-time]')).toHaveText('Time open');
+      await expectUnbooked();
+      await call.click();
+      await expect(card.getByText(/Give Rae a time they can count on/)).toBeVisible();
+      await expect(visit).toBeHidden();
+      await book.click();
+      await expect(card.locator('[data-time]')).toHaveText('2 p.m.');
+      await expect(update).toBeHidden();
+      await visit.click();
+      for (const lead of ['function', 'change']) {
+        if (lead === 'change') await handoff.locator('[data-switch]').click();
+        await expect(update).toBeVisible();
+        await expect(update).toContainText(lead === 'function' ? question.afternoon : 'sharp, here on the right');
+        await expect(compare).toBeHidden();
+        await expect(sample).toBeEmpty();
+        const otherLead = lead === 'function' ? 'change' : 'function';
+        await handoff.locator(`[data-lead="${otherLead}"]`).click();
+        const coaching = lead === 'function' ? /ache as familiar/ : /new focal, worsening pain/;
+        await expect(handoff.getByText(coaching)).toBeVisible();
+        await expect(compare).toBeHidden();
+        await expect(sample).toBeEmpty();
+        await handoff.locator(`[data-lead="${lead}"]`).click();
+        await expect(sample).toBeEmpty();
+        await compare.press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toContainText(lead === 'function' ? question.progress : question.history);
+        await expect(sample).not.toContainText(question.other);
+        if (lead === 'change') {
+          await expect(sample).toContainText('right-sided abdominal pain');
+          await expect(sample).toContainText('reassess Rae with the nurse now');
+        } else {
+          await expect(sample).toContainText('next check-in');
+          await expect(sample).not.toContainText('right-sided');
+        }
+      }
+    }
+    await call.click();
+    await expectUnbooked();
+    await expectHealthy(page);
+  });
+
   test('bedside reading · Lee matches onset and follow-up in each formulation', async ({ page }, info) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, info);
