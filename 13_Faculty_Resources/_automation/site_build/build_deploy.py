@@ -585,14 +585,23 @@ illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "ill
 os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
 for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
     _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
+               os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),
                os.path.join(OUT, "illustrations", "lithium-night-shift.webp"), _missing_req)
-_copy_required(os.path.join(LIB, "03_Core_Topics", "Anxiety", "illustrations", "pacing-hallway.webp"),
-               os.path.join(OUT, "illustrations", "pacing-hallway.webp"), _missing_req)
+for topic, scene in (("Anxiety", "pacing-hallway.webp"), ("Mood", "mood-breakfast.webp")):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", topic, "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Psychosis", "illustrations", "ari-between-admissions.webp"),
                os.path.join(OUT, "illustrations", "ari-between-admissions.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurodevelopmental", "illustrations", "alex-lunch.webp"),
+               os.path.join(OUT, "illustrations", "alex-lunch.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
                os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation", "illustrations", "robin-memory.webp"),
+               os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
+               os.path.join(OUT, "illustrations", "noor-dayroom.webp"), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
@@ -602,6 +611,10 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustra
                os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Personality", "illustrations", "personality-conversation.webp"),
                os.path.join(OUT, "illustrations", "personality-conversation.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", "cultural-chart.webp"),
+               os.path.join(OUT, "illustrations", "cultural-chart.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
+               os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 # Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms

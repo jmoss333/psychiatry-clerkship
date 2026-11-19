@@ -772,6 +772,74 @@
       shell.classList.toggle('is-scrollable',!!viewport&&viewport.scrollWidth>viewport.clientWidth+1);
     });
   }
+  function fdMountLunchInterview(body) {
+    const interview = body.querySelector('#alex-lunch');
+    const handoff = body.querySelector('#al-res');
+    if (!interview || !handoff || interview.dataset.mounted) return;
+    interview.dataset.mounted = 'true';
+
+    const choices = interview.querySelectorAll('[data-mode]');
+    const phrases = handoff.querySelectorAll('[data-phrase]');
+    const ask = interview.querySelector('#al-ask');
+    const askLabel = ask.textContent;
+    const answer = interview.querySelector('#al-answer');
+    const next = interview.querySelector('[data-continue]');
+    const ready = handoff.querySelector('[data-ready]');
+    const worked = handoff.querySelector('details');
+    const sample = handoff.querySelector('#al-sample');
+    const interpretation = handoff.querySelector('#al-interpret');
+    const rounds = handoff.querySelector('template[data-rounds]').content;
+    let choice;
+    let history;
+
+    function selectPhrase(button) {
+      for (const phrase of phrases) phrase.setAttribute('aria-pressed', String(button === phrase));
+      const correct = button?.dataset.phrase === 'appetite';
+      const feedback = handoff.querySelector('#al-feedback');
+      feedback.textContent = button ? rounds.querySelector(correct ? '[data-correct]' : '[data-retry]').textContent : '';
+      handoff.querySelector('#al-finish').hidden = !correct;
+      worked.open = false;
+      sample.textContent = interpretation.textContent = '';
+    }
+
+    function showAnswer(open) {
+      ask.setAttribute('aria-expanded', String(open));
+      ask.textContent = open ? 'Hide Alex’s reply' : askLabel;
+      answer.hidden = next.hidden = ready.hidden = !open;
+      handoff.querySelector('[data-locked]').hidden = open;
+      answer.querySelector('#al-by').textContent = open ? history.querySelector('[data-by]').textContent : '';
+      answer.querySelector('blockquote').textContent = open ? interview.querySelector('[data-answer]').content.textContent : '';
+      selectPhrase(null);
+    }
+
+    for (const button of choices) button.addEventListener('click', () => {
+      if (choice === button) return;
+      choice = button;
+      history = interview.querySelector('template[data-history="' + button.dataset.mode + '"]').content;
+      for (const option of choices) option.setAttribute('aria-pressed', String(option === choice));
+      interview.querySelector('#al-adapt').hidden = false;
+      interview.querySelector('#al-support').textContent = history.querySelector('[data-support]').textContent;
+      showAnswer(false);
+    });
+    ask.addEventListener('click', () => showAnswer(answer.hidden));
+    for (const button of phrases) button.addEventListener('click', () => selectPhrase(button));
+    function jump(control) {
+      control.focus({preventScroll:true});
+      control.scrollIntoView({block:'center'});
+    }
+    next.addEventListener('click', () => jump(phrases[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => jump(choice || choices[0]));
+    // Printing and in-page search can expand details. Only a learner action supplies the answers.
+    worked.querySelector('summary').addEventListener('click', () => {
+      const reveal = !worked.open && !handoff.querySelector('#al-finish').hidden;
+      sample.textContent = reveal ? '“' + [
+        rounds.querySelector('[data-opening]').textContent, history.querySelector('[data-report]').textContent,
+        rounds.querySelector('[data-inference]').textContent, history.querySelector('[data-next]').textContent
+      ].join(' ') + '”' : '';
+      interpretation.textContent = reveal ? rounds.querySelector('[data-meaning]').textContent : '';
+    });
+  }
+
   function fdMountPsychosisTimeline(body) {
     const timeline = body.querySelector('#ari-weeks');
     const handoff = body.querySelector('#aw-handoff');
@@ -849,6 +917,75 @@
       gap.setAttribute('aria-expanded','false');
       markInterval(null);
       focusControl(gap);
+    });
+  }
+
+  function fdMountNoorDayroom(body) {
+    const morning = body.querySelector('#noor-dayroom');
+    const afternoon = body.querySelector('#noor-checkin');
+    if (!morning || !afternoon || morning.dataset.mounted) return;
+    morning.dataset.mounted = 'true';
+    const invitations = morning.querySelectorAll('[data-place]');
+    const agreement = morning.querySelector('#nd-agreement');
+    const check = afternoon.querySelector('[data-check]');
+    const showLabel = check.textContent;
+    const later = afternoon.querySelector('#nd-later');
+    const questions = later.querySelector('.nd-questions');
+    const answer = later.querySelector('[data-answer]');
+    const rounds = later.querySelector('[data-rounds]');
+    const sample = rounds.querySelector('[data-sample]');
+    const back = afternoon.querySelector('[data-return]');
+    let visit, reply;
+
+    function showCheckin(open) {
+      later.hidden = !open;
+      check.setAttribute('aria-expanded', String(open));
+      check.textContent = open ? check.dataset.hideLabel : showLabel;
+      later.querySelector('[data-checkin-line]').textContent = open ? visit.querySelector('[data-afternoon] p').textContent : '';
+      later.querySelector('[data-result]').textContent = open ? visit.querySelector('[data-afternoon] blockquote').textContent : '';
+      questions.replaceChildren();
+      if (open) questions.append(...visit.querySelector('[data-questions]').cloneNode(true).children);
+      showReply(null);
+    }
+
+    function showReply(choice) {
+      for (const button of questions.children) button.setAttribute('aria-pressed', String(button === choice));
+      reply = choice && visit.querySelector('[data-reply="' + choice.dataset.ask + '"]');
+      answer.textContent = reply ? reply.querySelector('[data-quote]').textContent : '';
+      answer.parentElement.hidden = !reply;
+      rounds.open = false;
+      rounds.hidden = !reply;
+      sample.textContent = '';
+    }
+
+    for (const invitation of invitations) {
+      invitation.addEventListener('click', () => {
+        if (invitation.getAttribute('aria-pressed') === 'true') return;
+        for (const button of invitations) button.setAttribute('aria-pressed', String(button === invitation));
+        visit = afternoon.querySelector('template[data-visit="' + invitation.dataset.place + '"]').content;
+        morning.querySelector('[data-exchange]').replaceChildren(...visit.querySelector('[data-morning]').cloneNode(true).children);
+        agreement.hidden = false;
+        check.hidden = false;
+        back.textContent = back.dataset.changeLabel;
+        showCheckin(false);
+      });
+    }
+    function jump(target) {
+      const section = target.closest('.sec-c:not(.open)');
+      if (section) section.querySelector('.sec-h button').click();
+      target.focus({preventScroll:true});
+      target.scrollIntoView({block:'center'});
+    }
+    morning.querySelector('[data-continue]').addEventListener('click', () => jump(check));
+    back.addEventListener('click', () => jump(morning.querySelector('[data-place][aria-pressed=true]') || invitations[0]));
+    check.addEventListener('click', () => showCheckin(later.hidden));
+    questions.addEventListener('click', event => {
+      const choice = event.target.closest('button[data-ask]');
+      if (choice) showReply(choice);
+    });
+    // A guide search or print can expand details without a learner asking for the sample.
+    rounds.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = reply && !rounds.open ? reply.querySelector('[data-rounds-text]').textContent : '';
     });
   }
 
@@ -1060,6 +1197,65 @@
       }
     });
   }
+  function fdFocusGuideControl(button) {
+    const collapsed = button.closest('.sec-c:not(.open)');
+    if (collapsed) collapsed.querySelector('.sec-h button').click();
+    button.focus({preventScroll:true});
+    button.scrollIntoView({block:'center'});
+  }
+
+  function fdMountPillboxHandoff(body) {
+    const interview = body.querySelector('#mara-pillbox');
+    const handoff = body.querySelector('#mara-handoff');
+    if (!interview || !handoff || interview.dataset.mounted) return;
+    interview.dataset.mounted = 'true';
+    const days = Array.from(interview.querySelectorAll('[data-day]'));
+    const sunday = interview.querySelector('[data-day=sunday]');
+    const claims = handoff.querySelectorAll('[data-claim]');
+    const feedback = handoff.querySelector('[data-feedback]');
+    const model = handoff.querySelector('[data-model]');
+    const sample = model.querySelector('[data-sample]');
+    const next = interview.querySelector('[data-continue]');
+    const swap = handoff.querySelector('[data-swap]');
+    const hint = interview.querySelector('[data-hint]');
+    const initialHint = hint.textContent;
+    let history = handoff.querySelector('template[data-history=caps]');
+
+    function selectClaim(choice) {
+      for (const button of claims) button.setAttribute('aria-pressed', String(button === choice));
+      feedback.textContent = choice ? history.content.querySelector('[data-for="' + choice.dataset.claim + '"]').textContent : '';
+      feedback.hidden = model.hidden = swap.hidden = !choice;
+      model.open = false;
+      sample.textContent = '';
+    }
+
+    function setAnswer(button, open) {
+      button.setAttribute('aria-expanded', String(open));
+      interview.querySelector('#' + button.getAttribute('aria-controls')).hidden = !open;
+      button.querySelector('[data-indicator]').textContent = open ? '−' : '+';
+      button.querySelector('[data-action]').textContent = open ? 'Close answer' : 'Hear Mara';
+      interview.querySelector('[data-words=sunday]').textContent = sunday.getAttribute('aria-expanded') === 'true' ? history.content.querySelector('blockquote').textContent : '';
+      const left = days.filter(day => day.getAttribute('aria-expanded') === 'false');
+      handoff.querySelector('[data-ready]').hidden = next.hidden = left.length > 0;
+      handoff.querySelector('[data-locked]').hidden = hint.hidden = !left.length;
+      hint.textContent = left.length === 1 ? 'Now ask about ' + left[0].querySelector('.mp-dayname').textContent + '.' : initialHint;
+      selectClaim(null);
+    }
+
+    for (const button of days) button.addEventListener('click', () => setAnswer(button, button.getAttribute('aria-expanded') !== 'true'));
+    for (const button of claims) button.addEventListener('click', () => selectClaim(button));
+    next.addEventListener('click', () => fdFocusGuideControl(claims[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => fdFocusGuideControl(days.find(day => day.getAttribute('aria-expanded') === 'false') || sunday));
+    model.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = !model.open && !model.hidden ? history.content.querySelector('[data-handoff]').textContent : '';
+    });
+    swap.addEventListener('click', () => {
+      history = handoff.querySelector(history.dataset.history === 'caps' ? 'template[data-history=setup]' : 'template[data-history=caps]');
+      setAnswer(sunday, false);
+      fdFocusGuideControl(sunday);
+    });
+  }
+
   function fdMountLithiumHandoff(body) {
     const timing = body.querySelector('#li-eight-am');
     const resident = body.querySelector('#li-resident');
@@ -1110,14 +1306,8 @@
         showReport(null);
       });
     }
-    function goTo(button) {
-      const collapsed = button.closest('.sec-c:not(.open)');
-      if (collapsed) collapsed.querySelector('.sec-h button').click();
-      button.focus({preventScroll:true});
-      button.scrollIntoView({block:'center'});
-    }
-    next.addEventListener('click', () => goTo(hear));
-    resident.querySelector('[data-back]').addEventListener('click', () => goTo(timing.querySelector('[data-time][aria-pressed=true]') || choices[0]));
+    next.addEventListener('click', () => fdFocusGuideControl(hear));
+    resident.querySelector('[data-back]').addEventListener('click', () => fdFocusGuideControl(timing.querySelector('[data-time][aria-pressed=true]') || choices[0]));
     hear.addEventListener('click', () => showReport(report ? null : 'breakfast'));
     call.querySelector('[data-switch]').addEventListener('click', () => showReport(report.dataset.report === 'breakfast' ? 'change' : 'breakfast'));
     for (const lead of leads) lead.addEventListener('click', () => selectLead(lead));
@@ -1127,6 +1317,256 @@
     });
   }
 
+  /* The interview and note sit in separate reading sections. All clinical wording is
+     authored in the page. Explicitly opened answers belong to this mounted visit only. */
+  function fdMountCulturalChart(body){
+    var card=body.querySelector('#cultural-chart');
+    var follow=body.querySelector('#cultural-chart-followup');
+    if(!card||!follow)return;
+    var doc=body.ownerDocument;
+    var sources=[].slice.call(card.querySelectorAll('[data-culture-source]'));
+    var templates=[].slice.call(follow.querySelectorAll('template[data-culture-clause]'));
+    var interview=card.querySelector('[data-culture-interview]');
+    var line=follow.querySelector('[data-culture-line]');
+    var excerpt=follow.querySelector('#cultural-chart-excerpt');
+    var feedback=card.querySelector('[data-culture-feedback]');
+    var seen=new Set(), traced=null;
+
+    function renderTrace(){
+      follow.querySelectorAll('[data-culture-trace]').forEach(function(b){
+        b.setAttribute('aria-pressed',String(b.dataset.cultureTrace===traced));
+      });
+      excerpt.hidden=!traced;
+      if(!traced)return;
+      var source=card.querySelector('[data-culture-source="'+traced+'"]');
+      var quote=source?source.querySelector('blockquote p'):card.querySelector('[data-culture-opening]');
+      var label=source?source.querySelector('.cultural-chart__question-type'):card.querySelector('.cultural-chart__voice .fd-bedside-case__label');
+      excerpt.querySelector('[data-culture-quote]').textContent=quote.textContent;
+      excerpt.querySelector('[data-culture-quote-label]').textContent=label.textContent;
+    }
+    function renderNote(){
+      var opened=templates.filter(function(t){return t.dataset.cultureClause==='opening'||seen.has(t.dataset.cultureClause);});
+      line.replaceChildren();
+      opened.forEach(function(t,index){
+        var last=index===opened.length-1;
+        var phrase=doc.createElement('button');
+        phrase.type='button';
+        phrase.dataset.cultureTrace=t.dataset.cultureClause;
+        phrase.setAttribute('aria-controls',excerpt.id);
+        phrase.textContent=(index>0&&last?'and ':'')+t.content.textContent.trim()+(last?'.':opened.length>2?',':'');
+        if(index)line.appendChild(doc.createTextNode(' '));
+        line.appendChild(phrase);
+      });
+      var missing=sources.find(function(s){return !seen.has(s.dataset.cultureSource);});
+      var challenge=follow.querySelector('[data-culture-challenge-for="'+(missing?missing.dataset.cultureSource:'all')+'"]');
+      follow.querySelector('[data-culture-challenge]').textContent=challenge.content.textContent;
+      renderTrace();
+    }
+    function record(source){
+      var key=source.dataset.cultureSource;
+      if(!seen.has(key)){seen.add(key);renderNote();}
+    }
+    // Guide search opens the answer disclosure and focuses its actual passage.
+    card.addEventListener('focusin',function(event){
+      var source=event.target.closest('details[open][data-culture-source]');
+      if(source)record(source);
+    });
+    card.addEventListener('click',function(event){
+      var word=event.target.closest('[data-culture-word]');
+      if(word){
+        card.querySelectorAll('[data-culture-word]').forEach(function(b){
+          b.setAttribute('aria-pressed',String(b===word));
+        });
+        feedback.textContent=card.querySelector('[data-culture-feedback-for="'+word.dataset.cultureWord+'"]').content.textContent;
+        feedback.hidden=false;
+        if(word.dataset.cultureWord==='hallucinations')interview.open=true;
+        return;
+      }
+      // Native summary activation covers pointer and keyboard. Print-only expansion
+      // must never add an answer to the learner's note.
+      var summary=event.target.closest('summary');
+      var source=summary&&summary.parentElement;
+      if(source&&source.hasAttribute('data-culture-source')&&!source.open)record(source);
+    });
+    follow.addEventListener('click',function(event){
+      var phrase=event.target.closest('[data-culture-trace]');
+      if(phrase){traced=phrase.dataset.cultureTrace;renderTrace();return;}
+      if(!event.target.closest('[data-culture-reset]'))return;
+      seen.clear();traced=null;
+      card.querySelectorAll('details').forEach(function(d){d.open=false;});
+      follow.querySelectorAll('details').forEach(function(d){d.open=false;});
+      follow.open=false;
+      follow.querySelector('textarea').value='';
+      card.querySelectorAll('[data-culture-word]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      feedback.hidden=true;feedback.textContent='';
+      renderNote();
+      card.querySelector('[data-culture-word]').focus();
+    });
+    renderNote();
+  }
+  /* Clinical wording stays in the authored page. Only this visit's display state lives here. */
+  function fdMountDeliriumShift(body){
+    var card=body.querySelector('#delirium-shift'), follow=body.querySelector('#delirium-shift-followup');
+    if(!card||!follow||card._shiftMounted)return;
+    card._shiftMounted=true;
+    var encounter=card.querySelector('[data-shift-encounter]');
+    var afternoon=document.createDocumentFragment();
+    [].forEach.call(encounter.childNodes,function(node){afternoon.appendChild(node.cloneNode(true));});
+    var scenes={afternoon:afternoon};
+    card.querySelectorAll('template[data-shift-scene]').forEach(function(t){scenes[t.dataset.shiftScene]=t.content;});
+    var feedback=card.querySelector('[data-shift-feedback]'), comparison=card.querySelector('[data-shift-comparison]');
+    var time='afternoon';
+    function showTime(key){
+      if(!scenes[key])return;
+      card.querySelectorAll('[data-shift-time]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.shiftTime===key));});
+      if(time!==key){encounter.replaceChildren(scenes[key].cloneNode(true));time=key;}
+    }
+    card.addEventListener('click',function(event){
+      var reveal=event.target.closest('summary');
+      if(reveal&&reveal.parentElement===comparison){
+        var comparisonBody=comparison.querySelector('[data-shift-comparison-body]');
+        // Only explicit pointer/keyboard reveal mounts the answer. Guide find and print
+        // may open native details programmatically; neither supplies the comparison.
+        if(!comparisonBody.childNodes.length)comparisonBody.appendChild(comparison.querySelector('template').content.cloneNode(true));
+        return;
+      }
+      var observation=event.target.closest('[data-shift-time]');
+      if(observation){showTime(observation.dataset.shiftTime);return;}
+      var choice=event.target.closest('[data-shift-choice]');
+      if(choice){
+        var answer=card.querySelector('[data-shift-feedback-for="'+choice.dataset.shiftChoice+'"]');
+        if(!answer)return;
+        showTime('afternoon');
+        card.querySelectorAll('[data-shift-choice]').forEach(function(b){b.setAttribute('aria-pressed',String(b===choice));});
+        feedback.replaceChildren(answer.content.cloneNode(true));feedback.hidden=false;
+        if(comparison.hidden)comparison.open=false;
+        comparison.hidden=false;
+        return;
+      }
+      if(!event.target.closest('[data-shift-reset]'))return;
+      showTime('afternoon');
+      card.querySelectorAll('[data-shift-choice]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      feedback.replaceChildren();feedback.hidden=true;
+      comparison.open=false;comparison.hidden=true;
+      comparison.querySelector('[data-shift-comparison-body]').replaceChildren();
+      follow.open=false;follow.querySelector('[data-shift-worked]').open=false;
+      follow.querySelector('textarea').value='';
+      card.querySelector('[data-shift-time="afternoon"]').focus();
+    });
+  }
+  function fdMountSleepNight(body) {
+    const workup = body.querySelector('#sleep-workup');
+    const plan = body.querySelector('#sleep-plan');
+    const followup = body.querySelector('#sleep-followup');
+    if (!workup || !plan || !followup || workup.dataset.sleepMounted) return;
+    workup.dataset.sleepMounted = 'true';
+
+    const opened = new Set();
+    const sources = Array.from(workup.querySelectorAll('button[data-source]'));
+    const priorities = plan.querySelectorAll('button[data-priority]');
+    const feedback = plan.querySelector('[data-feedback]');
+    const baseline = workup.querySelector('[data-baseline]');
+    const evidence = workup.querySelector('#sn-evidence');
+    const tracks = workup.querySelectorAll('[data-track]');
+    const timeline = workup.querySelector('[data-night]');
+    const initialDescription = timeline.getAttribute('aria-label');
+    const worked = followup.querySelector('[data-worked]');
+    const note = worked.querySelector('[data-note]');
+    const coverage = worked.querySelector('[data-coverage]');
+    let priority = null;
+
+    const initialContents = new Map();
+    for (const node of [feedback, baseline, evidence, ...tracks]) {
+      initialContents.set(node, Array.from(node.childNodes, child => child.cloneNode(true)));
+    }
+    const captions = new Map(sources.map(button => [button, button.querySelector('small').textContent]));
+
+    function copy(section, selector) {
+      return section.querySelector(selector).content.cloneNode(true);
+    }
+    function choiceCopy(kind, key) {
+      const section = kind === 'note' ? followup : plan;
+      return copy(section, 'template[data-' + kind + '-copy="' + key + '"]');
+    }
+    function clearSample() {
+      worked.open = false;
+      note.replaceChildren();
+      coverage.textContent = '';
+    }
+    function showFeedback() {
+      if (!priority) return;
+      let key = priority + '-base';
+      if (priority === 'care' && opened.has('nurse')) key = 'care-nurse';
+      else if (opened.has('patient')) key = priority + '-patient';
+      feedback.replaceChildren(choiceCopy('plan', key));
+      if (opened.has('home')) feedback.append(' ', choiceCopy('plan', 'home'));
+    }
+    function openSource(button) {
+      const key = button.dataset.source;
+      if (!opened.has(key)) clearSample();
+      opened.add(key);
+      sources.forEach(source => source.setAttribute('aria-pressed', String(source === button)));
+      button.querySelector('small').textContent = 'Opened';
+      evidence.replaceChildren(copy(workup, 'template[data-evidence="' + key + '"]'));
+      const track = workup.querySelector('[data-track="' + key + '"]');
+      if (track) {
+        track.replaceChildren(copy(workup, 'template[data-markers="' + key + '"]'));
+        const descriptions = Array.from(workup.querySelectorAll('template[data-markers]'))
+          .filter(template => opened.has(template.dataset.markers))
+          .map(template => template.dataset.description);
+        timeline.setAttribute('aria-label', [timeline.querySelector('.sn-nightcaption').textContent, ...descriptions].join(' '));
+      }
+      if (key === 'home') baseline.replaceChildren(copy(workup, 'template[data-home-baseline]'));
+      showFeedback();
+    }
+    function showSample() {
+      const fragments = [choiceCopy('note', 'intro')];
+      const missing = [];
+      for (const button of sources) {
+        if (opened.has(button.dataset.source)) fragments.push(choiceCopy('note', button.dataset.source));
+        else missing.push(button.querySelector('[data-source-label]').textContent);
+      }
+      if (priority === 'care') fragments.push(choiceCopy('note', opened.has('nurse') ? 'care-nurse' : 'care-base'));
+      if (priority === 'contributors') fragments.push(choiceCopy('note', 'contributors'));
+      if (missing.length) {
+        const remaining = document.createElement('p');
+        remaining.textContent = 'Still to obtain: ' + missing.join(', ') + '.';
+        fragments.push(remaining);
+      } else {
+        fragments.push(choiceCopy('note', 'missing-all-known'));
+      }
+      if (!priority) fragments.push(choiceCopy('note', 'no-priority'));
+      note.replaceChildren(...fragments);
+      coverage.textContent = opened.size + ' of ' + sources.length + ' sources opened.';
+    }
+    function reset() {
+      clearSample();
+      opened.clear();
+      priority = null;
+      followup.open = false;
+      timeline.setAttribute('aria-label', initialDescription);
+      followup.querySelector('textarea').value = '';
+      for (const [node, children] of initialContents) node.replaceChildren(...children.map(child => child.cloneNode(true)));
+      for (const [button, caption] of captions) button.querySelector('small').textContent = caption;
+      for (const button of [...sources, ...priorities]) button.setAttribute('aria-pressed', 'false');
+      sources[0].focus({preventScroll:true});
+      sources[0].scrollIntoView({block:'center'});
+    }
+    for (const button of sources) button.addEventListener('click', () => openSource(button));
+    for (const button of priorities) {
+      button.addEventListener('click', () => {
+        if (priority !== button.dataset.priority) clearSample();
+        priority = button.dataset.priority;
+        priorities.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+        showFeedback();
+      });
+    }
+    workup.querySelector('[data-reset]').addEventListener('click', reset);
+    // Print and guide search can expand details. Build the example only on explicit activation.
+    worked.querySelector('summary').addEventListener('click', () => {
+      if (!worked.open) showSample();
+    });
+  }
   function enhanceTables(body){
     if(!body)return;
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
@@ -1810,6 +2250,8 @@
      that script hands the renderer across through this one global (set right after the Reader is
      injected). Null until then, and the preview simply shows no block. */
   var fdMediaPreviewHtml=null;
+  /*__FD_BEDSIDE_CASES__*/
+  /*__FD_CASE_ROUNDS__*/
   function fdFacultyPreviewMedia(ref){
     if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
     var html=fdMediaPreviewHtml(ref);
@@ -1840,10 +2282,18 @@
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
       fdMountPsychosisTimeline(contentEl);
+      fdMountLunchInterview(contentEl);
+      fdMountNoorDayroom(contentEl);
       fdMountRoundsReflection(contentEl);
       fdMountReferralCall(contentEl);
       fdMountPersonalityCrisis(contentEl);
+      fdMountBedsideCases(contentEl);
       fdMountLithiumHandoff(contentEl);
+      fdMountPillboxHandoff(contentEl);
+      fdMountCaseRounds(contentEl);
+      fdMountCulturalChart(contentEl);
+      fdMountDeliriumShift(contentEl);
+      fdMountSleepNight(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -3745,10 +4195,17 @@
           var stationPanel=body.querySelector('[data-osce-station]');
           if(stationPanel)fdMountOsceStation(stationPanel);
           fdMountPsychosisTimeline(body);
+          fdMountLunchInterview(body);
+          fdMountNoorDayroom(body);
           fdMountRoundsReflection(body);
           fdMountReferralCall(body);
           fdMountPersonalityCrisis(body);
+          fdMountBedsideCases(body);
           fdMountLithiumHandoff(body);
+          fdMountPillboxHandoff(body);
+          fdMountCulturalChart(body);
+          fdMountDeliriumShift(body);
+          fdMountSleepNight(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
