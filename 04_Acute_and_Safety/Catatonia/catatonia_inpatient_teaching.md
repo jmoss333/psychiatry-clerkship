@@ -17,9 +17,9 @@
 <h3 id="vp-catatonia-title">What did you actually see?</h3>
 <p>A handoff describes Kit as “withdrawn today.” The nurse is already asking the resident to assess this change. Open each moment to hear what someone at the table observed.</p></header>
 <div class="vp-options vp-frames">
-<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-breakfast.webp" width="640" height="426" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><span class="vp-time">08:10 · Breakfast</span><strong>At the table with Kit</strong></summary>
+<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-breakfast.webp" width="512" height="341" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><span class="vp-time">08:10 · Breakfast</span><strong>At the table with Kit</strong></summary>
 <p class="vp-reply">The nurse says, “Kit lifted the mug, took a sip and set it down. When I asked about breakfast they said, ‘The coffee’s good.’”</p></details>
-<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-later.webp" width="640" height="426" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><span class="vp-time">09:00 · Same table</span><strong>Back at Kit’s side</strong></summary>
+<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-later.webp" width="512" height="341" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><span class="vp-time">09:00 · Same table</span><strong>Back at Kit’s side</strong></summary>
 <p class="vp-reply">You see Kit hold their forearm in the same position throughout your conversation with the nurse. You greet Kit and ask how they feel. You hear no spoken response.</p></details>
 </div>
 <p data-vp-compare-hint>Open both moments to practice calling the resident.</p>

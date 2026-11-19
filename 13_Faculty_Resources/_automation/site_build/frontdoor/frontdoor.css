@@ -3449,9 +3449,15 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .vp-note del,.vp-note ins{display:block}
 .vp-note del{color:var(--fd-text-mid)}
 .vp-note ins{text-decoration:none}
+/* The chart dates and source labels double as the selectable tabs on each record. */
+:is(#vp-workup,#vp-perinatal) .vp-card>summary{display:block;position:relative;padding-inline-end:var(--fd-space-9)}
+:is(#vp-workup,#vp-perinatal) .vp-card>summary::after{content:"+";position:absolute;inset:var(--fd-space-5) var(--fd-space-5) auto auto;font-family:monospace;color:var(--fd-teal-deep)}
+:is(#vp-workup,#vp-perinatal) .vp-card[open]>summary::after{content:"−"}
+#vp-workup .vp-card{border-inline-start:3px solid var(--fd-teal)}
+#vp-perinatal .vp-card>summary .vp-time{width:fit-content;padding:var(--fd-space-1) var(--fd-space-4);border-radius:var(--fd-radius-xs);background:var(--fd-olive-wash);color:var(--fd-olive-deep)}
 .vp-room{position:relative;isolation:isolate}
 .vp-room img,.vp-frames img{display:block;width:100%;height:auto}
-.vp-room-controls{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.vp-room-controls{position:absolute;inset:0;display:grid;grid-template-columns:30% 45% 25%}
 .vp-room-controls button{display:flex;align-items:flex-end;justify-content:center;width:100%;padding:var(--fd-space-3);border:0;border-radius:0;background:transparent;text-align:center;line-height:1.15}
 .vp-room-controls button:hover,.vp-room-controls button[aria-pressed=true]{background:transparent;box-shadow:inset 0 0 0 3px var(--fd-teal-deep)}
 .vp-room-controls button:focus-visible{outline-offset:-3px}

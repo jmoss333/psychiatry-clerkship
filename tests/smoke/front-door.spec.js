@@ -2620,6 +2620,13 @@ test.describe('Interactive readings', () => {
       await expect(handoff.locator('p')).toBeVisible();
       await expect(handoff.locator('p')).toContainText(sample);
     }
+    const image = activity.locator('.vp-room img');
+    await image.scrollIntoViewIfNeeded();
+    const box = await image.boundingBox();
+    for (const [x, place] of [[0.10, 'tv'], [0.70, 'voices'], [0.91, 'chair']]) {
+      await page.mouse.click(box.x + x * box.width, box.y + 0.45 * box.height);
+      await expect(activity.locator('[data-vp-place="' + place + '"]')).toHaveAttribute('aria-pressed', 'true');
+    }
   });
 
   test('catatonia comparison requires both moments and clears the sample on close', async ({ page }) => {

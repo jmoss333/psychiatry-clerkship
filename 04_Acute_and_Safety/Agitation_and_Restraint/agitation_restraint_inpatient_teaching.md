@@ -27,7 +27,7 @@ Climb in order, and document why you moved up.
 <h4>What would you change first?</h4>
 <p class="vp-intro">Choose something in the room. Each choice lets you try a different start to this conversation.</p>
 <div class="vp-room" role="group" aria-label="Choose a first change in the dayroom">
-<img src="illustrations/dayroom-first-change.webp" width="1200" height="398" alt="Jules is seated between the television on the left and two staff in conversation. An empty chair sits by the window on the right.">
+<img src="illustrations/dayroom-first-change.webp" width="984" height="327" alt="Jules is seated between the television on the left and two staff in conversation. An empty chair sits by the window on the right.">
 <div class="vp-room-controls">
 <button type="button" data-vp-place="tv" aria-pressed="false" aria-controls="vp-tv"><span class="vp-before">Lower TV volume</span><span class="vp-changed">TV turned down</span></button>
 <button type="button" data-vp-place="voices" aria-pressed="false" aria-controls="vp-voices"><span class="vp-before">One speaker</span><span class="vp-changed">Nurse speaking</span></button>
