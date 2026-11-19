@@ -1295,15 +1295,14 @@
     "clinicalHash": "a01969f13e1f6f41258397f9af261b4c913d7434"
   },
   "family-meeting-sim.html": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-11-17",
-    "by": "Joshua Moss, MD",
-    "contentHash": "b6bcafa91e40797a8178f2ec484b5f2d8f3e75f1",
-    "clinicalHash": "479d062c6b2f6f1b04713f215a53899c37aefb1b"
+    "reason": "Family Conversation Simulator — eight draft fictional scenarios (three added 2026-10-27 in #1138, five in #1147; v2 safety-gate redesign pending); safety-planning and means-safety rehearsal; awaiting faculty attestation.",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
   },
   "rp-canon-quiz.html": {
     "status": "reviewed",
@@ -1554,15 +1553,14 @@
     "clinicalHash": "251658da7e0033c251557b925e9c61b6a87cd705"
   },
   "maine_law.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "legal",
       "level": "high"
     },
-    "at": "2026-11-17",
-    "by": "Joshua Moss, MD",
-    "contentHash": "fc51df7a94744c8ed9341c1be684a5fdb285d72a",
-    "clinicalHash": "6bc67d867db17247f39bd76f6e08833828c811e4"
+    "reason": "New Maine law & capacity statute page added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
+    "at": "2026-10-27",
+    "by": "Pending faculty review"
   },
   "maine-law-navigator.html": {
     "status": "reviewed",
