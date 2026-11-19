@@ -2578,6 +2578,75 @@ async function guideRenderedInventory(page) {
 }
 
 test.describe('Clinical field guide', () => {
+  test('Noor’s dayroom check-in carries only her selected reply into rounds', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=brief_psychotherapy.md&guideSection=match-the-skill-to-the-mechanism');
+    const mechanismSection = page.locator('#guide-match-the-skill-to-the-mechanism').locator('..');
+    const dayroom = mechanismSection.locator('#noor-dayroom');
+    const mechanismTable = mechanismSection.locator('table').filter({
+      has: page.locator('th', { hasText: /^Likely mechanism$/ }),
+    });
+    const checkin = page.locator('#guide-what-the-student-does').locator('..').locator('#noor-checkin');
+    const result = checkin.locator('[data-result]');
+    const answer = checkin.locator('[data-answer]');
+    const rounds = checkin.locator('details[data-rounds]');
+    const sample = rounds.locator('[data-sample]');
+    await expect(dayroom).toBeVisible();
+    await expect(checkin).toHaveCount(1);
+    await expect(dayroom.locator('button[data-place]')).toHaveCount(3);
+    await expect(mechanismTable.and(dayroom.locator('xpath=following::table'))).toHaveCount(1);
+    await expect(result).toBeHidden();
+
+    const paths = [
+      {
+        place: 'window', account: 'We did see that little brown bird',
+        questions: [
+          ['meaning', 'enormous boots', 'We sat by the window after breakfast. Noor said she still felt low and went back to bed. The bird reminded her of her niece, and for a moment she wanted to call her.'],
+          ['next', 'Come find me after breakfast tomorrow', 'Noor sat by the window with me and saw a bird. She still felt low afterward. She asked me to sit with her there after breakfast tomorrow and to leave the paper behind.'],
+        ],
+      },
+      {
+        place: 'lap', account: 'To the clock was plenty',
+        questions: [
+          ['meaning', 'nice to have company and not have to talk', 'Noor and I walked to the clock, where she wanted to stop. She still had a rough morning. What she liked was having someone beside her without having to make conversation.'],
+          ['next', 'I’ll see how I feel then', 'Noor walked with me to the clock this morning. She said that was far enough and was glad I came along. She asked me to check in after breakfast tomorrow and will decide about another walk then.'],
+        ],
+      },
+      {
+        place: 'table', account: 'Didn’t draw a thing',
+        questions: [
+          ['meaning', 'The feet have to be yellow', 'Noor picked a yellow crayon and left when the chairs got noisy. She said the color made her smile because her niece always draws the feet in yellow.'],
+          ['next', 'I could start with the feet', 'Noor picked up a yellow crayon and left when the chairs got noisy. She’d like to try the window seat after breakfast tomorrow. She thinks she might start by drawing the feet.'],
+        ],
+      },
+    ];
+    for (const path of paths) {
+      const choice = dayroom.locator(`[data-place="${path.place}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(dayroom.locator('[data-place][aria-pressed="true"]')).toHaveCount(1);
+      await expect(result).toBeHidden();
+      await expect(result).toBeEmpty();
+      await expect(answer).toBeEmpty();
+      await expect(sample).toBeEmpty();
+      await checkin.locator('[data-check]').click();
+      await expect(result).toBeVisible();
+      await expect(result).toContainText(path.account);
+      await expect(rounds).toBeHidden();
+      for (const [question, reply, summary] of path.questions) {
+        await checkin.locator(`[data-ask="${question}"]`).click();
+        await expect(answer).toBeVisible();
+        await expect(answer).toContainText(reply);
+        await expect(sample).toBeHidden();
+        await rounds.locator('summary').press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toHaveText(summary);
+      }
+    }
+    await expectHealthy(page);
+  });
+
   test('OARS reflection follows the chosen ending and coaches the resident on the reply Ren gave', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
@@ -2872,6 +2941,209 @@ test.describe('Clinical field guide', () => {
     await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
   });
 
+  async function openDeliriumShift(page, testInfo) {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 'delirium.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=delirium.md');
+    await expect(page.locator('.fd-reader--guide .governance-notice.pending-high').first()).toBeVisible();
+    const root = page.locator('#delirium-shift');
+    await expect(root).toBeVisible();
+    return {
+      root,
+      time: key => root.locator(`[data-shift-time="${key}"]`),
+      choice: key => root.locator(`[data-shift-choice="${key}"]`),
+      encounter: root.locator('#delirium-shift-encounter'),
+      feedback: root.locator('[data-shift-feedback]'),
+      comparison: root.locator('details[data-shift-comparison]'),
+      patterns: root.locator('[data-shift-patterns]'),
+      followup: page.locator('details#delirium-shift-followup'),
+      draft: page.locator('#delirium-shift-draft'),
+      worked: page.locator('details[data-shift-worked]'),
+    };
+  }
+
+  test('Delirium shift separates quiet movement from attention and reveals comparison after a choice', async ({ page }, testInfo) => {
+    const shift = await openDeliriumShift(page, testInfo);
+    const { root, time, choice, encounter, feedback, comparison, patterns, followup } = shift;
+    await expect(root.locator('[data-shift-time]')).toHaveCount(3);
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(encounter).toContainText('Drifts asleep mid-sentence; needs repeated prompts to re-engage.');
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    expect(await root.evaluate(node => node.closest('.fd-guide-section')?.querySelector('.fd-guide-lead')?.textContent))
+      .toMatch(/^How it presents on the unit/);
+    expect(await followup.evaluate(node => node.closest('.fd-guide-section')?.querySelector('.fd-guide-lead')?.textContent))
+      .toMatch(/^Recognize and screen/);
+
+    // A guide search must not pre-open a gated answer and expose it when a choice is made.
+    const find = page.locator('.fd-guide-find');
+    await find.getByRole('searchbox').fill('diagnostic score');
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await expect(comparison).not.toHaveAttribute('open');
+
+    const scene = encounter.locator('img');
+    const sceneAlts = new Set();
+    for (const [key, observation] of [
+      ['morning', 'Follows this brief exchange.'],
+      ['midday', 'Loses the thread of a short conversation.'],
+      ['afternoon', 'Drifts asleep mid-sentence; needs repeated prompts to re-engage.'],
+    ]) {
+      await time(key).focus();
+      await time(key).press('Enter');
+      await expect(time(key)).toHaveAttribute('aria-pressed', 'true');
+      await expect(root.locator('[data-shift-time][aria-pressed="true"]')).toHaveCount(1);
+      await expect(encounter).toContainText(observation);
+      await expect(scene).toBeVisible();
+      expect(await scene.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+      const alt = await scene.getAttribute('alt');
+      expect(alt).toBeTruthy();
+      sceneAlts.add(alt);
+      await expect(feedback).toBeHidden();
+      await expect(comparison).toBeHidden();
+    }
+    expect(sceneAlts.size, 'each selected time describes its own patient scene').toBe(3);
+
+    await time('midday').press('Enter');
+    await choice('quiet').press('Enter');
+    await expect(choice('quiet')).toHaveAttribute('aria-pressed', 'true');
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toBeVisible();
+    await expect(feedback).toContainText('That describes his movement. What changed in his engagement?');
+    await expect(feedback).toContainText('prompt bedside reassessment');
+    await expect(comparison).toBeVisible();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await expect(comparison).not.toHaveAttribute('open');
+
+    await choice('attention').press('Space');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(1);
+    await expect(feedback).toContainText('Lead with the change in attention and wakefulness.');
+    await expect(feedback).toContainText('prompt bedside reassessment');
+    await expect(comparison).not.toHaveAttribute('open');
+    await comparison.locator(':scope > summary').press('Enter');
+    await expect(patterns).toBeVisible();
+    await comparison.locator(':scope > summary').press('Enter');
+    await expect(patterns).toBeHidden();
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `case fits ${width}px`).toBe(true);
+      expect(await followup.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `follow-up fits ${width}px`).toBe(true);
+    }
+    await expectHealthy(page);
+  });
+
+  test('Delirium shift preserves independent follow-up during reading changes and clears it on reset or a new visit', async ({ page }, testInfo) => {
+    const { root, time, choice, feedback, comparison, followup, draft, worked } = await openDeliriumShift(page, testInfo);
+    const workedBody = worked.locator(':scope > :not(summary)').first();
+    await expect(draft).toBeHidden();
+    await expect(worked.locator(':scope > summary')).toBeHidden();
+    await followup.locator(':scope > summary').press('Enter');
+    await expect(draft).toBeVisible();
+    await draft.fill('Synthetic handoff: new drowsiness and difficulty staying engaged.');
+    await expect(workedBody).toBeHidden();
+    await worked.locator(':scope > summary').press('Enter');
+    await expect(workedBody).toBeVisible();
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+
+    await choice('attention').click();
+    await comparison.locator(':scope > summary').click();
+    await time('midday').click();
+    const selectedFeedback = await feedback.innerText();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
+    await settings.getByRole('group', { name: 'Reading text size', exact: true })
+      .getByRole('button', { name: 'Largest', exact: true }).click();
+    await settings.getByRole('button', { name: 'Close side sheet', exact: true }).click();
+    await expect(draft).toHaveValue('Synthetic handoff: new drowsiness and difficulty staying engaged.');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(time('midday')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toHaveText(selectedFeedback, { useInnerText: true });
+    await expect(comparison).toHaveAttribute('open', '');
+    await expect(followup).toHaveAttribute('open', '');
+    await expect(workedBody).toBeVisible();
+    expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    expect(await followup.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+
+    await root.locator('[data-shift-reset]').click();
+    await expect(time('afternoon')).toBeFocused();
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+
+    await choice('quiet').click();
+    await time('morning').click();
+    await followup.locator(':scope > summary').click();
+    await draft.fill('Synthetic draft that must not persist to the next visit.');
+    await worked.locator(':scope > summary').click();
+    // Keep app storage intact so an accidentally persisted answer or draft cannot be masked.
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.goto('/?page=orientation.md');
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 'orientation.md');
+    await page.goto('/?page=delirium.md');
+    await expect(root).toBeVisible();
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+    await expectHealthy(page);
+  });
+
+  test('Delirium shift printing restores disclosures without answering or unlocking comparison', async ({ page }, testInfo) => {
+    const { root, time, choice, feedback, comparison, patterns, followup, draft, worked } = await openDeliriumShift(page, testInfo);
+    const printEvent = name => page.evaluate(async eventName => {
+      window.dispatchEvent(new Event(eventName));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }, name);
+
+    await time('morning').click();
+    await printEvent('beforeprint');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await printEvent('afterprint');
+    await expect(time('morning')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+
+    await choice('attention').click();
+    await followup.locator(':scope > summary').click();
+    await draft.fill('Synthetic print-state draft.');
+    await worked.locator(':scope > summary').click();
+    const selectedFeedback = await feedback.innerText();
+    await printEvent('beforeprint');
+    await printEvent('afterprint');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toHaveText(selectedFeedback, { useInnerText: true });
+    await expect(comparison).toBeVisible();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).toHaveAttribute('open', '');
+    await expect(worked).toHaveAttribute('open', '');
+    await expect(draft).toHaveValue('Synthetic print-state draft.');
+    await expectHealthy(page);
+  });
+
   const referralSources = ['weight', 'symptoms', 'vitals'];
   const referralSubsets = [[], ['weight'], ['symptoms'], ['vitals'], ['weight', 'symptoms'],
     ['weight', 'vitals'], ['symptoms', 'vitals'], referralSources];
@@ -2975,6 +3247,76 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('Sleep case keeps observations in their sections and ties the formulation to the opened sources and first step', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, 't_sleep.md', { status: 'pending', riskLevel: 'moderate' });
+    await page.goto('/?page=t_sleep.md&guideSection=initial-workup');
+    const workup = page.locator('#sleep-workup');
+    const plan = page.locator('#sleep-plan');
+    const followup = page.locator('#sleep-followup');
+    const worked = followup.locator('[data-worked]');
+    const note = worked.locator('[data-note]');
+    for (const [block, section] of [[workup, 'Initial workup'], [plan, 'Acute inpatient management'], [followup, 'What the student does']]) {
+      await expect(block.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]').locator('> .fd-guide-lead')).toContainText(section);
+    }
+    const ask = source => workup.locator('[data-source="' + source + '"]').click();
+    const choose = priority => plan.locator('[data-priority="' + priority + '"]').click();
+    const compare = async () => {
+      await expect(note).toBeEmpty();
+      expect(await worked.evaluate(el => el.open)).toBe(false);
+      await worked.locator('> summary').press('Enter');
+      await expect(note).toBeVisible();
+    };
+    await ask('nurse');
+    await expect(workup.locator('[data-track=nurse] .sn-marker')).toHaveCount(3);
+    await expect(workup.locator('[data-track=patient] .sn-marker')).toHaveCount(0);
+    await followup.locator('> summary').click();
+    // Expanding disclosures for print must not generate an answer.
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(note).toBeEmpty();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await compare();
+    await expect(note).toContainText('From the nursing record');
+    await expect(note).not.toContainText('lying awake worrying');
+    await expect(note).not.toContainText('breathing pauses');
+    await expect(note).toContainText('not yet selected');
+    await choose('care');
+    await compare();
+    await expect(note).toContainText('coordinating nonurgent care');
+    await ask('home');
+    await expect(workup.locator('.sn-marker')).toHaveCount(3);
+    await compare();
+    await expect(note).toContainText('breathing pauses');
+    await expect(note).not.toContainText('lying awake worrying');
+    await choose('contributors');
+    await compare();
+    await expect(note).toContainText('My first step is to ask more');
+    await expect(note).not.toContainText('coordinating nonurgent care');
+    await ask('patient');
+    await compare();
+    await expect(note).toContainText('lying awake worrying');
+    await expect(note).toContainText('breathing pauses');
+    await expect(note).toContainText('From the nursing record');
+    await expect(worked.locator('[data-coverage]')).toContainText('3 of 3');
+    await workup.locator('[data-reset]').click();
+    await expect(note).toBeEmpty();
+    await expect(workup.locator('.sn-marker')).toHaveCount(0);
+    await expect(plan.locator('[aria-pressed=true]')).toHaveCount(0);
+    await expect(workup.locator('[data-source=patient]')).toBeFocused();
+    await followup.locator('> summary').click();
+    await compare();
+    await expect(note).not.toContainText('From Nora:');
+    await expect(note).not.toContainText('From the nursing record');
+    await expect(note).not.toContainText('breathing pauses');
+    await expect(worked.locator('[data-coverage]')).toContainText('0 of 3');
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.locator('.fd-reader').evaluate(el => el.style.setProperty('--fd-reading-scale', '2'));
+    const clockRow = workup.locator('.sn-clockrow');
+    expect(await clockRow.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    await expectHealthy(page);
+  });
+
   async function openPersonalityCrisis(page, testInfo) {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
@@ -3073,6 +3415,209 @@ test.describe('Clinical field guide', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     await expectHealthy(page);
   });
+
+  test('the Mood bedside case shows both sleep records before the patients’ accounts', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 't_mood.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_mood.md');
+
+    const header = page.locator('.fd-guide-header');
+    const warning = page.locator('.fd-reader .governance-notice.pending-high');
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toBeVisible();
+    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 + .fd-bedside-case');
+    await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
+    const art = bedside.locator('img');
+    await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
+    await art.evaluate(img => img.decode());
+    const record = bedside.getByRole('img', { name: /Maya and Alex.*three hours.*1 to 4 a.m/ });
+    await expect(record).toBeVisible();
+    await expect(record.locator('b')).toHaveText(['3 h', '3 h']);
+    const prompt = bedside.locator('.fd-bedside-case__prompt');
+    await expect(prompt).toContainText('What would you ask each patient at breakfast');
+    const disclosure = bedside.locator('.fd-bedside-case__prompt + details');
+    const toggle = disclosure.locator('summary');
+    const accounts = disclosure.locator('dd');
+    const follow = disclosure.getByText('Resident follow-up', { exact: true });
+    await expect(accounts).toHaveText([/kept trying to fall back asleep/, /felt rested/]);
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await toggle.focus();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeVisible();
+    await expect(disclosure.getByText('Compare the accounts', { exact: true })).toBeVisible();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await expect(record).toBeVisible();
+    await expect(prompt).toBeVisible();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
+  test('Mood rounds uses only the case sources opened on this visit', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const family = workup.locator('[data-rounds-source="family"] > summary');
+    const medication = workup.locator('[data-rounds-source="med"] > summary');
+    const interview = page.locator('.fd-bedside-case [data-rounds-source="interview"] > summary');
+    const rounds = student.locator('[data-rounds-sample]');
+    const line = rounds.locator('p');
+
+    await page.goto('/?page=t_mood.md');
+    await expect(workup.locator('details[data-rounds-source]')).toHaveCount(2);
+    await rounds.locator('summary').click();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('how he felt on waking');
+    await page.emulateMedia({ media: 'print' });
+    expect(await page.locator('.fd-rounds-jump').evaluateAll(buttons =>
+      buttons.every(button => getComputedStyle(button).display === 'none'))).toBe(true);
+    await page.emulateMedia({ media: 'screen' });
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(2);
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(0);
+    await expect(line).toHaveText(baseline);
+
+    await medication.focus();
+    await medication.press('Enter');
+    await expect(line).toContainText('prednisone');
+    await expect(line).not.toContainText('sister');
+    await expect(line).not.toContainText('feels rested');
+    await medication.press('Enter');
+    await workup.getByRole('button', { name: 'Present Alex on rounds' }).click();
+    await expect(student.locator('#mood-rounds')).toBeFocused();
+    await expect(line).toContainText('prednisone');
+
+    await student.getByRole('button', { name: 'Try the other source' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await family.click();
+    await expect(line).toContainText('late-night calls his sister described');
+    await expect(line).toContainText('prednisone');
+    await interview.click();
+    await expect(line).toContainText('he says he feels rested');
+
+    await page.reload();
+    await expect(rounds.locator('p')).toBeHidden();
+    await family.click();
+    await rounds.locator('summary').click();
+    await expect(line).toContainText('his sister reports');
+    await expect(line).not.toContainText('prednisone');
+    await expect(line).not.toContainText('feels rested');
+    await interview.click();
+    await page.getByRole('button', { name: 'Choose what to check next' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await expect(line).toContainText('he says he feels rested');
+  });
+
+  const culturalAnswers = ['experience', 'meaning', 'impact'];
+  const culturalClauses = {
+    opening: 'Since the funeral, the patient sometimes feels their mother nearby',
+    experience: 'describes a sense of presence without seeing or hearing her during these moments',
+    meaning: 'says the feeling helps them stay close to her',
+    impact: 'sometimes pauses briefly before carrying on',
+  };
+
+  for (let mask = 0; mask < 8; mask++) {
+    const opened = culturalAnswers.filter((key, i) => mask & (1 << i));
+    test(`Cultural chart uses only opened answers (${opened.join(', ') || 'none'})`, async ({ page }, testInfo) => {
+      const ref = 'cultural_psychiatry.md';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+      await page.goto(`/?page=${ref}`);
+      const card = page.locator('#cultural-chart');
+      const follow = page.locator('#cultural-chart-followup');
+      const interview = card.locator('[data-culture-interview]');
+      const note = follow.locator('[data-culture-line]');
+      const source = key => card.locator(`[data-culture-source="${key}"]`);
+
+      await expect(card).toBeVisible();
+      await expect(card.locator('img')).toBeVisible();
+      await card.locator('img').scrollIntoViewIfNeeded();
+      expect(await card.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+      await expect(card.locator('[data-culture-prompt]')).toBeVisible();
+      await expect(card.locator('details[open]')).toHaveCount(0);
+      await expect(note).toBeHidden();
+      await expect(card.locator('..')).toContainText('Religion, spirituality & community');
+      await expect(follow.locator('..')).toContainText('What the student does');
+      expect(await card.evaluate(node => node.closest('.fd-guide-section').querySelector('.fd-guide-lead').textContent.startsWith('Religion, spirituality & community'))).toBe(true);
+      expect(await follow.evaluate(node => node.closest('.fd-guide-section').querySelector('.fd-guide-lead').textContent.startsWith('What the student does'))).toBe(true);
+
+      if (mask === 0) {
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('experience has changed over time');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(page.locator('.fd-guide-results [role="status"]')).toHaveText('No matching passage in this guide.');
+      }
+      await card.locator('[data-culture-word="reports"]').press('Enter');
+      await expect(interview).not.toHaveAttribute('open', '');
+      await card.locator('[data-culture-word="hallucinations"]').press('Enter');
+      await expect(interview).toHaveAttribute('open', '');
+      for (const key of opened) await source(key).locator('summary').press('Enter');
+
+      await follow.locator(':scope > summary').press('Enter');
+      const draft = follow.locator('textarea');
+      await draft.fill('Fictional practice note <draft>.');
+      await expect(note).toBeHidden();
+      await follow.locator('[data-culture-worked] > summary').press('Enter');
+
+      const expected = ['opening', ...opened];
+      await expect(note.locator('[data-culture-trace]')).toHaveCount(expected.length);
+      for (const key of ['opening', ...culturalAnswers]) {
+        const phrase = note.locator(`[data-culture-trace="${key}"]`);
+        if (expected.includes(key)) {
+          await expect(phrase).toContainText(culturalClauses[key]);
+          await phrase.press('Enter');
+          await expect(phrase).toHaveAttribute('aria-pressed', 'true');
+          const quote = key === 'opening' ? card.locator('[data-culture-opening]') : source(key).locator('blockquote p');
+          await expect(follow.locator('[data-culture-quote]')).toHaveText(await quote.textContent());
+        } else {
+          await expect(phrase).toHaveCount(0);
+          await expect(note).not.toContainText(culturalClauses[key]);
+        }
+      }
+      const sample = await note.innerText();
+      for (const key of opened) await source(key).locator('summary').click();
+      await expect(note).toHaveText(sample);
+      await page.emulateMedia({ media: 'print' });
+      await page.evaluate(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      await expect(note).toHaveText(sample);
+      await expect(note.locator('[data-culture-trace="opening"]')).toBeVisible();
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await page.emulateMedia({ media: 'screen' });
+      await expect(card.locator('[data-culture-source][open]')).toHaveCount(0);
+      await expect(draft).toHaveValue('Fictional practice note <draft>.');
+      expect(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      expect(await follow.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+
+      await follow.locator('[data-culture-reset]').click();
+      await expect(card.locator('[data-culture-word="reports"]')).toBeFocused();
+      await expect(card.locator('details[open]')).toHaveCount(0);
+      await expect(follow).not.toHaveAttribute('open', '');
+      await expect(draft).toHaveValue('');
+      await expect(note.locator('[data-culture-trace]')).toHaveCount(1);
+
+      if (mask === 7) {
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('one way I stay close');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(interview).toHaveAttribute('open', '');
+        await expect(source('meaning')).toHaveAttribute('open', '');
+        await expect(note.locator('[data-culture-trace]')).toHaveCount(2);
+        await expect(note).toContainText(culturalClauses.meaning);
+        await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+        await page.goto('/?page=cultural_psychiatry.md');
+        await expect(page.locator('#cultural-chart details[open]')).toHaveCount(0);
+        await expect(page.locator('[data-culture-line] [data-culture-trace]')).toHaveCount(1);
+        await expect(page.locator('#cultural-chart-draft')).toHaveValue('');
+      }
+    });
+  }
 
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
@@ -3263,6 +3808,198 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('bedside reading · faculty preview mounts Jo’s case and opens the selected observation', async ({ page }) => {
+    const ref = 'collateral_workflow.md';
+    await page.goto(`/?page=${ref}&reviewKey=page:${ref}&reviewToken=${'a'.repeat(32)}`);
+    const card = page.locator('#content #jo-night');
+    await card.locator('[data-source="call"]').click();
+    await expect(card.locator('#jo-call')).toBeVisible();
+    await expect(card.locator('#jo-home')).toBeHidden();
+    await expect(page.locator('#content #jo-note [data-ready]')).toBeVisible();
+  });
+
+  test('bedside reading · Jo limits the handoff to opened observations', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=collateral_workflow.md&guideFind=How+much+of+the+night+did+Jo+see');
+    const card = page.locator('#jo-night');
+    const note = page.locator('#jo-note');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#jo-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=preceding-sibling::h3[1]')).toHaveText('Baseline And Timeline');
+    await expect(note.locator('xpath=ancestor::section[h2][1]/h2')).toContainText('Bring It Back To The Team');
+    const sample = note.locator('#jo-sample');
+    const call = card.locator('[data-source="call"]');
+    const home = card.locator('[data-source="home"]');
+    await expect(note.locator('[data-ready]')).toBeHidden();
+    for (const [change, withCall, withHome] of [[call, true, false], [home, true, true], [call, false, true]]) {
+      await change.click();
+      await expect(sample).toBeEmpty();
+      await expect(card.locator('.call')).toBeVisible({ visible: withCall });
+      await expect(card.locator('.visit')).toBeVisible({ visible: withHome });
+      await card.locator('[data-continue]').click();
+      await expect(note.locator('[data-claim="night"]')).toBeFocused();
+      await note.locator('[data-claim="night"]').click();
+      await expect(note.locator('summary')).toBeHidden();
+      await note.locator('[data-claim="contact"]').click();
+      await note.locator('summary').click();
+      const text = await sample.innerText();
+      expect(text.includes('for six minutes')).toBe(withCall);
+      expect(text.includes('making coffee at seven')).toBe(withHome);
+      expect(text).toContain('We still don’t know how long Sam slept');
+    }
+    await home.click();
+    await expect(note.locator('[data-ready]')).toBeHidden();
+    await expect(sample).toBeEmpty();
+  });
+
+  test('bedside reading · Lee matches onset and follow-up in each formulation', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=t_adjustment.md&guideFind=Did+it+start+with+the+letter');
+    const card = page.locator('#lee-letter');
+    const resident = page.locator('#lee-res');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#lee-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]')).toContainText('Initial workup');
+    await expect(resident.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]')).toContainText('What the student does');
+    const sample = resident.locator('#lee-sample');
+    await card.locator('#lee-ask').click();
+    for (const [onset, work, mood] of [['after', 'missed two shifts', 'enjoy the call'], ['before', 'difficulty concentrating at work', 'loss of enjoyment']]) {
+      if (onset === 'before') await card.locator('#lee-switch').click();
+      await expect(sample).toBeEmpty();
+      await card.locator('[data-onset="' + (onset === 'before' ? 'after' : 'before') + '"]').click();
+      await expect(resident.locator('[data-ready]')).toBeHidden();
+      await card.locator('[data-onset="' + onset + '"]').click();
+      await card.locator('[data-continue]').click();
+      await expect(resident.locator('[data-follow="function"]')).toBeFocused();
+      for (const [follow, phrase] of [['function', work], ['mood', mood]]) {
+        await resident.locator('[data-follow="' + follow + '"]').click();
+        await expect(sample).toBeEmpty();
+        await resident.locator('summary').click();
+        await expect(sample).toContainText(phrase);
+      }
+    }
+    await card.locator('#lee-ask').click();
+    await expect(sample).toBeEmpty();
+    await expect(resident.locator('[data-ready]')).toBeHidden();
+  });
+
+  test('bedside reading · Robin’s counseling and handoff follow the memory concern', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=ect_neuromodulation.md&guideFind=Which+memory+matters+to+you');
+    const card = page.locator('#ect-memory-conversation');
+    const resident = page.locator('#em-resident');
+    const model = resident.locator('[data-em-model-body]');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#ect-memory-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=preceding-sibling::p[1]')).toContainText('Workup & safety');
+    await expect(resident.locator('xpath=preceding-sibling::p[1]')).toContainText('What the student does');
+    await expect(card.locator('img')).toBeVisible();
+    await expect.poll(() => card.locator('img').evaluate(i => i.naturalWidth)).toBe(1320);
+    for (const [concern, general, specific, handoff, other] of [
+      ['event', 'toast back', 'part of that day', 'wedding toast today', 'evening calls'],
+      ['calls', 'fine on a test', 'pick up where we left off', 'remembering evening calls', 'wedding toast']
+    ]) {
+      await card.locator('[data-em-concern="' + concern + '"]').click();
+      await expect(resident.locator('[data-em-ready]')).toBeHidden();
+      await expect(model).toBeEmpty();
+      for (const [reply, response] of [['general', general], ['specific', specific]]) {
+        await card.locator('[data-em-reply="' + reply + '"]').click();
+        await expect(card.locator('[data-em-interpretation]')).toContainText(response);
+        await expect(model).toBeEmpty();
+        await card.locator('[data-em-continue]').click();
+        await expect(resident.locator('#em-resident-title')).toBeFocused();
+        await resident.locator('summary').click();
+        await expect(model).toContainText(handoff);
+        await expect(model).not.toContainText(other);
+      }
+    }
+    await card.locator('[data-em-reset]').click();
+    await expect(model).toBeEmpty();
+    await expect(resident.locator('[data-em-ready]')).toBeHidden();
+  });
+
+
+  test('Mara’s pillbox handoff follows the Sunday history and preserves the Tuesday account', async ({ page }, testInfo) => {
+    const ref = 't_neurocog.md';
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}&guideSection=initial-workup`);
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const interview = workup.locator('#mara-pillbox');
+    const handoff = student.locator('#mara-handoff');
+    await expect(interview).toBeVisible();
+    await expect(handoff).toBeVisible();
+
+    const sunday = interview.locator('[data-day="sunday"]');
+    const tuesday = interview.locator('[data-day="tuesday"]');
+    const sundayAnswer = interview.locator(`[id="${await sunday.getAttribute('aria-controls')}"]`);
+    const tuesdayAnswer = interview.locator(`[id="${await tuesday.getAttribute('aria-controls')}"]`);
+    const ready = handoff.locator('[data-ready]');
+    const feedback = handoff.locator('[data-feedback]');
+    const model = handoff.locator('details[data-model]');
+    const sample = model.locator('[data-sample]');
+    const claims = ['opens', 'fills', 'all'];
+    const histories = [
+      {
+        sunday: 'those stubborn caps', coaching: ['choosing and sorting', 'Nina opens the caps', 'leaves to Nina'],
+        sample: 'Nina helping to open the bottles', other: 'two mix-ups',
+      },
+      {
+        sunday: 'Nina filled the whole thing', coaching: ['Nina sorts the pills', 'recent change', 'recently handed over sorting'],
+        sample: 'Nina started filling the box last month after two mix-ups', other: 'Nina helping to open the bottles',
+      },
+    ];
+    await expect(sundayAnswer).toBeHidden();
+    await expect(tuesdayAnswer).toBeHidden();
+    await expect(ready).toBeHidden();
+    await sunday.press('Enter');
+    await expect(sundayAnswer).toContainText(histories[0].sunday);
+    await expect(ready).toBeHidden();
+    await tuesday.click();
+    await expect(tuesdayAnswer).toBeVisible();
+    await expect(tuesdayAnswer).toContainText('took what was there');
+    const morning = await tuesdayAnswer.textContent();
+
+    for (const [index, history] of histories.entries()) {
+      if (index === 1) {
+        await handoff.locator('[data-swap]').click();
+        await expect(sunday).toHaveAttribute('aria-expanded', 'false');
+        await expect(sundayAnswer).toBeHidden();
+        await expect(tuesday).toHaveAttribute('aria-expanded', 'true');
+        await expect(tuesdayAnswer).toBeVisible();
+        await expect(tuesdayAnswer).toHaveText(morning);
+        await expect(ready).toBeHidden();
+        await expect(feedback).toBeEmpty();
+        await expect(sample).toBeEmpty();
+        await expect(model).toHaveJSProperty('open', false);
+        await sunday.click();
+      }
+      await expect(sundayAnswer).toBeVisible();
+      await expect(sundayAnswer).toContainText(history.sunday);
+      await expect(ready).toBeVisible();
+      await expect(ready.locator('[data-claim][aria-pressed="true"]')).toHaveCount(0);
+      await expect(model).toBeHidden();
+      for (const [i, claim] of claims.entries()) {
+        const choice = ready.locator(`[data-claim="${claim}"]`);
+        await choice.click();
+        await expect(choice).toHaveAttribute('aria-pressed', 'true');
+        await expect(feedback).toBeVisible();
+        await expect(feedback).toContainText(history.coaching[i]);
+        await expect(sample).toBeEmpty();
+        await model.locator('summary').press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toContainText(history.sample);
+        await expect(sample).not.toContainText(history.other);
+      }
+    }
+    await expectHealthy(page);
+  });
+
   test('Jules’s lithium handoff follows the collection time, nurse report, and selected lead', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, testInfo);
@@ -3417,6 +4154,87 @@ test.describe('Clinical field guide', () => {
     await gap.click();
     await expect(reply).toContainText(histories[0].words);
     await expect(ready).toBeHidden();
+    await expectHealthy(page);
+  });
+
+  test('Alex’s lunch handoff follows the accommodation and distinguishes chewing pain from appetite', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=t_neurodev.md&guideSection=initial-workup');
+    const interview = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') }).locator('#alex-lunch');
+    const handoff = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') }).locator('#al-res');
+    const ask = interview.locator('#al-ask');
+    const answer = interview.locator('#al-answer');
+    const seen = handoff.locator('[data-phrase="seen"]');
+    const appetite = handoff.locator('[data-phrase="appetite"]');
+    const summary = handoff.locator('details > summary');
+    const sample = handoff.locator('#al-sample');
+    const interpretation = handoff.locator('#al-interpret');
+    await expect(interview).toBeVisible();
+    await expect(ask).toBeHidden();
+    await expect(appetite).toBeHidden();
+
+    const accommodations = [
+      { mode: 'type', speaker: 'Alex types', used: /asked to type/i, other: /quiet table/i },
+      { mode: 'quiet', speaker: 'Alex says', used: /quiet table, one question at a time/i, other: /asked to type/i },
+    ];
+    for (const accommodation of accommodations) {
+      const choice = interview.locator(`[data-mode="${accommodation.mode}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(answer).toBeHidden();
+      await expect(appetite).toBeHidden();
+      await expect(sample).toBeEmpty();
+      await expect(interpretation).toBeEmpty();
+      await ask.press('Enter');
+      await expect(answer).toBeVisible();
+      await expect(answer).toContainText(accommodation.speaker);
+      await expect(answer).toContainText(/wanted the sandwich/i);
+      await expect(answer).toContainText(/hurts when I bite down/i);
+      await interview.locator('[data-continue]').click();
+      await expect(seen).toBeFocused();
+      await seen.press('Enter');
+      await expect(handoff.locator('#al-feedback')).toContainText(/observation/i);
+      await expect(summary).toBeHidden();
+      await appetite.click();
+      await expect(summary).toBeVisible();
+      // The print handler expands guide disclosures. Only a learner may request the worked answer.
+      await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+      await expect(sample).toBeEmpty();
+      await expect(interpretation).toBeEmpty();
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await summary.press('Enter');
+      await expect(sample).toBeVisible();
+      await expect(sample).toContainText(/saw Alex push the tray aside/i);
+      await expect(sample).toContainText(accommodation.used);
+      await expect(sample).not.toContainText(accommodation.other);
+      await expect(sample).toContainText(/pain with chewing is why they set it aside/i);
+      await expect(sample).not.toContainText(/abscess|caries|cracked tooth/i);
+      await expect(sample).toContainText(/examine their mouth/i);
+      await expect(sample).toContainText(/eat and drink|intake/i);
+      await expect(interpretation).toBeVisible();
+      await expect(interpretation).toContainText(/diagnostic overshadowing/i);
+      await handoff.locator('[data-back]').click();
+      await expect(choice).toBeFocused();
+    }
+
+    await seen.click();
+    await expect(summary).toBeHidden();
+    await expect(sample).toBeEmpty();
+    await expect(interpretation).toBeEmpty();
+    await appetite.click();
+    await summary.click();
+    await ask.click();
+    await expect(answer).toBeHidden();
+    await expect(sample).toBeEmpty();
+    await expect(interpretation).toBeEmpty();
+    await ask.click();
+    await expect(seen).toBeVisible();
+    await expect(summary).toBeHidden();
+    await page.goto('/?page=t_neurodev.md&guideSection=what-the-student-does');
+    await handoff.locator('[data-back]').click();
+    await expect(interview.locator('[data-mode="type"]')).toBeFocused();
+    await expect(ask).toBeHidden();
     await expectHealthy(page);
   });
 
@@ -4629,6 +5447,8 @@ test('Care status clears on Home, browser history, and resource opening', async 
 test('phone chrome: one dock stays at the bottom and the first screen belongs to the page', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
+  // Measure the ordinary header here. The Mood bedside case test covers the warning above the title.
+  await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
   const dock = page.locator('.fd-dock:visible');

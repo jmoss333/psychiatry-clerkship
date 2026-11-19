@@ -52,6 +52,23 @@ If the caller demands information:
 - What changed first: sleep, mood, thinking, behavior, substances, medication adherence, medical symptoms?
 - Is this new, recurrent, or worse than usual?
 
+<section class="bedside-case" id="jo-night" aria-labelledby="jo-title">
+<header><p class="case-kicker">Collateral · Baseline and timeline</p><h3 id="jo-title">How much of the night did Jo see?</h3><p>On the unit, Sam gives you permission to ask their sister Jo about sleep before admission. Jo starts with last night.</p></header>
+<figure class="sheet" aria-label="Jo’s overnight observations">
+ <div class="folio"><span>Overnight call log</span><span>Source · Jo, sister</span></div>
+ <blockquote>“I swear Sam was up all night.”</blockquote>
+ <div class="scale" aria-hidden="true"><span class="call" hidden></span><span class="visit" hidden></span></div>
+ <div class="ticks" aria-hidden="true"><span>Midnight</span><span>4 a.m.</span><span>8 a.m.</span></div>
+ <figcaption class="legend" aria-live="polite">Hatching marks time Jo hasn’t accounted for.</figcaption>
+</figure>
+<section class="step" aria-label="MS3 follow-up questions"><p class="case-kicker">MS3 · On the call</p><h4>What did Jo hear or see herself?</h4>
+ <div class="case-choices"><button type="button" data-source="call" aria-pressed="false">“When did you two speak?”</button><button type="button" data-source="home" aria-pressed="false">“When did you get home?”</button></div>
+ <div id="jo-call" class="entry" hidden><p>2:10–2:16 a.m. · Phone call</p><blockquote>“I called on my break. Sam picked up. We talked for six minutes, then I had to get back on the floor.”</blockquote></div>
+ <div id="jo-home" class="entry" hidden><p>7 a.m. · In person</p><blockquote>“I got home at seven. Sam was making coffee. I’d been at work, so I couldn’t tell you when they’d gotten up.”</blockquote></div>
+</section>
+<button type="button" class="case-link" data-continue hidden>Bring Jo’s observations to rounds →</button>
+</section>
+
 ### Risk And Safety
 
 - Any suicidal statements, threats, preparations, giving things away, goodbye messages, or access to lethal means?
@@ -91,6 +108,18 @@ Use this 30-second update:
 If nothing changed:
 
 > "Collateral supported the current formulation: baseline ____, episode timeline ____, no new means/violence/discharge barriers reported beyond what we already knew."
+
+<section class="bedside-case" id="jo-note" aria-labelledby="jo-note-title">
+<p class="case-kicker">Resident · Bring it back to the team</p><h3 id="jo-note-title">Which part of Jo’s account can you carry into rounds?</h3>
+ <p data-locked>Open a question in Jo’s call to start the handoff.</p>
+ <div data-ready hidden><div class="case-choices"><button type="button" data-claim="night" aria-pressed="false">Sam had no sleep overnight.</button><button type="button" data-claim="contact" aria-pressed="false">Sam was awake when Jo had contact.</button></div>
+ <p class="feedback" aria-live="polite" id="jo-feedback"></p>
+ <div class="step" id="jo-ready" hidden><p>Give the hours you can support. What would you ask Sam next?</p><details><summary>Compare your handoff</summary><blockquote id="jo-sample"></blockquote></details></div>
+</div>
+<button type="button" class="case-link" data-back>Return to Jo’s call</button>
+<template data-copy><span data-night>Look at the gaps. What could Jo actually know about those hours?</span><span data-contact>Keep Jo’s observation and her worry distinct when you present.</span><span data-start>Jo worries Sam was awake all night. She</span><span data-call>spoke with Sam for six minutes starting at 2:10 in the morning</span><span data-home>saw Sam making coffee at seven</span><span data-end>We still don’t know how long Sam slept. I’d ask Sam when they slept, how rested they felt, and how that compares with their usual energy.</span></template>
+<footer>Fictional teaching case · <a href="https://www.nimh.nih.gov/health/publications/bipolar-disorder" target="_blank" rel="noopener noreferrer">NIMH on sleep, energy and the course of mood symptoms</a></footer>
+</section>
 
 ## 6. Document Without Overreaching
 
