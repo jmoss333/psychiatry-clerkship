@@ -1026,15 +1026,14 @@
     "clinicalHash": "0b5934ec662d5c944d2f705f18863258de537de3"
   },
   "osce.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-11-17",
-    "by": "Joshua Moss, MD",
-    "contentHash": "6b510c01fac724c9b3f8c01fce413db7361516af",
-    "clinicalHash": "73696ad78134e0b541ae687b2917d13b71ce1686"
+    "reason": "OSCE station set changed in #1234 after the 2026-11-17 signature; awaiting faculty re-attestation.",
+    "at": "2026-11-19",
+    "by": "Pending faculty review"
   },
   "cases.md": {
     "status": "reviewed",
