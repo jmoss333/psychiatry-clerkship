@@ -5448,7 +5448,9 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   // Measure the ordinary header here. The Mood bedside case test covers the warning above the title.
-  await pinGovernance(page, 't_mood.md', { status: 'reviewed', riskLevel: 'low' });
+  await pinGovernance(page, 't_mood.md', {
+    status: 'reviewed', riskLevel: 'low', reviewer: 'Test Faculty', reviewedAt: '2026-10-01',
+  });
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
   const dock = page.locator('.fd-dock:visible');
@@ -5485,6 +5487,7 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   // One row: 10px padding + 44px controls + 10px padding + the hairline (one-thread phone top bar).
   expect(readerHeader.height, 'reader header is a single row').toBeLessThanOrEqual(66);
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
+  await expect(page.locator('.fd-reader .reviewed-receipt')).toHaveText('Reviewed by Test Faculty · 2026-10-01');
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
   expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
