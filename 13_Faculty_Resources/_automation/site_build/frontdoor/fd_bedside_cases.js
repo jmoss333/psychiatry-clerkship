@@ -4,6 +4,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
+  fdMountImaniGrounding(body);
 }
 
 function fdBedsideFocus(control) {
@@ -11,6 +12,56 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountImaniGrounding(body) {
+  const bedside = body.querySelector('#imani-grounding');
+  const handoff = body.querySelector('#imani-handoff');
+  if (!bedside || !handoff || bedside.dataset.mounted) return;
+  bedside.dataset.mounted = 'true';
+
+  const choices = bedside.querySelectorAll('[data-preference]');
+  const reports = handoff.querySelectorAll('[data-report]');
+  const listen = bedside.querySelector('[data-listen]');
+  const listenLabel = listen.textContent;
+  const ready = handoff.querySelector('[data-ready]');
+  let branch;
+
+  function selectReport(selected) {
+    for (const report of reports) report.setAttribute('aria-pressed', String(report === selected));
+    const matches = selected && selected.dataset.report === branch.dataset.branch;
+    handoff.querySelector('[data-handoff]').hidden = !matches;
+    handoff.querySelector('[data-sample]').textContent = matches ? branch.content.querySelector('[data-report]').textContent : '';
+    const feedback = handoff.querySelector('[data-feedback]');
+    feedback.textContent = '';
+    if (selected) feedback.textContent = matches ? 'That matches Imani’s words.' : 'Read Imani’s last line again. What did Imani actually tell you?';
+  }
+
+  function showReply(heard) {
+    listen.setAttribute('aria-expanded', String(heard));
+    listen.textContent = heard ? 'Hide Imani’s response' : listenLabel;
+    bedside.querySelector('#imani-after').hidden = !heard;
+    bedside.querySelector('[data-after]').textContent = heard ? branch.content.querySelector('[data-reply]').textContent : '';
+    bedside.querySelector('[data-follow]').textContent = heard ? branch.content.querySelector('[data-follow]').textContent : '';
+    ready.hidden = !heard;
+    handoff.querySelector('[data-locked]').hidden = heard;
+    selectReport(null);
+  }
+
+  for (const choice of choices) choice.addEventListener('click', () => {
+    if (choice.getAttribute('aria-pressed') === 'true') return;
+    for (const option of choices) option.setAttribute('aria-pressed', String(option === choice));
+    branch = bedside.querySelector('template[data-branch="' + choice.dataset.preference + '"]');
+    bedside.querySelector('[data-line]').textContent = branch.content.querySelector('[data-line]').textContent;
+    bedside.querySelector('#imani-turn').hidden = false;
+    showReply(false);
+  });
+  listen.addEventListener('click', () => showReply(listen.getAttribute('aria-expanded') !== 'true'));
+  for (const report of reports) report.addEventListener('click', () => selectReport(report));
+  bedside.querySelector('[data-next]').addEventListener('click', () => fdBedsideFocus(reports[0]));
+  handoff.querySelector('[data-back]').addEventListener('click', () => {
+    fdBedsideFocus(bedside.querySelector('[data-preference][aria-pressed="true"]') || choices[0]);
+  });
 }
 
 function fdMountRaeReturnVisit(body) {

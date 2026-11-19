@@ -3937,6 +3937,88 @@ test.describe('Clinical field guide', () => {
     await expectHealthy(page);
   });
 
+  test('bedside reading · Imani’s grounding handoff follows the reply the learner heard', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=t_dissociative.md&guideSection=acute-inpatient-management');
+    const management = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-acute-inpatient-management') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const bedside = management.locator('#imani-grounding');
+    const handoff = student.locator('#imani-handoff');
+    const listen = bedside.locator('[data-listen]');
+    const reply = bedside.locator('[data-after]');
+    const follow = bedside.locator('[data-follow]');
+    const next = bedside.locator('[data-next]');
+    const sample = handoff.locator('[data-sample]');
+    const feedback = handoff.locator('[data-feedback]');
+    const expectUnheard = async () => {
+      await expect(reply).toBeHidden();
+      await expect(follow).toBeHidden();
+      await expect(next).toBeHidden();
+      await expect(handoff.locator('[data-report]:visible')).toHaveCount(0);
+      await expect(handoff.locator('[data-report][aria-pressed="true"]')).toHaveCount(0);
+      await expect(feedback).toBeEmpty();
+      await expect(sample).toBeHidden();
+      await expect(sample).toBeEmpty();
+    };
+    await expect(bedside.getByRole('heading', { name: 'What helps you feel here?' })).toBeVisible();
+    await expect(handoff).toHaveCount(1);
+    await expect(listen).toBeHidden();
+    await expectUnheard();
+
+    const cases = [
+      {
+        preference: 'book', reply: 'The room feels a little closer. Still a bit far away, though.',
+        follow: 'keep looking or take a break', sample: 'the room felt a little closer, though it still felt distant',
+      },
+      {
+        preference: 'floor', reply: 'The room still feels far away. Can we stop?',
+        follow: 'You stop the exercise as soon as Imani asks.', sample: 'asked to stop. We stopped.',
+      },
+      {
+        preference: 'quiet', reply: 'I’d like a quiet minute before we talk again.',
+        follow: 'You sit quietly with Imani and the nurse.', sample: 'Imani hasn’t said whether the feeling changed.',
+      },
+    ];
+    for (const current of cases) {
+      const choice = bedside.locator(`[data-preference="${current.preference}"]`);
+      await choice.press('Enter');
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(listen).toHaveAttribute('aria-expanded', 'false');
+      await expectUnheard();
+      await listen.press('Enter');
+      await expect(reply).toBeVisible();
+      await expect(reply).toContainText(current.reply);
+      await expect(follow).toBeVisible();
+      await expect(follow).toContainText(current.follow);
+      await next.press('Enter');
+      await expect(handoff.locator('[data-report]:focus')).toHaveCount(1);
+      await expect(sample).toBeHidden();
+      const matching = handoff.locator(`[data-report="${current.preference}"]`);
+      const others = cases.filter(other => other !== current);
+      await matching.press('Enter');
+      await expect(sample).toBeVisible();
+      await expect(sample).toContainText(current.sample);
+      for (const other of others) await expect(sample).not.toContainText(other.sample);
+      for (const other of others) {
+        await handoff.locator(`[data-report="${other.preference}"]`).click();
+        await expect(feedback).toContainText('What did Imani actually tell you?');
+        await expect(sample).toBeHidden();
+        await expect(sample).toBeEmpty();
+      }
+      await matching.click();
+      await expect(sample).toBeVisible();
+      await handoff.locator('[data-back]').press('Enter');
+      await expect(choice).toBeFocused();
+    }
+    await listen.press('Enter');
+    await expectUnheard();
+    await listen.press('Enter');
+    await expect(handoff.locator('[data-report]:visible')).toHaveCount(3);
+    await expect(sample).toBeEmpty();
+    await expectHealthy(page);
+  });
+
   test('bedside reading · Lee matches onset and follow-up in each formulation', async ({ page }, info) => {
     await page.setViewportSize(PHONE);
     await seedApp(page, info);

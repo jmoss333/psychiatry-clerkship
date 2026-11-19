@@ -3426,6 +3426,19 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#imani-grounding .patient{display:grid;grid-template-columns:minmax(0,1fr) min(27%,9em);margin-block-start:.85em;background:var(--fd-teal-wash)}
+#imani-grounding .patient-words{padding:.7em .85em;align-self:center}
+#imani-grounding .room{position:relative;overflow:hidden;min-height:6.2em;background:linear-gradient(128deg,transparent 48%,var(--fd-surface-warm) 49% 61%,transparent 62%),var(--fd-olive-wash)}
+#imani-grounding .window{position:absolute;left:45%;top:-14%;width:61%;height:77%;border:.27em solid var(--fd-surface);box-shadow:-2px 2px 0 var(--fd-line);background:linear-gradient(90deg,transparent 45%,var(--fd-surface) 45% 50%,transparent 50%),linear-gradient(0deg,transparent 40%,var(--fd-surface) 40% 46%,transparent 46%),var(--fd-teal-wash)}
+#imani-grounding .tabletop{position:absolute;inset:72% -10% auto;height:9%;transform:rotate(-4deg);background:var(--fd-olive);border-top:3px solid var(--fd-line-strong)}
+#imani-grounding .tabletop::after{content:"";position:absolute;top:85%;right:13%;height:5em;width:7%;background:var(--fd-olive)}
+#imani-grounding .book{position:absolute;left:18%;top:49%;width:45%;height:23%;background:steelblue;border-bottom:.22em solid var(--fd-surface);box-shadow:0 .12em 0 steelblue;transform:skew(-28deg) rotate(-7deg);border-radius:var(--fd-radius-xs)}
+#imani-grounding .book::before{content:"";position:absolute;inset:0 auto 0 10%;border-left:1px solid var(--fd-teal-wash)}
+#imani-grounding .book::after{content:"";position:absolute;right:19%;bottom:-27%;height:63%;width:8%;background:sandybrown}
+#imani-grounding .offer{border-inline-start:3px solid var(--fd-line-strong);padding-inline-start:.8em}
+:is(#imani-grounding,#imani-handoff) fieldset{margin:0;padding:0;border:0;min-width:0}
+:is(#imani-grounding,#imani-handoff) legend{padding:0;font-weight:600}
+#imani-handoff [data-feedback]:empty{display:none}
 #rae-visit header blockquote{border-inline-start:3px solid var(--fd-olive);padding-inline-start:.8em}
 #rae-visit figure{display:grid;grid-template-columns:minmax(5em,.55fr) minmax(0,2fr);background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);box-shadow:0 3px 0 var(--fd-line);overflow-wrap:anywhere}
 #rae-visit figure>div{padding:var(--fd-space-6)}
