@@ -84,6 +84,9 @@ available during the risk window.
 > psychosis/family conflict/means/follow-up]. Current plan is [level of care and
 > safety steps]."
 
+These labels allocate the intensity of care and name what to change — they do not
+predict who will die by suicide.
+
 ## Means Safety
 
 Ask specifically. Do not say only "we discussed safety."
@@ -132,7 +135,8 @@ on the unit:
 - Severe agitation or psychosis.
 - Access to lethal means.
 - Collateral that contradicts patient report.
-- Sudden improvement after severe suicidality without clear explanation.
+- Sudden improvement after severe suicidality without clear explanation (clinical
+  convention — reassess; do not assume recovery).
 
 ## Documentation Sentence
 

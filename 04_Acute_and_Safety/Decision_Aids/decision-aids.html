@@ -383,12 +383,12 @@ function App(){
       e("h2",null,"CIWA-Ar score bands"),
       e("div",{className:"cap"},"Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules. Valid only when the patient can report symptoms: not in delirium, where dosing is scheduled or front-loaded."),
       e("div",{className:"meter"},
-        e("div",{className:"seg s1"},"≤8"), e("div",{className:"seg s2"},"9–19"), e("div",{className:"seg s3"},"≥20")),
+        e("div",{className:"seg s1"},"Mild"), e("div",{className:"seg s2"},"Moderate"), e("div",{className:"seg s3"},"Severe")),
       e("div",{className:"bands"},
-        e("div",{className:"band s1"}, e("span",{className:"bk"},"≤ 8"), e("span",null,"Minimal–mild — supportive care, PRN only.")),
-        e("div",{className:"band s2"}, e("span",{className:"bk"},"9–19"), e("span",null,"Moderate — symptom-triggered benzodiazepine; reassess hourly.")),
-        e("div",{className:"band s3"}, e("span",{className:"bk"},"≥ 20"), e("span",null,"Severe — high DTs risk; aggressive treatment, consider higher level of care."))),
-      e("div",{className:"note"},"Brief teaching reference — use your unit's alcohol-withdrawal protocol. ",
+        e("div",{className:"band s1"}, e("span",{className:"bk"},"Mild"), e("span",null,"Supportive care; PRN per protocol.")),
+        e("div",{className:"band s2"}, e("span",{className:"bk"},"Moderate"), e("span",null,"Symptom-triggered benzodiazepine; reassess hourly.")),
+        e("div",{className:"band s3"}, e("span",{className:"bk"},"Severe"), e("span",null,"High DTs risk; aggressive treatment, consider higher level of care."))),
+      e("div",{className:"note"},"Score cut-offs differ between protocols — use your unit's. A low score does not withhold treatment after a prior withdrawal seizure or DTs. ",
         e("a",{className:"more",href:"./withdrawal.html"},"Open the withdrawal recognition card (COWS) →"))
     );
   }

@@ -532,7 +532,7 @@
     },
     {
       "id": "qb_sud_002",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -547,7 +547,7 @@
         "label": "Withdrawal recognition card (COWS)",
         "href": "tools/withdrawal.html"
       },
-      "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. The most important step before administering the glucose is which of the following?",
+      "stem": "A 52-year-old man with a history of heavy daily alcohol use is admitted in early withdrawal — tremulous and tachycardic. A nurse is about to start an IV dextrose infusion for a fingerstick glucose in the low-normal range. Which step should accompany the glucose?",
       "options": [
         {
           "key": "A",
@@ -2740,7 +2740,7 @@
     },
     {
       "id": "qb_sud_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -2755,7 +2755,7 @@
         "label": "Open the Substance Use page",
         "href": "?page=t_sud.md"
       },
-      "stem": "A 57-year-old man with severe alcohol use disorder is admitted through the ED with altered mental status. The nurse establishes IV access and is preparing to infuse D5W. He appears malnourished and confused. Which step must occur before the glucose infusion is started?",
+      "stem": "A 57-year-old man with severe alcohol use disorder is admitted through the ED with altered mental status. The nurse establishes IV access and is preparing to infuse D5W. He appears malnourished and confused. Which step should accompany the glucose infusion?",
       "options": [
         {
           "key": "A",
