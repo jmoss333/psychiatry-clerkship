@@ -27,9 +27,9 @@ class Element {
   fire(type){for(const callback of this.events.get(type)||[])callback({target:this});}
 }
 function all(element){return [element,...element.children.flatMap(all)];}
-function mount(caseId=DANA){
+function mount(caseId=DANA,options={}){
   const host=new Element('div'),document={createElement:tag=>new Element(tag)};
-  const review=createReview({document},host,{caseId,patientName:caseId===MORGAN?'Morgan':'Dana'});
+  const review=createReview({document},host,{caseId,patientName:caseId===MORGAN?'Morgan':'Dana',...options});
   const control=suffix=>all(host).find(item=>item.getAttribute('id')?.endsWith('-'+suffix));
   const select=(suffix,value)=>{const element=control(suffix);element.value=value;element.fire('change');};
   const note=text=>{control('note').value=text;control('note').fire('input');};
@@ -223,4 +223,39 @@ test('dispose removes quotes, notes and listeners; a new station starts empty',(
   next.review.update(snapshot([pt('New words.')]));
   assert.equal(next.review.getReview().judgment,'');assert.equal(next.review.getReview().note,'');
   assert.equal(next.host.textContent.includes('Old private note.'),false);
+});
+
+const settle=async()=>{for(let i=0;i<12;i++)await Promise.resolve();};
+const button=view=>all(view.host).find(item=>item.tagName==='BUTTON');
+const status=view=>all(view.host).find(item=>item.getAttribute('role')==='status');
+const ratingView=onSubmit=>{const view=mount(DANA,{onSubmit});view.review.update(snapshot([pt('My concern.'),you('What would help?'),pt('Listen first.')]));return view;};
+test('explicit rating required; duplicate taps share one submission and success requires confirmation',async()=>{
+ let complete;const calls=[],view=ratingView(value=>{calls.push(value);return new Promise(resolve=>complete=resolve);});
+ button(view).fire('click');await settle();assert.equal(calls.length,0);assert.match(status(view).textContent,/Choose a judgment/);
+ view.select('judgment','Partly addressed');view.note('Please leave room for questions.');
+ button(view).fire('click');button(view).fire('click');assert.equal(calls.length,1);
+ assert.deepEqual(plain(calls[0]),{patientIndex:0,learnerIndex:1,judgment:'Partly addressed',note:'Please leave room for questions.'});
+ assert.equal(button(view).disabled,true);assert.equal(view.control('note').disabled,true);assert.doesNotMatch(status(view).textContent,/Feedback saved/);
+ complete({saved:true,reference:'a'.repeat(32)});await settle();assert.match(status(view).textContent,/Feedback saved/);assert.equal(button(view).disabled,true);
+ button(view).fire('click');assert.equal(calls.length,1);
+});
+test('uncertain save holds exact choices for a deliberate retry and never fabricates success',async()=>{
+ const calls=[],view=ratingView(async value=>{calls.push(value);if(calls.length===1)throw Error('offline');return {saved:true,reference:'b'.repeat(32)};});
+ view.select('judgment','Still open');view.note('Original note');button(view).fire('click');await settle();
+ assert.match(status(view).textContent,/Could not confirm/);assert.equal(button(view).textContent,'Try submitting again');
+ view.note('Changed note');view.select('judgment','Addressed');assert.equal(view.review.getReview().note,'Original note');
+ button(view).fire('click');await settle();assert.deepEqual(plain(calls[1]),plain(calls[0]));assert.match(status(view).textContent,/Feedback saved/);
+});
+test('definite input rejection unlocks editing while conflict and expiry preserve choices',async()=>{
+ for(const error of [{status:400},{status:413},{code:'feedback_conflict'},{code:'feedback_expired'}]){
+  const view=ratingView(async()=>{throw error;});view.select('judgment','Addressed');view.note('Retained');button(view).fire('click');await settle();
+  assert.equal(view.review.getReview().note,'Retained');assert.equal(view.control('note').disabled,!error.status);
+  assert.equal(button(view).disabled,!error.status);assert.doesNotMatch(status(view).textContent,/Feedback saved/);
+ }
+});
+test('malformed confirmation and a disposed view cannot display saved feedback',async()=>{
+ for(const result of [{saved:false},{saved:true,reference:'invalid'}]){
+  const view=ratingView(async()=>result);view.select('judgment','Addressed');button(view).fire('click');await settle();assert.match(status(view).textContent,/Could not confirm/);
+ }
+ let complete;const view=ratingView(()=>new Promise(resolve=>complete=resolve));view.select('judgment','Addressed');button(view).fire('click');view.review.dispose();complete({saved:true,reference:'c'.repeat(32)});await settle();assert.equal(view.host.children.length,0);assert.equal(view.review.getReview(),null);
 });

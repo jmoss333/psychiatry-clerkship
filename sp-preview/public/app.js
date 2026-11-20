@@ -298,9 +298,41 @@
     var previousPlayback='interrupted',previousCompletedSegments=0,generation=0,targetRoleId='morgan',spokenInterrupt=false,deliveryIntensity='standard',echoReference='',echoUntil=0,echoResults=new Map();
     var roomCue=null,cuePending=false,familyBid=null,activeSpeakerId=null,positioning=createFamilyPositioning(env,publish);
     var coachingOpen=false,coachingUnfinished='';
+    var feedbackContext=null,feedbackPayload=null,feedbackFlight=null,feedbackAbort=null,feedbackResult=null;
     var tally={startRequests:0,turnRequests:0,automaticSubmissions:0,explicitSubmissions:0,spokenInterruptions:0,echoResultsIgnored:0};
     function snapshot(){return Object.assign({coachingOpen:coachingOpen,coachingUnfinished:coachingUnfinished,startedAt:startedAt,roomSound:roomSoundWanted,quietSerial:quietSerial,quietMs:capture.quietWindow(),roomCue:roomCue?Object.assign({},roomCue):null,familyBid:familyBid?Object.assign({},familyBid):null,activeSpeakerId:activeSpeakerId,spokenInterrupt:spokenInterrupt,deliveryIntensity:deliveryIntensity,mode:mode,maxTurns:maxTurns,momentStage:momentStage,captureTarget:captureTarget,reflectionOpen:reflectionOpen,review:review?JSON.parse(JSON.stringify(review)):null,teamFormulation:teamFormulation,summaryUncertain:summaryUncertain,uncertainTurnIds:uncertainTurnIds.slice(),reviewAttempted:reviewAttempted,closedReceiptAvailable:closedReceiptAvailable,phase:phase,turn:turn,messages:messages.map(function(message){var copy=Object.assign({},message);if(copy.segments)copy.segments=copy.segments.slice();if(copy.familyBid)copy.familyBid=Object.assign({},copy.familyBid);return copy;}),draft:draft,interim:interim,error:problem,voice:voice,thinking:thinking,hold:hold,busy:!!task,restartRequired:restartRequired,retryUsed:retryUsed,caseId:caseId,targetRoleId:targetRoleId},positioning.snapshot());}
-    function publish(){syncRoomBed();if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());}
+    function publish(){syncRoomBed();
+      if(!disposed&&ended&&!task&&receipt&&!feedbackContext&&mode==='full'&&supportsConcernInitiative(caseId)&&!retryUsed){
+        feedbackContext={caseId:caseId,state:receipt,previousPlayback:previousPlayback,previousCompletedSegments:previousCompletedSegments};
+      }
+      if(!disposed&&typeof options.onChange==='function')options.onChange(snapshot());
+    }
+    function resetFeedback(){if(feedbackAbort)feedbackAbort.abort();feedbackContext=feedbackPayload=feedbackFlight=feedbackAbort=feedbackResult=null;}
+    function submitFeedback(value){
+      if(disposed||!ended||task||!feedbackContext||!key)return Promise.reject(issue('feedback_unavailable'));
+      if(!value||Object.keys(value).sort().join(',')!=='judgment,learnerIndex,note,patientIndex'||!Number.isInteger(value.patientIndex)||value.patientIndex<0||
+        !(value.learnerIndex===null||Number.isInteger(value.learnerIndex)&&value.learnerIndex>value.patientIndex)||
+        !['Addressed','Partly addressed','Still open'].includes(value.judgment)||typeof value.note!=='string'||value.note.length>1200)return Promise.reject(issue('feedback_input_invalid'));
+      var payload=JSON.stringify(Object.assign({},feedbackContext,value));
+      if(feedbackPayload&&feedbackPayload!==payload)return Promise.reject(issue('feedback_locked'));
+      if(feedbackResult)return Promise.resolve(Object.assign({},feedbackResult));
+      if(feedbackFlight)return feedbackFlight;
+      feedbackPayload=payload;
+      var version=generation,abort=new AbortController();feedbackAbort=abort;
+      var timeout=env.setTimeout(function(){abort.abort();},20000);
+      feedbackFlight=(async function(){
+        try{
+          var result=await env.fetch('/api/faculty-feedback',{method:'POST',headers:{'Content-Type':'application/json','x-preview-key':key},body:payload,signal:abort.signal,credentials:'omit',cache:'no-store'});
+          if(disposed||version!==generation)throw issue('feedback_cancelled');
+          if(!result.ok){var error=issue(result.status===409?'feedback_conflict':result.status===410?'feedback_expired':result.status===403?'feedback_forbidden':'feedback_unconfirmed');error.status=result.status;if(result.status===400||result.status===413)feedbackPayload=null;throw error;}
+          var data=await result.json();
+          if(disposed||version!==generation)throw issue('feedback_cancelled');
+          if(data?.saved!==true||typeof data.reference!=='string'||!/^[a-f0-9]{32}$/.test(data.reference))throw issue('feedback_unconfirmed');
+          feedbackResult={saved:true,reference:data.reference};return Object.assign({},feedbackResult);
+        }finally{env.clearTimeout(timeout);if(feedbackAbort===abort){feedbackAbort=null;feedbackFlight=null;}}
+      })();
+      return feedbackFlight;
+    }
     function interruptionEligible(){return spokenInterrupt&&voice&&mode==='full'&&!disposed&&!ended&&!restartRequired&&!reflectionOpen&&!coachingOpen&&!env.document.hidden&&turn<maxTurns;}
     function speechWords(text){return String(text).toLowerCase().replace(/[’']/g,'').match(/[a-z0-9]+/g)||[];}
     function captureClock(){return typeof env.now==='function'?env.now():env.performance&&env.performance.now?env.performance.now():Date.now();}
@@ -418,7 +450,10 @@
         operation.abort.abort();
         if(task!==operation||disposed){operation.failed=true;return false;}
         stopPlayer();try{await queue;}catch(_){}
-        error=operation.error||error;previousPlayback='interrupted';previousCompletedSegments=operation.completed;
+        error=operation.error||error;
+        // Without a new receipt, playback still describes the previous heard
+        // reply. Preserve that pair for the original-visit faculty debrief.
+        if(operation.receivedState){previousPlayback='interrupted';previousCompletedSegments=operation.completed;}
         if(operation.reply){operation.reply.status='interrupted';operation.reply.completedSegments=operation.completed;}
         if(!operation.receivedState){restartRequired=true;if(learner)learner.status='unconfirmed';}
         // A failed retry happens with ended already true; without this it would set
@@ -441,7 +476,7 @@
       if((chosenCase===FAMILY_CASE_ID||chosenCase===undefined&&caseId===FAMILY_CASE_ID)&&settings.familyBriefAcknowledged!==true){problem='Review how this family session works and acknowledge it before starting.';publish();return false;}
       if(chosenCase!==undefined){var profile=options.getMomentProfile&&options.getMomentProfile(chosenCase);if(!profile&&CASE_IDS.indexOf(chosenCase)<0)return false;caseId=chosenCase;mode=profile?'moment':'full';maxTurns=profile?4:10;endpoint=profile?'/api/practice-moment':'/api/dana-preview';}key=String(passcode||'').trim();if(!key||key.length>200){problem=safeMessage('access_denied');publish();return false;}
       voice=!!useVoice&&!!(env.SpeechRecognition||env.webkitSpeechRecognition);coachingOpen=false;coachingUnfinished='';problem='';receipt=null;messages=[];turn=0;ended=false;restartRequired=false;startedAt=Date.now();
-      settings=settings||{};roomCue=null;cuePending=false;familyBid=null;targetRoleId='morgan';spokenInterrupt=mode==='full'&&voice&&settings.spokenInterrupt===true;deliveryIntensity=mode==='full'&&['gentle','standard','expressive'].includes(settings.deliveryIntensity)?settings.deliveryIntensity:'standard';
+      resetFeedback();settings=settings||{};roomCue=null;cuePending=false;familyBid=null;targetRoleId='morgan';spokenInterrupt=mode==='full'&&voice&&settings.spokenInterrupt===true;deliveryIntensity=mode==='full'&&['gentle','standard','expressive'].includes(settings.deliveryIntensity)?settings.deliveryIntensity:'standard';
       positioning.select(caseId===FAMILY_CASE_ID&&settings.familyPositioning===true,true);
       var body={action:'start',requestId:env.crypto.randomUUID()};
       body[mode==='moment'?'scenarioId':'caseId']=caseId;
@@ -531,7 +566,7 @@
     function end(){coachingOpen=false;coachingUnfinished='';closeAudio();familyBid=null;if(mode==='moment'&&!reviewAttempted){momentStage='ending';endReason=task?'technical_interruption':turn>=maxTurns?'turn_limit':'learner_end';if(!turn)receipt=null;}ended=true;capture.stop();if(task){task.cancelled=true;task.abort.abort();}stopPlayer();phase='ended';positioning.close(false);publish();}
     function resume(){if(disposed||env.document.hidden||task||(ended&&!auxiliaryCaptureEligible())||restartRequired||!receipt||reflectionOpen||coachingOpen)return false;voice=true;problem='';phase='connecting';publish();capture.start();return true;}
     function setDraft(text){if(task||(ended&&captureTarget==='patient')||restartRequired||disposed||reflectionOpen||coachingOpen)return;draft=String(text).slice(0,1200);interim='';coachingUnfinished='';if(capture.isActive()){capture.stop();phase='paused';}problem='';publish();}
-    function clear(){closeAudio();roomSoundWanted=false;coachingOpen=false;coachingUnfinished='';roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;quietSerial=0;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';positioning.close(true);publish();}
+    function clear(){closeAudio();roomSoundWanted=false;resetFeedback();coachingOpen=false;coachingUnfinished='';roomCue=null;cuePending=false;familyBid=null;activeSpeakerId=null;clearEcho();startedAt=null;quietSerial=0;spokenInterrupt=false;deliveryIntensity='standard';generation++;if(task){task.cancelled=true;task.abort.abort();task=null;}capture.stop();stopPlayer();receipt=null;key='';messages=[];draft='';interim='';problem='';turn=0;ended=false;restartRequired=false;retryUsed=false;targetRoleId='morgan';previousPlayback='interrupted';previousCompletedSegments=0;phase='gate';mode='full';maxTurns=10;endpoint='/api/dana-preview';momentStage='dialogue';captureTarget='patient';reflectionOpen=false;review=null;teamFormulation='';summaryUncertain=false;uncertainTurnIds=[];reviewAttempted=false;closedReceiptAvailable=false;alternativeTurnId=null;endReason='learner_end';positioning.close(true);publish();}
     // Realism 4 — the cue sound and the ambient bed share one AudioContext. The cue used to open and
     // close its own; closing it now would cut the bed, so the context outlives individual sounds.
     // It is closed on End as well as Clear/dispose: ending the encounter tearing down audio is an
@@ -596,7 +631,7 @@
       setSummaryUncertain:function(value){if(!reviewAttempted&&teamFormulation.trim()){summaryUncertain=!!value;publish();}},
       setUncertainTurn:function(id,value){if(reviewAttempted||!Number.isInteger(id)||id<1||id>turn)return;uncertainTurnIds=uncertainTurnIds.filter(function(v){return v!==id;});if(value)uncertainTurnIds.push(id);uncertainTurnIds.sort(function(a,b){return a-b;});publish();},
       setRoomSound:function(value){roomSoundWanted=!!value;syncRoomBed();publish();return roomSoundWanted;},
-      triggerRoomCue:triggerRoomCue,deferFamilyBid:function(){familyBid=null;publish();},inviteFamilyBid:function(){if(!familyBid||task||ended)return false;targetRoleId=familyBid.speakerId;familyBid=null;publish();return true;},start:start,send:send,retry:retry,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
+      triggerRoomCue:triggerRoomCue,deferFamilyBid:function(){familyBid=null;publish();},inviteFamilyBid:function(){if(!familyBid||task||ended)return false;targetRoleId=familyBid.speakerId;familyBid=null;publish();return true;},start:start,send:send,retry:retry,submitFeedback:submitFeedback,pause:pause,interrupt:pause,end:end,resume:resume,setDraft:setDraft,clear:clear,dispose:dispose,getSnapshot:snapshot,
       setFamilyPositioning:function(value){if(disposed||caseId!==FAMILY_CASE_ID||phase==='gate')return false;var activeAlternative=task&&task.learner&&task.learner.alternative===true&&!task.cancelled&&!task.abort.signal.aborted;positioning.select(!!value,!ended||!!activeAlternative);publish();return true;},
       setSpokenInterrupt:function(value){spokenInterrupt=!!value&&mode==='full'&&voice;if(!spokenInterrupt){clearEcho();if(task&&task.monitoring){task.monitoring=false;if(task.barged)pause();else capture.stop();}}else if(task&&player&&phase==='speaking'&&interruptionEligible()&&!task.abort.signal.aborted){task.monitoring=true;echoReference=task.reply.segments.join('');echoUntil=Infinity;capture.start();}publish();},
       setTargetRole:function(value){if(caseId!==FAMILY_CASE_ID||!Object.hasOwn(FAMILY_NAMES,value)||task||ended||restartRequired||disposed)return false;targetRoleId=value;publish();return true;},
@@ -847,7 +882,7 @@
       }
       if(!env.DanaStation||!env.DanaStationContent||!el('station-root'))return;
       el('station-root').replaceChildren();
-      station=env.DanaStation.createStation(env,el('station-root'),{caseId:caseId,content:env.DanaStationContent,onRetry:function(turnId,text){return controller.retry(turnId,text);}});
+      station=env.DanaStation.createStation(env,el('station-root'),{caseId:caseId,content:env.DanaStationContent,onSubmitFeedback:controller.submitFeedback,onRetry:function(turnId,text){return controller.retry(turnId,text);}});
     }
     function familyRoom(snapshot){
       var family=snapshot.caseId===FAMILY_CASE_ID,visible=family&&snapshot.phase!=='gate';el('family-room').hidden=!visible;el('family-opening-invite').hidden=!visible||snapshot.messages.length>0||!['ready','listening','paused','connecting'].includes(snapshot.phase);

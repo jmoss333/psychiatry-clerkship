@@ -949,3 +949,50 @@ test('faculty cue during speech stops queued audio and preserves only the finish
  assert.equal(c.triggerRoomCue('door_knock'),true);await start;assert.equal(c.getSnapshot().phase,'paused');assert.equal(h.live(),undefined);
  c.send('Let us return to that');await until(()=>h.calls.length===2);assert.equal(h.calls[1].body.previousCompletedSegments,1);assert.equal(h.calls[1].body.roomCueId,'door_knock');c.end();await flush();
 });
+
+const feedbackValue={patientIndex:0,learnerIndex:1,judgment:'Partly addressed',note:'Fictional teaching feedback.'};
+const feedbackReference='d'.repeat(32);
+test('feedback uses the frozen original receipt after a terminal alternative and is idempotent on the phone',async()=>{
+ let encounter=0;
+ const h=environment((path,options)=>path==='/api/faculty-feedback'?Promise.resolve(Response.json({saved:true,reference:feedbackReference})):Promise.resolve(response(JSON.parse(options.body).action==='retry'?frames(1,['Alternative words.']).map(event=>event.state?{...event,state:'alternative-'+event.state}:event):frames(encounter++,['Heard words.']),options.signal))),c=createController(h.env);
+ let work=c.start('private key',false);await finishAudio(h,0);await work;
+ await assert.rejects(c.submitFeedback(feedbackValue),{code:'feedback_unavailable'});
+ work=c.send('What matters?');await finishAudio(h,1);await work;c.end();
+ work=c.retry(1,'Could you explain?');await finishAudio(h,2);await work;
+ await c.submitFeedback(feedbackValue);const request=h.calls.at(-1);
+ assert.equal(request.path,'/api/faculty-feedback');assert.deepEqual(request.body,{caseId:'sp_depression_gated_si_001',state:'complete-1',previousPlayback:'played',previousCompletedSegments:1,...feedbackValue});
+ assert.equal(request.options.headers['x-preview-key'],'private key');assert.equal(request.options.credentials,'omit');
+ const count=h.calls.length;await c.submitFeedback({...feedbackValue});assert.equal(h.calls.length,count);
+ await assert.rejects(c.submitFeedback({...feedbackValue,note:'Changed'}),{code:'feedback_locked'});
+ assert.doesNotMatch(JSON.stringify(c.getSnapshot()),/private key|complete-1/);c.dispose();
+});
+test('feedback retains the final interrupted heard prefix and sends no fabricated quote',async()=>{
+ const h=environment((path,options)=>path==='/api/faculty-feedback'?Promise.resolve(Response.json({saved:true,reference:feedbackReference})):Promise.resolve(response(frames(),options.signal))),c=createController(h.env);
+ const work=c.start('key',false);await finishAudio(h,0);await until(()=>h.audios[1]?.plays===1);c.end();await work;
+ await c.submitFeedback({...feedbackValue,learnerIndex:null});const body=h.calls.at(-1).body;
+ assert.equal(body.previousPlayback,'interrupted');assert.equal(body.previousCompletedSegments,1);assert.equal(Object.hasOwn(body,'patientQuote'),false);c.dispose();
+});
+test('ambiguous feedback retries freeze the payload, join double taps and require a valid confirmation',async()=>{
+ let finish,calls=0;const h=environment((path,options)=>path==='/api/faculty-feedback'?(++calls===1?Promise.reject(Error('connection lost')):new Promise(resolve=>finish=resolve)):Promise.resolve(response(frames(0,['Opening.']),options.signal))),c=createController(h.env);
+ const start=c.start('key',false);await finishAudio(h,0);await start;c.end();const value={...feedbackValue,learnerIndex:null};
+ await assert.rejects(c.submitFeedback(value));await assert.rejects(c.submitFeedback({...value,note:'Changed'}),{code:'feedback_locked'});
+ const first=c.submitFeedback(value),second=c.submitFeedback({...value});assert.equal(first,second);assert.equal(calls,2);
+ assert.equal(h.calls.at(-1).options.body,h.calls.at(-2).options.body);finish(Response.json({saved:true,reference:'bad'}));await assert.rejects(first,{code:'feedback_unconfirmed'});c.dispose();
+});
+test('clearing an encounter aborts feedback and ignores late responses in a fresh visit',async()=>{
+ let finish;const h=environment((path,options)=>path==='/api/faculty-feedback'?new Promise(resolve=>finish=resolve):Promise.resolve(response(frames(0,['Opening.']),options.signal))),c=createController(h.env);
+ let work=c.start('key',false);await finishAudio(h,0);await work;c.end();const saving=c.submitFeedback({...feedbackValue,learnerIndex:null});const signal=h.calls.at(-1).options.signal;
+ c.clear();assert.equal(signal.aborted,true);work=c.start('new key',false);await finishAudio(h,1);await work;finish(Response.json({saved:true,reference:feedbackReference}));await assert.rejects(saving,{code:'feedback_cancelled'});assert.equal(c.getSnapshot().phase,'ready');
+ await assert.rejects(c.submitFeedback(feedbackValue),{code:'feedback_unavailable'});c.dispose();
+});
+
+test('ending an unknown-outcome turn retains playback evidence paired with the last authenticated receipt',async()=>{
+ const h=environment((path,options)=>{
+  if(path==='/api/faculty-feedback')return Promise.resolve(Response.json({saved:true,reference:feedbackReference}));
+  if(JSON.parse(options.body).action==='start')return Promise.resolve(response(frames(0,['Heard opening.']),options.signal));
+  return new Promise((resolve,reject)=>options.signal.addEventListener('abort',()=>reject(Error('aborted'))));
+ }),c=createController(h.env);
+ let work=c.start('key',false);await finishAudio(h,0);await work;work=c.send('Question with unknown outcome');await until(()=>h.calls.length===2);c.end();await work;
+ assert.equal(c.getSnapshot().restartRequired,true);assert.equal(c.getSnapshot().messages[1].status,'unconfirmed');
+ await c.submitFeedback({...feedbackValue,learnerIndex:null});const body=h.calls.at(-1).body;assert.equal(body.state,'complete-0');assert.equal(body.previousPlayback,'played');assert.equal(body.previousCompletedSegments,1);c.dispose();
+});

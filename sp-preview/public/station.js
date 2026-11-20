@@ -239,7 +239,7 @@
     markButton.addEventListener('click',function(){if(latest){store.add(latest);draw();}});
 
     var priorityHost=el('section',null,host,{class:'panel priority-review','data-station':'priority-review',hidden:''});
-    var priorityReview=env.PriorityReview&&env.PriorityReview.createReview(env,priorityHost,{caseId:options.caseId,patientName:profile.displayName});
+    var priorityReview=env.PriorityReview&&env.PriorityReview.createReview(env,priorityHost,{caseId:options.caseId,patientName:profile.displayName,onSubmit:options.onSubmitFeedback});
     var closing=el('section',null,host,{class:'panel','data-station':'closing',hidden:''});
     el('h2','Present to your attending',closing);
     el('p',family?'Give a brief presentation in your own words: who you met and why, each person’s priorities, whose account each finding came from, what remains uncertain, and what you would ask your supervisor to help decide.':'Give a brief presentation in your own words: who you met and why, the patient’s priorities, key findings and uncertainties, your working formulation, and what you would ask your supervisor to help decide.',closing);

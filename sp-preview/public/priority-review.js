@@ -1,5 +1,5 @@
-/* Encounter-local reflection on heard words. This view never interprets the
-   patient's priorities or sends, saves, or scores the review. */
+/* Heard-word reflection. Submission is an explicit controller callback;
+   this view neither interprets priorities nor scores the review. */
 (function(root,factory){
   'use strict';var api=factory();
   if(typeof module==='object'&&module.exports)module.exports=api;
@@ -57,6 +57,7 @@
     if(!doc||!host||!Object.prototype.hasOwnProperty.call(CASES,caseId))return null;
     var name=typeof options.patientName==='string'&&options.patientName.trim()?options.patientName:CASES[caseId];
     var prefix='priority-review-'+(++serial),disposed=false,frozen=null,selectedPatient=null,selectedLearner=null,judgment='',note='',listeners=[];
+    var pendingSubmission=null,submitting=false,saved=false,conflict=false;
     function node(tag,parent,attrs,text){
       var item=doc.createElement(tag);
       Object.keys(attrs||{}).forEach(function(key){item.setAttribute(key,attrs[key]);});
@@ -96,7 +97,12 @@
     var noteField=node('div',fields,{class:'priority-field'});
     label(noteField,prefix+'-note','What remains to ask or clarify');
     var noteInput=node('textarea',noteField,{id:prefix+'-note',class:'priority-note',rows:'3',maxlength:'1200','aria-describedby':prefix+'-note-help'});
-    node('p',noteField,{id:prefix+'-note-help',class:'priority-help'},'Optional · up to 1,200 characters. This review stays on this page and clears with a new encounter or when you leave.');
+    node('p',noteField,{id:prefix+'-note-help',class:'priority-help'},'Optional · up to 1,200 characters. Use fictional information only; do not include real-patient information.');
+    var submission=node('div',fields,{class:'priority-submit'});
+    node('p',submission,{class:'priority-help'},'Submit shares your rating, note, patient setting and selected exchange with the faculty coordinator. It does not send the whole visit or audio. Unsaved notes clear when you leave.');
+    var submitButton=node('button',submission,{type:'button',class:'primary'},'Submit feedback');
+    var submitStatus=node('p',submission,{class:'priority-status',role:'status','aria-live':'polite'});
+    submission.hidden=typeof options.onSubmit!=='function';
     node('p',card,{class:'priority-help'},'Draft debrief · faculty preview');
     function laterResponses(){return frozen&&selectedPatient?frozen.learners.filter(function(item){return item.messageIndex>selectedPatient.messageIndex;}):[];}
     function nextReply(){
@@ -105,6 +111,30 @@
       return !next||next.kind!=='patient'?{status:'none',quote:null}:next.quote?{status:'heard',quote:next.quote}:{status:'unheard',quote:null};
     }
     function clearJudgment(){judgment='';note='';judgmentSelect.value='';noteInput.value='';nextTurn.open=false;}
+    function locked(){return !!pendingSubmission||submitting||saved||conflict;}
+    function submissionState(){
+      [patientSelect,learnerSelect,judgmentSelect,noteInput].forEach(function(item){item.disabled=locked();});
+      submitButton.disabled=submitting||saved||conflict;
+      submitButton.textContent=saved?'Feedback saved':submitting?'Submitting…':pendingSubmission?'Try submitting again':'Submit feedback';
+    }
+    listen(submitButton,'click',async function(){
+      if(disposed||submitting||saved||conflict||typeof options.onSubmit!=='function')return;
+      if(!selectedPatient||!judgment){submitStatus.textContent='Choose a judgment before submitting.';if(judgmentSelect.focus)judgmentSelect.focus();return;}
+      if(!pendingSubmission)pendingSubmission={patientIndex:selectedPatient.messageIndex,learnerIndex:selectedLearner?selectedLearner.messageIndex:null,judgment:judgment,note:note};
+      submitting=true;submitStatus.textContent='Submitting your feedback…';submissionState();
+      try{
+        var result=await options.onSubmit(Object.assign({},pendingSubmission));
+        if(disposed)return;
+        if(result?.saved!==true||typeof result.reference!=='string'||!/^[a-f0-9]{32}$/.test(result.reference))throw new Error('unconfirmed');
+        saved=true;submitStatus.textContent='Feedback saved. Thank you. Reference '+result.reference.slice(0,8)+'.';
+      }catch(error){
+        if(disposed)return;
+        if(error?.code==='feedback_conflict'){conflict=true;submitStatus.textContent='Feedback was already saved for this visit with different choices. It has not been replaced.';}
+        else if(error?.code==='feedback_expired'){conflict=true;submitStatus.textContent='This visit’s submission window has expired. We cannot confirm a saved review from here. Your selections and notes are still shown.';}
+        else if(error?.status===400||error?.status===413){pendingSubmission=null;submitStatus.textContent='The server did not accept this review. Your notes remain here; check the selections and try again.';}
+        else submitStatus.textContent='Could not confirm that your feedback was saved. Your choices are held here. Tap Try submitting again to check safely without creating a duplicate.';
+      }finally{if(!disposed){submitting=false;submissionState();}}
+    });
     function renderSelected(){
       patientStatus.textContent=selectedPatient?(selectedPatient.opening?'Opening words':'Patient turn '+selectedPatient.ordinal)+(selectedPatient.partial?' · partial: completed audio only':' · heard in full'):'';
       patientQuote.textContent=selectedPatient?selectedPatient.text:'';
@@ -121,23 +151,23 @@
       learnerSelect.value=selectedLearner?selectedLearner.id:'';renderSelected();
     }
     listen(patientSelect,'change',function(){
-      if(disposed||!frozen)return;
+      if(disposed||!frozen||locked())return;
       var chosen=frozen.patients.find(function(item){return item.id===patientSelect.value;});
       if(!chosen||chosen===selectedPatient)return;
       selectedPatient=chosen;selectedLearner=laterResponses()[0]||null;clearJudgment();renderResponses();
     });
     listen(learnerSelect,'change',function(){
-      if(disposed||!frozen)return;
+      if(disposed||!frozen||locked())return;
       var chosen=laterResponses().find(function(item){return item.id===learnerSelect.value;})||null;
       if(chosen===selectedLearner)return;
       selectedLearner=chosen;clearJudgment();renderSelected();
     });
     listen(judgmentSelect,'change',function(){
-      if(disposed||!selectedPatient)return;
+      if(disposed||!selectedPatient||locked())return;
       judgment=JUDGMENTS.indexOf(judgmentSelect.value)>=0?judgmentSelect.value:'';judgmentSelect.value=judgment;
     });
     listen(noteInput,'input',function(){
-      if(disposed||!selectedPatient)return;
+      if(disposed||!selectedPatient||locked())return;
       note=noteInput.value.slice(0,1200);noteInput.value=note;
     });
     function update(snapshot){
@@ -159,7 +189,7 @@
     }
     function dispose(){
       if(disposed)return;disposed=true;listeners.forEach(function(remove){remove();});listeners=[];
-      frozen=null;selectedPatient=selectedLearner=null;clearJudgment();
+      frozen=null;selectedPatient=selectedLearner=null;pendingSubmission=null;clearJudgment();
       patientQuote.textContent=learnerQuote.textContent=nextQuote.textContent='';
       empty(patientSelect);empty(learnerSelect);patientSelect.value=learnerSelect.value='';
       empty(card);if(card.parentNode)card.parentNode.removeChild(card);

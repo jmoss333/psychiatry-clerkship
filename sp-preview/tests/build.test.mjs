@@ -13,10 +13,10 @@ test('runtime deployment binding comes from trusted invocation context, not buil
  assert.equal(env.DEPLOY_ID,'actual-deploy');assert.equal(env.URL,'https://preview.test');assert.equal(env.DANA_PREVIEW_ENABLED,'true');
  assert.equal(runtimeEnvironment({DEPLOY_ID:'build-only'},{}).DEPLOY_ID,undefined);
 });
-test('only the ten explicit browser files ship; private case and keys remain outside dist',async()=>{
+test('only the twelve explicit browser files ship; private case and keys remain outside dist',async()=>{
  const run=spawnSync(process.execPath,['build.mjs'],{cwd:root,encoding:'utf8'});assert.equal(run.status,0,run.stderr);
- assert.deepEqual((await readdir(path.join(root,'dist'))).sort(),['app.js','index.html','moment-content.js','moment-station.js','practice-coach.js','practice-content.js','priority-review.js','station-content.js','station.js','styles.css']);
- const published=['app.js','index.html','styles.css','priority-review.js','station.js','station-content.js','moment-content.js','moment-station.js','practice-content.js','practice-coach.js'];
+ assert.deepEqual((await readdir(path.join(root,'dist'))).sort(),['app.js','feedback.html','feedback.js','index.html','moment-content.js','moment-station.js','practice-coach.js','practice-content.js','priority-review.js','station-content.js','station.js','styles.css']);
+ const published=['app.js','feedback.html','feedback.js','index.html','styles.css','priority-review.js','station.js','station-content.js','moment-content.js','moment-station.js','practice-content.js','practice-coach.js'];
  const publicText=(await Promise.all(published.map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
  for(const forbidden of ['OPENAI_API_KEY','DANA_PREVIEW_STATE_KEY','hiddenAgenda','Tom has a sleep medication','ordinaryFacts','sp-interview.pack.json'])assert.ok(!publicText.includes(forbidden),forbidden);
  const stationText=(await Promise.all(['station.js','station-content.js','priority-review.js','moment-station.js','moment-content.js','practice-content.js','practice-coach.js'].map(file=>readFile(path.join(root,'dist',file),'utf8')))).join('\n');
