@@ -29,7 +29,16 @@ function fdMountDayroomChoices(body) {
   if (!room || room.dataset.mounted) return;
   room.dataset.mounted = 'true';
   const choices = room.querySelectorAll('[data-vp-place]');
+  const recheck = room.querySelector('#vp-recheck');
   for (const choice of choices) choice.addEventListener('click', () => {
+    if (choice.getAttribute('aria-pressed') === 'true') return;
+    const selectedPanel = room.querySelector('#' + choice.getAttribute('aria-controls'));
+    recheck.hidden = false;
+    recheck.open = false;
+    for (const disclosure of recheck.querySelectorAll('details[open]')) disclosure.open = false;
+    for (const history of recheck.querySelectorAll('[data-vp-first-step]')) {
+      history.textContent = selectedPanel.querySelector('[data-vp-opening]').textContent;
+    }
     for (const option of choices) {
       const selected = option === choice;
       option.setAttribute('aria-pressed', String(selected));
@@ -37,7 +46,7 @@ function fdMountDayroomChoices(body) {
       result.hidden = !selected;
       if (!selected) result.querySelector('details').open = false;
     }
-    room.querySelector('.vp-announcement').textContent = room.querySelector('#' + choice.getAttribute('aria-controls') + ' blockquote').textContent;
+    room.querySelector('.vp-announcement').textContent = selectedPanel.querySelector('blockquote').textContent;
   });
 }
 

@@ -2601,8 +2601,10 @@ test.describe('Interactive readings', () => {
     const paths = [
       ['tv', 'ask me one thing at a time', 'ask the nurse to take the lead'],
       ['voices', 'That game on TV', 'ask whether they want it turned down'],
-      ['chair', 'I’d rather stay here', 'wants to stay in this chair'],
+      ['calming', 'I’d rather stay here', 'offered the calming room'],
     ];
+    const recheck = activity.locator('#vp-recheck');
+    await expect(recheck).toBeHidden();
     await expect(activity.locator('.vp-result:visible')).toHaveCount(0);
     for (const [place, reply, sample] of paths) {
       const button = activity.locator('[data-vp-place="' + place + '"]');
@@ -2619,11 +2621,36 @@ test.describe('Interactive readings', () => {
       await toggleWithKeyboard(handoff);
       await expect(handoff.locator('p')).toBeVisible();
       await expect(handoff.locator('p')).toContainText(sample);
+
+      await expect(recheck).toBeVisible();
+      await expect(recheck).toHaveJSProperty('open', false);
+      await toggleWithKeyboard(recheck);
+      await expect(recheck.locator(':scope > blockquote')).toContainText('still so wound up');
+      const offer = recheck.locator('#vp-prn-offer');
+      await expect(offer).toHaveJSProperty('open', false);
+      await toggleWithKeyboard(offer);
+      const firstStep = await panel.locator('[data-vp-opening]').textContent();
+      for (const [replyId, outcome, missing] of [
+        ['vp-prn-yes', 'chose the oral PRN and received it', 'No dose was given'],
+        ['vp-prn-no', 'No dose was given', 'chose the oral PRN and received it'],
+      ]) {
+        const decision = offer.locator('#' + replyId);
+        await toggleWithKeyboard(decision);
+        await expect(offer.locator('[name="vp-prn-reply"][open]')).toHaveCount(1);
+        const report = decision.locator('.vp-handoff');
+        await expect(report).toHaveJSProperty('open', false);
+        await toggleWithKeyboard(report);
+        const spoken = report.locator('p').last();
+        await expect(spoken).toBeVisible();
+        await expect(spoken).toContainText(firstStep);
+        await expect(spoken).toContainText(outcome);
+        await expect(spoken).not.toContainText(missing);
+      }
     }
     const image = activity.locator('.vp-room img');
     await image.scrollIntoViewIfNeeded();
     const box = await image.boundingBox();
-    for (const [x, place] of [[0.10, 'tv'], [0.70, 'voices'], [0.91, 'chair']]) {
+    for (const [x, place] of [[0.10, 'tv'], [0.70, 'voices'], [0.91, 'calming']]) {
       await page.mouse.click(box.x + x * box.width, box.y + 0.45 * box.height);
       await expect(activity.locator('[data-vp-place="' + place + '"]')).toHaveAttribute('aria-pressed', 'true');
     }
