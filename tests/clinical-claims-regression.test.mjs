@@ -1,7 +1,6 @@
 // Regression tests from the 2026-11-10 independent clinical-claims audit (suicide risk, alcohol
 // withdrawal, lithium, delirium, thiamine/glucose). Each A*/B* test reproduces one finding that the
-// same PR corrected (A2 and B1 wait for the pharmacy-link follow-up: their questions are linked from
-// pharmacy cards, and a withheld question id in pharmacy_public.json fails the publication check); the G* tests guard corrections made earlier. Findings and sources:
+// same PR corrected; the G* tests guard corrections made earlier. Findings and sources:
 // the PR description and corrections.json in the audit packet.
 //
 // It reads only shipped content text. It never reads attestation state (reviewed.json, facultyReview,
@@ -97,4 +96,12 @@ test('G2 no shipped page teaches a no-suicide contract as protective, and EXTRIP
   none(/no-(suicide|harm) contracts? (is|are) (the )?(gold standard|effective|protective)\b(?! )/i, 'contracts are not protective', u => !/\b(not|no evidence|trap|wrong)\b/i.test(u.text) && !/options\[/.test(u.where) && !/\/o\[/.test(u.where));
   const bad = ALL.filter(u => /lithium/i.test(u.text) && />\s?4\.0/.test(u.text) && /dialysis|extracorporeal|EXTRIP/i.test(u.text) && !/(at any level|irrespective of the level|regardless of the level|irrespective)/i.test(u.text)).map(u => `${u.file} ${u.where}`);
   assert.deepEqual(bad, [], 'EXTRIP: decreased consciousness, seizures or life-threatening dysrhythmias qualify irrespective of the level');
+});
+// ---------- A2 and B1: landed after the pharmacy-link fix (#1202) --------------------------------
+test('A2 the antipsychotic boxed mortality warning is never stated without its scope (dementia-related psychosis)', () => {
+  const bad = ALL.flatMap(u => sentences(u.text).filter(s => /(black-?box|boxed)[^.]{0,80}mortality|mortality[^.]{0,40}(black-?box|boxed)/i.test(s) && /antipsychotic/i.test(u.text) && !/dementia/i.test(s)).map(s => `${u.file} ${u.where}: ${s.slice(0, 160)}`));
+  assert.deepEqual(bad, [], 'the boxed warning is for older adults with dementia-related psychosis, not for older patients in general');
+});
+test('B1 lithium\'s anti-suicidal evidence is not described as covering acute prevention', () => {
+  none(/anti-suicidal evidence encompasses both acute and long-term prevention/i, 'the signal is from long-term trials; Katz 2022 (recent suicide-related event) was stopped for futility');
 });
