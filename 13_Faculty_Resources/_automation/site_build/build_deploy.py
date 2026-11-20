@@ -615,6 +615,10 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illus
                os.path.join(OUT, "illustrations", "cultural-chart.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
                os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
+for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),
+                      ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp")):
+    _copy_required(os.path.join(LIB, "04_Acute_and_Safety", _topic, "illustrations", _plate),
+                   os.path.join(OUT, "illustrations", _plate), _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 # Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms

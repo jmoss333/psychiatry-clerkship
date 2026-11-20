@@ -8,6 +8,28 @@
 People with serious mental illness die 10–20 years earlier than the general population, mostly from cardiometabolic disease. Several psychotropics drive weight gain, dyslipidemia, and glucose dysregulation; diet and activity are both a *cause* of that risk and part of the *treatment*. Owning metabolic health is part of owning the psychiatric care.
 
 ## Metabolic monitoring you should know cold
+<section class="bedside-case visual-practice" id="vp-metabolic" aria-labelledby="vp-metabolic-title">
+<header><p class="case-kicker">Metabolic monitoring · Fictional follow-up</p>
+<h3 id="vp-metabolic-title">Which change would you bring up today?</h3>
+<p>Sam started an antipsychotic eight weeks ago. The inpatient team is planning discharge. You have the prescribing clinic’s baseline and four-week measurements alongside today’s.</p></header>
+<h4>Choose a trend to discuss with Sam</h4>
+<p class="vp-intro">Select a chart to ask what Sam has noticed. Use the values and their answer to suggest one follow-up.</p>
+<div class="vp-options vp-trends">
+<details class="vp-card" name="vp-measure"><summary><span class="vp-time">Body weight · kg</span><strong>72 → 74 → 76 kg</strong>
+<svg class="vp-plot" viewBox="0 0 240 84" aria-hidden="true" focusable="false"><path class="vp-gridline" d="M12 12H228 M12 42H228 M12 72H228"/><path class="vp-trace" d="M14 64L120 42L226 20"/><g class="vp-points"><circle cx="14" cy="64" r="4"/><circle cx="120" cy="42" r="4"/><circle cx="226" cy="20" r="4"/></g></svg>
+<span class="vp-axis"><span>Baseline</span><span>4 weeks</span><span>8 weeks</span></span></summary>
+<div class="vp-reply"><p><strong>Sam</strong> “I wake up hungry now. This medicine helps me sleep, though. Can we talk about both when I see my prescriber?”</p>
+<p><strong>MS3</strong> How would you bring the measurements and Sam’s priorities to the next visit?</p>
+<details class="vp-handoff"><summary>Compare a discharge handoff</summary><p>“Sam’s weight rose from 72 to 76 kg over eight weeks. They’ve noticed hunger and value sleeping better. With Sam’s permission, I’d send the trend to their prescriber and agree on a visit to review appetite, sleep and a repeat weight together.”</p></details></div></details>
+<details class="vp-card" name="vp-measure"><summary><span class="vp-time">Systolic blood pressure · mmHg</span><strong>124 → 122 → 124 mmHg</strong>
+<svg class="vp-plot" viewBox="0 0 240 84" aria-hidden="true" focusable="false"><path class="vp-gridline" d="M12 12H228 M12 42H228 M12 72H228"/><path class="vp-trace" d="M14 40L120 46L226 40"/><g class="vp-points"><circle cx="14" cy="40" r="4"/><circle cx="120" cy="46" r="4"/><circle cx="226" cy="40" r="4"/></g></svg>
+<span class="vp-axis"><span>Baseline</span><span>4 weeks</span><span>8 weeks</span></span></summary>
+<div class="vp-reply"><p><strong>Sam</strong> “I was wondering about my pressure. I’m glad you checked. The thing I notice at home is getting hungry again right after dinner.”</p>
+<p><strong>MS3</strong> How would you answer Sam’s question and make room for the concern they raised?</p>
+<details class="vp-handoff"><summary>Compare a discharge handoff</summary><p>“Sam’s systolic pressure is back at its baseline of 124. Sam wanted to discuss evening hunger. I’d ask permission to look at the weight measurements together and make that concern part of the follow-up visit.”</p></details></div></details>
+</div>
+</section>
+
 For anyone starting an antipsychotic, the **ADA/APA 2004 consensus** establishes two separate cadences — one front-loaded for weight (the earliest and most actionable signal), and one less frequent for fasting labs and BP:
 
 | Measure | Schedule | Why |

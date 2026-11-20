@@ -58,7 +58,7 @@ function fdGuideMount(body,options){
     if(!leads.length)return null;
   }
   var doc=body.ownerDocument, win=doc.defaultView, ref=o.ref;
-  var disposed=false, frame=0, printOpened=[], tableModes=[], invokers=[];
+  var disposed=false, frame=0, printOpened=[], printGroups=[], tableModes=[], invokers=[];
   function el(tag,cls,text){
     var node=doc.createElement(tag);
     if(cls)node.className=cls;
@@ -285,10 +285,17 @@ function fdGuideMount(body,options){
     updateCurrent();
   }
   function beforePrint(){
-    if(printOpened.length)return;
+    if(printOpened.length||printGroups.length)return;
+    /* An exclusive disclosure would otherwise close its sibling during printing. */
+    each(reader.querySelectorAll('.visual-practice details[name]'),function(d){
+      printGroups.push([d,d.getAttribute('name')]);d.removeAttribute('name');
+    });
     each(reader.querySelectorAll('.fd-article__body details:not([open]),.fd-bedside-case details:not([open])'),function(d){printOpened.push(d);d.open=true;});
   }
-  function afterPrint(){printOpened.forEach(function(d){d.open=false;});printOpened=[];}
+  function afterPrint(){
+    printOpened.forEach(function(d){d.open=false;});printOpened=[];
+    printGroups.forEach(function(pair){pair[0].setAttribute('name',pair[1]);});printGroups=[];
+  }
   win.addEventListener('scroll',onScroll,{passive:true});win.addEventListener('resize',onResize);
   win.addEventListener('beforeprint',beforePrint);win.addEventListener('afterprint',afterPrint);
   /* Index only stable resource controls, after table generation. No durable learner state. */

@@ -3426,6 +3426,62 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* Learners can choose the room feature, observation frame, chart or source itself. */
+.visual-practice{display:grid;gap:var(--fd-space-6)}
+.visual-practice>header{gap:var(--fd-space-3)}
+.visual-practice .vp-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-5);align-items:start}
+.visual-practice .vp-time,.visual-practice .vp-axis{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));font-weight:600;color:var(--fd-text-mid)}
+.visual-practice .vp-time{display:block;margin-bottom:.3em}
+.visual-practice .vp-card{min-width:0;margin:0;padding:0;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);background:var(--fd-surface)}
+.visual-practice .vp-card>summary{padding:var(--fd-space-5) var(--fd-space-6);color:var(--fd-text);line-height:1.35}
+.visual-practice .vp-card>summary:hover,.visual-practice .vp-card[open]>summary{background:var(--fd-teal-wash)}
+.visual-practice .vp-card[open]{border-color:var(--fd-teal)}
+.visual-practice .vp-reply,.visual-practice .vp-result{padding:var(--fd-space-6)}
+.visual-practice .vp-reply{border-top:1px solid var(--fd-line)}
+.visual-practice .vp-result{border-inline-start:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+.visual-practice :is(.vp-reply,.vp-result)>*+*{margin-top:.65em}
+.visual-practice .vp-handoff{margin-top:.65em;padding:var(--fd-space-1) var(--fd-space-6);border-inline-start:2px solid var(--fd-line-strong);background:var(--fd-surface-warm)}
+.visual-practice .vp-handoff>summary{line-height:1.35}
+.visual-practice .vp-handoff[open]{padding-bottom:.65em}
+.visual-practice .vp-handoff p{margin:var(--fd-space-4) 0 0}
+.visual-practice .vp-safety{padding:var(--fd-space-5) var(--fd-space-6);border-inline-start:3px solid var(--fd-olive);color:var(--fd-text);background:var(--fd-olive-wash)}
+.visual-practice .vp-note{border-inline-start:3px solid var(--fd-teal);background:var(--fd-surface);padding:var(--fd-space-5)}
+.vp-note del,.vp-note ins{display:block}
+.vp-note del{color:var(--fd-text-mid)}
+.vp-note ins{text-decoration:none}
+/* The chart dates and source labels double as the selectable tabs on each record. */
+:is(#vp-workup,#vp-perinatal) .vp-card>summary{display:block;position:relative;padding-inline-end:var(--fd-space-9)}
+:is(#vp-workup,#vp-perinatal) .vp-card>summary::after{content:"+";position:absolute;inset:var(--fd-space-5) var(--fd-space-5) auto auto;font-family:monospace;color:var(--fd-teal-deep)}
+:is(#vp-workup,#vp-perinatal) .vp-card[open]>summary::after{content:"−"}
+#vp-workup .vp-card{border-inline-start:3px solid var(--fd-teal)}
+#vp-perinatal .vp-card>summary .vp-time{width:fit-content;padding:var(--fd-space-1) var(--fd-space-4);border-radius:var(--fd-radius-xs);background:var(--fd-olive-wash);color:var(--fd-olive-deep)}
+.vp-room{position:relative;isolation:isolate}
+.vp-room img,.vp-frames img{display:block;width:100%;height:auto}
+.vp-room-controls{position:absolute;inset:0;display:grid;grid-template-columns:30% 45% 25%}
+.vp-room-controls button{display:flex;align-items:flex-end;justify-content:center;width:100%;padding:var(--fd-space-3);border:0;border-radius:0;background:transparent;text-align:center;line-height:1.15}
+.vp-room-controls button:hover,.vp-room-controls button[aria-pressed=true]{background:transparent;box-shadow:inset 0 0 0 3px var(--fd-teal-deep)}
+.vp-room-controls button:focus-visible{outline-offset:-3px}
+.vp-room-controls button span{padding:var(--fd-space-3) var(--fd-space-4);border-radius:var(--fd-radius-xs);background:var(--fd-surface);color:var(--fd-text);box-shadow:var(--fd-shadow-sm)}
+.vp-room-controls button[aria-pressed=true] span{background:var(--fd-teal-deep);color:var(--fd-surface)}
+.vp-room-controls .vp-changed,.vp-room-controls [aria-pressed=true] .vp-before{display:none}
+.vp-room-controls [aria-pressed=true] .vp-changed{display:inline}
+.vp-frames summary img{border-radius:var(--fd-radius-xs);margin-bottom:.6em}
+.vp-frames .vp-card>summary,.vp-trends .vp-card>summary{display:block;position:relative}
+.vp-frames summary::after,.vp-trends summary::after{content:"+";position:absolute;inset:auto .4em .35em auto;font-family:monospace;color:var(--fd-teal-deep)}
+.vp-frames [open]>summary::after,.vp-trends [open]>summary::after{content:"−"}
+.vp-frames .vp-card>summary strong{display:block;padding-right:1em}
+.vp-trends .vp-card>summary{padding-bottom:var(--fd-space-8)}
+.vp-plot{display:block;width:100%;height:auto;margin:var(--fd-space-3) auto var(--fd-space-1)}
+.vp-gridline,.vp-trace{fill:none;stroke:var(--fd-line);stroke-width:1}
+.vp-trace{stroke:var(--fd-teal-deep);stroke-width:3}
+.vp-points{fill:var(--fd-surface);stroke:var(--fd-teal-deep);stroke-width:3}
+.vp-axis{display:flex;justify-content:space-between;gap:var(--fd-space-2)}
+@container bedside (max-width:32em){
+  .visual-practice .vp-options{grid-template-columns:1fr}
+  .vp-room{padding-bottom:2.7em;background:var(--fd-teal-wash)}
+  .vp-room-controls button{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));padding:var(--fd-space-2)}
+  .vp-room-controls button span{display:grid;align-content:center;min-height:2.7em;width:100%;padding:var(--fd-space-1)}
+}
 #rae-visit header blockquote{border-inline-start:3px solid var(--fd-olive);padding-inline-start:.8em}
 #rae-visit figure{display:grid;grid-template-columns:minmax(5em,.55fr) minmax(0,2fr);background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);box-shadow:0 3px 0 var(--fd-line);overflow-wrap:anywhere}
 #rae-visit figure>div{padding:var(--fd-space-6)}
