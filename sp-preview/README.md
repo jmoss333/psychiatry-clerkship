@@ -4,7 +4,7 @@ The protected room now includes Elena, Priya and Luis moments alongside all five
 
 Each moment allows four patient-facing responses, one three-unit review and one three-unit terminal alternative: at most 19 reserved operation units and one start. It shares the existing budget namespace and 20/680/340 policy. Review consumes the current continuation before evaluation; unavailable feedback stays closed and falls back to authored reflection prompts. Transfers require a fresh normally budgeted start.
 
-Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No transcripts/audio are persisted, no dialogue is logged, and no analytics are added. Actor facts/rubrics stay in the function bundle; nine explicit browser assets ship.
+Private reflection and the existing attending presentation stay in page memory. The separate optional Priya **Team formulation — included in AI feedback** goes to review only after explicit submission. No full transcripts or audio are persisted, no dialogue is logged, and no analytics are added. Explicit full-visit faculty submissions save only selected excerpts as described below. Actor facts/rubrics stay in the function bundle; twelve explicit browser assets ship.
 
 ---
 
@@ -44,6 +44,10 @@ Only Dana receives the direct-suicide-question overlay. It is reviewed for her
 alone and is never applied to another case.
 
 Faculty can choose **Gentler expression / Current portrayal / More pronounced expression** before a full encounter. Only the expression of the existing dialogue changes; the server binds this allowlisted setting for the whole encounter, including family speakers and an alternative. Standard preserves the accepted profiles exactly. Presets do not change numeric speed, facts, symptoms, disclosure rules, actor instructions, learner feedback, or interruption controls. Practice a Moment retains Standard and its existing capture flow. Actual nonstandard voices are drafts for listening review.
+
+For Dana and individual Morgan, **Volunteering concerns** offers **Wait for an invitation / Natural openings (current) / More forthcoming**. It adjusts when a patient adds an already permitted practical concern after answering the learner. The current behavior remains the default. Direct, compound and safety questions and required disclosures take priority at every setting; no setting changes case facts, voice, illness severity or disclosure gates. Choose before Start. The allowlisted choice stays in authenticated encounter state, including alternatives, and travels in a reusable setup link. It is unavailable for other patients, the family visit and Practice a Moment. The authored opening is unchanged; compare the conversation after your first question. This is a direction to the actor, not a guarantee of a question on a particular turn.
+
+For the individual Morgan encounter, faculty can also choose **One point, then room for a follow-up** under **Faculty · patient settings and setup link**. This trial asks Morgan to volunteer one point after a broad invitation. Specific, compound and safety questions take precedence. The server binds the selection at Start and carries it through a retry. Use **Get link for this setup** to copy a reusable entrance with the selected patient, expression, communication goal, coaching depth and applicable Morgan setting. The recipient enters the passcode and chooses when to begin. The family-visit doorway selects both people and opens their briefing. [API, voice and case review](INTERVIEW_ROOM_REVIEW.md)
 
 See the [case-by-case research](../docs/superpowers/specs/2026-09-09-sp-voice-evidence.md) and [spoken interruption pilot design and trial sequence](../docs/superpowers/specs/2026-09-09-spoken-interruption-pilot.md). No production activation or clinical attestation follows from automated checks.
 
@@ -101,6 +105,7 @@ Use a separate Netlify preview site with this directory as its base. Keep its pr
 | --- | --- |
 | `DANA_PREVIEW_ENABLED` | Exactly `true` to permit this engineering preview. Missing/false fails closed. |
 | `DANA_PREVIEW_PASSCODE` | Access phrase, at least 15 characters. Configured server-side; held only in browser memory during an encounter. |
+| `FACULTY_FEEDBACK_REVIEW_KEY` | Separate private coordinator review key; never use the faculty passcode or publish this key. |
 | `DANA_PREVIEW_STATE_KEY` | Random 32-byte key encoded as 43 base64url characters. Server only. |
 | `OPENAI_API_KEY` | Existing user-authorized Psychiatherapy key. Server only; never public assets. |
 | Deployment identity | Supplied by trusted Function `context.deploy.id`; encrypted encounter state binds to that deployment. Do not rely on build-only `DEPLOY_ID`. |
@@ -134,6 +139,20 @@ The ledger stores operation hashes, binding hashes, timestamps, and unit counts 
 - Native MP3 completion, microphone behavior, cancellation, and response delays are verified in the actual hosted browser journey.
 - Private source paths are absent from published assets; public failures contain no provider details or keys.
 - Canonical production voice flags and learner routes remain unchanged.
+
+## Full-visit concern review
+
+The entry links **Dana · natural openings** and **Morgan · wait for an invitation** restore the owner-selected concern settings for full encounters. They keep current vocal expression and the existing voice profiles. These are explicit setup links; older links and the general setting defaults still work.
+
+After either solo visit ends, **Did we address what mattered?** pairs a selected patient quote with a later learner response. It initially shows the first heard patient words (including the opening when heard) and the first following response; that is a chronological starting point, not a claim that the concern was answered. Choose another exchange when needed. Only patient words confirmed played are eligible, with interrupted prefixes identified separately. Unsent or failed learner questions and alternative retry dialogue are excluded.
+
+The learner or faculty chooses **Addressed**, **Partly addressed**, or **Still open**, and writes what remains to ask or clarify. No outcome is pre-scored. The review freezes the original encounter at its end, so a later retry cannot rewrite it. Review selections and notes stay in page memory until **Submit feedback** is chosen. Submission saves the selected heard patient words, selected later learner response, its immediate heard patient reply (if any), the faculty judgment, optional note, patient settings, case/deployment binding and timestamp in a separate site-wide `faculty-full-visit-feedback-v1` store. It sends nothing to a model and stores no audio, whole transcript, encounter receipt or access credential. Unsaved notes clear with the encounter. Use fictional information only. Other cases and short Moments retain their existing closing activities.
+
+**Submit feedback** requires the existing faculty passcode and the original authenticated encounter receipt. The server derives quotations from that receipt and bounds interrupted audio to completed segments. One immutable review is allowed per original visit. A lost-response retry of the same selection confirms the existing record; different selections cannot overwrite it. The phone holds the attempted selection until confirmed, and shows “Feedback saved” only after a verified response. Original receipts remain subject to their 30-minute expiry and deployment binding; submit before leaving the visit. Feedback uses no model operations or encounter admission units.
+
+The coordinator reads saved feedback at `/feedback.html` using a separate `FACULTY_FEEDBACK_REVIEW_KEY` (32–128 base64url characters, different from the faculty passcode). A private link may carry it in the URL fragment, which is removed immediately and is never sent as part of an HTTP URL. The page holds the key only in memory and sends it as a bearer header to the same-origin feedback endpoint. **Close private view** clears it and the displayed reviews. Do not share this owner link with faculty or put it in repository files; faculty receive the regular visit links. Reads are bounded to 200 records and report when truncated. Records persist across preview deployments until explicitly removed by the owner; there is no automatic email or scheduled processing.
+
+The full-visit rehearsal also prompted a narrow solo-Morgan portrayal correction: an unspecified safety history is answered with ordinary first-person uncertainty, without explaining the simulation or redirecting to the consultation topic. This supplies no new clinical findings or safety denial. The speech provider and voice profiles are unchanged.
 
 ## Diagnosing a real microphone session
 

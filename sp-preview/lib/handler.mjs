@@ -3,7 +3,7 @@ import {createContext,validateReply} from '../../_prototypes/sp-interview/dana-l
 import {getCase} from './case.mjs';
 import {FAMILY_CASE_ID,familyContext,roleSpeechCaseId} from './family.mjs';
 import {refineActorContext,isDeliveryIntensity} from './portrayal.mjs';
-import {applyInteractionGuidance,validateInteractionReply} from './interaction-guidance.mjs';
+import {applyInteractionGuidance,isSupportedReplyDetail,isSupportedConcernInitiative,validateInteractionReply} from './interaction-guidance.mjs';
 import {recommendFamilyBid} from './family-bids.mjs';
 import {roomCue,withRoomCue} from './room-cues.mjs';
 import {hash,problem,createStateCodec,initialState,nextHistory,issuedState,retryState,learnerHistoryIndex} from './state.mjs';
@@ -42,10 +42,20 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
    let operationId;
    if(action==='start'){
     const intensityPresent=Object.hasOwn(body,'deliveryIntensity');
-    if(!exact(body,['action','caseId','requestId',...(intensityPresent?['deliveryIntensity']:[])])||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId)
+    const detailPresent=Object.hasOwn(body,'replyDetail');
+    const initiativePresent=Object.hasOwn(body,'concernInitiative');
+    const fields=['action','caseId','requestId'];
+    if(intensityPresent)fields.push('deliveryIntensity');
+    if(detailPresent)fields.push('replyDetail');
+    if(initiativePresent)fields.push('concernInitiative');
+    if(!exact(body,fields)||typeof body.requestId!=='string'||!/^[a-f0-9-]{36}$/.test(body.requestId)
+      ||detailPresent&&!isSupportedReplyDetail(caseDef.id,body.replyDetail)
+      ||initiativePresent&&!isSupportedConcernInitiative(caseDef.id,body.concernInitiative)
       ||intensityPresent&&!isDeliveryIntensity(body.deliveryIntensity))throw problem(400,'preview_input_invalid');
     roleId=isFamily?'morgan':undefined;
     state=initialState(caseDef.persona.opening,now,caseDef.id,roleId,intensityPresent?body.deliveryIntensity:'standard',isFamily?'clinician':undefined);operationId=`start:${body.requestId}`;
+    if(detailPresent)state.replyDetail=body.replyDetail;
+    if(initiativePresent)state.concernInitiative=body.concernInitiative;
    }else if(action==='turn'){
     const cuePresent=Object.hasOwn(body,'roomCueId');
     if(!exact(body,['action','caseId','state','text','previousPlayback','previousCompletedSegments',...(isFamily?['targetRoleId']:[]),...(cuePresent?['roomCueId']:[])]))throw problem(400,'preview_input_invalid');
@@ -114,7 +124,10 @@ export function createHandler({env=process.env,provider,budget,now=Date.now,dead
       if(action==='start'){reply=caseDef.persona.opening;segments=[reply];jobs=[begin(reply)];}
       else {
        const baseContext=roleId?familyContext(history,roleId):refineActorContext(createContext(caseDef,history.filter(entry=>entry.who==='me').map(entry=>entry.text),history),caseDef.id);
-       const context=withRoomCue(applyInteractionGuidance(baseContext,caseDef.id,roleId?{roleId}:{}),state.roomCue);
+       const actorOptions=roleId?{roleId}:{};
+       if(Object.hasOwn(state,'replyDetail'))actorOptions.replyDetail=state.replyDetail;
+       if(Object.hasOwn(state,'concernInitiative'))actorOptions.concernInitiative=state.concernInitiative;
+       const context=withRoomCue(applyInteractionGuidance(baseContext,caseDef.id,actorOptions),state.roomCue);
        // An occasional family bid uses the second existing speech slot. No
        // additional model call, budget reservation, or simultaneous speakers.
        familyBid=roleId&&action==='turn'&&state.roomCue?.turn!==state.turn+1?recommendFamilyBid(history,roleId):null;

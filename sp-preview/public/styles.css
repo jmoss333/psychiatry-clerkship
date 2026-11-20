@@ -28,7 +28,7 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 @media(max-width:700px){[data-mode="moment"] .moment-station,[data-mode="moment"]:not([data-moment-stage="dialogue"]) .moment-station{display:block;margin-top:20px}[data-mode="moment"] .moment-panel{padding:18px;margin-bottom:16px}}
 
 /* Optional headphone experiment and bounded faculty delivery settings. */
-.voice-experiment{border-left:3px solid var(--line);padding:0 12px 14px;margin-bottom:14px}.voice-experiment .check{align-items:flex-start}.voice-experiment input{margin-top:5px}.faculty-options{border-top:1px solid var(--line);padding:4px 0 16px;font-size:.85rem}.faculty-options>label{display:block;margin:8px 0;font-weight:600}.faculty-options>p{margin-top:10px}.faculty-options>select{max-width:100%}
+.voice-experiment{border-left:3px solid var(--line);padding:0 12px 14px;margin-bottom:14px}.voice-experiment .check{align-items:flex-start}.voice-experiment input{margin-top:5px}.faculty-options{border-top:1px solid var(--line);padding:4px 0 16px;font-size:.85rem}.faculty-options>label,.faculty-setting>label{display:block;margin:8px 0;font-weight:600}.faculty-options>p,.faculty-setting>p{margin-top:10px}.faculty-options>select,.faculty-setting>select{max-width:100%}.faculty-setting{margin-bottom:18px}
 
 .family-bid-offer,.room-cue-notice{padding:1rem;border:1px solid var(--line,#d8cebf);border-radius:.75rem;background:var(--paper,#fffaf1);margin:.75rem 0}.family-bid-offer button,.faculty-options button{margin:.25rem .35rem .25rem 0}.family-bid{border-left:3px solid var(--accent,#1f716a)}
 
@@ -173,3 +173,20 @@ button,input,textarea,select{font:inherit}button,input[type=password],textarea,s
 /* Realism 4 — the opt-in room sound chip sits beside the microphone chip. */
 .room-bed{justify-self:center;align-self:center;font-size:.72rem;color:var(--green);background:var(--pale);border:1px solid #a9c2bc;border-radius:999px;padding:3px 9px;white-space:nowrap}
 @media print{.room-bed{display:none}}
+
+/* Full-visit priority review: quoted dialogue and the reviewer's own judgment. */
+.selected-visits{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:4px;font-size:.85rem}
+.selected-visits>span{font-weight:650;width:100%;color:var(--muted)}
+.selected-visits>a{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;color:var(--green);background:var(--card);text-decoration:none;box-sizing:border-box;max-width:100%;overflow-wrap:anywhere}
+.selected-visits>a:hover,.selected-visits>a:focus-visible{background:var(--pale)}
+.priority-review{min-width:0;overflow-wrap:anywhere}
+.priority-review h3{font:500 1.55rem/1.25 var(--serif);margin:0 0 12px}
+.priority-field{margin:18px 0}
+.priority-review label{display:block;font-weight:600;font-size:.9rem;line-height:1.5;margin-bottom:8px}
+.priority-review select,.priority-review textarea{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:16px;min-height:44px}
+.priority-review textarea{min-height:112px;resize:vertical}
+.priority-review blockquote{margin:12px 0;padding:14px 16px;border-left:3px solid var(--green);background:var(--pale);white-space:pre-wrap;font-size:.94rem;line-height:1.65;overflow-wrap:anywhere}
+.priority-review .priority-help,.priority-review .priority-status,.priority-review .priority-empty{font-size:.82rem;line-height:1.55;color:var(--muted)}
+.priority-review details{margin:12px 0}
+.priority-review summary{min-height:44px;box-sizing:border-box;line-height:1.5}
+.priority-submit{border-top:1px solid var(--line);margin-top:20px;padding-top:10px}.priority-submit button{min-height:44px;width:100%}.priority-submit [role="status"]{min-height:1.6em}.priority-review select:disabled,.priority-review textarea:disabled{opacity:1;color:var(--ink);background:#f2f4f2}.feedback-review-shell{max-width:820px}.feedback-review-shell .panel{margin-bottom:20px}.feedback-review-shell h1{font:500 2rem/1.2 var(--serif)}.feedback-note{white-space:pre-wrap;overflow-wrap:anywhere}#feedback-unlock label{display:block;margin-bottom:8px}#feedback-unlock input{max-width:100%;width:100%;box-sizing:border-box;margin-bottom:12px}#feedback-actions{display:flex;flex-wrap:wrap;gap:10px}#feedback-actions[hidden]{display:none}
