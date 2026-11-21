@@ -3427,6 +3427,29 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
 /* Learners can choose the room feature, observation frame, chart or source itself. */
+/* Robin's bedside history and the timeline share the same five time anchors. */
+#robin-timeline-case .robin-workspace{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-6);align-items:start}
+#robin-opening,#robin-questions,#robin-timeline-case .robin-question,#robin-timeline-case form{margin-block-start:var(--fd-space-4)}
+#robin-opening button,#robin-timeline-case form>button{margin-block:var(--fd-space-4)}
+#robin-timeline-case .robin-question>button{display:block;width:100%}
+#robin-timeline-case .robin-question .folio{display:block}
+#robin-timeline-case button[aria-expanded=true]{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+#robin-timeline-case .robin-timeline{border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);padding:var(--fd-space-6);background:var(--fd-surface)}
+#robin-count,#robin-track li:not(.has-facts) p{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));color:var(--fd-text-mid)}
+#robin-track{list-style:none;padding:0;margin:var(--fd-space-6) 0}
+#robin-track li{position:relative;margin:0 0 0 .5em;padding:0 0 var(--fd-space-5) var(--fd-space-6);border-inline-start:1px dashed var(--fd-line-strong)}
+#robin-track li:last-child{padding-bottom:0;border-inline-start-color:transparent}
+#robin-track li::before{content:"";position:absolute;inset-inline-start:-.35em;top:.4em;width:.6em;height:.6em;box-sizing:border-box;border:1px solid var(--fd-text-mid);border-radius:50%;background:var(--fd-surface)}
+#robin-track li.has-facts::before{border-color:var(--fd-teal);background:var(--fd-teal)}
+#robin-track li:nth-child(3)::before{border-radius:0;transform:rotate(45deg)}
+#robin-track p+p{margin-top:var(--fd-space-2)}
+#robin-timeline-case fieldset{min-inline-size:0;margin:0;padding:0;border:0}
+#robin-timeline-case legend{font-weight:600}
+#robin-timeline-case fieldset label{display:flex;align-items:baseline;gap:var(--fd-space-4);padding:var(--fd-space-4) 0;cursor:pointer}
+#robin-timeline-case label input{flex:none}
+#robin-handoff{margin-block:var(--fd-space-5)}
+@container bedside (max-width:34rem){#robin-timeline-case .robin-workspace{grid-template-columns:1fr}}
+@media print{#robin-timeline-case .robin-workspace{grid-template-columns:1fr}#robin-timeline-case .case-link{display:none}}
 /* Observed outcomes in two groups, shown as original counts or on a shared scale. */
 #study-denominators .study-plot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-block:1px solid var(--fd-line-strong);background:var(--fd-surface-warm)}
 #study-denominators .study-plot>div{display:flex;flex-direction:column;justify-content:space-between;padding:var(--fd-space-6);min-width:0}
