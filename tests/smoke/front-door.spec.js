@@ -78,6 +78,127 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test.describe('matching search excerpts on a touch phone', () => {
+  test.use({ hasTouch: true });
+
+  test('late excerpts keep the keyboard-selected row visible and Enter opens it', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    let release, requests = 0;
+    const held = new Promise(resolve => { release = resolve; });
+    await page.route('**/search-passages-*.json', async route => {
+      requests++;
+      await held;
+      await route.continue();
+    });
+    try {
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=library');
+      await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+      expect(requests).toBe(0);
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      await search.getByRole('textbox', { name: 'Search resources', exact: true }).fill('treatment');
+      await search.getByRole('button', { name: 'Show all matches', exact: true }).tap();
+      const selected = search.locator('.fd-result[data-fd-open$=".md"]').last();
+      const ref = await selected.getAttribute('data-fd-open');
+      await selected.scrollIntoViewIfNeeded();
+      await selected.focus();
+      await expect(search.locator('.fd-result__excerpt')).toHaveCount(0);
+      release();
+      await expect.poll(() => search.locator('.fd-result__excerpt').count()).toBeGreaterThan(0);
+      await expect(selected).toBeFocused();
+      await expect(selected).toBeInViewport({ ratio: 1 });
+      expect(requests).toBe(1);
+      await page.keyboard.press('Enter');
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+      await expectHealthy(page);
+    } finally {
+      release();
+    }
+  });
+
+  test('unavailable optional excerpts leave ordinary results usable', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    let requests = 0;
+    await page.route('**/search-passages-*.json', route => {
+      requests++;
+      return route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+    });
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('QTc');
+    await expect.poll(() => requests).toBe(1);
+    await input.fill('mood');
+    await expect(input).toBeFocused();
+    await expect(search.locator('.fd-result__excerpt')).toHaveCount(0);
+    const row = search.locator('.fd-result[data-fd-open="t_mood.md"]');
+    await row.tap();
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 't_mood.md');
+    expect(requests).toBe(1);
+    // Chromium reports the intentionally injected HTTP error; no application errors are allowed.
+    await expect.poll(() => runtimeErrors.get(page)).toEqual([
+      'console: Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
+    ]);
+    runtimeErrors.get(page).splice(0);
+    await expectHealthy(page);
+  });
+
+  for (const width of [320, 390]) {
+    test(`${width}px: source excerpt survives return and another result opens with Enter`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width, height: 844 });
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=library');
+      await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill('QTc');
+      const expand = search.getByRole('button', { name: 'Show all matches', exact: true });
+      if (await expand.count()) await expand.tap();
+      const readings = search.locator('.fd-result[data-fd-open$=".md"]').filter({ has: page.locator('.fd-result__excerpt') });
+      await expect.poll(() => readings.count()).toBeGreaterThan(1);
+      const first = readings.first();
+      const ref = await first.getAttribute('data-fd-open');
+      const excerpt = first.locator('.fd-result__excerpt');
+      const text = await excerpt.innerText();
+      expect(text.length).toBeLessThanOrEqual(240);
+      await expect(excerpt.locator('mark').first()).toHaveText(/^QTc$/i);
+      const source = await page.evaluate(async ref => {
+        const index = await window.cwSearchIndexPromise;
+        return index.docs.find(doc => doc.f === ref).passages;
+      }, ref);
+      expect(source.some(passage => passage.includes(text)), 'the excerpt is an unchanged source sentence').toBe(true);
+      const before = await search.locator('.fd-result__excerpt').allTextContents();
+      await first.scrollIntoViewIfNeeded();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      expect(await excerpt.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      await testInfo.attach('matching-excerpt-phone', { body: await page.screenshot(), contentType: 'image/png' });
+      const body = search.locator('.fd-searchpanel__body');
+      const scrollTop = await body.evaluate(el => el.scrollTop);
+      await first.tap();
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+      await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+      await expect(input).toHaveValue('QTc');
+      expect(await search.locator('.fd-result__excerpt').allTextContents()).toEqual(before);
+      await expect(first).toBeFocused();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      await expect.poll(async () => Math.abs(await body.evaluate(el => el.scrollTop) - scrollTop)).toBeLessThanOrEqual(2);
+      const second = readings.nth(1);
+      const secondRef = await second.getAttribute('data-fd-open');
+      expect(secondRef).not.toBe(ref);
+      await second.focus();
+      await second.press('Enter');
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', secondRef);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await expectHealthy(page);
+    });
+  }
+});
+
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
 

@@ -355,6 +355,69 @@ function fdSearchBodyScores(si, query, alternatives){
   return out;
 }
 
+/* Excerpts explain a match; they never participate in ranking. Keep a complete short source
+   sentence (including its qualifiers) rather than cutting a window around the matching word.
+   Old/offline indexes without passages still work. Cache sentence splitting, not user queries. */
+var FD_SEARCH_EXCERPT_MAX=240;
+function fdSearchExcerptSentences(si, prep, id){
+  if(!prep.sentences) prep.sentences={};
+  if(prep.sentences[id]) return prep.sentences[id];
+  var passages=si.docs[id].passages, out=[];
+  if(!Array.isArray(passages)) return out;
+  var segmenter=typeof Intl!=='undefined'&&Intl.Segmenter
+    ?new Intl.Segmenter('en',{granularity:'sentence'}):null;
+  for(var p=0;p<passages.length;p++){
+    if(typeof passages[p]!=='string') continue;
+    var parts=segmenter?Array.from(segmenter.segment(passages[p]),function(s){return s.segment;}):[passages[p]];
+    for(var s=0;s<parts.length;s++){
+      var text=parts[s].trim();
+      if(text.length>=20&&text.length<=FD_SEARCH_EXCERPT_MAX) out.push(text);
+    }
+  }
+  prep.sentences[id]=out;
+  return out;
+}
+function fdSearchExcerpt(si, prep, ref, tokens){
+  var id=prep.byF[ref];
+  if(id===undefined||!tokens.length) return null;
+  var sentences=fdSearchExcerptSentences(si,prep,id), best=null, bestScore=0;
+  for(var s=0;s<sentences.length;s++){
+    var text=sentences[s], words=/[a-z0-9]+/gi, match, ranges=[], found={};
+    while((match=words.exec(text))){
+      var word=match[0].toLowerCase(), hit=false;
+      for(var t=0;t<tokens.length;t++){
+        if(word===tokens[t]||(tokens[t].length>=FD_SEARCH_BODY_PREFIX&&word.indexOf(tokens[t])===0)){
+          found[tokens[t]]=true; hit=true;
+        }
+      }
+      if(hit) ranges.push([match.index,match.index+match[0].length]);
+    }
+    // Prefer a sentence covering more distinct query words, then keep source order.
+    var score=Object.keys(found).length;
+    if(score>bestScore){ bestScore=score; best={text:text,ranges:ranges}; }
+  }
+  return best;
+}
+function fdSearchWithExcerpts(rows, query, state){
+  var si=state&&state.bodyIndex, prep=fdSearchBodyPrep(si), tokens=fdSearchBodyTokens(query);
+  if(!prep||!tokens.length) return rows;
+  for(var r=0;r<rows.length;r++){
+    if(rows[r].kind==='care') continue;
+    var excerpt=fdSearchExcerpt(si,prep,rows[r].item.ref,tokens);
+    if(excerpt) rows[r].excerpt=excerpt;
+  }
+  return rows;
+}
+function fdSearchExcerptMarkup(excerpt){
+  if(!excerpt) return '';
+  var text=excerpt.text, ranges=excerpt.ranges, out='', end=0;
+  for(var i=0;i<ranges.length;i++){
+    out+=fdEsc(text.slice(end,ranges[i][0]))+'<mark>'+fdEsc(text.slice(ranges[i][0],ranges[i][1]))+'</mark>';
+    end=ranges[i][1];
+  }
+  return '<span class="fd-result__excerpt">'+out+fdEsc(text.slice(end))+'</span>';
+}
+
 /* Crisis routing for the protocol pass. Triggers are matched against the SPACE-PADDED raw query
    rather than the word list, which buys whole-word/phrase matching without a regex: " diet and
    nutrition " does not contain " die ", and a multi-word trigger can be authored the way a
@@ -648,8 +711,10 @@ function fdSearchMatches(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  if(exactOnly.length) return protoResults.concat(careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest);
-  return protoResults.concat(careResults, exactAlias, aliasItems, hayProtocols, rest);
+  var ranked=exactOnly.length
+    ?protoResults.concat(careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest)
+    :protoResults.concat(careResults, exactAlias, aliasItems, hayProtocols, rest);
+  return fdSearchWithExcerpts(ranked,rawQuery,state);
 }
 
 /* Keep one matching/ranking pass for both the honest total and the visible rows. The keyboard
@@ -718,6 +783,7 @@ function fdSearchResultRow(r, ctx){
     '<span class="fd-result__title">'+fdEsc(it.searchTitle||it.title)+'</span>'+
     governanceBadge(it.governance)+
     '<span class="fd-result__meta">'+fdEsc(meta)+'</span>'+
+    fdSearchExcerptMarkup(r.excerpt)+
   '</button>';
 }
 
