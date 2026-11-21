@@ -1,10 +1,10 @@
 /* The clinical text lives with its reading. Each mounted exercise keeps its choices in the DOM. */
 function fdMountBedsideCases(body) {
-  fdMountFollowupStudy(body);
   fdMountJoCall(body);
   fdMountLeeTimeline(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
+  fdMountFollowupStudy(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountPerinatalComparison(body);
