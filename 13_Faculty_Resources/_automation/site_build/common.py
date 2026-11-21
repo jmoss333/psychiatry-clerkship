@@ -396,7 +396,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
     idx = {"version": 1, "n": len(docs), "avgLen": avg_len,
            "synonyms": syn, "docs": docs, "postings": post, "df": df}
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as fh:
-        fh.write(json.dumps(idx, ensure_ascii=False))
+        fh.write(json.dumps(idx, ensure_ascii=False, separators=(",", ":")))
     print(
         "search-index%s: docs %d | tokens %d | synonym-keys %d"
         % (" (" + label + ")" if label else "", len(docs), len(post), len(syn))
