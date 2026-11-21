@@ -671,6 +671,9 @@ function fdMountFamilyPause(body) {
 
   const find = selector => card.querySelector(selector);
   const voices = Array.from(card.querySelectorAll('[data-fp-ask]'));
+  const frames = card.querySelectorAll('[data-fp-frame]');
+  const captions = card.querySelectorAll('[data-fp-caption]');
+  const stage = find('.fp-stage'), art = find('.fp-art');
   const lines = card.querySelectorAll('[data-fp-line]');
   const heard = new Set();
   const hint = find('#fp-hint'), openingHint = hint.textContent;
@@ -682,11 +685,24 @@ function fdMountFamilyPause(body) {
     for (const button of buttons) button.setAttribute('aria-pressed', String(button === chosen));
   }
 
+  function showFrame(key) {
+    stage.dataset.frame = key;
+    for (const button of frames) button.setAttribute('aria-pressed', String(button.dataset.fpFrame === key));
+    for (const caption of captions) {
+      caption.hidden = caption.dataset.fpCaption !== key;
+      if (!caption.hidden) art.alt = caption.dataset.alt;
+    }
+  }
+  for (const button of frames) button.addEventListener('click', () => showFrame(button.dataset.fpFrame));
+
   for (const button of voices) button.addEventListener('click', () => {
     const answer = find('#' + button.getAttribute('aria-controls'));
     answer.hidden = !answer.hidden;
     button.setAttribute('aria-expanded', String(!answer.hidden));
-    if (!answer.hidden) heard.add(button);
+    if (!answer.hidden) {
+      heard.add(button);
+      showFrame('pause');
+    }
     if (heard.size === voices.length && responses.hidden) {
       responses.hidden = false;
       hint.textContent = hint.dataset.readyText;
@@ -714,6 +730,7 @@ function fdMountFamilyPause(body) {
 
   find('[data-fp-reset]').addEventListener('click', () => {
     heard.clear();
+    showFrame('first');
     for (const button of voices) {
       button.setAttribute('aria-expanded', 'false');
       find('#' + button.getAttribute('aria-controls')).hidden = true;

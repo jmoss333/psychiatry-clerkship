@@ -2666,6 +2666,8 @@ test.describe('Interactive readings', () => {
     const button = name => activity.getByRole('button', { name, exact: true });
     const devon = button('Ask what Devon noticed');
     const lee = button('Ask what Lee needed');
+    const art = activity.locator('.fp-art');
+    const transcript = activity.locator('#fp-transcript');
     const devonAccount = activity.getByText('“I thought Lee hadn’t heard me. That’s why I asked again.”', { exact: true });
     const leeAccount = activity.getByText('“I was trying to find the words. Then I heard ‘You sure?’ and I lost my place.”', { exact: true });
     const response = activity.locator('#fp-response');
@@ -2719,7 +2721,22 @@ test.describe('Interactive readings', () => {
     }
 
     await expectLocked();
+    await art.scrollIntoViewIfNeeded();
+    await expect.poll(() => art.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    for (const [name, position, caption, description] of [
+      ['First question', '50% 0%', '“You doing okay?”', 'Lee looks back.'],
+      ['The pause', '50% 50%', 'Lee looks down. A few seconds pass.', 'Lee looks down at their hands'],
+      ['Second question', '50% 100%', '“I heard you.”', 'Lee lifts their gaze'],
+    ]) {
+      await button(name).click();
+      await expect(button(name)).toHaveAttribute('aria-pressed', 'true');
+      await expect(art).toHaveCSS('object-position', position);
+      await expect(art).toHaveAttribute('alt', new RegExp(description));
+      await expect(transcript.getByText(caption, { exact: false })).toBeVisible();
+      await expectLocked();
+    }
     await devon.click();
+    await expect(button('The pause')).toHaveAttribute('aria-pressed', 'true');
     await expect(devonAccount).toBeVisible();
     await expect(leeAccount).toBeHidden();
     await expectLocked();
@@ -2751,7 +2768,8 @@ test.describe('Interactive readings', () => {
     await expect(lee).toHaveAttribute('aria-expanded', 'false');
     await expect(devonAccount).toBeHidden();
     await expect(leeAccount).toBeHidden();
-    await expect(activity.locator('[aria-pressed="true"]')).toHaveCount(0);
+    await expect(activity.locator('[data-fp-line][aria-pressed="true"], #fp-notes [aria-pressed="true"]')).toHaveCount(0);
+    await expect(button('First question')).toHaveAttribute('aria-pressed', 'true');
     await expectLocked();
     await lee.click();
     await expect(leeAccount).toBeVisible();

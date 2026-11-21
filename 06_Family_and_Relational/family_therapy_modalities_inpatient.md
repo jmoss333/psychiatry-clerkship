@@ -36,15 +36,25 @@ Multipartiality over neutrality ("not a courtroom; multiple truths") · the **tr
 <header><h3 id="fp-title">What happened in the pause?</h3>
 <p>At a family meeting on the unit, Lee agrees to practice one check-in with their partner, Devon. “Just this bit,” Lee says. “I don’t want to get into what happened at home.”</p></header>
 <figure class="fp-sheet" aria-labelledby="fp-caption">
-<figcaption id="fp-caption"><strong class="case-kicker">The check-in</strong><small>Two accounts of one pause</small></figcaption>
-<div class="fp-exchange">
-<div class="fp-moment fp-partner"><p class="case-kicker">Devon · partner</p><blockquote>“You doing okay?”</blockquote>
-<button type="button" class="case-link" data-fp-ask aria-controls="fp-devon" aria-expanded="false">Ask what Devon noticed</button>
-<p id="fp-devon" class="fp-heard" hidden>“I thought Lee hadn’t heard me. That’s why I asked again.”</p></div>
-<div class="fp-pause"><span>Lee looks down. A few seconds pass.</span><strong>Devon asks again. “You sure?”</strong></div>
-<div class="fp-moment"><p class="case-kicker">Lee · patient</p><blockquote>“I heard you.”</blockquote>
-<button type="button" class="case-link" data-fp-ask aria-controls="fp-lee" aria-expanded="false">Ask what Lee needed</button>
-<p id="fp-lee" class="fp-heard" hidden>“I was trying to find the words. Then I heard ‘You sure?’ and I lost my place.”</p></div>
+<figcaption id="fp-caption"><strong class="case-kicker">The check-in</strong><small>Tap a name to ask about the pause.</small></figcaption>
+<div class="fp-stage" data-frame="first">
+<img src="illustrations/family-meeting-pause.webp" width="800" height="1200" alt="Devon turns toward Lee with an open hand. Lee looks back." class="fp-art">
+<button type="button" class="fp-pin fp-devon" data-fp-ask aria-label="Ask what Devon noticed" aria-controls="fp-devon" aria-expanded="false">Devon</button>
+<button type="button" class="fp-pin fp-lee" data-fp-ask aria-label="Ask what Lee needed" aria-controls="fp-lee" aria-expanded="false">Lee</button>
+</div>
+<div class="fp-strip" role="group" aria-label="Replay the conversation">
+<button type="button" data-fp-frame="first" aria-pressed="true" aria-controls="fp-transcript">First question</button>
+<button type="button" data-fp-frame="pause" aria-pressed="false" aria-controls="fp-transcript">The pause</button>
+<button type="button" data-fp-frame="second" aria-pressed="false" aria-controls="fp-transcript">Second question</button>
+</div>
+<div id="fp-transcript" aria-live="polite">
+<div data-fp-caption="first" data-alt="Devon turns toward Lee with an open hand. Lee looks back."><p class="case-kicker">Devon</p><blockquote>“You doing okay?”</blockquote></div>
+<div data-fp-caption="pause" data-alt="Lee looks down at their hands while Devon sits beside them." hidden><p class="case-kicker">In the room</p><p class="fp-observation">Lee looks down. A few seconds pass.</p></div>
+<div data-fp-caption="second" data-alt="Devon opens a hand again. Lee lifts their gaze and starts to answer." hidden><p><strong>Devon</strong> “You sure?”</p><p><strong>Lee</strong> “I heard you.”</p></div>
+</div>
+<div class="fp-accounts" aria-live="polite">
+<div class="fp-account fp-from-devon" id="fp-devon" hidden><p class="case-kicker">Devon · partner</p><p>“I thought Lee hadn’t heard me. That’s why I asked again.”</p></div>
+<div class="fp-account" id="fp-lee" hidden><p class="case-kicker">Lee · patient</p><p>“I was trying to find the words. Then I heard ‘You sure?’ and I lost my place.”</p></div>
 </div></figure>
 <section class="step" aria-labelledby="fp-coach"><p class="case-kicker">MS3 · In the meeting</p><h4 id="fp-coach">What would you say next?</h4>
 <p id="fp-hint" class="fp-hint" role="status" data-ready-text="Choose a line to hear how Lee and Devon respond.">Ask both people about the pause to open the three responses.</p>
