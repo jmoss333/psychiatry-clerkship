@@ -2658,6 +2658,106 @@ test.describe('Interactive readings', () => {
     await expect(question).not.toContainText('around seven');
   });
 
+  test('What happened in the pause opens three conversations after both accounts and gives feedback on each note', async ({ page }) => {
+    const activity = await openActivity(page, 'family_modalities.md', 'family-pause', 'The stance that makes any modality work');
+    await expect(activity.locator('xpath=preceding-sibling::*[1]')).toContainText('Multipartiality over neutrality');
+    await expect(activity.locator('xpath=following-sibling::*[1]')).toContainText('Pair with');
+    await expect(activity.getByRole('heading', { name: 'What happened in the pause?', exact: true })).toBeVisible();
+    const button = name => activity.getByRole('button', { name, exact: true });
+    const devon = button('Ask what Devon noticed');
+    const lee = button('Ask what Lee needed');
+    const devonAccount = activity.getByText('“I thought Lee hadn’t heard me. That’s why I asked again.”', { exact: true });
+    const leeAccount = activity.getByText('“I was trying to find the words. Then I heard ‘You sure?’ and I lost my place.”', { exact: true });
+    const response = activity.locator('#fp-response');
+    const noteChoices = activity.locator('#fp-notes').getByRole('button');
+    const feedback = activity.locator('#fp-feedback');
+    const paths = [
+      {
+        line: '“Devon asked again, and Lee went quiet. Have I got the order right?”',
+        reply: [
+          'Lee “Other way around. I was quiet first. That was me thinking.”',
+          'Devon “Oh. I took the quiet to mean you hadn’t heard me.”',
+        ],
+        notes: [
+          ['Lee described going quiet after the second question. Devon agreed to wait longer at the next visit.', 'Listen again to Lee’s correction. The pause came first, and neither person made a plan for the next visit.'],
+          ['Lee said the pause came before the second question. Devon said they read the pause as a missed question.', 'Yes. The note keeps Lee’s correction and attributes Devon’s interpretation to Devon.'],
+          ['The couple identified a recurring pattern at home and agreed to work on it together.', 'Lee agreed to discuss this exchange. The conversation gives us no account of what usually happens at home.']
+        ]
+      },
+      {
+        line: '“Lee, want to try asking for a moment? Devon, you can answer the way you would here.”',
+        reply: [
+          'Lee “Okay. Give me a second. I do want to tell you.”',
+          'Devon “Take your time. I can sit here.”',
+          'Lee “Yeah. That helps right now.”',
+        ],
+        notes: [
+          ['In one rehearsal Lee asked for a moment. Devon offered to wait, and Lee said that helped here.', 'Yes. Both people spoke for themselves. “In one rehearsal” keeps the claim within what happened on the unit.'],
+          ['Lee and Devon agreed to use a timed pause after discharge.', 'They tried an exchange in the room. Neither person agreed to a timer or a plan for home.'],
+          ['Devon’s repeated questions caused Lee to withdraw during visits.', 'That gives one person’s behavior a causal role across visits. This rehearsal only shows what happened here.']
+        ]
+      },
+      {
+        line: '“Could we settle on a ten-minute break whenever this happens?”',
+        reply: [
+          'Lee “Ten minutes? I don’t want Devon to leave. I just need a second to answer.”',
+          'Devon “I can stay. Lee, do you want me to wait here with you?”',
+          'Lee “Here, yeah. Let’s leave home for another day.”',
+        ],
+        notes: [
+          ['The partners agreed to take ten-minute breaks at home when a check-in stalls.', 'Lee declined that plan and kept the discussion in the room.'],
+          ['Lee declined further help from Devon during the admission.', 'Lee asked Devon to stay. Declining the timer was a preference about this check-in.'],
+          ['Lee declined a timed break and asked for a moment with Devon present. They left plans for home open.', 'Yes. This records Lee’s preference, Devon’s offer and the boundary Lee set for this meeting.']
+        ]
+      }
+    ];
+    async function expectLocked() {
+      for (const path of paths) await expect(button(path.line)).toBeHidden();
+      await expect(response).toBeHidden();
+      await expect(noteChoices).toHaveCount(0);
+      await expect(feedback).toBeHidden();
+    }
+
+    await expectLocked();
+    await devon.click();
+    await expect(devonAccount).toBeVisible();
+    await expect(leeAccount).toBeHidden();
+    await expectLocked();
+    await lee.press('Enter');
+    await expect(leeAccount).toBeVisible();
+    for (const path of paths) await expect(button(path.line)).toBeVisible();
+
+    for (const path of paths) {
+      const choice = button(path.line);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(response).toBeVisible();
+      await expect(response.locator('p:visible').filter({ hasText: '“' })).toHaveText(path.reply);
+      await expect(noteChoices).toHaveText(path.notes.map(([label]) => label));
+      await expect(feedback).toBeHidden();
+      await expect(feedback).toBeEmpty();
+      for (const [label, explanation] of path.notes) {
+        const note = button(label);
+        await note.click();
+        await expect(note).toHaveAttribute('aria-pressed', 'true');
+        await expect(feedback).toBeVisible();
+        await expect(feedback).toHaveText(explanation);
+      }
+    }
+
+    await button('Start over').click();
+    await expect(devon).toBeFocused();
+    await expect(devon).toHaveAttribute('aria-expanded', 'false');
+    await expect(lee).toHaveAttribute('aria-expanded', 'false');
+    await expect(devonAccount).toBeHidden();
+    await expect(leeAccount).toBeHidden();
+    await expect(activity.locator('[aria-pressed="true"]')).toHaveCount(0);
+    await expectLocked();
+    await lee.click();
+    await expect(leeAccount).toBeVisible();
+    await expectLocked();
+  });
+
   test('Quieter on the unit compares the same functional goal across both shifts', async ({ page }) => {
     await page.goto('/?page=exp_tx.md&guideSection=how-to-present-a-treatment-rationale');
     const card = page.locator('.fd-article__body #quieter-on-unit');
