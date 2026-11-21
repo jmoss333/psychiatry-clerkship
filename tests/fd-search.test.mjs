@@ -368,6 +368,16 @@ test('empty query never shows the no-results state (defaults always populate it)
   assert.doesNotMatch(html, /fd-searchpanel__empty/);
 });
 
+test('spelling recovery requires a known typo and a searchable correction', () => {
+  const emptyIndex = { byRef: {}, weeks: [], columns: [], kit: [] };
+  const render = (index, query) => F.fdSearchOverlay(index, query, SYN, {});
+  assert.match(render(REAL_INDEX, '  DELERIUM  '), /data-fd-search-query="delirium">Did you mean delirium\?/);
+  assert.doesNotMatch(render(emptyIndex, 'delerium'), /Did you mean/);
+  for (const query of ['', 'delirium', 'zzzzqqq', 'constructor', 'delerium zzzzqqq']) {
+    assert.doesNotMatch(render(REAL_INDEX, query), /Did you mean/, query);
+  }
+});
+
 test('a zero-match search offers recovery without turning the query into a question draft', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, {});
   assert.match(html, /role="group" aria-label="Search recovery"/);
