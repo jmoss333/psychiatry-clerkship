@@ -28,6 +28,7 @@ statically-inspectable literal in that file.
 import errno
 import glob
 import hashlib
+from html.parser import HTMLParser
 import json
 import os
 import re
@@ -294,6 +295,129 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 
 
+class _SearchPassageHTML(HTMLParser):
+    """Keep readable source text, never embedded code or unrevealed exercises."""
+
+    _omit = {"script", "style", "template", "pre", "code", "noscript", "svg", "head",
+             "button", "select", "textarea", "h1", "h2", "h3", "h4", "h5", "h6", "table"}
+    _blocks = {"p", "div", "section", "article", "header", "footer", "blockquote", "li",
+               "ul", "ol", "dl", "dt", "dd", "figure", "figcaption", "details", "summary"}
+    _void = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link",
+             "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self.stack = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        blocked = bool(self.stack and self.stack[-1][1])
+        omitted = (tag in self._omit or "hidden" in attributes
+                   or attributes.get("aria-hidden", "").lower() == "true"
+                   or re.search(r"(?:display\s*:\s*none|visibility\s*:\s*hidden)\b",
+                                attributes.get("style", ""), re.I))
+        if not blocked and tag == "code":
+            self.parts.append("\x00omit-code\x00")
+        elif not blocked and (tag in self._blocks or omitted or tag in {"br", "hr"}):
+            self.parts.append("\n\n")
+        if tag not in self._void:
+            self.stack.append((tag, blocked or bool(omitted)))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self._void:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stack) - 1, -1, -1):
+            if self.stack[i][0] == tag:
+                del self.stack[i:]
+                break
+        if not (self.stack and self.stack[-1][1]) and (tag in self._blocks or tag in self._omit - {"code"}):
+            self.parts.append("\n\n")
+
+    def handle_data(self, data):
+        if not (self.stack and self.stack[-1][1]):
+            if self.stack:
+                data = re.sub(r"(?m)^[ \t]{2,}", " ", data)
+            self.parts.append(data)
+
+
+def _search_passages(raw):
+    """Complete source prose for excerpts, separate from the legacy scoring text.
+
+    This is a conservative Markdown cleaner, not a renderer. Tables, headings,
+    code and metadata are omitted rather than presented without their context.
+    No character cap: a matching sentence may occur at the end of a long block.
+    """
+    raw = raw.lstrip("\ufeff").replace("\r\n", "\n")
+    raw = re.sub(r"\A(---|\+\+\+)[ \t]*\n.*?\n\1[ \t]*(?:\n|$)", "", raw, flags=re.S)
+    # Remove fences before parsing HTML: a code sample may contain an unclosed
+    # tag, which must not hide real prose that follows the closing code fence.
+    unfenced, fence = [], None
+    for line in raw.splitlines():
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", re.sub(r"^\s{0,3}(?:>\s*)+", "", line))
+        if fence:
+            if marker and marker[1][0] == fence[0] and len(marker[1]) >= len(fence) and not marker[2].strip():
+                fence = None
+            continue
+        if marker:
+            fence = marker[1]
+            unfenced.append("")
+        else:
+            unfenced.append(line)
+    # Preserve Markdown line boundaries while the HTML parser discards comments,
+    # hidden subtrees, scripts, styles and templates used by interactive lessons.
+    parser = _SearchPassageHTML()
+    parser.feed("\n".join(unfenced))
+    parser.close()
+    lines = "".join(parser.parts).splitlines()
+    visible = []
+    for line in lines:
+        quote_free = re.sub(r"^\s{0,3}(?:>\s*)+", "", line)
+        if re.match(r"^\s*(?:=+|-+)\s*$", quote_free) and visible:
+            visible[-1] = ""  # Setext heading, not prose.
+            continue
+        if (re.match(r"^(?: {4}|\t)", quote_free)
+                or re.match(r"^ {0,3}\[[^\]]+\]:", quote_free)
+                or re.match(r"^\s{0,3}#{1,6}(?:\s|$)", quote_free)
+                or re.match(r"^\s*(?:[-*_]\s*){3,}$", quote_free)
+                or re.search(r"(?<!\\)\|", quote_free)):
+            visible.append("")
+            continue
+        item = re.match(r"^\s*(?:[-+*]|\d+[.)])\s+(.*)$", quote_free)
+        if item:
+            visible.extend(["", item[1]])
+        else:
+            visible.append(quote_free)
+
+    passages, seen = [], set()
+    for block in re.split(r"\n\s*\n", "\n".join(visible)):
+        # Code inside a sentence can carry a drug name or negation: omit the
+        # whole block rather than manufacture a different sentence by deletion.
+        if "\x00omit-code\x00" in block or re.search(r"(`+).*?\1", block, flags=re.S):
+            continue
+        block = re.sub(r"!\[[^\]]*\]\((?:[^()]|\([^()]*\))*\)", "", block)
+        block = re.sub(r"!\[[^\]]*\](?:\[[^\]]*\])?", "", block)
+        block = re.sub(r"\[([^\]]+)\]\((?:[^()]|\([^()]*\))*\)", r"\1", block)
+        block = re.sub(r"\[\^[^\]]+\]", "", block)
+        block = re.sub(r"\[([^\]]+)\]\[[^\]]*\]", r"\1", block)
+        block = re.sub(r"\[([^\]]+)\]", r"\1", block)
+        block = re.sub(r"(\*\*|__|~~)(?=\S)(.+?)(?<=\S)\1", r"\2", block, flags=re.S)
+        block = re.sub(r"(?<!\w)([*_])(?=\S)(.+?)(?<=\S)\1(?!\w)", r"\2", block, flags=re.S)
+        block = re.sub(r"\\([\\`*_{}\[\]()#+\-.!>~|])", r"\1", block)
+        block = re.sub(r"\s+", " ", block).strip()
+        # Existing page-specific naming exceptions do not authorize new surfaces.
+        # Omit the whole passage so excerpts keep exact source wording elsewhere.
+        if "ReConnect" in block:
+            continue
+        if block and not block.startswith("Review status:") and block not in seen:
+            passages.append(block)
+            seen.add(block)
+    return passages
+
+
 def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_refs=None):
     """Pre-tokenized inverted index + bidirectional synonyms → search-index.json.
 
@@ -336,6 +460,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
     keywords = TOOL_KEYWORDS if tool_keywords is None else tool_keywords
     reachable = set(reachable_refs or ())
     postings, docs, lengths = {}, [], []
+    passage_docs = {}
 
     def addtok(docid, text, wt):
         terms = tok(text)
@@ -367,6 +492,8 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
             clean = re.sub(r"[#>*_`|\[\]()/-]+", " ", body)
             clean = re.sub(r"\s+", " ", clean).strip()
             doc = {"t": title, "f": f, "k": k, "sec": section, "snip": clean[:170]}
+            if k == "md":
+                passage_docs[f] = _search_passages(raw)
             # Surface governance (risk-aware-publishing-warnings, Task 3): once nav
             # items carry a `.governance` triplet (annotate_navigation()), copy it
             # onto the matching search doc so the learner search UI can show the
@@ -393,8 +520,21 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
     # scorers (the SPA and check_search_quality.py) read the same number, and floored
     # at 1 so an all-empty fixture index cannot produce a zero divisor.
     avg_len = max(1.0, sum(lengths) / len(lengths)) if lengths else 1.0
+    # Optional excerpt prose is fetched only when needed, keeping the offline
+    # search index within its existing precache budget. Its URL binds exact bytes.
+    passage_bytes = json.dumps({"version": 1, "docs": passage_docs},
+                               ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    passage_file = "search-passages-%s.json" % hashlib.sha256(passage_bytes).hexdigest()
+    # The resident assembler starts from the MS3 output tree. Replace its feed,
+    # so neither stale prose nor another audience's source survives in this build.
+    for old_file in os.listdir(out_dir):
+        if old_file != passage_file and re.fullmatch(r"search-passages-[0-9a-f]{64}\.json", old_file):
+            os.remove(os.path.join(out_dir, old_file))
+    with open(os.path.join(out_dir, passage_file), "wb") as fh:
+        fh.write(passage_bytes)
     idx = {"version": 1, "n": len(docs), "avgLen": avg_len,
-           "synonyms": syn, "docs": docs, "postings": post, "df": df}
+           "synonyms": syn, "docs": docs, "postings": post, "df": df,
+           "passagesFile": passage_file}
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as fh:
         fh.write(json.dumps(idx, ensure_ascii=False, separators=(",", ":")))
     print(
@@ -1264,6 +1404,10 @@ def _sw_precache_url(rel_posix):
 
 
 def _sw_is_excluded(rel_posix):
+    # Source excerpts are an optional online enhancement; ordinary search stays
+    # precached. Only the generated root filename is excluded, never arbitrary JSON.
+    if re.fullmatch(r"search-passages-[0-9a-f]{64}\.json", rel_posix):
+        return True
     if rel_posix in SW_EXCLUDE_NAMES:
         return True
     if rel_posix in SW_NETLIFY_RESERVED_ROOT_NAMES:
