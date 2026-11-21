@@ -3336,6 +3336,95 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('.rt-return')).toHaveCount(0);
   });
 
+  const nicoTurns = {
+    wait: {
+      action: 'You stay quiet and give him a moment.',
+      reply: '“Anyway, Dad drove me. We barely said a word the whole ride.”',
+      quote: '“Anyway, Dad drove me.”',
+      observation: 'He returned to the original question on his own.',
+      cue: 'Pause',
+      rationale: 'Nico supplied the link back to the ride himself.',
+      report: 'He came back to the question on his own.',
+    },
+    repeat: {
+      action: '“Let me come back to the ride. How did you get from home to the ED this morning?”',
+      reply: '“Oh, the ride? Dad drove me. His car was right outside.”',
+      quote: '“Oh, the ride? Dad drove me.”',
+      observation: 'He answered when I asked the original question again.',
+      cue: 'Ask again',
+      rationale: 'Whether he would have returned given more time is still open.',
+      report: 'He answered after one redirect.',
+    },
+    focus: {
+      action: '“Who drove you here?”',
+      reply: '“My dad.”',
+      quote: '“My dad.”',
+      observation: 'He answered a narrower question about the driver.',
+      cue: 'Who drove?',
+      rationale: 'you can’t tell whether he would have returned to the original question on his own.',
+      report: 'I’d want to hear another open-ended answer before describing his overall thought process.',
+    },
+  };
+  const nicoQuoteFeedback = {
+    rent: 'The rent quote shows what Nico remembered his father saying.',
+    end: 'This line gives Nico’s answer about the ride.',
+    job: 'The first-job quote explains why the deposit made sense to Nico.',
+  };
+
+  for (const [move, turn] of Object.entries(nicoTurns)) {
+    test(`Nico thought process: ${move} pairs every quotation with every observation`, async ({ page }) => {
+      const card = await openActivity(page, 'pg_interview.md', 'nico-interview', 'MSE Structure');
+      await expect(page.locator('#reply-thread-case + #nico-interview')).toBeVisible();
+      const at = id => card.locator('#ni-' + id);
+      const choose = (group, value) => card.locator(`[data-${group}="${value}"]`).click();
+      await expect(at('result')).toBeHidden();
+      await expect(at('rounds')).toBeHidden();
+      await choose('move', move);
+      await expect(at('result')).toBeVisible();
+      await expect(at('action')).toHaveText(turn.action);
+      await expect(at('reply')).toHaveText(turn.reply);
+      await expect(at('map-cue')).toHaveText(turn.cue);
+      await expect(card.locator('[data-quote]')).toHaveText([
+        '“Dad kept saying, ‘That’s the rent money.’”', turn.quote, '“I thought I’d earn it back on the first job.”',
+      ]);
+      await expect(at('compare')).toBeHidden();
+      for (const [quote, evidence] of Object.entries(nicoQuoteFeedback)) {
+        await choose('quote', quote);
+        await expect(at('feedback')).toBeHidden();
+        if (quote === 'rent') await expect(at('compare')).toBeHidden();
+        for (const reading of Object.keys(nicoTurns)) {
+          await test.step(`${quote} quotation, ${reading} observation`, async () => {
+            const observation = card.getByRole('button', { name: nicoTurns[reading].observation, exact: true });
+            await observation.click();
+            await expect(observation).toHaveAttribute('aria-pressed', 'true');
+            await expect(at('feedback')).toBeHidden();
+            await at('compare').click();
+            await expect(at('compare')).toHaveAttribute('aria-expanded', 'true');
+            await expect(at('feedback')).toBeVisible();
+            await expect(at('quote-feedback')).toContainText(evidence);
+            await expect(at('reading-feedback')).toContainText(move === reading ? 'That fits.' : 'Look again at your turn.');
+            await expect(at('reading-feedback')).toContainText(turn.rationale);
+            await expect(at('note')).toBeHidden();
+            await toggleWithKeyboard(at('sample'));
+            await expect(at('note')).toBeVisible();
+            await expect(at('note')).toContainText(turn.report);
+          });
+        }
+      }
+      await at('compare').click();
+      await expect(at('feedback')).toBeHidden();
+      await expect(at('compare')).toHaveAttribute('aria-expanded', 'false');
+      await at('compare').click();
+      await expect(at('note')).toBeHidden();
+      await at('replay').click();
+      await expect(at('result')).toBeHidden();
+      await expect(at('rounds')).toBeHidden();
+      await expect(at('end-label')).toHaveText('Next turn?');
+      await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+      await expect(card.locator('[data-move]').first()).toBeFocused();
+    });
+  }
+
   test('dayroom choices reveal the requested change and reset the previous handoff', async ({ page }) => {
     const activity = await openActivity(page, 'agitation.md', 'vp-dayroom', 'The least-restrictive ladder');
     const paths = [

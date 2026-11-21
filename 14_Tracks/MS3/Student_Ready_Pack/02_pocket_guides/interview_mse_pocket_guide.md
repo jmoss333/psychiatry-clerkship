@@ -187,6 +187,104 @@ Example:
   <template data-rt-result="privacy"><p>Eden wants to discuss privacy first. Clarify who can access the note and invite Eden to continue when ready.</p><blockquote>Eden asked about privacy before discussing what happened at home. <span></span> We have yet to talk about the events at home.</blockquote></template>
 </section>
 
+<section id="nico-interview" aria-labelledby="ni-title">
+  <header class="ni-head">
+    <p class="ni-label">Fictional bedside interview · Thought process</p>
+    <h3 id="ni-title">Did they come back to the question?</h3>
+    <p class="ni-setting">Thursday afternoon on the unit. You’re interviewing Nico about his trip to the ED this morning.</p>
+  </header>
+  <figure class="ni-board">
+    <figcaption>The conversation so far</figcaption>
+    <svg class="ni-map" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-labelledby="ni-map-title">
+      <title id="ni-map-title">You ask about the trip. Nico talks about the van deposit. The next turn is open.</title>
+      <path class="guide" d="M15 46 H284" fill="none"/>
+      <path class="thread" d="M20 46 C47 46 52 45 69 34 S114 8 146 14"/>
+      <path id="ni-finish" class="thread" d="" hidden></path>
+      <path class="you" d="M15 39 l7 7 -7 7 -7 -7 Z"/>
+      <circle class="person" cx="146" cy="14" r="5"/>
+      <path id="ni-redirect" class="you" d="M215 26 l6 6 -6 6 -6 -6 Z" hidden></path>
+      <text id="ni-map-cue" x="221" y="17" text-anchor="middle"></text>
+      <circle id="ni-terminal" class="unknown" cx="284" cy="46" r="6"/>
+    </svg>
+    <div class="ni-stops" aria-hidden="true"><span>Trip to the ED</span><span>Van deposit</span><span id="ni-end-label">Next turn?</span></div>
+    <div class="ni-legend"><span><i class="ni-symbol you" aria-hidden="true"></i>You speak</span><span><i class="ni-symbol person" aria-hidden="true"></i>Nico speaks</span></div>
+  </figure>
+  <div class="ni-body">
+    <ol class="ni-exchange" aria-label="Interview transcript">
+      <li><span class="speaker">You</span><p>“How did you get from home to the ED this morning?”</p></li>
+      <li class="nico"><span class="speaker">Nico</span><p>“Dad and I got into it over the van. The guy wanted a deposit. Dad kept saying, ‘That’s the rent money.’ I thought I’d earn it back on the first job.”</p></li>
+    </ol>
+    <section class="ni-part" aria-labelledby="ni-ask">
+      <p class="ni-label">At the bedside</p>
+      <h4 id="ni-ask">What do you do next?</h4>
+      <div class="ni-options" role="group" aria-labelledby="ni-ask">
+        <button type="button" data-move="wait" aria-pressed="false">Give Nico a moment</button>
+        <button type="button" data-move="repeat" aria-pressed="false">Repeat the original question</button>
+        <button type="button" data-move="focus" aria-pressed="false">Ask who drove him</button>
+      </div>
+    </section>
+    <section id="ni-result" class="ni-part" hidden aria-label="The next two turns">
+      <ol class="ni-exchange">
+        <li><span class="speaker">You</span><p id="ni-action"></p></li>
+        <li class="nico"><span class="speaker">Nico</span><p id="ni-reply"></p></li>
+      </ol>
+    </section>
+    <section id="ni-rounds" class="ni-part" hidden aria-labelledby="ni-rounds-title">
+      <p class="ni-label">On rounds · Your resident asks</p>
+      <h4 id="ni-rounds-title">“Did he get back to the question on his own?”</h4>
+      <p class="ni-caption" id="ni-quote-label">Pick a line from Nico to support your answer.</p>
+      <div class="ni-options" role="group" aria-labelledby="ni-quote-label">
+        <button type="button" data-quote="rent" aria-pressed="false">“Dad kept saying, ‘That’s the rent money.’”</button>
+        <button type="button" data-quote="end" aria-pressed="false"></button>
+        <button type="button" data-quote="job" aria-pressed="false">“I thought I’d earn it back on the first job.”</button>
+      </div>
+      <p class="ni-caption" id="ni-reading-label">Which observation would you report?</p>
+      <div class="ni-options" role="group" aria-labelledby="ni-reading-label">
+        <button type="button" data-reading="repeat" aria-pressed="false">He answered when I asked the original question again.</button>
+        <button type="button" data-reading="focus" aria-pressed="false">He answered a narrower question about the driver.</button>
+        <button type="button" data-reading="wait" aria-pressed="false">He returned to the original question on his own.</button>
+      </div>
+      <div id="ni-check" class="ni-more ni-check" hidden><button type="button" class="ni-action" id="ni-compare" aria-expanded="false" aria-controls="ni-feedback">Check my reasoning</button></div>
+      <div id="ni-feedback" class="ni-feedback" hidden>
+        <p id="ni-quote-feedback"></p><p id="ni-reading-feedback"></p>
+        <details id="ni-sample"><summary>See one way to say it on rounds</summary><blockquote id="ni-note"></blockquote><a id="ni-source" hidden href="https://physicians.utah.edu/sites/g/files/zrelqx276/files/media/documents/2021/psychiatric-interview-module-1.pdf" target="_blank" rel="noopener">Circumstantiality in the MSE · University of Utah (PDF)</a></details>
+      </div>
+      <div class="ni-more"><button type="button" class="ni-replay" id="ni-replay">Try another approach</button></div>
+    </section>
+    <p id="ni-live" class="fd-visually-hidden" role="status" aria-atomic="true"></p>
+  </div>
+  <template data-ni-turn="wait" data-path="M146 14 C181 14 187 21 212 34 S257 46 284 46" data-cue="Pause">
+    <span data-ni-action>You stay quiet and give him a moment.</span>
+    <span data-ni-reply>“Anyway, Dad drove me. We barely said a word the whole ride.”</span>
+    <span data-ni-quote>“Anyway, Dad drove me.”</span>
+    <span data-ni-end>Dad drove me</span>
+    <span data-ni-map>After a pause, Nico brings the conversation back to the ride himself.</span>
+    <span data-ni-reasoning>You stayed quiet. Nico supplied the link back to the ride himself. If you describe this answer as circumstantial, the detour and his independent return are the details to give.</span>
+    <span data-ni-note>“When I asked about the ride, Nico gave me the backstory about the van. After a pause he said, ‘Anyway, Dad drove me.’ He came back to the question on his own.”</span>
+  </template>
+  <template data-ni-turn="repeat" data-path="M146 14 C176 14 183 12 210 30 M220 35 C240 50 266 46 284 46" data-cue="Ask again">
+    <span data-ni-action>“Let me come back to the ride. How did you get from home to the ED this morning?”</span>
+    <span data-ni-reply>“Oh, the ride? Dad drove me. His car was right outside.”</span>
+    <span data-ni-quote>“Oh, the ride? Dad drove me.”</span>
+    <span data-ni-end>Dad drove me</span>
+    <span data-ni-map>You repeat the original question. Nico then answers about the ride.</span>
+    <span data-ni-reasoning>You brought him back to the ride by repeating the original question. Whether he would have returned given more time is still open.</span>
+    <span data-ni-note>“Nico first described an argument over the van. When I asked again how he got here, he said, ‘Oh, the ride? Dad drove me.’ He answered after one redirect.”</span>
+  </template>
+  <template data-ni-turn="focus" data-path="M146 14 C177 14 193 15 210 30 M220 35 Q229 46 242 46 H284" data-cue="Who drove?">
+    <span data-ni-action>“Who drove you here?”</span>
+    <span data-ni-reply>“My dad.”</span>
+    <span data-ni-quote>“My dad.”</span>
+    <span data-ni-end>My dad</span>
+    <span data-ni-map>You narrow the question to who drove. Nico identifies the driver.</span>
+    <span data-ni-reasoning>You supplied the idea of a driver. Nico identified his dad. With that cue, you can’t tell whether he would have returned to the original question on his own.</span>
+    <span data-ni-note>“Nico started with the van deposit. When I asked who drove, he answered, ‘My dad.’ I got the detail I needed. I’d want to hear another open-ended answer before describing his overall thought process.”</span>
+  </template>
+  <template data-ni-feedback="rent"><p>The rent quote shows what Nico remembered his father saying. To show how he answered you, pair his words about the ride with the turn just before them.</p></template>
+  <template data-ni-feedback="job"><p>The first-job quote explains why the deposit made sense to Nico. For thought process, follow the shift in topic from the van back to the ride.</p></template>
+  <template data-ni-feedback="end"><p>This line gives Nico’s answer about the ride. Pair it with what happened just before he said it.</p></template>
+</section>
+
 ## MSE Words To Use Carefully
 
 Avoid vague or stigmatizing words:

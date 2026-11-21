@@ -16,7 +16,99 @@ function fdMountBedsideCases(body) {
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
+  fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountNicoInterview(body) {
+  const card = body.querySelector('#nico-interview');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#ni-' + id);
+  const sample = find('sample');
+  const compare = find('compare');
+  const checkLabel = compare.textContent;
+  const mapOpening = find('map-title').textContent;
+  const nextTurn = find('end-label').textContent;
+  const choices = {move: '', quote: '', reading: ''};
+  let scenario;
+
+  const field = name => scenario.content.querySelector('[data-ni-' + name + ']').textContent;
+
+  function select(group, value) {
+    choices[group] = value;
+    for (const button of card.querySelectorAll('[data-' + group + ']')) {
+      button.setAttribute('aria-pressed', String(button.dataset[group] === value));
+    }
+  }
+
+  function closeFeedback() {
+    find('feedback').hidden = true;
+    compare.setAttribute('aria-expanded', 'false');
+    compare.textContent = checkLabel;
+    sample.open = false;
+    find('note').textContent = '';
+    find('quote-feedback').textContent = '';
+    find('reading-feedback').textContent = '';
+    find('source').hidden = true;
+  }
+
+  function showExchange(move) {
+    select('move', move);
+    select('quote', '');
+    select('reading', '');
+    closeFeedback();
+    scenario = move ? card.querySelector('template[data-ni-turn="' + move + '"]') : null;
+    find('check').hidden = true;
+    find('result').hidden = find('rounds').hidden = !scenario;
+    for (const name of ['action', 'reply']) find(name).textContent = scenario ? field(name) : '';
+    card.querySelector('[data-quote="end"]').textContent = scenario ? field('quote') : '';
+    find('end-label').textContent = scenario ? field('end') : nextTurn;
+    find('map-title').textContent = scenario ? field('map') : mapOpening;
+    find('map-cue').textContent = scenario ? scenario.dataset.cue : '';
+    find('finish').setAttribute('d', scenario ? scenario.dataset.path : '');
+    find('finish').toggleAttribute('hidden', !scenario);
+    find('redirect').toggleAttribute('hidden', !scenario || move === 'wait');
+    find('terminal').setAttribute('class', scenario ? 'person' : 'unknown');
+  }
+
+  card.addEventListener('click', event => {
+    const button = event.target.closest('button');
+    if (!button || button.getAttribute('aria-pressed') === 'true') return;
+    if (button.dataset.move) {
+      showExchange(button.dataset.move);
+      find('live').textContent = field('action') + ' Nico says ' + field('reply');
+    } else if (button.dataset.quote || button.dataset.reading) {
+      const group = button.dataset.quote ? 'quote' : 'reading';
+      select(group, button.dataset[group]);
+      closeFeedback();
+      find('check').hidden = !(choices.quote && choices.reading);
+      find('live').textContent = find('check').hidden ? 'Choice selected.' : 'Your choices are ready to check.';
+    } else if (button === compare && scenario && choices.quote && choices.reading) {
+      if (!find('feedback').hidden) {
+        closeFeedback();
+        return;
+      }
+      const quoteFeedback = card.querySelector('template[data-ni-feedback="' + choices.quote + '"]').content;
+      find('quote-feedback').textContent = quoteFeedback.textContent.trim();
+      find('reading-feedback').textContent = (choices.move === choices.reading ? 'That fits. ' : 'Look again at your turn. ') + field('reasoning');
+      find('feedback').hidden = false;
+      compare.setAttribute('aria-expanded', 'true');
+      compare.textContent = 'Hide feedback';
+      find('live').textContent = find('quote-feedback').textContent + ' ' + find('reading-feedback').textContent;
+    } else if (button === find('replay')) {
+      showExchange('');
+      fdBedsideFocus(card.querySelector('[data-move]'));
+      find('live').textContent = 'New interview. Choose your next move.';
+    }
+  });
+
+  // Search and print can expand details. Only a learner's reveal supplies the worked note.
+  sample.querySelector('summary').addEventListener('click', () => {
+    const revealing = !sample.open && !find('feedback').hidden && scenario;
+    find('note').textContent = revealing ? field('note') : '';
+    find('source').hidden = !(revealing && choices.move === 'wait');
+  });
 }
 
 /* Each reading owns its timeline, patient dialogue and ordered debrief rules. */
