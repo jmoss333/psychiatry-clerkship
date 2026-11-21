@@ -3449,6 +3449,36 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* Nico's overnight dials mark individual observations. Unobserved hours stay empty. */
+#night-witness .nw-intro{color:var(--fd-text-mid)}
+#night-witness .nw-signout,#night-witness .nw-reply,#night-witness .nw-feedback{border-inline-start:3px solid var(--fd-olive);padding:var(--fd-space-3) var(--fd-space-5)}
+#night-witness .nw-signout{background:var(--fd-olive-wash)}
+#night-witness .nw-signout strong{display:block}
+#night-witness .nw-figure{--nw-sky:var(--fd-teal-deep);margin-block:1em;padding:clamp(var(--fd-space-4),3cqi,var(--fd-space-7));background:var(--nw-sky);color:var(--fd-on-accent);border-radius:var(--fd-radius-sm)}
+#night-witness .nw-figure blockquote{margin:.2em 0 .65em;font-size:calc(var(--fd-font-xl)*var(--fd-reading-scale,1));color:inherit}
+#night-witness .nw-source,#night-witness figcaption,#night-witness .nw-kind{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#night-witness .nw-charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--fd-space-3);text-align:center}
+#night-witness .nw-chart,#night-witness figcaption{border-top:1px solid color-mix(in srgb,currentColor 50%,transparent);padding-top:var(--fd-space-3)}
+#night-witness .nw-night-label{font-family:Georgia,serif;font-weight:400}
+#night-witness .nw-chart svg{display:block;width:100%;height:auto;max-height:90px;margin:auto}
+#night-witness [data-mark]{fill:currentColor}
+#night-witness [data-shape=ring],#night-witness [data-shape=diamond]{fill:var(--nw-sky)}
+#night-witness [data-shape=diamond] circle,#night-witness [data-mark]:not([data-shape=diamond]) rect{display:none}
+#night-witness .nw-value{font-weight:650;font-variant-numeric:tabular-nums}
+#night-witness .nw-kind{display:block;min-height:1.4em}
+#night-witness figcaption{margin-top:var(--fd-space-5);color:inherit}
+#night-witness .nw-questions,#night-witness .nw-interpret{display:grid;gap:var(--fd-space-3);margin-top:var(--fd-space-4)}
+#night-witness .nw-questions button{display:grid;grid-template-columns:6.2em 1fr;align-items:baseline;gap:var(--fd-space-3)}
+#night-witness .nw-day{font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1));font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+#night-witness [data-heard=true] .nw-day::after{content:" ✓"}
+#night-witness :is(.nw-reply,.nw-feedback,.nw-res,#nw-assess){margin-top:1em}
+#night-witness .nw-res{border-top:1px solid var(--fd-line-strong);padding-top:1em}
+#night-witness .nw-reading,#night-witness footer{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#night-witness .nw-reading{margin-top:var(--fd-space-4)}
+#night-witness footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--fd-space-3)}
+#night-witness [data-reset]:disabled{visibility:hidden}
+@container bedside (max-width:380px){#night-witness .nw-questions button{grid-template-columns:1fr;gap:0}}
+
 /* Learners can choose the room feature, observation frame, chart or source itself. */
 /* Observed outcomes in two groups, shown as original counts or on a shared scale. */
 #study-denominators .study-plot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-block:1px solid var(--fd-line-strong);background:var(--fd-surface-warm)}

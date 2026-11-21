@@ -3,6 +3,7 @@ function fdMountBedsideCases(body) {
   fdMountMorganExposure(body);
   fdMountFeverExams(body);
   fdMountJoCall(body);
+  fdMountNicoCall(body);
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
@@ -639,6 +640,105 @@ function fdMountFollowupStudy(body) {
     showView('count');
     fdBedsideFocus(group('pick')[0]);
   });
+}
+
+function fdMountNicoCall(body) {
+  const card = body.querySelector('#night-witness');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = selector => card.querySelector(selector);
+  const bank = find('[data-nw-bank]');
+  const answers = bank.content;
+  const nights = [...card.querySelectorAll('[data-night]')];
+  const questions = card.querySelectorAll('[data-ask]');
+  const followups = card.querySelectorAll('[data-next]');
+  const readings = card.querySelectorAll('[data-read]');
+  const dial = find('#nw-dial').content;
+  const rounds = find('#nw-rounds');
+  const sample = find('#nw-sample');
+  const reset = find('[data-reset]');
+  const opened = new Set();
+  let question, speaker, reading;
+
+  const answerFor = night => answers.querySelector('[data-answer-for="' + night + '"]');
+  const responseFor = person => answers.querySelector('[data-followup-for="' + person + '"]');
+  for (const night of nights) {
+    night.append(dial.cloneNode(true));
+    const key = night.dataset.night;
+    const observation = key === 'wed' ? responseFor('father') : answerFor(key);
+    const {minutes, shape} = observation.dataset;
+    const angle = Math.PI * (1 - Number(minutes) / 480);
+    const mark = night.querySelector('[data-mark]');
+    mark.setAttribute('transform', 'translate(' + (70 + 58 * Math.cos(angle)) + ' ' + (68 - 58 * Math.sin(angle)) + ')');
+    mark.dataset.shape = shape;
+  }
+
+  function render() {
+    const followup = speaker && responseFor(speaker);
+    for (const night of nights) {
+      const key = night.dataset.night;
+      let observation = opened.has(key) && answerFor(key);
+      if (key === 'wed' && speaker === 'father') observation = followup;
+      night.querySelector('[data-mark]').toggleAttribute('hidden', !observation || !observation.hasAttribute('data-minutes'));
+      night.querySelector('.nw-value').textContent = observation ? observation.dataset.time : bank.dataset.unasked;
+      night.querySelector('.nw-kind').textContent = observation ? observation.dataset.source : '';
+    }
+    for (const button of questions) {
+      button.dataset.heard = String(opened.has(button.dataset.ask));
+      button.setAttribute('aria-pressed', String(question === button.dataset.ask));
+    }
+    const answer = question && answerFor(question);
+    find('#nw-reply').hidden = !answer;
+    find('#nw-label').textContent = answer ? answer.dataset.speaker : '';
+    find('#nw-answer').textContent = answer ? answer.querySelector('blockquote').textContent : '';
+    find('#nw-res').hidden = !answer;
+    for (const button of followups) button.setAttribute('aria-pressed', String(button.dataset.next === speaker));
+    find('#nw-consult').hidden = find('#nw-assess').hidden = !followup;
+    find('#nw-who').textContent = followup ? followup.dataset.speaker : '';
+    find('#nw-consult-answer').textContent = followup ? followup.querySelector('blockquote').textContent : '';
+    for (const button of readings) button.setAttribute('aria-pressed', String(button.dataset.read === reading));
+    let feedback = '';
+    if (reading) {
+      const options = answers.querySelectorAll('[data-coach-for="' + speaker + '-' + reading + '"]');
+      feedback = [...options].find(option => !option.dataset.ifOpen || opened.has(option.dataset.ifOpen)).textContent;
+    }
+    find('#nw-feedback').textContent = feedback;
+    find('#nw-feedback').hidden = rounds.hidden = !reading;
+    rounds.open = false;
+    sample.textContent = '';
+    reset.disabled = !opened.size;
+  }
+
+  for (const button of questions) button.addEventListener('click', () => {
+    question = button.dataset.ask;
+    if (!opened.has(question)) reading = null;
+    opened.add(question);
+    render();
+  });
+  for (const button of followups) button.addEventListener('click', () => {
+    if (speaker !== button.dataset.next) reading = null;
+    speaker = button.dataset.next;
+    render();
+  });
+  for (const button of readings) button.addEventListener('click', () => {
+    reading = button.dataset.read;
+    render();
+  });
+  rounds.querySelector('summary').addEventListener('click', () => {
+    sample.textContent = '';
+    if (!reading || rounds.open) return;
+    const facts = nights.map(night => night.dataset.night).filter(key => opened.has(key))
+      .map(key => answerFor(key).querySelector('p').textContent);
+    const family = bank.dataset.patientFamily + ' ' + new Intl.ListFormat('en-US').format(facts) + '.';
+    sample.textContent = [family, bank.dataset.uncertainty, responseFor(speaker).querySelector('p').textContent].join(' ');
+  });
+  reset.addEventListener('click', () => {
+    opened.clear();
+    question = speaker = reading = null;
+    render();
+    fdBedsideFocus(questions[0]);
+  });
+  render();
 }
 
 function fdMountJoCall(body) {
