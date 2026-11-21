@@ -3464,6 +3464,38 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #night-signout .ns-reader{padding:var(--fd-space-6);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
 #night-signout .ns-primary{width:100%;margin-top:var(--fd-space-5);background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent);text-align:center}
 #night-signout .case-choices{column-gap:var(--fd-space-8)}
+#family-pause .fp-sheet{border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden;background:var(--fd-surface)}
+#family-pause figcaption,#family-pause footer{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--fd-space-3)}
+#family-pause figcaption{padding:var(--fd-space-4) var(--fd-space-6)}
+#family-pause .fp-stage{position:relative;isolation:isolate;background:var(--fd-surface-warm)}
+#family-pause .fp-art{display:block;width:100%;height:auto;aspect-ratio:2/1;object-fit:cover;object-position:center top;margin:0}
+#family-pause [data-frame=pause] .fp-art{object-position:center center}
+#family-pause [data-frame=second] .fp-art{object-position:center bottom}
+#family-pause .fp-pin{position:absolute;bottom:var(--fd-space-2);min-height:var(--fd-target-touch);padding:var(--fd-space-2) var(--fd-space-5);border:0;background:transparent;color:var(--fd-text);box-shadow:none;z-index:0}
+#family-pause .fp-pin::before{content:"";position:absolute;inset:var(--fd-space-2) 0;z-index:-1;background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill)}
+#family-pause .fp-pin::after{content:"+" / "";margin-inline-start:var(--fd-space-3)}
+#family-pause .fp-pin[aria-expanded=true]::after{content:"−" / ""}
+#family-pause .fp-pin[aria-expanded=true]::before{background:var(--fd-teal-wash);border-color:var(--fd-teal-deep)}
+#family-pause .fp-devon{inset-inline-start:4%}
+#family-pause .fp-lee{inset-inline-end:4%}
+#family-pause .fp-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid var(--fd-line-strong)}
+#family-pause .fp-strip button{border:0;border-radius:0;border-inline-end:1px solid var(--fd-line);padding:var(--fd-space-3);text-align:center;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));line-height:1.2}
+#family-pause .fp-strip button:last-child{border-inline-end:0}
+#family-pause .fp-strip button[aria-pressed=true]{background:var(--fd-teal-wash);box-shadow:inset 0 -3px var(--fd-teal)}
+#family-pause #fp-transcript{padding:var(--fd-space-5) var(--fd-space-6)}
+#family-pause .fp-observation{font-family:Georgia,serif;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#family-pause .fp-account{margin:0 var(--fd-space-6) var(--fd-space-5);padding:var(--fd-space-4) var(--fd-space-5);border-inline-start:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+#family-pause .fp-from-devon{border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+#family-pause .fp-from-devon .case-kicker,#family-pause .fp-reply .case-kicker{color:var(--fd-olive-deep)}
+#family-pause figcaption small,#family-pause .fp-hint{color:var(--fd-text-mid)}
+#family-pause .step{margin-top:0;padding-block-start:var(--fd-space-6);border-top:1px solid var(--fd-line)}
+#family-pause .fp-options,#family-pause [data-fp-choices],#family-pause [data-fp-reply]{display:grid;gap:var(--fd-space-4)}
+#family-pause .fp-options button{width:100%;color:var(--fd-text)}
+#family-pause .fp-options button[aria-pressed=true]{box-shadow:inset 3px 0 var(--fd-teal)}
+#family-pause .fp-reply,#family-pause .fp-feedback{padding:var(--fd-space-6);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
+#family-pause .fp-reply:focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px}
+#family-pause .fp-feedback{border-inline-start-color:var(--fd-teal);background:var(--fd-teal-wash)}
+#family-pause footer{margin-top:0;align-items:center}
 #quieter-on-unit fieldset{min-inline-size:0;margin:0;padding:0;border:0}
 #quieter-on-unit .qt-lenses{display:flex;gap:var(--fd-space-4);flex-wrap:wrap}
 #quieter-on-unit label{display:flex;align-items:center;gap:var(--fd-space-4);min-height:var(--fd-target-touch);padding:var(--fd-space-4) var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);background:var(--fd-surface);cursor:pointer}
