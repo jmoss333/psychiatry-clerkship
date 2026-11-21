@@ -3823,9 +3823,9 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
 .fp-case .names>div,.fp-case .findings>article,.fp-case .tools,.fp-case .empty{padding:var(--fd-space-5)}
 .fp-case .names strong,.fp-case .names small{display:block;color:inherit}
 .fp-case .examphoto{position:relative}.fp-case .examphoto img{width:100%;height:auto;display:block}
-.fp-case .spot{position:absolute;transform:translate(-50%,-50%);min-width:44px;min-height:44px;padding:0;text-align:center;border:0;background:transparent}
+.fp-case .spot{position:absolute;transform:translate(-50%,-50%);min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);padding:0;text-align:center;border:0;background:transparent}
 .fp-case .spot:hover,.fp-case .spot[aria-pressed=true]{background:transparent;box-shadow:none}
-.fp-case .spot span{background:var(--fd-teal-deep);color:var(--fd-on-accent);border:1px solid var(--fd-on-accent);border-radius:99px;padding:.15em .55em;font-size:var(--fd-font-sm)}
+.fp-case .spot span{background:var(--fd-teal-deep);color:var(--fd-on-accent);border:1px solid var(--fd-on-accent);border-radius:var(--fd-radius-pill);padding:var(--fd-space-1) var(--fd-space-4);font-size:var(--fd-font-sm)}
 .fp-case .spot[aria-pressed=true] span{background:var(--fd-surface);color:var(--fd-teal-deep);border:2px solid var(--fd-teal-deep)}
 .fp-case .taye-arm{left:15%;top:48%}.fp-case .ana-arm{left:77%;top:50%}.fp-case .taye-ankle{left:26%;top:85%}.fp-case .ana-ankle{left:74%;top:85%}
 .fp-case .tools,.fp-case .actions,.fp-case .casefoot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-4)}
@@ -3836,14 +3836,14 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
 .fp-case .chosen,.fp-case .basis,.fp-case .ranks,.fp-case fieldset,.fp-case .actions,.fp-case .feedback p,.fp-case .references p{margin-block:.6em}
 .fp-case .medtext{padding:var(--fd-space-4)}.fp-case .casefoot{justify-content:space-between}
 .fp-case .ranks,.fp-case #fp-prediction-choices{gap:var(--fd-space-5)}
-.fp-case select{display:block;width:100%;min-height:44px;margin-top:.25em;font:inherit;color:var(--fd-text);background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs)}
+.fp-case select{display:block;width:100%;min-height:var(--fd-target-touch);margin-top:.25em;font:inherit;color:var(--fd-text);background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs)}
 .fp-case fieldset{min-width:0;padding:0;border:0}.fp-case legend,.fp-case .ranks label{font-weight:600}
-.fp-case #fp-prediction-choices label{display:flex;align-items:flex-start;gap:.5em;min-height:44px;padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);cursor:pointer}
+.fp-case #fp-prediction-choices label{display:flex;align-items:flex-start;gap:var(--fd-space-4);min-height:var(--fd-target-touch);padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);cursor:pointer}
 .fp-case #fp-prediction-choices label:has(:checked){background:var(--fd-teal-wash);border-color:var(--fd-teal)}
-.fp-case #fp-prediction-choices input{flex:none;margin:.3em 0 0;accent-color:var(--fd-teal)}
+.fp-case #fp-prediction-choices input{flex:none;margin:var(--fd-space-2) 0 0;accent-color:var(--fd-teal)}
 .fp-case .primary:enabled{color:var(--fd-on-accent);background:var(--fd-teal-deep)}.fp-case button:disabled{opacity:.6}
-@container (max-width:550px){.fp-case .ranks,.fp-case #fp-prediction-choices{grid-template-columns:1fr}.fp-case .tools strong{width:100%}}
-@media (max-width:550px){.fp-case .ranks,.fp-case #fp-prediction-choices{grid-template-columns:1fr}.fp-case .tools strong{width:100%}}
+@container (max-width:640px){.fp-case .ranks,.fp-case #fp-prediction-choices{grid-template-columns:1fr}.fp-case .tools strong{width:100%}}
+@media (max-width:640px){.fp-case .ranks,.fp-case #fp-prediction-choices{grid-template-columns:1fr}.fp-case .tools strong{width:100%}}
 /* Morgan's three-setting interview and reconstructed exposure timeline. */
 .mg-case .mg-stages,.mg-case .mg-times,.mg-case .mg-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 .mg-case .mg-stages{gap:var(--fd-space-2);margin:var(--fd-space-6) 0;padding:var(--fd-space-2);background:var(--fd-surface);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}

@@ -402,6 +402,14 @@ SCREENERS_MBC_2026_10_IDS = {
     "lowe-2004-phq9-monitoring", "kroenke-2010-phq-gad-review",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | SCREENERS_MBC_2026_10_IDS
+# Primary studies used in the Morgan and paired fever case debriefs.
+ALL_SOURCE_IDS |= {
+    "meyer-2001-clozapine-smoking-cessation",
+    "hukkanen-2011-nicotine-cyp1a2",
+    "hefner-2016-crp-clozapine",
+    "gurrera-2017-nms-criteria-validation",
+    "white-1991-catatonia-preceding-nms",
+}
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
