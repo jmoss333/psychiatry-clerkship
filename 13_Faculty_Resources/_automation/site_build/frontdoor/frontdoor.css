@@ -3400,6 +3400,29 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 
 /* Bedside teaching cases share the reader's type, colors and touch targets. */
+/* Elena's two illustrated viewpoints share the interpreter reading's typography. */
+#elena-visit .ei-spread{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start;gap:var(--fd-space-7)}
+#elena-visit .ei-scene{overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+#elena-visit figcaption,#elena-visit .ei-roles,#elena-visit .ei-meta,#elena-visit footer{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--fd-space-3)}
+#elena-visit figcaption{background:var(--fd-teal-deep);color:var(--fd-on-accent);padding:var(--fd-space-4) var(--fd-space-5);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#elena-visit figcaption .case-kicker{color:inherit}
+#elena-visit .ei-crop img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center bottom;margin:0}
+#elena-visit [data-view=relay] img{object-position:center top}
+#elena-visit .ei-roles{border-top:1px solid var(--fd-line);padding:var(--fd-space-3) var(--fd-space-5);font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1));color:var(--fd-text-mid)}
+#elena-visit #ei-exchange,#elena-visit #ei-followup{border-block-start:1px solid var(--fd-line);padding:var(--fd-space-5)}
+#elena-visit #ei-exchange blockquote{margin-block:var(--fd-space-3) var(--fd-space-5)}
+#elena-visit #ei-next{background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
+#elena-visit .ei-options{display:grid;gap:var(--fd-space-4);margin:var(--fd-space-5) 0}
+#elena-visit .ei-options button{width:100%;color:var(--fd-text)}
+#elena-visit .ei-options button[aria-pressed=true]{box-shadow:inset 3px 0 var(--fd-teal)}
+#elena-visit .ei-aside{color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#elena-visit #ei-followup{margin-top:var(--fd-space-6);padding-inline:0}
+#elena-visit .case-reply{background:var(--fd-olive-wash);border-color:var(--fd-olive)}
+#elena-visit .case-reply .case-kicker{color:var(--fd-olive-deep)}
+#elena-visit details{padding:0;border:0;background:transparent}
+#elena-visit summary{text-decoration:underline;text-underline-offset:.15em}
+#elena-visit footer{align-items:center;margin:0}
+@container bedside (max-width:660px){#elena-visit .ei-spread{grid-template-columns:minmax(0,1fr)}}
 .bedside-case{
   container:bedside / inline-size;margin-block:var(--fd-space-8);padding:clamp(var(--fd-space-5),4%,var(--fd-space-10));
   border:1px solid var(--fd-line-strong);border-top:4px solid var(--fd-teal);border-radius:var(--fd-radius-lg);

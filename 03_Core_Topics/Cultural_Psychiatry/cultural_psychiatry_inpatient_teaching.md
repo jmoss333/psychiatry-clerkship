@@ -14,6 +14,37 @@
 
 **Working with interpreters** — Use a **trained professional interpreter** (in person or via phone/video) for any language barrier — **not family members or children**, who introduce error and confidentiality/role problems. Speak **to the patient** in the first and second person, in short segments; allow extra time; and remember interpreters convey meaning, not just words.
 
+<section id="elena-visit" class="bedside-case visual-practice" aria-labelledby="ei-title">
+<header><h3 id="ei-title">Who gets the next turn?</h3>
+<p>It’s Elena’s first morning on the unit. She prefers Spanish for this visit. You’ve introduced yourself and Sofía, the professional interpreter. Elena says she’d like to talk about last night.</p></header>
+<div class="ei-spread"><figure class="ei-scene"><figcaption><strong class="case-kicker">From Elena’s chair</strong><span>Morning check-in</span></figcaption>
+<div class="ei-crop" data-view="direct"><img width="640" height="960" src="illustrations/elena-interpreter.avif" loading="lazy" alt="From Elena’s chair, the medical student sits on the left and Sofía, the interpreter, on the right." data-direct="From Elena’s chair, the student is turned toward Elena, with Sofía beside her." data-relay="From Elena’s chair, the student is turned toward Sofía."></div>
+<div class="ei-roles"><span><strong>You</strong> · medical student</span><span><strong>Sofía</strong> · interpreter</span></div>
+<div id="ei-exchange" hidden><div class="ei-meta"><span id="ei-speaker" class="case-kicker"></span><small id="ei-count"></small></div><blockquote id="ei-line"></blockquote><button type="button" id="ei-next" data-repair="Try a repair">Hear the next turn</button></div></figure>
+<div><section aria-labelledby="ei-open"><p class="case-kicker">MS3 · Open the visit</p><h4 id="ei-open">How will you ask about last night?</h4>
+<div class="ei-options"><button type="button" data-ei-opening="relay" aria-pressed="false">“Can you ask her how last night went?”</button>
+<button type="button" data-ei-opening="direct" aria-pressed="false">“How did last night go for you?”</button></div>
+<p class="ei-aside">Try either opening. Elena’s replies appear in English as interpreted by Sofía.</p></section>
+<section id="ei-followup" aria-labelledby="ei-follow-title" hidden><p class="case-kicker">Resident · Clarify the history</p><h4 id="ei-follow-title" tabindex="-1">What would you ask about the click?</h4>
+<div class="ei-options"><button type="button" data-ei-question="observation" aria-pressed="false">“What did you notice when you heard it?”</button>
+<button type="button" data-ei-question="timing" aria-pressed="false">“Were you already awake when you heard it?”</button></div>
+<div id="ei-reply" class="case-reply" hidden><p class="case-kicker">Elena · via Sofía</p><blockquote id="ei-answer"></blockquote><details id="ei-rounds"><summary>Compare a rounds sentence</summary><p id="ei-note"></p></details></div></section></div></div>
+<p class="fd-visually-hidden" role="status" id="ei-status"></p>
+<footer><span>Fictional case · <a href="https://hclsig.thinkculturalhealth.hhs.gov/ProviderContent/PDFs/WorkingWithAnInterpreter.pdf">Working with an interpreter (HHS)</a></span><button type="button" id="ei-reset" class="case-link">Start over</button></footer>
+<template data-ei-path="relay">
+<p data-view="relay" data-speaker="You · to Sofía">“Can you ask her how last night went?”</p>
+<p data-view="relay" data-repair data-speaker="Elena · via interpreter">“Were you asking me?”</p>
+<p data-view="direct" data-speaker="You · to Elena">“Yes, Elena. I was asking you. How did last night go for you?”</p>
+</template>
+<template data-ei-path="direct">
+<p data-view="direct" data-speaker="You · to Elena">“How did last night go for you?”</p>
+<p data-view="direct" data-speaker="Sofía · interpreting into Spanish" lang="es">“¿Cómo le fue anoche?”</p>
+</template>
+<template data-ei-last><p data-view="direct" data-speaker="Elena · via interpreter">“I kept hearing this click. Then I’d be wide awake again.”</p></template>
+<template data-ei-answer="observation"><blockquote>“A strip of light came across the floor. I wondered if someone was checking on me. I didn’t know how nights worked here.”</blockquote><p>Elena recalls light crossing the floor and wonders if someone was checking on her. I’d ask the night team about its routine and explain it to her with the interpreter.</p></template>
+<template data-ei-answer="timing"><blockquote>“At least once, yes. I was lying there waiting for it. The other times? I’m not sure which came first.”</blockquote><p>Elena remembers already being awake before at least one click. She’s unsure of the order on the other occasions.</p></template>
+</section>
+
 **Religion, spirituality & community** — Ask about faith and community supports, which can be protective and central to recovery; distinguish culturally normative beliefs and experiences (e.g., bereavement visions, religious practices) from psychopathology before labeling them.
 
 <section id="cultural-chart" class="cultural-chart" aria-labelledby="cultural-chart-title">
