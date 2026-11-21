@@ -2670,6 +2670,90 @@ test.describe('Interactive readings', () => {
     await details.locator(':scope > summary').press('Enter');
   }
 
+  test('withdrawal timeline ties the differential to changes in usual intake', async ({ page }) => {
+    const card = await openActivity(page, 't_sud.md', 'aw-timeline', 'Initial workup');
+    const choose = async (lead, check) => {
+      await card.locator('[data-et-lead]').selectOption(lead);
+      await card.locator('[data-et-check]').selectOption(check);
+      await card.locator('[data-et-commit]').press('Enter');
+    };
+    const open = key => card.locator('[data-et-source="' + key + '"]').press('Enter');
+    await expect(card.locator('[data-et-commit]')).toBeDisabled();
+    await open('usual');
+    await choose('fall','history');
+    await expect(card.locator('[data-et-feedback]')).toContainText('do not yet establish a drop');
+    await open('recent');
+    await expect(card.locator('[data-et-debrief]')).toBeHidden();
+    await choose('fall','exam');
+    await expect(card.locator('[data-et-feedback]')).toContainText('marked reduction');
+    await toggleWithKeyboard(card.locator('details').first());
+    await expect(card.locator('[data-et-sample]')).not.toContainText('seizure');
+    await open('prior');
+    await choose('fall','history');
+    await toggleWithKeyboard(card.locator('details').first());
+    await expect(card.locator('[data-et-sample]')).toContainText('prior discharge summary documents a withdrawal seizure');
+    await card.locator('[data-et-version="second"]').press('Enter');
+    await expect(card.locator('[data-et-debrief]')).toBeHidden();
+    await expect(card.locator('[data-reviewed]')).toHaveCount(0);
+    await open('recent');
+    await choose('fall','level');
+    await expect(card.locator('[data-et-feedback]')).toContainText('size of any reduction are uncertain');
+    await expect(card.locator('[data-et-next]')).toContainText('alone cannot settle');
+    await toggleWithKeyboard(card.locator('details').first());
+    await expect(card.locator('[data-et-sample]')).not.toContainText('withdrawal seizure');
+    await toggleWithKeyboard(card.locator('details').last());
+    await expect(card.locator('a[href*="16912820"]')).toBeVisible();
+  });
+
+  test('discharge barrier map distinguishes a filled prescription from a feasible pickup', async ({ page }) => {
+    const card = await openActivity(page, 'exp_family.md', 'remy-pickup', 'Discharge Barrier Map');
+    for (const [version, outcome] of [['first','pickup plan fits'],['second','ride misses closing time']]) {
+      await card.locator('[data-et-version="' + version + '"]').press('Enter');
+      await expect(card.locator('[data-et-debrief]')).toBeHidden();
+      await card.locator('[data-et-source="pharmacy"]').press('Enter');
+      await card.locator('[data-et-lead]').selectOption('ready');
+      await card.locator('[data-et-check]').selectOption('ride');
+      await card.locator('[data-et-commit]').press('Enter');
+      await toggleWithKeyboard(card.locator('details').first());
+      await expect(card.locator('[data-et-sample]')).toContainText('still need to confirm');
+      await expect(card.locator('[data-et-sample]')).not.toContainText('Tess');
+      await card.locator('[data-et-source="ride"]').press('Enter');
+      await expect(card.locator('[data-et-debrief]')).toBeHidden();
+      await card.locator('[data-et-commit]').press('Enter');
+      await toggleWithKeyboard(card.locator('details').first());
+      await expect(card.locator('[data-et-sample]')).toContainText(outcome);
+      await toggleWithKeyboard(card.locator('details').last());
+      await expect(card.locator('a[href*="24421481"]')).toBeVisible();
+    }
+    await card.locator('[data-et-reset]').press('Enter');
+    await expect(card.locator('[data-et-commit]')).toBeDisabled();
+  });
+
+  test('interview reply traces an answer, a redirect, or a privacy question', async ({ page }) => {
+    const card = await openActivity(page, 'pg_interview.md', 'reply-thread-case', 'MSE Structure');
+    const press = selector => card.locator(selector).press('Enter');
+    const last = () => card.locator('[data-rt-phrase]:visible').last().press('Enter');
+    await expect(card.locator('[data-rt-rounds]')).toBeHidden();
+    await press('[data-rt-next]');
+    await press('[data-rt-next]');
+    await last();
+    await press('[data-rt-rounds] summary');
+    await expect(card.locator('[data-rt-rounds]')).toContainText('without my asking again');
+    await card.locator('[data-rt-case="alternate"]').press('Enter');
+    await press('[data-rt-next]');
+    await press('[data-rt-next]');
+    await press('[data-rt-ask]');
+    await last();
+    await press('[data-rt-rounds] summary');
+    await expect(card.locator('[data-rt-rounds]')).toContainText('When I asked again');
+    await card.locator('[data-rt-case="eden"]').press('Enter');
+    await press('[data-rt-next]');
+    await press('[data-rt-open]');
+    await press('[data-rt-rounds] summary');
+    await expect(card.locator('[data-rt-rounds]')).toContainText('My brother comes to visit');
+    await expect(card.locator('.rt-return')).toHaveCount(0);
+  });
+
   test('dayroom choices reveal the requested change and reset the previous handoff', async ({ page }) => {
     const activity = await openActivity(page, 'agitation.md', 'vp-dayroom', 'The least-restrictive ladder');
     const paths = [

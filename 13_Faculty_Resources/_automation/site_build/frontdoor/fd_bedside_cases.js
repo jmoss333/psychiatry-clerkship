@@ -9,6 +9,240 @@ function fdMountBedsideCases(body) {
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountPerinatalComparison(body);
+  fdMountEvidenceRails(body);
+  fdMountReplyThread(body);
+}
+
+/* Each reading owns its timeline, patient dialogue and ordered debrief rules. */
+function fdMountEvidenceRails(body) {
+  for (const rail of body.querySelectorAll('.evidence-rail')) {
+    if (rail.dataset.mounted) continue;
+    rail.dataset.mounted = 'true';
+    const find = selector => rail.querySelector(selector);
+    const bank = find('[data-et-bank]').content;
+    const versions = [...rail.querySelectorAll('[data-et-version]')];
+    const sources = [...rail.querySelectorAll('[data-et-source]')];
+    const lead = find('[data-et-lead]'), check = find('[data-et-check]');
+    const answer = find('[data-et-answer]'), debrief = find('[data-et-debrief]');
+    const commit = find('[data-et-commit]'), status = find('[data-et-status]');
+    const instruction = status.textContent, read = new Set();
+    let version;
+
+    function story(source) {
+      return bank.querySelector('[data-et-story="' + version + '-' + source + '"]') ||
+        bank.querySelector('[data-et-story="both-' + source + '"]');
+    }
+    function explanation(group) {
+      // More specific rules precede the unconditional fallback in the authored reading.
+      const rules = bank.querySelectorAll('[data-et-group="' + group + '"]');
+      for (const rule of rules) {
+        const conditions = (rule.dataset.when || '').split(' ').filter(Boolean);
+        if (conditions.every(key => key === version || read.has(key))) return rule.textContent;
+      }
+      return '';
+    }
+    function updateAssessment() {
+      debrief.hidden = true;
+      debrief.replaceChildren();
+      commit.disabled = !(read.size && lead.value && check.value);
+      status.textContent = commit.disabled ? instruction : '';
+    }
+    function switchVersion(key) {
+      version = key;
+      read.clear();
+      for (const button of versions) button.setAttribute('aria-pressed', String(button.dataset.etVersion === key));
+      for (const button of sources) {
+        button.setAttribute('aria-pressed', 'false');
+        button.querySelector('[data-et-state]').textContent = 'Unopened';
+        delete button.dataset.reviewed;
+      }
+      answer.hidden = true;
+      answer.replaceChildren();
+      lead.value = check.value = '';
+      updateAssessment();
+    }
+    for (const button of versions) {
+      button.addEventListener('click', () => {
+        if (version !== button.dataset.etVersion) switchVersion(button.dataset.etVersion);
+      });
+    }
+    for (const button of sources) {
+      button.addEventListener('click', () => {
+        const key = button.dataset.etSource;
+        for (const source of sources) source.setAttribute('aria-pressed', String(source === button));
+        button.dataset.reviewed = 'true';
+        button.querySelector('[data-et-state]').textContent = 'Reviewed';
+        const entry = story(key).cloneNode(true);
+        entry.querySelector('[data-et-note]').remove();
+        answer.replaceChildren(entry);
+        answer.hidden = false;
+        if (!read.has(key)) {
+          read.add(key);
+          updateAssessment();
+        }
+      });
+    }
+    lead.addEventListener('change', updateAssessment);
+    check.addEventListener('change', updateAssessment);
+    commit.addEventListener('click', () => {
+      if (commit.disabled) return;
+      const result = find('[data-et-result]').content.cloneNode(true);
+      result.querySelector('[data-et-feedback]').textContent = explanation('lead-' + lead.value);
+      result.querySelector('[data-et-next]').textContent = explanation('check-' + check.value);
+      const report = [explanation('opening')];
+      for (const button of sources) {
+        const key = button.dataset.etSource;
+        if (read.has(key)) report.push(story(key).querySelector('[data-et-note]').textContent);
+      }
+      report.push(explanation('handoff'), explanation('extra'));
+      result.querySelector('[data-et-sample]').textContent = '“' + report.filter(Boolean).join(' ') + '”';
+      debrief.replaceChildren(result);
+      debrief.hidden = false;
+      status.textContent = '';
+      fdBedsideFocus(debrief.querySelector('[data-et-title]'));
+    });
+    find('[data-et-reset]').addEventListener('click', () => {
+      switchVersion(versions[0].dataset.etVersion);
+      fdBedsideFocus(sources[0]);
+    });
+    switchVersion(versions[0].dataset.etVersion);
+  }
+}
+
+/* The reading supplies the patient replies, feedback and worked rounds sentences. */
+function fdMountReplyThread(body) {
+  const card = body.querySelector('#reply-thread-case');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const get = selector => card.querySelector(selector);
+  const caseButtons = Array.from(card.querySelectorAll('[data-rt-case]'));
+  const panels = Array.from(card.querySelectorAll('[data-rt-panel]'));
+  const map = get('[data-rt-map]');
+  const next = get('[data-rt-next]');
+  const ask = get('[data-rt-ask]');
+  const open = get('[data-rt-open]');
+  const rounds = get('[data-rt-rounds]');
+  const feedback = get('[data-rt-feedback]');
+  let panel, phrases, selected;
+
+  function drawMap() {
+    const visible = phrases.filter(button => !button.closest('li').hidden);
+    const count = visible.length + 1;
+    const labels = map.querySelector('ol');
+    const svg = map.querySelector('svg');
+    const svgNode = (tag, attributes) => {
+      const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [key, value] of Object.entries(attributes)) element.setAttribute(key, value);
+      return element;
+    };
+    const points = Array.from({length: count}, (_, i) => {
+      const phrase = visible[i - 1];
+      const returned = selected && selected === phrase && phrase.dataset.rtPhrase;
+      return {x: (i + 0.5) * 400 / count, y: i === 0 || returned ? 26 : (i % 2 ? 36 : 46)};
+    });
+    labels.style.gridTemplateColumns = 'repeat(' + count + ', minmax(0, 1fr))';
+    labels.replaceChildren();
+    svg.replaceChildren();
+    svg.append(svgNode('line', {class: 'rt-baseline', x1: points[0].x, y1: 26, x2: points[count - 1].x, y2: 26}));
+    svg.append(svgNode('polyline', {class: 'rt-line', points: points.map(p => p.x + ',' + p.y).join(' ')}));
+    points.forEach((point, i) => {
+      const phrase = visible[i - 1];
+      const active = Boolean(phrase && selected === phrase);
+      const label = document.createElement('li');
+      label.textContent = phrase ? phrase.querySelector('[data-rt-topic]').textContent : 'Question';
+      label.classList.toggle('rt-current', active);
+      labels.append(label);
+      svg.append(svgNode('circle', {class: active || !i ? 'rt-dot rt-filled' : 'rt-dot', cx: point.x, cy: point.y, r: 4.5}));
+      if (active && phrase.dataset.rtPhrase) {
+        const origin = points[0].x;
+        const end = point.x;
+        svg.append(svgNode('path', {class: 'rt-return', d: 'M ' + end + ' 17 V 13 Q ' + end + ' 6 ' + (end - 8) + ' 6 H ' + (origin + 8) + ' Q ' + origin + ' 6 ' + origin + ' 13 V 17 m -4 -4 4 4 4 -4'}));
+      }
+    });
+  }
+
+  function clearChoice() {
+    selected = null;
+    for (const phrase of phrases) phrase.setAttribute('aria-pressed', 'false');
+    feedback.textContent = '';
+    rounds.hidden = true;
+    rounds.querySelector('details').open = false;
+    get('[data-rt-sample]').replaceChildren();
+  }
+
+  function updateControls() {
+    const visible = phrases.filter(p => !p.closest('li').hidden);
+    const redirected = visible.some(p => p.closest('[data-rt-redirect]'));
+    next.hidden = redirected || phrases.slice(0, -1).every(p => !p.closest('li').hidden);
+    ask.hidden = redirected || visible.some(p => p.dataset.rtPhrase);
+    drawMap();
+  }
+
+  function restart(button) {
+    for (const choice of caseButtons) choice.setAttribute('aria-pressed', String(choice === button));
+    panel = panels.find(p => p.dataset.rtPanel === button.dataset.rtCase);
+    for (const item of panels) item.hidden = item !== panel;
+    phrases = Array.from(panel.querySelectorAll('[data-rt-phrase]'));
+    phrases.forEach((phrase, i) => { phrase.closest('li').hidden = i > 0; });
+    panel.querySelector('[data-rt-map-place]').append(map);
+    map.hidden = false;
+    const privacy = panel.dataset.rtPanel === 'eden';
+    ask.firstElementChild.hidden = privacy;
+    ask.lastElementChild.hidden = !privacy;
+    clearChoice();
+    updateControls();
+  }
+
+  function reveal(phrase) {
+    clearChoice();
+    phrase.closest('li').hidden = false;
+    updateControls();
+    phrase.focus();
+  }
+
+  function showChoice(phrase) {
+    clearChoice();
+    selected = phrase;
+    const visible = phrases.filter(p => !p.closest('li').hidden);
+    const privacy = panel.dataset.rtPanel === 'eden';
+    let result;
+    if (phrase) {
+      phrase.setAttribute('aria-pressed', 'true');
+      result = phrase.dataset.rtPhrase || (privacy ? 'concern' : 'detail');
+    } else if (visible.some(p => p.dataset.rtPhrase)) {
+      result = 'look';
+    } else if (!next.hidden) {
+      result = 'early';
+    } else {
+      result = privacy ? 'privacy' : 'open';
+    }
+    const content = get('template[data-rt-result="' + result + '"]').content;
+    feedback.textContent = content.querySelector('p').textContent;
+    const model = content.querySelector('blockquote');
+    if (model) {
+      const copy = model.cloneNode(true);
+      const evidence = selected || visible[visible.length - 1];
+      copy.querySelector('span').textContent = evidence.querySelector('[data-rt-quote]').textContent;
+      get('[data-rt-sample]').replaceChildren(...copy.childNodes);
+      rounds.hidden = false;
+    }
+    drawMap();
+  }
+
+  for (const button of caseButtons) button.addEventListener('click', () => restart(button));
+  card.addEventListener('click', event => {
+    const phrase = event.target.closest('[data-rt-phrase]');
+    if (phrase && panel.contains(phrase)) showChoice(phrase);
+  });
+  next.addEventListener('click', () => reveal(phrases.find(p => p.closest('li').hidden)));
+  ask.addEventListener('click', () => reveal(phrases[phrases.length - 1]));
+  open.addEventListener('click', () => showChoice(null));
+  get('[data-rt-restart]').addEventListener('click', () => {
+    const current = caseButtons.find(b => b.getAttribute('aria-pressed') === 'true');
+    restart(current);
+    current.focus();
+  });
+  restart(caseButtons[0]);
 }
 
 function fdMountPerinatalComparison(body) {

@@ -131,6 +131,62 @@ Example:
 | Insight | understanding of illness/situation | "Partial insight into depression; limited insight into alcohol contribution" |
 | Judgment | decision-making in context | "Impaired around safety planning; accepts inpatient care" |
 
+<section id="reply-thread-case" aria-labelledby="rt-title">
+  <header><span class="fd-bedside-case__label">Fictional bedside interviews</span><h3 id="rt-title">Did they answer the question?</h3><p>Follow the reply one phrase at a time. Choose the words you would quote on rounds, ask again, or leave the opening question unanswered.</p></header>
+  <div class="rt-switch" role="group" aria-label="Choose an interview">
+    <button type="button" data-rt-case="first" aria-controls="rt-first" aria-pressed="true">Lou · first reply</button>
+    <button type="button" data-rt-case="alternate" aria-controls="rt-alternate" aria-pressed="false">Lou · alternate reply</button>
+    <button type="button" data-rt-case="eden" aria-controls="rt-eden" aria-pressed="false">Eden’s interview</button>
+  </div>
+  <div data-rt-map hidden><svg aria-hidden="true" viewBox="0 0 400 60" preserveAspectRatio="none"></svg><ol aria-label="Conversation path"></ol></div>
+  <div id="rt-first" data-rt-panel="first">
+    <div class="rt-question"><span class="fd-bedside-case__label">Your opening question</span><strong>“What brought you to the hospital yesterday?”</strong></div>
+    <div data-rt-map-place></div>
+    <h4>Lou · first reply</h4><ol class="rt-transcript" aria-label="Lou’s reply">
+      <li><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Sister</span><span data-rt-quote>“My sister got off at four. She still wears that blue jacket from her old job.”</span></button></li>
+      <li hidden><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Station</span><span data-rt-quote>“She used to work over by the train station. I used to pick her up there.”</span></button></li>
+      <li hidden><button type="button" data-rt-phrase="independent" aria-pressed="false"><span data-rt-topic hidden>Why I came</span><span data-rt-quote>“Anyway, I called her because I hadn’t slept for four nights and I was scared. That’s why we came.”</span></button></li>
+      <li data-rt-redirect hidden><div class="rt-redirect"><strong>You asked</strong> “Can we go back to yesterday? What happened that made you come in?”</div><button type="button" data-rt-phrase="redirected" aria-pressed="false"><span data-rt-topic hidden>Why I came</span><span data-rt-quote>“I hadn’t slept for four nights. I got scared and asked my sister to bring me.”</span></button></li>
+    </ol>
+  </div>
+  <div id="rt-alternate" data-rt-panel="alternate" hidden>
+    <div class="rt-question"><span class="fd-bedside-case__label">Your opening question</span><strong>“What brought you to the hospital yesterday?”</strong></div>
+    <div data-rt-map-place></div>
+    <h4>Lou · alternate reply</h4><ol class="rt-transcript" aria-label="Lou’s reply">
+      <li><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Sister</span><span data-rt-quote>“My sister got off at four. She still wears that blue jacket from her old job.”</span></button></li>
+      <li hidden><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Station</span><span data-rt-quote>“She used to work over by the train station. I used to pick her up there.”</span></button></li>
+      <li hidden><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Bakery</span><span data-rt-quote>“There’s a little bakery across from the station. She likes the sesame rolls.”</span></button></li>
+      <li data-rt-redirect hidden><div class="rt-redirect"><strong>You asked</strong> “Can we go back to yesterday? What happened that made you come in?”</div><button type="button" data-rt-phrase="redirected" aria-pressed="false"><span data-rt-topic hidden>Why I came</span><span data-rt-quote>“Oh, yesterday? I called my sister because I hadn’t slept for four nights. I was scared.”</span></button></li>
+    </ol>
+  </div>
+  <div id="rt-eden" data-rt-panel="eden" hidden>
+    <div class="rt-question"><span class="fd-bedside-case__label">Your opening question</span><strong>“What was happening at home before you came in?”</strong></div>
+    <div data-rt-map-place></div>
+    <h4>Eden’s interview</h4><ol class="rt-transcript" aria-label="Eden’s reply">
+      <li><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>The note</span><span data-rt-quote>“Who gets to read what you write down?”</span></button></li>
+      <li hidden><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Privacy</span><span data-rt-quote>“My brother comes to visit. I don’t want him to hear this part.”</span></button></li>
+      <li data-rt-redirect hidden><div class="rt-redirect"><strong>You asked</strong> “Would it help to talk about privacy first? We can come back to what happened at home.”</div><button type="button" data-rt-phrase="" aria-pressed="false"><span data-rt-topic hidden>Preference</span><span data-rt-quote>“Yes. Let’s talk about who can read it before I get into what happened.”</span></button></li>
+    </ol>
+  </div>
+  <div class="rt-actions">
+    <button type="button" data-rt-next>Hear the next phrase</button><button type="button" data-rt-ask><span>Ask again</span><span hidden>Ask about privacy</span></button><button type="button" data-rt-open>Leave the question open</button>
+  </div>
+  <p data-rt-feedback role="status" aria-atomic="true"></p>
+  <div data-rt-rounds hidden>
+    <p><strong>On rounds</strong> · Say one sentence about how the patient responded. Include their words and whether you asked again.</p>
+    <details><summary>Compare a rounds sentence</summary><blockquote data-rt-sample></blockquote></details>
+  </div>
+  <button type="button" data-rt-restart>Restart this reply</button>
+  <template data-rt-result="detail"><p>That gives context. Which words tell you why Lou came to the hospital?</p></template>
+  <template data-rt-result="concern"><p>These words tell you what matters to Eden before discussing events at home. The opening question is still open.</p></template>
+  <template data-rt-result="early"><p>You haven’t heard an answer yet. Hear the next phrase or ask again.</p></template>
+  <template data-rt-result="look"><p>There is an answer in the transcript. Choose the words that tell you why Lou came in.</p></template>
+  <template data-rt-result="independent"><p>Lou came back to your opening question without a prompt.</p><blockquote>Lou gave some background, then explained why they came in without my asking again. <span></span></blockquote></template>
+  <template data-rt-result="redirected"><p>Lou gave a reason after you returned to the opening question.</p><blockquote>When I asked again why they came in, Lou answered. <span></span></blockquote></template>
+  <template data-rt-result="open"><p>Lou moved from their sister to the station and the bakery. You can describe that sequence and try asking again.</p><blockquote>When I asked why they came in, Lou described their sister, the station and a bakery. <span></span> I still need to ask what brought them in.</blockquote></template>
+  <template data-rt-result="privacy"><p>Eden wants to discuss privacy first. Clarify who can access the note and invite Eden to continue when ready.</p><blockquote>Eden asked about privacy before discussing what happened at home. <span></span> We have yet to talk about the events at home.</blockquote></template>
+</section>
+
 ## MSE Words To Use Carefully
 
 Avoid vague or stigmatizing words:
