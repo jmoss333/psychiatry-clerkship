@@ -2670,6 +2670,98 @@ test.describe('Interactive readings', () => {
     await details.locator(':scope > summary').press('Enter');
   }
 
+  test('Robin builds a source-limited timeline and resident handoff for both histories', async ({ page }) => {
+    const card = await openActivity(page, 't_sexual.md', 'robin-timeline-case', 'Sexual dysfunctions');
+    const part = id => card.locator('#robin-' + id);
+    const ask = key => part('ask-' + key).press('Enter');
+    const choose = async (form, value) => {
+      await part(form).locator('input[value="' + value + '"]').check();
+      await part(form).getByRole('button').press('Enter');
+    };
+    const histories = [
+      {
+        reading: 'before',
+        baseline: /already low/i, timing: /no further change/i,
+        reportedBaseline: /low before treatment/i, reportedTiming: /no further change in interest/i,
+        decision: /preceded sertraline/i, uncertainty: /sustaining the low interest/i,
+        moodTimeline: /interest in music/i, moodReport: /less music/i,
+        priorityTimeline: /closeness/i, priorityReport: /feeling close to their partner/i,
+      },
+      {
+        reading: 'after',
+        baseline: /could still reach orgasm/i, timing: /arousal preserved/i,
+        reportedBaseline: /just before treatment/i, reportedTiming: /about a week later/i,
+        decision: /difficulty reaching orgasm followed sertraline/i, uncertainty: /could also contribute/i,
+        moodTimeline: /answering friends/i, moodReport: /return to social contact/i,
+        priorityTimeline: /preserve gains/i, priorityReport: /preserve recent gains/i,
+      },
+    ];
+
+    for (const h of histories) {
+      await expect(part('begin')).toBeVisible();
+      await expect(part('count')).toHaveText('0 of 4 asked');
+      await expect(part('assessment')).toBeHidden();
+      await expect(part('results')).toBeHidden();
+      await expect(part('handoff')).toBeHidden();
+      await expect(part('track')).not.toContainText(/sertraline|interest in music|orgasm|closeness|preserve gains/i);
+      await part('begin').press('Enter');
+      await ask('baseline');
+      await expect(part('track')).toContainText(h.baseline);
+      await expect(part('assessment')).toBeHidden();
+      await ask('timing');
+      await expect(part('track')).toContainText(h.timing);
+      await expect(part('count')).toHaveText('2 of 4 asked');
+      await expect(part('track')).not.toContainText(h.moodTimeline);
+      await expect(part('track')).not.toContainText(h.priorityTimeline);
+      await choose('assessment', 'unknown');
+      await expect(part('results')).toBeHidden();
+      await expect(part('reading-feedback')).toContainText(/baseline and timing/i);
+      await choose('assessment', h.reading === 'before' ? 'after' : 'before');
+      await expect(part('results')).toBeHidden();
+      await choose('assessment', h.reading);
+      const resident = part('resident');
+      await expect(resident.locator('summary')).toContainText(/resident handoff/i);
+      await expect(part('plan')).toBeHidden();
+      await toggleWithKeyboard(resident);
+      await choose('plan', 'goals');
+      const handoff = part('handoff');
+      await expect(handoff).toBeVisible();
+      await expect(handoff).toContainText(h.reportedBaseline);
+      await expect(handoff).toContainText(h.reportedTiming);
+      await expect(handoff).toContainText(h.decision);
+      await expect(handoff).toContainText(h.uncertainty);
+      await expect(handoff).toContainText(/mood still needs clarification/i);
+      await expect(handoff).toContainText(/what outcome matters most/i);
+      await expect(handoff).not.toContainText(h.moodReport);
+      await expect(handoff).not.toContainText(h.priorityReport);
+      await expect(handoff).toContainText(/meet privately/i);
+
+      await ask('mood');
+      await expect(part('track')).toContainText(h.moodTimeline);
+      await expect(handoff).toContainText(h.moodReport);
+      await expect(handoff).not.toContainText(/mood still needs clarification/i);
+      await expect(handoff).not.toContainText(h.priorityReport);
+      await expect(handoff).toContainText(/what outcome matters most/i);
+      await ask('priority');
+      await expect(part('count')).toHaveText('4 of 4 asked');
+      await expect(part('track')).toContainText(h.priorityTimeline);
+      await expect(handoff).toContainText(h.priorityReport);
+      await expect(handoff).not.toContainText(/what outcome matters most/i);
+      await expect(handoff).toContainText(h.uncertainty);
+
+      await part('plan').locator('input[value="contributors"]').check();
+      await expect(handoff).toBeHidden();
+      await part('plan').getByRole('button').press('Enter');
+      await expect(handoff).toContainText(/review other medicines/i);
+      await expect(handoff).not.toContainText(/meet privately/i);
+      await expect(handoff).toContainText(h.moodReport);
+      await expect(handoff).toContainText(h.priorityReport);
+      await part('replay').press('Enter');
+      await expect(part('assessment').locator('input:checked')).toHaveCount(0);
+      await expect(part('plan').locator('input:checked')).toHaveCount(0);
+    }
+  });
+
   test('withdrawal timeline ties the differential to changes in usual intake', async ({ page }) => {
     const card = await openActivity(page, 't_sud.md', 'aw-timeline', 'Initial workup');
     const choose = async (lead, check) => {

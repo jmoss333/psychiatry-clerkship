@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
   fdMountFollowupStudy(body);
+  fdMountRobinTimeline(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountPerinatalComparison(body);
@@ -390,6 +391,173 @@ function fdMountRaeReturnVisit(body) {
       : copy(morning, 'progress') + ' ' + nextStep;
     sample.textContent = '“' + report + '”';
   });
+}
+
+function fdMountRobinTimeline(body) {
+  const card = body.querySelector('#robin-timeline-case');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = selector => card.querySelector(selector);
+  const part = id => find('#robin-' + id);
+  const questions = Array.from(card.querySelectorAll('[data-robin-ask]'));
+  const phases = Array.from(part('track').children);
+  const labels = phases.map(phase => phase.querySelector('strong').textContent);
+  const shared = find('[data-robin-shared]').content;
+  const heard = new Set();
+  let version = 'before';
+  let bank;
+  let lastQuestion;
+  let nextStep = '';
+
+  const text = (root, key) => root.querySelector('[data-text="' + key + '"]').textContent;
+  const source = key => bank.querySelector('[data-source="' + key + '"]');
+
+  function updateTimeline() {
+    const facts = phases.map(() => []);
+    for (const key of ['mood', 'baseline', 'timing', 'priority']) {
+      if (!heard.has(key)) continue;
+      for (const fact of source(key).querySelectorAll('[data-slot]')) {
+        facts[Number(fact.dataset.slot)].push(fact.textContent);
+      }
+    }
+    phases.forEach((phase, index) => {
+      const filled = facts[index].length > 0;
+      const descriptions = phase.querySelector('div');
+      descriptions.replaceChildren();
+      phase.classList.toggle('has-facts', filled);
+      for (const line of filled ? facts[index] : ['History still open']) {
+        const p = document.createElement('p');
+        p.textContent = line;
+        descriptions.appendChild(p);
+      }
+      phase.querySelector('strong').textContent = labels[index];
+    });
+    if (heard.has('timing')) {
+      phases[2].querySelector('strong').textContent = text(shared, 'firstDose');
+      phases[3].querySelector('strong').textContent = text(bank, 'afterTiming');
+    }
+    part('count').textContent = heard.size + ' of ' + questions.length + ' asked';
+    const ready = heard.has('baseline') && heard.has('timing');
+    part('hint').hidden = ready;
+    part('assessment').hidden = !ready;
+  }
+
+  function updateHandoff() {
+    const box = part('handoff');
+    box.hidden = !nextStep;
+    if (!nextStep) return;
+    const report = [text(shared, 'start')];
+    for (const key of heard) report.push(source(key).querySelector('[data-report]').textContent);
+    const reasoning = [text(bank, 'decision'), text(bank, 'uncertainty')];
+    if (!heard.has('mood')) reasoning.push(text(shared, 'openMood'));
+    if (!heard.has('priority')) reasoning.push(text(shared, 'openPriority'));
+    box.querySelector('[data-robin-report]').textContent = report.join(' ');
+    box.querySelector('[data-robin-assessment]').textContent = reasoning.join(' ');
+    box.querySelector('[data-robin-next]').textContent = text(shared, nextStep);
+  }
+
+  function updateDebrief() {
+    if (part('results').hidden) return;
+    for (const field of part('debrief').querySelectorAll('[data-robin-field]')) {
+      const key = field.dataset.robinField;
+      field.hidden = key === 'moodInterpretation' && !heard.has('mood');
+      field.textContent = key === 'line' && !heard.has('priority') ? text(shared, 'askPriority') : text(bank, key);
+    }
+    updateHandoff();
+  }
+
+  function clearPlan() {
+    nextStep = '';
+    part('plan-feedback').textContent = '';
+    part('handoff').hidden = true;
+    for (const p of part('handoff').querySelectorAll('[data-robin-report],[data-robin-assessment],[data-robin-next]')) p.textContent = '';
+  }
+
+  function clearAssessment() {
+    part('results').hidden = true;
+    part('reading-feedback').textContent = '';
+    part('plan').reset();
+    clearPlan();
+    for (const details of part('results').querySelectorAll('details[open]')) details.open = false;
+  }
+
+  function reset() {
+    bank = find('[data-robin-history="' + version + '"]').content;
+    lastQuestion = null;
+    heard.clear();
+    part('assessment').reset();
+    clearAssessment();
+    part('opening').hidden = false;
+    part('questions').hidden = part('reason').hidden = part('back').hidden = true;
+    part('interview').textContent = 'Ask permission';
+    for (const button of questions) {
+      button.setAttribute('aria-expanded', 'false');
+      button.querySelector('[data-robin-heard]').hidden = true;
+      const reply = part('reply-' + button.dataset.robinAsk);
+      reply.hidden = true;
+      reply.querySelector('blockquote').textContent = '';
+    }
+    updateTimeline();
+  }
+
+  part('begin').addEventListener('click', () => {
+    part('opening').hidden = true;
+    part('questions').hidden = part('reason').hidden = part('back').hidden = false;
+    part('interview').textContent = 'Ask Robin';
+    fdBedsideFocus(part('interview'));
+  });
+  for (const button of questions) button.addEventListener('click', () => {
+    const key = button.dataset.robinAsk;
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    for (const choice of questions) {
+      const active = open && choice === button;
+      choice.setAttribute('aria-expanded', String(active));
+      part('reply-' + choice.dataset.robinAsk).hidden = !active;
+    }
+    if (!open) return;
+    lastQuestion = button;
+    part('reply-' + key).querySelector('blockquote').textContent = source(key).querySelector('blockquote').textContent;
+    button.querySelector('[data-robin-heard]').hidden = false;
+    heard.add(key);
+    updateTimeline();
+    updateDebrief();
+  });
+  for (const jump of card.querySelectorAll('[data-robin-jump]')) {
+    jump.addEventListener('click', () => fdBedsideFocus(part('timeline')));
+  }
+  part('back').addEventListener('click', () => fdBedsideFocus(lastQuestion || questions[0]));
+  part('assessment').addEventListener('change', clearAssessment);
+  part('assessment').addEventListener('submit', event => {
+    event.preventDefault();
+    const choice = part('assessment').querySelector('input:checked');
+    if (!choice || choice.value !== version) {
+      part('reading-feedback').textContent = choice ? 'Read Robin’s baseline and timing answers together. What was already true on the day of the first dose?' : 'Choose the account you would present on rounds.';
+      return;
+    }
+    part('reading-feedback').textContent = '';
+    part('results').hidden = false;
+    updateDebrief();
+    fdBedsideFocus(part('debrief'));
+  });
+  part('plan').addEventListener('change', clearPlan);
+  part('plan').addEventListener('submit', event => {
+    event.preventDefault();
+    const choice = part('plan').querySelector('input:checked');
+    if (!choice) {
+      part('plan-feedback').textContent = 'Choose the next step you want the team to take.';
+      return;
+    }
+    part('plan-feedback').textContent = '';
+    nextStep = choice.value;
+    updateHandoff();
+    fdBedsideFocus(part('handoff'));
+  });
+  part('replay').addEventListener('click', () => {
+    version = version === 'before' ? 'after' : 'before';
+    reset();
+    fdBedsideFocus(part('title'));
+  });
+  reset();
 }
 
 function fdMountFollowupStudy(body) {
