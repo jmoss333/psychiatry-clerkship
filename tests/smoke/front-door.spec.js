@@ -2588,7 +2588,13 @@ test.describe('Interactive readings', () => {
     const section = page.locator('.fd-guide-section').filter({has: page.locator(':scope > #guide-working-with-interpreters')});
     const card = section.locator('#elena-visit');
     await expect(card.getByRole('heading', {name:'Who gets the next turn?'})).toBeVisible();
-    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Working with interpreters');
+    const pointers = section.locator(':scope > #guide-working-with-interpreters + ul');
+    await expect(pointers.getByRole('listitem')).toHaveCount(4);
+    await expect(pointers).toContainText('Offer natural eye contact');
+    await expect(pointers).toContainText('one question at a time');
+    await expect(pointers).toContainText('let the interpreter finish');
+    await expect(pointers).toContainText('What are you expecting to happen tonight?');
+    await expect(section.locator(':scope > ul + #elena-visit')).toBeVisible();
     await expect(page.locator('#cultural-chart').locator('..')).toContainText('Religion, spirituality & community');
     const art = card.getByRole('img');
     await art.scrollIntoViewIfNeeded();

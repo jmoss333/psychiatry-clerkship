@@ -12,7 +12,12 @@
 
 **Disparities & bias — what's tested and true** — Mental-health disparities in care are driven largely by access, stigma, social determinants, and clinician bias. Some groups do have higher rates of certain disorders — for example, psychotic disorders are about twice as common among migrants and some ethnic-minority groups in Europe — but because the excess persists into the second generation and varies by host country, it points to social adversity and exclusion rather than inherent biological difference. A classic, exam-relevant example: **Black (and some other minority) patients are disproportionately *over*-diagnosed with schizophrenia and *under*-diagnosed with mood disorders** relative to comparable presentations. Social determinants — poverty, housing, trauma, discrimination — are core clinical data, not background. Structural and cultural humility means examining how the *system* and *your own defaults* contribute.
 
-**Working with interpreters** — Use a **trained professional interpreter** (in person or via phone/video) for any language barrier — **not family members or children**, who introduce error and confidentiality/role problems. Speak **to the patient** in the first and second person, in short segments; allow extra time; and remember interpreters convey meaning, not just words.
+**Working with interpreters** — Arrange a **trained professional interpreter** in person, by video, or by phone. Leave interpreting to the professional so family members, including children, can stay in their family roles and the patient can speak privately. Allow extra time for the visit.
+
+- **Face the patient.** Speak directly to them using “I” and “you.” Stay turned toward them while the interpreter speaks. Offer natural eye contact and follow the patient’s lead about how much feels comfortable.
+- **Slow the pace.** Use your usual volume and everyday words. Share one short thought or ask one question at a time. “How did you sleep last night?” is enough for one turn.
+- **Leave room for the answer.** Pause after each complete thought. Give the patient time to think, and let the interpreter finish conveying the whole reply before you ask another question.
+- **Check how you explained the plan.** Try “I want to make sure I explained this clearly. What are you expecting to happen tonight?” Listen for anything you can clarify.
 
 <section id="elena-visit" class="bedside-case visual-practice" aria-labelledby="ei-title">
 <header><h3 id="ei-title">Who gets the next turn?</h3>
