@@ -4,6 +4,7 @@ function fdMountBedsideCases(body) {
   fdMountFeverExams(body);
   fdMountJoCall(body);
   fdMountLeeTimeline(body);
+  fdMountNightSignout(body);
   fdMountCoachLine(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
@@ -661,6 +662,79 @@ function fdMountLeeTimeline(body) {
   });
 }
 
+
+function fdMountNightSignout(body) {
+  const card = body.querySelector('#night-signout');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const find = selector => card.querySelector(selector);
+  const bank = find('[data-ns-bank]').content;
+  const buttons = Array.from(card.querySelectorAll('[data-pick]'));
+  const order = buttons.map(button => button.dataset.pick);
+  const selected = new Set();
+  const slip = find('#ns-slip-label'), openingLabel = slip.textContent;
+  const speaker = find('#ns-resident-label'), residentLabel = speaker.textContent;
+  const question = find('#ns-question'), status = find('#ns-status');
+  let sent = false;
+  const firstGap = () => order.find(key => !selected.has(key));
+  const fact = key => bank.querySelector('[data-fact="' + key + '"]');
+  const label = key => bank.querySelector('[data-ns-' + key + ']').textContent;
+
+  function render() {
+    const included = order.filter(key => selected.has(key));
+    const list = find('#ns-card');
+    list.replaceChildren(...included.map(key => fact(key).cloneNode(true)));
+    list.hidden = !included.length;
+    slip.textContent = sent ? label('sent') : included.length ? label('draft') : openingLabel;
+    for (const button of buttons) {
+      const isIncluded = selected.has(button.dataset.pick);
+      button.setAttribute('aria-pressed', String(isIncluded));
+      find('#' + button.getAttribute('aria-controls')).hidden = !isIncluded;
+    }
+    find('#ns-compose').hidden = sent;
+    find('#ns-received').hidden = !sent;
+    const missing = firstGap();
+    speaker.textContent = missing ? residentLabel : label('readback');
+    question.dataset.missing = sent && missing ? missing : 'none';
+    question.textContent = sent ? bank.querySelector('[data-heard="' + (included.join('-') || 'none') + '"]').textContent : '';
+    find('#ns-repair').hidden = !missing;
+    if (missing) find('#ns-clarify').textContent = fact(missing).dataset.clarify;
+  }
+
+  function receive(newFact) {
+    sent = true;
+    render();
+    status.textContent = [newFact, question.textContent].filter(Boolean).join(' ');
+    find(firstGap() ? '#ns-clarify' : '#ns-edit').focus({preventScroll:true});
+    find('.ns-reader').scrollIntoView({block:'nearest'});
+  }
+
+  function edit(reset) {
+    if (reset) selected.clear();
+    sent = false;
+    render();
+    status.textContent = label(reset ? 'restarted' : 'editing');
+    fdBedsideFocus(buttons[0]);
+  }
+
+  for (const button of buttons) button.addEventListener('click', () => {
+    const key = button.dataset.pick;
+    if (selected.has(key)) selected.delete(key);
+    else selected.add(key);
+    render();
+    status.textContent = selected.has(key) ? find('#' + button.getAttribute('aria-controls')).textContent : label('removed');
+  });
+  find('#ns-send').addEventListener('click', () => receive(''));
+  find('#ns-clarify').addEventListener('click', () => {
+    const key = firstGap();
+    if (!sent || !key) return;
+    selected.add(key);
+    receive(fact(key).querySelector('dd').textContent);
+  });
+  find('#ns-edit').addEventListener('click', () => edit(false));
+  find('#ns-reset').addEventListener('click', () => edit(true));
+}
 
 function fdMountCoachLine(body) {
   const card = body.querySelector('#coach-line');

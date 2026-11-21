@@ -2592,6 +2592,72 @@ test.describe('Interactive readings', () => {
     return activity;
   }
 
+  test('Sam’s night sign-out changes the receiving resident’s reply with each handoff detail', async ({ page }) => {
+    await page.goto('/?page=doc_oral.md&guideSection=handoff-template');
+    const section = page.locator('.fd-article__body section').filter({
+      has: page.locator(':scope > #guide-handoff-template'),
+    });
+    const template = section.locator('blockquote').filter({ hasText: 'If [trigger], do [plan]' });
+    const activity = section.locator('#night-signout');
+    await expect(template.locator('xpath=following-sibling::*[1][@id="night-signout"]')).toBeVisible();
+    await expect(activity.getByRole('heading', { name: 'Can the night team act on this?' })).toBeVisible();
+    const send = activity.getByRole('button', { name: 'Hand over to the night resident' });
+    const reset = activity.getByRole('button', { name: 'Start over' });
+    const question = activity.locator('#ns-question');
+    const card = activity.locator('#ns-card dd');
+    const details = {
+      wish: ['What did Sam ask for?', 'Privacy during the call and a check-in afterward.'],
+      time: ['When is the call?', 'Sam’s sister plans to call around seven tonight.'],
+      owner: ['Who agreed to check in?', 'Maya, Sam’s evening nurse, agreed to take the check-in.'],
+    };
+    const pick = key => activity.getByRole('button', { name: details[key][0], exact: true });
+    const expectCard = keys => expect(card).toHaveText(keys.map(key => details[key][1]));
+    const readback = 'So, their sister’s calling around seven. Sam wants to take it alone, and Maya will check in afterward. Have I got that right?';
+    const cases = [
+      [[], 'What did Sam ask us to do around the call?'],
+      [['wish'], 'I’ll give Sam some privacy. About what time is their sister calling?'],
+      [['time'], 'I’ve got the time. Does Sam want me there for the call, or would they rather I stop by afterward?'],
+      [['owner'], 'Maya has the check-in. What did Sam say would help them around the call?'],
+      [['wish', 'time'], 'Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?'],
+      [['wish', 'owner'], 'Maya’s checking in afterward. When is Sam expecting their sister to call?'],
+      [['time', 'owner'], 'I’ve got the time, and Maya has the check-in. Does Sam want company during the call, or would they rather talk afterward?'],
+      [['wish', 'time', 'owner'], readback],
+    ];
+    for (const [selected, reply] of cases) {
+      for (const key of selected) await pick(key).click();
+      await expectCard(selected);
+      await send.click();
+      await expect(question).toBeVisible();
+      await expect(question).toContainText(reply);
+      await expectCard(selected);
+      await reset.click();
+      await expectCard([]);
+      await expect(activity.locator('[aria-pressed=true]')).toHaveCount(0);
+      await expect(question).toBeEmpty();
+    }
+
+    await send.press('Enter');
+    await activity.getByRole('button', { name: 'Ask what Sam wants' }).click();
+    await expectCard(['wish']);
+    await expect(question).toContainText('About what time is their sister calling?');
+    await activity.getByRole('button', { name: 'Check the time of the call' }).click();
+    await expectCard(['wish', 'time']);
+    await expect(question).toContainText('Who’s agreed to check in with them afterward?');
+    await activity.getByRole('button', { name: 'Find out who agreed to check in' }).click();
+    await expectCard(['wish', 'time', 'owner']);
+    await expect(question).toContainText(readback);
+    await expect(activity.locator('#ns-clarify')).toBeHidden();
+    await activity.getByRole('button', { name: 'Edit handoff' }).click();
+    await expect(question).toBeEmpty();
+    await expectCard(['wish', 'time', 'owner']);
+    await pick('time').click();
+    await expectCard(['wish', 'owner']);
+    await expect(activity.locator('#ns-source-time')).toBeHidden();
+    await send.click();
+    await expect(question).toContainText('When is Sam expecting their sister to call?');
+    await expect(question).not.toContainText('around seven');
+  });
+
   test('Quieter on the unit compares the same functional goal across both shifts', async ({ page }) => {
     await page.goto('/?page=exp_tx.md&guideSection=how-to-present-a-treatment-rationale');
     const card = page.locator('.fd-article__body #quieter-on-unit');
