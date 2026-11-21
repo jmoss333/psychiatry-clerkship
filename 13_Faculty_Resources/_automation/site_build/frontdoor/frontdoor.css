@@ -3592,14 +3592,15 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #nico-interview .ni-label{margin:0;color:var(--fd-olive-deep);letter-spacing:.045em;text-transform:uppercase}
 #nico-interview .ni-setting{margin:var(--fd-space-3) 0 var(--fd-space-5);color:var(--fd-text-mid)}
 #nico-interview .ni-board{--ni-nico:color-mix(in srgb,var(--fd-on-accent) 78%,var(--fd-olive));max-width:32em;padding:var(--fd-space-6);margin:0;border-radius:var(--fd-radius-sm);background:var(--fd-teal-deep);color:var(--fd-on-accent)}
-#nico-interview figcaption{margin:0;text-align:start;color:inherit;font:600 1.1em/1.25 'Source Serif 4',Georgia,serif}
-#nico-interview .ni-map{display:block;width:100%;height:4.6em}
+#nico-interview figcaption{margin:0;text-align:start;color:inherit;font-family:'Source Serif 4',Georgia,serif;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1));font-weight:600;line-height:1.25}
+#nico-interview .ni-drawing{position:relative;padding-top:var(--fd-space-5)}
+#nico-interview .ni-map{display:block;width:100%;height:auto;aspect-ratio:300 / 64}
+#nico-interview #ni-map-cue{position:absolute;left:73.7%;top:0;transform:translateX(-50%);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));white-space:nowrap}
 #nico-interview .ni-map .guide{stroke:currentColor;opacity:.42;stroke-width:1;stroke-dasharray:1 5}
 #nico-interview .ni-map .thread{stroke:var(--ni-nico);stroke-width:2.7;fill:none;stroke-linecap:round}
 #nico-interview .ni-map :is(path,circle){vector-effect:non-scaling-stroke}
 #nico-interview .ni-map .you{stroke:currentColor;stroke-width:2.4;fill:var(--fd-teal-deep)}
 #nico-interview .ni-map .person{fill:var(--ni-nico)}
-#nico-interview .ni-map text{fill:currentColor}
 #nico-interview .ni-map text{font:12px system-ui,sans-serif}
 #nico-interview .ni-map .unknown{stroke:currentColor;stroke-dasharray:3 3;fill:none}
 #nico-interview .ni-stops{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--fd-space-2)}

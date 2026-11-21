@@ -195,6 +195,7 @@ Example:
   </header>
   <figure class="ni-board">
     <figcaption>The conversation so far</figcaption>
+    <div class="ni-drawing">
     <svg class="ni-map" viewBox="0 0 300 64" preserveAspectRatio="none" role="img" aria-labelledby="ni-map-title">
       <title id="ni-map-title">You ask about the trip. Nico talks about the van deposit. The next turn is open.</title>
       <path class="guide" d="M15 46 H284" fill="none"/>
@@ -203,9 +204,10 @@ Example:
       <path class="you" d="M15 39 l7 7 -7 7 -7 -7 Z"/>
       <circle class="person" cx="146" cy="14" r="5"/>
       <path id="ni-redirect" class="you" d="M215 26 l6 6 -6 6 -6 -6 Z" hidden></path>
-      <text id="ni-map-cue" x="221" y="17" text-anchor="middle"></text>
       <circle id="ni-terminal" class="unknown" cx="284" cy="46" r="6"/>
     </svg>
+    <span id="ni-map-cue" aria-hidden="true"></span>
+    </div>
     <div class="ni-stops" aria-hidden="true"><span>Trip to the ED</span><span>Van deposit</span><span id="ni-end-label">Next turn?</span></div>
     <div class="ni-legend"><span><i class="ni-symbol you" aria-hidden="true"></i>You speak</span><span><i class="ni-symbol person" aria-hidden="true"></i>Nico speaks</span></div>
   </figure>
