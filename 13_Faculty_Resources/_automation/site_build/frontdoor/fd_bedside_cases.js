@@ -6,6 +6,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
+  fdMountFollowupStudy(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountPerinatalComparison(body);
@@ -388,6 +389,64 @@ function fdMountRaeReturnVisit(body) {
       ? nextStep + ' ' + copy(morning, 'history')
       : copy(morning, 'progress') + ' ' + nextStep;
     sample.textContent = '“' + report + '”';
+  });
+}
+
+function fdMountFollowupStudy(body) {
+  const card = body.querySelector('#study-denominators');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const all = selector => Array.from(card.querySelectorAll(selector));
+  const group = attribute => all('[data-study-' + attribute + ']');
+  const controls = card.querySelector('[data-study-controls]');
+  const result = card.querySelector('[data-study-result]');
+  const debrief = card.querySelector('[data-study-debrief]');
+  function mark(buttons, choice) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === choice));
+  }
+  function showView(view) {
+    for (const count of group('count')) count.hidden = view === 'rate';
+    for (const rate of group('rate')) rate.hidden = view !== 'rate';
+    card.querySelector('#study-scale').hidden = view !== 'rate';
+    mark(group('view'), card.querySelector('[data-study-view="' + view + '"]'));
+  }
+  function clearClaim() {
+    mark(group('claim'), null);
+    debrief.hidden = true;
+    for (const detail of debrief.querySelectorAll('details[open]')) detail.open = false;
+    for (const reply of group('reply')) reply.hidden = true;
+  }
+  for (const button of group('view')) {
+    button.addEventListener('click', () => showView(button.dataset.studyView));
+  }
+  for (const button of group('pick')) {
+    button.addEventListener('click', () => {
+      mark(group('pick'), button);
+      clearClaim();
+      for (const reply of group('answer')) reply.hidden = reply.dataset.studyAnswer !== button.dataset.studyPick;
+      for (const denominator of group('total')) denominator.hidden = false;
+      controls.hidden = result.hidden = false;
+      showView('rate');
+      fdBedsideFocus(card.querySelector('.study-plot'));
+    });
+  }
+  for (const button of group('claim')) {
+    button.addEventListener('click', () => {
+      clearClaim();
+      mark(group('claim'), button);
+      card.querySelector('[data-study-reply="' + button.dataset.studyClaim + '"]').hidden = false;
+      debrief.hidden = false;
+      fdBedsideFocus(debrief);
+    });
+  }
+  card.querySelector('[data-study-reset]').addEventListener('click', () => {
+    clearClaim();
+    result.hidden = controls.hidden = true;
+    for (const denominator of group('total')) denominator.hidden = true;
+    for (const reply of group('answer')) reply.hidden = true;
+    mark(group('pick'), null);
+    showView('count');
+    fdBedsideFocus(group('pick')[0]);
   });
 }
 

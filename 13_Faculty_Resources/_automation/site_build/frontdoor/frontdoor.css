@@ -3427,6 +3427,22 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
 /* Learners can choose the room feature, observation frame, chart or source itself. */
+/* Observed outcomes in two groups, shown as original counts or on a shared scale. */
+#study-denominators .study-plot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-block:1px solid var(--fd-line-strong);background:var(--fd-surface-warm)}
+#study-denominators .study-plot>div{display:flex;flex-direction:column;justify-content:space-between;padding:var(--fd-space-6);min-width:0}
+#study-denominators .study-plot>div+div{border-inline-start:1px solid var(--fd-line-strong)}
+#study-denominators .study-plot strong{display:block;margin-block:var(--fd-space-3);font:600 calc(var(--fd-font-2xl)*var(--fd-reading-scale,1))/1.1 Georgia,serif;color:var(--fd-teal-deep)}
+#study-denominators .study-plot meter{display:block;width:100%;height:.85em;margin-block-start:var(--fd-space-3);accent-color:var(--fd-teal)}
+#study-denominators .study-plot meter::-webkit-meter-optimum-value{background:var(--fd-teal)}
+#study-denominators .study-plot meter::-moz-meter-bar{background:var(--fd-teal)}
+#study-scale{grid-column:1/-1;padding:var(--fd-space-3) var(--fd-space-6);border-block-start:1px solid var(--fd-line);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));color:var(--fd-text-mid)}
+#study-denominators .study-claim,#study-denominators [data-study-reset]{margin-block-start:var(--fd-space-7)}
+#study-denominators .case-choices{margin-block:var(--fd-space-4)}
+#study-denominators [hidden]{display:none}
+@media(max-width:36rem){
+  #study-denominators .study-plot{grid-template-columns:1fr}
+  #study-denominators .study-plot>div+div{border-inline-start:0;border-block-start:1px solid var(--fd-line-strong)}
+}
 .visual-practice{display:grid;gap:var(--fd-space-6)}
 .visual-practice>header{gap:var(--fd-space-3)}
 .visual-practice .vp-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-5);align-items:start}

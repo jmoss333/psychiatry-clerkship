@@ -2898,6 +2898,53 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  test('follow-up study changes the denominator and separates cohort findings from individual decisions', async ({ page }) => {
+    const card = await openActivity(page, 'evidence_inpatient.md', 'study-denominators', 'Follow-Up Interventions and Collaborative Care');
+    const text = (label) => card.locator('[data-study-' + label + ']');
+    const choose = (name, value) => card.locator('[data-study-' + name + '="' + value + '"]').press('Enter');
+    const scale = card.getByRole('group', { name: 'Chart view' });
+    const study = card.getByRole('link', { name: 'Read the 2018 study in JAMA Psychiatry' });
+    await expect(text('count').first()).toContainText('36');
+    await expect(text('total').first()).toBeHidden();
+    await expect(text('result')).toBeHidden();
+    for (const guess of ['more', 'same', 'base']) {
+      await choose('pick', guess);
+      await expect(card.locator('[data-study-answer]:visible')).toHaveAttribute('data-study-answer', guess);
+      await expect(text('rate').nth(0)).toContainText('30');
+      await expect(text('rate').nth(1)).toContainText('53');
+      await expect(card.locator('.study-plot')).toBeFocused();
+      await expect(text('debrief')).toBeHidden();
+    }
+    await scale.getByRole('button', { name: 'Original groups' }).click();
+    await expect(text('total').nth(0)).toHaveText('out of 1,186');
+    await expect(text('total').nth(1)).toHaveText('out of 454');
+    await expect(text('rate').first()).toBeHidden();
+    await scale.getByRole('button', { name: 'Per 1,000 patients' }).click();
+    await expect(card.getByRole('meter').first()).toBeVisible();
+    for (const claim of ['individual', 'call', 'cohort']) {
+      await choose('claim', claim);
+      await expect(card.locator('[data-study-reply]:visible')).toHaveAttribute('data-study-reply', claim);
+      await expect(text('debrief')).toBeFocused();
+      await expect(study).toBeHidden();
+      await text('debrief').getByText('Check the primary study', { exact: true }).press('Enter');
+      await expect(study).toHaveAttribute('href','https://pubmed.ncbi.nlm.nih.gov/29998307/');
+    }
+    await text('reset').click();
+    await expect(text('controls')).toBeHidden();
+    await expect(text('total').first()).toBeHidden();
+    await expect(text('result')).toBeHidden();
+    await expect(text('pick').first()).toBeFocused();
+  });
+
+  test('first evening link opens Leah’s discharge rehearsal', async ({ page }) => {
+    await page.goto('/?page=suicide.md');
+    const link = page.getByRole('link', { name: 'Rehearse the first evening home with Leah' });
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page.getByRole('tabpanel')).toContainText('Make the safety plan usable at home');
+    await expect(page.getByRole('tab', { selected: true })).toBeVisible();
+  });
+
   test('perinatal accounts answer the same questions with distinct safety assessments', async ({ page }) => {
     const activity = await openActivity(page, 't_perinatal.md', 'vp-perinatal', 'Initial workup');
     await expect(activity.locator('.vp-safety')).toBeVisible();
