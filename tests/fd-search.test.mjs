@@ -902,6 +902,20 @@ const ELEVEN_MATCH_REFS = [
   'quasar-06.md', 'quasar-07.md', 'quasar-08.md', 'quasar-09.md', 'quasar-10.md', 'quasar-11.md',
 ];
 
+test('returning to a search retains its original rows across later reranking', () => {
+  const index = overflowIndex(11);
+  const original = F.fdSearchResults(index, 'quasar', {}, { searchExpanded: true });
+  const searchReturn = { query: 'quasar', matches: original };
+  for (const ref of ELEVEN_MATCH_REFS.slice(8)) index.byRef[ref].searchAliases = ['quasar'];
+  const refs = state => F.fdSearchResults(index, 'quasar', {}, state).map(row => row.item.ref);
+  assert.ok(!refs({}).includes('quasar-08.md'), 'the former eighth row now falls outside the live top eight');
+  assert.deepEqual(refs({ searchRestored: true, searchReturn }), ELEVEN_MATCH_REFS.slice(0, 8));
+  assert.deepEqual(refs({ searchRestored: true, searchReturn, searchExpanded: true }), ELEVEN_MATCH_REFS);
+  assert.deepEqual(refs({ searchRestored: false, searchReturn }), refs({}), 'a new search uses current ranking');
+  assert.deepEqual(F.fdSearchResults(index, 'absent', {}, { searchRestored: true, searchReturn }), [],
+    'a different query cannot reuse the old matches');
+});
+
 test('Show all matches exposes every match in ranked order while the default remains eight', () => {
   const index = overflowIndex(11);
   const refs = (state) => F.fdSearchResults(index, 'quasar', {}, state).map((row) => row.item.ref);

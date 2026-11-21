@@ -402,6 +402,12 @@ function fdSearchNextUnread(index, state){
 }
 
 function fdSearchMatches(index, query, synonyms, state){
+  /* Return to the list the learner opened, even if page text finished loading
+     while they were reading. Editing or opening a new search uses the live index. */
+  var saved=state&&state.searchReturn;
+  if(state&&state.searchRestored&&saved&&saved.query===String(query||'')&&Array.isArray(saved.matches)){
+    return saved.matches;
+  }
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var kit=idx.kit||[];
   var typedQuery=String(query||'').trim().toLowerCase();

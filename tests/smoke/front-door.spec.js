@@ -78,6 +78,172 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test.describe('Back to search results on a touch phone', () => {
+  test.use({ viewport: PHONE, hasTouch: true });
+
+  async function expandedSearch(page, testInfo) {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    // Settle the real index before taking a result-list snapshot; delayed hydration has its
+    // own regression below and must not make this navigation assertion depend on timing.
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    await search.getByRole('textbox', { name: 'Search resources', exact: true }).fill('treatment');
+    await search.getByRole('button', { name: 'Show all matches', exact: true }).tap();
+    await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveAttribute('aria-expanded', 'true');
+    expect(await search.locator('.fd-result').count()).toBeGreaterThan(8);
+    return search;
+  }
+
+  async function resultIdentity(search) {
+    return search.locator('.fd-result').evaluateAll(rows => rows.map(row => ({
+      action: row.hasAttribute('data-fd-safety') ? 'safety' : 'open',
+      ref: row.getAttribute('data-fd-safety') || row.getAttribute('data-fd-open') || row.getAttribute('href'),
+    })));
+  }
+
+  async function expectResultDestination(page, ref) {
+    const urlKey = ref.endsWith('.md') ? 'page' : 'tool';
+    await expect.poll(() => new URL(page.url()).searchParams.get(urlKey)).toBe(ref);
+    if (urlKey === 'page') {
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+      await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+    } else {
+      const frame = page.locator('iframe.toolframe');
+      await expect(frame).toBeVisible();
+      expect(new URL(await frame.getAttribute('src'), page.url()).pathname).toBe(`/tools/${ref}`);
+      await expect(page.frameLocator('iframe.toolframe').getByRole('heading', { name: 'Your 60-second update' })).toBeVisible();
+    }
+  }
+
+  for (const firstKind of ['reading', 'tool']) {
+    test(`${firstKind}: keeps query, expanded rows, selected action and scroll before opening another result`, async ({ page }, testInfo) => {
+      const search = await expandedSearch(page, testInfo);
+      const body = search.locator('.fd-searchpanel__body');
+      const reading = search.locator('.fd-result[data-fd-open$=".md"]').last();
+      const tool = search.locator('.fd-result[data-fd-open="oral.html"]');
+      const first = firstKind === 'reading' ? reading : tool;
+      const second = firstKind === 'reading' ? tool : reading;
+      const firstRef = await first.getAttribute('data-fd-open');
+      const secondRef = await second.getAttribute('data-fd-open');
+      expect(firstRef).not.toBe(secondRef);
+      const rows = await resultIdentity(search);
+      await first.scrollIntoViewIfNeeded();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      const scrollTop = await body.evaluate(el => el.scrollTop);
+      expect(scrollTop, 'the first result is reached by scrolling the expanded list').toBeGreaterThan(100);
+      await first.tap();
+      await expect(search).toHaveCount(0);
+      await expectResultDestination(page, firstRef);
+
+      const back = page.getByRole('button', { name: 'Back to search results', exact: true });
+      await expect(back).toBeVisible();
+      await back.tap();
+      await expect(search).toBeVisible();
+      await expect(search.getByRole('textbox', { name: 'Search resources', exact: true })).toHaveValue('treatment');
+      await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveAttribute('aria-expanded', 'true');
+      expect(await resultIdentity(search)).toEqual(rows);
+      await expect(first).toBeFocused();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      await expect.poll(async () => Math.abs(await body.evaluate(el => el.scrollTop) - scrollTop)).toBeLessThanOrEqual(2);
+      await second.tap();
+      await expect(search).toHaveCount(0);
+      await expectResultDestination(page, secondRef);
+      await expectHealthy(page);
+    });
+  }
+
+  test('a delayed text index preserves the collapsed return list until the query is edited', async ({ page }, testInfo) => {
+    const releaseIndex = await delaySearchIndex(page);
+    try {
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=library');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      const body = search.locator('.fd-searchpanel__body');
+      await input.fill('treatment');
+      await expect(search.locator('.fd-result')).toHaveCount(8);
+      await expect(search.getByRole('button', { name: 'Show all matches', exact: true })).toHaveAttribute('aria-expanded', 'false');
+      const rows = await resultIdentity(search);
+      const summary = await body.getAttribute('aria-label');
+      const selected = search.locator('.fd-result[data-fd-open$=".md"]').last();
+      const ref = await selected.getAttribute('data-fd-open');
+      await selected.scrollIntoViewIfNeeded();
+      const scrollTop = await body.evaluate(el => el.scrollTop);
+      await selected.tap();
+      await expect(search).toHaveCount(0);
+      await expectResultDestination(page, ref);
+
+      releaseIndex();
+      await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+      await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+      await expect(input).toHaveValue('treatment');
+      await expect(search.getByRole('button', { name: 'Show all matches', exact: true })).toHaveAttribute('aria-expanded', 'false');
+      await expect(body).toHaveAttribute('aria-label', summary);
+      expect(await resultIdentity(search)).toEqual(rows);
+      await expect(selected).toBeFocused();
+      await expect(selected).toBeInViewport({ ratio: 1 });
+      await expect.poll(async () => Math.abs(await body.evaluate(el => el.scrollTop) - scrollTop)).toBeLessThanOrEqual(2);
+
+      // Editing the same term releases the snapshot. The now-loaded real index contributes
+      // page-text matches, which could not appear while its response was held above.
+      await input.fill('treatment ');
+      await search.getByRole('button', { name: 'Show all matches', exact: true }).tap();
+      await expect(search.locator('.fd-result__meta').filter({ hasText: 'mentioned in the text' }).first()).toBeVisible();
+      await expectHealthy(page);
+    } finally {
+      releaseIndex();
+    }
+  });
+
+  test('safety result and its full page return to the search row before opening another reading', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('suicide');
+    const row = search.locator('.fd-result[data-fd-safety="pg_suicide.md"]');
+    await expect(row).toBeVisible();
+    await row.tap();
+    await expect(search).toHaveCount(0);
+    const safety = page.locator('.fd-sheet[role="dialog"]');
+    await expect(safety).toBeVisible();
+    await safety.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(safety).toHaveCount(0);
+    await expect(input).toHaveValue('suicide');
+    await expect(row).toBeFocused();
+    await row.tap();
+    await safety.getByRole('button', { name: 'Open the full page →', exact: true }).tap();
+    await expect(safety).toHaveCount(0);
+    await expectResultDestination(page, 'pg_suicide.md');
+    await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(input).toHaveValue('suicide');
+    await expect(row).toBeFocused();
+    const reading = search.locator('.fd-result[data-fd-open$=".md"]').first();
+    const ref = await reading.getAttribute('data-fd-open');
+    await reading.tap();
+    await expect(search).toHaveCount(0);
+    await expectResultDestination(page, ref);
+    await expectHealthy(page);
+  });
+
+  test('a reader opened directly keeps its ordinary return control', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo, { state: { tab: 'library', fromTab: 'library' } });
+    await page.goto('/?page=t_mood.md');
+    await expectResultDestination(page, 't_mood.md');
+    await expect(page.getByRole('button', { name: 'Back to search results', exact: true })).toHaveCount(0);
+    const back = page.locator('.fd-reader__back[data-fd-back]');
+    await expect(back).toBeVisible();
+    await back.tap();
+    await expect(page.locator('.fd-library')).toBeVisible();
+    await expectHealthy(page);
+  });
+});
+
 test('search recovery edits and browses with usable targets at phone and desktop widths', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
