@@ -611,8 +611,9 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustra
                os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Personality", "illustrations", "personality-conversation.webp"),
                os.path.join(OUT, "illustrations", "personality-conversation.webp"), _missing_req)
-_copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", "cultural-chart.webp"),
-               os.path.join(OUT, "illustrations", "cultural-chart.webp"), _missing_req)
+for scene in ("cultural-chart.webp", "elena-interpreter.avif"):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
                os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
 for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),

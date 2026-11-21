@@ -15,6 +15,7 @@ function fdMountBedsideCases(body) {
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
+  fdMountElenaVisit(body);
 }
 
 /* Each reading owns its timeline, patient dialogue and ordered debrief rules. */
@@ -309,6 +310,90 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountElenaVisit(body) {
+  const card = body.querySelector('#elena-visit');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const find = selector => card.querySelector(selector);
+  const openings = card.querySelectorAll('[data-ei-opening]');
+  const questions = card.querySelectorAll('[data-ei-question]');
+  const crop = find('.ei-crop'), art = crop.querySelector('img'), initialAlt = art.alt;
+  const exchange = find('#ei-exchange'), speaker = find('#ei-speaker'), line = find('#ei-line');
+  const next = find('#ei-next'), nextLabel = next.textContent, followup = find('#ei-followup');
+  const reply = find('#ei-reply'), rounds = find('#ei-rounds'), note = find('#ei-note');
+  const status = find('#ei-status');
+  let turns = [], position = 0;
+
+  function select(buttons, selected) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === selected));
+  }
+
+  function clearReply() {
+    select(questions, null);
+    reply.hidden = true;
+    rounds.open = false;
+    find('#ei-answer').textContent = note.textContent = '';
+  }
+
+  function renderTurn() {
+    const turn = turns[position];
+    const last = position === turns.length - 1;
+    crop.dataset.view = turn.dataset.view;
+    art.alt = art.dataset[turn.dataset.view];
+    speaker.textContent = turn.dataset.speaker;
+    line.textContent = turn.textContent;
+    line.lang = turn.lang || 'en';
+    find('#ei-count').textContent = (position + 1) + ' of ' + turns.length;
+    next.textContent = turn.hasAttribute('data-repair') ? next.dataset.repair : nextLabel;
+    next.hidden = last;
+    exchange.hidden = false;
+    followup.hidden = !last;
+    status.textContent = speaker.textContent + '. ' + line.textContent;
+    if (last) find('#ei-follow-title').focus({preventScroll:true});
+  }
+
+  for (const button of openings) button.addEventListener('click', () => {
+    const path = find('template[data-ei-path="' + button.dataset.eiOpening + '"]').content;
+    turns = [...path.children, find('[data-ei-last]').content.firstElementChild];
+    position = 0;
+    select(openings, button);
+    clearReply();
+    renderTurn();
+    next.focus({preventScroll:true});
+    exchange.scrollIntoView({block:'nearest'});
+  });
+
+  next.addEventListener('click', () => {
+    if (position + 1 < turns.length) {
+      position++;
+      renderTurn();
+    }
+  });
+
+  for (const button of questions) button.addEventListener('click', () => {
+    const answer = find('template[data-ei-answer="' + button.dataset.eiQuestion + '"]').content;
+    select(questions, button);
+    rounds.open = false;
+    find('#ei-answer').textContent = answer.querySelector('blockquote').textContent;
+    note.textContent = answer.querySelector('p').textContent;
+    reply.hidden = false;
+    status.textContent = find('#ei-answer').textContent;
+  });
+
+  find('#ei-reset').addEventListener('click', () => {
+    turns = [];
+    position = 0;
+    select(openings, null);
+    clearReply();
+    exchange.hidden = followup.hidden = true;
+    crop.dataset.view = 'direct';
+    art.alt = initialAlt;
+    speaker.textContent = line.textContent = status.textContent = '';
+    fdBedsideFocus(openings[0]);
+  });
 }
 
 function fdMountRaeReturnVisit(body) {

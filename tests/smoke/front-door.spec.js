@@ -2797,6 +2797,73 @@ test.describe('Interactive readings', () => {
     await seedApp(page, info);
   });
 
+  test('Elena’s interpreted visit connects both openings and the repair to the selected clinical follow-up', async ({ page }) => {
+    await page.goto('/?page=cultural_psychiatry.md&guideSection=working-with-interpreters');
+    const section = page.locator('.fd-guide-section').filter({has: page.locator(':scope > #guide-working-with-interpreters')});
+    const card = section.locator('#elena-visit');
+    await expect(card.getByRole('heading', {name:'Who gets the next turn?'})).toBeVisible();
+    const pointers = section.locator(':scope > #guide-working-with-interpreters + ul');
+    await expect(pointers.getByRole('listitem')).toHaveCount(4);
+    await expect(pointers).toContainText('Offer natural eye contact');
+    await expect(pointers).toContainText('one question at a time');
+    await expect(pointers).toContainText('let the interpreter finish');
+    await expect(pointers).toContainText('What are you expecting to happen tonight?');
+    await expect(section.locator(':scope > ul + #elena-visit')).toBeVisible();
+    await expect(page.locator('#cultural-chart').locator('..')).toContainText('Religion, spirituality & community');
+    const art = card.getByRole('img');
+    await art.scrollIntoViewIfNeeded();
+    expect(await art.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+    const exchange = card.locator('#ei-exchange'), followup = card.locator('#ei-followup');
+    const reply = card.locator('#ei-reply'), note = card.locator('#ei-note');
+    const btn = name => card.getByRole('button', {name,exact:true});
+    const final = ['Elena · via interpreter','“I kept hearing this click. Then I’d be wide awake again.”','direct'];
+    const branches = [
+      [
+        ['You · to Sofía','“Can you ask her how last night went?”','relay'],
+        ['Elena · via interpreter','“Were you asking me?”','relay'],
+        ['You · to Elena','“Yes, Elena. I was asking you. How did last night go for you?”','direct'],
+        final
+      ], [
+        ['You · to Elena','“How did last night go for you?”','direct'],
+        ['Sofía · interpreting into Spanish','“¿Cómo le fue anoche?”','direct'],
+        final
+      ]
+    ];
+    const answers = [
+      ['“What did you notice when you heard it?”','“A strip of light came across the floor. I wondered if someone was checking on me. I didn’t know how nights worked here.”','Elena recalls light crossing the floor and wonders if someone was checking on her. I’d ask the night team about its routine and explain it to her with the interpreter.'],
+      ['“Were you already awake when you heard it?”','“At least once, yes. I was lying there waiting for it. The other times? I’m not sure which came first.”','Elena remembers already being awake before at least one click. She’s unsure of the order on the other occasions.']
+    ];
+    await expect(exchange).toBeHidden();
+    for (const turns of branches) {
+      await btn(turns[0][1]).click();
+      await expect(reply).toBeHidden();
+      await expect(note).toBeEmpty();
+      for (const [index, [speaker, words, frame]] of turns.entries()) {
+        await expect(card.locator('#ei-speaker')).toHaveText(speaker);
+        await expect(card.locator('#ei-line')).toHaveText(words);
+        await expect(card.locator('#ei-line')).toHaveAttribute('lang', words.includes('¿') ? 'es' : 'en');
+        await expect(art).toHaveCSS('object-position', frame === 'relay' ? '50% 0%' : '50% 100%');
+        if (index < turns.length - 1) {
+          await expect(followup).toBeHidden();
+          await btn(words === '“Were you asking me?”' ? 'Try a repair' : 'Hear the next turn').click();
+        }
+      }
+      await expect(followup).toBeVisible();
+      for (const [question, answer, sample] of answers) {
+        await btn(question).click();
+        await expect(card.locator('#ei-answer')).toHaveText(answer);
+        await expect(note).toBeHidden();
+        await card.locator('#ei-rounds summary').click();
+        await expect(note).toHaveText(sample);
+      }
+    }
+    await btn('Start over').click();
+    await expect(exchange).toBeHidden();
+    await expect(followup).toBeHidden();
+    await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+    await expect(btn(branches[0][0][1])).toBeFocused();
+  });
+
   async function openActivity(page, ref, id, heading) {
     await page.goto('/?page=' + ref);
     const activity = page.locator('.fd-article__body #' + id);
