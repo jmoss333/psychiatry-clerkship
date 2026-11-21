@@ -3812,3 +3812,79 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
 .noor-case summary{padding-block:var(--fd-space-4);font-weight:600}
 .noor-case footer{margin-top:var(--fd-space-5);font-size:calc(var(--fd-font-xs) * var(--fd-reading-scale,1))}
 @container noor (max-width:560px){.noor-case .nd-invitations{grid-template-columns:1fr}}
+
+/* Fever comparison within the Toxidromes reading. The visible exam buttons duplicate the image targets. */
+.fp-case .hero,.fp-case .handoff,.fp-case #fp-result{display:grid;gap:var(--fd-space-5)}
+.fp-case .eyeline,.fp-case .caption,.fp-case .empty,.fp-case .casefoot{color:var(--fd-text-mid);font-size:var(--fd-font-sm)}
+.fp-case .team,.fp-case .feedback{padding:var(--fd-space-6);border-left:3px solid var(--fd-olive);background:var(--fd-surface)}
+.fp-case .paper{margin-block:var(--fd-space-7);overflow:hidden;border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}
+.fp-case .names,.fp-case .findings,.fp-case .ranks,.fp-case #fp-prediction-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.fp-case .names{background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+.fp-case .names>div,.fp-case .findings>article,.fp-case .tools,.fp-case .empty{padding:var(--fd-space-5)}
+.fp-case .names strong,.fp-case .names small{display:block;color:inherit}
+.fp-case .examphoto{position:relative}.fp-case .examphoto img{width:100%;height:auto;display:block}
+.fp-case .spot{position:absolute;transform:translate(-50%,-50%);min-width:44px;min-height:44px;padding:0;text-align:center;border:0;background:transparent}
+.fp-case .spot:hover,.fp-case .spot[aria-pressed=true]{background:transparent;box-shadow:none}
+.fp-case .spot span{background:var(--fd-teal-deep);color:var(--fd-on-accent);border:1px solid var(--fd-on-accent);border-radius:99px;padding:.15em .55em;font-size:var(--fd-font-sm)}
+.fp-case .spot[aria-pressed=true] span{background:var(--fd-surface);color:var(--fd-teal-deep);border:2px solid var(--fd-teal-deep)}
+.fp-case .taye-arm{left:15%;top:48%}.fp-case .ana-arm{left:77%;top:50%}.fp-case .taye-ankle{left:26%;top:85%}.fp-case .ana-ankle{left:74%;top:85%}
+.fp-case .tools,.fp-case .actions,.fp-case .casefoot{display:flex;flex-wrap:wrap;align-items:center;gap:var(--fd-space-4)}
+.fp-case .tools,.fp-case .medtext{background:var(--fd-teal-wash)}
+.fp-case .findings>article{display:flex;flex-direction:column;align-items:start;gap:var(--fd-space-4);min-width:0}
+.fp-case .findings>article+article{border-left:1px solid var(--fd-line)}
+.fp-case .findings h3,.fp-case #fp-result-title{font-size:var(--fd-font-lg)}
+.fp-case .chosen,.fp-case .basis,.fp-case .ranks,.fp-case fieldset,.fp-case .actions,.fp-case .feedback p,.fp-case .references p{margin-block:.6em}
+.fp-case .medtext{padding:var(--fd-space-4)}.fp-case .casefoot{justify-content:space-between}
+.fp-case .ranks,.fp-case #fp-prediction-choices{gap:var(--fd-space-5)}
+.fp-case select{display:block;width:100%;min-height:44px;margin-top:.25em;font:inherit;color:var(--fd-text);background:var(--fd-surface);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs)}
+.fp-case fieldset{min-width:0;padding:0;border:0}.fp-case legend,.fp-case .ranks label{font-weight:600}
+.fp-case #fp-prediction-choices label{display:flex;align-items:flex-start;gap:.5em;min-height:44px;padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);cursor:pointer}
+.fp-case #fp-prediction-choices label:has(:checked){background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+.fp-case #fp-prediction-choices input{flex:none;margin:.3em 0 0;accent-color:var(--fd-teal)}
+.fp-case .primary:enabled{color:var(--fd-on-accent);background:var(--fd-teal-deep)}.fp-case button:disabled{opacity:.6}
+@container (max-width:550px){.fp-case .ranks,.fp-case #fp-prediction-choices{grid-template-columns:1fr}.fp-case .tools strong{width:100%}}
+@media (max-width:550px){.fp-case .ranks,.fp-case #fp-prediction-choices{grid-template-columns:1fr}.fp-case .tools strong{width:100%}}
+/* Morgan's three-setting interview and reconstructed exposure timeline. */
+.mg-case .mg-stages,.mg-case .mg-times,.mg-case .mg-track{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.mg-case .mg-stages{gap:var(--fd-space-2);margin:var(--fd-space-6) 0;padding:var(--fd-space-2);background:var(--fd-surface);border:1px solid var(--fd-line);border-radius:var(--fd-radius-sm)}
+.mg-case .mg-stages button{text-align:center;padding:var(--fd-space-3);border-color:transparent}
+.mg-case .mg-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start;gap:var(--fd-space-5)}
+.mg-case .mg-interview,.mg-case .mg-chart{min-width:0;padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+.mg-case .mg-chart{grid-column:1;grid-row:1}
+.mg-case .mg-interview{grid-column:2;grid-row:1}
+.mg-case .mg-ask{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4);width:100%;margin-top:var(--fd-space-4)}
+.mg-case .mg-ask::after{content:"+";flex:none}
+.mg-case .mg-ask[aria-expanded=true]::after{content:"−"}
+.mg-case .mg-times,.mg-case .mg-track{font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));gap:var(--fd-space-2)}
+.mg-case .mg-times{margin-top:var(--fd-space-6);color:var(--fd-text-mid);border-bottom:1px solid var(--fd-line);padding-bottom:var(--fd-space-2)}
+.mg-case[data-stage=home] .mg-times span:first-child,.mg-case[data-stage=unit] .mg-times span:nth-child(2),.mg-case[data-stage=discharge] .mg-times span:last-child{color:var(--fd-teal-deep);font-weight:700}
+.mg-case .mg-track-title{margin-top:var(--fd-space-5);font-weight:650}
+.mg-case ul.mg-track{list-style:none;padding:0;margin:var(--fd-space-2) 0;gap:0}
+.mg-case .mg-track li{display:block;position:relative;min-width:0;margin:0;padding:var(--fd-space-5) var(--fd-space-2) 0 0}
+.mg-case .mg-track li::before{content:"";position:absolute;top:.28em;left:0}
+.mg-case .mg-orders li::before{width:100%;border-top:2px solid var(--fd-teal)}
+.mg-case .mg-orders li:last-child::before{width:.5em}
+.mg-case .mg-orders li::after{content:"";position:absolute;left:0;top:.1em;width:.45em;height:.45em;background:var(--fd-teal);border-radius:50%}
+.mg-case .mg-smoke li::before{width:1.8em;max-width:80%;height:.45em;border:1px dashed var(--fd-text-mid);border-radius:2px}
+.mg-case .mg-smoke .mg-known:first-child::before{background:repeating-linear-gradient(115deg,var(--fd-olive) 0 2px,var(--fd-olive-wash) 2px 4px);border:1px solid var(--fd-olive)}
+.mg-case .mg-smoke .mg-known:nth-child(2)::before{background:var(--fd-teal-wash);border:1px solid var(--fd-teal)}
+.mg-case .mg-smoke .mg-known:last-child::before{background:var(--fd-olive-wash);border:2px dashed var(--fd-olive)}
+.mg-case .mg-record,.mg-case .mg-safety{margin-top:var(--fd-space-5);border-top:1px solid var(--fd-line);padding-top:var(--fd-space-4)}
+.mg-case .mg-record ul{margin:0;padding-left:1.2em}
+.mg-case .mg-record,.mg-case .mg-chart .case-kicker{font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+.mg-case .mg-assessment{border-top:1px solid var(--fd-line-strong);margin-top:var(--fd-space-6);padding-top:var(--fd-space-5)}
+.mg-case .mg-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-4);margin-block:var(--fd-space-5)}
+.mg-case .mg-fields label{display:grid;align-content:start;gap:var(--fd-space-2);font-weight:600}
+.mg-case .mg-fields label:last-child{grid-column:1/-1}
+.mg-case select{display:block;width:100%;min-width:0;min-height:var(--fd-target-touch);padding:var(--fd-space-3);font:inherit;background:var(--fd-surface);color:var(--fd-text);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs)}
+.mg-case fieldset{border:0;padding:0;margin:0;min-width:0}
+.mg-case fieldset label{display:flex;align-items:center;min-height:var(--fd-target-touch);gap:var(--fd-space-2)}
+.mg-case :is(select,input):focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.mg-case .mg-commit{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+.mg-case .mg-feedback{border-inline-start:3px solid var(--fd-teal);padding:var(--fd-space-4) var(--fd-space-5);margin-top:var(--fd-space-5)}
+.mg-case .mg-error{font-weight:650}
+.mg-case :is(.mg-feedback,details)>p{margin-top:var(--fd-space-3)}
+@container bedside (max-width:630px){
+  .mg-case .mg-workspace,.mg-case .mg-fields{grid-template-columns:minmax(0,1fr)}
+  .mg-case .mg-interview,.mg-case .mg-chart{grid-column:auto;grid-row:auto}
+}

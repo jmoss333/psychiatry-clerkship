@@ -926,6 +926,8 @@ SNIPPET_MARKERS = {
     "/*__FD_CARE__*/": "frontdoor/fd_care.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
     "/*__FD_OSCE_STATION__*/": "frontdoor/fd_osce_station.js",
+    "/*__FD_MORGAN_EXPOSURE__*/": "frontdoor/fd_morgan_exposure.js",
+    "/*__FD_FEVER_EXAMS__*/": "frontdoor/fd_fever_exams.js",
     "/*__FD_BEDSIDE_CASES__*/": "frontdoor/fd_bedside_cases.js",
     "/*__FD_CASE_ROUNDS__*/": "frontdoor/fd_case_rounds.js",
     "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",

@@ -2592,6 +2592,80 @@ test.describe('Interactive readings', () => {
     return activity;
   }
 
+  test('Morgan builds a clozapine differential before revealing the studies and handoff', async ({ page }) => {
+    const activity = await openActivity(page, 'psychopharm_primer.md', 'morgan-exposure', 'Antipsychotics');
+    const select = (id, value) => activity.locator('#mg-' + id).selectOption(value);
+    const act = selector => activity.locator(selector).press('Enter');
+    await expect(activity.locator('[data-sources]')).toHaveCount(0);
+    await act('[data-stage="unit"]');
+    await act('[data-ask="meds"]');
+    await select('leading', 'sedative');
+    await select('alternate', 'sedative');
+    await select('next-check', 'sedative');
+    await act('[data-commit]');
+    await expect(activity.locator('[data-debrief]')).toBeHidden();
+    await select('alternate', 'illness');
+    await act('[data-commit]');
+    await expect(activity.locator('[data-result="leading"]')).toContainText('after the first sleepiness');
+    await act('[data-sample] summary');
+    await expect(activity.locator('[data-sample]')).not.toContainText('sore throat');
+    await expect(activity.locator('[data-blood-source]')).toHaveCount(0);
+    await act('[data-ask="illness"]');
+    await expect(activity.locator('[data-debrief]')).toBeHidden();
+    await act('[data-commit]');
+    await act('[data-sample] summary');
+    await expect(activity.locator('[data-result="safety"]')).toContainText('absolute neutrophil count');
+    await act('[data-sources] summary');
+    for (const pmid of ['11763003', '21599724', '26032842']) {
+      await expect(activity.locator('[data-sources] a[href$="/' + pmid + '/"]')).toBeVisible();
+    }
+  });
+
+  test('fever comparison gates patient-specific interpretations and primary studies', async ({ page }) => {
+    const activity = await openActivity(page, 'toxidromes.md', 'febrile-exam-pair', 'The four, side by side');
+    const act = selector => activity.locator(selector).press('Enter');
+    const article = activity.locator('xpath=ancestor::section[contains(@class,"fd-guide-section") or contains(@class,"sec-c")][1]');
+    expect(await article.evaluate(el => !!(el.querySelector('#febrile-exam-pair').compareDocumentPosition(el.querySelector('table')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+    const plate = activity.locator('.examphoto img');
+    expect(await plate.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(500);
+    const discuss = async (lead, rival, prediction) => {
+      await activity.locator('#fp-lead').selectOption(lead);
+      await activity.locator('#fp-rival').selectOption(rival);
+      await activity.locator('input[value="' + prediction + '"]').check();
+      await act('#fp-commit');
+    };
+    await act('.spot.taye-ankle');
+    await act('[data-pin="taye"]');
+    await expect(activity.locator('#fp-commit')).toBeDisabled();
+    await expect(activity.locator('#fp-evidence')).toBeHidden();
+    await act('[data-med="taye"]');
+    await discuss('serotonin', 'infection', 'temperature');
+    await expect(activity.locator('#fp-leading-line')).toContainText('linezolid');
+    await expect(activity.locator('#fp-prediction-line')).toContainText('limited diagnostic weight');
+    await act('#fp-report summary');
+    await expect(activity.locator('#fp-sample')).not.toContainText('draining wound');
+    await act('[data-ward="taye"]');
+    await expect(activity.locator('#fp-result')).toBeHidden();
+    await discuss('serotonin', 'infection', 'cultures');
+    await act('#fp-report summary');
+    await expect(activity.locator('#fp-sample')).toContainText('cultures are pending');
+    await act('.spot.ana-arm');
+    await act('[data-pin="ana"]');
+    await expect(activity.locator('#fp-lead')).toHaveValue('');
+    await act('[data-ward="ana"]');
+    await act('[data-med="ana"]');
+    await discuss('catatonia', 'nms', 'rigidity');
+    await act('#fp-report summary');
+    await expect(activity.locator('#fp-sample')).toContainText('superimposed NMS');
+    await expect(activity.locator('#fp-sample')).not.toContainText(/linezolid|wound/i);
+    await act('#fp-evidence summary');
+    for (const pmid of ['12925718', '28027111', '1674666']) {
+      await expect(activity.locator('#fp-evidence a[href$="/' + pmid + '/"]')).toBeVisible();
+    }
+    await act('#fp-reset');
+    await expect(activity.locator('#fp-result')).toBeHidden();
+  });
+
   async function toggleWithKeyboard(details) {
     await details.locator(':scope > summary').press('Enter');
   }

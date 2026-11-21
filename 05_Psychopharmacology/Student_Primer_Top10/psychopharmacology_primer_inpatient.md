@@ -52,6 +52,200 @@ Most familiar antipsychotics block dopamine D2 receptors; aripiprazole and carip
 
 **Clozapine deserves its own conversation.** Consider it for treatment-resistant schizophrenia after establishing adequate prior trials, exposure/adherence, and diagnosis. Although the FDA eliminated the clozapine REMS in 2025, **ANC monitoring remains recommended according to prescribing information**[^clozapine-rems]. The administrative change did not remove severe neutropenia risk. Ask about bowel movements, fever/infection, chest symptoms, dizziness and sedation. Missed treatment can require re-titration: never assume the previous regimen can simply resume. See the [FDA notice](https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine) and [clozapine label](https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=90876802-0e3a-44c9-9ff7-1754dfbe736a).
 
+<section class="bedside-case mg-case" id="morgan-exposure" aria-labelledby="mg-title">
+  <header><p class="case-kicker">Clozapine · Fictional case</p><h3 id="mg-title">Same prescription. <em>What changed?</em></h3>
+    <p>On the third morning of admission, Morgan keeps drifting off at breakfast. The clozapine order is unchanged. The nurse has called the covering clinician, who is assessing Morgan now. What would you ask to explain the change?</p></header>
+  <div class="mg-stages" role="group" aria-label="Choose a care setting">
+    <button type="button" data-stage="home" aria-pressed="true" aria-controls="mg-home">Home</button>
+    <button type="button" data-stage="unit" aria-pressed="false" aria-controls="mg-unit">On the unit</button>
+    <button type="button" data-stage="discharge" aria-pressed="false" aria-controls="mg-discharge">Discharge</button>
+  </div>
+  <div class="mg-workspace">
+    <div class="mg-interview">
+      <div id="mg-home" data-scene="home">
+        <p class="case-kicker">Before admission</p><h4 tabindex="-1">Start with home.</h4><p>Which part of Morgan’s life at home would you ask about first? You can move on after one question or ask a follow-up.</p>
+        <button type="button" class="mg-ask" data-ask="doses" aria-expanded="false" aria-controls="mg-answer-doses">“Walk me through how you took clozapine at home.”</button>
+        <div id="mg-answer-doses" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="cigarettes" aria-expanded="false" aria-controls="mg-answer-cigarettes">“What did smoking look like on a usual day?”</button>
+        <div id="mg-answer-cigarettes" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="baseline" aria-expanded="false" aria-controls="mg-answer-baseline">“At home, how awake did you feel by breakfast?”</button>
+        <div id="mg-answer-baseline" class="case-reply" hidden></div>
+        <button type="button" class="case-link" data-next="unit">Go to the unit →</button>
+      </div>
+      <div id="mg-unit" data-scene="unit" hidden>
+        <p class="case-kicker">During admission</p><h4 tabindex="-1">Ask at the bedside.</h4><p>Morgan can answer between naps. The nurse and medication record are also available. Where would you start?</p>
+        <button type="button" class="mg-ask" data-ask="illness" aria-expanded="false" aria-controls="mg-answer-illness">“Besides feeling sleepy, what else feels different?”</button>
+        <div id="mg-answer-illness" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="last" aria-expanded="false" aria-controls="mg-answer-last">“When did you last smoke an actual cigarette?”</button>
+        <div id="mg-answer-last" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="meds" aria-expanded="false" aria-controls="mg-answer-meds">Ask the nurse what was given before Morgan got sleepy.</button>
+        <div id="mg-answer-meds" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="patch" aria-expanded="false" aria-controls="mg-answer-patch">“What have you been using for cravings?”</button>
+        <div id="mg-answer-patch" class="case-reply" hidden></div>
+        <button type="button" class="case-link" data-next="discharge">Go to discharge →</button>
+      </div>
+      <div id="mg-discharge" data-scene="discharge" hidden>
+        <p class="case-kicker">Planning a transition</p><h4 tabindex="-1">Ask about tomorrow.</h4><p>Later, during discharge planning, what would you clarify with Morgan for the person taking over?</p>
+        <button type="button" class="mg-ask" data-ask="contact" aria-expanded="false" aria-controls="mg-answer-contact">“How could the clinic reach you after you leave?”</button>
+        <div id="mg-answer-contact" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="future" aria-expanded="false" aria-controls="mg-answer-future">“What do you expect to do about cigarettes when you go home?”</button>
+        <div id="mg-answer-future" class="case-reply" hidden></div>
+        <button type="button" class="mg-ask" data-ask="support" aria-expanded="false" aria-controls="mg-answer-support">“Who would notice if you started feeling too sleepy again?”</button>
+        <div id="mg-answer-support" class="case-reply" hidden></div>
+        <button type="button" class="case-link" data-next="assessment">Make your assessment ↓</button>
+      </div>
+    </div>
+    <div class="mg-chart" role="group" aria-label="Prescription and exposure history across settings">
+      <p class="case-kicker">Pinned medication</p><h4>Clozapine</h4>
+      <div class="mg-times" aria-hidden="true"><span>Home</span><span>On unit</span><span>After discharge</span></div>
+      <p class="mg-track-title">Prescription on chart</p>
+      <ul class="mg-track mg-orders" aria-label="Prescription on chart">
+        <li aria-label="Home: Home order">Home order</li><li aria-label="On unit: Same order">Same order</li><li aria-label="After discharge: To be reconciled">To be reconciled</li>
+      </ul>
+      <p class="mg-track-title" id="mg-exposure-label">Exposure history</p>
+      <ul class="mg-track mg-smoke" aria-labelledby="mg-exposure-label">
+        <li><span class="sr-only">Home: </span><span data-track="home">Not asked</span></li>
+        <li><span class="sr-only">On unit: </span><span data-track="unit">Not asked</span></li>
+        <li><span class="sr-only">After discharge: </span><span data-track="discharge">Plan unknown</span></li>
+      </ul>
+      <aside class="mg-record"><p class="case-kicker">Notes from your questions</p><div data-notes>Choose a question to add Morgan’s history.</div></aside>
+    </div>
+  </div>
+  <div class="mg-assessment"><h4>Your assessment</h4><p>What could explain the sleepiness on day three? Choose a working explanation, a competing explanation and the check that could change your mind.</p>
+    <div class="mg-fields">
+      <label for="mg-leading">Working explanation<select id="mg-leading"><option value="">Choose one…</option><option value="smoke">Changed cigarette exposure</option><option value="illness">An acute illness or inflammation</option><option value="sedative">Another sedating medicine</option><option value="adherence">A change in clozapine actually taken</option><option value="unknown">Too little evidence to rank the causes</option></select></label>
+      <label for="mg-alternate">Keep in the differential<select id="mg-alternate"><option value="">Choose one…</option><option value="smoke">Changed cigarette exposure</option><option value="illness">An acute illness or inflammation</option><option value="sedative">Another sedating medicine</option><option value="adherence">A change in clozapine actually taken</option></select></label>
+      <label for="mg-next-check">What would you check next?<select id="mg-next-check"><option value="">Choose one…</option><option value="smoke">Compare actual smoking at home and on the unit</option><option value="illness">Assess vitals, symptoms and signs of illness</option><option value="sedative">Check medication times against symptom onset</option><option value="adherence">Compare home use with doses documented as given</option><option value="level">Review a timed level alongside the clinical exam</option></select></label>
+    </div>
+    <button type="button" class="mg-commit" data-commit>Commit and compare</button>
+    <p class="mg-error" role="alert" data-error hidden></p>
+    <div data-debrief hidden></div>
+    <button type="button" class="case-link" data-reset>Start over</button>
+  </div>
+  <p class="sr-only" role="status" aria-live="polite" data-announcement></p>
+  <template data-mg-template="question-doses">
+    <p class="case-kicker">Morgan · at home</p><blockquote>“I took it at night from my pillbox. I can’t remember missing any last week.”</blockquote>
+  </template>
+  <template data-mg-template="question-cigarettes">
+    <p class="case-kicker">Morgan · at home</p><blockquote>“About ten cigarettes most days. The first one was usually with my morning coffee.”</blockquote>
+  </template>
+  <template data-mg-template="question-baseline">
+    <p class="case-kicker">Morgan · at home</p><blockquote>“I was usually up before everyone else. I’d eat and take the dog out.”</blockquote>
+  </template>
+  <template data-mg-template="question-illness">
+    <p class="case-kicker">Morgan · on the unit</p><blockquote>“I started coughing yesterday. My throat hurts today.”</blockquote>
+    <p class="mg-safety" data-safety>Tell the covering clinician about the new cough and sore throat now. Check a CBC with differential, including the absolute neutrophil count, while assessing for infection.</p>
+  </template>
+  <template data-mg-template="question-last">
+    <p class="case-kicker">Morgan · on the unit</p><blockquote>“Just before I came in. This unit is smoke-free. I haven’t smoked a cigarette since then.”</blockquote>
+  </template>
+  <template data-mg-template="question-meds">
+    <p class="case-kicker">Nurse · medication administration record</p><blockquote>“The nightly clozapine is signed as given. I documented the sleepiness at breakfast. The hydroxyzine was given later that morning.”</blockquote>
+  </template>
+  <template data-mg-template="question-patch">
+    <p class="case-kicker">Morgan · on the unit</p><blockquote>“I’ve been using a nicotine patch here. It takes the edge off.”</blockquote>
+  </template>
+  <template data-mg-template="question-future">
+    <fieldset><legend>Choose Morgan’s reply for this version</legend>
+      <label><input type="radio" name="mg-future-plan" value="resume"> “I expect I’ll start smoking again.”</label>
+      <label><input type="radio" name="mg-future-plan" value="free"> “I want to stay smoke-free.”</label>
+      <label><input type="radio" name="mg-future-plan" value="unsure"> “I don’t know yet.”</label>
+    </fieldset>
+  </template>
+  <template data-mg-template="question-contact">
+    <p class="case-kicker">Morgan · discharge planning</p><blockquote>“Call my mobile the first evening. If I miss it, leave me a message to call the clinic back.”</blockquote>
+  </template>
+  <template data-mg-template="question-support">
+    <p class="case-kicker">Morgan · discharge planning</p><blockquote>“My sister usually sees me after work. I’d like her to know who to call.”</blockquote>
+  </template>
+  <template data-mg-template="copy">
+    <p data-copy="note-doses">Morgan recalls taking clozapine nightly at home.</p>
+    <p data-copy="why-doses">Asking how Morgan took clozapine tests whether the written order reflects exposure.</p>
+    <p data-copy="note-cigarettes">Morgan reports about ten cigarettes most days at home.</p>
+    <p data-copy="why-cigarettes">Asking about cigarettes establishes a baseline for comparing settings.</p>
+    <p data-copy="note-baseline">Morgan recalls being awake for breakfast at home.</p>
+    <p data-copy="why-baseline">Asking about alertness tests whether the day-three observation is a change.</p>
+    <p data-copy="note-illness">Morgan reports a new cough and sore throat.</p>
+    <p data-copy="why-illness">Asking about physical symptoms can uncover an illness needing assessment now.</p>
+    <p data-copy="note-last">Morgan reports no cigarettes since just before admission.</p>
+    <p data-copy="why-last">Asking about the last cigarette checks actual exposure on the unit.</p>
+    <p data-copy="note-meds">Unit doses are signed as given. Hydroxyzine followed the first observed sleepiness.</p>
+    <p data-copy="why-meds">Checking administration times tests whether an additional sedative came before the change.</p>
+    <p data-copy="note-patch">Morgan reports using a nicotine patch on the unit.</p>
+    <p data-copy="why-patch">Asking about the patch identifies a nicotine source. It leaves cigarette use open.</p>
+    <p data-copy="why-future">Asking about Morgan’s intentions gives the receiving team a change to look for.</p>
+    <p data-copy="note-contact">Morgan prefers a call to their mobile the first evening.</p>
+    <p data-copy="why-contact">Asking how to reach Morgan makes it possible to verify what actually happens.</p>
+    <p data-copy="note-support">Morgan wants their sister to know who to call about new sleepiness.</p>
+    <p data-copy="why-support">Asking who might notice a change identifies someone Morgan wants included.</p>
+    <p data-copy="report-resume">Morgan expects to resume smoking.</p>
+    <p data-copy="track-resume">Intends to resume</p>
+    <p data-copy="action-resume">If Morgan resumes cigarettes after a smoke-free interval, clozapine levels may fall. Confirm when and how much they smoke and review symptom control and levels.</p>
+    <p data-copy="report-free">Morgan intends to stay smoke-free.</p>
+    <p data-copy="track-free">Intends to stay smoke-free</p>
+    <p data-copy="action-free">If Morgan remains smoke-free after stopping regular smoking, reassess tolerability and levels in that setting. Ask about renewed sleepiness or dizziness.</p>
+    <p data-copy="report-unsure">Morgan is unsure whether they will smoke after discharge.</p>
+    <p data-copy="track-unsure">Undecided</p>
+    <p data-copy="action-unsure">At follow-up ask whether cigarettes restarted. If so, review symptom control and levels. If the smoke-free interval continues, review tolerability and levels.</p>
+    <p data-copy="smoke-neither">You have neither Morgan’s home cigarette pattern nor their last cigarette. Ask about both. A unit policy cannot establish either fact.</p>
+    <p data-copy="smoke-home">You know the home pattern. Ask when Morgan last smoked a cigarette to establish what changed.</p>
+    <p data-copy="smoke-unit">You know when the last cigarette was. Ask how regularly Morgan smoked before admission to establish the baseline.</p>
+    <p data-copy="smoke-both">Morgan describes regular cigarettes at home and none since admission. Loss of smoke-induced CYP1A2 activity could raise clozapine exposure over the next few days. This fits the timing. A level and exam would help establish its clinical significance.</p>
+    <p data-copy="unknown-both">Leaving the cause open is reasonable. The cigarette histories on both sides of admission support a change in exposure. The case supplies no measured level or confirmed cause.</p>
+    <p data-copy="unknown">Keeping the cause open is defensible.</p>
+    <p data-copy="illness-heard">The new cough and sore throat make acute illness plausible. Examine Morgan and check vitals. Inflammation can accompany higher clozapine concentrations. Symptoms alone cannot establish infection or its effect on the level.</p>
+    <p data-copy="illness-missing">Your history contains no illness review. Ask about new physical symptoms and assess vitals and examination findings now.</p>
+    <p data-copy="sedative-heard">The nurse places hydroxyzine after the first sleepiness. It could add to later sedation, but it cannot explain the onset. Review earlier administrations too.</p>
+    <p data-copy="sedative-missing">The chart order alone cannot tell you whether a sedating medicine preceded breakfast. Ask the nurse for administration times.</p>
+    <p data-copy="adherence-both">Morgan recalls nightly use at home, and inpatient doses are signed as given. A major change in doses taken has less support. Confirm the home account if uncertainty remains.</p>
+    <p data-copy="adherence-home">Morgan recalls nightly use at home. Compare that report with actual inpatient administrations.</p>
+    <p data-copy="adherence-unit">Inpatient doses are signed as given. Home use is still unknown. Ask how Morgan took clozapine before admission.</p>
+    <p data-copy="adherence-neither">You have the written prescription only. Ask how Morgan took it at home and compare that with inpatient administrations.</p>
+    <p data-copy="check-smoke-both">Both parts of the cigarette history are already documented. A timed level or a competing cause could add more information now.</p>
+    <p data-copy="check-illness-heard">A new cough and sore throat give the bedside assessment a concrete target. Ask the medical team what they found.</p>
+    <p data-copy="check-illness-missing">Get the symptom history and bedside findings. The effect of inflammation remains an open question.</p>
+    <p data-copy="check-sedative-heard">You already placed hydroxyzine after onset. Reconstruct any earlier sedative exposure before attributing the change to medication.</p>
+    <p data-copy="check-sedative-missing">Read the actual administration record alongside the nurse’s first observation of sleepiness.</p>
+    <p data-copy="check-level">Ask the prescriber and pharmacist about a level, document sampling time and last dose, and compare with a prior level if available. Clinical assessment proceeds immediately.</p>
+    <p data-copy="patch">Morgan’s patch relieves cravings. Nicotine replacement does not reproduce the smoke-related increase in CYP1A2 activity. A patch can be used by someone who still smokes.</p>
+    <p data-copy="report">Morgan was newly sleepy at breakfast on day three. The chart lists the same clozapine order.</p>
+    <p data-copy="handoff-smoke-both">The loss of regular smoke exposure could be raising clozapine levels. Other causes can coexist.</p>
+    <p data-copy="handoff-smoke-home">We know Morgan’s home smoking pattern. We still need to establish the pattern since admission.</p>
+    <p data-copy="handoff-smoke-unit">We know when Morgan last smoked. We still need their usual cigarette pattern before admission.</p>
+    <p data-copy="handoff-smoke-neither">We still need Morgan’s home cigarette pattern and last cigarette to interpret any change in exposure.</p>
+    <p data-copy="assessment">The covering clinician is assessing Morgan now. Review alertness, vital signs, medicines and possible illness with the team. Involve the clozapine prescriber and pharmacist in monitoring.</p>
+    <p data-copy="future-unknown">Ask what Morgan expects to do about cigarettes after discharge. Confirm what actually happens at follow-up.</p>
+    <p data-copy="incomplete-resume">Ask when and how much Morgan actually smokes after discharge. Compare with verified unit use before predicting a change in levels.</p>
+    <p data-copy="incomplete-free">Check whether the smoke-free plan holds. Compare actual smoking across all three settings before interpreting a change in levels.</p>
+    <p data-copy="incomplete-unsure">Ask about actual cigarette use after discharge and fill in the missing history before predicting the direction of any change in levels.</p>
+    <p data-copy="transition">Before discharge, agree who from the clozapine team will call, review symptoms and levels, and respond to changes.</p>
+    <p data-copy="track-home">About 10 daily</p>
+    <p data-copy="track-unit">None since admission</p>
+  </template>
+  <template data-mg-template="debrief">
+    <div class="mg-feedback"><h4 tabindex="-1">How your reasoning fits</h4>
+      <p><strong>Working explanation.</strong> <span data-result="leading"></span></p>
+      <p><strong>Competing explanation.</strong> <span data-result="alternate"></span></p>
+      <p><strong>Next check.</strong> <span data-result="check"></span></p>
+      <p hidden><strong>Nicotine patch.</strong> <span data-result="patch"></span></p>
+      <p hidden><strong>Your opening question.</strong> <span data-result="opening"></span></p>
+    </div>
+    <details data-sample><summary>Read a handoff from the history you took</summary>
+      <p><strong>Report.</strong> <span data-result="report"></span></p>
+      <p><strong>Assessment today.</strong> <span data-result="assessment"></span></p>
+      <p hidden><strong>New infection symptoms.</strong> <span data-result="safety"></span></p>
+      <p><strong>At transition.</strong> <span data-result="transition"></span></p>
+    </details>
+    <details data-sources><summary>Primary studies and clinical guidance</summary>
+    <p><strong>Cigarettes and clozapine.</strong> Meyer compared levels in 11 patients on stable doses before and after a hospital smoking ban. Levels rose on average after cessation, with substantial variation. The study cannot predict Morgan’s level. <a target="_blank" rel="noopener noreferrer" href="https://pubmed.ncbi.nlm.nih.gov/11763003/">Meyer, 2001 · PMID 11763003</a></p>
+    <p><strong>Nicotine replacement.</strong> In a randomized crossover study of 12 smokers, Hukkanen and colleagues found that nicotine patches did not increase CYP1A2 activity. They measured caffeine metabolism as a probe rather than measuring clozapine. <a target="_blank" rel="noopener noreferrer" href="https://pubmed.ncbi.nlm.nih.gov/21599724/">Hukkanen et al., 2011 · PMID 21599724</a></p>
+    <p><strong>Illness and clozapine.</strong> Hefner and colleagues compared measurements within 33 clozapine-treated patients. Dose-adjusted concentrations were higher when C-reactive protein was elevated. This retrospective association cannot identify the cause of an individual’s sleepiness. <a target="_blank" rel="noopener noreferrer" href="https://pubmed.ncbi.nlm.nih.gov/26032842/">Hefner et al., 2016 · PMID 26032842</a></p>
+    <p><strong>Practice guidance.</strong> The NHS Specialist Pharmacy Service describes specialist review and blood-level monitoring when cigarette smoking changes. <a target="_blank" rel="noopener noreferrer" href="https://sps.nhs.uk/articles/managing-specific-interactions-with-smoking/#clozapine">Clozapine and smoking</a></p>
+    <p data-blood-source hidden><strong>Infection symptoms during clozapine treatment.</strong> The U.S. prescribing information and medication guide cover prompt reporting, evaluation for infection and blood counts for neutropenia. <a target="_blank" rel="noopener noreferrer" href="https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=90876802-0e3a-44c9-9ff7-1754dfbe736a">CLOZARIL prescribing information · severe neutropenia</a></p>
+    </details>
+  </template>
+</section>
+
 **Resident nuance — exposure can change without a prescription change.** Combustible tobacco smoke, rather than nicotine itself, induces metabolism of clozapine and olanzapine. Admission to a smoke-free setting and resumption after discharge can change exposure. Ask about smoking changes, acute illness, interactions and missed doses; involve pharmacy in the monitoring plan.
 
 ## Bipolar treatment: the phase comes first

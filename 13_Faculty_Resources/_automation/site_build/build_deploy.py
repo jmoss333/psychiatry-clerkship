@@ -211,7 +211,7 @@ if _evidence_tools not in sys.path:
 from registry import build_public_projection, load_evidence_registry
 _canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
 with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
-    json.dump(build_public_projection(_canonical_evidence),_fh,indent=2,sort_keys=True)
+    json.dump(build_public_projection(_canonical_evidence),_fh,separators=(",", ":"),sort_keys=True)
     _fh.write("\n")
 for _jn, _fallback in [
     ("tool_registry.json", '{"tools":[]}'),
@@ -616,7 +616,8 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illus
 _copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
                os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
 for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),
-                      ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp")):
+                      ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp"),
+                      ("Toxidromes", "paired-fever-exams.webp")):
     _copy_required(os.path.join(LIB, "04_Acute_and_Safety", _topic, "illustrations", _plate),
                    os.path.join(OUT, "illustrations", _plate), _missing_req)
 _abort_missing(_missing_req)
