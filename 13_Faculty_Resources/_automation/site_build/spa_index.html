@@ -4769,6 +4769,10 @@
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
+      searchMatches:function(state){
+        var live=fdLiveState(state);live.bodyIndex=fdBodyIndex;
+        return fdSearchMatches(FD_INDEX,state.query,FD_CURRICULUM.synonyms||{},live);
+      },
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
       readingPlaceSession:function(){return fdReadingPlaceSession;},
       disposeReadingPlace:fdDisposeReadingPlace,

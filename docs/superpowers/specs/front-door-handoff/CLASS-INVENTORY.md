@@ -853,6 +853,12 @@ the Library.
 
 ## 6. Reader (reading / tool pane)
 
+When a resource opens from Search, the top `.fd-reader__back` button becomes “Back to search results.”
+It restores the query, expansion, selected action and results scroll from the current visit.
+The saved result order survives a delayed page-text load. Editing or starting a new search uses
+the current index. Opening a safety card's full reading keeps the same return path.
+Resources opened from the ordinary navigation retain their tab return control.
+
 ```
 .fd-reader                              + .is-nav-next | .is-nav-prev
   [tool only, same element] &.fd-reader--tool  + &.is-tool-expanded
@@ -1300,7 +1306,7 @@ projection and the existing attested flag is true. The preview itself adds no at
 | Class | Notes |
 |---|---|
 | `.fd-sheetbackdrop` | Separate sibling element, before `.fd-sheet`. Carries the click-to-close. |
-| `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
+| `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). Safety results opened from Search start with a “Back to search results” button using `.fd-btn.fd-btn--ghost`. |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: <page title> · faculty-attested". Names the page, never the file (the prototype's `protoSrc` was a readable source); the ref rides on `data-ref`. |
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |

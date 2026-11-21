@@ -1724,6 +1724,68 @@ test('opening or closing search resets a previous expanded view', () => {
   }
 });
 
+test('search return restores the last query and expansion without a new resource navigation', () => {
+  const searchReturn = { query: 'treatment', expanded: true };
+  const result = F.fdDispatch({ 'data-fd-search-return': '' }, {}, {
+    ...roleContext, openId: 't_mood.md', searchReturn, query: '', searchExpanded: false,
+  });
+  assert.equal(result.patch.searchOpen, true);
+  assert.equal(result.patch.query, 'treatment');
+  assert.equal(result.patch.searchExpanded, true);
+  assert.equal(result.patch.sheet, null);
+  assert.equal(result.route, null);
+  assert.equal(result.effect.type, 'restore-search');
+  assert.equal(result.patch.openId, undefined);
+  assert.deepEqual(F.fdDispatch({ 'data-fd-search-return': '' }, {}, roleContext),
+    { patch: {}, route: null, effect: null });
+});
+
+test('opening a search row saves its action and list offset only for the current visit', () => {
+  const storage = memStorage();
+  const body = { scrollTop: 317 };
+  const row = actionTarget({ 'data-fd-open': 't_mood.md' });
+  const closest = row.closest;
+  row.closest = function(selector) {
+    if (selector === '.fd-result') return this;
+    if (selector === '.fd-searchpanel__body') return body;
+    return closest.call(this, selector);
+  };
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'library',
+    searchOpen: true, query: 'treatment', searchExpanded: true,
+  }, { F: make(storage), openResource() {} });
+  h.rootHandlers.click({ target: row, preventDefault() {} });
+  const saved = h.controller.getState().searchReturn;
+  assert.deepEqual(saved, {
+    query: 'treatment', expanded: true, action: 'data-fd-open', ref: 't_mood.md', scrollTop: 317, matches: [],
+  });
+  assert.equal(h.controller.getState().openId, 't_mood.md');
+  assert.equal(h.controller.getState().searchOpen, false);
+  const stored = JSON.parse(storage.getItem('cw_frontdoor_v1'));
+  assert.equal(stored.searchReturn, undefined);
+  assert.equal(stored.query, undefined);
+  h.rootHandlers.click({ target: actionTarget({ 'data-fd-search-return': '' }), preventDefault() {} });
+  assert.equal(h.controller.getState().searchOpen, true, 'the real click handler owns the return button');
+  assert.equal(h.controller.getState().query, 'treatment');
+  assert.equal(h.controller.getState().searchExpanded, true);
+  h.controller.dispatch({ 'data-fd-close-search': '' });
+  h.controller.dispatch({ 'data-fd-back': '' });
+  assert.equal(h.controller.getState().searchReturn, null, 'ordinary navigation ends the return path');
+  h.controller.destroy();
+});
+
+test('a searched safety card keeps its return path through the full reading', () => {
+  const searchReturn = { query: 'suicide', expanded: false, ref: 'pg_suicide.md' };
+  const h = fakeHarness({
+    ...roleContext, screen: 'app', tab: 'library', sheet: 'pg_suicide.md', searchReturn,
+  }, { F, openResource() {} });
+  h.controller.dispatch({ 'data-fd-open': 'pg_suicide.md' });
+  assert.equal(h.controller.getState().searchReturn, searchReturn);
+  h.controller.dispatch({ 'data-fd-open': 't_mood.md' });
+  assert.equal(h.controller.getState().searchReturn, null);
+  h.controller.destroy();
+});
+
 test('delegated search expansion changes only the overlay while preserving the live reading and storage', () => {
   const storage = memStorage({ cw_frontdoor_v1: JSON.stringify({ role: 'first-role', tab: 'library' }) });
   const storageWrites = [];
@@ -1799,6 +1861,7 @@ test('editing an expanded query restores the compact view without replacing the 
 test('history navigation discards expanded search even when an old snapshot tries to restore it', () => {
   const h = fakeHarness({
     ...roleContext, screen: 'app', tab: 'library', searchOpen: true, searchExpanded: true, query: 'sleep',
+    searchReturn: { query: 'sleep', expanded: true },
   }, { F, location: { href: 'https://example.test/?tab=path', search: '?tab=path', pathname: '/' } });
   h.windowHandlers.popstate({ state: { fd: true, state: {
     ...roleContext, screen: 'app', tab: 'path', searchOpen: true, searchExpanded: true, query: 'sleep',
@@ -1808,6 +1871,7 @@ test('history navigation discards expanded search even when an old snapshot trie
   assert.equal(restored.searchOpen, false);
   assert.equal(restored.searchExpanded, false);
   assert.equal(restored.query, '');
+  assert.equal(restored.searchReturn, null);
   h.controller.destroy();
 });
 
