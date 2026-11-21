@@ -2797,6 +2797,118 @@ test.describe('Interactive readings', () => {
     await seedApp(page, info);
   });
 
+  test('Nico’s collateral rounds handoff uses only the nights and source the learner heard', async ({ page }) => {
+    await page.goto('/?page=collateral_workflow.md&guideSection=5-bring-it-back-to-the-team');
+    const section = page.locator('.fd-guide-section').filter({ has: page.locator(':scope > #guide-5-bring-it-back-to-the-team') });
+    const card = section.locator('#night-witness');
+    await expect(section.locator(':scope > h2')).toHaveText('5. Bring It Back To The Team');
+    await expect(card.getByRole('heading', { name: 'Which nights can we account for?' })).toBeVisible();
+    await expect(page.locator('#jo-night').locator('xpath=preceding-sibling::h3[1]')).toHaveText('Baseline And Timeline');
+    await expect(section.locator('#jo-note')).toHaveCount(1);
+
+    const nights = [
+      { day: 'mon', speaker: 'Luz · Monday night', quote: 'if the van would fit', time: 'About 3 a.m.', source: 'Awake · Luz saw', fact: 'saw Nico measuring the garage around 3 a.m. Tuesday' },
+      { day: 'tue', speaker: 'Luz · Tuesday night', quote: 'My phone says 1:12.', time: '1:12 a.m.', source: 'Text from Nico', fact: 'got a 1:12 a.m. text Wednesday saying he felt wiped' },
+      { day: 'wed', speaker: 'Luz · Wednesday night', quote: 'Dad told me he saw Nico asleep', time: 'Time unknown', source: 'Sleep · relayed', fact: 'heard from their dad that Nico slept on the couch' },
+    ];
+    const sources = {
+      father: {
+        speaker: 'Dad · return call', quote: 'five this morning',
+        handoff: 'Dad saw him asleep at 5 a.m. Thursday and says the spending is new, so I’d ask Nico how rested he felt and when his energy changed.',
+        feedback: { need: 'He can’t tell you how much sleep Nico needed.', unclear: 'Dad’s 5 a.m. observation establishes some sleep.' },
+      },
+      patient: {
+        speaker: 'Nico · on the unit', quote: 'missed my stop',
+        handoff: 'Nico describes lying awake worrying and dozing on the bus, so I’d document difficulty sleeping and ask when his mood, energy and spending changed.',
+        feedback: { need: 'Nico wanted sleep and was tired enough to miss his stop.', tired: 'That fits Nico’s account.', unclear: 'You can already say how Nico felt yesterday' },
+      },
+    };
+    const factList = new Intl.ListFormat('en-US', { style: 'long', type: 'conjunction' });
+    const wednesday = card.locator('[data-night="wed"]');
+    const mark = wednesday.locator('[data-mark]');
+    const rounds = card.locator('#nw-rounds');
+    const sample = card.locator('#nw-sample');
+    const feedback = card.locator('#nw-feedback');
+    const reset = card.locator('[data-reset]');
+    async function expectUnasked() {
+      await expect(card.locator('.nw-value')).toHaveText(['Unasked', 'Unasked', 'Unasked']);
+      await expect(card.locator('.nw-kind')).toHaveText(['', '', '']);
+      await expect(card.locator('[data-mark]:visible, [data-heard="true"], [aria-pressed="true"]')).toHaveCount(0);
+      await expect(card.locator('#nw-res')).toBeHidden();
+      await expect(card.locator('#nw-consult-answer')).toBeEmpty();
+      await expect(feedback).toBeEmpty();
+      await expect(rounds).toBeHidden();
+      await expect(sample).toBeEmpty();
+      await expect(reset).toBeDisabled();
+    }
+    async function expectSource(source, heardWed) {
+      const dad = source === 'father';
+      await expect(card.locator('#nw-who')).toHaveText(sources[source].speaker);
+      await expect(card.locator('#nw-consult-answer')).toContainText(sources[source].quote);
+      await expect(wednesday.locator('.nw-value')).toHaveText(dad ? '5 a.m.' : heardWed ? 'Time unknown' : 'Unasked');
+      await expect(wednesday.locator('.nw-kind')).toHaveText(dad ? 'Asleep · Dad saw' : heardWed ? 'Sleep · relayed' : '');
+      await expect(mark).toBeVisible({ visible: dad });
+      if (dad) {
+        await expect(mark.locator('circle')).toHaveCount(1);
+        // On this 10 p.m.–6 a.m. arc, 5 a.m. is seven eighths of the way across.
+        const point = await mark.evaluate(el => {
+          const { e, f } = el.transform.baseVal.getItem(0).matrix;
+          return [e, f];
+        });
+        expect(point[0]).toBeCloseTo(123.58, 1);
+        expect(point[1]).toBeCloseTo(45.80, 1);
+      }
+      await expect(card.locator('#nw-assess')).toBeVisible();
+      await expect(feedback).toBeHidden();
+      await expect(rounds).toBeHidden();
+      await expect(sample).toBeEmpty();
+    }
+
+    await expectUnasked();
+    for (let mask = 1; mask < 8; mask++) {
+      const opened = nights.filter((_, index) => mask & (1 << index));
+      const heardTue = opened.some(night => night.day === 'tue');
+      const heardWed = opened.some(night => night.day === 'wed');
+      await test.step(opened.map(night => night.day).join(' + '), async () => {
+        for (const night of opened) {
+          await card.locator(`[data-ask="${night.day}"]`).click();
+          await expect(card.locator('#nw-label')).toHaveText(night.speaker);
+          await expect(card.locator('#nw-answer')).toContainText(night.quote);
+        }
+        await expect(card.locator('.nw-value')).toHaveText(nights.map(night => opened.includes(night) ? night.time : 'Unasked'));
+        await expect(card.locator('.nw-kind')).toHaveText(nights.map(night => opened.includes(night) ? night.source : ''));
+        await expect(mark).toBeHidden();
+        await expect(card.locator('#nw-assess')).toBeHidden();
+        await expect(rounds).toBeHidden();
+        for (const [source, account] of Object.entries(sources)) {
+          await card.locator(`[data-next="${source}"]`).click();
+          await expectSource(source, heardWed);
+          const handoff = 'Luz ' + factList.format(opened.map(night => night.fact)) + '. Total sleep is unclear. ' + account.handoff;
+          for (const reading of ['need', 'tired', 'unclear']) {
+            await card.locator(`[data-read="${reading}"]`).click();
+            const expected = source === 'father' && reading === 'tired'
+              ? heardTue ? 'His text tells you he felt wiped that night.' : 'Dad didn’t describe how Nico felt the next day.'
+              : account.feedback[reading];
+            await expect(feedback).toBeVisible();
+            await expect(feedback).toContainText(expected);
+            await expect(rounds).toHaveJSProperty('open', false);
+            await expect(sample).toBeHidden();
+            await expect(sample).toBeEmpty();
+            await rounds.locator('summary').click();
+            await expect(sample).toBeVisible();
+            await expect(sample).toHaveText(handoff);
+          }
+        }
+        // Switching back clears the patient interpretation and the already-open rounds disclosure.
+        await card.locator('[data-next="father"]').click();
+        await expectSource('father', heardWed);
+        await reset.click();
+        await expectUnasked();
+      });
+    }
+    await expectHealthy(page);
+  });
+
   test('Elena’s interpreted visit connects both openings and the repair to the selected clinical follow-up', async ({ page }) => {
     await page.goto('/?page=cultural_psychiatry.md&guideSection=working-with-interpreters');
     const section = page.locator('.fd-guide-section').filter({has: page.locator(':scope > #guide-working-with-interpreters')});
