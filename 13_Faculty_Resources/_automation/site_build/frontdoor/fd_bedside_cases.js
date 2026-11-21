@@ -4,8 +4,10 @@ function fdMountBedsideCases(body) {
   fdMountFeverExams(body);
   fdMountJoCall(body);
   fdMountLeeTimeline(body);
+  fdMountCoachLine(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
+  fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
@@ -392,6 +394,109 @@ function fdMountRaeReturnVisit(body) {
   });
 }
 
+function fdMountTreatmentRationale(body) {
+  const card = body.querySelector('#quieter-on-unit');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const find = selector => card.querySelector(selector);
+  const bank = find('template').content;
+  const lenses = Array.from(card.querySelectorAll('input[name="qt-lens"]'));
+  const question = find('[data-qt-question]');
+  const instruction = find('[data-qt-instruction]');
+  const openingQuestion = question.textContent;
+  const openingInstruction = instruction.textContent;
+  const options = find('[data-qt-statements]');
+  const openButton = find('[data-qt-open]');
+  const compared = new Set();
+  let historyIndex = 0;
+  let nextShift = false;
+  const history = () => bank.querySelector('[data-history="' + historyIndex + '"]');
+
+  function updateHandoff() {
+    const hasCall = compared.has('call');
+    options.hidden = !hasCall;
+    find('[data-qt-gap]').hidden = hasCall;
+    const selected = options.querySelector('input:checked');
+    const feedback = find('[data-qt-feedback]');
+    const worked = find('[data-qt-worked]');
+    feedback.hidden = !(hasCall && selected);
+    feedback.textContent = feedback.hidden ? '' : history().querySelector('[data-feedback="' + selected.value + '"]').textContent;
+    worked.hidden = feedback.hidden || !selected.hasAttribute('data-correct');
+    const handoff = find('[data-qt-handoff]');
+    handoff.replaceChildren();
+    if (worked.hidden) return;
+    const report = history().querySelector('[data-handoff]').cloneNode(true);
+    for (const condition of report.querySelectorAll('[data-if-open],[data-if-unopened]')) {
+      const {ifOpen, ifUnopened} = condition.dataset;
+      if (ifOpen ? !compared.has(ifOpen) : compared.has(ifUnopened)) condition.remove();
+    }
+    handoff.textContent = report.textContent;
+  }
+
+  function showReading(period, reading) {
+    const value = find('[data-qt-' + period + '-value]');
+    const quote = find('[data-qt-' + period + '-quote]');
+    if (reading) {
+      value.replaceChildren(reading.querySelector('[data-value]').cloneNode(true));
+      quote.textContent = reading.querySelector('[data-quote]').textContent;
+    } else {
+      value.textContent = '—';
+      quote.textContent = bank.querySelector('[data-pending]').textContent;
+    }
+  }
+
+  function compare() {
+    const lens = lenses.find(input => input.checked);
+    find('[data-qt-empty]').hidden = Boolean(lens);
+    find('.qt-trace').hidden = !lens;
+    openButton.disabled = !lens;
+    if (lens) {
+      const key = lens.value;
+      const metric = bank.querySelector('[data-metric="' + key + '"]');
+      find('[data-qt-metric]').textContent = metric.querySelector('[data-title]').textContent;
+      find('[data-qt-note]').textContent = metric.querySelector('[data-note]').textContent;
+      showReading('base', bank.querySelector('[data-reading="base-' + key + '"]'));
+      showReading('next', nextShift && history().querySelector('[data-reading="' + key + '"]'));
+      if (nextShift) compared.add(key);
+    }
+    updateHandoff();
+  }
+
+  function showPhase() {
+    const isAlternate = historyIndex === 1;
+    const phase = nextShift ? (isAlternate ? 'other-open' : 'open') : (isAlternate ? 'alternate' : 'base');
+    find('[data-qt-phase]').textContent = bank.querySelector('[data-phase-' + phase + ']').textContent;
+    question.textContent = nextShift ? bank.querySelector('[data-question-open]').textContent : openingQuestion;
+    instruction.textContent = nextShift ? bank.querySelector('[data-instruction-open]').textContent : openingInstruction;
+    const context = find('[data-qt-context]');
+    context.querySelector('span').textContent = nextShift ? history().querySelector('[data-context]').textContent : '';
+    context.hidden = find('[data-qt-nurse]').hidden = find('[data-qt-practice]').hidden = !nextShift;
+    openButton.hidden = nextShift;
+    const optionList = options.querySelector('div');
+    optionList.replaceChildren();
+    if (nextShift) optionList.replaceChildren(...history().querySelector('[data-options]').cloneNode(true).children);
+    compare();
+    fdBedsideFocus(question);
+  }
+
+  for (const lens of lenses) lens.addEventListener('change', compare);
+  options.addEventListener('change', updateHandoff);
+  openButton.addEventListener('click', () => {
+    nextShift = true;
+    showPhase();
+  });
+  function restart(index) {
+    historyIndex = index;
+    nextShift = false;
+    compared.clear();
+    for (const lens of lenses) lens.checked = false;
+    showPhase();
+  }
+  find('[data-qt-other]').addEventListener('click', () => restart(1 - historyIndex));
+  find('[data-qt-reset]').addEventListener('click', () => restart(0));
+}
+
 function fdMountFollowupStudy(body) {
   const card = body.querySelector('#study-denominators');
   if (!card || card.dataset.mounted) return;
@@ -556,6 +661,103 @@ function fdMountLeeTimeline(body) {
   });
 }
 
+
+function fdMountCoachLine(body) {
+  const card = body.querySelector('#coach-line');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const get = selector => card.querySelector(selector);
+  const views = card.querySelectorAll('[data-coach-view]');
+  const scenes = card.querySelectorAll('[data-coach-scene]');
+  const lines = card.querySelectorAll('[data-coach-line]');
+  const openings = card.querySelectorAll('[data-coach-open]');
+  const observations = card.querySelectorAll('[data-coach-observe]');
+  const ask = get('[data-coach-open="ask"]');
+  const match = get('[data-coach-observe="match"]');
+  const other = get('[data-coach-observe="other"]');
+  const hint = get('#cl-hint');
+  const outcome = get('#cl-outcome');
+  const student = get('#cl-student');
+  const worked = get('#cl-worked');
+  const reveal = get('[data-coach-reveal]');
+  const status = get('[data-coach-status]');
+  let selectedLine, branch;
+
+  function press(group, selected) {
+    for (const button of group) button.setAttribute('aria-pressed', String(button === selected));
+  }
+  function copy(field) {
+    return branch.content.querySelector('[data-' + field + ']').textContent;
+  }
+  function clearPractice() {
+    student.hidden = worked.hidden = true;
+    reveal.setAttribute('aria-expanded', 'false');
+    for (const selector of ['[data-coach-self]', '[data-coach-model]', '[data-coach-retry]']) {
+      get(selector).textContent = '';
+    }
+    hint.textContent = outcome.textContent = status.textContent = '';
+    match.textContent = other.textContent = '';
+    press(observations, null);
+  }
+
+  for (const view of views) view.addEventListener('click', () => {
+    if (view.getAttribute('aria-pressed') === 'true') return;
+    press(views, view);
+    for (const scene of scenes) scene.hidden = scene.dataset.coachScene !== view.dataset.coachView;
+    selectedLine = branch = null;
+    press(lines, null);
+    press(openings, null);
+    clearPractice();
+    get('#cl-attempt').hidden = true;
+    get('[data-coach-empty]').hidden = false;
+    get('[data-coach-echo]').textContent = ask.textContent = '';
+  });
+  for (const line of lines) line.addEventListener('click', () => {
+    selectedLine = line;
+    branch = get('template[data-coach-branch="' + line.dataset.coachLine + '"]');
+    press(lines, line);
+    press(openings, null);
+    clearPractice();
+    get('[data-coach-empty]').hidden = true;
+    get('#cl-attempt').hidden = false;
+    get('[data-coach-echo]').textContent = '“' + line.querySelector('.cl-quote').textContent + '”';
+    ask.textContent = copy('ask');
+    const openingGroup = get('[data-coach-openings]');
+    openingGroup.prepend(branch.hasAttribute('data-ask-first') ? ask : get('[data-coach-open="tell"]'));
+    fdBedsideFocus(get('#cl-private-title'));
+    status.textContent = line.closest('[data-coach-scene]').dataset.status;
+  });
+  for (const opening of openings) opening.addEventListener('click', () => {
+    press(openings, opening);
+    clearPractice();
+    if (opening !== ask) {
+      hint.textContent = hint.dataset.hint;
+      return;
+    }
+    get('[data-coach-self]').textContent = copy('self');
+    student.hidden = false;
+    status.textContent = status.dataset.selfStatus;
+  });
+  reveal.addEventListener('click', () => {
+    if (student.hidden) return;
+    get('[data-coach-model]').textContent = copy('model');
+    get('[data-coach-retry]').textContent = copy('retry');
+    match.textContent = copy('match');
+    other.textContent = copy('other');
+    get('[data-coach-observations]').prepend(branch.hasAttribute('data-match-first') ? match : other);
+    outcome.textContent = '';
+    press(observations, null);
+    worked.hidden = false;
+    reveal.setAttribute('aria-expanded', 'true');
+    fdBedsideFocus(get('#cl-worked-title'));
+  });
+  for (const choice of observations) choice.addEventListener('click', () => {
+    press(observations, choice);
+    outcome.textContent = choice === match ? copy('result') : outcome.dataset.hint;
+  });
+  get('[data-coach-back]').addEventListener('click', () => fdBedsideFocus(selectedLine));
+}
 
 function fdMountEctMemory(body) {
   const card = body.querySelector('#ect-memory-conversation');

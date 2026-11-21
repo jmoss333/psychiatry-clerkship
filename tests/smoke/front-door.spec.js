@@ -2592,6 +2592,129 @@ test.describe('Interactive readings', () => {
     return activity;
   }
 
+  test('Quieter on the unit compares the same functional goal across both shifts', async ({ page }) => {
+    await page.goto('/?page=exp_tx.md&guideSection=how-to-present-a-treatment-rationale');
+    const card = page.locator('.fd-article__body #quieter-on-unit');
+    const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > :is(h2,.sec-h)')).toContainText('How To Present A Treatment Rationale');
+    const lens = name => card.getByRole('radio', {name, exact:true});
+    const open = card.getByRole('button', {name:'Open next-shift update'});
+    const worked = card.locator('[data-qt-worked]');
+    const trace = card.locator('.qt-trace');
+    const line = index => card.locator('[data-qt-statements] input').nth(index);
+
+    await expect(open).toBeDisabled();
+    await lens('Following the call').check();
+    await expect(trace).toContainText('1 of 3');
+    await expect(trace).not.toContainText('3 of 3');
+    await lens('Daytime alertness').check();
+    await open.press('Enter');
+    await expect(card.locator('[data-qt-question]')).toBeFocused();
+    await expect(card.locator('[data-qt-gap]')).toBeVisible();
+    await expect(line(0)).toBeHidden();
+    await lens('Following the call').check();
+    await expect(trace).toContainText('3 of 3');
+    await line(0).check();
+    await expect(worked).toBeHidden();
+    await line(1).check();
+    await expect(worked).toContainText('felt as awake as yesterday');
+    await expect(worked).not.toContainText('less time in the lounge');
+    await lens('Time in the lounge').check();
+    await expect(worked).toContainText('Nursing observed less time in the lounge');
+
+    await card.getByRole('button', {name:'Try the other history'}).press('Enter');
+    await expect(open).toBeDisabled();
+    await expect(worked).toBeHidden();
+    await lens('Following the call').check();
+    await open.press('Enter');
+    await expect(trace.locator('[data-qt-next-value]')).toHaveText('1 of 3');
+    await line(0).check();
+    await expect(card.locator('[data-qt-feedback]')).toContainText('timing alone cannot establish');
+    await line(2).check();
+    await expect(worked).toContainText('clinician assessing the new dozing now');
+    await expect(worked).toContainText('too sleepy to keep talking');
+    await expect(worked).not.toContainText('report nodding off');
+    await lens('Daytime alertness').check();
+    await expect(worked).toContainText('report nodding off');
+    await expect(worked).not.toContainText('less time in the lounge');
+    await card.getByRole('button', {name:'Start over'}).press('Enter');
+    await expect(card.locator('input:checked')).toHaveCount(0);
+    await lens('Following the call').check();
+    await open.press('Enter');
+    await line(1).check();
+    await expect(worked).toContainText('still need the patient’s own account');
+  });
+
+  test('Which line would you coach requires Jules’s self-assessment for each heard line', async ({ page }, info) => {
+    const ref = 'supervision_teaching.md';
+    if (!isResidentProject(info.project.name)) {
+      const response = await page.request.get('/content/' + ref);
+      expect(await response.text()).not.toContain('id="coach-line"');
+      return;
+    }
+    await page.goto('/?page=' + ref + '&guideSection=feedback-that-lands');
+    const card = page.locator('#guide-feedback-that-lands + #coach-line');
+    await expect(card.getByRole('heading', { name: 'Which line would you coach?' })).toBeVisible();
+    const reveal = card.getByRole('button', { name: 'Compare a feedback exchange' });
+    const model = card.locator('[data-coach-model]');
+    const self = card.locator('[data-coach-self]');
+    const echo = card.locator('[data-coach-echo]');
+    const ask = card.locator('[data-coach-open="ask"]');
+    const tell = card.getByRole('button', { name: 'Can I give you the wording I would use?' });
+    const back = card.getByRole('button', { name: 'Choose a different line' });
+    const scenes = [
+      ['At the bedside', [
+        ['quieter start', 'hoping to learn', 'noise might matter', 'offered a possible meaning', 'What did I miss?', 'invitation to correct it'],
+        ['team group went fine', 'team to take away', 'my summary lost', 'what made staying possible', 'part you want them to hear', 'next interview'],
+      ]],
+      ['At rounds', [
+        ['Group is going well', 'basing the opening', 'One group yesterday', 'a general conclusion', 'checked how today went', 'next presentation'],
+        ['Val told me they stayed', 'include the words', 'where the information came from', 'what was still open', 'who reported the change', 'remaining question'],
+      ]],
+    ];
+    await expect(reveal).toBeHidden();
+    for (const [setting, branches] of scenes) {
+      await card.getByRole('button', { name: setting, exact: true }).click();
+      await expect(echo).toBeEmpty();
+      await expect(card.getByText('Select one of Jules’s lines in the transcript.')).toBeVisible();
+      await expect(card.locator('[data-coach-line]:visible')).toHaveCount(2);
+      for (const [quote, question, selfCheck, example, retry, result] of branches) {
+        const line = card.getByRole('button', { name: new RegExp(quote) });
+        await line.press('Enter');
+        await expect(card.getByRole('heading', { name: 'Feedback for Jules' })).toBeFocused();
+        await expect(echo).toHaveText('“' + await line.locator('.cl-quote').innerText() + '”');
+        await expect(ask).toContainText(question);
+        await expect(model).toBeEmpty();
+        await expect(self).toBeEmpty();
+        await expect(card.locator('#cl-outcome')).toBeEmpty();
+        await expect(reveal).toBeHidden();
+        await tell.click();
+        await expect(card.locator('#cl-hint')).toContainText('First find out');
+        await expect(reveal).toBeHidden();
+        await ask.click();
+        await expect(self).toContainText(selfCheck);
+        await expect(model).toBeEmpty();
+        await reveal.press('Enter');
+        await expect(card.locator('#cl-worked-title')).toBeFocused();
+        await expect(model).toContainText(example);
+        await expect(card.locator('[data-coach-retry]')).toContainText(retry);
+        await card.locator('[data-coach-observe="other"]').click();
+        await expect(card.locator('#cl-outcome')).toContainText('particular move');
+        await card.locator('[data-coach-observe="match"]').click();
+        await expect(card.locator('#cl-outcome')).toContainText(result);
+        await back.press('Enter');
+        await expect(line).toBeFocused();
+      }
+    }
+    await tell.click();
+    await expect(reveal).toBeHidden();
+    await expect(model).toBeEmpty();
+    await expect(card.locator('#cl-outcome')).toBeEmpty();
+    await card.getByRole('button', { name: 'At the bedside' }).click();
+    await expect(card.locator('#cl-attempt')).toBeHidden();
+    await expect(card.locator('[data-coach-line][aria-pressed=true]')).toHaveCount(0);
+  });
+
   test('Morgan builds a clozapine differential before revealing the studies and handoff', async ({ page }) => {
     const activity = await openActivity(page, 'psychopharm_primer.md', 'morgan-exposure', 'Antipsychotics');
     const select = (id, value) => activity.locator('#mg-' + id).selectOption(value);
