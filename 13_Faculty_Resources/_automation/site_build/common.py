@@ -28,6 +28,7 @@ statically-inspectable literal in that file.
 import errno
 import glob
 import hashlib
+from html.parser import HTMLParser
 import json
 import os
 import re
@@ -294,6 +295,30 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 
 
+class _SearchProse(HTMLParser):
+    """Keep the words learners can read or hear in embedded activity markup."""
+
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.skip = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self.skip = True
+        elif not self.skip:
+            self.parts.extend(value for key, value in attrs
+                              if key in ("alt", "aria-label", "title") and value)
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style"):
+            self.skip = False
+
+    def handle_data(self, text):
+        if not self.skip:
+            self.parts.append(text)
+
+
 def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_refs=None):
     """Pre-tokenized inverted index + bidirectional synonyms → search-index.json.
 
@@ -360,7 +385,12 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
                         heads += " " + s.lstrip("#").strip()
                     else:
                         btxt.append(s)
-                body = " ".join(btxt)
+                # Button IDs and layout classes would otherwise dilute the clinical
+                # terms on illustrated pages under the index's length normalization.
+                prose = _SearchProse()
+                prose.feed("\n".join(btxt))
+                prose.close()
+                body = " ".join(prose.parts)
             else:
                 body = keywords.get(f, "")
             docid = len(docs)

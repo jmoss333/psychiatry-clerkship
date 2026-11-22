@@ -3744,6 +3744,86 @@ test.describe('Interactive readings', () => {
     });
   }
 
+  test('evening calls unlock the bedside question in either order and clear the rounds sample on revision', async ({ page }) => {
+    const card = await openActivity(page, 'psychotherapy.md', 'evening-calls', 'The map — what each is, who it fits');
+    const map = card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]');
+    const modalities = card.locator('xpath=preceding-sibling::ul[1]').getByRole('listitem');
+    await expect(modalities).toHaveCount(7);
+    await expect(modalities.last()).toContainText('Family and group modalities');
+    await expect(map.locator('xpath=following-sibling::section[1]').locator(':scope > .fd-guide-lead'))
+      .toContainText('What the student does');
+
+    const at = id => card.locator('#ec-' + id);
+    const button = name => card.getByRole('button', { name });
+    const calls = {
+      before: { name: /Before admission/i, alt: /kitchen window/i, quote: 'can I run something by you', annotation: 'Daughter asks for advice about work' },
+      week: { name: /This week/i, alt: /on the unit/i, quote: 'Did you eat?', annotation: 'Daughter asks about meds and meals' },
+    };
+    for (const call of Object.values(calls)) {
+      const image = button(call.name).getByRole('img', { name: call.alt });
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
+    }
+
+    for (const order of [['before', 'week'], ['week', 'before']]) {
+      await test.step(order.join(' → '), async () => {
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        for (const [index, key] of order.entries()) {
+          const call = calls[key];
+          await button(call.name).click();
+          await expect(button(call.name)).toHaveAttribute('aria-expanded', 'true');
+          await expect(at('quote-' + key)).toBeVisible();
+          await expect(at('quote-' + key)).toContainText(call.quote);
+          await expect(at('annotation-' + key)).toHaveText(call.annotation);
+          await expect(at('count')).toHaveText((index + 1) + ' of 2 heard');
+          if (index === 0) {
+            await button(call.name).click();
+            await expect(at('quote-' + key)).toBeHidden();
+            await expect(at('count')).toHaveText('1 of 2 heard');
+            await expect(at('meaning-panel')).toBeHidden();
+          }
+        }
+        const fewer = button(/Would it help if she called less often/);
+        const miss = button(/What do you miss about the way you two used to talk/);
+        await fewer.click();
+        await expect(at('meaning-words')).toContainText('I look forward to her calls');
+        await expect(at('retry')).toBeVisible();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('meaning-words')).toContainText('I miss being the person she comes to');
+        await expect(at('retry')).toBeHidden();
+        for (const [choice, feedback] of [
+          [/They’d like fewer calls/, 'Did they ask for less contact?'],
+          [/They describe an argument/, 'They described a quiet pause'],
+        ]) {
+          await button(choice).click();
+          await expect(at('feedback')).toBeVisible();
+          await expect(at('feedback')).toContainText(feedback);
+          await expect(at('sample')).toBeHidden();
+        }
+        await button(/They value the calls and miss/).click();
+        await expect(at('feedback')).toBeHidden();
+        await expect(at('sample')).toBeVisible();
+        await expect(at('sample')).toContainText('what they’d like tonight’s call to sound like');
+        await expect(at('sample')).toContainText('Why interpersonal psychotherapy fits');
+        await fewer.click();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('rounds-panel')).toBeVisible();
+        await expect(at('sample')).toBeHidden();
+        await expect(at('rounds-panel').locator('[aria-pressed="true"]')).toHaveCount(0);
+        await button(/Start again/).click();
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        await expect(card.locator('[aria-pressed="true"], [aria-expanded="true"]')).toHaveCount(0);
+        await expect(card.locator('[id^="ec-annotation-"]')).toHaveText(['Ask about the call', 'Ask about the call']);
+        await expect(button(calls.before.name)).toBeFocused();
+      });
+    }
+  });
+
   test('follow-up study changes the denominator and separates cohort findings from individual decisions', async ({ page }) => {
     const card = await openActivity(page, 'evidence_inpatient.md', 'study-denominators', 'Follow-Up Interventions and Collaborative Care');
     const text = (label) => card.locator('[data-study-' + label + ']');

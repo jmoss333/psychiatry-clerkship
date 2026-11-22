@@ -3449,6 +3449,27 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#evening-calls .opener{margin-block:var(--fd-space-6);padding-inline-start:var(--fd-space-6);border-inline-start:3px solid var(--fd-terracotta)}
+#evening-calls .opener blockquote,#evening-calls .case-reply blockquote{font-style:italic}
+#evening-calls :is(.speaker,.hint,.asked,.record small){color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#evening-calls .map{border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);padding:var(--fd-space-6)}
+#evening-calls .map-head{display:flex;align-items:baseline;gap:var(--fd-space-3);justify-content:space-between;flex-wrap:wrap}
+#ec-count{color:var(--fd-teal-deep);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));font-weight:700}
+#evening-calls .hint{margin-block:var(--fd-space-3) var(--fd-space-5)}
+#evening-calls .records{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-4)}
+#evening-calls .record{display:flex;flex-direction:column;min-width:0;padding:0;overflow:hidden;border-radius:var(--fd-radius-xs)}
+#evening-calls .record[aria-expanded=true]{outline:2px solid var(--fd-teal);outline-offset:-2px}
+#evening-calls .record:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+#evening-calls .record[data-heard=true]{background:var(--fd-olive-wash)}
+#evening-calls .record img{display:block;width:100%;height:auto;aspect-ratio:1.24;object-fit:cover;object-position:50% 26%;border-bottom:1px solid var(--fd-line)}
+#evening-calls .record-body{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--fd-space-2);padding:var(--fd-space-4)}
+#evening-calls .period{font-family:Georgia,serif;color:var(--fd-text);line-height:1.2}
+#evening-calls .record small{grid-column:1/-1;font-weight:400;line-height:1.25}
+#evening-calls .step{padding-top:var(--fd-space-6);border-top:2px solid var(--fd-line-strong)}
+#evening-calls .choices{display:grid;gap:var(--fd-space-4)}
+#evening-calls .feedback{background:var(--fd-surface-warm);border-inline-start:3px solid var(--fd-terracotta);padding:var(--fd-space-5)}
+#evening-calls .case-reply h5{margin:0 0 var(--fd-space-3);font-size:inherit}
+#ec-sample p{margin-top:var(--fd-space-4)}
 /* The illustrated observations bookend two links supplied by the patient. */
 #therapy-chain .tc-layout,#therapy-chain .tc-opts{display:grid;gap:var(--fd-space-5);align-items:start}
 #therapy-chain .tc-map-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:var(--fd-space-3);margin-block:var(--fd-space-6) var(--fd-space-3)}
