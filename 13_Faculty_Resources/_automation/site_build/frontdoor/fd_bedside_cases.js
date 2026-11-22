@@ -388,13 +388,67 @@ function fdMountCatatoniaFrames(body) {
   const caseCard = body.querySelector('#vp-catatonia');
   if (!caseCard || caseCard.dataset.mounted) return;
   caseCard.dataset.mounted = 'true';
-  const frames = Array.from(caseCard.querySelectorAll('[data-vp-frame]'));
-  const compare = caseCard.querySelector('[data-vp-compare]');
-  for (const frame of frames) frame.addEventListener('toggle', () => {
-    const bothOpen = frames.every(item => item.open);
-    compare.hidden = !bothOpen;
-    caseCard.querySelector('[data-vp-compare-hint]').hidden = bothOpen;
-    if (!bothOpen) compare.querySelectorAll('details').forEach(answer => { answer.open = false; });
+  const momentButtons = [...caseCard.querySelectorAll('[data-kit-moment]')];
+  const frames = caseCard.querySelector('#kit-frames');
+  const pair = caseCard.querySelector('[data-kit-pair]');
+  const practice = caseCard.querySelector('[data-vp-compare]');
+  const status = caseCard.querySelector('[role="status"]');
+  const handoffs = practice.querySelectorAll('.vp-handoff');
+  let current = 'breakfast';
+  let viewedLater = false;
+  let paired = false;
+
+  function render() {
+    for (const button of momentButtons) {
+      const selected = button.dataset.kitMoment === current;
+      button.setAttribute('aria-pressed', String(selected && !paired));
+      caseCard.querySelector('#' + button.getAttribute('aria-controls')).hidden = !selected && !paired;
+    }
+    frames.classList.toggle('is-paired', paired);
+    pair.setAttribute('aria-pressed', String(paired));
+    pair.textContent = paired ? 'Show one frame' : 'Compare both frames';
+    caseCard.querySelector('.kit-actions').hidden = practice.hidden = !viewedLater;
+    caseCard.querySelector('[data-vp-compare-hint]').hidden = viewedLater;
+  }
+
+  for (const button of momentButtons) button.addEventListener('click', () => {
+    current = button.dataset.kitMoment;
+    if (current === 'later') viewedLater = true;
+    paired = false;
+    render();
+    status.textContent = current === 'later' ? 'Showing 09:00. Handoff practice is available below.' : 'Showing breakfast.';
+  });
+
+  pair.addEventListener('click', () => {
+    if (!viewedLater) return;
+    paired = !paired;
+    render();
+    status.textContent = paired ? 'Showing both moments.' : 'Showing one moment.';
+  });
+
+  // The reader opens details for search and printing. Only the learner's own reveal supplies the answer.
+  for (const handoff of handoffs) {
+    const answer = handoff.querySelector('p');
+    const sample = answer.textContent;
+    answer.textContent = '';
+    handoff.querySelector('summary').addEventListener('click', event => {
+      event.preventDefault();
+      if (!viewedLater) return;
+      const reveal = !(handoff.open && answer.textContent);
+      answer.textContent = reveal ? sample : '';
+      handoff.open = reveal;
+    });
+  }
+  caseCard.querySelector('[data-kit-reset]').addEventListener('click', () => {
+    current = 'breakfast';
+    viewedLater = paired = false;
+    for (const handoff of handoffs) {
+      handoff.open = false;
+      handoff.querySelector('p').textContent = '';
+    }
+    render();
+    momentButtons[0].focus();
+    status.textContent = 'Practice restarted at breakfast.';
   });
 }
 

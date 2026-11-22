@@ -15,14 +15,18 @@
 <section class="bedside-case visual-practice" id="vp-catatonia" aria-labelledby="vp-catatonia-title">
 <header><p class="case-kicker">Catatonia · Fictional morning shift</p>
 <h3 id="vp-catatonia-title">What did you actually see?</h3>
-<p>A handoff describes Kit as “withdrawn today.” The nurse is already asking the resident to assess this change. Open each moment to hear what someone at the table observed.</p></header>
-<div class="vp-options vp-frames">
-<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-breakfast.webp" width="512" height="341" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><span class="vp-time">08:10 · Breakfast</span><strong>At the table with Kit</strong></summary>
-<p class="vp-reply">The nurse says, “Kit lifted the mug, took a sip and set it down. When I asked about breakfast they said, ‘The coffee’s good.’”</p></details>
-<details class="vp-card" data-vp-frame><summary><img src="illustrations/kit-later.webp" width="512" height="341" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><span class="vp-time">09:00 · Same table</span><strong>Back at Kit’s side</strong></summary>
-<p class="vp-reply">You see Kit hold their forearm in the same position throughout your conversation with the nurse. You greet Kit and ask how they feel. You hear no spoken response.</p></details>
+<p>A handoff describes Kit as “withdrawn today.” The nurse is already asking the resident to assess this change. Compare Kit’s forearm at breakfast and later at the same table.</p></header>
+<div class="kit-switch" role="group" aria-label="Choose a moment">
+<button type="button" data-kit-moment="breakfast" aria-pressed="true" aria-controls="kit-breakfast"><strong>08:10</strong> Breakfast</button>
+<button type="button" data-kit-moment="later" aria-pressed="false" aria-controls="kit-later"><strong>09:00</strong> Same table</button>
 </div>
-<p data-vp-compare-hint>Open both moments to practice calling the resident.</p>
+<div class="vp-frames" id="kit-frames">
+<figure id="kit-breakfast" class="vp-card"><img src="illustrations/kit-breakfast.webp" width="512" height="341" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><figcaption class="vp-reply"><strong class="vp-time">08:10 · At the table with Kit</strong>The nurse says, “Kit lifted the mug, took a sip and set it down. When I asked about breakfast they said, ‘The coffee’s good.’”</figcaption></figure>
+<figure id="kit-later" class="vp-card" hidden><img src="illustrations/kit-later.webp" width="512" height="341" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><figcaption class="vp-reply"><strong class="vp-time">09:00 · Back at Kit’s side</strong>You see Kit hold their forearm in the same position throughout your conversation with the nurse. You greet Kit and ask how they feel. You hear no spoken response.</figcaption></figure>
+</div>
+<p data-vp-compare-hint>View 09:00 to practice calling the resident.</p>
+<div class="kit-actions" hidden><button type="button" data-kit-pair aria-pressed="false" aria-controls="kit-frames">Compare both frames</button><button type="button" data-kit-reset>Start over</button></div>
+<p class="fd-visually-hidden" role="status"></p>
 <div class="vp-result" data-vp-compare hidden><h4>Replace “withdrawn” in your call</h4><p>Describe one change in movement and one in speech. What needs a bedside assessment now?</p>
 <details class="vp-handoff"><summary>Compare one way to call the resident</summary><p>“The nurse saw Kit drink and heard them speak at breakfast. Now I see them holding their forearm out, and I heard no reply when I spoke to them. Can you assess Kit with us now for possible catatonia and other causes of this acute change? I’ll help the nurse get current vitals.”</p></details>
     <details class="vp-handoff"><summary>Resident · What do you decide at the bedside?</summary><p>“New mutism and posturing: I’ll score the Bush-Francis screen now and check vitals. If it is positive, I’d give a lorazepam challenge, which tests the diagnosis and starts treatment, and I’d avoid antipsychotics until catatonia is excluded or has responded. If Kit is deteriorating or does not respond, I’d raise ECT with the team without delay.”</p></details></div>
