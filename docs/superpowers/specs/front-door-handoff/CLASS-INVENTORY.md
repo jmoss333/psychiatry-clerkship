@@ -967,6 +967,7 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `.fp-case` / `.mg-case` | Paired bedside fever exams and the clozapine interview timeline. Both keep histories with their source and require a differential and next finding or check before the debrief. |
 | `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
 | `#quieter-on-unit` | The two-row chart compares the same observation across shifts. The handoff uses the patient’s call and any additional observations the learner opened. |
+| `#dinner-map` | Three patient answers add stops to the evening map. The nurse’s callback updates the unit pin and determines whether the handoff can confirm a meal is ready for pickup. |
 | `#therapy-chain` | Two illustrated ward observations bracket the patient’s account. Eliciting and recording both links opens three offers. The team update reflects the selected offer and the patient’s reply. |
 | `#coach-line` | Select a transcript and a student line, invite self-assessment, then rehearse feedback and a next attempt. The transcript and coaching panel stack on narrow screens. |
 | `.visual-practice` | In-reading room choices, paired observation frames, evidence cards, parent accounts and selectable trend charts. Named disclosures keep each answer with its source. The two catatonia frames open independently so learners can compare both observations. |

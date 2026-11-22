@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountDinnerMap(body);
   fdMountTherapyChain(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
@@ -475,6 +476,116 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountDinnerMap(body) {
+  const card = body.querySelector('#dinner-map');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#dm-' + id);
+  const copy = Object.fromEntries(Array.from(find('copy').content.querySelectorAll('[data-copy]'),
+    piece => [piece.dataset.copy, piece.textContent]));
+  const stops = ['route', 'kitchen', 'dinner'];
+  const claims = ['requested', 'confirmed'];
+  const replies = ['pending', 'ready'];
+  const initialPrompt = find('evidence').textContent;
+  const heard = new Set();
+  let report = null;
+
+  function drawMap() {
+    find('pin-pantry').hidden = find('pin-home').hidden = !heard.has('route');
+    find('pin-kitchen').hidden = !heard.has('kitchen');
+    const meal = find('pin-meal');
+    meal.hidden = !heard.has('dinner');
+    meal.textContent = meal.dataset[report || 'requested'];
+    meal.classList.toggle('dm-verified', report === 'ready');
+    find('count').textContent = find('count').dataset.format.replace('{n}', heard.size);
+    find('reset').hidden = heard.size === 0;
+    find('handoff').hidden = heard.size !== stops.length;
+  }
+
+  function clearClaim() {
+    claims.forEach(key => find('claim-' + key).setAttribute('aria-pressed', 'false'));
+    for (const id of ['claim-feedback', 'team-note']) find(id).hidden = true;
+    find('claim-feedback').textContent = find('note-text').textContent = '';
+  }
+
+  function enableClaims(enabled) {
+    claims.forEach(key => { find('claim-' + key).disabled = !enabled; });
+  }
+
+  function ask(key) {
+    const open = find('quote-' + key).hidden;
+    heard.add(key);
+    for (const stop of stops) {
+      const active = open && stop === key;
+      find('stop-' + stop).setAttribute('aria-expanded', String(active));
+      find('quote-' + stop).hidden = !active;
+    }
+    find('map-' + key).textContent = find('map-' + key).dataset.fact;
+    find('stop-' + key).closest('li').classList.add('dm-heard');
+    drawMap();
+    find('announce').textContent = find('count').textContent +
+      (heard.size === stops.length ? '. The handoff is available below.' : '.');
+  }
+
+  function chooseClaim(key) {
+    clearClaim();
+    find('claim-' + key).setAttribute('aria-pressed', 'true');
+    if ((key === 'confirmed') !== (report === 'ready')) {
+      find('claim-feedback').textContent = copy['feedback-' + (report || 'requested')];
+      find('claim-feedback').hidden = false;
+      return;
+    }
+    find('note-text').textContent = copy.account + ' ' + copy[report ? report + '-summary' : 'requested'];
+    find('team-note').hidden = false;
+    find('call-unit').hidden = !find('callback').hidden;
+  }
+
+  function hearCallback(key) {
+    clearClaim();
+    report = key;
+    drawMap();
+    enableClaims(true);
+    replies.forEach(reply => find('reply-' + reply).setAttribute('aria-pressed', String(reply === key)));
+    find('nurse-quote').textContent = copy[key + '-quote'];
+    find('nurse-report').hidden = false;
+    find('evidence').textContent = copy['after-call'];
+    find('announce').textContent = copy[key + '-quote'] + ' Revise the handoff below.';
+  }
+
+  stops.forEach(key => find('stop-' + key).addEventListener('click', () => ask(key)));
+  claims.forEach(key => find('claim-' + key).addEventListener('click', () => chooseClaim(key)));
+  replies.forEach(key => find('reply-' + key).addEventListener('click', () => hearCallback(key)));
+  find('call-unit').addEventListener('click', () => {
+    clearClaim();
+    enableClaims(false);
+    find('evidence').textContent = copy['await-call'];
+    find('callback').hidden = false;
+    find('call-unit').hidden = true;
+    find('call-unit').setAttribute('aria-expanded', 'true');
+    find('reply-pending').focus();
+  });
+  find('reset').addEventListener('click', () => {
+    heard.clear();
+    report = null;
+    drawMap();
+    clearClaim();
+    enableClaims(true);
+    for (const key of stops) {
+      find('map-' + key).textContent = '';
+      find('stop-' + key).closest('li').classList.remove('dm-heard');
+      find('stop-' + key).setAttribute('aria-expanded', 'false');
+      find('quote-' + key).hidden = true;
+    }
+    for (const id of ['call-unit', 'callback', 'nurse-report']) find(id).hidden = true;
+    replies.forEach(key => find('reply-' + key).setAttribute('aria-pressed', 'false'));
+    find('call-unit').setAttribute('aria-expanded', 'false');
+    find('evidence').textContent = initialPrompt;
+    find('nurse-quote').textContent = '';
+    find('announce').textContent = 'Started again. The evening map is empty.';
+    find('stop-route').focus();
+  });
 }
 
 function fdMountTherapyChain(body) {

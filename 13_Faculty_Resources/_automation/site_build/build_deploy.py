@@ -603,6 +603,8 @@ _copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation",
                os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
                os.path.join(OUT, "illustrations", "noor-dayroom.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Nutrition", "illustrations", "evening-route.avif"),
+               os.path.join(OUT, "illustrations", "evening-route.avif"), _missing_req)
 for scene in ("therapy-chain-phone.avif", "therapy-chain-hall.avif"):
     _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Psychotherapy", "illustrations", scene),
                    os.path.join(OUT, "illustrations", scene), _missing_req)
