@@ -3449,6 +3449,18 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#nell-family-meeting .nell-spread{display:grid;gap:var(--fd-space-6);align-items:start;margin-top:var(--fd-space-6)}
+#nell-family-meeting figure img{display:block;width:100%;height:auto;border-radius:var(--fd-radius-xs)}
+#nell-family-meeting figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--fd-space-3);padding-block:var(--fd-space-4);border-bottom:1px solid var(--fd-line);color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#nell-family-meeting figcaption strong{color:var(--fd-teal-deep)}
+#nell-family-meeting .nell-dialogue{min-width:0}
+#nell-family-meeting :is(.nell-dialogue,#nell-feedback,#nell-handoff)>*+*{margin-top:var(--fd-space-5)}
+#nell-family-meeting #nell-options{display:grid;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+#nell-family-meeting #nell-options button{font-weight:500}
+#nell-family-meeting #nell-handoff{border-top:2px solid var(--fd-teal);padding-top:var(--fd-space-5)}
+@container bedside (min-width:40em){
+  #nell-family-meeting .nell-spread{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}
 /* Nico's overnight dials mark individual observations. Unobserved hours stay empty. */
 #night-witness .nw-intro{color:var(--fd-text-mid)}
 #night-witness .nw-signout,#night-witness .nw-reply,#night-witness .nw-feedback{border-inline-start:3px solid var(--fd-olive);padding:var(--fd-space-3) var(--fd-space-5)}
