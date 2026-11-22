@@ -2,6 +2,7 @@
 function fdMountBedsideCases(body) {
   fdMountMorganExposure(body);
   fdMountFeverExams(body);
+  fdMountImpulseHistory(body);
   fdMountJoCall(body);
   fdMountNicoCall(body);
   fdMountLeeTimeline(body);
@@ -19,6 +20,109 @@ function fdMountBedsideCases(body) {
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountImpulseHistory(body) {
+  const card = body.querySelector('#impulse-history');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#ih-' + id);
+  const sources = Array.from(card.querySelectorAll('[data-ih-source]'));
+  const opened = new Set();
+  const periods = ['baseline', 'week'];
+  const empty = find('baseline').firstElementChild.cloneNode(true);
+  const count = find('count');
+  const counts = [count.textContent, count.dataset.one, count.dataset.both];
+  const options = () => find('options-' + (opened.size === 2 ? 'both' : [...opened][0])).content;
+  const account = id => find('account-' + id).content;
+
+  function clearNote() {
+    find('note').hidden = find('trace').hidden = find('feedback').hidden = true;
+    for (const id of ['note-line', 'trace', 'feedback']) find(id).replaceChildren();
+  }
+  function drawHistory() {
+    count.textContent = counts[opened.size];
+    for (const period of periods) {
+      const entries = find(period);
+      entries.replaceChildren();
+      if (!opened.size) entries.append(empty.cloneNode(true));
+      for (const button of sources) {
+        const id = button.dataset.ihSource;
+        if (!opened.has(id)) continue;
+        const record = account(id);
+        const entry = document.createElement('p');
+        const speaker = document.createElement('small');
+        speaker.textContent = record.querySelector('[data-speaker]').textContent;
+        entry.append(speaker, record.querySelector('[data-' + period + ']').textContent);
+        entries.append(entry);
+      }
+    }
+    find('reason').hidden = !opened.size;
+    find('choices').replaceChildren();
+    if (opened.size) {
+      for (const option of options().querySelectorAll('button')) find('choices').append(option.cloneNode(true));
+    }
+    clearNote();
+  }
+  function showWords(id, target, highlight) {
+    const record = account(id);
+    const label = document.createElement('p');
+    label.className = 'case-kicker';
+    label.textContent = record.querySelector('[data-speaker]').textContent;
+    const quote = record.querySelector('blockquote').cloneNode(true);
+    if (highlight) {
+      quote.id = 'ih-trace-quote';
+      for (const phrase of quote.querySelectorAll('span')) {
+        const mark = document.createElement('mark');
+        mark.textContent = phrase.textContent;
+        phrase.replaceWith(mark);
+      }
+    }
+    target.hidden = false;
+    target.replaceChildren(label, quote);
+  }
+
+  for (const button of sources) button.addEventListener('click', () => {
+    const id = button.dataset.ihSource;
+    if (!opened.has(id)) {
+      opened.add(id);
+      drawHistory();
+    }
+    for (const source of sources) source.setAttribute('aria-pressed', String(source === button));
+    showWords(id, find('quote'), false);
+    find('reset').hidden = false;
+  });
+  find('choices').addEventListener('click', event => {
+    const choice = event.target.closest('[data-choice]');
+    if (!choice) return;
+    clearNote();
+    for (const option of find('choices').children) option.setAttribute('aria-pressed', String(option === choice));
+    const key = choice.dataset.choice;
+    if (key !== 'supported') {
+      find('feedback').hidden = false;
+      find('feedback').textContent = options().querySelector('[data-feedback="' + key + '"]').textContent;
+      return;
+    }
+    for (const source of sources) {
+      const id = source.dataset.ihSource;
+      if (opened.has(id)) find('note-line').append(account(id).querySelector('[data-ih-trace]').cloneNode(true), ' ');
+    }
+    find('note-line').append(options().querySelector('[data-next]').textContent);
+    find('note').hidden = false;
+    find('note').focus();
+  });
+  find('note-line').addEventListener('click', event => {
+    const claim = event.target.closest('[data-ih-trace]');
+    if (claim) showWords(claim.dataset.ihTrace, find('trace'), true);
+  });
+  find('reset').addEventListener('click', () => {
+    opened.clear();
+    drawHistory();
+    for (const source of sources) source.setAttribute('aria-pressed', 'false');
+    find('quote').replaceChildren();
+    find('reset').hidden = find('quote').hidden = true;
+    sources[0].focus();
+  });
 }
 
 function fdMountOvernightPlan(body) {

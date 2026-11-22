@@ -3252,6 +3252,91 @@ test.describe('Interactive readings', () => {
     await details.locator(':scope > summary').press('Enter');
   }
 
+  for (const first of ['patient', 'sister']) {
+    test(`Impulse-Control history ties the rounds note to the interviews opened, ${first} first`, async ({ page }) => {
+      const card = await openActivity(page, 't_impulse.md', 'impulse-history', 'Initial workup');
+      await expect(card.getByRole('heading', { name: 'Is this new for them?' })).toBeVisible();
+      await expect(card.locator('xpath=following::*[@id="guide-acute-inpatient-management"]')).toHaveCount(1);
+      const accounts = {
+        patient: {
+          ask: 'Ask the patient', baseline: 'Has raised their voice in arguments before.', recent: 'Reports little sleep since Thursday.',
+          note: 'The patient describes past arguments and little sleep since Thursday.', newFact: 'little sleep since Thursday',
+          quotes: ['I’ve gotten loud in arguments before.', 'What’s new is that I’ve barely slept since Thursday.'],
+        },
+        sister: {
+          ask: 'Call their sister', baseline: 'Describes years of arguments.', recent: 'Reports new, hour-long calls at 3 a.m.',
+          note: 'Their sister describes longstanding arguments and new calls at 3 a.m.', newFact: 'new calls at 3 a.m.',
+          quotes: ['We’ve argued for years.', 'Calling me at three in the morning to talk for an hour? That started this week.'],
+        },
+      };
+      const decisions = {
+        patient: { wrong: { need: 'how they felt the next day', usual: 'What did the patient say had changed' }, followup: 'how they felt the next day' },
+        sister: { wrong: { usual: 'Which part of her account is new?', sleep: 'Ask the patient how much they slept' }, followup: 'walk me through one of those nights' },
+        both: { wrong: { cause: 'Neither person said what caused the outburst', need: 'How the patient felt the next day' }, followup: 'how their daytime energy compares with usual' },
+      };
+      const note = card.locator('#ih-note');
+      const line = card.locator('#ih-note-line');
+      const trace = card.locator('#ih-trace');
+      const count = card.locator('#ih-count');
+      const feedback = card.locator('#ih-feedback');
+      const timeline = card.locator('#ih-timeline');
+      const source = key => card.getByRole('button', { name: accounts[key].ask, exact: true });
+      const supported = card.locator('button[data-choice="supported"]');
+      const other = first === 'patient' ? 'sister' : 'patient';
+
+      await expect(count).toHaveText('Nurse’s report only');
+      await expect(timeline).toContainText('Yelled and left group after a phone call.');
+      await expect(card.getByRole('heading', { name: 'What would you say on rounds?' })).toBeHidden();
+      for (const selected of [[first], [first, other]]) {
+        const newest = selected.at(-1);
+        await source(newest).click();
+        await expect(card.locator('#ih-quote')).toContainText(accounts[newest].quotes.join(' '));
+        await expect(count).toHaveText(selected.length === 1 ? '1 interview opened' : '2 interviews opened');
+        await expect(note).toBeHidden();
+        await expect(trace).toBeHidden();
+        await expect(supported).toHaveAttribute('aria-pressed', 'false');
+        for (const [id, account] of Object.entries(accounts)) {
+          for (const [period, fact] of [['#ih-baseline', account.baseline], ['#ih-week', account.recent]]) {
+            if (selected.includes(id)) await expect(timeline.locator(period)).toContainText(fact);
+            else await expect(timeline).not.toContainText(fact);
+          }
+        }
+
+        const decision = decisions[selected.length === 1 ? first : 'both'];
+        for (const [choice, correction] of Object.entries(decision.wrong)) {
+          await card.locator(`button[data-choice="${choice}"]`).click();
+          await expect(feedback).toBeVisible();
+          await expect(feedback).toContainText(correction);
+          await expect(note).toBeHidden();
+        }
+        await supported.click();
+        await expect(feedback).toBeHidden();
+        await expect(note).toBeVisible();
+        await expect(line).toContainText(decision.followup);
+        await expect(line.getByRole('button')).toHaveCount(selected.length);
+        if (selected.length === 1) await expect(line).not.toContainText(accounts[other].newFact);
+        for (const id of selected) {
+          await line.getByRole('button', { name: accounts[id].note, exact: true }).click();
+          await expect(trace).toBeVisible();
+          await expect(trace.locator('mark')).toHaveText(accounts[id].quotes);
+        }
+        const revision = await line.innerText();
+        await source(first).click();
+        await expect(note).toBeVisible();
+        await expect(line).toHaveText(revision);
+        await expect(supported).toHaveAttribute('aria-pressed', 'true');
+      }
+      await card.getByRole('button', { name: 'Start again' }).click();
+      await expect(count).toHaveText('Nurse’s report only');
+      await expect(timeline.getByText('History to ask about', { exact: true })).toHaveCount(2);
+      await expect(card.locator('#ih-quote')).toBeHidden();
+      await expect(supported).toHaveCount(0);
+      await expect(note).toBeHidden();
+      await expect(trace).toBeHidden();
+      await expect(source('patient')).toBeFocused();
+    });
+  }
+
   test('withdrawal timeline ties the differential to changes in usual intake', async ({ page }) => {
     const card = await openActivity(page, 't_sud.md', 'aw-timeline', 'Initial workup');
     const choose = async (lead, check) => {
