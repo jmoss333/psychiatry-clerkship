@@ -28,15 +28,15 @@ async function checkRevisedLine(line, chosen) {
 }
 
 for (const [chosen, other, width] of [['roommate', 'text', 390], ['text', 'roommate', 320]]) {
-  test(`Luz rehearses the ${chosen} route from a fresh Safety Planning reader at ${width}px`, async ({ page }, testInfo) => {
+  test(`Lucía rehearses the ${chosen} route from a fresh Safety Planning reader at ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 844 });
     const response = await page.goto('/?page=suicide.md');
     expect(response.ok()).toBe(true);
     const servedAudience = (await response.text()).match(/var FD_AUDIENCE="([^"]+)"/)?.[1];
     expect(servedAudience).toBe(audienceOf(testInfo.project.name));
     const article = page.locator('.fd-reader .fd-article[data-ref="suicide.md"] .fd-article__body');
-    const activity = article.locator('#luz-rehearsal');
-    const byId = id => activity.locator('#luz-' + id);
+    const activity = article.locator('#lucia-rehearsal');
+    const byId = id => activity.locator('#lucia-' + id);
     const ask = key => byId('ask-' + key);
     const pick = key => byId('pick-' + key);
     const result = byId('result');
@@ -44,13 +44,15 @@ for (const [chosen, other, width] of [['roommate', 'text', 390], ['text', 'roomm
     const feedback = byId('feedback');
 
     await expect(activity).toBeVisible();
+    await expect(activity).toContainText('you and Lucía rehearse');
+    await expect(activity).not.toContainText(/\bLuz\b/);
     const management = article.getByText(/^Management\.?$/);
     const student = article.getByText(/^What the student does\.?$/);
     await expect(management).toBeVisible();
     await expect(student).toBeVisible();
     const labels = await management.or(activity).or(student).evaluateAll(nodes =>
-      nodes.map(node => node.id === 'luz-rehearsal' ? node.id : node.textContent.trim().replace(/\.$/, '')));
-    expect(labels).toEqual(['Management', 'luz-rehearsal', 'What the student does']);
+      nodes.map(node => node.id === 'lucia-rehearsal' ? node.id : node.textContent.trim().replace(/\.$/, '')));
+    expect(labels).toEqual(['Management', 'lucia-rehearsal', 'What the student does']);
 
     const contacts = article.locator('blockquote:has(.crisis-block-hook)');
     await expect(contacts).toBeVisible();
@@ -78,6 +80,7 @@ for (const [chosen, other, width] of [['roommate', 'text', 390], ['text', 'roomm
     await pick('sister').press('Space');
     await apply.press('Enter');
     await expect(feedback).toBeVisible();
+    await expect(feedback).toBeFocused();
     await expect(feedback).toContainText(/silent phone/);
     await expect(result).toBeHidden();
 

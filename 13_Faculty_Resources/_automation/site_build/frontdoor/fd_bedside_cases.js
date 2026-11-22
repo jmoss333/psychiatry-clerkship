@@ -22,12 +22,12 @@ function fdMountBedsideCases(body) {
 }
 
 function fdMountOvernightPlan(body) {
-  const card = body.querySelector('#luz-rehearsal');
+  const card = body.querySelector('#lucia-rehearsal');
   if (!card || card.dataset.mounted) return;
   card.dataset.mounted = 'true';
-  const find = key => card.querySelector('#luz-' + key);
-  const questions = card.querySelectorAll('button[aria-controls^="luz-reply-"]');
-  const choices = card.querySelectorAll('input[name="luz-revision"]');
+  const find = key => card.querySelector('#lucia-' + key);
+  const questions = card.querySelectorAll('button[aria-controls^="lucia-reply-"]');
+  const choices = card.querySelectorAll('input[name="lucia-revision"]');
 
   function clearResult() {
     find('result').hidden = find('feedback').hidden = true;
@@ -49,7 +49,7 @@ function fdMountOvernightPlan(body) {
   find('try-night').addEventListener('click', () => showNight(true));
   for (const question of questions) {
     const reply = card.querySelector('#' + question.getAttribute('aria-controls'));
-    const choice = find('pick-' + question.id.slice('luz-ask-'.length));
+    const choice = find('pick-' + question.id.slice('lucia-ask-'.length));
     question.addEventListener('click', () => {
       const opening = reply.hidden;
       reply.hidden = !opening;
@@ -69,6 +69,7 @@ function fdMountOvernightPlan(body) {
     clearResult();
     if (selected.value === 'sister') {
       find('feedback').hidden = false;
+      find('feedback').focus();
       return;
     }
     find('new-line').textContent = find('line-' + selected.value).content.textContent;

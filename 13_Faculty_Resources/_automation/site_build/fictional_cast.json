@@ -351,6 +351,15 @@
       "pages": [
         "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md"
       ]
+    },
+    {
+      "id": "lucia-safety-planning",
+      "name": "Lucía",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md"
+      ]
     }
   ],
   "ignore": []

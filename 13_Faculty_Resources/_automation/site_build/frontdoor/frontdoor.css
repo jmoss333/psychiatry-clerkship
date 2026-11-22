@@ -3449,25 +3449,25 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
-/* Luz rehearses a daytime support plan against the first night home. */
-#luz-rehearsal .luz-scene{display:grid;grid-template-columns:1fr 1fr;gap:var(--fd-space-6);align-items:center}
-#luz-rehearsal figure{overflow:hidden;border-radius:var(--fd-radius-sm);background:var(--fd-teal-deep)}
-#luz-rehearsal figure img{display:block;width:100%;height:auto;aspect-ratio:4/3}
-#luz-rehearsal figcaption{padding:var(--fd-space-4) var(--fd-space-5);font-weight:600;color:var(--fd-on-accent);background:var(--fd-teal-deep)}
-#luz-rehearsal .luz-paper{margin:0;padding:var(--fd-space-6);border:1px solid var(--fd-line);border-inline-start:3px solid var(--fd-olive);background:var(--fd-surface)}
-#luz-rehearsal .luz-paper :is(blockquote,dd){margin:.25em 0 0;padding:0;border:0;color:var(--fd-text)}
-#luz-rehearsal .luz-paper blockquote,#luz-new-line{font-family:Georgia,serif;font-size:1.2em}
-#luz-rehearsal dt{font-weight:650;color:var(--fd-text-mid)}
-#luz-rehearsal dt:not(:first-child){margin-top:.9em;padding-top:.75em;border-top:1px solid var(--fd-line)}
-#luz-rehearsal fieldset{min-width:0;margin:.5em 0 0;padding:0;border:0}
-#luz-rehearsal legend{font:1.3em Georgia,serif}
-#luz-rehearsal fieldset label{display:flex;gap:.6em;align-items:center;min-height:44px;margin-top:.45em;padding:.55em .75em;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);cursor:pointer}
-#luz-rehearsal label:has(:checked){background:var(--fd-teal-wash);border-color:var(--fd-teal)}
-#luz-rehearsal input{flex:none;accent-color:var(--fd-teal-deep)}
-#luz-rehearsal button:disabled,#luz-rehearsal label:has(:disabled){color:var(--fd-text-mid);background:var(--fd-surface-warm);cursor:default}
-#luz-rehearsal button[aria-expanded=true]{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+/* Lucía rehearses a daytime support plan against the first night home. */
+#lucia-rehearsal .lucia-scene{display:grid;grid-template-columns:1fr 1fr;gap:var(--fd-space-6);align-items:center}
+#lucia-rehearsal figure{overflow:hidden;border-radius:var(--fd-radius-sm);background:var(--fd-teal-deep)}
+#lucia-rehearsal figure img{display:block;width:100%;height:auto;aspect-ratio:4/3}
+#lucia-rehearsal figcaption{padding:var(--fd-space-4) var(--fd-space-5);font-weight:600;color:var(--fd-on-accent);background:var(--fd-teal-deep)}
+#lucia-rehearsal .lucia-paper{margin:0;padding:var(--fd-space-6);border:1px solid var(--fd-line);border-inline-start:3px solid var(--fd-olive);background:var(--fd-surface)}
+#lucia-rehearsal .lucia-paper :is(blockquote,dd){margin:.25em 0 0;padding:0;border:0;color:var(--fd-text)}
+#lucia-rehearsal .lucia-paper blockquote,#lucia-new-line{font-family:Georgia,serif;font-size:1.2em}
+#lucia-rehearsal dt{font-weight:650;color:var(--fd-text-mid)}
+#lucia-rehearsal dt:not(:first-child){margin-top:.9em;padding-top:.75em;border-top:1px solid var(--fd-line)}
+#lucia-rehearsal fieldset{min-width:0;margin:.5em 0 0;padding:0;border:0}
+#lucia-rehearsal legend{font:1.3em Georgia,serif}
+#lucia-rehearsal fieldset label{display:flex;gap:.6em;align-items:center;min-height:44px;margin-top:.45em;padding:.55em .75em;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);cursor:pointer}
+#lucia-rehearsal label:has(:checked){background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+#lucia-rehearsal input{flex:none;accent-color:var(--fd-teal-deep)}
+#lucia-rehearsal button:disabled,#lucia-rehearsal label:has(:disabled){color:var(--fd-text-mid);background:var(--fd-surface-warm);cursor:default}
+#lucia-rehearsal button[aria-expanded=true]{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
 @container bedside (max-width:560px){
-  #luz-rehearsal .luz-scene{grid-template-columns:minmax(0,1fr)}
+  #lucia-rehearsal .lucia-scene{grid-template-columns:minmax(0,1fr)}
 }
 /* Nico's overnight dials mark individual observations. Unobserved hours stay empty. */
 #night-witness .nw-intro{color:var(--fd-text-mid)}
