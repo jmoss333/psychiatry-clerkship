@@ -1088,6 +1088,8 @@ export function createProductionRealtimeHandler(read = readEnv) {
   const now = Date.now;
   const learnerKey = read('SP_STUDENT_PASSCODE');
   const voiceKey = runtime.danaPilot ? read('SP_REALTIME_PILOT_PASSCODE') : learnerKey;
+  const receiptSecret = read('SP_SPEECH_TICKET_SECRET');
+  const hasReceiptSecret = typeof receiptSecret === 'string' && Buffer.byteLength(receiptSecret) >= 32;
   let pilotEndsAt;
   if (runtime.danaPilot) {
     const end = read('SP_REALTIME_PILOT_ENDS_AT');
@@ -1098,7 +1100,7 @@ export function createProductionRealtimeHandler(read = readEnv) {
       || voiceKey !== voiceKey.trim() || voiceKey === learnerKey
       || !Number.isFinite(pilotEndsAt) || new Date(pilotEndsAt).toISOString() !== end
       || !explicitLimits.every((name) => nonempty(read(name))) || !validLedgerPolicy(runtime)
-      || !nonempty(read('OPENAI_API_KEY')) || Buffer.byteLength(read('SP_SPEECH_TICKET_SECRET') ?? '') < 32) {
+      || !nonempty(read('OPENAI_API_KEY')) || !hasReceiptSecret) {
       throw invalidConfiguration();
     }
   }
@@ -1114,7 +1116,7 @@ export function createProductionRealtimeHandler(read = readEnv) {
     transcriptionModel: runtime.transcriptionModel,
     deadlineMinutes: runtime.deadlineMinutes,
     rotationId: runtime.rotationId,
-    credentialHash: credentialHash(voiceKey),
+    credentialHash: runtime.enabled && hasReceiptSecret ? credentialHash(voiceKey, receiptSecret) : null,
     pilotEndsAt,
     now,
   });
@@ -1142,7 +1144,7 @@ export function createProductionRealtimeHandler(read = readEnv) {
     const byTurns = codecs.get(clock);
     if (!byTurns.has(maxTurns)) {
       byTurns.set(maxTurns, createReceiptCodec({
-        secret: read('SP_SPEECH_TICKET_SECRET'),
+        secret: receiptSecret,
         clock,
         maxTurns,
       }));

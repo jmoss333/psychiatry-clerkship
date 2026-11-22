@@ -44,6 +44,7 @@ const ORIGIN = 'https://learn.example.test';
 const STUDENT_KEY = 'student-secret';
 const OPERATIONS_KEY = 'operations-secret';
 const RECEIPT_SECRET = '0123456789abcdef0123456789abcdef';
+const STUDENT_CREDENTIAL_HASH = credentialHash(STUDENT_KEY, RECEIPT_SECRET);
 const ROTATION = 'rotation-2026-09';
 const MODEL = 'gpt-realtime-mini-2025-12-15';
 const TRANSCRIPTION = 'gpt-4o-mini-transcribe';
@@ -228,7 +229,7 @@ function receiptCodecFactory() {
 }
 
 function bindingFor({ caseId = CASE, credential = STUDENT_KEY, origin = ORIGIN, packHash = PACK_HASH } = {}) {
-  return receiptBinding({ caseId, packHash, origin, rotationId: ROTATION, credentialHash: credentialHash(credential) });
+  return receiptBinding({ caseId, packHash, origin, rotationId: ROTATION, credentialHash: credentialHash(credential, RECEIPT_SECRET) });
 }
 
 // What the provider must receive: the shared module's session object with the
@@ -280,7 +281,7 @@ function enabledHandler({
       transcriptionModel: TRANSCRIPTION,
       deadlineMinutes: 15,
       rotationId: ROTATION,
-      credentialHash: credentialHash(STUDENT_KEY),
+      credentialHash: STUDENT_CREDENTIAL_HASH,
       now,
       randomBytes(size) {
         assert.equal(size, 16);
@@ -438,7 +439,7 @@ test('enabled without both model pins, or with an out-of-range deadline, fails c
     transcriptionModel: TRANSCRIPTION,
     deadlineMinutes: 15,
     rotationId: ROTATION,
-    credentialHash: credentialHash(STUDENT_KEY),
+    credentialHash: STUDENT_CREDENTIAL_HASH,
     now: () => NOW,
   };
   for (const broken of [
@@ -789,7 +790,7 @@ test('turn: cap, forged, foreign-case and replaced-passcode receipts are refused
   const replaced = enabledHandler({
     fake: harness.fake,
     http: createTestHttp({ studentKey: 'replaced-passcode' }),
-    config: { credentialHash: credentialHash('replaced-passcode') },
+    config: { credentialHash: credentialHash('replaced-passcode', RECEIPT_SECRET) },
   });
   const afterRotation = await replaced.handler(jsonRequest('turn', turnBody(started.receipt, itemsFrom(['Hello?'])), { studentKey: 'replaced-passcode' }));
   assert.equal(afterRotation.status, 400);
