@@ -11,6 +11,7 @@ function fdMountBedsideCases(body) {
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
+  fdMountBellInterview(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountPerinatalComparison(body);
@@ -356,6 +357,86 @@ function fdMountPerinatalComparison(body) {
       fdBedsideFocus(question.querySelector('summary'));
     });
   }
+}
+
+function fdMountBellInterview(body) {
+  const card = body.querySelector('#bell-hearing');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = key => card.querySelector('#bell-' + key);
+  const action = key => card.querySelector('[data-action="' + key + '"]');
+  const art = find('illustration');
+  const doorway = {
+    src: art.getAttribute('src'), alt: art.alt, position: find('position').textContent,
+    caption: find('caption').textContent, question: find('student-line').textContent,
+    reply: find('patient-line').textContent, draft: find('note-text').textContent
+  };
+  const noteLabel = find('note-label').textContent;
+  const initialPrompt = find('prompt').textContent;
+  let turn;
+  function field(key) {
+    return turn.content.querySelector('[data-field="' + key + '"]');
+  }
+
+  function interview(stage) {
+    turn = card.querySelector('template[data-bell-stage="' + stage + '"]');
+    const seated = stage === 'chair';
+    const canRevise = seated || stage === 'repeat';
+    const image = seated ? field('art') : null;
+    const src = image ? image.dataset.src : doorway.src;
+    if (art.getAttribute('src') !== src) art.setAttribute('src', src);
+    art.alt = image ? image.textContent : doorway.alt;
+    find('position').textContent = seated ? field('position').textContent : doorway.position;
+    find('caption').textContent = seated ? field('caption').textContent : doorway.caption;
+    find('student-line').textContent = stage === 'ask' ? field('question').textContent : doorway.question;
+    find('patient-line').textContent = turn ? field('reply').textContent : doorway.reply;
+    find('note-label').textContent = noteLabel;
+    find('note-text').textContent = doorway.draft;
+    find('note').classList.remove('bell-revised');
+    find('feedback').hidden = true;
+    find('feedback').textContent = '';
+    find('decision').hidden = false;
+    find('prompt').textContent = canRevise ? 'Revise the rounds note' : stage === 'ask' ? 'Try it her way' : initialPrompt;
+    for (const group of card.querySelectorAll('[data-bell-at]')) {
+      group.hidden = !group.dataset.bellAt.split(' ').includes(stage);
+    }
+    if (canRevise) {
+      const options = Array.from(turn.content.querySelectorAll('[data-field="supported"],[data-field="inference"]'));
+      card.querySelectorAll('[data-bell-option]').forEach((button, i) => {
+        button.dataset.action = options[i].dataset.field;
+        button.textContent = options[i].textContent;
+      });
+    }
+    action('seat').hidden = stage !== 'ask';
+    action('repair').hidden = stage !== 'repeat';
+    action('restart').hidden = stage === 'start';
+    if (seated) find('scene').focus();
+    else if (stage === 'start') find('title').focus();
+    else find('exchange').focus();
+  }
+
+  card.addEventListener('click', event => {
+    const button = event.target.closest('button[data-action]');
+    if (!button || !card.contains(button)) return;
+    switch (button.dataset.action) {
+      case 'repeat': interview('repeat'); break;
+      case 'ask': case 'repair': interview('ask'); break;
+      case 'move': case 'seat': interview('chair'); break;
+      case 'restart': interview('start'); break;
+      case 'inference':
+        find('feedback').textContent = field('feedback').textContent;
+        find('feedback').hidden = false;
+        find('feedback').focus();
+        break;
+      case 'supported':
+        find('note-label').textContent = 'Revised rounds note';
+        find('note-text').textContent = field('note').textContent;
+        find('note').classList.add('bell-revised');
+        find('decision').hidden = true;
+        find('note').focus();
+        break;
+    }
+  });
 }
 
 function fdMountDayroomChoices(body) {

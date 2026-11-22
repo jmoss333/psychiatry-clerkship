@@ -3449,6 +3449,24 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* Ms. Bell's requested chair changes the scene, her reply and the evidence for the note. */
+#bell-hearing .bell-spread{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:var(--fd-space-7);align-items:start}
+#bell-hearing .bell-plate{position:relative;overflow:hidden;border-radius:var(--fd-radius-sm)}
+#bell-hearing img{display:block;width:100%;height:auto}
+#bell-hearing [data-action=seat]{position:absolute;left:39%;top:70%;transform:translate(-50%,-50%);border:2px solid var(--fd-surface);border-radius:var(--fd-radius-pill);background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#bell-hearing figcaption{padding-block:var(--fd-space-4);border-bottom:1px solid var(--fd-line);color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#bell-hearing figcaption strong{margin-inline-end:var(--fd-space-3);color:var(--fd-teal-deep)}
+#bell-exchange,#bell-decision,#bell-hearing .bell-options{display:grid;gap:var(--fd-space-4);margin-top:var(--fd-space-6)}
+#bell-exchange>div{display:grid;grid-template-columns:3.5em minmax(0,1fr);gap:var(--fd-space-3);align-items:baseline}
+#bell-exchange blockquote{margin:0}
+#bell-note{padding:var(--fd-space-6);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
+#bell-note.bell-revised{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+#bell-note-text{font-family:Georgia,serif}
+#bell-hearing .bell-options{margin-top:0}
+#bell-hearing .case-choices:not(:has(button:not([hidden]))){display:none}
+@container bedside (max-width:600px){
+  #bell-hearing .bell-spread{grid-template-columns:minmax(0,1fr)}
+}
 /* Nico's overnight dials mark individual observations. Unobserved hours stay empty. */
 #night-witness .nw-intro{color:var(--fd-text-mid)}
 #night-witness .nw-signout,#night-witness .nw-reply,#night-witness .nw-feedback{border-inline-start:3px solid var(--fd-olive);padding:var(--fd-space-3) var(--fd-space-5)}
