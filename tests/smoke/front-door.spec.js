@@ -3485,31 +3485,111 @@ test.describe('Interactive readings', () => {
     }
   });
 
-  test('catatonia comparison requires both moments and clears the sample on close', async ({ page }) => {
+  test('catatonia comparison shows Kit in the same frame and reveals each handoff separately', async ({ page }) => {
     const activity = await openActivity(page, 'catatonia.md', 'vp-catatonia', 'How it presents on the unit');
-    const frames = activity.locator('details[data-vp-frame]');
+    const breakfast = activity.locator('#kit-breakfast');
+    const later = activity.locator('#kit-later');
+    const breakfastButton = activity.locator('button[data-kit-moment="breakfast"]');
+    const laterButton = activity.locator('button[data-kit-moment="later"]');
+    const pair = activity.locator('[data-kit-pair]');
     const compare = activity.locator('[data-vp-compare]');
-    await expect(frames).toHaveCount(2);
+    const handoffs = compare.locator('details.vp-handoff');
+    const student = handoffs.first();
+    const resident = handoffs.last();
+    const homeHistory = activity.locator('header p').filter({ hasText: 'Before admission.' });
+    const admission = activity.locator('header p').filter({ hasText: 'On admission.' });
+    // Measure relative to the activity so keyboard scrolling cannot shift the comparison.
+    const imageRect = frame => frame.locator('img').evaluate(image => {
+      const box = image.getBoundingClientRect();
+      const card = image.closest('#vp-catatonia').getBoundingClientRect();
+      return { x: box.x - card.x, y: box.y - card.y, width: box.width, height: box.height };
+    });
+
+    await expect(homeHistory).toBeVisible();
+    await expect(homeHistory).toContainText(/sister.*For three days they’ve barely said a word/);
+    await expect(homeHistory).toContainText('sit in the same position, even after everyone else gets up');
+    await expect(admission).toBeVisible();
+    await expect(admission).toContainText(/resident.*long pauses before answering and held one arm out/);
+    await expect(admission).toContainText('first morning on the unit');
+    await expect(breakfastButton).toHaveAccessibleName(/At breakfast/i);
+    await expect(laterButton).toHaveAccessibleName(/Bedside recheck/i);
+    await expect(breakfast).toBeVisible();
+    await expect(later).toBeHidden();
     await expect(compare).toBeHidden();
-    await toggleWithKeyboard(frames.last());
-    await expect(frames.last().locator('.vp-reply')).toBeVisible();
-    await expect(compare).toBeHidden();
-    await toggleWithKeyboard(frames.first());
+    await expect(pair).toBeHidden();
+    await expect(breakfastButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(breakfast.locator('img')).toHaveAttribute('src', /kit-breakfast\.webp$/);
+    await expect.poll(() => breakfast.locator('img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+    await expect(breakfast.locator('figcaption')).toContainText('The nurse says');
+    await expect(breakfast.locator('figcaption')).toContainText('took a sip');
+    await expect(breakfast.locator('figcaption')).toContainText('The coffee’s good');
+    const firstRect = await imageRect(breakfast);
+    expect(firstRect.width).toBeGreaterThan(0);
+    expect(firstRect.height).toBeGreaterThan(0);
+    await laterButton.press('Enter');
+    await expect(breakfast).toBeHidden();
+    await expect(later).toBeVisible();
+    await expect(laterButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(later.locator('img')).toHaveAttribute('src', /kit-later\.webp$/);
+    await expect.poll(() => later.locator('img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+    await expect(later.locator('figcaption')).toContainText('forearm in the same position');
+    await expect(later.locator('figcaption')).toContainText('no spoken response');
+    const laterRect = await imageRect(later);
+    for (const dimension of ['x', 'y', 'width', 'height']) {
+      expect(laterRect[dimension]).toBeCloseTo(firstRect[dimension], 0);
+    }
     await expect(compare).toBeVisible();
-    const handoff = compare.locator('details').filter({has: page.getByText('Compare one way to call the resident', { exact: true })});
-    const decision = compare.locator('details').filter({has: page.getByText('Resident · What do you decide at the bedside?', { exact: true })});
-    await toggleWithKeyboard(handoff);
-    await expect(handoff.locator('p')).toContainText('nurse saw Kit drink');
-    await expect(handoff.locator('p')).toContainText('I heard no reply');
-    await toggleWithKeyboard(decision);
-    await expect(decision.locator('p')).toContainText('lorazepam challenge');
-    await toggleWithKeyboard(frames.last());
+    await breakfastButton.press('Space');
+    await expect(breakfast).toBeVisible();
+    await expect(later).toBeHidden();
+    await pair.press('Enter');
+    await expect(breakfast).toBeVisible();
+    await expect(later).toBeVisible();
+    await expect(pair).toHaveAttribute('aria-pressed', 'true');
+    const pairedBreakfast = await imageRect(breakfast);
+    const pairedLater = await imageRect(later);
+    expect(pairedLater.width).toBeCloseTo(pairedBreakfast.width, 0);
+    expect(pairedLater.height).toBeCloseTo(pairedBreakfast.height, 0);
+    await pair.press('Enter');
+    await expect(breakfast).toBeVisible();
+    await expect(later).toBeHidden();
+    await expect(pair).toHaveAttribute('aria-pressed', 'false');
+    await expect(handoffs).toHaveCount(2);
+    await expect(student).toHaveJSProperty('open', false);
+    await expect(resident).toHaveJSProperty('open', false);
+
+    // Browser search or printing can open native details without a learner choosing the reveal.
+    await resident.evaluate(details => new Promise(resolve => {
+      details.addEventListener('toggle', resolve, { once: true });
+      details.open = true;
+    }));
+    await expect(resident.locator('p')).toBeEmpty();
+    await resident.evaluate(details => { details.open = false; });
+
+    await toggleWithKeyboard(student);
+    await expect(student.locator('p')).toBeVisible();
+    await expect(student.locator('p')).toContainText('Kit’s sister noticed the change three days ago');
+    await expect(student.locator('p')).toContainText('The nurse saw Kit drink');
+    await expect(student.locator('p')).toContainText('I heard no reply');
+    await expect(resident).toHaveJSProperty('open', false);
+    await toggleWithKeyboard(student);
+    await toggleWithKeyboard(resident);
+    await expect(resident.locator('p')).toBeVisible();
+    await expect(resident.locator('p')).toContainText('The signs were already present on admission');
+    await expect(resident.locator('p')).toContainText('Kit spoke briefly at breakfast');
+    await expect(resident.locator('p')).toContainText('catatonia');
+    await expect(student).toHaveJSProperty('open', false);
+
+    await activity.locator('[data-kit-reset]').press('Enter');
+    await expect(breakfast).toBeVisible();
+    await expect(later).toBeHidden();
     await expect(compare).toBeHidden();
-    await expect(decision).toHaveJSProperty('open', false);
-    await expect(handoff).toHaveJSProperty('open', false);
-    await toggleWithKeyboard(frames.last());
+    await expect(student).toHaveJSProperty('open', false);
+    await expect(resident).toHaveJSProperty('open', false);
+    await laterButton.press('Enter');
     await expect(compare).toBeVisible();
-    await expect(handoff.locator('p')).toBeHidden();
+    await expect(student.locator('p')).toBeEmpty();
+    await expect(resident.locator('p')).toBeEmpty();
   });
 
   test('medical workup distinguishes copied text, firsthand findings and the opening line', async ({ page }) => {
