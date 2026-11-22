@@ -242,7 +242,8 @@ if _pp_problems:
 _qb_public=qbank_public.project_question_bank(
     json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
 with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
-    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    # The released bank is precached on phones. Whitespace counts towards the offline budget.
+    json.dump(_qb_public,_fh,ensure_ascii=False,separators=(",",":"))
     _fh.write("\n")
 # Placement is another publication of question text, so it takes the same released
 # bytes as practice and Anki. Missing categories are reported by static QA.
@@ -602,6 +603,9 @@ _copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation",
                os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
                os.path.join(OUT, "illustrations", "noor-dayroom.webp"), _missing_req)
+for scene in ("therapy-chain-phone.avif", "therapy-chain-hall.avif"):
+    _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Psychotherapy", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
