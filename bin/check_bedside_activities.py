@@ -36,6 +36,15 @@ COUNTRY = (".uk", ".au", ".ca", ".nz", ".ie")
 class ActivityText(HTMLParser):
     """Strip tag attributes from language checks and read link targets from anchors only."""
 
+    SEPARATORS = {
+        "address", "article", "aside", "blockquote", "br", "button", "caption",
+        "dd", "details", "dialog", "div", "dl", "dt", "fieldset", "figcaption",
+        "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6",
+        "header", "hr", "input", "legend", "li", "main", "nav", "ol", "option",
+        "p", "pre", "section", "select", "summary", "table", "td", "textarea",
+        "th", "tr", "ul",
+    }
+
     def __init__(self):
         super().__init__()
         self.words = []
@@ -45,6 +54,8 @@ class ActivityText(HTMLParser):
         self.words.append(data)
 
     def handle_starttag(self, tag, attrs):
+        if tag in self.SEPARATORS:
+            self.words.append(" ")
         if tag == "a":
             href = dict(attrs).get("href")
             if href:
@@ -53,7 +64,7 @@ class ActivityText(HTMLParser):
                     self.links.append((host.rstrip(".").removeprefix("www."), href))
 
     def handle_endtag(self, tag):
-        if tag in {"p", "li", "div", "td", "summary", "figcaption"}:
+        if tag in self.SEPARATORS:
             self.words.append(" ")
 
 
@@ -217,7 +228,7 @@ def self_test():
         a = root / "a.md"
         a.write_text(
             "Kit is named in prose only. Trolley trolley. Professor Ellis.\n"
-            '<p id="ward">Kit saw the ward. <a href="https://www.example.ca/a">Link</a></p>\n'
+            '<p id="ward">Kit saw the w<em>ar</em>d. <a href="https://www.example.ca/a">Link</a></p>\n'
             '<p>Friday Friday Friday’s. What What What’s. Brand Brand Brand’s. '
             "Rose Rose Rose's rose. Zed Zed Zed. Pat Pat’s.</p>\n")
         result = measure(root, cast)
@@ -234,7 +245,9 @@ def self_test():
         cast.write_text(json.dumps({"people": [person, second], "ignore": []}))
         check("distinct people sharing a name", measure(root, cast)["surplus_name_uses"] == 1)
         cast.write_text(json.dumps({"people": [dict(person,pages=["a.md","missing.md"])], "ignore": []}))
-        a.write_text("<p>Newby’s turn: Newby asks Newby. Newby.</p>\n")
+        # Distinct controls need boundaries. Inline emphasis can split a single word.
+        b.write_text("<button>Kit</button><button>Jo</button>")
+        a.write_text("<summary>Newby’s</summary><button>Newby</button><button>New<em>by</em></button>")
         broken = measure(root, cast)
         check("H1 unlisted use", any(f.startswith("H1 b.md: Kit") for f in broken["hard_findings"]))
         check("H2 missing name and unshipped page", sum(f.startswith("H2 ") for f in broken["hard_findings"]) == 2)
