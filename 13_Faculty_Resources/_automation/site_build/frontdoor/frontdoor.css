@@ -3449,6 +3449,33 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* The illustrated observations bookend two links supplied by the patient. */
+#therapy-chain .tc-layout,#therapy-chain .tc-opts{display:grid;gap:var(--fd-space-5);align-items:start}
+#therapy-chain .tc-map-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:var(--fd-space-3);margin-block:var(--fd-space-6) var(--fd-space-3)}
+#therapy-chain .tc-count{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));color:var(--fd-text-mid)}
+#therapy-chain .tc-rail{list-style:none;position:relative;padding:0 0 0 var(--fd-space-7);margin:0}
+#therapy-chain .tc-rail::before{content:'';position:absolute;left:var(--fd-space-2);top:8%;bottom:8%;border-left:2px solid var(--fd-line-strong)}
+#therapy-chain .tc-rail>li{position:relative;margin:var(--fd-space-4) 0}
+#therapy-chain .tc-rail>li::before{content:'';position:absolute;left:calc(var(--fd-space-7)*-1);top:50%;width:.55em;height:.55em;border:2px solid var(--fd-teal);border-radius:50%;background:var(--fd-surface-warm);transform:translateY(-50%)}
+#therapy-chain .tc-rail>.tc-seen::before,#therapy-chain .tc-rail>li:has([data-filled=true])::before{background:var(--fd-teal)}
+#therapy-chain .tc-scene{display:grid;grid-template-columns:minmax(4.5em,30%) minmax(0,1fr);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+#therapy-chain .tc-scene img{display:block;width:100%;height:100%;max-height:9em;aspect-ratio:1;object-fit:cover}
+#therapy-chain .tc-scene figcaption{align-self:center;padding:var(--fd-space-4) var(--fd-space-5);color:var(--fd-text);text-align:start}
+#therapy-chain figcaption p:last-child,#therapy-chain [data-filled=true] [data-link-text]{font-family:Georgia,serif}
+#therapy-chain .tc-slot{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;border-style:dashed;align-items:center;background:var(--fd-surface)}
+#therapy-chain [data-link-text]{grid-column:1}
+#therapy-chain .tc-symbol{grid-column:2;grid-row:1/3;padding-left:var(--fd-space-4)}
+#therapy-chain .tc-slot[aria-expanded=true],#therapy-chain .tc-slot[data-filled=true]{border-style:solid;background:var(--fd-olive-wash)}
+#therapy-chain .tc-pane{border-top:3px solid var(--fd-teal);padding:var(--fd-space-6);background:var(--fd-surface)}
+#therapy-chain .tc-pane h4,#therapy-chain .tc-pane h5{margin:var(--fd-space-3) 0}
+#therapy-chain .tc-opts,#therapy-chain #tc-offer-script,#therapy-chain .tc-prompt,#therapy-chain #tc-debrief{margin-top:var(--fd-space-5)}
+#therapy-chain .tc-why{margin-top:var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);padding:var(--fd-space-5)}
+#therapy-chain .tc-primary{margin-top:var(--fd-space-4);background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#therapy-chain dl{margin:0}
+#therapy-chain dt{font-weight:700;color:var(--fd-teal-deep);margin-top:var(--fd-space-4)}
+#therapy-chain dd{margin:0}
+@container bedside (min-width:40rem){#therapy-chain .tc-layout:has(.tc-pane:not([hidden])){grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+
 /* Lucía rehearses a daytime support plan against the first night home. */
 #lucia-rehearsal .lucia-scene{display:grid;grid-template-columns:1fr 1fr;gap:var(--fd-space-6);align-items:center}
 #lucia-rehearsal figure{overflow:hidden;border-radius:var(--fd-radius-sm);background:var(--fd-teal-deep)}

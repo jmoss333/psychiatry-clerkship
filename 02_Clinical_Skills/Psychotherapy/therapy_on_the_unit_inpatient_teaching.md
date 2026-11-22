@@ -70,6 +70,51 @@ Hold both halves of that finding. The effect is real: an admission is a treatmen
 
 *Cognitive-demand rule of thumb: the more acute the disorganization, the more behavioral and supportive the intervention. Restructuring-type work waits for a clearer sensorium.*
 
+<section id="therapy-chain" class="bedside-case" aria-labelledby="tc-title">
+<header><h3 id="tc-title">Where could we have helped sooner?</h3>
+<p class="tc-lede">The evening nurse saw the call end and the patient leave group. Later, the patient agrees to talk it through. Tap a missing link to ask what happened in between.</p></header>
+<div class="tc-layout">
+<section id="tc-chain-map" aria-labelledby="tc-map-title">
+<div class="tc-map-head"><h4 id="tc-map-title">The evening in group</h4><span class="tc-count" id="tc-count" data-format="{n} of 2 links filled">0 of 2 links filled</span></div>
+<ol class="tc-rail">
+<li class="tc-seen"><figure class="tc-scene"><img loading="lazy" src="illustrations/therapy-chain-phone.avif" alt="The patient puts down the unit phone." width="450" height="450"><figcaption><p class="case-kicker">Nurse · At the phone</p><p>“I heard them say, ‘Voicemail again,’ and put the phone down.”</p></figcaption></figure></li>
+<li><button class="tc-slot" type="button" data-slot="meaning" aria-controls="tc-interview" aria-expanded="false"><span class="case-kicker">Missing link · Thought</span><span data-link-text>What did the call mean to them?</span><span class="tc-symbol" aria-hidden="true">＋</span></button></li>
+<li><button class="tc-slot" type="button" data-slot="body" aria-controls="tc-interview" aria-expanded="false"><span class="case-kicker">Missing link · Feeling and urge</span><span data-link-text>What happened just before they left?</span><span class="tc-symbol" aria-hidden="true">＋</span></button></li>
+<li class="tc-seen"><figure class="tc-scene"><img loading="lazy" src="illustrations/therapy-chain-hall.avif" alt="The same patient walks through the group-room door into the hall." width="450" height="450"><figcaption><p class="case-kicker">Nurse · A few minutes later</p><p>“They got up halfway through group and went into the hall.”</p></figcaption></figure></li>
+</ol>
+</section>
+<div class="tc-working">
+<section class="tc-pane" id="tc-interview" aria-labelledby="tc-interview-title" hidden>
+<p class="case-kicker">Later, with the patient</p><h4 id="tc-interview-title" tabindex="-1"></h4><p>How would you ask?</p>
+<div class="tc-opts" id="tc-questions" role="group" aria-label="Interview questions"></div>
+<div id="tc-reply" class="case-reply" role="status" hidden><p class="case-kicker">Patient</p><blockquote id="tc-answer"></blockquote></div>
+<div id="tc-add-link" hidden><p class="tc-prompt">Which words belong in the chain?</p><div class="tc-opts" id="tc-fills" role="group" aria-label="Possible links"></div>
+<p id="tc-fill-feedback" class="tc-why" role="status" hidden></p></div>
+<button class="case-link" id="tc-back" type="button">Back to the chain</button>
+</section>
+<section class="tc-pane" id="tc-offer" aria-labelledby="tc-offer-title" hidden>
+<p class="case-kicker">Plan together</p><h4 id="tc-offer-title" tabindex="-1">Where would you offer help?</h4>
+<p>Pick a moment to rehearse with the patient.</p>
+<div class="case-choices" role="group" aria-label="When to offer help">
+<button type="button" data-moment="phone" aria-pressed="false">At the phone</button><button type="button" data-moment="quiet" aria-pressed="false">When they go quiet</button><button type="button" data-moment="hall" aria-pressed="false">In the hall</button></div>
+<div id="tc-offer-script" hidden><p class="case-kicker">Your offer for next time</p><blockquote class="tc-spoken" id="tc-offer-line"></blockquote><button class="tc-primary" type="button" id="tc-make-offer">Try this offer</button></div>
+<div id="tc-offer-reply" tabindex="-1" class="case-reply" role="status" hidden><p class="case-kicker">Patient</p><blockquote id="tc-their-preference"></blockquote></div>
+<div id="tc-debrief" hidden><h5 id="tc-debrief-title">What the team can use</h5><dl>
+<dt>What the nurse observed</dt><dd>The call ended. A few minutes later the patient left group.</dd>
+<dt>What the patient described</dt><dd id="tc-account-summary">They thought their sister was done with them. In group they went quiet, felt their face get hot and wanted to leave before anyone saw them cry.</dd>
+<dt>What the patient wants next time</dt><dd id="tc-plan-summary"></dd></dl></div>
+<button class="case-link" type="button" id="tc-try-moment" hidden>Try another moment</button>
+</section>
+</div></div>
+<footer><details><summary>Facilitator note</summary><p>This fictional scene rehearses one part of a behavior-chain review. Ask the learner which detail changed the help they offered. The patient’s preference may differ at each moment.</p><p><a href="https://www.sciencedirect.com/science/article/pii/S1077722913000916">Rizvi &amp; Ritschel on chain analysis in DBT</a></p></details><button class="case-link" id="tc-reset" type="button" hidden>Start again</button></footer>
+<p class="fd-visually-hidden" role="status" id="tc-announce"></p>
+<template id="tc-link-meaning"><span data-title>What did the voicemail mean?</span><span data-name>Thought</span><span data-saved>“I thought my sister was done with me.”</span><span data-reply>“I thought my sister was done with me. I know it was just voicemail, but that’s where my mind went.”</span><span data-correction>“I don’t know why she didn’t pick up. Mad isn’t quite it.”</span><span data-feedback>The patient told you what they feared. Their sister’s reason for missing the call is still unknown.</span><div data-questions><button type="button" data-question="invite" aria-pressed="false">“What went through your mind when you heard the voicemail?”</button><button type="button" data-question="guess" aria-pressed="false">“Were you mad at your sister for ignoring you?”</button></div><div data-fills><button type="button" data-fill="grounded" aria-pressed="false">They thought, “My sister is done with me.”</button><button type="button" data-fill="inferred" aria-pressed="false">Their sister had decided to stop taking their calls.</button></div></template>
+<template id="tc-link-body"><span data-title>What happened before they left?</span><span data-name>Feeling and urge</span><span data-saved>“My face got hot. I wanted to get out before anyone saw me cry.”</span><span data-reply>“I got really quiet. My face got hot. I wanted to get out before anyone saw me cry.”</span><span data-correction>“Nobody in group did anything. I just got quiet.”</span><span data-feedback>They described wanting privacy. Whether they want someone to follow is something you can ask.</span><div data-questions><button type="button" data-question="guess" aria-pressed="false">“Was group getting on your nerves by then?”</button><button type="button" data-question="invite" aria-pressed="false">“Can we slow down that moment in group? What did you notice first?”</button></div><div data-fills><button type="button" data-fill="inferred" aria-pressed="false">They wanted staff to follow them out of group.</button><button type="button" data-fill="grounded" aria-pressed="false">They went quiet, felt their face get hot and wanted to leave before anyone saw them cry.</button></div></template>
+<template id="tc-moment-phone"><span data-line>“If it goes to voicemail again, would you like me to stay with you while you decide what to do?”</span><span data-reply>“Right then? Give me a minute to myself. You can check back after.”</span><span data-plan>Give them a minute alone after the call, then check back.</span></template>
+<template id="tc-moment-quiet"><span data-line>“If I notice you going quiet in group, would it help if I asked you to step into the hall with me?”</span><span data-reply>“When I get quiet like that, ask if I want to step into the hall with you. Just ask me quietly.”</span><span data-plan>If they go quiet, discreetly offer to step into the hall together.</span></template>
+<template id="tc-moment-hall"><span data-line>“If you head into the hall, would it be okay if I came out and sat with you?”</span><span data-reply>“Yeah. Sit with me for a minute? I might not be ready to go back in.”</span><span data-plan>Offer to sit with them in the hall and let them choose when to return.</span></template>
+</section>
+
 ## 5 · BPD without a DBT unit
 
 About one in five psychiatric admissions involves borderline personality disorder, so this is core inpatient skill, not specialist territory. The generalist frame is **Good Psychiatric Management (GPM)**: any competent clinician can treat BPD — with case management, psychoeducation about the interpersonal-hypersensitivity model, a life-outside-treatment focus, and conservative prescribing [21 ✓]. Four ward-level behaviors follow:

@@ -2985,6 +2985,107 @@ test.describe('Interactive readings', () => {
     return activity;
   }
 
+  for (const order of [['meaning', 'body'], ['body', 'meaning']]) {
+    test('therapy chain starts with ' + order[0] + ' and matches each offer to the patient’s preference', async ({ page }) => {
+      const card = await openActivity(page, GUIDE_REF, 'therapy-chain', 'Matching the intervention to the presentation');
+      await expect(card.getByRole('heading', { name: 'Where could we have helped sooner?' })).toBeVisible();
+      const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+      await expect(section.locator('table')).toContainText('Distress-tolerance skill + behavior chain review');
+      expect(await card.evaluate(node => {
+        const table = node.closest('.fd-guide-section, .sec-c').querySelector('table');
+        return Boolean(table.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      })).toBe(true);
+      await expect(section.locator('xpath=following-sibling::section[1]').locator(':scope > :is(h2, .fd-guide-lead, .sec-h)'))
+        .toContainText('BPD without a DBT unit');
+
+      const id = name => card.locator('#tc-' + name);
+      const button = (attribute, value) => card.locator('button[data-' + attribute + '="' + value + '"]');
+      const linkText = key => button('slot', key).locator('[data-link-text]');
+      const links = {
+        meaning: {
+          blank: 'What did the call mean to them?',
+          correction: '“I don’t know why she didn’t pick up. Mad isn’t quite it.”',
+          answer: '“I thought my sister was done with me. I know it was just voicemail, but that’s where my mind went.”',
+          feedback: 'The patient told you what they feared. Their sister’s reason for missing the call is still unknown.',
+          saved: '“I thought my sister was done with me.”',
+        },
+        body: {
+          blank: 'What happened just before they left?',
+          correction: '“Nobody in group did anything. I just got quiet.”',
+          answer: '“I got really quiet. My face got hot. I wanted to get out before anyone saw me cry.”',
+          feedback: 'They described wanting privacy. Whether they want someone to follow is something you can ask.',
+          saved: '“My face got hot. I wanted to get out before anyone saw me cry.”',
+        },
+      };
+      await expect(id('offer')).toBeHidden();
+      for (const [index, key] of order.entries()) {
+        const link = links[key];
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('slot', key).click();
+        await button('question', 'guess').click();
+        await expect(id('answer')).toBeVisible();
+        await expect(id('answer')).toHaveText(link.correction);
+        await expect(button('fill', 'grounded')).toBeHidden();
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('question', 'invite').click();
+        await expect(id('answer')).toHaveText(link.answer);
+        await button('fill', 'inferred').click();
+        await expect(id('fill-feedback')).toBeVisible();
+        await expect(id('fill-feedback')).toHaveText(link.feedback);
+        await expect(linkText(key)).toHaveText(link.blank);
+        await expect(id('count')).toHaveText(index + ' of 2 links filled');
+        await expect(id('offer')).toBeHidden();
+        await button('fill', 'grounded').click();
+        await expect(linkText(key)).toHaveText(link.saved);
+        if (index === 0) await expect(id('offer')).toBeHidden();
+      }
+      await expect(linkText(order[0])).toHaveText(links[order[0]].saved);
+      await expect(id('count')).toHaveText('2 of 2 links filled');
+      await expect(id('offer')).toBeVisible();
+
+      const moments = [
+        { key: 'phone', line: '“If it goes to voicemail again, would you like me to stay with you while you decide what to do?”',
+          reply: '“Right then? Give me a minute to myself. You can check back after.”',
+          plan: 'Give them a minute alone after the call, then check back.' },
+        { key: 'quiet', line: '“If I notice you going quiet in group, would it help if I asked you to step into the hall with me?”',
+          reply: '“When I get quiet like that, ask if I want to step into the hall with you. Just ask me quietly.”',
+          plan: 'If they go quiet, discreetly offer to step into the hall together.' },
+        { key: 'hall', line: '“If you head into the hall, would it be okay if I came out and sat with you?”',
+          reply: '“Yeah. Sit with me for a minute? I might not be ready to go back in.”',
+          plan: 'Offer to sit with them in the hall and let them choose when to return.' },
+      ];
+      for (const moment of moments) {
+        await button('moment', moment.key).click();
+        await expect(id('offer-line')).toHaveText(moment.line);
+        await expect(id('offer-reply')).toBeHidden();
+        await expect(id('debrief')).toBeHidden();
+        await expect(id('plan-summary')).toBeEmpty();
+        await id('make-offer').click();
+        await expect(id('their-preference')).toBeVisible();
+        await expect(id('their-preference')).toHaveText(moment.reply);
+        await expect(id('plan-summary')).toBeVisible();
+        await expect(id('plan-summary')).toHaveText(moment.plan);
+        if (moment.key === 'quiet') {
+          await id('try-moment').click();
+          await expect(id('offer-reply')).toBeHidden();
+          await expect(id('debrief')).toBeHidden();
+          await expect(id('plan-summary')).toBeEmpty();
+        }
+      }
+      await expect(id('debrief').locator('dt')).toHaveText([
+        'What the nurse observed', 'What the patient described', 'What the patient wants next time',
+      ]);
+      await expect(id('account-summary')).toContainText('They thought their sister was done with them.');
+      await id('reset').click();
+      await expect(id('count')).toHaveText('0 of 2 links filled');
+      for (const key of order) await expect(linkText(key)).toHaveText(links[key].blank);
+      await expect(id('offer')).toBeHidden();
+      await expect(id('reply')).toBeHidden();
+      await expect(id('debrief')).toBeHidden();
+      await expect(id('plan-summary')).toBeEmpty();
+    });
+  }
+
   test('Sam’s night sign-out changes the receiving resident’s reply with each handoff detail', async ({ page }) => {
     await page.goto('/?page=doc_oral.md&guideSection=handoff-template');
     const section = page.locator('.fd-article__body section').filter({
