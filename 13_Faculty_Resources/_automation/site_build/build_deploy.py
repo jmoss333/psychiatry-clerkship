@@ -611,6 +611,9 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustra
                os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Personality", "illustrations", "personality-conversation.webp"),
                os.path.join(OUT, "illustrations", "personality-conversation.webp"), _missing_req)
+for scene in ("bell-doorway.avif", "bell-seated.avif"):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", "Geriatric", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 for scene in ("cultural-chart.webp", "elena-interpreter.avif"):
     _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", scene),
                    os.path.join(OUT, "illustrations", scene), _missing_req)

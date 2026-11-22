@@ -46,6 +46,15 @@
       ]
     },
     {
+      "id": "ms-bell-geriatric",
+      "name": "Bell",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md"
+      ]
+    },
+    {
       "id": "luz-collateral-workflow",
       "name": "Luz",
       "pronouns": "not stated",

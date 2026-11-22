@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { requestGetWithRetry, routeFetchWithRetry } from './net-resilience.js';
-import { isResidentProject } from './audience.js';
+import { audienceOf, isResidentProject } from './audience.js';
 import { auditEverything, essentialsResourceRefs, essentialsResources, everythingResourceRefs } from './essentials-inventory.js';
 import { LANDING, TODAY_TAB } from './landing.js';
 
@@ -2600,6 +2600,110 @@ test('phone Care is the dock\'s fixed slot, named in full, and the header carrie
   await expect(page.locator('.fd-tab--care')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.fd-askbtn')).toBeVisible();
 });
+
+for (const [firstChoice, width] of [['repeat', 320], ['ask', 390]]) {
+  test(`Ms. Bell hearing exercise starts with ${firstChoice} on a ${width}px phone`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 844 });
+    const response = await page.goto('/?page=t_geri.md');
+    expect(response.ok()).toBe(true);
+    expect((await response.text()).match(/var FD_AUDIENCE="([^"]+)"/)?.[1]).toBe(audienceOf(testInfo.project.name));
+
+    const article = page.locator('.fd-reader .fd-article[data-ref="t_geri.md"] .fd-article__body');
+    const activity = article.locator('#bell-hearing');
+    const byId = id => activity.locator('#bell-' + id);
+    const action = name => activity.locator(`button[data-action="${name}"]:visible`);
+    const art = byId('illustration');
+    const student = byId('student-line');
+    const patient = byId('patient-line');
+    const note = byId('note-text');
+    const label = byId('note-label');
+    const feedback = byId('feedback');
+    const question = '“What brought you in yesterday?”';
+    const draft = '“Couldn’t explain why she came in.”';
+
+    async function artwork() {
+      await expect(art).toBeVisible();
+      await art.scrollIntoViewIfNeeded();
+      return art.evaluate(async img => { await img.decode(); return img.currentSrc; });
+    }
+    async function expectDraft() {
+      await expect(label).toHaveText('Draft for rounds');
+      await expect(note).toHaveText(draft);
+    }
+    async function expectOpening() {
+      await expect(student).toBeVisible();
+      await expect(patient).toBeVisible();
+      await expect(note).toBeVisible();
+      await expect(student).toHaveText(question);
+      await expect(patient).toHaveText('“Was that about my daughter?”');
+      await expectDraft();
+      await expect(feedback).toBeHidden();
+      await expect(action('repeat')).toBeVisible();
+      await expect(action('ask')).toBeVisible();
+      await expect(action('seat')).toHaveCount(0);
+    }
+    await expect(activity).toBeVisible();
+    // Include the last authored bedside action so the exercise cannot interrupt the list.
+    const studentLead = article.locator('p > strong').filter({ hasText: /^What the student does$/ });
+    const lastAction = article.getByText(/^Sit with the patient unhurried/);
+    const dischargeLead = article.locator('p > strong').filter({ hasText: /^Disposition & discharge essentials$/ });
+    const landmarks = await studentLead.or(lastAction).or(activity).or(dischargeLead)
+      .evaluateAll(nodes => nodes.map(node => node.id === 'bell-hearing' ? node.id : node.textContent.trim()));
+    expect(landmarks).toEqual(['What the student does', expect.stringMatching(/^Sit with the patient unhurried/),
+      'bell-hearing', 'Disposition & discharge essentials']);
+    const studentSection = article.locator('.fd-guide-section:has(> #guide-what-the-student-does)');
+    await expect(studentSection.locator('#bell-hearing')).toHaveCount(1);
+    await expectOpening();
+    await expect(art).toHaveAttribute('alt', /doorway/i);
+    const doorway = await artwork();
+
+    if (firstChoice === 'repeat') {
+      await action('repeat').click();
+      await expect(student).toHaveText(question);
+      await expect(patient).toContainText('I heard that part. What did you ask about yesterday?');
+      await expect(action('inference')).toContainText(/couldn’t recall/i);
+      await expect(action('supported')).toContainText(/heard “yesterday”/i);
+      await action('inference').click();
+      await expect(feedback).toContainText(/whether she heard the whole question/i);
+      await expectDraft();
+      await action('supported').click();
+      await expect(label).toHaveText('Revised rounds note');
+      await expect(note).toContainText(/she heard “yesterday”.*reason for admission is still unclear/i);
+      await expect(note).not.toContainText(/drove|three nights|frightened/i);
+      await action('repair').click();
+    } else {
+      await action('ask').click();
+    }
+    await expectDraft();
+    await expect(feedback).toBeHidden();
+    await expect(student).toContainText('What would make it easier to hear me?');
+    await expect(patient).toContainText('Could you sit here, where I can see your face?');
+    await expect(action('seat')).toBeVisible();
+    await expect(action('move')).toBeVisible();
+    await action(firstChoice === 'repeat' ? 'seat' : 'move').click();
+    await expect(student).toHaveText(question);
+    await expect(patient).toContainText('My daughter drove me in. I hadn’t slept in three nights, and it scared me.');
+    await expect(art).toHaveAttribute('alt', /fac(e|ing)/i);
+    expect(await artwork()).not.toBe(doorway);
+    await expect(action('inference')).toContainText(/cognition is intact/i);
+    await expect(action('supported')).toContainText(/she described what brought her in/i);
+    await action('inference').click();
+    await expect(feedback).toContainText(/what did you observe/i);
+    await expectDraft();
+    await action('supported').click();
+    await expect(label).toHaveText('Revised rounds note');
+    await expect(note).toContainText(/she could see my face.*daughter drove her in after three nights without sleep/i);
+    await expect(note).toContainText(/still need to assess attention/i);
+    await expect(note).not.toContainText(/cognition is intact|admission is still unclear/i);
+    expect(await activity.evaluate(el => el.scrollWidth <= el.clientWidth + 1 &&
+      el.getBoundingClientRect().left >= 0 && el.getBoundingClientRect().right <= innerWidth + 1)).toBe(true);
+
+    await action('restart').click();
+    await expectOpening();
+    await expect(art).toHaveAttribute('alt', /doorway/i);
+    expect(await artwork()).toBe(doorway);
+  });
+}
 
 test('wide interview table remains accessible and contained in the live Reader', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
