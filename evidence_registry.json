@@ -1615,13 +1615,13 @@
       },
       "identity": {
         "status": "verified",
-        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full; full text read 2026-11-22.",
         "verifiedAt": "2026-11-22",
-        "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text is not open access and was not read: the \"37% to 10%\" relapse figures the library used to carry could not be confirmed and were removed. Studies in which all patients were acutely ill were excluded."
+        "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm. The pages do not carry them pending a faculty decision (Batch 2, J9). Studies in which all patients were acutely ill were excluded."
       },
       "requiredAccess": "abstract",
       "governance": {
-        "evidenceLevel": "systematic review and network meta-analysis (confidence moderate to very low)",
+        "evidenceLevel": "systematic review and network meta-analysis (confidence moderate to very low across comparisons)",
         "facultyReviewStatus": "pending",
         "lastReviewed": "2026-11-22",
         "reviewCadence": "annual",
@@ -1633,12 +1633,17 @@
           "family",
           "relapse-prevention"
         ],
-        "clerkshipRelevance": "Family psychoeducation alone: relapse OR 0.18 (95% CI 0.12-0.27) versus treatment as usual at 12 months; two sessions or fewer did not significantly reduce relapse; confidence moderate to very low; acutely ill samples excluded.",
+        "clerkshipRelevance": "Family psychoeducation alone: relapse OR 0.18 (95% CI 0.12-0.27) versus treatment as usual at 12 months; two sessions or fewer did not significantly reduce relapse; confidence moderate to very low across comparisons; acutely ill samples excluded.",
         "noteHistory": [
           {
             "date": "2026-11-22",
             "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text is not open access and was not read: the \"37% to 10%\" relapse figures the library used to carry could not be confirmed and were removed. Studies in which all patients were acutely ill were excluded.",
             "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          },
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm. The pages do not carry them pending a faculty decision (Batch 2, J9). Studies in which all patients were acutely ill were excluded.",
+            "reason": "Full text obtained after registration; the earlier note said the 37%/10% figures could not be confirmed. Corrects the note only. Not faculty review."
           }
         ]
       }

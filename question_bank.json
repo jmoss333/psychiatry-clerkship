@@ -7093,7 +7093,7 @@
         },
         {
           "key": "C",
-          "t": "Multi-session family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18; confidence moderate to very low).",
+          "t": "Multi-session family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18 versus treatment as usual).",
           "c": true
         },
         {
@@ -7105,9 +7105,9 @@
           }
         }
       ],
-      "why": "Family work = courtesy, Patient/family refusal as barrier, and Stability first each undercut a well-supported default. Versus treatment as usual, family psychoeducation alone had a 12-month relapse odds ratio of 0.18 (Rodolico 2022; 90 RCTs), with confidence in the estimates rated moderate to very low. Programs of two sessions or fewer did not significantly reduce relapse, and trials in which all patients were acutely ill were excluded — so the admission starts the work and the outpatient handoff continues it.",
-      "pearl": "Family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18; confidence moderate to very low); it is multi-session work — start it in hospital and secure the outpatient continuation.",
-      "evidence": "family_modalities.md — OR 0.18 (95% CI 0.12–0.27) — versus treatment as usual at 12 months, relapse odds ratios across 11 family-intervention models ranged from 0.18 for family psychoeducation alone to 0.63, with confidence in the estimates rated moderate to very low. Family psychoeducation with two sessions or fewer did not significantly reduce relapse, and trials in which all patients were acutely ill were excluded (Rodolico et al., Lancet Psychiatry 2022; 90 RCTs)."
+      "why": "Family work = courtesy, Patient/family refusal as barrier, and Stability first each undercut a well-supported default. Versus treatment as usual, family psychoeducation alone had a 12-month relapse odds ratio of 0.18 (Rodolico 2022; 90 RCTs); the review's confidence in its estimates ranged from moderate to very low across comparisons. Programs of two sessions or fewer did not significantly reduce relapse, and trials in which all patients were acutely ill were excluded — so the admission starts the work and the outpatient handoff continues it.",
+      "pearl": "Family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18; the review's confidence ranged from moderate to very low across comparisons); it is multi-session work — start it in hospital and secure the outpatient continuation.",
+      "evidence": "family_modalities.md — OR 0.18 (95% CI 0.12–0.27) — versus treatment as usual at 12 months, every one of 11 family-intervention models except crisis-oriented interventions and family psychoeducation of two sessions or fewer significantly reduced relapse, with odds ratios from 0.18 for family psychoeducation alone to 0.63 for community-based interventions involving family members; the review's confidence in its estimates ranged from moderate to very low across comparisons, and trials in which all patients were acutely ill were excluded (Rodolico et al., Lancet Psychiatry 2022; 90 RCTs)."
     },
     {
       "id": "qb_rel_005",
@@ -9561,7 +9561,7 @@
       ],
       "why": "Avoidance trap, Isolation trap, and Wrong-target trap each leave the family out. Family psychoeducation, including multifamily groups, is the default highest-evidence family approach: psychoeducation alone had a 12-month relapse odds ratio of 0.18 versus treatment as usual (Rodolico 2022). How it works is not established — lowering expressed emotion and improving problem-solving are proposed mechanisms, not demonstrated ones.",
       "pearl": "Family psychoeducation reduces schizophrenia relapse — the evidence-based family intervention.",
-      "evidence": "family_modalities.md — OR 0.18 (95% CI 0.12–0.27) — versus treatment as usual at 12 months, relapse odds ratios across 11 family-intervention models ranged from 0.18 for family psychoeducation alone to 0.63, with confidence in the estimates rated moderate to very low."
+      "evidence": "family_modalities.md — OR 0.18 (95% CI 0.12–0.27) — versus treatment as usual at 12 months, every one of 11 family-intervention models except crisis-oriented interventions and family psychoeducation of two sessions or fewer significantly reduced relapse, with odds ratios from 0.18 for family psychoeducation alone to 0.63 for community-based interventions involving family members; the review's confidence in its estimates ranged from moderate to very low across comparisons"
     },
     {
       "id": "qb_rel_015",

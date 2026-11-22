@@ -69,7 +69,7 @@ test('1 no shipped source names clinician avoidance as the barrier to family wor
   none(/clinician avoidance/i, 'no source ranks clinician avoidance first: Ince 2016 reports organisational barriers most often; Tham & Solomon 2024 list patients declining among the barriers');
 });
 test('2 no shipped source says Open Dialogue has no completed RCT or that ODDESSI is ongoing', () => {
-  none(/no completed RCT exists|ODDESSI trial is ongoing|ODDESSI\)? has not reported/i, 'ODDESSI reported in 2026: no difference in time to relapse, HR 0.95 (95% CI 0.67-1.32) (Pilling 2026)');
+  none(/no completed RCT exists|ODDESSI trial is ongoing|ODDESSI\)? has not reported/i, 'ODDESSI reported in 2026: no statistically significant difference in time to relapse, HR 0.95 (95% CI 0.67-1.32) (Pilling 2026)');
 });
 test('3 no shipped source says two sessions or fewer "is ineffective"', () => {
   none(/(≤\s?2|two|2)( family)? sessions?( or fewer)?( of family \w+)?\s+(is|are)\s+ineffective|≤\s?2 is ineffective/i,
@@ -90,8 +90,10 @@ test('5 no shipped source says family involvement "triples the odds"', () => {
   none(/triples? the odds/i, 'Haselden 2019 is an observational association: adjusted OR 2.79 (95% CI 1.28-6.08) for a 7-day visit');
 });
 test('6 the schizophrenia "37% to 10%" relapse figures are gone, and no Miklowitz 2003 line carries them', () => {
-  // Rodolico 2022's full text could not be retrieved; neither percentage is in its abstract, so no qualifier was stored.
-  none(/\b37\s?%[^.]{0,80}\b10\s?%|\b10\s?%[^.]{0,40}\b37\s?%|from\s+~?37\s?%/i, 'relapse "37% to 10%" is not in Rodolico 2022\'s abstract and could not be confirmed in the paper');
+  // Rodolico 2022's full text (read 2026-11-22) gives 37% and 10% as 12-month event rates calculated from the odds ratio
+  // (appendix p 8), not rates observed in a trial arm. Neither is in the abstract, so no span is stored; the pages leave
+  // them out pending a faculty decision (Batch 2, J9). Reinstating them needs that label, a stored span, and this test.
+  none(/\b37\s?%[^.]{0,80}\b10\s?%|\b10\s?%[^.]{0,40}\b37\s?%|from\s+~?37\s?%/i, 'relapse "37% to 10%" are model-derived event rates in Rodolico 2022 (not observed rates); off the pages pending faculty decision J9');
   const bad = RECORDS.flatMap(r => r.texts.filter(t => /\b37\s?%/.test(t) && /relaps/i.test(t) && /schizophren|psychoeducation|family/i.test(t)).map(t => `${r.where}: ${t.slice(0, 160)}`));
   assert.deepEqual(bad, [], 'a "37%" beside "relapse" in family/schizophrenia teaching would need the qualifier stored with a span; none is stored');
   // The landmark index is the record the quiz decks were extracted from. It is not shipped, so it is named here.

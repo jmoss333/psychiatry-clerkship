@@ -4140,7 +4140,7 @@
   },
   "family_modalities.md": {
     "read": 4,
-    "tldr": "Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18 for 12-month relapse, confidence moderate to very low), but programs of two sessions or fewer did not significantly reduce relapse, and delivery lags for organizational, staff and patient-level reasons.",
+    "tldr": "Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18 for 12-month relapse; the review's confidence ranged from moderate to very low across comparisons), but programs of two sessions or fewer did not significantly reduce relapse, and delivery lags for organizational, staff and patient-level reasons.",
     "points": [
       "Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.",
       "CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.",
@@ -4151,7 +4151,7 @@
       "q": "A patient with schizophrenia is preparing for discharge. Family members are willing to participate in family work. Which intervention has the strongest evidence for preventing 12-month relapse?",
       "o": [
         {
-          "t": "Family psychoeducation — OR 0.18 for 12-month relapse versus treatment as usual across 90 RCTs (confidence moderate to very low); NICE advises at least 10 planned sessions over 3 months to 1 year",
+          "t": "Family psychoeducation — OR 0.18 for 12-month relapse versus treatment as usual across 90 RCTs (confidence moderate to very low across the review's comparisons); NICE advises at least 10 planned sessions over 3 months to 1 year",
           "c": true
         },
         {
@@ -4164,7 +4164,7 @@
           "t": "Solution-focused brief therapy — one high-yield session amplifying existing family strengths"
         }
       ],
-      "why": "Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, 10,340 participants; confidence moderate to very low). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below what was tested (family psychoeducation of two sessions or fewer did not significantly reduce relapse); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base."
+      "why": "Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, 10,340 participants; confidence moderate to very low across the review's comparisons). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below what was tested (family psychoeducation of two sessions or fewer did not significantly reduce relapse); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base."
     },
     "cta": [
       {

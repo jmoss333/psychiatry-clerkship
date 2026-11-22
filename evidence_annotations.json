@@ -392,11 +392,11 @@
       "claims": [
         {
           "claimId": "family-psychoeducation-relapse-12-months",
-          "claimText": "Across 11 family intervention models in 90 randomised controlled trials (10 340 participants), relapse odds ratios versus treatment as usual at 12 months ranged from 0·18 (95% CI 0·12-0·27) for family psychoeducation alone to 0·63, with confidence ranging from moderate to very low; crisis-oriented interventions and family psychoeducation with two sessions or fewer did not reduce relapse significantly, and studies in which all patients were acutely ill were excluded.",
+          "claimText": "Of 11 family intervention models in 90 randomised controlled trials (10 340 participants), all except crisis-oriented interventions and family psychoeducation with two sessions or fewer reduced relapse significantly versus treatment as usual at 12 months, with odds ratios ranging from 0·18 (95% CI 0·12-0·27) for family psychoeducation alone to 0·63 for community-based interventions involving family members; confidence in the estimates ranged from moderate to very low for different comparisons, and studies in which all patients were acutely ill were excluded.",
           "claimTerms": [
             "family psychoeducation with two sessions or fewer",
             "excluded studies in which all patients were acutely ill",
-            "ranged from moderate to very low",
+            "ranged from moderate to very low for different comparisons",
             "for family psychoeducation alone"
           ],
           "direction": "mixed",
