@@ -289,6 +289,62 @@
   .sa textarea{width:100%;margin-top:8px;font:inherit;font-size:.94rem;padding:12px;border:1px solid var(--btn-border);border-radius:var(--radius-sm);background:var(--card);color:var(--text);min-height:82px;resize:vertical}
   .sa .commit{display:flex;align-items:center;gap:14px;margin-top:4px;flex-wrap:wrap}
   .sa .commit .hint{font-size:.78rem;color:var(--muted)}
+  #marcus-morning{--ink:var(--text);--leaf:var(--green);--wash:var(--pale);--night:#183d39;--star:#f6d691;--cream:#fcf4dc;--haze:#9ebdae;--hill:#426860;--sun:#ecc884;--light:#f2d8ac;color:var(--ink);margin:16px 0;font:1rem/1.45 var(--font-body)}
+    #marcus-morning *{box-sizing:border-box} #marcus-morning [hidden]{display:none!important}
+    #marcus-morning article{width:100%;margin:0;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+    #marcus-morning header,#marcus-morning .practice{padding:14px 16px} #marcus-morning header{padding-bottom:10px}
+    #marcus-morning h2,#marcus-morning h3,#marcus-morning p,#marcus-morning figure,#marcus-morning blockquote{margin:0}
+    #marcus-morning h2,#marcus-morning h3{font:500 23px/1.12 var(--serif);letter-spacing:-.026em;text-wrap:balance}
+    #marcus-morning h2{font-size:clamp(28px,6.8vw,34px);margin:5px 0}
+    #marcus-morning .kicker{font:700 11.5px/1.4 var(--font-body);letter-spacing:.075em;text-transform:uppercase;color:var(--leaf)}
+    #marcus-morning .intro,#marcus-morning .muted{color:var(--muted);font-size:14px}
+    #marcus-morning button,#marcus-morning select{font:600 14px/1.35 var(--font-body);color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;min-height:44px;max-width:100%;padding:8px 10px}
+    #marcus-morning select{font-size:16px;min-width:0;width:100%}
+    #marcus-morning figure{margin:0 9px;background:var(--night);color:var(--cream);border-radius:9px;overflow:hidden;padding:12px 10px 8px}
+    #marcus-morning figcaption{font:500 17px/1.32 var(--serif);margin:0 2px 5px}
+    #marcus-morning .window{width:100%;height:auto;display:block}
+    #marcus-morning .window .shutters{opacity:1} #marcus-morning .window .dawn{opacity:0}
+    #marcus-morning .window[data-heard=true] .shutters{opacity:0} #marcus-morning .window[data-heard=true] .dawn{opacity:1}
+    @media (prefers-reduced-motion:no-preference){#marcus-morning .window :is(.dawn,.shutters){transition:opacity .3s ease}}
+    #marcus-morning .panes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+    #marcus-morning .panes button{text-align:left;border-color:transparent;color:var(--cream);background:transparent;padding:6px}
+    #marcus-morning .panes button[aria-pressed=true]{border-color:var(--haze);background:color-mix(in srgb,var(--haze) 13%,var(--night))}
+    #marcus-morning .panes small{display:block;font-size:11.5px;font-weight:500;color:var(--cream)}
+    #marcus-morning .voice{margin-top:6px;padding:8px 6px 1px;border-top:1px solid color-mix(in srgb,var(--haze) 55%,transparent)}
+    #marcus-morning .voice strong,#marcus-morning .by{font-size:12px;font-weight:650}
+    #marcus-morning blockquote{font:400 17px/1.4 var(--serif);overflow-wrap:anywhere}
+    #marcus-morning label.write{display:block;font:500 21px/1.2 var(--serif);margin:3px 0 8px;letter-spacing:-.02em}
+    #marcus-morning textarea{display:block;width:100%;min-height:75px;resize:vertical;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px;font:400 16px/1.38 var(--font-body)}
+    #marcus-morning textarea::placeholder{color:var(--muted)}
+    #marcus-morning .go{background:var(--leaf);border-color:var(--leaf);color:var(--card);margin-top:7px}
+    #marcus-morning button:disabled{opacity:.6}
+    #marcus-morning .part{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+    #marcus-morning .part h3{margin:4px 0 7px}
+    #marcus-morning .choices{display:grid;gap:5px}
+    #marcus-morning .choices button{text-align:left;font-weight:550}
+    #marcus-morning .choices button[aria-pressed=true]{background:var(--wash);border-color:var(--leaf);color:var(--leaf)}
+    #marcus-morning .quiet{color:var(--leaf);border:0;text-decoration:underline;text-underline-offset:3px;background:transparent;padding-inline:0}
+    #marcus-morning .exchange{border-inline-start:3px solid var(--leaf);background:var(--wash);padding:9px 11px;margin-top:9px}
+    #marcus-morning .exchange .by{display:block;color:var(--muted)}
+    #marcus-morning .learner{padding-left:11px;border-left:2px solid var(--line);margin-top:6px}
+    #marcus-morning .learner p{white-space:pre-wrap;overflow-wrap:anywhere}
+    #marcus-morning .comparison p{white-space:pre-wrap;overflow-wrap:anywhere;margin:1px 0 8px}
+    #marcus-morning details{margin-top:6px;border-top:1px solid var(--line)}
+    #marcus-morning summary{min-height:44px;padding:11px 0;color:var(--leaf);font-weight:650}
+    #marcus-morning .coach{color:var(--muted);font-size:14px}
+    #marcus-morning .foot{display:flex;gap:12px;flex-wrap:wrap}
+    #marcus-morning a{display:inline-flex;align-items:center;min-height:44px;color:var(--leaf);font-size:13px}
+    #marcus-morning .sr{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+    #marcus-morning .source + .source{margin-top:8px}
+    #marcus-morning .other-reply{margin:8px 0}
+    #marcus-morning .other-reply label{display:block}
+    @media(min-width:780px){
+      #marcus-morning article{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:start}
+      #marcus-morning header{grid-column:1/-1}
+      #marcus-morning figure{margin:4px 0 16px 16px}
+      #marcus-morning .practice{padding-top:4px}
+    }
+
   /* debrief */
   .formative{margin:0 0 var(--sp3);font-size:.81rem;line-height:1.5;color:var(--amber);background:var(--amber-light);border-left:3px solid var(--amber);padding:9px 12px}
   .formative b{font-family:var(--serif);color:inherit}
@@ -398,6 +454,95 @@
 </head>
 <body>
 <button class="themebtn" id="themebtn" aria-label="Toggle light/dark theme">◐</button>
+<template id="marcus-sleep-card">
+  <article aria-labelledby="mm-title">
+    <header>
+      <p class="kicker">SP Interview Room · Marcus · Debrief</p>
+      <h2 id="mm-title">Two hours of sleep. What can you say on rounds?</h2>
+      <p class="intro">The admission brief puts his sleep at about two hours a night. On morning rounds, the resident asks, “What did Marcus tell you himself?”</p>
+    </header>
+    <figure>
+      <figcaption>From the night to the next morning</figcaption>
+      <svg class="window" viewBox="0 0 338 78" role="img" aria-labelledby="mm-diagram">
+        <title id="mm-diagram">Two to three hours of sleep. How Marcus felt at waking is unknown.</title>
+        <defs>
+          <clipPath id="mm-a"><rect x="2" y="2" width="162" height="71" rx="4"/></clipPath>
+          <clipPath id="mm-b"><rect x="174" y="2" width="162" height="71" rx="4"/></clipPath>
+          <linearGradient id="mm-sky" x2="0" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="var(--night)"/><stop offset="1" stop-color="var(--hill)"/></linearGradient>
+        </defs>
+        <g clip-path="url(#mm-a)">
+          <rect width="167" height="74" fill="url(#mm-sky)"/>
+          <g fill="var(--star)"><circle cx="19" cy="19" r="1"/><circle cx="47" cy="10" r=".8"/><circle cx="81" cy="31" r="1"/><circle cx="94" cy="15" r=".8"/><circle cx="121" cy="10" r="1"/><circle cx="145" cy="20" r=".8"/><path d="M60 13a11 11 0 1 0 10 16c-9 2-17-8-10-16Z"/></g>
+          <g fill="var(--night)" stroke="var(--haze)" stroke-width="1"><path d="M0 72V51h16v-9h17v28h5V48h17v22h4V35h25v37h4V51h20v19h5V43h18v29h9V54h23v20Z"/></g>
+          <path d="M20 49h4m3 0h3m34-7h5m3 0h5m-13 7h5m-24 7h5m68-4h5m21 8h5" stroke="var(--star)" stroke-width="2"/>
+        </g>
+        <g clip-path="url(#mm-b)">
+          <rect x="174" width="164" height="75" fill="var(--hill)"/>
+          <g class="dawn">
+            <rect x="174" width="164" height="75" fill="var(--light)"/>
+            <circle cx="287" cy="45" r="13" fill="var(--sun)" stroke="var(--hill)"/>
+            <path d="M174 61q27-19 56-11t44 4q31-20 64-15v35H174Z" fill="var(--sage, var(--haze))"/>
+            <path d="M175 72V55h16v-8h16v25h5V54h21v17h4V43h20v29h4V59h19v13h5V53h24v19h5V48h24v26Z" fill="var(--hill)" stroke="var(--night)" stroke-width=".9"/>
+            <path d="M241 49h4m4 0h4m-11 6h4m43 3h5m24-4h5" stroke="var(--light)" stroke-width="1.8"/>
+          </g>
+          <g class="shutters" fill="var(--night)" stroke="var(--haze)" stroke-width=".9">
+            <path d="M173 2h164l-4 10H173zM173 14h164l-4 10H173zM173 26h164l-4 10H173zM173 38h164l-4 10H173zM173 50h164l-4 10H173zM173 62h164l-4 10H173z"/>
+            <path d="M321 7v50" fill="none"/><circle cx="321" cy="59" r="2"/>
+          </g>
+        </g>
+        <g stroke="var(--haze)" fill="none" opacity=".85"><rect x="2" y="2" width="162" height="71" rx="4"/><rect x="174" y="2" width="162" height="71" rx="4"/></g>
+      </svg>
+      <div class="panes" role="group" aria-label="Inspect each part of the interview">
+        <button type="button" data-pane="night" aria-pressed="true"><small>At night</small><span id="mm-hours">Admission brief</span></button>
+        <button type="button" data-pane="morning" aria-pressed="false"><small>On waking</small><span id="mm-energy">Still unknown</span></button>
+      </div>
+      <div class="voice"><div id="mm-evidence" aria-live="polite"></div></div>
+    </figure>
+    <div class="practice">
+      <div id="mm-other" class="other-reply" hidden>
+        <label for="mm-quote">Choose an interview reply to cite in your sentence</label>
+        <select id="mm-quote"><option value="">Leave unselected</option></select>
+        <blockquote id="mm-quote-text"></blockquote>
+      </div>
+      <div id="mm-first-form">
+        <p class="kicker">Your first read</p>
+        <label class="write" for="mm-first">How would you present his sleep?</label>
+        <textarea id="mm-first" rows="2" maxlength="450" placeholder="Describe what Marcus reported."></textarea>
+        <button id="mm-commit" class="go" type="button" disabled>Commit my sentence</button>
+      </div>
+      <div id="mm-first-saved" hidden><p class="kicker">Your first read</p><div class="learner"><p id="mm-original"></p></div></div>
+      <section class="part" id="mm-ask" aria-labelledby="mm-ask-title" hidden>
+        <p class="kicker">Back at the bedside</p><h3 id="mm-ask-title">Which question would you try?</h3>
+        <p class="muted">Rehearse a follow-up with a reply from Marcus’s case.</p>
+        <div class="choices" role="group" aria-labelledby="mm-ask-title">
+          <button type="button" data-q="baseline" aria-pressed="false">“What’s a usual night for you? When did that change?”</button>
+          <button type="button" data-q="work" aria-pressed="false">“What do you do with those extra hours?”</button>
+          <button type="button" data-q="waking" aria-pressed="false">“When you wake up after that little sleep, how do you feel?”</button>
+        </div>
+        <button type="button" data-q="none" class="quiet" aria-pressed="false">Present with what I have</button>
+        <div id="mm-answer" class="exchange" hidden><span class="by">Marcus · practice follow-up</span><blockquote id="mm-answer-text"></blockquote></div>
+      </section>
+      <section id="mm-revise" class="part" hidden>
+        <p class="kicker">On rounds</p>
+        <label class="write" for="mm-final">What would you say now?</label>
+        <p class="muted">Edit your original sentence, or keep it if it still fits.</p>
+        <textarea id="mm-final" rows="3" maxlength="450"></textarea>
+        <button type="button" id="mm-submit" class="go">Use this sentence on rounds</button>
+      </section>
+      <section id="mm-report" class="part comparison" hidden aria-labelledby="mm-report-title">
+        <p class="kicker">Your presentation</p><h3 id="mm-report-title">What changed in your wording?</h3>
+        <strong class="by">First read</strong><p id="mm-before"></p>
+        <strong class="by">On rounds</strong><p id="mm-revised"></p>
+        <details id="mm-worked"><summary>Compare a worked sentence</summary>
+          <p id="mm-model" class="model"></p><p id="mm-coach" class="coach"></p>
+          <a href="https://www.nimh.nih.gov/health/publications/bipolar-disorder" rel="noopener" target="_blank">Bipolar disorder · NIMH</a>
+        </details>
+        <div class="foot"><button type="button" id="mm-edit" class="quiet">Edit my sentence</button><button type="button" id="mm-retry" class="quiet">Try another question</button></div>
+      </section>
+      <p class="sr" id="mm-status" role="status"></p>
+    </div>
+  </article>
+</template>
 <main class="shell" id="root"></main>
 <div id="live" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 <script>
@@ -1160,6 +1305,167 @@ function typedRoomView(voiceState,name,busy,speakingText,offline,trouble){
   return v;
 }
 
+/* The chart and the learner's questions are not patient disclosures. Only complete,
+   authored replies carry automatic interpretations. Other wording stays quotable. */
+function marcusSleepSources(session, opening) {
+  var cd = session.caseDef;
+  var sleep = cd.responses.sleep_decreased;
+  var course = cd.responses.timeline_onset;
+  var sources = [];
+  var choices = {
+    baseline: course.open[0], work: sleep.guarded[1], waking: sleep.open[0]
+  };
+  var facts = new Map([
+    [sleep.guarded[0], 'full'], [sleep.open[0], 'rested'],
+    [sleep.guarded[1], 'work'], [course.open[0], 'baseline'],
+    [course.guarded[0], 'onset']
+  ]);
+  var authored = new Set(visitNoteCaseLines(cd).concat(cd.persona.opening));
+  function add(text, label) {
+    if (!text || /^\[(not heard|no reply|interrupted)/i.test(text)) return;
+    var kind = facts.get(text);
+    // A short spoken answer can establish hours alone. Keep an unfamiliar or
+    // qualified answer intact for the learner to cite instead of guessing.
+    if (!kind && /^(?:two|2) (?:hours,? maybe (?:three|3)|(?:or|to) (?:three|3) hours)(?: (?:a|per) night)?[.!]?$/i.test(text.trim())) kind = 'hours';
+    if (kind || !authored.has(text)) sources.push({text:text, label:label, kind:kind || 'other'});
+  }
+  add(opening, 'Interview opening');
+  session.turns.forEach(function(turn, i) { add(turn.pt, 'Interview · turn ' + (i + 1)); });
+  return {sources:sources, choices:choices, facts:facts};
+}
+
+function marcusSleepModel(rows, other) {
+  var has = function(kind) { return rows.some(function(row) { return row.kind === kind; }); };
+  var rested = has('rested'), full = has('full'), work = has('work');
+  var reportedHours = full || rested || has('hours');
+  var sentence = reportedHours ? 'Marcus reports about two to three hours of sleep' : 'The admission brief puts his sleep at about two hours a night';
+  if (rested) sentence += ' for roughly two weeks, down from his usual eight hours';
+  else if (has('baseline')) sentence += '. He describes a change starting around two weeks ago and says eight hours of sleep was usual for him';
+  else if (has('onset')) sentence += '. He dates the change to about two weeks ago';
+  sentence += '.';
+  if (work) sentence += ' He describes working between midnight and four.';
+  if (other) {
+    sentence += ' In the interview, Marcus said, “' + other.text + '”';
+    if (rested || full) sentence += ' I would check how that fits with his account of waking.';
+    return sentence;
+  }
+  if (rested || full) return sentence + (rested ? ' He says he isn’t tired' : ' He describes waking up “FULL”') + ', which suggests a decreased need for sleep.';
+  return sentence + ' I would clarify how he feels when he wakes.';
+}
+
+function MarcusSleepDebrief(props) {
+  var host = useRef(null);
+  useEffect(function() {
+    var root = host.current;
+    root.appendChild(document.getElementById('marcus-sleep-card').content.cloneNode(true));
+    var el = function(key) { return root.querySelector('#mm-' + key); };
+    var data = marcusSleepSources(props.session, props.opening);
+    var otherRows = data.sources.filter(function(row) { return row.kind === 'other'; });
+    var first = '', question = '', pane = 'night';
+    var choiceButtons = Array.from(root.querySelectorAll('[data-q]'));
+    var chart = {label:'Admission brief', text:'About two hours of sleep a night for two weeks.'};
+    otherRows.forEach(function(row, index) {
+      var option = document.createElement('option');
+      option.value = String(index); option.textContent = row.label + ' · ' + row.text.slice(0, 64);
+      el('quote').appendChild(option);
+    });
+    el('other').hidden = !otherRows.length;
+    function otherReply() {
+      return el('quote').value === '' ? null : otherRows[Number(el('quote').value)];
+    }
+    function rows() {
+      var answer = data.choices[question];
+      return answer ? data.sources.concat({text:answer, label:'Practice follow-up', kind:data.facts.get(answer)}) : data.sources;
+    }
+    function renderEvidence() {
+      var all = rows();
+      var waking = all.filter(function(row) { return row.kind === 'full' || row.kind === 'rested'; });
+      var hasRested = waking.some(function(row) { return row.kind === 'rested'; });
+      var quote = otherReply();
+      var reportedHours = waking.length > 0 || all.some(function(row) { return row.kind === 'hours'; });
+      el('hours').textContent = reportedHours ? '2–3 hours' : 'About 2 hours · brief';
+      el('energy').textContent = hasRested ? '“I’m not tired”' : waking.length ? '“FULL”' : otherRows.length ? 'Check his words' : 'Still unknown';
+      root.querySelector('.window').dataset.heard = String(waking.length > 0);
+      el('diagram').textContent = el('hours').textContent + ' of sleep. On waking: ' + el('energy').textContent;
+      root.querySelectorAll('[data-pane]').forEach(function(b) { b.setAttribute('aria-pressed', String(b.dataset.pane === pane)); });
+      var shown = pane === 'morning' ? waking.slice() : all.filter(function(row) { return row.kind !== 'other'; });
+      if (pane === 'night' && !reportedHours) shown.unshift(chart);
+      if (quote) shown.push(quote);
+      var evidence = el('evidence');
+      evidence.replaceChildren();
+      if (!shown.length) evidence.textContent = otherRows.length ? 'Check Marcus’s wording in the interview before drawing a conclusion.' : 'How he feels when he wakes is still open.';
+      shown.forEach(function(row) {
+        var source = document.createElement('div'), label = document.createElement('strong'), words = document.createElement('blockquote');
+        source.className = 'source'; label.textContent = row.label; words.textContent = row.text;
+        source.append(label, words); evidence.appendChild(source);
+      });
+      el('quote-text').textContent = quote ? quote.text : '';
+    }
+    function comparison() {
+      var all = rows(), other = otherReply();
+      el('model').textContent = marcusSleepModel(all, other);
+      var wake = all.some(function(r) { return r.kind === 'rested' || r.kind === 'full'; });
+      el('coach').textContent = other || (otherRows.length && !wake) ? 'Check your interpretation against Marcus’s exact wording. A question about fatigue can tell you something different from a question about hours.' :
+        wake ? 'Which words support your interpretation? Ask what changed alongside his sleep, including mood, activity and substance use.' :
+        question === 'work' ? 'You learned how he spends the night. What would you ask to find out how he feels the next morning?' :
+        'Separate the hours in the admission brief from what Marcus told you. What would you need to hear before calling this a decreased need for sleep?';
+    }
+    function focus(id) { el(id).focus(); }
+    function click(event) {
+      var b = event.target.closest('button');
+      if (!b) return;
+      if (b.dataset.pane) { pane = b.dataset.pane; renderEvidence(); return; }
+      if (b.id === 'mm-commit') {
+        if (!el('first').value.trim()) return;
+        first = el('first').value; el('original').textContent = first;
+        el('first-form').hidden = true; el('first-saved').hidden = false; el('ask').hidden = false;
+        choiceButtons[0].focus();
+      } else if (b.dataset.q && !question) {
+        question = b.dataset.q;
+        choiceButtons.forEach(function(btn) {
+          btn.hidden = btn !== b; btn.setAttribute('aria-pressed', String(btn === b));
+        });
+        el('ask-title').textContent = question === 'none' ? 'Present with the interview so far' : 'Your practice follow-up';
+        el('answer-text').textContent = data.choices[question] || '';
+        el('answer').hidden = question === 'none';
+        pane = question === 'waking' ? 'morning' : 'night';
+        el('revise').hidden = false; el('final').value = first; el('submit').disabled = false;
+        el('status').textContent = data.choices[question] || 'You kept your interview account.';
+        renderEvidence(); focus('final');
+      } else if (b.id === 'mm-submit') {
+        if (!el('final').value.trim()) return;
+        el('before').textContent = first; el('revised').textContent = el('final').value;
+        el('report').hidden = false; el('first-saved').hidden = true; el('revise').hidden = true;
+        comparison(); el('worked').querySelector('summary').focus();
+      } else if (b.id === 'mm-edit') {
+        el('report').hidden = true; el('worked').open = false; el('revise').hidden = false;
+        el('first-saved').hidden = false; focus('final');
+      } else if (b.id === 'mm-retry') {
+        question = ''; pane = 'night'; el('worked').open = false;
+        el('answer').hidden = true; el('answer-text').textContent = '';
+        el('report').hidden = true; el('first-saved').hidden = false;
+        el('ask-title').textContent = 'Which question would you try?';
+        choiceButtons.forEach(function(btn) { btn.hidden = false; btn.setAttribute('aria-pressed', 'false'); });
+        renderEvidence(); choiceButtons[0].focus();
+      }
+    }
+    function input(event) {
+      if (event.target === el('first')) el('commit').disabled = !event.target.value.trim();
+      if (event.target === el('final')) el('submit').disabled = !event.target.value.trim();
+    }
+    function change(event) {
+      if (event.target === el('quote')) { renderEvidence(); if (!el('report').hidden) comparison(); }
+    }
+    root.addEventListener('click', click); root.addEventListener('input', input); root.addEventListener('change', change);
+    renderEvidence();
+    return function() {
+      root.removeEventListener('click', click); root.removeEventListener('input', input); root.removeEventListener('change', change);
+      root.replaceChildren();
+    };
+  }, [props.session, props.opening]);
+  return e('section', {ref:host, id:'marcus-morning', 'aria-labelledby':'mm-title'});
+}
+
 function App(){
   var st=useState({screen:'loading',pack:null,err:null}); var S=st[0],setS=st[1];
   var enc=useState(null); var E=enc[0],setE=enc[1];
@@ -1303,7 +1609,10 @@ function App(){
   function recordSpokenTurns(snapshot){
     if(!snapshot||!E||!E.spoken||!Array.isArray(snapshot.transcript))return;
     var book=rtBookRef.current,sess=E.session,learners=[],prevTurnId=0;
-    snapshot.transcript.forEach(function(m){if(m&&m.who==='me')learners.push(m);});
+    snapshot.transcript.forEach(function(m){
+      if(m&&m.who==='me')learners.push(m);
+      if(m&&m.who==='pt'&&m.turnId===0&&m.delivered===true&&m.status==='complete'&&m.text)sess.heardOpening=m.text;
+    });
     snapshot.transcript.forEach(function(m){
       if(!m||m.who!=='pt'||!m.turnId)return;
       if(m.repeatOf){
@@ -2030,6 +2339,7 @@ function App(){
           e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty);}},'Re-run this encounter'),
           refLine?e('span',{className:'ref'},refLine):null,
           reframeLine?e('span',{className:'myth'},reframeLine):null)):null,
+      E.caseDef.id==='sp_mania_redirect_001'?e(MarcusSleepDebrief,{key:E.encounterId,session:sess2,opening:E.spoken?sess2.heardOpening:(E.msgs.find(function(m){return m.who==='pt'&&m.turnId===0;})||{}).text}):null,
       E.caseDef.visitNote?e(VisitNoteReview,{caseDef:E.caseDef,session:sess2,entries:VN}):null,
       e('div',{className:'card'},
         e('h2',null,'Your read, then the room’s'),
@@ -2100,7 +2410,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,visitNoteFactLines:visitNoteFactLines,visitNoteCarries:visitNoteCarries,visitNoteCaseLines:visitNoteCaseLines,gradeVisitNote:gradeVisitNote,visitNoteSummary:visitNoteSummary,nextEncounterFor:nextEncounterFor};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,marcusSleepSources:marcusSleepSources,marcusSleepModel:marcusSleepModel,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,visitNoteFactLines:visitNoteFactLines,visitNoteCarries:visitNoteCarries,visitNoteCaseLines:visitNoteCaseLines,gradeVisitNote:gradeVisitNote,visitNoteSummary:visitNoteSummary,nextEncounterFor:nextEncounterFor};}catch(x){}
 function isLocalDanaPreview(location, config){
   return !!(location && config && config.generated === true && config.providerMode === 'mock' &&
     (location.protocol === 'http:' || location.protocol === 'https:') &&

@@ -194,5 +194,42 @@ await run('"calm down" still blocks the gate for a passive-wish question',[
   return errs;
 });
 
+// Full case lines carry every fact the patient disclosed, even when a question
+// asked about only one of them. An undelivered reply never fills in a symptom.
+const assert=require('node:assert/strict');
+const course=cd.responses.timeline_onset;
+const sleep=cd.responses.sleep_decreased;
+assert.match(cd.persona.presentingContext,/About two hours of sleep a night for two weeks/);
+assert.match(course.open[0],/Two weeks.*Eight hours of sleep/);
+assert.match(sleep.guarded[0],/Two hours, maybe three.*I wake up FULL/);
+assert.match(sleep.guarded[1],/hours of work done between midnight and four/);
+assert.match(sleep.open[0],/Two or three hours, for about two weeks.*I'm not tired.*eight-hour guy/);
+for (const opening of ['Two hours, maybe three.',sleep.guarded[0]]) {
+  const session=P.start(cd,{difficulty:'supported'});
+  const data=T.marcusSleepSources(session,opening);
+  for (const q of ['baseline','work','waking','none']) {
+    const answer=data.choices[q];
+    const rows=answer?data.sources.concat({text:answer,kind:data.facts.get(answer)}):data.sources;
+    const model=T.marcusSleepModel(rows,null);
+    const wakingEstablished=opening===sleep.guarded[0]||q==='waking';
+    assert.equal(model.includes('suggests a decreased need for sleep'),wakingEstablished);
+    assert.equal(model.includes('working between midnight and four'),q==='work');
+    assert.equal(model.includes('eight hours'),q==='baseline'||q==='waking');
+    assert.equal(model.includes('admission brief'),false);
+  }
+}
+const mixed=P.start(cd,{difficulty:'supported'});
+mixed.turns=[
+  {me:'You wake up FULL?',pt:'[not heard — playback did not start]'},
+  {me:'Are you tired?',pt:'[interrupted — delivery uncertain]'},
+  {me:'How many hours?',pt:'I was up for hours and felt exhausted at breakfast.'}
+];
+const mixedData=T.marcusSleepSources(mixed,cd.persona.opening);
+assert.equal(mixedData.sources.length,1);
+assert.equal(mixedData.sources[0].kind,'other');
+assert.match(T.marcusSleepModel(mixedData.sources,mixedData.sources[0]),/exhausted at breakfast/);
+assert.doesNotMatch(T.marcusSleepModel(mixedData.sources,mixedData.sources[0]),/decreased need|waking up “FULL”/);
+console.log('PASS — sleep debrief follows the actual replies across eight paths');
+
 process.exit(failures?1:0);
 })().catch(e=>{console.log('CRASH',e);process.exit(1);});
