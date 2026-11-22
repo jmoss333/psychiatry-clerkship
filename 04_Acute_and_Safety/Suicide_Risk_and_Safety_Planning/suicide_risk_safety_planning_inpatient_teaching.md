@@ -18,6 +18,50 @@
 
 <!-- crisis-block -->
 
+<section id="luz-rehearsal" class="bedside-case visual-practice" aria-labelledby="luz-title">
+<header><p class="case-kicker">Discharge rehearsal · Fictional case</p>
+<h3 id="luz-title" tabindex="-1">Who could you reach at 2 a.m.?</h3>
+<p>Before discharge, you and Luz rehearse what she’ll do if suicidal thoughts return on her first night home.</p></header>
+<div id="luz-day" class="luz-scene">
+<figure><img src="illustrations/luz-on-unit.avif" width="576" height="432" loading="lazy" alt="Luz and a clinician sit together on the unit with her written plan."><figcaption>4 p.m. · On the inpatient unit</figcaption></figure>
+<div class="step"><div class="luz-paper"><span class="folio">Luz’s first draft</span><blockquote>“If I feel unsafe, I’ll call my sister.”</blockquote></div>
+<p><strong>Luz:</strong> “My sister usually picks up during the day. We talk while she walks home from work.”</p>
+<button type="button" id="luz-try-night" aria-controls="luz-night">Try it at 2 a.m.</button></div>
+</div>
+<div id="luz-night" class="luz-scene" hidden>
+<figure><img src="illustrations/luz-at-night.avif" width="576" height="432" loading="lazy" alt="Luz imagines sitting at home with her phone in the middle of the night."><figcaption>2 a.m. · Imagining the first night home</figcaption></figure>
+<div class="step"><div class="luz-paper"><span class="folio">Luz’s first draft</span><blockquote>“If I feel unsafe, I’ll call my sister.”</blockquote></div>
+<p id="luz-barrier" tabindex="-1"><strong>Luz:</strong> “Oh. My sister keeps her phone on silent at night. She’d see the call in the morning.”</p></div>
+</div>
+<div id="luz-work" class="step" hidden>
+<h4 id="luz-questions" tabindex="-1">Ask Luz what might work</h4>
+<p>Ask a question to hear her answer. You can ask both.</p>
+<button id="luz-ask-roommate" type="button" aria-expanded="false" aria-controls="luz-reply-roommate">Who at home have you talked with about waking them up?</button>
+<p id="luz-reply-roommate" class="vp-reply" hidden><strong>Luz:</strong> “My roommate told me I could knock, even late. She’s a heavy sleeper, though. If she doesn’t answer, I could text {{lifeline-number}}.”</p>
+<button id="luz-ask-text" type="button" aria-expanded="false" aria-controls="luz-reply-text">If talking out loud felt hard, how would you want to ask for help?</button>
+<p id="luz-reply-text" class="vp-reply" hidden><strong>Luz:</strong> “I’d rather start with a text. I could text {{lifeline-number}} myself. It’s easier to type the first sentence.”</p>
+<fieldset><legend>Revise the overnight line</legend>
+<p>Choose a line Luz could use. Her answers open up the choices.</p>
+<label><input type="radio" id="luz-pick-roommate" name="luz-revision" value="roommate" disabled> “I’ll knock on my roommate’s door.”</label>
+<label><input type="radio" id="luz-pick-text" name="luz-revision" value="text" disabled> “I’ll text the 24-hour crisis line.”</label>
+<label><input type="radio" id="luz-pick-sister" name="luz-revision" value="sister"> “I’ll try my sister again.”</label>
+</fieldset>
+<button type="button" id="luz-apply" disabled>Apply revision</button>
+<p id="luz-feedback" class="vp-safety" role="status" hidden>Another call still goes to a silent phone. Ask Luz about a different way to reach someone tonight, then revise her line.</p>
+</div>
+<div id="luz-result" class="step" hidden>
+<h4 id="luz-result-title" tabindex="-1">Luz’s revised plan</h4>
+<dl class="luz-paper"><dt>Before</dt><dd>“If I feel unsafe, I’ll call my sister.”</dd>
+<dt>During the day</dt><dd>“I can call my sister during the day, when she usually picks up.”</dd>
+<dt>At 2 a.m.</dt><dd id="luz-new-line"></dd>
+<dt>If I’m in immediate danger</dt><dd>“I’ll call {{emergency-number}} for emergency help right away.”</dd></dl>
+<div class="case-choices"><button type="button" id="luz-edit">Try another revision</button><button type="button" id="luz-reset">Rehearse again</button></div>
+</div>
+<template id="luz-line-roommate">“If I feel unsafe at 2 a.m., I’ll knock on my roommate’s door. If she doesn’t answer, I’ll text {{lifeline-number}} right away.”</template>
+<template id="luz-line-text">“If I feel unsafe at 2 a.m., I’ll text {{lifeline-number}} myself. I can start by telling the counselor I need help getting through tonight.”</template>
+<footer><a href="https://www.mentalhealth.va.gov/docs/VA_SafetyPlan_quickguide.pdf">VA clinician guide to safety planning (PDF)</a></footer>
+</section>
+
 **What the student does.**
 - Ask directly and document the specifics — plan, intent, means, preparatory behavior — never a bare "denies SI."
 - Chase collateral and the record for a prior attempt and for firearm access — the two facts most likely to change the plan.
