@@ -159,8 +159,8 @@ DBT-informed family skills, solution-focused / single-session.
 
 **Options**
 - **A. Add a column "Evidence and setting"**: family psychoeducation row **"Relapse evidence at 12 months;
-  multi-session; not acutely ill samples (Rodolico 2022)"**; Open Dialogue row **"First RCT: no difference in time
-  to relapse; community crisis care (Pilling 2026)"**; every other row **"Not checked for this page"**.
+  multi-session; not acutely ill samples (Rodolico 2022)"**; Open Dialogue row **"First RCT: no statistically significant
+  difference in time to relapse; community crisis care (Pilling 2026)"**; every other row **"Not checked for this page"**.
 - **B. One line under the table instead:** **"Only the family-psychoeducation and Open Dialogue rows carry outcome
   evidence checked for this page, and none of those trials tested a single inpatient meeting."**
 - **C. Keep the table as is.**

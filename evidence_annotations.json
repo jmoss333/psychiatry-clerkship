@@ -361,7 +361,7 @@
       "claims": [
         {
           "claimId": "family-intervention-2024-update",
-          "claimText": "In an update of the Cochrane family-intervention review (26 RCTs), low-certainty evidence indicated that family-based interventions may reduce patients' relapse at one month or less postintervention (RR 0.66, 95% CI 0.49 to 0.89; 4 RCTs, 229 participants), may result in more family members shifting from high to low expressed emotion (RR 3.90, 95% CI 1.11 to 13.71; 2 RCTs, 72 participants), and may result in little to no difference in hospital admission (RR 0.81, 95% CI 0.51 to 1.29).",
+          "claimText": "In an update of the Cochrane family-intervention review (26 RCTs), low-certainty evidence indicated that family-based interventions may reduce patients' relapse at one month or less postintervention (RR 0.66, 95% CI 0.49 to 0.89; 4 RCTs, 229 participants), may result in more family members shifting from high to low expressed emotion (RR 3.90, 95% CI 1.11 to 13.71; 2 RCTs, 72 participants), and may result in little to no difference in hospital admission at one month or less postintervention (RR 0.81, 95% CI 0.51 to 1.29; 2 RCTs, 153 participants; low-certainty evidence).",
           "claimTerms": [
             "Low-certainty evidence",
             "may reduce patients' relapse at one month or less postintervention",
