@@ -18,6 +18,7 @@ function fdMountBedsideCases(body) {
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+  fdMountNellFamilyMeeting(body);
 }
 
 function fdMountNicoInterview(body) {
@@ -1189,4 +1190,75 @@ function fdMountEctMemory(body) {
     fdBedsideFocus(concerns[0]);
     status.textContent = status.dataset.resetMessage;
   });
+}
+
+function fdMountNellFamilyMeeting(body) {
+  const card = body.querySelector('#nell-family-meeting');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const part = name => card.querySelector('#nell-' + name);
+  const choices = part('choice-panel');
+  const feedback = part('feedback'), next = part('feedback-action');
+  const handoff = part('handoff'), update = handoff.querySelector('blockquote');
+  let stage, selected;
+
+  function respond(choice) {
+    selected = choice;
+    part('said-line').textContent = choice.querySelector('button').textContent;
+    part('reply-speaker').textContent = choice.querySelector('[data-speaker]').textContent;
+    part('reply-line').textContent = choice.querySelector('[data-reply]').textContent;
+    part('coach').textContent = choice.querySelector('[data-coach]').textContent;
+    next.textContent = 'Rehearse another response';
+    if (selected.hasAttribute('data-confirm')) {
+      next.textContent = stage === 'private' ? 'Join Joni in the meeting' : 'Reveal the team update';
+    }
+    choices.hidden = true;
+    feedback.hidden = false;
+    fdBedsideFocus(feedback);
+  }
+
+  function showStage(name) {
+    stage = name;
+    selected = null;
+    const scene = card.querySelector('template[data-nell-stage="' + name + '"]').content;
+    const image = scene.querySelector('img');
+    part('scene-art').src = image.getAttribute('src');
+    part('scene-art').alt = image.alt;
+    part('scene-label').textContent = scene.querySelector('[data-label]').textContent;
+    part('scene-people').textContent = scene.querySelector('[data-people]').textContent;
+    part('speaker').textContent = scene.querySelector('[data-speaker]').textContent;
+    part('scene-quote').textContent = scene.querySelector('[data-quote]').textContent;
+    part('question').textContent = scene.querySelector('[data-question]').textContent;
+    const buttons = Array.from(scene.querySelectorAll('[data-choice]'), choice => {
+      const button = choice.querySelector('button').cloneNode(true);
+      button.addEventListener('click', () => respond(choice));
+      return button;
+    });
+    part('options').replaceChildren(...buttons);
+    choices.hidden = next.hidden = false;
+    feedback.hidden = handoff.hidden = true;
+    update.textContent = '';
+    for (const field of ['said-line', 'reply-speaker', 'reply-line', 'coach']) part(field).textContent = '';
+  }
+
+  next.addEventListener('click', () => {
+    if (!selected || feedback.hidden || next.hidden) return;
+    if (!selected.hasAttribute('data-confirm')) {
+      showStage(stage);
+      fdBedsideFocus(part('question'));
+    } else if (stage === 'private') {
+      showStage('meeting');
+      fdBedsideFocus(part('scene'));
+    } else {
+      update.textContent = card.querySelector('template[data-nell-update]').content.textContent;
+      handoff.hidden = false;
+      next.hidden = true;
+      fdBedsideFocus(part('handoff-title'));
+    }
+  });
+  part('replay').addEventListener('click', () => {
+    showStage('private');
+    fdBedsideFocus(part('scene'));
+  });
+  showStage('private');
 }

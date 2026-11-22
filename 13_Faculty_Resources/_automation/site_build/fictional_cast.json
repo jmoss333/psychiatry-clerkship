@@ -351,6 +351,24 @@
       "pages": [
         "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md"
       ]
+    },
+    {
+      "id": "nell-family-meeting-playbook",
+      "name": "Nell",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "06_Family_and_Relational/family_meeting_playbook_90min.md"
+      ]
+    },
+    {
+      "id": "joni-family-meeting-playbook",
+      "name": "Joni",
+      "pronouns": "she",
+      "role": "Nell's sister",
+      "pages": [
+        "06_Family_and_Relational/family_meeting_playbook_90min.md"
+      ]
     }
   ],
   "ignore": []

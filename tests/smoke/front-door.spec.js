@@ -2797,6 +2797,121 @@ test.describe('Interactive readings', () => {
     await seedApp(page, info);
   });
 
+  test('Nell and Joni rehearse six responses and reveal the team update only after Joni confirms the ride', async ({ page }) => {
+    await pinGovernance(page, 'family_playbook.md', { status: 'reviewed', riskLevel: 'low' });
+    await page.goto('/?page=family_playbook.md');
+    const article = page.locator('.fd-article__body');
+    const section = article.locator('section').filter({
+      has: page.locator(':scope > h2', { hasText: 'Before the meeting (≈15 min prep)' }),
+    });
+    const card = section.locator('#nell-family-meeting');
+    const id = name => card.locator('#nell-' + name);
+    const art = id('scene-art');
+    const action = id('feedback-action');
+    const teamUpdate = '“In private, Nell asked me to discuss timing and transportation for Thursday’s follow-up with Joni. Nell wants to tell Joni personally what brought them to the hospital. In the meeting, Joni confirmed she can drive Nell to the ten o’clock visit. They still need to agree on a pickup time.”';
+    const updateText = article.getByText(/In private, Nell asked me to discuss timing|They still need to agree on a pickup time/);
+
+    async function expectPrintAndOpenKeepUpdateEmpty() {
+      // getByText also finds hidden elements. An already-populated, collapsed quote would leak the answer.
+      await expect(updateText).toHaveCount(0);
+      await page.emulateMedia({ media: 'print' });
+      await page.evaluate(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      await expect(updateText).toHaveCount(0);
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await page.emulateMedia({ media: 'screen' });
+      // Simulate an external disclosure opener without activating the learner's Reveal button.
+      const handoff = id('handoff');
+      if (await handoff.count()) {
+        const wasHidden = await handoff.evaluate(el => {
+          const hidden = el.hidden;
+          el.hidden = false;
+          el.setAttribute('open', '');
+          return hidden;
+        });
+        await handoff.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await expect(updateText).toHaveCount(0);
+        await handoff.evaluate((el, hidden) => {
+          el.hidden = hidden;
+          el.removeAttribute('open');
+        }, wasHidden);
+      }
+    }
+
+    async function expectArt(alt) {
+      await expect(art).toHaveAttribute('alt', alt);
+      await art.scrollIntoViewIfNeeded();
+      return art.evaluate(async img => { await img.decode(); return img.currentSrc; });
+    }
+
+    async function expectWidths() {
+      for (const viewport of [{ width: 320, height: 750 }, DESKTOP, PHONE]) {
+        await page.setViewportSize(viewport);
+        expect(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      }
+    }
+
+    async function respond(choice, phrase, speaker, quote, coaching) {
+      await expect(id(choice)).toContainText(phrase);
+      const words = await id(choice).innerText();
+      await id(choice).press('Enter');
+      await expect(id('feedback')).toBeFocused();
+      await expect(id('said-line')).toHaveText(words);
+      await expect(id('reply-speaker')).toHaveText(speaker + ' replies');
+      await expect(id('reply-line')).toHaveText('“' + quote + '”');
+      await expect(id('coach')).toContainText(coaching);
+      await expect(updateText).toHaveCount(0);
+    }
+
+    async function retry() {
+      await expect(action).toHaveText('Rehearse another response');
+      await page.keyboard.press('Tab');
+      await expect(action).toBeFocused();
+      await page.keyboard.press('Space');
+      await expect(id('question')).toBeFocused();
+    }
+
+    await expect(card.getByRole('heading', { name: 'What can we talk about together?' })).toBeVisible();
+    await expect(id('scene-quote')).toContainText('I want to tell her myself what brought me here.');
+    const privateAlt = 'Nell and the resident sit together in the meeting room before Joni arrives.';
+    const privateArt = await expectArt(privateAlt);
+    expect(privateArt).toBeTruthy();
+    await expectWidths();
+    await expectPrintAndOpenKeepUpdateEmpty();
+    await respond('private-broad', 'I’ll fill Joni in', 'Nell', 'Wait. Fill her in on what? I want to be the one to tell her why I’m here.', '“Fill Joni in” leaves Nell guessing');
+    await retry();
+    await respond('private-narrow', 'I’ll just listen today', 'Nell', 'Could you ask her about the ride, though? That’s the part I want help with.', 'Try saying exactly what you can take on.');
+    await retry();
+    await respond('private-scope', 'I can ask Joni about the time and the ride.', 'Nell', 'Yes. Please ask her about Thursday. I’ll decide when to tell her the rest.', 'what they want to say themselves.');
+    await expect(action).toHaveText('Join Joni in the meeting');
+    await action.press('Enter');
+    const meetingArt = await expectArt('Joni joins Nell and the resident for the family meeting.');
+    expect(meetingArt).toBeTruthy();
+    expect(meetingArt).not.toBe(privateArt);
+    await expect(id('scene-quote')).toContainText('But can someone tell me what happened?');
+    await expectWidths();
+    await respond('meeting-signal', 'there’s more they want to explain to you later', 'Nell', 'I didn’t say I’d explain it later. I wanted to decide that part myself.', '“I spoke for you. I’m sorry. You get to decide whether to have that conversation.”');
+    await retry();
+    await respond('meeting-pressure', 'Nell, would you tell Joni what brought you in?', 'Nell', 'I wasn’t ready to do that right now.', '“Nell, I put you on the spot. I’m sorry. You get to decide when you want to talk.”');
+    await retry();
+    await respond('meeting-scope', 'Nell asked me to help with a ride for Thursday at ten.', 'Joni', 'Ten? Yes, I’m off that morning. I can drive you, Nell. We can figure out when to leave.', 'what Nell requested and what Joni agreed to.');
+    await expect(action).toHaveText('Reveal the team update');
+    await expectPrintAndOpenKeepUpdateEmpty();
+    await action.press('Enter');
+    await expect(id('handoff-title')).toBeFocused();
+    await expect(id('handoff').getByText(teamUpdate, { exact: true })).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(id('replay')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(updateText).toHaveCount(0);
+    await expect(id('private-broad')).toBeVisible();
+    await expect(id('feedback')).toBeHidden();
+    expect(await expectArt(privateAlt)).toBe(privateArt);
+    await expectHealthy(page);
+  });
+
   test('Nico’s collateral rounds handoff uses only the nights and source the learner heard', async ({ page }) => {
     await page.goto('/?page=collateral_workflow.md&guideSection=5-bring-it-back-to-the-team');
     const section = page.locator('.fd-guide-section').filter({ has: page.locator(':scope > #guide-5-bring-it-back-to-the-team') });
