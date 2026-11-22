@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Felitti et al. · 1998 · American Journal of Preventive Medicine",
-     "sourceId": "felitti-1998-ace",
+     "t": "Belkin et al. · 2021 · Psychiatr Serv",
+     "sourceId": "belkin-2021",
      "key": "A"
     },
     {
-     "t": "Miklowitz et al. · 2021 · JAMA Psychiatry",
-     "sourceId": "miklowitz-2021-bipolar-psychotherapy-nma",
+     "t": "Mahon · 2024 · Community Ment Health J",
+     "sourceId": "mahon-2024",
      "key": "B"
     },
     {
@@ -1132,8 +1132,8 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Nuij et al. · 2021 · The British journal of psychiatry : the journal of mental science",
-     "sourceId": "nuij-2021-safety-planning-meta-analysis",
+     "t": "American Psychiatric Association · 2026",
+     "sourceId": "apa-practice-guidelines",
      "key": "A"
     },
     {

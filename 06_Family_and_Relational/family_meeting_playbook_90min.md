@@ -10,7 +10,7 @@ Convene a family meeting for a first episode, a relapse, a high-expressed-emotio
 
 ## Before the meeting (≈15 min prep)
 
-- **Confirm consent and scope.** The patient agrees to the meeting and to what may be shared; document it. Respect the patient's limits on disclosure (PHI is the patient's to share).
+- **Confirm consent and scope.** The patient agrees to the meeting and to what may be shared; document it. Respect the patient's limits on disclosure (PHI is the patient's to share). Some patients decline family involvement for privacy reasons or because they expect a different kind of involvement (Tham & Solomon 2024). Ask what they would be comfortable with, and offer to revisit it before discharge.
 - **Set the goal in one sentence.** "Align on the diagnosis and the discharge plan," or "Lower the temperature at home and agree on warning signs." A meeting with one clear goal beats a meeting that tries to do everything.
 - **Know your audience.** Who is coming, who is missing, who holds influence, what each person is most worried about.
 - **Brief the team.** Agree on who leads, who takes notes, who watches the patient's distress, and the two or three messages everyone will keep consistent.
@@ -46,4 +46,4 @@ Letting information-sharing eat the whole meeting; correcting expressed emotion 
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
 
-**Pending re-attestation:** session-count parenthesis changed 2026-11-22 (NICE CG178; Rodolico 2022)
+**Pending re-attestation:** session-count parenthesis changed 2026-11-22 (NICE CG178; Rodolico 2022); declining-patients sentence added to the consent step 2026-11-22 (Tham & Solomon 2024)

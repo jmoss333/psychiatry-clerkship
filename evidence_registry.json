@@ -1617,9 +1617,9 @@
         "status": "verified",
         "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full; full text read 2026-11-22.",
         "verifiedAt": "2026-11-22",
-        "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm. The pages do not carry them pending a faculty decision (Batch 2, J9). Studies in which all patients were acutely ill were excluded."
+        "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm; no included study was at low risk of bias (49 moderate, 33 high). Family Therapy Modalities carries them labelled as a model estimate (Batch 2, J9). The family-psychoeducation trials delivered a median of 12 sessions. Studies in which all patients were acutely ill were excluded."
       },
-      "requiredAccess": "abstract",
+      "requiredAccess": "fulltext",
       "governance": {
         "evidenceLevel": "systematic review and network meta-analysis (confidence moderate to very low across comparisons)",
         "facultyReviewStatus": "pending",
@@ -1644,6 +1644,461 @@
             "date": "2026-11-22",
             "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm. The pages do not carry them pending a faculty decision (Batch 2, J9). Studies in which all patients were acutely ill were excluded.",
             "reason": "Full text obtained after registration; the earlier note said the 37%/10% figures could not be confirmed. Corrects the note only. Not faculty review."
+          },
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm; no included study was at low risk of bias (49 moderate, 33 high). Family Therapy Modalities carries them labelled as a model estimate (Batch 2, J9). The family-psychoeducation trials delivered a median of 12 sessions. Studies in which all patients were acutely ill were excluded.",
+            "reason": "Faculty decision D-2026-11-22-01 (Batch 2 J9, J10, J8.3): the labelled event-rate estimate, the ranking among family models and the median session count now ship, each with a full-text span. Not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "okpokoro-2014-brief-family-cochrane",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family intervention (brief) for schizophrenia",
+        "authors": [
+          {
+            "family": "Okpokoro",
+            "given": "U"
+          },
+          {
+            "family": "Adams",
+            "given": "CE"
+          },
+          {
+            "family": "Sampson",
+            "given": "S"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "3",
+        "pages": "CD009802",
+        "doi": "10.1002/14651858.CD009802.pub2",
+        "pmid": "24595545",
+        "url": "https://doi.org/10.1002/14651858.CD009802.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Cochrane review of brief family interventions (four studies, 163 people). Results for hospital admission and relapse are equivocal and every outcome in the Summary of findings table is low or very low quality; no meta-analysis was possible."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Cochrane systematic review (4 RCTs; GRADE low to very low)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "relapse-prevention"
+        ],
+        "clerkshipRelevance": "Brief family intervention has little trial evidence: four studies, 163 people, equivocal results for admission and relapse, all outcomes rated low or very low quality.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Cochrane review of brief family interventions (four studies, 163 people). Results for hospital admission and relapse are equivocal and every outcome in the Summary of findings table is low or very low quality; no meta-analysis was possible.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "glick-1990-inpatient-family-intervention",
+      "type": "primary-study",
+      "citation": {
+        "title": "A randomized clinical trial of inpatient family intervention. IV. Followup results for subjects with schizophrenia",
+        "authors": [
+          {
+            "family": "Glick",
+            "given": "ID"
+          },
+          {
+            "family": "Spencer",
+            "given": "JH"
+          },
+          {
+            "family": "Clarkin",
+            "given": "JF"
+          },
+          {
+            "family": "Haas",
+            "given": "GL"
+          },
+          {
+            "family": "Lewis",
+            "given": "AB"
+          },
+          {
+            "family": "Peyser",
+            "given": "J"
+          },
+          {
+            "family": "DeMane",
+            "given": "N"
+          },
+          {
+            "family": "Good-Ellis",
+            "given": "M"
+          }
+        ],
+        "organization": "",
+        "year": 1990,
+        "journal": "Schizophr Res",
+        "volume": "3",
+        "pages": "187-200",
+        "doi": "10.1016/0920-9964(90)90036-7",
+        "pmid": "2278982",
+        "url": "https://doi.org/10.1016/0920-9964(90)90036-7"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored)).",
+        "verifiedAt": "2026-11-22",
+        "note": "Payne Whitney trial of a psychoeducational family intervention limited to the inpatient phase (mean 8.6 sessions; mean stay 51 days); 92 patients with schizophrenia completed the inpatient phase. Full text read 2026-11-22: very little effect at discharge; by 18 months better global and role functioning in women, most marked in poorly functioning women; men unaffected or a little worse. Outcomes are functioning, symptom and family measures; relapse and readmission are not reported, and findings at P<0.10 are reported as significant. The mixed-diagnosis sample (169 inpatients) is Spencer et al., Am J Psychiatry 1988."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "randomised controlled trial (inpatient phase only; post-hospital care not controlled)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "The one randomized trial found of family intervention confined to the admission: little effect at discharge; a delayed (18-month) benefit in women, most clearly with poor prehospital functioning; men unaffected or slightly worse; relapse not reported.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Payne Whitney trial of a psychoeducational family intervention limited to the inpatient phase (mean 8.6 sessions; mean stay 51 days); 92 patients with schizophrenia completed the inpatient phase. Full text read 2026-11-22: very little effect at discharge; by 18 months better global and role functioning in women, most marked in poorly functioning women; men unaffected or a little worse. Outcomes are functioning, symptom and family measures; relapse and readmission are not reported, and findings at P<0.10 are reported as significant. The mixed-diagnosis sample (169 inpatients) is Spencer et al., Am J Psychiatry 1988.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "eassom-2014-family-involvement-implementation",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Implementing family involvement in the treatment of patients with psychosis: a systematic review of facilitating and hindering factors",
+        "authors": [
+          {
+            "family": "Eassom",
+            "given": "E"
+          },
+          {
+            "family": "Giacco",
+            "given": "D"
+          },
+          {
+            "family": "Dirik",
+            "given": "A"
+          },
+          {
+            "family": "Priebe",
+            "given": "S"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "BMJ Open",
+        "volume": "4",
+        "pages": "e006108",
+        "doi": "10.1136/bmjopen-2014-006108",
+        "pmid": "25280809",
+        "url": "https://doi.org/10.1136/bmjopen-2014-006108"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Systematic review, 43 studies, almost all qualitative and most of staff perspectives. Describes organisational cultures that can limit family involvement and staff reservations about it (power relations, fear of negative outcomes, an exclusive patient-professional relationship). It does not rank barriers."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review (qualitative synthesis)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "psychosis",
+          "family",
+          "implementation"
+        ],
+        "clerkshipRelevance": "Barriers to family involvement in psychosis care, mostly from staff perspectives: organisational culture and reservations about power relations, negative outcomes and an exclusive patient-professional relationship.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Systematic review, 43 studies, almost all qualitative and most of staff perspectives. Describes organisational cultures that can limit family involvement and staff reservations about it (power relations, fear of negative outcomes, an exclusive patient-professional relationship). It does not rank barriers.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "norheim-2025-ifip-cluster-rct",
+      "type": "primary-study",
+      "citation": {
+        "title": "Effectiveness of implementing family involvement on patient outcomes in individuals with psychotic disorders: a pragmatic cluster randomised controlled trial",
+        "authors": [
+          {
+            "family": "Norheim",
+            "given": "I"
+          },
+          {
+            "family": "Pedersen",
+            "given": "R"
+          },
+          {
+            "family": "Selle",
+            "given": "ML"
+          }
+        ],
+        "organization": "",
+        "year": 2025,
+        "journal": "BMC Psychiatry",
+        "volume": "25",
+        "pages": "1142",
+        "doi": "10.1186/s12888-025-07501-z",
+        "pmid": "41345598",
+        "url": "https://doi.org/10.1186/s12888-025-07501-z"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "IFIP sub-study: cluster randomised trial in 15 Norwegian community mental health centre units, 231 patients with psychotic disorders. No significant difference in the primary outcome (interpersonal difficulties at 12 months); less perceived criticism from relatives and better overall functioning in the intervention arm. Most follow-up fell during COVID-19."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "cluster randomised controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "psychosis",
+          "family",
+          "implementation"
+        ],
+        "clerkshipRelevance": "Implementing family interventions did not change patients' interpersonal difficulties at 12 months, though patients in intervention units perceived less criticism from relatives.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "IFIP sub-study: cluster randomised trial in 15 Norwegian community mental health centre units, 231 patients with psychotic disorders. No significant difference in the primary outcome (interpersonal difficulties at 12 months); less perceived criticism from relatives and better overall functioning in the intervention arm. Most follow-up fell during COVID-19.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "bighelli-2021-psychosocial-relapse-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Psychosocial and psychological interventions for relapse prevention in schizophrenia: a systematic review and network meta-analysis",
+        "authors": [
+          {
+            "family": "Bighelli",
+            "given": "I"
+          },
+          {
+            "family": "Rodolico",
+            "given": "A"
+          },
+          {
+            "family": "García-Mieres",
+            "given": "H"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "Lancet Psychiatry",
+        "volume": "8",
+        "pages": "969-980",
+        "doi": "10.1016/S2215-0366(21)00243-1",
+        "pmid": "34653393",
+        "url": "https://doi.org/10.1016/S2215-0366(21)00243-1"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Network meta-analysis of 72 RCTs (10 364 participants) comparing 20 psychosocial and psychological interventions with treatment as usual. Family interventions (OR 0·35), relapse prevention programmes (0·33) and CBT (0·45) had lower point estimates than family psychoeducation (0·56). Registered as the comparator that scoped the family_modalities summary to family-intervention models (Batch 2 J10, replacing \"single strongest psychosocial intervention\"); no learner sentence quotes its figures."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and network meta-analysis (confidence moderate to very low)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "relapse-prevention",
+          "therapy"
+        ],
+        "clerkshipRelevance": "Across 20 psychosocial interventions for schizophrenia relapse prevention, family interventions, relapse prevention programmes, CBT and family psychoeducation all reduced relapse versus treatment as usual at 1 year; family psychoeducation was not the lowest point estimate.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis of 72 RCTs (10 364 participants) comparing 20 psychosocial and psychological interventions with treatment as usual. Family interventions (OR 0·35), relapse prevention programmes (0·33) and CBT (0·45) had lower point estimates than family psychoeducation (0·56). Registered as the comparator that scoped the family_modalities summary to family-intervention models (Batch 2 J10, replacing \"single strongest psychosocial intervention\"); no learner sentence quotes its figures.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "henken-2007-family-therapy-depression-cochrane",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family therapy for depression",
+        "authors": [
+          {
+            "family": "Henken",
+            "given": "HT"
+          },
+          {
+            "family": "Huibers",
+            "given": "MJ"
+          },
+          {
+            "family": "Churchill",
+            "given": "R"
+          },
+          {
+            "family": "Restifo",
+            "given": "K"
+          },
+          {
+            "family": "Roelofs",
+            "given": "J"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "3",
+        "pages": "CD006728",
+        "doi": "10.1002/14651858.CD006728",
+        "pmid": "17636850",
+        "url": "https://doi.org/10.1002/14651858.CD006728"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored)).",
+        "verifiedAt": "2026-11-22",
+        "note": "Cochrane review, six trials, 519 people; too heterogeneous and sparse to judge family therapy for depression. Full text read 2026-11-22 (edited in Issue 1, 2010 with no change to conclusions): in the inpatient family-intervention trial (Glick 1985, the same Payne Whitney trial as glick-1990-inpatient-family-intervention), the 29 patients with unipolar depression did better without the intervention (limited evidence, level 3). Whether a newer Cochrane version exists was not checked."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "Cochrane systematic review (6 trials; no meta-analysis possible)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "The evidence for family therapy in depression is too heterogeneous and sparse to judge; in its inpatient trial, unipolar patients did better without the family intervention (limited evidence).",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Cochrane review, six trials, 519 people; too heterogeneous and sparse to judge family therapy for depression. Full text read 2026-11-22 (edited in Issue 1, 2010 with no change to conclusions): in the inpatient family-intervention trial (Glick 1985, the same Payne Whitney trial as glick-1990-inpatient-family-intervention), the 29 patients with unipolar depression did better without the intervention (limited evidence, level 3). Whether a newer Cochrane version exists was not checked.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "pitschel-walz-2006-munich-pip",
+      "type": "primary-study",
+      "citation": {
+        "title": "Psychoeducation and compliance in the treatment of schizophrenia: results of the Munich Psychosis Information Project Study",
+        "authors": [
+          {
+            "family": "Pitschel-Walz",
+            "given": "G"
+          },
+          {
+            "family": "Bäuml",
+            "given": "J"
+          },
+          {
+            "family": "Bender",
+            "given": "W"
+          },
+          {
+            "family": "Engel",
+            "given": "RR"
+          },
+          {
+            "family": "Wagner",
+            "given": "M"
+          },
+          {
+            "family": "Kissling",
+            "given": "W"
+          }
+        ],
+        "organization": "",
+        "year": 2006,
+        "journal": "J Clin Psychiatry",
+        "volume": "67",
+        "pages": "443-452",
+        "doi": "10.4088/jcp.v67n0316",
+        "pmid": "16649832",
+        "url": "https://doi.org/10.4088/jcp.v67n0316"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored)).",
+        "verifiedAt": "2026-11-22",
+        "note": "Randomised trial, 236 inpatients with schizophrenia or schizoaffective disorder; eight patient group sessions (sessions 1-4 mostly during the inpatient stay) and eight separate relatives' sessions starting soon after randomization. Full text read 2026-11-22: rehospitalization among those followed up 21% vs 38% at 12 months and 41% vs 58% at 24 months; with all dropouts counted as rehospitalized (N=194) 37% vs 45% and 54% vs 66%, not significant. The 54% vs 88% figures sometimes attributed to this trial are the 7-year follow-up of 48 patients (Bäuml et al., J Clin Psychiatry 2007, PMID 17592908)."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "randomised controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "Family and patient psychoeducation started on the unit: fewer rehospitalizations at 2 years among patients followed up (41% vs 58%), not significant when dropouts were counted as rehospitalized (54% vs 66%).",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Randomised trial, 236 inpatients with schizophrenia or schizoaffective disorder; eight patient group sessions (sessions 1-4 mostly during the inpatient stay) and eight separate relatives' sessions starting soon after randomization. Full text read 2026-11-22: rehospitalization among those followed up 21% vs 38% at 12 months and 41% vs 58% at 24 months; with all dropouts counted as rehospitalized (N=194) 37% vs 45% and 54% vs 66%, not significant. The 54% vs 88% figures sometimes attributed to this trial are the 7-year follow-up of 48 patients (Bäuml et al., J Clin Psychiatry 2007, PMID 17592908).",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
           }
         ]
       }
@@ -6370,11 +6825,11 @@
       },
       "identity": {
         "status": "verified",
-        "source": "PubMed efetch (PMID 33052390): title, all 7 authors, journal, volume 78, issue 2, pages 141-150 and DOI 10.1001/jamapsychiatry.2020.2993 match",
-        "verifiedAt": "2026-09-24",
-        "note": "Added for peer-review finding M07-011 (family_modalities.md): the page read OR 0.12 as a result against control and called a confidence interval crossing zero 'helped stabilize'. OR 0.12 compares family/group-format psychoeducation with the same strategies delivered individually; retention OR 0.46 is against standard psychoeducation; family/conjoint therapy SMD -0.46 (95% CI -1.01 to 0.08) was reported 'with less certainty'. 39 RCTs, 3863 participants. Annotation is AI-drafted and awaits faculty signature."
+        "source": "PubMed efetch (PMID 33052390): title, all 7 authors, journal, volume 78, issue 2, pages 141-150 and DOI 10.1001/jamapsychiatry.2020.2993 match; full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored))",
+        "verifiedAt": "2026-11-22",
+        "note": "39 RCTs, 3863 participants; conclusions drawn for outpatients. Full text read 2026-11-22: 0.56 is all manualized therapies against control treatments; family or conjoint therapy (family-focused therapy, multifamily or caregiver-only groups) had the lowest recurrence odds versus treatment as usual (OR 0.30, 95% CI 0.17-0.53; highest SUCRA). OR 0.12 is a component-model estimate with a 95% credible interval. Brief psychoeducation shared the retention advantage over standard-length psychoeducation (OR 0.44). The paper reports associations."
       },
-      "requiredAccess": "abstract",
+      "requiredAccess": "fulltext",
       "governance": {
         "evidenceLevel": "systematic review / component network meta-analysis",
         "facultyReviewStatus": "pending",
@@ -6389,12 +6844,17 @@
           "psychoeducation",
           "therapy"
         ],
-        "clerkshipRelevance": "Adjunctive psychotherapy for bipolar disorder: manualized treatments lowered recurrence against control (OR 0.56); family or group-format psychoeducation beat the same strategies delivered individually (OR 0.12, a component comparison); family/conjoint therapy improved retention against standard psychoeducation (OR 0.46), with a less certain effect on depressive symptoms.",
+        "clerkshipRelevance": "Adjunctive psychotherapy for bipolar disorder (outpatients): manualized treatments were associated with lower recurrence than control treatments (OR 0.56); family or conjoint therapy had the lowest recurrence odds versus treatment as usual (OR 0.30); family or group-format psychoeducation was estimated to outperform the same strategies delivered individually (OR 0.12, a component-model estimate); family or conjoint therapy and brief psychoeducation were associated with better retention than standard-length psychoeducation (OR 0.46 and 0.44), with a less certain effect on depressive symptoms.",
         "noteHistory": [
           {
             "date": "2026-09-24",
             "note": "Added for peer-review finding M07-011 (family_modalities.md): the page read OR 0.12 as a result against control and called a confidence interval crossing zero 'helped stabilize'. OR 0.12 compares family/group-format psychoeducation with the same strategies delivered individually; retention OR 0.46 is against standard psychoeducation; family/conjoint therapy SMD -0.46 (95% CI -1.01 to 0.08) was reported 'with less certainty'. 39 RCTs, 3863 participants. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-011)"
+          },
+          {
+            "date": "2026-11-22",
+            "note": "39 RCTs, 3863 participants; conclusions drawn for outpatients. Full text read 2026-11-22: 0.56 is all manualized therapies against control treatments; family or conjoint therapy (family-focused therapy, multifamily or caregiver-only groups) had the lowest recurrence odds versus treatment as usual (OR 0.30, 95% CI 0.17-0.53; highest SUCRA). OR 0.12 is a component-model estimate with a 95% credible interval. Brief psychoeducation shared the retention advantage over standard-length psychoeducation (OR 0.44). The paper reports associations.",
+            "reason": "Faculty decision D-2026-11-22-01 (Batch 2 J11): the page bullet was rewritten from the full text; clerkshipRelevance now says \"associated with\". Not faculty review."
           }
         ]
       }

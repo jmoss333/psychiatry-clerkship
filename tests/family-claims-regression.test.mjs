@@ -1,7 +1,8 @@
 // Regression tests from the 2026-11-22 family-evidence review (superseded, misattributed and
 // overstated claims about family intervention). Tests 1-9 each reproduce one finding the same PR
-// corrected; X1-X4 pin four further corrections made in that PR. Findings, sources and stored spans:
-// the PR description and evidence_annotations.json.
+// corrected; X1-X4 pin four further corrections made in that PR; B1-B5 pin the Batch 2 wording faculty
+// chose on 2026-11-22 (decision D-2026-11-22-01, items J1-J15). Findings, sources and stored spans:
+// the PR description, the Batch 2 handoff file and evidence_annotations.json.
 //
 // It reads only the wording of shipped content: every file shipped_pages.json lists, plus the
 // topic_meta.json overlay of each shipped slug (keyed by slug, so derived from the same listing).
@@ -89,13 +90,26 @@ test('4 every shipped record that gives an NNT from the 2010 Cochrane review als
 test('5 no shipped source says family involvement "triples the odds"', () => {
   none(/triples? the odds/i, 'Haselden 2019 is an observational association: adjusted OR 2.79 (95% CI 1.28-6.08) for a 7-day visit');
 });
-test('6 the schizophrenia "37% to 10%" relapse figures are gone, and no Miklowitz 2003 line carries them', () => {
-  // Rodolico 2022's full text (read 2026-11-22) gives 37% and 10% as 12-month event rates calculated from the odds ratio
-  // (appendix p 8), not rates observed in a trial arm. Neither is in the abstract, so no span is stored; the pages leave
-  // them out pending a faculty decision (Batch 2, J9). Reinstating them needs that label, a stored span, and this test.
-  none(/\b37\s?%[^.]{0,80}\b10\s?%|\b10\s?%[^.]{0,40}\b37\s?%|from\s+~?37\s?%/i, 'relapse "37% to 10%" are model-derived event rates in Rodolico 2022 (not observed rates); off the pages pending faculty decision J9');
-  const bad = RECORDS.flatMap(r => r.texts.filter(t => /\b37\s?%/.test(t) && /relaps/i.test(t) && /schizophren|psychoeducation|family/i.test(t)).map(t => `${r.where}: ${t.slice(0, 160)}`));
-  assert.deepEqual(bad, [], 'a "37%" beside "relapse" in family/schizophrenia teaching would need the qualifier stored with a span; none is stored');
+test('6 the schizophrenia "37% / 10%" relapse figures ship only labelled as a model estimate, and no Miklowitz 2003 line carries them', () => {
+  // Rodolico 2022's full text (read 2026-11-22) gives 37% and 10% as 12-month event rates the authors calculated from
+  // the odds ratio (appendix p 8), not rates observed in a trial arm. Faculty decision D-2026-11-22-01 (Batch 2, J9)
+  // restored them on Family Therapy Modalities only, in a line that says so, with the full-text span stored. Anywhere
+  // else, or in a line without that label, they are the overstatement this PR removed.
+  const MODALITIES = '06_Family_and_Relational/family_therapy_modalities_inpatient.md';
+  const FIGURES = /\b37\s?%[^.]{0,80}\b10\s?%|\b10\s?%[^.]{0,80}\b37\s?%|from\s+~?37\s?%/i;
+  const RELAPSE_37 = t => /\b37\s?%/.test(t) && /relaps/i.test(t) && /schizophren|psychoeducation|family/i.test(t);
+  const LABELLED = t => /model estimate/i.test(t) && /not a rate seen in one trial/i.test(t) && /Rodolico/.test(t);
+  const bad = RECORDS.flatMap(r => r.texts.filter(t => (FIGURES.test(t) || RELAPSE_37(t)) && !(r.where === MODALITIES && LABELLED(t)))
+    .map(t => `${r.where}: ${t.slice(0, 160)}`));
+  assert.deepEqual(bad, [], 'relapse "37% / 10%" are event rates Rodolico 2022 calculated from the odds ratio; they ship only on the modalities page, labelled as a model estimate (D-2026-11-22-01, J9)');
+  const labelled = RECORDS.filter(r => r.where === MODALITIES).flatMap(r => r.texts.filter(t => FIGURES.test(t) && LABELLED(t)));
+  assert.equal(labelled.length, 1, 'expected the one labelled estimate on the modalities page -- refusing to pass over nothing');
+  const row = JSON.parse(read('evidence_annotations.json')).annotations.find(a => a.sourceId === 'rodolico-2022-family-nma');
+  const span = row ? row.verifiedAgainst.sourceSpan : '';
+  for (const words of ['Event rates were calculated from ORs', '37% of participants receiving treatment as usual relapsed',
+    '10% [7–14] of participants', 'No studies had low risk of bias']) {
+    assert.ok(span.includes(words), `the stored Rodolico span must carry "${words}" to license the labelled estimate`);
+  }
   // The landmark index is the record the quiz decks were extracted from. It is not shipped, so it is named here.
   const index = JSON.parse(read('07_Evidence_and_Reading/Landmark_Trials/LM_master_index.json'));
   const entries = (index.papers || []).filter(e => /Miklowitz/.test(JSON.stringify(e)) && /2003/.test(JSON.stringify(e)));
@@ -116,6 +130,10 @@ test('9 the registry holds every source this work cites, each with a stored span
     'tham-solomon-2024', 'pilling-2026-oddessi', 'haselden-2019-family-involvement-followup', 'ma-2021',
     'butzlaff-hooley-1998-ee-meta', 'dixon-1999-family-services', 'fontanella-2020-youth-followup-suicide',
     'lemmens-2009-family-therapy-depression', 'nice-cg178-psychosis-schizophrenia', 'chung-2019-first-week-month',
+    // Batch 2 (D-2026-11-22-01)
+    'okpokoro-2014-brief-family-cochrane', 'glick-1990-inpatient-family-intervention', 'eassom-2014-family-involvement-implementation',
+    'norheim-2025-ifip-cluster-rct', 'bighelli-2021-psychosocial-relapse-nma', 'henken-2007-family-therapy-depression-cochrane',
+    'pitschel-walz-2006-munich-pip',
   ];
   const registry = JSON.parse(read('evidence_registry.json')).sources;
   const ids = new Set(registry.map(s => s.id));
@@ -139,4 +157,21 @@ test('X3 no shipped source says days 0-3 are the highest-risk post-discharge day
 });
 test('X4 no shipped source says family psychoeducation is "supported by over 100 RCTs"', () => {
   none(/supported by over 100 RCTs/i, 'the cited network meta-analysis included 90 RCTs (Rodolico 2022)');
+});
+
+// ---------- Batch 2: the wording faculty chose (D-2026-11-22-01; red on 3bf9a93f) ----------------
+test('B1 no shipped source calls family psychoeducation the single strongest psychosocial intervention (J10)', () => {
+  none(/single strongest psychosocial intervention/i, 'Rodolico 2022 compared family models only; across 20 psychosocial interventions Bighelli 2021 found lower point estimates for family interventions, relapse prevention programmes and CBT');
+});
+test('B2 no shipped source says brief, simple family psychoeducation formats are effective (J8.1)', () => {
+  none(/even brief,? simple formats are effective/i, 'two sessions or fewer did not significantly reduce relapse (Rodolico 2022); brief family intervention evidence is low to very low quality (Okpokoro 2014)');
+});
+test('B3 no shipped source says involving families in discharge planning increases follow-up attendance (F05)', () => {
+  none(/(significantly )?increases follow-up attendance/i, 'Haselden 2019 is an association from chart review (adjusted OR 2.79), not an effect');
+});
+test('B4 no shipped source says family or group-format psychoeducation "reduced recurrence" in bipolar disorder (J11)', () => {
+  none(/(family or group|group or family) format reduced recurrence/i, 'Miklowitz 2021: an association, and OR 0.12 is a component-model estimate with a credible interval');
+});
+test('B5 no shipped source says that bringing the family in "changes outcomes" (J1)', () => {
+  none(/Bringing the family in changes outcomes/i, 'the relapse evidence is for multi-session programs; the one inpatient-only trial found little effect at discharge (Glick 1990)');
 });

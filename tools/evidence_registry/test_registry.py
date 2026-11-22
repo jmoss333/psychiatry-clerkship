@@ -344,6 +344,18 @@ FAMILY_EVIDENCE_2026_11_IDS = {
     "rodolico-2022-family-nma",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | FAMILY_EVIDENCE_2026_11_IDS
+# Family-evidence Batch 2 (2026-11-22, faculty decision D-2026-11-22-01). Each enters pending with a
+# stored abstract or full-text span; none carries a published correction.
+FAMILY_EVIDENCE_2026_11_BATCH2_IDS = {
+    "bighelli-2021-psychosocial-relapse-nma",
+    "eassom-2014-family-involvement-implementation",
+    "glick-1990-inpatient-family-intervention",
+    "henken-2007-family-therapy-depression-cochrane",
+    "norheim-2025-ifip-cluster-rct",
+    "okpokoro-2014-brief-family-cochrane",
+    "pitschel-walz-2006-munich-pip",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | FAMILY_EVIDENCE_2026_11_BATCH2_IDS
 # ODDESSI carries a published correction (PMID 42721996); its text could not be retrieved on
 # 2026-11-22, which the identity note records. correctionStatus "corrected", pending faculty review.
 FAMILY_EVIDENCE_2026_11_CORRECTED_IDS = {"pilling-2026-oddessi"}

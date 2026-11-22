@@ -243,7 +243,7 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 **Family psychoeducation (FPE)** has the most robust evidence base. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27) versus treatment as usual, with confidence in the estimates ranging from moderate to very low across comparisons; trials in which all patients were acutely ill were excluded. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
-An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**, each family therapy added to treatment as usual (Lemmens et al., 2009).
+An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**, each family therapy added to treatment as usual (Lemmens et al., 2009). An earlier Cochrane review (6 trials, 519 participants) found the evidence too heterogeneous and sparse to judge family therapy for depression; in a trial of a family intervention given during the hospital stay, patients with unipolar depression did better without it, which the review rates as limited evidence (Henken et al., Cochrane 2007).
 
 **Family involvement in discharge planning** is significantly associated with outpatient follow-up: any family involvement with inpatient staff was associated with follow-up within 7 days (OR 2.79) and 30 days (OR 3.07).
 
@@ -255,13 +255,13 @@ Implementation remains poor despite strong guideline recommendations. Key barrie
 
 ### Practical Recommendations
 
-- Offer family psychoeducation to all patients with psychotic disorders and their families — even brief, simple formats are effective
+- Offer family psychoeducation to all patients with psychotic disorders and their families — start with simple psychoeducation and plan for a multi-session course
 
-- Involve families in discharge planning — it significantly increases follow-up attendance
+- Involve families in discharge planning — it is associated with higher follow-up attendance (Haselden 2019)
 
 - Address confidentiality proactively with patients and families
 
-- For mood disorders, consider multi-family group therapy during hospitalization
+- For mood disorders, multi-family group therapy started in hospital has single-trial support (Lemmens 2009); the wider evidence is sparse and mixed (Henken 2007)
 
 ---
 
@@ -597,6 +597,8 @@ Would you like to explore any of these domains in greater depth — for example,
 
 - Lemmens GM, Eisler I, Buysse A, Heene E, Demyttenaere K. Psychotherapy and Psychosomatics. 2009;78(2):98-105. doi:10.1159/000201935.
 
+- Henken HT, Huibers MJ, Churchill R, Restifo KK, Roelofs JJ. Cochrane Database of Systematic Reviews. 2007;(3):CD006728. doi:10.1002/14651858.CD006728.
+
 - Pilling S, Craig T, Clarke K, et al. The Lancet. Psychiatry. 2026;13(10):841-851. doi:10.1016/S2215-0366(26)00229-4.
 
 - Haselden M, Corbeil T, Tang F, et al. Psychiatric Services (Washington, D.C.). 2019;70(10):860-866. doi:10.1176/appi.ps.201900028.
@@ -676,4 +678,4 @@ Would you like to explore any of these domains in greater depth — for example,
 - Solberg LI, Crain AL, Maciosek MV, et al. Annals of Family Medicine. 2015;13(5):412-20. doi:10.1370/afm.1842.
 
 ---
-*Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist* · **Pending re-attestation:** Open Dialogue trial result, family-psychoeducation relapse figures and depression family-therapy citation changed 2026-11-22 (Pilling 2026; Rodolico 2022; Lemmens 2009)
+*Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist* · **Pending re-attestation:** Open Dialogue trial result, family-psychoeducation relapse figures and recommendation, family-involvement recommendation, and depression family-therapy evidence changed 2026-11-22 (Pilling 2026; Rodolico 2022; Haselden 2019; Lemmens 2009; Henken 2007)
