@@ -966,6 +966,7 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fp-case` / `.mg-case` | Paired bedside fever exams and the clozapine interview timeline. Both keep histories with their source and require a differential and next finding or check before the debrief. |
 | `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
+| `#impulse-history` | Patient and sister interviews add source-labeled observations to the timeline under Initial workup. A revised note links back to the words used in each opened account. |
 | `#quieter-on-unit` | The two-row chart compares the same observation across shifts. The handoff uses the patient’s call and any additional observations the learner opened. |
 | `#coach-line` | Select a transcript and a student line, invite self-assessment, then rehearse feedback and a next attempt. The transcript and coaching panel stack on narrow screens. |
 | `.visual-practice` | In-reading room choices, paired observation frames, evidence cards, parent accounts and selectable trend charts. Named disclosures keep each answer with its source. The two catatonia frames open independently so learners can compare both observations. |

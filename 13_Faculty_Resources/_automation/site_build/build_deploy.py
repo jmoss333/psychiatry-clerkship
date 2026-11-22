@@ -242,7 +242,8 @@ if _pp_problems:
 _qb_public=qbank_public.project_question_bank(
     json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
 with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
-    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    # The released bank is precached on phones. Whitespace counts towards the offline budget.
+    json.dump(_qb_public,_fh,ensure_ascii=False,separators=(",",":"))
     _fh.write("\n")
 # Placement is another publication of question text, so it takes the same released
 # bytes as practice and Anki. Missing categories are reported by static QA.
@@ -589,7 +590,8 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrati
                os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),
                os.path.join(OUT, "illustrations", "lithium-night-shift.webp"), _missing_req)
-for topic, scene in (("Anxiety", "pacing-hallway.webp"), ("Mood", "mood-breakfast.webp")):
+for topic, scene in (("Anxiety", "pacing-hallway.webp"), ("Mood", "mood-breakfast.webp"),
+                     ("Impulse_Control", "impulse-group-handoff.avif")):
     _copy_required(os.path.join(LIB, "03_Core_Topics", topic, "illustrations", scene),
                    os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Psychosis", "illustrations", "ari-between-admissions.webp"),

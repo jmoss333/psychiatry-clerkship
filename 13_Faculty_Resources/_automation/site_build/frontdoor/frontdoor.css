@@ -3449,6 +3449,28 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* Two accounts place observations alongside the group handoff. */
+#impulse-history .ih-scene{overflow:hidden;margin-block:var(--fd-space-5) var(--fd-space-6);background:var(--fd-teal-deep);color:var(--fd-on-accent);border-radius:var(--fd-radius-sm)}
+#impulse-history .ih-scene img{display:block;width:100%;height:auto;aspect-ratio:5/2;object-fit:cover}
+#impulse-history .ih-scene figcaption{padding:var(--fd-space-5) var(--fd-space-6);color:inherit;text-align:start}
+#impulse-history .ih-scene .case-kicker{color:inherit;margin-bottom:var(--fd-space-3)}
+#impulse-history .ih-spread,#impulse-history #ih-choices{display:grid;gap:var(--fd-space-5);align-items:start}
+#impulse-history h4+p{margin:var(--fd-space-4) 0}
+#impulse-history .ih-board{border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden;background:var(--fd-surface)}
+#impulse-history .ih-board-title{display:flex;justify-content:space-between;align-items:baseline;gap:var(--fd-space-4);background:var(--fd-olive-wash);padding:var(--fd-space-4) var(--fd-space-5);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#impulse-history .ih-board ol{list-style:none;margin:0;padding:0 var(--fd-space-5)}
+#impulse-history .ih-board li{display:grid;grid-template-columns:minmax(4em,25%) 1fr;gap:var(--fd-space-5);padding:var(--fd-space-4) 0;margin:0}
+#impulse-history .ih-board li+li{border-top:1px solid var(--fd-line)}
+#impulse-history .ih-board li>div{position:relative;border-inline-start:2px solid var(--fd-line-strong);padding-inline-start:var(--fd-space-5)}
+#impulse-history .ih-board li>div::before{content:'';position:absolute;inset-inline-start:calc(-.22em - 1px);top:.4em;width:.44em;height:.44em;border-radius:50%;background:var(--fd-teal)}
+#impulse-history .ih-board li small{display:block;color:var(--fd-teal-deep);font-weight:700}
+#impulse-history .ih-board li p+p{margin-top:var(--fd-space-4)}
+#impulse-history #ih-note-line{font:400 1.12em/1.5 Georgia,serif;margin:var(--fd-space-3) 0}
+#impulse-history [data-ih-trace]{padding:var(--fd-space-2) 0;min-height:var(--fd-target-touch);display:inline;border:0;background:transparent;color:var(--fd-teal-deep);font:inherit;text-decoration:underline;text-underline-offset:.18em}
+#impulse-history #ih-trace{margin-top:var(--fd-space-5);padding:var(--fd-space-5) var(--fd-space-6);background:var(--fd-surface)}
+#impulse-history mark{background:var(--fd-olive-wash);color:var(--fd-text);text-decoration:underline;text-underline-offset:.14em}
+@container bedside (min-width:38rem){#impulse-history .ih-spread{grid-template-columns:1fr 1.1fr}}
+
 /* Lucía rehearses a daytime support plan against the first night home. */
 #lucia-rehearsal .lucia-scene{display:grid;grid-template-columns:1fr 1fr;gap:var(--fd-space-6);align-items:center}
 #lucia-rehearsal figure{overflow:hidden;border-radius:var(--fd-radius-sm);background:var(--fd-teal-deep)}
