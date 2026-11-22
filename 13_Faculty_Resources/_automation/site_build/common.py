@@ -228,7 +228,7 @@ _TOOLKW_MS3 = {
     # treatment), because common.tok() does not stem: "refuses" cannot reach "refusal".
     # Audience-neutral and free of patient-specific legal or clinical direction by
     # design — it says what capacity IS assessed by, never what to do about a refusal.
-    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient may refuse or decline a medication, or decline treatment outright, and still have capacity. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient who refuses medication may still have capacity to refuse a dose or decline treatment outright. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
     "oral.html": "treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst agitation safety prediction de-escalation",
     "cssrs.html": "columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
@@ -396,7 +396,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
     idx = {"version": 1, "n": len(docs), "avgLen": avg_len,
            "synonyms": syn, "docs": docs, "postings": post, "df": df}
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as fh:
-        fh.write(json.dumps(idx, ensure_ascii=False))
+        fh.write(json.dumps(idx, ensure_ascii=False, separators=(",", ":")))
     print(
         "search-index%s: docs %d | tokens %d | synonym-keys %d"
         % (" (" + label + ")" if label else "", len(docs), len(post), len(syn))
@@ -926,6 +926,10 @@ SNIPPET_MARKERS = {
     "/*__FD_CARE__*/": "frontdoor/fd_care.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
     "/*__FD_OSCE_STATION__*/": "frontdoor/fd_osce_station.js",
+    "/*__FD_MORGAN_EXPOSURE__*/": "frontdoor/fd_morgan_exposure.js",
+    "/*__FD_FEVER_EXAMS__*/": "frontdoor/fd_fever_exams.js",
+    "/*__FD_BEDSIDE_CASES__*/": "frontdoor/fd_bedside_cases.js",
+    "/*__FD_CASE_ROUNDS__*/": "frontdoor/fd_case_rounds.js",
     "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
     "/*__FD_TREE__*/": "frontdoor/fd_tree.js",

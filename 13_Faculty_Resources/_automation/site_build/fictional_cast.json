@@ -1,0 +1,366 @@
+{
+  "people": [
+    {
+      "id": "jules-agitation",
+      "name": "Jules",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "04_Acute_and_Safety/Agitation_and_Restraint/agitation_restraint_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "noor-brief-psychotherapy",
+      "name": "Noor",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "02_Clinical_Skills/Brief_Psychotherapy/brief_psychotherapy_inpatient.md"
+      ]
+    },
+    {
+      "id": "kit-catatonia",
+      "name": "Kit",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "04_Acute_and_Safety/Catatonia/catatonia_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "sam-collateral-workflow",
+      "name": "Sam",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "06_Family_and_Relational/collateral_micro_workflow.md"
+      ]
+    },
+    {
+      "id": "jo-collateral-workflow",
+      "name": "Jo",
+      "pronouns": "she",
+      "role": "Sam's sister",
+      "pages": [
+        "06_Family_and_Relational/collateral_micro_workflow.md"
+      ]
+    },
+    {
+      "id": "luz-collateral-workflow",
+      "name": "Luz",
+      "pronouns": "not stated",
+      "role": "Nico's sister",
+      "pages": [
+        "06_Family_and_Relational/collateral_micro_workflow.md"
+      ]
+    },
+    {
+      "id": "nico-collateral-workflow",
+      "name": "Nico",
+      "pronouns": "he",
+      "role": "patient",
+      "pages": [
+        "06_Family_and_Relational/collateral_micro_workflow.md",
+        "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md"
+      ]
+    },
+    {
+      "id": "elena-cultural-psychiatry",
+      "name": "Elena",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "sofia-cultural-psychiatry",
+      "name": "Sofía",
+      "pronouns": "not stated",
+      "role": "professional interpreter",
+      "pages": [
+        "03_Core_Topics/Cultural_Psychiatry/cultural_psychiatry_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "sam-doc-oral",
+      "name": "Sam",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md"
+      ]
+    },
+    {
+      "id": "maya-doc-oral",
+      "name": "Maya",
+      "pronouns": "not stated",
+      "role": "evening nurse",
+      "pages": [
+        "14_Tracks/MS3/Student_Ready_Pack/05_documentation_oral_presentation/student_documentation_and_oral_presentations.md"
+      ]
+    },
+    {
+      "id": "robin-ect-neuromodulation",
+      "name": "Robin",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "remy-exp-family",
+      "name": "Remy",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md"
+      ]
+    },
+    {
+      "id": "tess-exp-family",
+      "name": "Tess",
+      "pronouns": "not stated",
+      "role": "Remy's sister",
+      "pages": [
+        "14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/family_discharge_student_module.md"
+      ]
+    },
+    {
+      "id": "jules-med-monitoring",
+      "name": "Jules",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "05_Psychopharmacology/Monitoring_and_Labs/medication_monitoring_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "ellis-medical-workup",
+      "name": "Ellis",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Medical_Workup/medical_workup_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "ren-motivational-interviewing",
+      "name": "Ren",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "06_Family_and_Relational/motivational_interviewing_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "sam-nutrition-metabolic",
+      "name": "Sam",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Nutrition/nutrition_metabolic_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "lou-pg-interview",
+      "name": "Lou",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md"
+      ]
+    },
+    {
+      "id": "eden-pg-interview",
+      "name": "Eden",
+      "pronouns": "not stated",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/MS3/Student_Ready_Pack/02_pocket_guides/interview_mse_pocket_guide.md"
+      ]
+    },
+    {
+      "id": "morgan-psychopharm-primer",
+      "name": "Morgan",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "05_Psychopharmacology/Student_Primer_Top10/psychopharmacology_primer_inpatient.md"
+      ]
+    },
+    {
+      "id": "jules-supervision-teaching",
+      "name": "Jules",
+      "pronouns": "they",
+      "role": "MS3",
+      "pages": [
+        "14_Tracks/Resident/supervision_teaching.md"
+      ]
+    },
+    {
+      "id": "val-supervision-teaching",
+      "name": "Val",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/Resident/supervision_teaching.md"
+      ]
+    },
+    {
+      "id": "lee-adjustment",
+      "name": "Lee",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Adjustment/adjustment_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "robin-eating",
+      "name": "Robin",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "alex-mood",
+      "name": "Alex",
+      "pronouns": "he",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "maya-mood",
+      "name": "Maya",
+      "pronouns": "not stated",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "mara-neurocog",
+      "name": "Mara",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "nina-neurocog",
+      "name": "Nina",
+      "pronouns": "she",
+      "role": "Mara's daughter",
+      "pages": [
+        "03_Core_Topics/Neurocognitive/neurocognitive_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "alex-neurodev",
+      "name": "Alex",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Neurodevelopmental/neurodevelopmental_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "robin-perinatal",
+      "name": "Robin",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "morgan-perinatal",
+      "name": "Morgan",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Perinatal/perinatal_psychiatry_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "sam-personality",
+      "name": "Sam",
+      "pronouns": "he",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Personality/personality_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "ari-psychosis",
+      "name": "Ari",
+      "pronouns": "not stated",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Psychosis/psychotic_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "nora-sleep",
+      "name": "Nora",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Sleep/sleep_wake_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "rae-somatic",
+      "name": "Rae",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Somatic/somatic_symptom_disorders_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "ellis-sud",
+      "name": "Ellis",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "taye-toxidromes",
+      "name": "Taye",
+      "pronouns": "he",
+      "role": "patient",
+      "pages": [
+        "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "ana-toxidromes",
+      "name": "Ana",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "04_Acute_and_Safety/Toxidromes/hyperthermia_toxidromes_inpatient_teaching.md"
+      ]
+    },
+    {
+      "id": "lucia-safety-planning",
+      "name": "Lucía",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md"
+      ]
+    }
+  ],
+  "ignore": []
+}

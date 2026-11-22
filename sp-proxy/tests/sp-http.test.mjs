@@ -126,6 +126,16 @@ test('student and operations credentials must be configured and distinct', () =>
   }
 });
 
+test('credential comparisons include UTF-8 bytes and their exact lengths', () => {
+  const http = createProductionHttp({ studentKey: 'café' });
+  // Exercise the comparison itself; the HTTP parser already rejects NUL in wire headers.
+  const withCredential = (value) => ({ headers: { get: () => value } });
+  http.requireStudentCredential(withCredential('café'));
+  for (const wrong of ['caf', 'cafe', 'caféx', 'café\0']) {
+    assert.throws(() => http.requireStudentCredential(withCredential(wrong)), { code: 'unauthorized' });
+  }
+});
+
 test('student authorization returns the exact allowed origin and emits scoped CORS', async () => {
   const http = createProductionHttp();
   const auth = http.requireStudent(request({ studentKey: STUDENT_KEY }));

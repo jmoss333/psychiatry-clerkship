@@ -211,7 +211,7 @@ if _evidence_tools not in sys.path:
 from registry import build_public_projection, load_evidence_registry
 _canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
 with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
-    json.dump(build_public_projection(_canonical_evidence),_fh,indent=2,sort_keys=True)
+    json.dump(build_public_projection(_canonical_evidence),_fh,separators=(",", ":"),sort_keys=True)
     _fh.write("\n")
 for _jn, _fallback in [
     ("tool_registry.json", '{"tools":[]}'),
@@ -242,7 +242,8 @@ if _pp_problems:
 _qb_public=qbank_public.project_question_bank(
     json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
 with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
-    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    # The released bank is precached on phones. Whitespace counts towards the offline budget.
+    json.dump(_qb_public,_fh,ensure_ascii=False,separators=(",",":"))
     _fh.write("\n")
 # Placement is another publication of question text, so it takes the same released
 # bytes as practice and Anki. Missing categories are reported by static QA.
@@ -580,11 +581,52 @@ _ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
 if _ANALYTICS_MS3:
     _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
+# Reading illustrations ship at the same relative URL in both editions.
+illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "illustrations")
+os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
+for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
+    _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
+               os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),
+               os.path.join(OUT, "illustrations", "lithium-night-shift.webp"), _missing_req)
+for topic, scene in (("Anxiety", "pacing-hallway.webp"), ("Mood", "mood-breakfast.webp")):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", topic, "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Psychosis", "illustrations", "ari-between-admissions.webp"),
+               os.path.join(OUT, "illustrations", "ari-between-admissions.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurodevelopmental", "illustrations", "alex-lunch.webp"),
+               os.path.join(OUT, "illustrations", "alex-lunch.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
+               os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation", "illustrations", "robin-memory.webp"),
+               os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
+               os.path.join(OUT, "illustrations", "noor-dayroom.webp"), _missing_req)
+for scene in ("therapy-chain-phone.avif", "therapy-chain-hall.avif"):
+    _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Psychotherapy", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
 for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL.txt"):
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustrations", "referral-call.webp"),
+               os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Personality", "illustrations", "personality-conversation.webp"),
+               os.path.join(OUT, "illustrations", "personality-conversation.webp"), _missing_req)
+for scene in ("cultural-chart.webp", "elena-interpreter.avif"):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
+               os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
+for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),
+                      ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-on-unit.avif"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-at-night.avif"),
+                      ("Toxidromes", "paired-fever-exams.webp")):
+    _copy_required(os.path.join(LIB, "04_Acute_and_Safety", _topic, "illustrations", _plate),
+                   os.path.join(OUT, "illustrations", _plate), _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 # Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms

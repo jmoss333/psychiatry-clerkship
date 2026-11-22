@@ -1,5 +1,23 @@
 # Anxiety, OCD & Trauma on the Inpatient Unit
 
+<figure class="fd-bedside-case" aria-labelledby="pacing-title">
+  <figcaption>
+    <span class="fd-bedside-case__label">Fictional bedside case</span>
+    <strong id="pacing-title">What’s behind the pacing?</strong>
+  </figcaption>
+  <img src="illustrations/pacing-hallway.webp" width="2172" height="724" alt="A patient walks along a quiet inpatient hallway.">
+  <p class="fd-bedside-case__note"><span class="fd-bedside-case__label">Nursing note</span> “Pacing in the hallway. Appears anxious.”</p>
+  <p class="fd-bedside-case__prompt"><span class="fd-bedside-case__label">MS3 prompt</span> What would you ask the patient first?</p>
+  <details>
+    <summary><span class="fd-bedside-case__closed">Reveal the two clues</span><span class="fd-bedside-case__open">Hide the two clues</span></summary>
+    <dl>
+      <div><dt>Patient’s words</dt><dd>“I feel like I have to keep moving.”</dd></div>
+      <div><dt>Medication history</dt><dd>The antipsychotic dose was increased yesterday.</dd></div>
+    </dl>
+    <p class="fd-bedside-case__follow"><span class="fd-bedside-case__label">Resident follow-up</span> What moves up your differential? What would you check before recommending a medication change on rounds?</p>
+  </details>
+</figure>
+
 > Educational; fictional composites only, no PHI.
 
 **In one line** — On the unit, anxiety, OCD, and PTSD are usually layered onto a primary admission diagnosis; your job is to separate the medical and substance mimics from the psychiatric disorder, choose among disorder-specific psychotherapy and medication options according to evidence, patient preference, and access, and resist the reflex to standing benzodiazepines.

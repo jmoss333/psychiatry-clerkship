@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-31",
+  "updated": "2026-11-20",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -1840,7 +1840,8 @@
           ],
           "direction": "descriptive",
           "usedBy": [
-            "cotw_20260914_ssnms_res"
+            "cotw_20260914_ssnms_res",
+            "toxidromes.md"
           ]
         }
       ]
@@ -3452,6 +3453,126 @@
           "direction": "descriptive",
           "usedBy": [
             "screeners.html"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "meyer-2001-clozapine-smoking-cessation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/11763003",
+        "retrievedAt": "2026-11-20",
+        "pmid": "11763003",
+        "doi": "10.1097/00004714-200112000-00005",
+        "sourceSpan": "A mean increase in clozapine levels of 71.9% (442.4 ng/ml +/- 598.8 ng/ml) occurred upon smoking cessation"
+      },
+      "claims": [
+        {
+          "claimId": "meyer-2001-clozapine-smoking-cessation-case-debrief",
+          "claimText": "Clozapine levels rose on average after smoking cessation in patients on a stable dose.",
+          "claimTerms": [
+            "smoking cessation"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "hukkanen-2011-nicotine-cyp1a2",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3243019/",
+        "retrievedAt": "2026-11-20",
+        "pmid": "21599724",
+        "doi": "10.1111/j.1365-2125.2011.04023.x",
+        "sourceSpan": "There was no significant influence of nicotine administration on the pharmacokinetic parameters of caffeine or the formation pharmacokinetics of paraxanthine, theophylline and theobromine."
+      },
+      "claims": [
+        {
+          "claimId": "hukkanen-2011-nicotine-cyp1a2-case-debrief",
+          "claimText": "Nicotine did not significantly change caffeine metabolism in this crossover study.",
+          "claimTerms": [
+            "no significant influence of nicotine"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "hefner-2016-crp-clozapine",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/26032842",
+        "retrievedAt": "2026-11-20",
+        "pmid": "26032842",
+        "doi": "10.1007/s00213-015-3976-0",
+        "sourceSpan": "Elevated levels of C-reactive protein were found in 105 patients. They were significantly associated with elevated values in C/D for clozapine (n = 33, P < 0.01)"
+      },
+      "claims": [
+        {
+          "claimId": "hefner-2016-crp-clozapine-case-debrief",
+          "claimText": "Elevated C-reactive protein was associated with higher dose-adjusted clozapine concentrations.",
+          "claimTerms": [
+            "elevated values in C/D for clozapine"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "gurrera-2017-nms-criteria-validation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/28027111",
+        "retrievedAt": "2026-11-20",
+        "pmid": "28027111",
+        "doi": "10.1097/jcp.0000000000000640",
+        "sourceSpan": "Data were extracted from 221 archived telephone contact reports of clinician-initiated calls to a national telephone consultation service from 1997 to 2009"
+      },
+      "claims": [
+        {
+          "claimId": "gurrera-2017-nms-criteria-validation-case-debrief",
+          "claimText": "The NMS criteria validation used reports from 221 archived telephone consultations.",
+          "claimTerms": [
+            "221 archived telephone contact reports"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "toxidromes.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "white-1991-catatonia-preceding-nms",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/1674666",
+        "retrievedAt": "2026-11-20",
+        "pmid": "1674666",
+        "doi": "10.1192/bjp.158.3.419",
+        "sourceSpan": "Five consecutive cases of the NMS are presented, in all of which a catatonic state preceded the onset of the condition."
+      },
+      "claims": [
+        {
+          "claimId": "white-1991-catatonia-preceding-nms-case-debrief",
+          "claimText": "Catatonic signs preceded NMS in five consecutive cases in this series.",
+          "claimTerms": [
+            "a catatonic state preceded"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "toxidromes.md"
           ]
         }
       ]

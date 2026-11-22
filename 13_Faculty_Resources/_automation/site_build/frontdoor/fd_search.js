@@ -56,6 +56,10 @@
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
 var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
+var FD_SEARCH_SPELLING_CORRECTIONS = new Map([
+  ['delerium', 'delirium'],
+  ['akathesia', 'akathisia']
+]);
 
 /* Discovery aliases never expand the safety haystack. Short ambiguous abbreviations must
    be the entire query. Normalize punctuation so PHQ-9 / PHQ 9 and trailing ? work alike. */
@@ -367,7 +371,8 @@ function fdSearchTriggerHit(triggers, paddedQuery){
 
 /* Care vocabulary is deliberately separate from synonyms and safety triggers. A match only
    selects a static, canonical URL; the typed phrase never becomes a query parameter or fragment. */
-function fdSearchCareHit(resource, normalizedQuery){
+function fdSearchCareHit(resource, normalizedQuery, readingQuery){
+  if(readingQuery&&fdSearchNormalize(resource.title)===readingQuery) return true;
   var padded=' '+normalizedQuery+' ', terms=resource.searchTerms||[];
   for(var i=0;i<terms.length;i++){
     var term=fdSearchNormalize(terms[i]);
@@ -401,9 +406,21 @@ function fdSearchNextUnread(index, state){
 }
 
 function fdSearchMatches(index, query, synonyms, state){
+  /* Return to the list the learner opened, even if page text finished loading
+     while they were reading. Editing or opening a new search uses the live index. */
+  var saved=state&&state.searchReturn;
+  if(state&&state.searchRestored&&saved&&saved.query===String(query||'')&&Array.isArray(saved.matches)){
+    return saved.matches;
+  }
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var kit=idx.kit||[];
-  var rawQuery=String(query||'').trim().toLowerCase();
+  var typedQuery=String(query||'').trim().toLowerCase();
+  /* Route the dotted spelling through the same SI vocabulary, without picking
+     the letters out of a longer initialism or a resource filename. */
+  var rawQuery=typedQuery.replace(/(^|[^a-z0-9_.])s\.i\.?(?=$|[^a-z0-9_.])/g,'$1si');
+  /* Rank a request to open or use a resource by the words that name it. Keeping
+     this at the start of the query preserves those same words inside a title. */
+  rawQuery=rawQuery.replace(/^(?:show\s+me|where\s+can\s+i\s+find|how\s+do\s+i\s+(?:use|do(?:\s+an?)?)|open)\s+(?=\S)/,'');
   var seenRefs={};
 
   if(!rawQuery){
@@ -496,6 +513,7 @@ function fdSearchMatches(index, query, synonyms, state){
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
     var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
+       (typedQuery!==rawQuery&&fdSearchTriggerHit(kit[kk].triggers, ' '+typedQuery+' '))||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
        fdSearchTriggerHit(kit[kk].triggers, ' '+readingQuery+' ')||
        fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords, true);
@@ -513,7 +531,7 @@ function fdSearchMatches(index, query, synonyms, state){
 
   var careResults=[], care=idx.careResources||[];
   for(var ci=0;ci<care.length;ci++){
-    if(fdSearchCareHit(care[ci],normalizedQuery)){
+    if(fdSearchCareHit(care[ci],normalizedQuery,readingQuery)){
       careResults.push({item:care[ci],kind:'care',meta:'External care resource'});
     }
   }
@@ -539,13 +557,16 @@ function fdSearchMatches(index, query, synonyms, state){
     altWords.push(fdSearchContentWords(fdExpandQuery(alternatives[aw], synonyms).split(/\s+/)));
   }
   var body=literalFile?{}:fdSearchBodyScores(state&&state.bodyIndex, readingQuery, alternatives);
+  /* Only a standalone family-call request means the existing "collateral call" alias.
+     A longer query such as "call family about delirium" needs its own clinical ranking. */
+  var aliasQuery=(readingQuery==='call family'||readingQuery==='i need to call family')?'collateral call':rawQuery;
   var kitRefs={};
   for(var kr=0;kr<kit.length;kr++){ if(kit[kr].item) kitRefs[kit[kr].item.ref]=true; }
   var itemResults=[], bodyOnly=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
-    var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var aliasHit=fdSearchAliasHit(it, aliasQuery);
     var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
     var literal=aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
@@ -779,10 +800,17 @@ function fdSearchOverlay(index, query, synonyms, state){
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */
   if(trimmed&&!results.length){
+    var correction=FD_SEARCH_SPELLING_CORRECTIONS.get(trimmed.toLowerCase());
+    var canSuggest=correction&&fdSearchMatches(index,correction,synonyms,state).length>0;
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
-    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
-      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search="">Edit search</button>';
+    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">';
+    if(canSuggest){
+      out+='<button type="button" class="fd-btn fd-btn--primary" data-fd-search="" data-fd-search-query="'+
+        fdEsc(correction)+'">Did you mean '+fdEsc(correction)+'?</button>';
+    }
+    out+='<button type="button" class="fd-btn '+(canSuggest?'fd-btn--ghost':'fd-btn--primary')+
+      '" data-fd-search="">Edit search</button>';
     if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>';
     if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
     out+='</div>';

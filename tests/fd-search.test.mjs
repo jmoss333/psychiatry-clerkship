@@ -368,6 +368,16 @@ test('empty query never shows the no-results state (defaults always populate it)
   assert.doesNotMatch(html, /fd-searchpanel__empty/);
 });
 
+test('spelling recovery requires a known typo and a searchable correction', () => {
+  const emptyIndex = { byRef: {}, weeks: [], columns: [], kit: [] };
+  const render = (index, query) => F.fdSearchOverlay(index, query, SYN, {});
+  assert.match(render(REAL_INDEX, '  DELERIUM  '), /data-fd-search-query="delirium">Did you mean delirium\?/);
+  assert.doesNotMatch(render(emptyIndex, 'delerium'), /Did you mean/);
+  for (const query of ['', 'delirium', 'zzzzqqq', 'constructor', 'delerium zzzzqqq']) {
+    assert.doesNotMatch(render(REAL_INDEX, query), /Did you mean/, query);
+  }
+});
+
 test('a zero-match search offers recovery without turning the query into a question draft', () => {
   const html = F.fdSearchOverlay(REAL_INDEX, 'zzzzqqq', SYN, {});
   assert.match(html, /role="group" aria-label="Search recovery"/);
@@ -901,6 +911,20 @@ const ELEVEN_MATCH_REFS = [
   'quasar-01.md', 'quasar-02.md', 'quasar-03.md', 'quasar-04.md', 'quasar-05.md',
   'quasar-06.md', 'quasar-07.md', 'quasar-08.md', 'quasar-09.md', 'quasar-10.md', 'quasar-11.md',
 ];
+
+test('returning to a search retains its original rows across later reranking', () => {
+  const index = overflowIndex(11);
+  const original = F.fdSearchResults(index, 'quasar', {}, { searchExpanded: true });
+  const searchReturn = { query: 'quasar', matches: original };
+  for (const ref of ELEVEN_MATCH_REFS.slice(8)) index.byRef[ref].searchAliases = ['quasar'];
+  const refs = state => F.fdSearchResults(index, 'quasar', {}, state).map(row => row.item.ref);
+  assert.ok(!refs({}).includes('quasar-08.md'), 'the former eighth row now falls outside the live top eight');
+  assert.deepEqual(refs({ searchRestored: true, searchReturn }), ELEVEN_MATCH_REFS.slice(0, 8));
+  assert.deepEqual(refs({ searchRestored: true, searchReturn, searchExpanded: true }), ELEVEN_MATCH_REFS);
+  assert.deepEqual(refs({ searchRestored: false, searchReturn }), refs({}), 'a new search uses current ranking');
+  assert.deepEqual(F.fdSearchResults(index, 'absent', {}, { searchRestored: true, searchReturn }), [],
+    'a different query cannot reuse the old matches');
+});
 
 test('Show all matches exposes every match in ranked order while the default remains eight', () => {
   const index = overflowIndex(11);

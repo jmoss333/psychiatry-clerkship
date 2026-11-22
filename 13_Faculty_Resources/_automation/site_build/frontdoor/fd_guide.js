@@ -58,7 +58,7 @@ function fdGuideMount(body,options){
     if(!leads.length)return null;
   }
   var doc=body.ownerDocument, win=doc.defaultView, ref=o.ref;
-  var disposed=false, frame=0, printOpened=[], tableModes=[], invokers=[];
+  var disposed=false, frame=0, printOpened=[], printGroups=[], tableModes=[], invokers=[];
   function el(tag,cls,text){
     var node=doc.createElement(tag);
     if(cls)node.className=cls;
@@ -167,10 +167,14 @@ function fdGuideMount(body,options){
   }
   var columns=reader.querySelector('.fd-reader__cols'), article=reader.querySelector('.fd-article');
   var guideHeader=el('header','fd-guide-header');
+  var bedsideCase=body.querySelector(':scope > .fd-bedside-case');
   each([].slice.call(article.children),function(node){
-    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead'))guideHeader.appendChild(node);
+    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead')||
+        (bedsideCase&&node.classList.contains('governance-notice')))guideHeader.appendChild(node);
+    if(bedsideCase&&node.classList.contains('fd-article__h1'))guideHeader.appendChild(bedsideCase);
   });
   columns.insertBefore(guideHeader,article);columns.insertBefore(margin,article);
+  if(bedsideCase)fdMountCaseRounds(reader,function(source){return printOpened.indexOf(source)!==-1;});
 
   /* A second view is offered only for simple rectangular tables. Both views come from the same
      original cells. Complex tables keep their original accessible, scrollable representation. */
@@ -281,9 +285,17 @@ function fdGuideMount(body,options){
     updateCurrent();
   }
   function beforePrint(){
-    printOpened=[];each(body.querySelectorAll('details:not([open])'),function(d){printOpened.push(d);d.open=true;});
+    if(printOpened.length||printGroups.length)return;
+    /* An exclusive disclosure would otherwise close its sibling during printing. */
+    each(reader.querySelectorAll('.visual-practice details[name]'),function(d){
+      printGroups.push([d,d.getAttribute('name')]);d.removeAttribute('name');
+    });
+    each(reader.querySelectorAll('.fd-article__body details:not([open]),.fd-bedside-case details:not([open])'),function(d){printOpened.push(d);d.open=true;});
   }
-  function afterPrint(){printOpened.forEach(function(d){d.open=false;});printOpened=[];}
+  function afterPrint(){
+    printOpened.forEach(function(d){d.open=false;});printOpened=[];
+    printGroups.forEach(function(pair){pair[0].setAttribute('name',pair[1]);});printGroups=[];
+  }
   win.addEventListener('scroll',onScroll,{passive:true});win.addEventListener('resize',onResize);
   win.addEventListener('beforeprint',beforePrint);win.addEventListener('afterprint',afterPrint);
   /* Index only stable resource controls, after table generation. No durable learner state. */

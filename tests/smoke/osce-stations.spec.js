@@ -4,9 +4,20 @@ import { pinVisualGovernance } from './governance-fixture.js';
 const CAPACITY = '?page=osce.md&station=capacity';
 const FAMILY = '?page=osce.md&station=family-agenda';
 const ADMISSION = '?page=osce.md&station=admission-presentation';
+const CIRCUIT = 'catatonia-withdrawal-circuit';
+const FULL_CIRCUIT = 'full-six-station-circuit';
+const TEACHING_TIME_45 = 'teaching-time-45';
+const COMMUNICATION_45 = 'communication-handoff-45';
+const TEACHING_TIME_20 = 'teaching-time-20';
+const COMMUNICATION_20 = 'communication-handoff-20';
 const CATATONIA_DEBRIEF = 'Repeat the first sentence.';
 const WITHDRAWAL_DEBRIEF = 'Rehearse the call.';
+const COLLATERAL_DEBRIEF = 'Give the handoff.';
 const SHARED_DEBRIEF = 'What would you document in one sentence?';
+const HANDOFF_FOCUSES = ['Name the source', 'State the uncertainty', 'Make the request'];
+const focusNames = new RegExp(HANDOFF_FOCUSES.join('|'));
+const focusOptions = page => page.getByRole('radio', { name: focusNames });
+const receiverSummary = page => page.locator('summary').filter({ hasText: /^Receiver read-back$/ });
 const roles = [
   { label: 'Interviewer', cue: /Assess decision-making capacity for a specific refusal/i },
   { label: 'Patient', cue: /antibiotics are poison/i },
@@ -22,6 +33,22 @@ function stationLink(page, href) {
     .and(page.locator(`a[href="${href}"]`));
 }
 
+function nextCase(page) {
+  return page.getByRole('link', { name: 'Next case', exact: true })
+    .or(page.getByRole('button', { name: 'Next case', exact: true }));
+}
+
+async function expectAgenda(page, schedule) {
+  const agenda = page.getByRole('list', { name: 'Session agenda' });
+  await expect(agenda).toBeVisible();
+  const rows = agenda.getByRole('listitem');
+  await expect(rows).toHaveCount(schedule.length);
+  for (const [index, [range, activity]] of schedule.entries()) {
+    await expect(rows.nth(index)).toContainText(range, { useInnerText: true });
+    await expect(rows.nth(index)).toContainText(activity, { useInnerText: true });
+  }
+}
+
 async function openSharedDebriefOnly(page) {
   const prompt = page.getByText(SHARED_DEBRIEF, { exact: true }).filter({ visible: true });
   await expect(prompt).toHaveCount(0);
@@ -29,6 +56,7 @@ async function openSharedDebriefOnly(page) {
   await expect(prompt).toHaveCount(1);
   await expect(page.getByText(CATATONIA_DEBRIEF, { exact: true })).toHaveCount(0);
   await expect(page.getByText(WITHDRAWAL_DEBRIEF, { exact: true })).toHaveCount(0);
+  await expect(page.getByText(COLLATERAL_DEBRIEF, { exact: true })).toHaveCount(0);
 }
 
 test('open the capacity station from the OSCE reader and share each role independently', async ({ page }) => {
@@ -217,6 +245,8 @@ test('admission presentation share links open the shared case and only the selec
       else await expect(instruction).toBeHidden();
     }
     await openSharedDebriefOnly(page);
+    await expect(focusOptions(page)).toHaveCount(0);
+    await expect(receiverSummary(page)).toHaveCount(0);
     await page.getByRole('link', { name: 'Back to station', exact: true }).click();
     await expect(page).toHaveURL(url => url.search === ADMISSION);
   }
@@ -242,11 +272,22 @@ test('admission presentation runs six minutes of presentation followed by four m
 
 const touchStations = [
   {
+    name: 'suicide risk with collateral hesitation',
+    href: '?page=osce.md&station=suicide-risk-collateral',
+    phases: [['Patient encounter', 12], ['Risk summary', 3], ['Feedback', 10]],
+    debrief: [COLLATERAL_DEBRIEF, 'Check the sources.', 'Try the next sentence.'],
+    verifyCrisisBlock: true,
+    participants: [
+      { key: 'interviewer', label: 'Interviewer', cue: 'Ask about safety today.' },
+      { key: 'patient', label: 'Patient', cue: 'What you tell the student.', facts: [/I wrote a goodbye letter last night/i] },
+      { key: 'sibling', label: 'Sibling', cue: 'What you heard on the phone.', facts: [/I didn't want to be alone tonight/i] },
+    ],
+  },
+  {
     name: 'possible catatonia',
     href: '?page=osce.md&station=possible-catatonia',
-    firstPhase: 'Observation and interview',
-    debrief: CATATONIA_DEBRIEF,
-    otherDebrief: WITHDRAWAL_DEBRIEF,
+    phases: [['Observation and interview', 10], ['Team presentation', 5]],
+    debrief: [CATATONIA_DEBRIEF],
     participants: [
       { key: 'interviewer', label: 'Interviewer', cue: 'Start at the bedside.' },
       { key: 'patient', label: 'Patient', cue: 'How to play the pauses.' },
@@ -256,9 +297,8 @@ const touchStations = [
   {
     name: 'alcohol withdrawal',
     href: '?page=osce.md&station=alcohol-withdrawal',
-    firstPhase: 'Patient encounter',
-    debrief: WITHDRAWAL_DEBRIEF,
-    otherDebrief: CATATONIA_DEBRIEF,
+    phases: [['Patient encounter', 10], ['Team presentation', 5]],
+    debrief: [WITHDRAWAL_DEBRIEF],
     participants: [
       { key: 'interviewer', label: 'Interviewer', cue: 'Ask about a usual drinking day.' },
       { key: 'patient', label: 'Patient', cue: 'What happened years ago.', facts: [/yesterday morning/i, /my brother said I fell down and shook all over/i] },
@@ -267,13 +307,20 @@ const touchStations = [
   },
 ];
 
+async function expectCrisisBlock(page) {
+  const block = page.locator('.fd-article__body blockquote:has(.crisis-block-hook)');
+  await expect(block.getByRole('heading', { name: 'If someone is in crisis' })).toBeVisible();
+  await expect(block.getByRole('listitem').first()).toBeVisible();
+}
+
 for (const station of touchStations) test.describe(station.name + ' on a touch phone', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
-  test('open the station, share role cards, and reveal both debrief prompts', async ({ page, context }) => {
+  test('open the station, share role cards, and reveal the station and shared debriefs', async ({ page, context }) => {
     await page.goto('/?page=osce.md');
     await stationLink(page, station.href).tap();
     await expect(page).toHaveURL(url => url.search === station.href);
+    if (station.verifyCrisisBlock) await expectCrisisBlock(page);
     for (const participant of station.participants) {
       const link = page.getByRole('link', { name: participant.label, exact: true });
       const url = new URL(await link.getAttribute('href'), page.url());
@@ -284,6 +331,7 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
       await pinVisualGovernance(card);
       await card.goto(url.href);
       await expect(card.getByRole('heading', { name: participant.label, exact: true })).toBeVisible();
+      if (station.verifyCrisisBlock) await expectCrisisBlock(card);
       for (const { key, cue, facts = [] } of station.participants) {
         const instruction = card.getByText(cue, { exact: true });
         if (key === participant.key) await expect(instruction).toBeVisible();
@@ -294,14 +342,13 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
           else await expect(answers).toHaveCount(0);
         }
       }
-      const stationPrompt = card.getByText(station.debrief, { exact: true });
-      const sharedPrompt = card.getByText(SHARED_DEBRIEF, { exact: true });
-      await expect(stationPrompt).toBeHidden();
-      await expect(sharedPrompt).toBeHidden();
+      const prompts = [...station.debrief, SHARED_DEBRIEF].map(text => card.getByText(text, { exact: true }));
+      for (const prompt of prompts) await expect(prompt).toBeHidden();
       await card.getByRole('button', { name: 'Open debrief', exact: true }).tap();
-      await expect(stationPrompt).toBeVisible();
-      await expect(sharedPrompt).toBeVisible();
-      await expect(card.getByText(station.otherDebrief, { exact: true })).toHaveCount(0);
+      for (const prompt of prompts) await expect(prompt).toBeVisible();
+      for (const other of touchStations.filter(item => item !== station)) {
+        await expect(card.getByText(other.debrief[0], { exact: true })).toHaveCount(0);
+      }
       await card.getByRole('link', { name: 'Back to station', exact: true }).tap();
       await expect(card).toHaveURL(current => current.search === station.href);
       await expect(card.getByRole('link', { name: participant.label, exact: true })).toBeVisible();
@@ -309,34 +356,705 @@ for (const station of touchStations) test.describe(station.name + ' on a touch p
     }
   });
 
-  test('pause, resume, reset, and finish the encounter and presentation timers', async ({ page }) => {
+  test('pause, resume, reset, and finish each timed phase', async ({ page }) => {
     await page.clock.install();
     await page.goto('/' + station.href);
     const timer = page.getByRole('timer');
-    await expect(page.getByRole('radio', { name: station.firstPhase, exact: true })).toBeChecked();
-    await expect(timer).toHaveText('10:00');
+    const [firstPhase, firstMinutes] = station.phases[0];
+    await expect(page.getByRole('radio', { name: firstPhase, exact: true })).toBeChecked();
+    await expect(timer).toHaveText(`${firstMinutes}:00`);
     await page.getByRole('button', { name: 'Start', exact: true }).tap();
     await page.clock.fastForward(10_000);
     await page.getByRole('button', { name: 'Pause', exact: true }).tap();
-    await expect(timer).toHaveText(/^9:\d{2}$/);
+    await expect(timer).toHaveText(new RegExp('^' + (firstMinutes - 1) + ':\\d{2}$'));
     const paused = await timer.innerText();
     await page.clock.fastForward(60_000);
     await expect(timer).toHaveText(paused);
     await page.getByRole('button', { name: 'Resume', exact: true }).tap();
     await page.clock.fastForward(60_000);
-    await expect(timer).toHaveText(/^8:\d{2}$/);
+    await expect(timer).toHaveText(new RegExp('^' + (firstMinutes - 2) + ':\\d{2}$'));
     await page.getByRole('button', { name: 'Reset', exact: true }).tap();
+    await expect(timer).toHaveText(`${firstMinutes}:00`);
+    for (const [phase, minutes] of station.phases) {
+      await page.getByRole('radio', { name: phase, exact: true }).tap();
+      await expect(timer).toHaveText(`${minutes}:00`);
+      await page.getByRole('button', { name: 'Start', exact: true }).tap();
+      await page.clock.fastForward(minutes * 60_000);
+      await expect(timer).toHaveText('0:00');
+      await expect(page.getByText(/Time is up/)).toBeVisible();
+    }
+    await page.getByRole('button', { name: 'Reset', exact: true }).tap();
+    const [, lastMinutes] = station.phases.at(-1);
+    await expect(timer).toHaveText(`${lastMinutes}:00`);
+  });
+});
+
+test.describe('two-station circuit on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  const cases = [
+    touchStations.find(station => station.name === 'possible catatonia'),
+    touchStations.find(station => station.name === 'alcohol withdrawal'),
+  ];
+  const seats = [
+    { id: 'a', label: 'Learner A', rotation: ['interviewer', 'nurse'] },
+    { id: 'b', label: 'Learner B', rotation: ['patient', 'interviewer'] },
+    { id: 'c', label: 'Learner C', rotation: ['nurse', 'patient'] },
+  ];
+
+  async function checkRole(card, seat, round) {
+    const current = cases[round];
+    for (const { key, label, cue } of current.participants) {
+      const instruction = card.getByText(cue, { exact: true });
+      if (key === seat.rotation[round]) {
+        await expect(card.getByRole('heading', { name: label, level: 2, exact: true })).toBeVisible();
+        await expect(instruction).toBeVisible();
+      } else {
+        await expect(instruction).toBeHidden();
+      }
+    }
+  }
+
+  test('share the three seats once and keep each seat as its role changes', async ({ page, context }) => {
+    await page.goto('/?page=osce.md');
+    await page.getByRole('link', { name: 'Run a circuit', exact: true }).tap();
+    await expect(page).toHaveURL(url => url.search === '?page=osce.md&station=' + CIRCUIT);
+    for (const seat of seats) {
+      const link = page.getByRole('link', { name: seat.label, exact: true });
+      const address = new URL(await link.getAttribute('href'), page.url());
+      expect(address.origin).toBe(new URL(page.url()).origin);
+      expect(address.searchParams.get('station')).toBe(CIRCUIT);
+      expect(address.searchParams.get('role')).toBe(seat.id);
+      const card = await context.newPage();
+      await pinVisualGovernance(card);
+      await card.goto(address.href);
+      for (const [round, current] of cases.entries()) {
+        if (round === 1) {
+          await nextCase(card).tap();
+          await expect(card).toHaveURL(url => url.searchParams.get('round') === '2' && url.searchParams.get('role') === seat.id);
+        }
+        await checkRole(card, seat, round);
+        const prompt = card.getByText(current.debrief[0], { exact: true });
+        await expect(prompt).toBeHidden();
+        await card.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+        await expect(prompt).toBeVisible();
+        await expect(card.getByText(cases[1 - round].debrief[0], { exact: true })).toBeHidden();
+      }
+      if (seat.id === 'a') {
+        await card.reload();
+        await checkRole(card, seat, 1);
+        await card.goBack();
+        await checkRole(card, seat, 0);
+        await card.goForward();
+        await checkRole(card, seat, 1);
+      }
+      await card.close();
+    }
+  });
+
+  test('facilitator keeps the timer while sharing a QR code and reading the debrief', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/?page=osce.md&station=' + CIRCUIT);
+    const timer = page.getByRole('timer');
+    await expect(page.getByRole('radio', { name: 'Observation and interview', exact: true })).toBeChecked();
     await expect(timer).toHaveText('10:00');
     await page.getByRole('button', { name: 'Start', exact: true }).tap();
-    await page.clock.fastForward(600_000);
-    await expect(timer).toHaveText('0:00');
-    await expect(page.getByText(/Time is up/)).toBeVisible();
+    await page.clock.fastForward(65_000);
+    await expect(timer).toHaveText(/^8:\d{2}$/);
+    const showQr = page.getByRole('button', { name: 'Show QR for Learner A', exact: true });
+    await showQr.tap();
+    const qr = page.getByRole('img', { name: /Learner A/i });
+    await expect(qr).toBeVisible();
+    await page.getByRole('button', { name: /^Hide QR/i }).tap();
+    await expect(qr).toBeHidden();
+    await page.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+    const endOfDebrief = page.getByText(SHARED_DEBRIEF, { exact: true });
+    await expect(endOfDebrief).toBeVisible();
+    await endOfDebrief.evaluate(node => node.scrollIntoView({ block: 'center' }));
+    await expect(timer).toBeInViewport({ ratio: 1 });
+    await page.clock.fastForward(60_000);
+    await expect(timer).toHaveText(/^7:\d{2}$/);
+    await page.getByRole('radio', { name: 'Team presentation', exact: true }).tap();
+    await expect(timer).toHaveText('5:00');
+    await nextCase(page).tap();
+    await expect(page).toHaveURL(url => url.searchParams.get('round') === '2');
+    await expect(page.getByRole('radio', { name: 'Patient encounter', exact: true })).toBeChecked();
+    await expect(timer).toHaveText('10:00');
     await page.getByRole('radio', { name: 'Team presentation', exact: true }).tap();
     await expect(timer).toHaveText('5:00');
     await page.getByRole('button', { name: 'Start', exact: true }).tap();
     await page.clock.fastForward(300_000);
     await expect(timer).toHaveText('0:00');
-    await page.getByRole('button', { name: 'Reset', exact: true }).tap();
-    await expect(timer).toHaveText('5:00');
   });
+});
+
+test.describe('full six-station circuit on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  // Expected assignments in seat order A, B, C. The cues distinguish identically
+  // named roles that appear in several stations.
+  const rounds = [
+    [['Sibling', 'What you heard on the phone.'], ['Interviewer', 'Ask about safety today.'], ['Patient', 'What you tell the student.']],
+    [['Patient', /antibiotics are poison/i], ['Observer', /Decision-specific reasoning and delirium recognition/i], ['Interviewer', /Assess decision-making capacity for a specific refusal/i]],
+    [['Interviewer', 'Start at the bedside.'], ['Patient', 'How to play the pauses.'], ['Nurse', 'What you saw this shift.']],
+    [['Nurse', 'Your bedside observations.'], ['Interviewer', 'Ask about a usual drinking day.'], ['Patient', 'What happened years ago.']],
+    [['Family member', 'If you want a firm plan'], ['Observer', 'Give one piece of feedback.'], ['Presenter', 'Close with a handoff.']],
+    [['Presenter', 'Open with the timeline.'], ['Supervising resident', 'Ask what would change the plan.'], ['Observer', 'Give feedback on one sentence.']],
+  ];
+  const seatIds = ['a', 'b', 'c'];
+
+  async function expectSeat(page, id, round) {
+    const seatIndex = seatIds.indexOf(id);
+    const [label] = rounds[round - 1][seatIndex];
+    const heading = page.getByRole('heading', { name: label, level: 2, exact: true });
+    await expect(heading).toBeVisible();
+    for (const [i, [, cue]] of rounds[round - 1].entries()) {
+      const instruction = page.getByText(cue, { exact: typeof cue === 'string' }).filter({ visible: true });
+      if (i === seatIndex) await expect(instruction).toHaveCount(1);
+      else await expect(instruction).toHaveCount(0);
+    }
+    return heading.innerText();
+  }
+
+  async function seatAddress(page, id) {
+    const link = page.getByRole('link', { name: 'Learner ' + id.toUpperCase(), exact: true });
+    const url = new URL(await link.getAttribute('href'), page.url());
+    expect(url.origin).toBe(new URL(page.url()).origin);
+    expect(url.searchParams.get('page')).toBe('osce.md');
+    expect(url.searchParams.get('station')).toBe(FULL_CIRCUIT);
+    expect(url.searchParams.get('role')).toBe(id);
+    expect(url.searchParams.has('round')).toBe(false);
+    return url.href;
+  }
+
+  for (const id of seatIds) {
+    test('seat ' + id.toUpperCase() + ' rotates through six roles and leads twice', async ({ page }) => {
+      await page.goto('/?page=osce.md');
+      await page.getByRole('link', { name: 'Full six-station circuit', exact: true }).tap();
+      const original = await seatAddress(page, id);
+      await page.goto(original);
+      const observedRoles = [];
+      for (let round = 1; round <= rounds.length; round++) {
+        if (round > 1) {
+          await nextCase(page).tap();
+          await expect(page).toHaveURL(url =>
+            url.searchParams.get('round') === String(round) && url.searchParams.get('role') === id);
+        }
+        observedRoles.push(await expectSeat(page, id, round));
+      }
+      expect(observedRoles.filter(label => label === 'Interviewer' || label === 'Presenter')).toHaveLength(2);
+      await expect(nextCase(page)).toHaveCount(0);
+    });
+  }
+
+  test('rescan a stable seat link after closing the tab, independently of other seats and devices', async ({ page, context, browser }) => {
+    await page.goto('/?page=osce.md&station=' + FULL_CIRCUIT);
+    const a = await seatAddress(page, 'a');
+    const b = await seatAddress(page, 'b');
+    const first = await context.newPage();
+    await pinVisualGovernance(first);
+    await first.goto(a + '&round=2');
+    await expectSeat(first, 'a', 2);
+    await nextCase(first).tap();
+    await expectSeat(first, 'a', 3);
+    await first.close();
+
+    await page.goto(a);
+    await expectSeat(page, 'a', 3);
+    await page.goto(b);
+    await expectSeat(page, 'b', 1);
+    await page.goto(a);
+    await expectSeat(page, 'a', 3);
+
+    const fresh = await browser.newContext({
+      viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, serviceWorkers: 'block',
+    });
+    try {
+      const device = await fresh.newPage();
+      await pinVisualGovernance(device);
+      await device.goto(a);
+      await expectSeat(device, 'a', 1);
+    } finally {
+      await fresh.close();
+    }
+    await page.getByRole('link', { name: 'Start at station 1', exact: true }).tap();
+    await expectSeat(page, 'a', 1);
+    await page.goto(a);
+    await expectSeat(page, 'a', 1);
+  });
+
+  test('facilitator shares stable seats on later rounds and keeps the clock visible in each debrief', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/?page=osce.md&station=' + FULL_CIRCUIT + '&round=1');
+    const original = [];
+    for (const id of seatIds) original.push(await seatAddress(page, id));
+    const timer = page.getByRole('timer');
+    const phases = [
+      [['Patient encounter', 12], ['Risk summary', 3], ['Feedback', 10]],
+      [['Interview', 12], ['Oral summary', 5]],
+      [['Observation and interview', 10], ['Team presentation', 5]],
+      [['Patient encounter', 10], ['Team presentation', 5]],
+      [['Preparation and presentation', 15]],
+      [['Presentation', 6], ['Questions', 4]],
+    ];
+    for (const [index, stationPhases] of phases.entries()) {
+      if (index > 0) {
+        await nextCase(page).tap();
+        await expect(page).toHaveURL(url => url.searchParams.get('round') === String(index + 1));
+      }
+      for (const [seatIndex, id] of seatIds.entries()) {
+        expect(await seatAddress(page, id)).toBe(original[seatIndex]);
+      }
+      for (const [label, minutes] of stationPhases) {
+        if (stationPhases.length > 1) await page.getByRole('radio', { name: label, exact: true }).tap();
+        await expect(timer).toHaveText(minutes + ':00');
+      }
+      const [, lastMinutes] = stationPhases.at(-1);
+      await page.getByRole('button', { name: 'Start', exact: true }).tap();
+      await page.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+      const prompt = page.getByText(SHARED_DEBRIEF, { exact: true });
+      await expect(prompt).toBeVisible();
+      await prompt.evaluate(node => node.scrollIntoView({ block: 'center' }));
+      await expect(timer).toBeInViewport({ ratio: 1 });
+      await page.clock.fastForward(10_000);
+      await expect(timer).toHaveText(new RegExp('^' + (lastMinutes - 1) + ':\\d{2}$'));
+    }
+  });
+});
+
+test.describe('45-minute teaching preset on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  const startUrl = '/?page=osce.md&station=' + TEACHING_TIME_45 + '&round=1';
+  const cases = [
+    { encounter: 'Observation and interview', debrief: CATATONIA_DEBRIEF },
+    { encounter: 'Patient encounter', debrief: WITHDRAWAL_DEBRIEF },
+  ];
+
+  test('open the agenda and run all 45 minutes with time for debrief and transition', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/?page=osce.md');
+    await page.getByRole('link', { name: 'Fit my teaching time', exact: true }).tap();
+    await expect(page).toHaveURL(url => url.searchParams.get('station') === TEACHING_TIME_45 && !url.searchParams.has('round'));
+    await expect(page.getByRole('heading', { name: '45-minute session plan', exact: true })).toBeVisible();
+    await expectAgenda(page, [
+      ['0–15', /catatonia/i], ['15–20', /debrief/i], ['20–25', /transition/i],
+      ['25–40', /alcohol withdrawal/i], ['40–45', /debrief/i],
+    ]);
+    await page.getByRole('link', { name: 'Start session', exact: true }).tap();
+    await expect(page).toHaveURL(url => url.pathname + url.search === startUrl);
+
+    let actualMinutes = 0;
+    const timer = page.getByRole('timer');
+    for (const [index, current] of cases.entries()) {
+      const phases = [[current.encounter, 10], ['Team presentation', 5], ['Debrief', 5]];
+      if (index === 0) phases.push(['Transition', 5]);
+      await expect(page.getByRole('radio')).toHaveCount(phases.length);
+      await expect(page.getByRole('radio', { name: current.encounter, exact: true })).toBeChecked();
+      const debrief = page.getByText(current.debrief, { exact: true });
+      await expect(debrief).toBeHidden();
+      for (const [phase, minutes] of phases) {
+        await page.getByRole('radio', { name: phase, exact: true }).tap();
+        await expect(timer).toHaveText(minutes + ':00');
+        actualMinutes += Number((await timer.innerText()).split(':')[0]);
+        await page.getByRole('button', { name: 'Start', exact: true }).tap();
+        if (phase === 'Debrief' || phase === 'Transition') {
+          if (phase === 'Debrief') await expect(debrief).toBeVisible();
+          const end = phase === 'Debrief' ? page.getByText(SHARED_DEBRIEF, { exact: true }) : nextCase(page);
+          await end.evaluate(node => node.scrollIntoView({ block: 'center' }));
+          await expect(timer).toBeInViewport({ ratio: 1 });
+          await page.clock.fastForward(10_000);
+          await expect(timer).toHaveText(/^4:\d{2}$/);
+          await page.clock.fastForward((minutes * 60 - 10) * 1000);
+        } else {
+          await page.clock.fastForward(minutes * 60_000);
+        }
+        await expect(timer).toHaveText('0:00');
+      }
+      if (index === 0) {
+        await expect(page.getByText('Transition complete. Cue everyone to tap Next case.', { exact: true })).toBeVisible();
+        await expect(page).toHaveURL(url => url.searchParams.get('round') === '1');
+        await nextCase(page).tap();
+        await expect(page).toHaveURL(url => url.searchParams.get('round') === '2');
+      }
+    }
+    expect(actualMinutes).toBe(45);
+    await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
+    await expect(nextCase(page)).toHaveCount(0);
+  });
+
+  const seatAssignments = {
+    [TEACHING_TIME_45]: [
+      ['a', 'Interviewer', 'Start at the bedside.', 'Nurse', 'Your bedside observations.'],
+      ['b', 'Patient', 'How to play the pauses.', 'Interviewer', 'Ask about a usual drinking day.'],
+      ['c', 'Nurse', 'What you saw this shift.', 'Patient', 'What happened years ago.'],
+    ],
+    [COMMUNICATION_45]: [
+      ['a', 'Presenter', 'Close with a handoff.', 'Observer', 'Give feedback on one sentence.'],
+      ['b', 'Family member', 'If you want a firm plan', 'Presenter', 'Open with the timeline.'],
+      ['c', 'Observer', 'Give one piece of feedback.', 'Supervising resident', 'Ask what would change the plan.'],
+    ],
+  };
+  for (const [slug, seats] of Object.entries(seatAssignments)) test(slug + ' shares stable seats across both cases', async ({ page, context }) => {
+    await page.goto('/?page=osce.md&station=' + slug + '&round=1');
+    const addresses = [];
+    const participantCards = [];
+    for (const [id, firstRole, firstCue, secondRole, secondCue] of seats) {
+      const label = 'Learner ' + id.toUpperCase();
+      const link = page.getByRole('link', { name: label, exact: true });
+      const address = new URL(await link.getAttribute('href'), page.url());
+      expect(address.origin).toBe(new URL(page.url()).origin);
+      expect(address.searchParams.get('station')).toBe(slug);
+      expect(address.searchParams.get('role')).toBe(id);
+      expect(address.searchParams.has('round')).toBe(false);
+      addresses.push([label, address.href]);
+
+      const card = await context.newPage();
+      await pinVisualGovernance(card);
+      await card.goto(address.href);
+      await expect(card.getByRole('heading', { name: firstRole, level: 2, exact: true })).toBeVisible();
+      await expect(card.getByText(firstCue, { exact: true })).toBeVisible();
+      await expect(focusOptions(card)).toHaveCount(0);
+      await expect(receiverSummary(card)).toHaveCount(0);
+      await nextCase(card).tap();
+      await expect(card).toHaveURL(url => url.searchParams.get('role') === id && url.searchParams.get('round') === '2');
+      await expect(card.getByRole('heading', { name: secondRole, level: 2, exact: true })).toBeVisible();
+      await expect(card.getByText(secondCue, { exact: true })).toBeVisible();
+      if (secondRole !== 'Observer') await expect(focusOptions(card)).toHaveCount(0);
+      if (secondRole !== 'Supervising resident') await expect(receiverSummary(card)).toHaveCount(0);
+      participantCards.push({ card, secondRole, address: card.url() });
+    }
+    await nextCase(page).tap();
+    for (const [label, original] of addresses) {
+      const href = await page.getByRole('link', { name: label, exact: true }).getAttribute('href');
+      expect(new URL(href, page.url()).href).toBe(original);
+    }
+    if (slug === COMMUNICATION_45) {
+      await page.getByRole('radio', { name: 'Debrief', exact: true }).tap();
+      await page.getByRole('button', { name: 'Repeat the handoff', exact: true }).tap();
+      for (const { card, secondRole, address } of participantCards) {
+        await expect(card).toHaveURL(address);
+        await expect(card.getByRole('heading', { name: secondRole, level: 2, exact: true })).toBeVisible();
+        await expect(nextCase(card)).toHaveCount(0);
+      }
+    }
+    for (const { card } of participantCards) await card.close();
+  });
+
+  test('switch teaching goals and use the final five minutes to repeat the handoff', async ({ page }) => {
+    await page.clock.install();
+    const goal = name => page.getByRole('link', { name, exact: true });
+    await page.goto('/?page=osce.md&station=' + TEACHING_TIME_45);
+    await goal('Communication and handoff').tap();
+    const onPlan = slug => url => url.searchParams.get('station') === slug && !url.searchParams.has('round');
+    await expect(page).toHaveURL(onPlan(COMMUNICATION_45));
+    await expect(goal('Communication and handoff')).toHaveAttribute('aria-current', 'page');
+    await goal('Acute assessment').tap();
+    await expect(page).toHaveURL(onPlan(TEACHING_TIME_45));
+    await expect(goal('Acute assessment')).toHaveAttribute('aria-current', 'page');
+    await goal('Communication and handoff').tap();
+    await expectAgenda(page, [
+      ['0–15', /family meeting/i], ['15–20', /debrief/i], ['20–25', /transition/i],
+      ['25–35', /oral presentation/i], ['35–40', /debrief/i], ['40–45', /repeat the handoff/i],
+    ]);
+    await goal('Start session').tap();
+    const timer = page.getByRole('timer');
+    const phase = name => page.getByRole('radio', { name, exact: true });
+    const button = name => page.getByRole('button', { name, exact: true });
+    const repeat = 'Repeat the handoff';
+    const coaching = page.getByText(/Repeat the handoff using one change from feedback\./i);
+    const rounds = [
+      [['Preparation and presentation', 15], ['Debrief', 5], ['Transition', 5]],
+      [['Presentation', 6], ['Questions', 4], ['Debrief', 5], [repeat, 5]],
+    ];
+    for (const [i, phases] of rounds.entries()) {
+      if (i === 1) await nextCase(page).tap();
+      await expect(page).toHaveURL(url => url.searchParams.get('round') === String(i + 1) && url.searchParams.get('station') === COMMUNICATION_45);
+      await expect(page.getByRole('radio')).toHaveCount(phases.length);
+      for (const [label, minutes] of phases) {
+        await phase(label).tap();
+        await expect(timer).toHaveText(minutes + ':00');
+        if (i === 1 && label === 'Debrief') {
+          await expect(button(repeat)).toBeVisible();
+          await expect(coaching).toBeHidden();
+          await button('Start').tap();
+          await page.clock.fastForward(300_000);
+          await expect(timer).toHaveText('0:00');
+          await expect(page.getByText('Debrief complete. Select Repeat the handoff.', { exact: true })).toBeVisible();
+          await expect(page.getByText('Session complete.', { exact: true })).toBeHidden();
+        }
+        if (label === repeat) {
+          await expect(coaching).toBeVisible();
+          await expect(page.getByRole('group', { name: 'Facilitator timer controls' })).not.toContainText(focusNames, { useInnerText: true });
+          await page.clock.fastForward(10_000);
+          await expect(timer).toHaveText('5:00');
+          await button('Start').tap();
+          await page.clock.fastForward(10_000);
+          await expect(timer).toHaveText(/^4:\d{2}$/);
+        }
+      }
+    }
+    await phase('Debrief').tap();
+    const beforeRetry = page.url();
+    await button(repeat).tap();
+    await expect(phase(repeat)).toBeChecked();
+    await expect(coaching).toBeVisible();
+    await expect(button('Pause')).toBeVisible();
+    await page.clock.fastForward(300_000);
+    await expect(timer).toHaveText('0:00');
+    await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
+    expect(page.url()).toBe(beforeRetry);
+    await expect(nextCase(page)).toHaveCount(0);
+  });
+});
+
+test.describe('20-minute teaching presets on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  test('duration and goal links preserve the other selection', async ({ page }) => {
+    const acute = 'Acute assessment', communication = 'Communication and handoff';
+    const link = name => page.getByRole('link', { name, exact: true });
+    await page.goto('/?page=osce.md');
+    await link('Fit my teaching time').tap();
+    for (const [action, slug, duration, goal] of [
+      [null, TEACHING_TIME_45, 45, acute],
+      ['20 minutes', TEACHING_TIME_20, 20, acute],
+      [communication, COMMUNICATION_20, 20, communication],
+      ['45 minutes', COMMUNICATION_45, 45, communication],
+      [acute, TEACHING_TIME_45, 45, acute],
+    ]) {
+      if (action) await link(action).tap();
+      await expect(page).toHaveURL(url => url.searchParams.get('station') === slug && !url.searchParams.has('round'));
+      await expect(page.getByRole('heading', { name: duration + '-minute session plan', exact: true })).toBeVisible();
+      const durations = page.getByRole('navigation', { name: 'Session duration' });
+      const goals = page.getByRole('navigation', { name: 'Teaching goal' });
+      await expect(durations.getByRole('link', { name: duration + ' minutes', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(goals.getByRole('link', { name: goal, exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(link((duration === 20 ? 45 : 20) + ' minutes')).not.toHaveAttribute('aria-current', 'page');
+      await expect(link(goal === acute ? communication : acute)).not.toHaveAttribute('aria-current', 'page');
+    }
+  });
+
+  const plans = [
+    {
+      slug: TEACHING_TIME_20, title: /possible catatonia/i,
+      agenda: [['0–10', /observation and interview/i], ['10–15', /team presentation/i], ['15–20', /handoff debrief/i]],
+      phases: [['Observation and interview', 10], ['Team presentation', 5], ['Debrief', 5]],
+      seats: [['Interviewer', 'Start at the bedside.'], ['Patient', 'How to play the pauses.'], ['Nurse', 'What you saw this shift.']],
+    },
+    {
+      slug: COMMUNICATION_20, title: /oral presentation of a new admission/i,
+      agenda: [['0–6', /presentation/i], ['6–10', /questions/i], ['10–15', /handoff debrief/i], ['15–20', /repeat the handoff/i]],
+      phases: [['Presentation', 6], ['Questions', 4], ['Debrief', 5], ['Repeat the handoff', 5]],
+      seats: [['Presenter', 'Open with the timeline.'], ['Supervising resident', 'Ask what would change the plan.'], ['Observer', 'Give feedback on one sentence.']],
+    },
+  ];
+  for (const plan of plans) test(plan.slug + ' gives each seat one private role and finishes in one case', async ({ page, context }) => {
+    await page.goto('/?page=osce.md&station=' + plan.slug);
+    const body = page.locator('.fd-article__body');
+    await expect(body).toContainText(plan.title, { useInnerText: true });
+    await expect(body).toContainText('Learner A leads', { useInnerText: true });
+    await expectAgenda(page, plan.agenda);
+    const card = await context.newPage();
+    await pinVisualGovernance(card);
+    for (const [index, [role]] of plan.seats.entries()) {
+      const seat = ['a', 'b', 'c'][index];
+      const link = page.getByRole('link', { name: 'Learner ' + seat.toUpperCase(), exact: true });
+      const address = new URL(await link.getAttribute('href'), page.url());
+      expect(address.origin).toBe(new URL(page.url()).origin);
+      expect(address.searchParams.get('station')).toBe(plan.slug);
+      expect(address.searchParams.get('role')).toBe(seat);
+      await card.goto(address.href);
+      await expect(card.getByRole('heading', { name: role, exact: true, level: 2 })).toBeVisible();
+      if (role !== 'Observer') await expect(focusOptions(card)).toHaveCount(0);
+      if (role !== 'Supervising resident') await expect(receiverSummary(card)).toHaveCount(0);
+      for (const [owner, cue] of plan.seats) {
+        const instruction = card.getByText(cue, { exact: true });
+        if (owner === role) await expect(instruction).toBeVisible();
+        else await expect(instruction).toBeHidden();
+      }
+      await expect(nextCase(card)).toHaveCount(0);
+    }
+    await card.close();
+    await page.clock.install();
+    await page.getByRole('link', { name: 'Start session', exact: true }).tap();
+    const timer = page.getByRole('timer');
+    const button = name => page.getByRole('button', { name, exact: true });
+    await expect(page.getByRole('radio')).toHaveCount(plan.phases.length);
+    for (const [label, minutes] of plan.phases) {
+      const radio = page.getByRole('radio', { name: label, exact: true });
+      if (label === 'Repeat the handoff') {
+        await expect(page.getByText('Session complete.', { exact: true })).toBeHidden();
+        await button(label).tap();
+        await expect(radio).toBeChecked();
+        await expect(button('Pause')).toBeVisible();
+        await expect(page.getByText(/Repeat the handoff using one change from feedback\./i)).toBeVisible();
+        await page.clock.fastForward((minutes - 1) * 60_000 + 10_000);
+        await expect(timer).toHaveText(/^0:[4-5]\d$/);
+        await page.clock.fastForward(50_000);
+      } else {
+        await radio.tap();
+        await expect(timer).toHaveText(minutes + ':00');
+        if (label === 'Debrief') await expect(page.getByText(SHARED_DEBRIEF, { exact: true })).toBeVisible();
+        await button('Start').tap();
+        await page.clock.fastForward(minutes * 60_000);
+      }
+      await expect(timer).toHaveText('0:00');
+    }
+    await expect(page.getByText('Session complete.', { exact: true })).toBeVisible();
+    await expect(nextCase(page)).toHaveCount(0);
+  });
+});
+
+test.describe('observer feedback on a touch phone', () => {
+  const phone = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
+  test.use(phone);
+
+  for (const [slug, round, seat] of [[COMMUNICATION_20, 1, 'c'], [COMMUNICATION_45, 2, 'a']]) {
+    test(slug + ' carries one observer focus to a fresh facilitator phone or the shared timer', async ({ page, browser }) => {
+      const facilitatorPath = '/?page=osce.md&station=' + slug + '&round=' + round;
+      await page.goto(facilitatorPath + '&role=' + seat);
+      await expect(page.getByRole('heading', { name: 'Observer', exact: true })).toBeVisible();
+      const share = page.getByRole('link', { name: 'Open focused timer', exact: true });
+      await expect(share).toBeHidden();
+      await expect(focusOptions(page)).toHaveCount(3);
+      let address;
+      for (const label of HANDOFF_FOCUSES) {
+        const choice = page.getByRole('radio', { name: label, exact: true });
+        await choice.tap();
+        await expect(choice).toBeChecked();
+        await expect(focusOptions(page).and(page.locator(':checked'))).toHaveCount(1);
+        await expect(share).toBeVisible();
+        address = new URL(await share.getAttribute('href'), page.url());
+        expect(address.origin).toBe(new URL(page.url()).origin);
+        expect(address.pathname).toBe(new URL(page.url()).pathname);
+        expect(Object.fromEntries(address.searchParams)).toEqual({
+          page: 'osce.md', station: slug, round: String(round), handoffFocus: label.toLowerCase().replaceAll(' ', '-'),
+        });
+      }
+      const fresh = await browser.newContext({ ...phone, serviceWorkers: 'block' });
+      try {
+        const device = await fresh.newPage();
+        await pinVisualGovernance(device);
+        await device.clock.install();
+        await device.goto(address.href);
+        const controls = device.getByRole('group', { name: 'Facilitator timer controls' });
+        const timer = controls.getByRole('timer');
+        const button = name => controls.getByRole('button', { name, exact: true });
+        await expect(device.getByRole('radio', { name: 'Repeat the handoff', exact: true })).toBeChecked();
+        await expect(controls).toContainText('Make the request', { useInnerText: true });
+        await device.clock.fastForward(10_000);
+        await expect(timer).toHaveText('5:00');
+        for (const action of ['Start', 'Pause', 'Resume', 'Reset']) {
+          await button(action).tap();
+          await expect(controls).toContainText('Make the request', { useInnerText: true });
+          if (action === 'Start') {
+            await device.clock.fastForward(10_000);
+            await expect(timer).toHaveText(/^4:\d{2}$/);
+          }
+        }
+        await expect(timer).toHaveText('5:00');
+        await expect(button('Start')).toBeVisible();
+        await device.getByRole('button', { name: 'Open debrief', exact: true }).tap();
+        await device.getByRole('radio', { name: 'Name the source', exact: true }).tap();
+        await expect(device).toHaveURL(url => url.searchParams.get('handoffFocus') === 'name-the-source');
+        await device.reload();
+        await expect(controls).toContainText('Name the source', { useInnerText: true });
+      } finally {
+        await fresh.close();
+      }
+
+      await page.goto(facilitatorPath);
+      await page.getByRole('radio', { name: 'Debrief', exact: true }).tap();
+      await expect(focusOptions(page)).toHaveCount(3);
+      await page.getByRole('radio', { name: 'State the uncertainty', exact: true }).tap();
+      await page.getByRole('button', { name: 'Repeat the handoff', exact: true }).tap();
+      const controls = page.getByRole('group', { name: 'Facilitator timer controls' });
+      await expect(controls).toContainText('State the uncertainty', { useInnerText: true });
+      await expect(controls.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+    });
+  }
+});
+
+test.describe('receiver read-back on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+
+  const choices = [
+    ['My first action changed', 'Say what you would do first now. Quote the sentence that changed your plan.'],
+    ['My first action stayed the same', 'Say what you would still do first. Quote the sentence that confirmed your plan.'],
+  ];
+
+  for (const [slug, round, seat] of [[COMMUNICATION_20, 1, 'b'], [COMMUNICATION_45, 2, 'c']]) {
+    test(slug + ' lets the receiving resident rehearse either first action on cue', async ({ page }) => {
+      const path = '/?page=osce.md&station=' + slug + '&round=' + round + '&role=' + seat;
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name: 'Supervising resident', exact: true })).toBeVisible();
+      const summary = receiverSummary(page);
+      const details = page.locator('details').filter({ has: summary });
+      await expect(summary).toBeVisible();
+      await expect(details).toHaveJSProperty('open', false);
+      await summary.tap();
+      await expect(details.getByRole('textbox', { includeHidden: true })).toHaveCount(0);
+      await expect(details.getByRole('radio')).toHaveCount(2);
+      await expect(details.locator('input:checked')).toHaveCount(0);
+      const originalUrl = page.url();
+      for (const [label] of choices) {
+        const choice = details.getByRole('radio', { name: label, exact: true });
+        await choice.tap();
+        await expect(choice).toBeChecked();
+        await expect(details.locator('input:checked')).toHaveCount(1);
+        for (const [owner, cue] of choices) {
+          const prompt = details.getByText(cue, { exact: true });
+          if (owner === label) await expect(prompt).toBeVisible();
+          else await expect(prompt).toBeHidden();
+        }
+      }
+      await expect(page).toHaveURL(originalUrl);
+      await page.reload();
+      await expect(summary).toBeVisible();
+      await expect(details.locator('input:checked')).toHaveCount(0);
+    });
+
+    test(slug + ' opens the read-back at time and returns focus from the pinned timer', async ({ page }) => {
+      await page.clock.install();
+      await page.goto('/?page=osce.md&station=' + slug + '&round=' + round);
+      const summary = receiverSummary(page);
+      const details = page.locator('details').filter({ has: summary });
+      const controls = page.getByRole('group', { name: 'Facilitator timer controls' });
+      const jump = controls.getByRole('button', { name: 'Go to read-back', exact: true });
+      await expect(controls.getByRole('timer')).toHaveText('6:00');
+      for (const phase of ['Presentation', 'Questions', 'Debrief']) {
+        await page.getByRole('radio', { name: phase, exact: true }).tap();
+        await expect(summary).toBeHidden();
+        await expect(jump).toBeHidden();
+      }
+      await page.getByRole('radio', { name: 'State the uncertainty', exact: true }).tap();
+      await page.getByRole('button', { name: 'Repeat the handoff', exact: true }).tap();
+      await expect(summary).toBeVisible();
+      await page.clock.fastForward(290_000);
+      await expect(details).toHaveJSProperty('open', false);
+      await page.clock.fastForward(10_000);
+      await expect(controls.getByRole('timer')).toHaveText('0:00');
+      await expect(details).toHaveJSProperty('open', true);
+      await page.setViewportSize({ width: 320, height: 660 });
+      await expect(jump).toBeInViewport({ ratio: 1 });
+      const focus = controls.getByText('State the uncertainty', { exact: true });
+      const textRight = await focus.evaluate(element => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return range.getBoundingClientRect().right;
+      });
+      const clock = await controls.getByRole('timer').boundingBox();
+      expect(textRight).toBeLessThanOrEqual(clock.x);
+      await jump.tap();
+      await expect(summary).toBeFocused();
+      await expect(summary).toBeInViewport();
+      await details.getByRole('radio', { name: choices[0][0], exact: true }).tap();
+      await expect(details.getByText(choices[0][1], { exact: true })).toBeVisible();
+      await controls.getByRole('button', { name: 'Reset', exact: true }).tap();
+      await expect(controls.getByRole('timer')).toHaveText('5:00');
+      await expect(details.locator('input:checked')).toHaveCount(0);
+      await expect(details.getByText(choices[0][1], { exact: true })).toBeHidden();
+    });
+  }
 });

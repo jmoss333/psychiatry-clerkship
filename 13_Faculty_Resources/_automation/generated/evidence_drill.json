@@ -1092,13 +1092,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Belkin et al. · 2021 · Psychiatr Serv",
-     "sourceId": "belkin-2021",
+     "t": "Brown et al. · 1972 · The British Journal of Psychiatry",
+     "sourceId": "brown-1972-expressed-emotion",
      "key": "A"
     },
     {
-     "t": "Schneider et al. · 2005 · JAMA",
-     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
+     "t": "Huggett et al. · 2022 · Clin Psychol Psychother",
+     "sourceId": "huggett-2022",
      "key": "B"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Aoki et al. · 2022 · Cochrane Database Syst Rev",
-     "sourceId": "aoki-2022-cochrane-sdm",
+     "t": "Bridge et al. · 2007 · JAMA",
+     "sourceId": "bridge-2007-pediatric-antidepressant-risk-benefit",
      "key": "A"
     },
     {
-     "t": "U.S. Preventive Services Task Force · 2026",
-     "sourceId": "uspstf-mental-health",
+     "t": "Chung et al. · 2017 · JAMA Psychiatry",
+     "sourceId": "chung-2017-postdischarge-suicide",
      "key": "B"
     },
     {

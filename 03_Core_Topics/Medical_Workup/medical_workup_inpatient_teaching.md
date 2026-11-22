@@ -6,6 +6,42 @@
 
 **When to suspect a medical cause.** Some features should raise your index of suspicion sharply: a first episode at an atypical age (new psychosis after ~40, new "depression" in an older adult), *no* prior psychiatric history, abnormal vital signs, an abnormal neurologic exam or focal signs, visual (rather than auditory) hallucinations, a fluctuating level of consciousness or inattention (that is delirium until proven otherwise), rapid onset over hours, or a poor response to appropriate psychiatric treatment. The single most useful bedside move is to test attention and take the vitals yourself rather than inherit them.
 
+<section class="bedside-case visual-practice" id="vp-workup" aria-labelledby="vp-workup-title">
+<header><p class="case-kicker">Fictional case · Before rounds</p><h3 id="vp-workup-title">Would you still present it that way?</h3>
+<p class="vp-intro">Ellis, 72, was admitted yesterday after hearing voices. Before rounds, two accounts reach you fifteen minutes apart. Check where each came from.</p></header>
+<p class="vp-safety"><strong>Act now.</strong> A change in alertness over minutes needs urgent bedside assessment. Bring the nurse and supervising clinician to Ellis now. Use the unit’s emergency response if breathing, circulation or responsiveness is impaired.</p>
+<div class="vp-options">
+<details class="vp-card" name="vp-workup-source"><summary><span class="vp-time">06:50 · Written sign-out</span>“Likely psychotic depression. Alert and attentive.”</summary>
+<div class="vp-reply"><p>The night team copied this line from yesterday’s admission exam. The sign-out gives no overnight attention exam or repeat vital signs.</p></div></details>
+<details class="vp-card" name="vp-workup-source"><summary><span class="vp-time">07:05 · Bedside nurse</span>“Half an hour ago we talked. Now Ellis keeps drifting off.”</summary>
+<div class="vp-reply"><p>The nurse saw both conversations. “We talked about what they wanted for breakfast. Just now I had to say their name three times while I asked about coffee.”</p></div></details>
+</div>
+<h4>MS3 · What will you check at the bedside?</h4>
+<p>Choose a finding. Use it to replace the first line you would give on rounds.</p>
+<div class="vp-options">
+<details class="vp-card" name="vp-workup-finding"><summary><span class="vp-time">07:08 · Your exam</span>Check attention</summary>
+<div class="vp-reply"><p>Ellis tells you their name and where they are. You ask them to count backward from 20. Twice they get as far as 18, close their eyes, and need your voice to re-engage.</p>
+<p><strong>Choose your opening line.</strong></p>
+<details class="vp-handoff" name="vp-workup-attention-line"><summary>“Ellis knows their name and location. The overnight impression still fits.”</summary>
+<p>Those answers establish orientation. They leave out the repeated loss of attention and the nurse’s description of a change. Try opening with what brought you back to the bedside.</p></details>
+<details class="vp-handoff" name="vp-workup-attention-line"><summary>“Ellis repeatedly drifted off during my exam. The nurse reports a change within the past half hour.”</summary>
+<div class="vp-note"><span class="vp-time">Revised opening for rounds</span><del>Alert and attentive on admission.</del> <ins>The nurse reports a change since breakfast. On my exam, Ellis twice drifted off while counting.</ins></div>
+<p>You identified what you saw and who established the time course. Tell the supervisor now. This raises concern for delirium even though Ellis answered the orientation questions.</p></details>
+<details class="vp-handoff"><summary>Resident · What do you need at the bedside?</summary>
+<p>“I’m concerned about an acute change in attention and arousal. I’ll assess Ellis now. Please get current vitals, oxygen saturation and a bedside glucose while I examine them.” Those measurements are still pending on this path.</p></details></div></details>
+<details class="vp-card" name="vp-workup-finding"><summary><span class="vp-time">07:08 · Your measurements</span>Repeat the vital signs</summary>
+<div class="vp-reply"><p>You and the nurse measure a respiratory rate of 28/min and oxygen saturation of 86% on room air with a good signal. The nurse confirms yesterday’s room-air saturation was 97%. Call the unit’s rapid response team now and stay with Ellis.</p>
+<p><strong>Choose your opening line.</strong></p>
+<details class="vp-handoff" name="vp-workup-vitals-line"><summary>“Ellis has new hypoxemia and rapid breathing. We need medical help at the bedside now.”</summary>
+<div class="vp-note"><span class="vp-time">Revised opening for rounds</span><del>Alert and attentive on admission.</del> <ins>At 07:08 we measured a respiratory rate of 28 and a room-air saturation of 86%. The nurse reports an acute change in alertness.</ins></div>
+<p>Lead with the change, then give the numbers and when you measured them. Tell the responders how Ellis’s alertness changed and who saw it.</p></details>
+<details class="vp-handoff" name="vp-workup-vitals-line"><summary>“Ellis is probably delirious from pneumonia.”</summary>
+<p>The measurements establish respiratory compromise. They cannot tell you its cause. Give the respiratory rate and saturation first so the team can act immediately.</p></details>
+<details class="vp-handoff"><summary>Resident · What do you say on the emergency call?</summary>
+<p>“Respiratory rate 28, saturation 86% on room air, previously 97%, with a new change in alertness reported by nursing. We need immediate respiratory and medical assessment.” Attend to airway and breathing, start oxygen per local protocol and reassess while help comes.</p></details></div></details>
+</div>
+</section>
+
 **Baseline workup of the new admission.** A reasonable core screen for most new admissions: vital signs; CBC; a complete metabolic panel (glucose, electrolytes, calcium, renal and hepatic function); TSH; B12 and folate; urinalysis, with culture when there are urinary symptoms, fever or systemic signs (asymptomatic bacteriuria is common in older adults and should not end the delirium search); urine toxicology and blood alcohol; a pregnancy test (β-hCG) in anyone of childbearing potential *before* starting medication; and a baseline EKG (QTc) before QT-prolonging agents. Add targeted tests by the clinical picture: RPR and HIV; ammonia (hepatic encephalopathy); ceruloplasmin/copper in a young patient with neuropsychiatric signs (Wilson disease); ANA (lupus); neuroimaging (CT/MRI) for first-episode psychosis that is late-onset or atypical, or any focal neurologic sign; lumbar puncture when delirium is accompanied by fever or meningismus; EEG when a seizure or nonconvulsive status is possible; and autoimmune/paraneoplastic panels (anti-NMDA-receptor) when psychosis is accompanied by movement disorder, seizures, or autonomic instability.
 
 **Medical mimics by presentation.**
