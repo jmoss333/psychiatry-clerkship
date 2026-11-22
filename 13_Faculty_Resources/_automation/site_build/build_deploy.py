@@ -618,6 +618,8 @@ _copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustratio
                os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
 for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),
                       ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-on-unit.avif"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-at-night.avif"),
                       ("Toxidromes", "paired-fever-exams.webp")):
     _copy_required(os.path.join(LIB, "04_Acute_and_Safety", _topic, "illustrations", _plate),
                    os.path.join(OUT, "illustrations", _plate), _missing_req)

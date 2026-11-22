@@ -13,11 +13,82 @@ function fdMountBedsideCases(body) {
   fdMountFollowupStudy(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
+  fdMountOvernightPlan(body);
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountOvernightPlan(body) {
+  const card = body.querySelector('#lucia-rehearsal');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = key => card.querySelector('#lucia-' + key);
+  const questions = card.querySelectorAll('button[aria-controls^="lucia-reply-"]');
+  const choices = card.querySelectorAll('input[name="lucia-revision"]');
+
+  function clearResult() {
+    find('result').hidden = find('feedback').hidden = true;
+    find('new-line').textContent = '';
+  }
+
+  function clearChoice() {
+    clearResult();
+    for (const choice of choices) choice.checked = false;
+    find('apply').disabled = true;
+  }
+
+  function showNight(isNight) {
+    find('day').hidden = isNight;
+    find('night').hidden = find('work').hidden = !isNight;
+    find(isNight ? 'barrier' : 'title').focus();
+  }
+
+  find('try-night').addEventListener('click', () => showNight(true));
+  for (const question of questions) {
+    const reply = card.querySelector('#' + question.getAttribute('aria-controls'));
+    const choice = find('pick-' + question.id.slice('lucia-ask-'.length));
+    question.addEventListener('click', () => {
+      const opening = reply.hidden;
+      reply.hidden = !opening;
+      question.setAttribute('aria-expanded', String(opening));
+      if (opening) choice.disabled = false;
+    });
+  }
+  for (const choice of choices) {
+    choice.addEventListener('change', () => {
+      clearResult();
+      find('apply').disabled = false;
+    });
+  }
+  find('apply').addEventListener('click', () => {
+    const selected = card.querySelector('input:checked:enabled');
+    if (!selected) return;
+    clearResult();
+    if (selected.value === 'sister') {
+      find('feedback').hidden = false;
+      find('feedback').focus();
+      return;
+    }
+    find('new-line').textContent = find('line-' + selected.value).content.textContent;
+    find('result').hidden = false;
+    find('result-title').focus();
+  });
+  find('edit').addEventListener('click', () => {
+    clearChoice();
+    find('questions').focus();
+  });
+  find('reset').addEventListener('click', () => {
+    clearChoice();
+    for (const question of questions) {
+      question.setAttribute('aria-expanded', 'false');
+      card.querySelector('#' + question.getAttribute('aria-controls')).hidden = true;
+    }
+    find('pick-roommate').disabled = find('pick-text').disabled = true;
+    showNight(false);
+  });
 }
 
 function fdMountNicoInterview(body) {

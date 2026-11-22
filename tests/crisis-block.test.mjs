@@ -255,6 +255,30 @@ test('the source shell carries exactly one HTML marker and no canonical contact 
   }
 });
 
+test('overnight plan numbers follow a changed crisis contact and reject ambiguous instructions', () => {
+  const program = `
+import sys
+sys.path.insert(0, sys.argv[1])
+import crisis_block as crisis
+data = crisis.load(sys.argv[2])
+lifeline = next(r for r in data["resources"] if r["id"] == "lifeline_988")
+emergency = next(r for r in data["resources"] if r["id"] == "emergency_911")
+lifeline["contact"], emergency["contact"] = "Call or text 111", "222"
+source = "{{lifeline-number}} / {{emergency-number}}" + chr(10) + crisis.MARKER
+assert crisis.inject_markdown(source, data)[0].splitlines()[0] == "111 / 222"
+lifeline["contact"] = "Call 111 or text 222"
+try:
+    crisis.inject_markdown(source, data)
+except ValueError:
+    pass
+else:
+    raise AssertionError("A voice and text number cannot be silently conflated")
+`;
+  const helper = path.join(repo, '13_Faculty_Resources', '_automation', 'site_build');
+  const result = spawnSync('python3', ['-c', program, helper, repo], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+});
+
 function runRequiredShellInjection(targets) {
   const helper = path.join(repo, '13_Faculty_Resources', '_automation', 'site_build');
   const program = [
