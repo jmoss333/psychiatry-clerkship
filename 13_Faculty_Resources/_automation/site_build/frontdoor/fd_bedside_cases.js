@@ -416,7 +416,7 @@ function fdMountCatatoniaFrames(body) {
     if (current === 'later') viewedLater = true;
     paired = false;
     render();
-    status.textContent = current === 'later' ? 'Showing 09:00. Handoff practice is available below.' : 'Showing breakfast.';
+    status.textContent = current === 'later' ? 'Showing the bedside recheck. Handoff practice is available below.' : 'Showing breakfast.';
   });
 
   pair.addEventListener('click', () => {

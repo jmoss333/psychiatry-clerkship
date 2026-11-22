@@ -3496,6 +3496,8 @@ test.describe('Interactive readings', () => {
     const handoffs = compare.locator('details.vp-handoff');
     const student = handoffs.first();
     const resident = handoffs.last();
+    const homeHistory = activity.locator('header p').filter({ hasText: 'Before admission.' });
+    const admission = activity.locator('header p').filter({ hasText: 'On admission.' });
     // Measure relative to the activity so keyboard scrolling cannot shift the comparison.
     const imageRect = frame => frame.locator('img').evaluate(image => {
       const box = image.getBoundingClientRect();
@@ -3503,6 +3505,14 @@ test.describe('Interactive readings', () => {
       return { x: box.x - card.x, y: box.y - card.y, width: box.width, height: box.height };
     });
 
+    await expect(homeHistory).toBeVisible();
+    await expect(homeHistory).toContainText(/sister.*For three days they’ve barely said a word/);
+    await expect(homeHistory).toContainText('sit in the same position, even after everyone else gets up');
+    await expect(admission).toBeVisible();
+    await expect(admission).toContainText(/resident.*long pauses before answering and held one arm out/);
+    await expect(admission).toContainText('first morning on the unit');
+    await expect(breakfastButton).toHaveAccessibleName(/At breakfast/i);
+    await expect(laterButton).toHaveAccessibleName(/Bedside recheck/i);
     await expect(breakfast).toBeVisible();
     await expect(later).toBeHidden();
     await expect(compare).toBeHidden();
@@ -3553,17 +3563,21 @@ test.describe('Interactive readings', () => {
       details.addEventListener('toggle', resolve, { once: true });
       details.open = true;
     }));
-    await expect(resident).not.toContainText('New mutism and posturing');
+    await expect(resident.locator('p')).toBeEmpty();
     await resident.evaluate(details => { details.open = false; });
 
     await toggleWithKeyboard(student);
     await expect(student.locator('p')).toBeVisible();
-    await expect(student.locator('p')).toContainText('nurse saw Kit drink');
+    await expect(student.locator('p')).toContainText('Kit’s sister noticed the change three days ago');
+    await expect(student.locator('p')).toContainText('The nurse saw Kit drink');
     await expect(student.locator('p')).toContainText('I heard no reply');
     await expect(resident).toHaveJSProperty('open', false);
     await toggleWithKeyboard(student);
     await toggleWithKeyboard(resident);
-    await expect(resident.getByText(/New mutism and posturing/)).toBeVisible();
+    await expect(resident.locator('p')).toBeVisible();
+    await expect(resident.locator('p')).toContainText('The signs were already present on admission');
+    await expect(resident.locator('p')).toContainText('Kit spoke briefly at breakfast');
+    await expect(resident.locator('p')).toContainText('catatonia');
     await expect(student).toHaveJSProperty('open', false);
 
     await activity.locator('[data-kit-reset]').press('Enter');
@@ -3574,7 +3588,8 @@ test.describe('Interactive readings', () => {
     await expect(resident).toHaveJSProperty('open', false);
     await laterButton.press('Enter');
     await expect(compare).toBeVisible();
-    await expect(resident).not.toContainText('New mutism and posturing');
+    await expect(student.locator('p')).toBeEmpty();
+    await expect(resident.locator('p')).toBeEmpty();
   });
 
   test('medical workup distinguishes copied text, firsthand findings and the opening line', async ({ page }) => {

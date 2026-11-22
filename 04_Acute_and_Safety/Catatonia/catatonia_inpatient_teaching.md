@@ -13,23 +13,24 @@
 | Malignant | Autonomic instability, hyperthermia, and rigidity that overlaps with NMS — a medical emergency |
 
 <section class="bedside-case visual-practice" id="vp-catatonia" aria-labelledby="vp-catatonia-title">
-<header><p class="case-kicker">Catatonia · Fictional morning shift</p>
+<header><p class="case-kicker">Catatonia · Fictional admission</p>
 <h3 id="vp-catatonia-title">What did you actually see?</h3>
-<p>A handoff describes Kit as “withdrawn today.” The nurse is already asking the resident to assess this change. Compare Kit’s forearm at breakfast and later at the same table.</p></header>
+<p><strong>Before admission.</strong> Kit’s sister explains why she brought them in. “For three days they’ve barely said a word. At meals they’ll sit in the same position, even after everyone else gets up. Usually they’re the one telling stories.”</p>
+<p><strong>On admission.</strong> The resident noted that Kit had long pauses before answering and held one arm out throughout the interview. During Kit’s first morning on the unit, the resident asks what you and the nurse have observed.</p></header>
 <div class="kit-switch" role="group" aria-label="Choose a moment">
-<button type="button" data-kit-moment="breakfast" aria-pressed="true" aria-controls="kit-breakfast"><strong>08:10</strong> Breakfast</button>
-<button type="button" data-kit-moment="later" aria-pressed="false" aria-controls="kit-later"><strong>09:00</strong> Same table</button>
+<button type="button" data-kit-moment="breakfast" aria-pressed="true" aria-controls="kit-breakfast">At breakfast</button>
+<button type="button" data-kit-moment="later" aria-pressed="false" aria-controls="kit-later">Bedside recheck</button>
 </div>
 <div class="vp-frames" id="kit-frames">
-<figure id="kit-breakfast" class="vp-card"><img src="illustrations/kit-breakfast.webp" width="512" height="341" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><figcaption class="vp-reply"><strong class="vp-time">08:10 · At the table with Kit</strong>The nurse says, “Kit lifted the mug, took a sip and set it down. When I asked about breakfast they said, ‘The coffee’s good.’”</figcaption></figure>
-<figure id="kit-later" class="vp-card" hidden><img src="illustrations/kit-later.webp" width="512" height="341" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><figcaption class="vp-reply"><strong class="vp-time">09:00 · Back at Kit’s side</strong>You see Kit hold their forearm in the same position throughout your conversation with the nurse. You greet Kit and ask how they feel. You hear no spoken response.</figcaption></figure>
+<figure id="kit-breakfast" class="vp-card"><img src="illustrations/kit-breakfast.webp" width="512" height="341" alt="Kit lifts a mug toward their mouth and turns toward the nurse."><figcaption class="vp-reply"><strong class="vp-time">At breakfast · Nurse’s observation</strong>The nurse says, “I sat with Kit for a few minutes before they reached for the mug. They took a sip and set it down. When I asked about breakfast they said, ‘The coffee’s good.’ That was all I heard them say.”</figcaption></figure>
+<figure id="kit-later" class="vp-card" hidden><img src="illustrations/kit-later.webp" width="512" height="341" alt="The mug is on the table. Kit looks straight ahead with their forearm held out."><figcaption class="vp-reply"><strong class="vp-time">Bedside recheck · Your observation</strong>You see Kit hold their forearm in the same position throughout your conversation with the nurse. You greet Kit and ask how they feel. You hear no spoken response.</figcaption></figure>
 </div>
-<p data-vp-compare-hint>View 09:00 to practice calling the resident.</p>
+<p data-vp-compare-hint>Open the bedside recheck to practice your handoff.</p>
 <div class="kit-actions" hidden><button type="button" data-kit-pair aria-pressed="false" aria-controls="kit-frames">Compare both frames</button><button type="button" data-kit-reset>Start over</button></div>
 <p class="fd-visually-hidden" role="status"></p>
-<div class="vp-result" data-vp-compare hidden><h4>Replace “withdrawn” in your call</h4><p>Describe one change in movement and one in speech. What needs a bedside assessment now?</p>
-<details class="vp-handoff"><summary>Compare one way to call the resident</summary><p>“The nurse saw Kit drink and heard them speak at breakfast. Now I see them holding their forearm out, and I heard no reply when I spoke to them. Can you assess Kit with us now for possible catatonia and other causes of this acute change? I’ll help the nurse get current vitals.”</p></details>
-    <details class="vp-handoff"><summary>Resident · What do you decide at the bedside?</summary><p>“New mutism and posturing: I’ll score the Bush-Francis screen now and check vitals. If it is positive, I’d give a lorazepam challenge, which tests the diagnosis and starts treatment, and I’d avoid antipsychotics until catatonia is excluded or has responded. If Kit is deteriorating or does not respond, I’d raise ECT with the team without delay.”</p></details></div>
+<div class="vp-result" data-vp-compare hidden><h4>What would you tell the resident?</h4><p>When did Kit’s speech and movement change? Include what their sister noticed at home, what the nurse saw at breakfast and what you observed yourself.</p>
+<details class="vp-handoff"><summary>Compare one way to call the resident</summary><p>“Kit’s sister noticed the change three days ago. Kit was barely talking and would sit still through meals. The nurse saw Kit drink and heard them say a few words at breakfast. When I spoke to Kit, their forearm stayed raised and I heard no reply. Can we examine Kit together now for possible catatonia? I’ll get current vitals with the nurse.”</p></details>
+    <details class="vp-handoff"><summary>Resident · What do you decide at the bedside?</summary><p>“The signs were already present on admission. Kit spoke briefly at breakfast, and now you’re seeing the same posture I saw when they arrived. I’m concerned about catatonia. Let’s examine Kit now, check vitals and use the Bush-Francis screen while we look for medical and medication-related causes. If the exam supports catatonia, I’d consider a monitored lorazepam challenge and reassess the same signs. I’d hold off on starting an antipsychotic for now and raise ECT with the team promptly if Kit deteriorates or doesn’t respond to treatment.”</p></details></div>
 </section>
 
 **Recognize and screen.** The standard instrument is the **Bush-Francis Catatonia Rating Scale (BFCRS)** (Bush et al., 1996) — use its screening items to detect catatonia and its full scale to track severity over time. On exam, deliberately look for the signs it scores: immobility/stupor, mutism, staring, posturing/catalepsy, waxy flexibility, negativism, echophenomena, stereotypy, and any agitation that does not fit the environment. Naming the signs out loud forces you to actually look for them.
