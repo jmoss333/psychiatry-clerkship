@@ -3670,6 +3670,80 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  for (const callback of ['pending', 'ready']) {
+    test(`dinner map supports all six question orders with the ${callback} callback`, async ({ page }) => {
+      const card = await openActivity(page, 'nutrition_metabolic.md', 'dinner-map', 'Population / systems lens');
+      await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Food insecurity');
+      const at = id => card.locator('#dm-' + id);
+      const facts = {
+        route: 'Home around 6 p.m. · Pantry closes at 5 p.m.',
+        kitchen: 'Shared microwave · Food at home uncertain',
+        dinner: 'Would like a meal to take home',
+      };
+      const orders = [
+        ['route', 'kitchen', 'dinner'], ['route', 'dinner', 'kitchen'],
+        ['kitchen', 'route', 'dinner'], ['kitchen', 'dinner', 'route'],
+        ['dinner', 'route', 'kitchen'], ['dinner', 'kitchen', 'route'],
+      ];
+      const patientAccount = 'The patient expects to get home after the pantry closes. They can use a shared microwave and are unsure whether there is food at home. ';
+      const requested = 'They asked for a meal to take home. I’ll ask the unit nurse what’s available and update the patient before they leave.';
+      const pending = 'The patient asked for a take-home meal. The nurse has contacted dietary and will update the patient before their ride leaves. A meal is still unconfirmed.';
+      const ready = 'The patient asked for a take-home meal. The unit nurse confirms that a supper bag is ready for pickup at the desk and will give it to the patient before their ride leaves.';
+      const note = at('note-text');
+      const mapFacts = card.locator('[id^="dm-stop-"] [id^="dm-map-"]');
+      for (const order of orders) {
+        await test.step(order.join(' → '), async () => {
+          await expect(at('count')).toHaveText('0 of 3 heard');
+          await expect(at('handoff')).toBeHidden();
+          await expect(mapFacts).toHaveText(['', '', '']);
+          for (const [index, stop] of order.entries()) {
+            await at('stop-' + stop).click();
+            await expect(at('quote-' + stop)).toBeVisible();
+            const heard = order.slice(0, index + 1);
+            await expect(mapFacts).toHaveText(Object.entries(facts).map(([key, text]) => heard.includes(key) ? text : ''));
+            await expect(at('count')).toHaveText(heard.length + ' of 3 heard');
+            if (heard.length < 3) await expect(at('handoff')).toBeHidden();
+          }
+
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('Who has confirmed a meal is ready?');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + requested);
+          await at('call-unit').click();
+          await expect(at('claim-confirmed')).toBeDisabled();
+          await at('reply-' + callback).click();
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          if (callback === 'ready') {
+            await expect(at('nurse-quote')).toContainText('It’s ready for pickup.');
+            await expect(at('pin-meal')).toHaveText('Ready for pickup');
+            await at('claim-confirmed').click();
+            await expect(note).toBeVisible();
+            await expect(note).toHaveText(patientAccount + ready);
+            await at('reply-pending').click();
+            await expect(at('team-note')).toBeHidden();
+            await expect(note).toBeEmpty();
+          }
+          await expect(at('nurse-quote')).toContainText('I haven’t heard back yet.');
+          await expect(at('pin-meal')).toHaveText('Awaiting reply');
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('The nurse left a message.');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + pending);
+          await at('reset').click();
+          await expect(at('callback')).toBeHidden();
+          await expect(note).toBeEmpty();
+        });
+      }
+    });
+  }
+
   test('follow-up study changes the denominator and separates cohort findings from individual decisions', async ({ page }) => {
     const card = await openActivity(page, 'evidence_inpatient.md', 'study-denominators', 'Follow-Up Interventions and Collaborative Care');
     const text = (label) => card.locator('[data-study-' + label + ']');
