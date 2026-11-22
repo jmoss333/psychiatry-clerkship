@@ -6466,7 +6466,7 @@
         "status": "verified",
         "source": "PubMed efetch (PMID 31310186): title, all 13 authors, journal, volume 70, issue 10, pages 860-866 and DOI 10.1176/appi.ps.201900028 match; PubMed ErratumIn PMID 31474217 (Psychiatr Serv 2019;70(9):792)",
         "verifiedAt": "2026-09-24",
-        "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'family involvement nearly triples the odds of 7-day follow-up' (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature."
+        "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'OR 2.79' bullet, worded since 2026-11-22 as an association from chart review, not proof of cause (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature."
       },
       "requiredAccess": "abstract",
       "governance": {
@@ -6488,6 +6488,11 @@
             "date": "2026-09-24",
             "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'family involvement nearly triples the odds of 7-day follow-up' (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-009)"
+          },
+          {
+            "date": "2026-11-22",
+            "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'OR 2.79' bullet, worded since 2026-11-22 as an association from chart review, not proof of cause (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "Family-evidence corrections 2026-11-22 (F05): the page no longer says 'nearly triples the odds'; note updated to the page's association wording."
           }
         ]
       }
