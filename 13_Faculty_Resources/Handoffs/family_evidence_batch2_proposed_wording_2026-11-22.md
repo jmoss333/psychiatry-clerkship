@@ -1,7 +1,44 @@
 # Family evidence — Batch 2: proposed wording for Dr. Moss
 
 Drafted 2026-11-22 alongside the Batch 1 corrections PR (branch `claude/family-evidence-corrections-2026-11-22`).
-**Nothing in this file has been applied.** Each item gives the current text, two or three options with exact
+
+> **Applied 2026-11-22 at your direction** ("Go with your recommendations for J1–J15"; decision register
+> D-2026-11-22-01). Applied: J1 B, J2 A, J3 A+B, J4 B, J5 B, J6 A, J7 (Norheim; declining patients), J8.1 A,
+> J8.3 A, J9 B, J10 A (with the AR-35 and quiz-why wording), J11 A, J12 A+B, J13 A, J14 A+B. Not applied, as
+> recommended: J6 B (waits for a legal read), J7 Stokholm and APA (text not read), J8.4 (stays removed), J15 (no
+> change). J8.5 and J8.6 carried no recommendation and are untouched. Nothing was attested or promoted.
+>
+> **Where the applied wording differs from the draft below, and why** (each checked against the full text):
+> - **J12 A:** the draft said "in its one inpatient trial". Henken includes two trials with inpatients (Glick
+>   1985 and Miller 2004), so the page says "in a trial of a family intervention given during the hospital stay"
+>   and adds "which the review rates as limited evidence".
+> - **J14 A:** the draft said "counting everyone randomized". The non-significant analysis (54% vs 66%) is of 194
+>   patients, with dropouts counted as readmitted, not of all 236 randomized. The page says "in an analysis that
+>   counted dropouts as readmitted (194 patients)". It also says "schizophrenia or schizoaffective disorder", as
+>   the trial did.
+> - **J11 A:** "the effect on depressive symptoms was less certain" now names whose effect it was: "family or
+>   conjoint therapy's effect …". The SMD −0.46 belongs to family or conjoint therapy, not brief psychoeducation.
+> - **J7:** the declining-patients sentence went into the playbook's "Confirm consent and scope" step, not Therapy
+>   on the Unit, which already lists patients declining for privacy reasons. The citation now sits on the finding
+>   and not on the advice ("offer to revisit it before discharge" is advice).
+> - **J4 B:** the odds-not-risk sentence follows the Ma figures in the expressed-emotion bullet; the Butzlaff &
+>   Hooley clause that followed them now starts its own sentence.
+> - **J7 Norheim:** "cluster-randomized" is spelled the way the page spells "randomized".
+> - **Found while applying (F05, Batch 1 scope):** `evidence_inpatient.md` still said involving families in
+>   discharge planning "significantly increases follow-up attendance". It now says "is associated with higher
+>   follow-up attendance (Haselden 2019)".
+>
+> **Found while applying, not changed (each needs your call):**
+> - Therapy on the Unit says relapse-prevention effects "show up at 12 months, not 6". Rodolico 2022 found family
+>   psychoeducation already at OR 0.19 (0.08–0.44) at 6 months; Bighelli 2021 found no 6-month benefit (see J15).
+> - Therapy on the Unit's resident extension scripts "family involvement cuts relapse roughly in half" with no
+>   source beside it.
+> - Canon Quiz AR-35#5 option A still reads "simple psychoeducation (12 sessions)" (a distractor; J8.3 changed
+>   only the landmark index).
+>
+> The sections below are the draft as you approved it, kept for the record.
+
+**Nothing in this file had been applied when it was drafted.** Each item gives the current text, two or three options with exact
 replacement wording, the primary source and the verbatim words behind each option, a recommendation, and the
 files it would touch. Every option includes keeping your wording as labelled faculty opinion.
 
