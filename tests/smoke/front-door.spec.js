@@ -2797,7 +2797,7 @@ test.describe('Interactive readings', () => {
     await seedApp(page, info);
   });
 
-  test('Nell and Jo rehearse six responses and reveal the team update only after Jo confirms the ride', async ({ page }) => {
+  test('Nell and Joni rehearse six responses and reveal the team update only after Joni confirms the ride', async ({ page }) => {
     await pinGovernance(page, 'family_playbook.md', { status: 'reviewed', riskLevel: 'low' });
     await page.goto('/?page=family_playbook.md');
     const article = page.locator('.fd-article__body');
@@ -2808,7 +2808,7 @@ test.describe('Interactive readings', () => {
     const id = name => card.locator('#nell-' + name);
     const art = id('scene-art');
     const action = id('feedback-action');
-    const teamUpdate = '“In private, Nell asked me to discuss timing and transportation for Thursday’s follow-up with Jo. Nell wants to tell Jo personally what brought them to the hospital. In the meeting, Jo confirmed she can drive Nell to the ten o’clock visit. They still need to agree on a pickup time.”';
+    const teamUpdate = '“In private, Nell asked me to discuss timing and transportation for Thursday’s follow-up with Joni. Nell wants to tell Joni personally what brought them to the hospital. In the meeting, Joni confirmed she can drive Nell to the ten o’clock visit. They still need to agree on a pickup time.”';
     const updateText = article.getByText(/In private, Nell asked me to discuss timing|They still need to agree on a pickup time/);
 
     async function expectPrintAndOpenKeepUpdateEmpty() {
@@ -2875,28 +2875,28 @@ test.describe('Interactive readings', () => {
 
     await expect(card.getByRole('heading', { name: 'What can we talk about together?' })).toBeVisible();
     await expect(id('scene-quote')).toContainText('I want to tell her myself what brought me here.');
-    const privateAlt = 'Nell and the resident sit together in the meeting room before Jo arrives.';
+    const privateAlt = 'Nell and the resident sit together in the meeting room before Joni arrives.';
     const privateArt = await expectArt(privateAlt);
     expect(privateArt).toBeTruthy();
     await expectWidths();
     await expectPrintAndOpenKeepUpdateEmpty();
-    await respond('private-broad', 'I’ll fill Jo in', 'Nell', 'Wait. Fill her in on what? I want to be the one to tell her why I’m here.', '“Fill Jo in” leaves Nell guessing');
+    await respond('private-broad', 'I’ll fill Joni in', 'Nell', 'Wait. Fill her in on what? I want to be the one to tell her why I’m here.', '“Fill Joni in” leaves Nell guessing');
     await retry();
     await respond('private-narrow', 'I’ll just listen today', 'Nell', 'Could you ask her about the ride, though? That’s the part I want help with.', 'Try saying exactly what you can take on.');
     await retry();
-    await respond('private-scope', 'I can ask Jo about the time and the ride.', 'Nell', 'Yes. Please ask her about Thursday. I’ll decide when to tell her the rest.', 'what they want to say themselves.');
-    await expect(action).toHaveText('Join Jo in the meeting');
+    await respond('private-scope', 'I can ask Joni about the time and the ride.', 'Nell', 'Yes. Please ask her about Thursday. I’ll decide when to tell her the rest.', 'what they want to say themselves.');
+    await expect(action).toHaveText('Join Joni in the meeting');
     await action.press('Enter');
-    const meetingArt = await expectArt('Jo joins Nell and the resident for the family meeting.');
+    const meetingArt = await expectArt('Joni joins Nell and the resident for the family meeting.');
     expect(meetingArt).toBeTruthy();
     expect(meetingArt).not.toBe(privateArt);
     await expect(id('scene-quote')).toContainText('But can someone tell me what happened?');
     await expectWidths();
     await respond('meeting-signal', 'there’s more they want to explain to you later', 'Nell', 'I didn’t say I’d explain it later. I wanted to decide that part myself.', '“I spoke for you. I’m sorry. You get to decide whether to have that conversation.”');
     await retry();
-    await respond('meeting-pressure', 'Nell, would you tell Jo what brought you in?', 'Nell', 'I wasn’t ready to do that right now.', '“Nell, I put you on the spot. I’m sorry. You get to decide when you want to talk.”');
+    await respond('meeting-pressure', 'Nell, would you tell Joni what brought you in?', 'Nell', 'I wasn’t ready to do that right now.', '“Nell, I put you on the spot. I’m sorry. You get to decide when you want to talk.”');
     await retry();
-    await respond('meeting-scope', 'Nell asked me to help with a ride for Thursday at ten.', 'Jo', 'Ten? Yes, I’m off that morning. I can drive you, Nell. We can figure out when to leave.', 'what Nell requested and what Jo agreed to.');
+    await respond('meeting-scope', 'Nell asked me to help with a ride for Thursday at ten.', 'Joni', 'Ten? Yes, I’m off that morning. I can drive you, Nell. We can figure out when to leave.', 'what Nell requested and what Joni agreed to.');
     await expect(action).toHaveText('Reveal the team update');
     await expectPrintAndOpenKeepUpdateEmpty();
     await action.press('Enter');

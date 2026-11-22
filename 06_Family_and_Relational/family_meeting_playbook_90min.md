@@ -19,9 +19,9 @@ Convene a family meeting for a first episode, a relapse, a high-expressed-emotio
 <section class="bedside-case" id="nell-family-meeting" aria-labelledby="nell-title">
 <header><p class="case-kicker">Family meeting · Fictional case</p>
 <h3 id="nell-title">What can we talk about together?</h3>
-<p>You’re the resident. Check in with Nell before their sister Jo joins you, then practice what to say with both of them in the room.</p></header>
+<p>You’re the resident. Check in with Nell before their sister Joni joins you, then practice what to say with both of them in the room.</p></header>
 <div class="nell-spread">
-<figure id="nell-scene" tabindex="-1" aria-labelledby="nell-scene-label"><img id="nell-scene-art" width="640" height="480" src="illustrations/nell-private.avif" alt="Nell and the resident sit together in the meeting room before Jo arrives."><figcaption><strong id="nell-scene-label"></strong><span id="nell-scene-people"></span></figcaption></figure>
+<figure id="nell-scene" tabindex="-1" aria-labelledby="nell-scene-label"><img id="nell-scene-art" width="640" height="480" src="illustrations/nell-private.avif" alt="Nell and the resident sit together in the meeting room before Joni arrives."><figcaption><strong id="nell-scene-label"></strong><span id="nell-scene-people"></span></figcaption></figure>
 <div class="nell-dialogue">
 <p class="case-kicker" id="nell-speaker"></p><blockquote id="nell-scene-quote"></blockquote>
 <div id="nell-choice-panel"><h4 id="nell-question" tabindex="-1"></h4><div id="nell-options" role="group" aria-labelledby="nell-question"></div></div>
@@ -32,26 +32,26 @@ Convene a family meeting for a first episode, a relapse, a high-expressed-emotio
 <div id="nell-handoff" aria-labelledby="nell-handoff-title" hidden><h4 id="nell-handoff-title" tabindex="-1">Your update to the team</h4><blockquote></blockquote><button type="button" class="case-link" id="nell-replay">Rehearse again</button></div>
 </div></div>
 <template data-nell-stage="private">
-<img src="illustrations/nell-private.avif" alt="Nell and the resident sit together in the meeting room before Jo arrives."><strong data-label>1 of 2 · Private check-in</strong><span data-people>Nell and you</span>
-<p data-speaker>Nell · in private</p><blockquote data-quote>“I’d like Jo to drive me to my follow-up on Thursday at ten. You can talk with her about the time and the ride. I want to tell her myself what brought me here.”</blockquote><p data-question>How will you check what Nell wants?</p>
-<div data-choice><button id="nell-private-broad" type="button">“I’ll fill Jo in and then we can figure out Thursday. Does that work?”</button>
-<span data-speaker>Nell replies</span><blockquote data-reply>“Wait. Fill her in on what? I want to be the one to tell her why I’m here.”</blockquote><p data-coach>“Fill Jo in” leaves Nell guessing about what you will share. Try naming the part Nell asked you to handle.</p></div>
-<div data-choice data-confirm><button id="nell-private-scope" type="button">“I can ask Jo about the time and the ride. You want to tell her yourself what brought you here. Did I get that right?”</button>
-<span data-speaker>Nell replies</span><blockquote data-reply>“Yes. Please ask her about Thursday. I’ll decide when to tell her the rest.”</blockquote><p data-coach>Nell has confirmed what you can discuss with Jo and what they want to say themselves.</p></div>
-<div data-choice><button id="nell-private-narrow" type="button">“I’ll just listen today and let you handle the conversation with Jo.”</button>
+<img src="illustrations/nell-private.avif" alt="Nell and the resident sit together in the meeting room before Joni arrives."><strong data-label>1 of 2 · Private check-in</strong><span data-people>Nell and you</span>
+<p data-speaker>Nell · in private</p><blockquote data-quote>“I’d like Joni to drive me to my follow-up on Thursday at ten. You can talk with her about the time and the ride. I want to tell her myself what brought me here.”</blockquote><p data-question>How will you check what Nell wants?</p>
+<div data-choice><button id="nell-private-broad" type="button">“I’ll fill Joni in and then we can figure out Thursday. Does that work?”</button>
+<span data-speaker>Nell replies</span><blockquote data-reply>“Wait. Fill her in on what? I want to be the one to tell her why I’m here.”</blockquote><p data-coach>“Fill Joni in” leaves Nell guessing about what you will share. Try naming the part Nell asked you to handle.</p></div>
+<div data-choice data-confirm><button id="nell-private-scope" type="button">“I can ask Joni about the time and the ride. You want to tell her yourself what brought you here. Did I get that right?”</button>
+<span data-speaker>Nell replies</span><blockquote data-reply>“Yes. Please ask her about Thursday. I’ll decide when to tell her the rest.”</blockquote><p data-coach>Nell has confirmed what you can discuss with Joni and what they want to say themselves.</p></div>
+<div data-choice><button id="nell-private-narrow" type="button">“I’ll just listen today and let you handle the conversation with Joni.”</button>
 <span data-speaker>Nell replies</span><blockquote data-reply>“Could you ask her about the ride, though? That’s the part I want help with.”</blockquote><p data-coach>Nell asked for your help with one practical task. Try saying exactly what you can take on.</p></div>
 </template>
 <template data-nell-stage="meeting">
-<img src="illustrations/nell-meeting.avif" alt="Jo joins Nell and the resident for the family meeting."><strong data-label>2 of 2 · In the meeting</strong><span data-people>Nell, Jo and you</span>
-<p data-speaker>Jo · with Nell present</p><blockquote data-quote>“I can help with rides. But can someone tell me what happened? I didn’t even know Nell was here until yesterday.”</blockquote><p data-question>What will you say to Jo?</p>
+<img src="illustrations/nell-meeting.avif" alt="Joni joins Nell and the resident for the family meeting."><strong data-label>2 of 2 · In the meeting</strong><span data-people>Nell, Joni and you</span>
+<p data-speaker>Joni · with Nell present</p><blockquote data-quote>“I can help with rides. But can someone tell me what happened? I didn’t even know Nell was here until yesterday.”</blockquote><p data-question>What will you say to Joni?</p>
 <div data-choice><button id="nell-meeting-signal" type="button">“Nell told me there’s more they want to explain to you later. For now, could we talk about Thursday?”</button>
-<span data-speaker>Nell replies</span><blockquote data-reply>“I didn’t say I’d explain it later. I wanted to decide that part myself.”</blockquote><p data-coach>Try a repair with Nell first. “I spoke for you. I’m sorry. You get to decide whether to have that conversation.” Then come back to Jo’s concern and the ride.</p></div>
-<div data-choice><button id="nell-meeting-pressure" type="button">“It sounds like you’ve been worried. Nell, would you tell Jo what brought you in?”</button>
+<span data-speaker>Nell replies</span><blockquote data-reply>“I didn’t say I’d explain it later. I wanted to decide that part myself.”</blockquote><p data-coach>Try a repair with Nell first. “I spoke for you. I’m sorry. You get to decide whether to have that conversation.” Then come back to Joni’s concern and the ride.</p></div>
+<div data-choice><button id="nell-meeting-pressure" type="button">“It sounds like you’ve been worried. Nell, would you tell Joni what brought you in?”</button>
 <span data-speaker>Nell replies</span><blockquote data-reply>“I wasn’t ready to do that right now.”</blockquote><p data-coach>Try a repair. “Nell, I put you on the spot. I’m sorry. You get to decide when you want to talk.” Then return to the part Nell asked you to handle.</p></div>
-<div data-choice data-confirm><button id="nell-meeting-scope" type="button">“That sounds like a shock, Jo. I’m here to listen if there’s something you’d like us to know. Nell asked me to help with a ride for Thursday at ten. Would that time work for you?”</button>
-<span data-speaker>Jo replies</span><blockquote data-reply>“Ten? Yes, I’m off that morning. I can drive you, Nell. We can figure out when to leave.”</blockquote><p data-coach>Jo confirmed she can drive on Thursday. You can now report what Nell requested and what Jo agreed to.</p></div>
+<div data-choice data-confirm><button id="nell-meeting-scope" type="button">“That sounds like a shock, Joni. I’m here to listen if there’s something you’d like us to know. Nell asked me to help with a ride for Thursday at ten. Would that time work for you?”</button>
+<span data-speaker>Joni replies</span><blockquote data-reply>“Ten? Yes, I’m off that morning. I can drive you, Nell. We can figure out when to leave.”</blockquote><p data-coach>Joni confirmed she can drive on Thursday. You can now report what Nell requested and what Joni agreed to.</p></div>
 </template>
-<template data-nell-update>“In private, Nell asked me to discuss timing and transportation for Thursday’s follow-up with Jo. Nell wants to tell Jo personally what brought them to the hospital. In the meeting, Jo confirmed she can drive Nell to the ten o’clock visit. They still need to agree on a pickup time.”</template>
+<template data-nell-update>“In private, Nell asked me to discuss timing and transportation for Thursday’s follow-up with Joni. Nell wants to tell Joni personally what brought them to the hospital. In the meeting, Joni confirmed she can drive Nell to the ten o’clock visit. They still need to agree on a pickup time.”</template>
 </section>
 
 ## The 90-minute arc

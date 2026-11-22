@@ -1210,7 +1210,7 @@ function fdMountNellFamilyMeeting(body) {
     part('coach').textContent = choice.querySelector('[data-coach]').textContent;
     next.textContent = 'Rehearse another response';
     if (selected.hasAttribute('data-confirm')) {
-      next.textContent = stage === 'private' ? 'Join Jo in the meeting' : 'Reveal the team update';
+      next.textContent = stage === 'private' ? 'Join Joni in the meeting' : 'Reveal the team update';
     }
     choices.hidden = true;
     feedback.hidden = false;
