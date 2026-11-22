@@ -410,6 +410,8 @@ ALL_SOURCE_IDS |= {
     "gurrera-2017-nms-criteria-validation",
     "white-1991-catatonia-preceding-nms",
 }
+# Original consensus used for the Nutrition case monitoring threshold.
+ALL_SOURCE_IDS.add("ada-apa-2004-antipsychotic-metabolic-consensus")
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
