@@ -241,15 +241,15 @@ Figure 2 Relative Risk of Compulsory Admission per Subgroup of Intervention
 
 ### Strongest Evidence
 
-**Family psychoeducation (FPE)** has the most robust evidence base, supported by over 100 RCTs. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27), with only 10% relapsing vs. 37% with treatment as usual. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
+**Family psychoeducation (FPE)** has the most robust evidence base. A *Lancet Psychiatry* network meta-analysis (Rodolico et al., 2022; 90 RCTs, 10,340 participants) comparing 11 family intervention models found FPE was the most efficacious for relapse prevention in schizophrenia at 12 months: OR 0.18 (95% CI 0.12–0.27) versus treatment as usual, with confidence in the estimates ranging from moderate to very low across comparisons; trials in which all patients were acutely ill were excluded. Even the simplest form of family psychoeducation was ranked among the most efficacious, suggesting that informing families about illness, symptoms, and treatment options has a protective role.
 
-An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**.
+An RCT of 83 hospitalized patients with major depression found that at 15 months, treatment response rates were **49% (multi-family group therapy), 24% (single-family therapy), and 9% (TAU)**, each family therapy added to treatment as usual (Lemmens et al., 2009).
 
 **Family involvement in discharge planning** is significantly associated with outpatient follow-up: any family involvement with inpatient staff was associated with follow-up within 7 days (OR 2.79) and 30 days (OR 3.07).
 
 ### Current Controversies
 
-The **Open Dialogue** approach has generated substantial interest but **no completed RCT exists**; the ODDESSI trial is ongoing. Non-randomized Finnish studies reported impressive outcomes (82% with no/mild psychotic symptoms at 2 years, only 35% needing neuroleptics), but these cannot be attributed to the intervention without controlled data.
+The **Open Dialogue** approach has generated substantial interest. Its first randomized trial (ODDESSI; 494 adults presenting in crisis to community mental health services in England, cluster-randomized) found no significant difference in time to first relapse versus treatment as usual (marginal HR 0.95, 95% CI 0.67–1.32). As secondary outcomes, Open Dialogue was associated with lower probabilities of psychiatric inpatient admission and re-referral, and with better self-rated recovery (Pilling et al., 2026). Earlier non-randomized Finnish reports of favorable outcomes cannot be attributed to the intervention without controlled data.
 
 Implementation remains poor despite strong guideline recommendations. Key barriers include confidentiality concerns, organizational culture, and clinician uncertainty about family involvement.
 
@@ -597,6 +597,8 @@ Would you like to explore any of these domains in greater depth — for example,
 
 - Lemmens GM, Eisler I, Buysse A, Heene E, Demyttenaere K. Psychotherapy and Psychosomatics. 2009;78(2):98-105. doi:10.1159/000201935.
 
+- Pilling S, Craig T, Clarke K, et al. The Lancet. Psychiatry. 2026;13(10):841-851. doi:10.1016/S2215-0366(26)00229-4.
+
 - Haselden M, Corbeil T, Tang F, et al. Psychiatric Services (Washington, D.C.). 2019;70(10):860-866. doi:10.1176/appi.ps.201900028.
 
 - Pilling S, Clarke K, Parker G, et al. Contemporary Clinical Trials. 2022;113:106664. doi:10.1016/j.cct.2021.106664.
@@ -674,4 +676,4 @@ Would you like to explore any of these domains in greater depth — for example,
 - Solberg LI, Crain AL, Maciosek MV, et al. Annals of Family Medicine. 2015;13(5):412-20. doi:10.1370/afm.1842.
 
 ---
-*Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist*
+*Evidence summary for teaching; verify against current guidelines and primary sources before clinical use. Reviewed and attested by Joshua Moss, MD (2026-07-09). Joshua Moss, MD | Psychiatrist* · **Pending re-attestation:** Open Dialogue trial result, family-psychoeducation relapse figures and depression family-therapy citation changed 2026-11-22 (Pilling 2026; Rodolico 2022; Lemmens 2009)

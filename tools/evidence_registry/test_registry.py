@@ -330,6 +330,23 @@ COTW_SAFETY_2026_10_IDS = {
     "siry-2021-lethal-means-clinician-views",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | COTW_SAFETY_2026_10_IDS
+# Family-evidence corrections (2026-11-22, Batch 1). Each source enters pending with a stored
+# abstract or guideline span. Folded in here, away from the union's lines and the file's tail.
+FAMILY_EVIDENCE_2026_11_IDS = {
+    "butzlaff-hooley-1998-ee-meta",
+    "chien-2024-family-cochrane",
+    "dixon-1999-family-services",
+    "fontanella-2020-youth-followup-suicide",
+    "ince-2016-implementation",
+    "lemmens-2009-family-therapy-depression",
+    "nice-cg178-psychosis-schizophrenia",
+    "pilling-2026-oddessi",
+    "rodolico-2022-family-nma",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | FAMILY_EVIDENCE_2026_11_IDS
+# ODDESSI carries a published correction (PMID 42721996); its text could not be retrieved on
+# 2026-11-22, which the identity note records. correctionStatus "corrected", pending faculty review.
+FAMILY_EVIDENCE_2026_11_CORRECTED_IDS = {"pilling-2026-oddessi"}
 VALIDATE = Path(__file__).with_name("validate.py")
 REGISTRY_CLI = Path(__file__).with_name("registry.py")
 ZOTERO_CONFIG_PATH = Path(__file__).with_name("zotero_config.json")
@@ -693,7 +710,8 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
         assert source["governance"]["supersededBy"] == expected_supersession, position
         expected_status = (
             "corrected"
-            if source["id"] in CORRECTED_IDS | PEER_REVIEW_WP9_2026_09_CORRECTED_IDS | PSYCHOPHARM_PRIMER_CORRECTED_IDS
+            if source["id"] in (CORRECTED_IDS | PEER_REVIEW_WP9_2026_09_CORRECTED_IDS | PSYCHOPHARM_PRIMER_CORRECTED_IDS
+                                | FAMILY_EVIDENCE_2026_11_CORRECTED_IDS)
             else "none-known"
         )
         assert source["governance"]["correctionStatus"] == expected_status, position

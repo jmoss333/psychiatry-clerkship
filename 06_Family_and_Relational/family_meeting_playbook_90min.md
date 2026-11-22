@@ -6,7 +6,7 @@
 
 ## When to use it
 
-Convene a family meeting for a first episode, a relapse, a high-expressed-emotion home, a complex disposition, a safety plan that depends on the family, or any time the people who will support the patient after discharge need a shared understanding. Earlier is better — don't save the meeting for the day of discharge. You are **planting a seed, not harvesting one**: the relapse-prevention benefit of family work accrues over the following ~12 months, and a single meeting rarely shows its payoff on the unit — which is exactly why starting it inpatient and securing the outpatient handoff matters (the dose that works is ≥10 sessions; ≤2 is ineffective).
+Convene a family meeting for a first episode, a relapse, a high-expressed-emotion home, a complex disposition, a safety plan that depends on the family, or any time the people who will support the patient after discharge need a shared understanding. Earlier is better — don't save the meeting for the day of discharge. You are **planting a seed, not harvesting one**: the relapse-prevention benefit of family work accrues over the following ~12 months, and a single meeting rarely shows its payoff on the unit — which is exactly why starting it inpatient and securing the outpatient handoff matters (NICE advises at least 10 planned sessions; in trials, family psychoeducation of two sessions or fewer did not significantly reduce relapse).
 
 ## Before the meeting (≈15 min prep)
 
@@ -45,3 +45,5 @@ Letting information-sharing eat the whole meeting; correcting expressed emotion 
 **Pair with** the [Family Therapy Modalities](?page=family_modalities.md) overview and the expressed-emotion teaching, the [Family & Discharge](?page=exp_family.md) module, and Week 4 of the curriculum.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+**Pending re-attestation:** session-count parenthesis changed 2026-11-22 (NICE CG178; Rodolico 2022)
