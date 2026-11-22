@@ -50,7 +50,7 @@
 <div id="fp-result" hidden><div class="feedback" aria-live="polite"><h3 id="fp-result-title"></h3><p id="fp-leading-line"></p><p id="fp-rival-line"></p><p id="fp-prediction-line"></p></div>
 <details id="fp-report" class="resident"><summary>Hear a bedside handoff</summary><blockquote id="fp-sample"></blockquote></details>
 <details id="fp-evidence" class="references"><summary>What evidence supports these distinctions?</summary>
-<p><a href="https://pubmed.ncbi.nlm.nih.gov/12925718/" target="_blank" rel="noopener noreferrer">Dunkley et al. · Clonus and serotonin toxicity</a><br>The Hunter investigators identified clonus and hyperreflexia as informative in serotonergic overdoses. Applying that pattern to a ward medication interaction requires the exposure history.</p>
+<p><a href="https://pubmed.ncbi.nlm.nih.gov/12925718/" target="_blank" rel="noopener noreferrer">Dunkley et al. · Clonus and serotonin toxicity</a><br>The Hunter investigators identified clonus and hyperreflexia as informative in serotonergic overdoses. Applying that pattern to an inpatient medication interaction requires the exposure history.</p>
 <p><a href="https://pubmed.ncbi.nlm.nih.gov/28027111/" target="_blank" rel="noopener noreferrer">Gurrera et al. · Assessing NMS criteria</a><br>The authors tested a constellation of features against clinical reference criteria using archived consultations. Rigidity alone cannot settle the diagnosis.</p>
 <p><a href="https://pubmed.ncbi.nlm.nih.gov/1674666/" target="_blank" rel="noopener noreferrer">White and Robins · Catatonia preceding NMS</a><br>In five consecutive cases, catatonia was present before NMS developed. That small series shows why a history of posturing before medication matters, and why the two possibilities can coexist.</p></details></div>
 </section><footer class="casefoot"><span>Fictional bedside teaching case</span><button type="button" id="fp-reset">Start again ↺</button></footer>
@@ -82,8 +82,8 @@
 <p data-dx="nms" data-when="ana arm">Uniform generalized rigidity fits NMS. Establish whether it followed dopamine blockade and when the fever began.</p>
 <p data-dx="nms" data-when="taye ankle">Clonus with brisk reflexes weighs against NMS as the best explanation. A dopamine-blocker exposure and the course of rigidity would matter.</p>
 <p data-dx="nms" data-when="">Fever and confusion alone give limited support to NMS. Look for progressive generalized rigidity and a relevant medication change.</p>
-<p data-dx="catatonia" data-when="ana med ward">Mutism and sustained posturing before ward medication make catatonia a serious possibility. With fever and tachycardia, consider malignant progression alongside possible superimposed NMS.</p>
-<p data-dx="catatonia" data-when="ana ward">Mutism and sustained posturing before ward medication make catatonia a serious possibility. With fever and tachycardia, consider malignant progression and clarify the later medication exposure.</p>
+<p data-dx="catatonia" data-when="ana med ward">Mutism and sustained posturing before any medication on the unit make catatonia a serious possibility. With fever and tachycardia, consider malignant progression alongside possible superimposed NMS.</p>
+<p data-dx="catatonia" data-when="ana ward">Mutism and sustained posturing before any medication on the unit make catatonia a serious possibility. With fever and tachycardia, consider malignant progression and clarify the later medication exposure.</p>
 <p data-dx="catatonia" data-when="">Look for mutism, posturing or other catatonic signs before the fever or drug change. The pinned finding alone cannot establish malignant catatonia.</p>
 <p data-dx="infection" data-when="taye ankle ward">The draining wound keeps infection in the differential while cultures are pending. Infection could contribute to delirium while a second process explains the clonus.</p>
 <p data-dx="infection" data-when="taye ward">The draining wound keeps infection in the differential while cultures are pending. An infectious source does not settle the cause of the neurologic findings.</p>
@@ -98,7 +98,7 @@
 <p data-fp-text="update-posturing">Catatonic signs before the new medication would raise concern for a catatonic illness, even if a drug reaction followed.</p>
 <p data-fp-text="update-clonus">Spontaneous clonus after a serotonergic exposure would move serotonin toxicity up the list.</p>
 <p data-fp-text="update-rigidity">A prior similar episode after dopamine blockade would add weight to NMS. The timing and exam in the current episode still matter.</p>
-<span data-fp-text="ana-nurse">Nursing saw mutism and sustained posturing before the first ward medication.</span>
+<span data-fp-text="ana-nurse">Nursing saw mutism and sustained posturing before the first medication on the unit.</span>
 <span data-fp-text="taye-nurse">Nursing reports a draining wound. Blood cultures are pending.</span>
 <span data-fp-text="taye-infection">We’re also evaluating infection.</span>
 <p data-dx="handoff" data-when="taye ankle med">Serotonin toxicity is high on my list.</p>

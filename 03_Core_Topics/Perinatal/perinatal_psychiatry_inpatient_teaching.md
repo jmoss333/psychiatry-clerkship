@@ -12,7 +12,7 @@
 
 <section class="bedside-case visual-practice" id="vp-perinatal" aria-labelledby="vp-perinatal-title">
 <header><p class="case-kicker">Perinatal psychiatry · First interview</p><h3 id="vp-perinatal-title">“I’m scared to be alone with the baby.”</h3>
-<p class="vp-intro">On the postpartum unit, the psychiatry consult team meets two fictional parents after admission. Each opens with the same words. Open a parent’s chart and choose a question you would feel comfortable asking either person.</p></header>
+<p class="vp-intro">The psychiatry consult team meets two fictional parents who were readmitted to the postpartum unit. Each opens with the same words. Open a parent’s chart and choose a question you would feel comfortable asking either person.</p></header>
 <p class="vp-safety"><strong>If you suspect postpartum psychosis or immediate danger to either person, get help now.</strong> Alert the supervising clinician and obstetric and psychiatric teams. Have a staff member stay with the parent and confirm who is caring for the infant while emergency assessment begins.</p>
 <div class="vp-options">
 <details class="vp-card" name="vp-perinatal-parent"><summary><span class="vp-time">Postpartum day 9</span>Open Robin’s chart</summary>

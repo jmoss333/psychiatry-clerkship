@@ -1459,14 +1459,15 @@
       "id": "t_sud-pearl1",
       "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
       "kind": "pearl",
-      "excerpt": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
+      "excerpt": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly, and still ask about suicidal thoughts during the stimulant crash and plan for lost opioid tolerance at discharge.",
       "targets": [
         {
           "id": "t_sud-pearl1:1",
           "text": "Alcohol and benzodiazepine",
-          "contentRevision": 1
+          "contentRevision": 2
         }
-      ]
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording replaces the published face; no clinical approval is recorded here."
     },
     {
       "id": "t_sud-pearl2",

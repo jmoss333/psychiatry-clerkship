@@ -34,7 +34,7 @@
     <div class="li-read" id="li-read" aria-live="polite" aria-atomic="true" hidden><h5 data-interval></h5><p data-explain></p></div>
   </section>
   <button type="button" class="li-link" data-continue hidden>Continue to the resident handoff ↓</button>
-  <template data-interval-for="collection"><h5>8 hours from dose to draw</h5><p>The sample reflects 04:00. Tell the team it was drawn four hours before the intended 12-hour trough. This result alone is a poor basis for a dose change.</p></template>
+  <template data-interval-for="collection"><h5>8 hours from dose to draw</h5><p>The sample reflects 04:00. Tell the team it was drawn four hours before the intended 12-hour trough. A level drawn this early usually reads higher than the trough will, so the true trough is probably below 0.8. This result alone is a poor basis for a dose change.</p></template>
   <template data-interval-for="posted"><h5>12 hours from dose to report</h5><p>08:00 is when the number appeared on screen. The lithium in the tube reflects when the blood was collected. Try the time on the specimen label.</p></template>
 </section>
 
@@ -73,11 +73,11 @@
     <blockquote>“Jules walked down to breakfast with me. They ate, and they say they feel like themselves this morning.”</blockquote>
     <p data-lead="timing">Give the collection time so the team can plan a properly timed level. Include what the nurse saw and check in with Jules about symptoms and recent changes.</p>
     <p data-lead="bedside">That gives the team useful context. Add that the sample was drawn eight hours after the dose so nobody records it as the planned trough.</p>
-    <p data-handoff>“Jules’s lithium was 0.8. The blood was drawn at four, eight hours after the evening dose. The nurse says Jules walked to breakfast, ate and feels like themselves. I’ll check in with Jules and coordinate a 12-hour pre-dose level with the team.”</p>
+    <p data-handoff>“Jules’s lithium was 0.8. The blood was drawn at four, eight hours after the evening dose, so the true trough is probably lower. The nurse says Jules walked to breakfast, ate and feels like themselves. I’ll check in with Jules and coordinate a 12-hour pre-dose level with the team.”</p>
   </template>
   <template data-report="change">
     <blockquote>“Can you come see Jules now? They’ve vomited twice, and I had to steady them on the way back from the bathroom. They were walking fine last night.”</blockquote>
-    <p data-lead="timing">Go to Jules now and alert your supervisor. New vomiting and unsteadiness raise concern for lithium toxicity or another acute illness. Withhold lithium, draw an urgent lithium level and check renal function and electrolytes, and seek urgent clinical advice. A routine timed draw can wait.</p>
+    <p data-lead="timing">Go to Jules now and alert your supervisor. New vomiting and unsteadiness raise concern for lithium toxicity or another acute illness. Withhold lithium, draw an urgent lithium level and check renal function and electrolytes, and ask for urgent medical evaluation. A routine timed draw can wait.</p>
     <p data-lead="bedside">Lead with the new vomiting and gait change. Assess Jules now with the nurse and alert your supervisor. Withhold lithium and draw an urgent lithium level and check renal function and electrolytes while evaluating possible toxicity and other acute causes.</p>
     <p data-handoff>“I’m going to see Jules now. They’ve vomited twice and newly need help walking. I’m concerned about lithium toxicity or another acute illness. Let’s hold lithium, alert the supervising clinician and get an urgent lithium level, renal function and electrolytes. The earlier 0.8 was drawn eight hours after the dose.”</p>
   </template>

@@ -394,7 +394,7 @@ function fdMountCatatoniaFrames(body) {
     const bothOpen = frames.every(item => item.open);
     compare.hidden = !bothOpen;
     caseCard.querySelector('[data-vp-compare-hint]').hidden = bothOpen;
-    if (!bothOpen) compare.querySelector('details').open = false;
+    if (!bothOpen) compare.querySelectorAll('details').forEach(answer => { answer.open = false; });
   });
 }
 

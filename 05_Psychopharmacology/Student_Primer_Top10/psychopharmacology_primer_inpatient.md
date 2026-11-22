@@ -153,7 +153,7 @@ Most familiar antipsychotics block dopamine D2 receptors; aripiprazole and carip
     </fieldset>
   </template>
   <template data-mg-template="question-contact">
-    <p class="case-kicker">Morgan · discharge planning</p><blockquote>“Call my mobile the first evening. If I miss it, leave me a message to call the clinic back.”</blockquote>
+    <p class="case-kicker">Morgan · discharge planning</p><blockquote>“Call my cell the first evening. If I miss it, leave me a message to call the clinic back.”</blockquote>
   </template>
   <template data-mg-template="question-support">
     <p class="case-kicker">Morgan · discharge planning</p><blockquote>“My sister usually sees me after work. I’d like her to know who to call.”</blockquote>
@@ -174,7 +174,7 @@ Most familiar antipsychotics block dopamine D2 receptors; aripiprazole and carip
     <p data-copy="note-patch">Morgan reports using a nicotine patch on the unit.</p>
     <p data-copy="why-patch">Asking about the patch identifies a nicotine source. It leaves cigarette use open.</p>
     <p data-copy="why-future">Asking about Morgan’s intentions gives the receiving team a change to look for.</p>
-    <p data-copy="note-contact">Morgan prefers a call to their mobile the first evening.</p>
+    <p data-copy="note-contact">Morgan prefers a call to their cell phone the first evening.</p>
     <p data-copy="why-contact">Asking how to reach Morgan makes it possible to verify what actually happens.</p>
     <p data-copy="note-support">Morgan wants their sister to know who to call about new sleepiness.</p>
     <p data-copy="why-support">Asking who might notice a change identifies someone Morgan wants included.</p>

@@ -12,7 +12,7 @@
 
 Read across each row to consider biological, psychological, and social factors. The same fact can serve two roles. If the history leaves a gap, name what you would ask.
 
-**A worked example (fictional composite).** A 34-year-old man with bipolar I disorder is admitted for mania. He lost his insurance three weeks ago and stopped taking lithium because he could no longer obtain it. He uses cannabis nightly. When he felt well, he said, "I'm fine, I don't need medication." His marriage is strained, and his spouse is willing to attend a family meeting.
+**A worked example (fictional composite).** A 34-year-old man with bipolar I disorder is admitted for mania. He lost his insurance three weeks ago. His refills ran out, he could not get an appointment or a lithium level, and he stopped taking it. He uses cannabis nightly. When he felt well, he said, "I'm fine, I don't need medication." His marriage is strained, and his spouse is willing to attend a family meeting.
 
 <figure class="fd-case-timeline">
   <figcaption>Why this episode, why now?</figcaption>
@@ -48,7 +48,7 @@ Losing coverage helps explain *why now*. If he still cannot obtain medication, t
 
 "Losing coverage likely contributed to the episode, and although coverage is back, we still need to confirm he can get the medication and find out what support he wants now that his spouse cannot attend."
 
-First, confirm with him and the pharmacist what the next fill will cost and whether he can collect it. Ask what benefit or burden he noticed on lithium when he felt well. A missed meeting leaves his spouse's wider role open. If he wants his spouse involved, ask whether another time or a phone call would work.
+First, confirm who will prescribe and monitor his lithium now, what the next fill will cost, and whether he can collect it. Ask what benefit or burden he noticed on lithium when he felt well. A missed meeting leaves his spouse's wider role open. If he wants his spouse involved, ask whether another time or a phone call would work.
 
 </details>
 
