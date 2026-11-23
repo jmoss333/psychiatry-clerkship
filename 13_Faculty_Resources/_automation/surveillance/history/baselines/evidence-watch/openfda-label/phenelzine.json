@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-11-09T08:02:29+00:00",
-  "effective_time": "20250606",
+  "checked_at": "2026-11-23T08:02:09+00:00",
+  "effective_time": "20261105",
   "sections": {
     "boxed_warning": {
       "hash": "bb6f5dede13e7e3d743f6d916cab333005b05a151d5d539b6b02d3b05ff3c51e",
@@ -26,5 +26,5 @@
     }
   },
   "set_id": "513a41d0-37d4-4355-8a6d-a2c643bce6fa",
-  "version": "11"
+  "version": "12"
 }
