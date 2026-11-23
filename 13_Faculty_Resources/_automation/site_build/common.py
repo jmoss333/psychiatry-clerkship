@@ -1271,7 +1271,12 @@ SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html", "tool-governance.json"}
 # are excluded for the same reason (Netlify does not reliably serve hidden files).
 # check-static-site.mjs (section 7c) HARD-fails if any of these reappear in sw.js.
 SW_NETLIFY_RESERVED_ROOT_NAMES = {"_headers", "_redirects", "netlify.toml"}
-SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
+# The budget is a tripwire against media creeping into a precached directory, not a size the
+# sites aim for. Raised 10 -> 11 MiB on 2026-11-22 (owner's decision, D-2026-11-22-02): a
+# content PR (#1281) put the resident precache at 10,491,905 bytes, 6,145 over, and every
+# precached byte was pages, JSON, CSS or scripts. check-static-site.mjs (section 7c) enforces
+# the same number; test_common.py pins the two together.
+SW_PRECACHE_BUDGET_BYTES = 11 * 1024 * 1024
 SW_TEMPLATE_NAME = "sw_template.js"
 _SW_VERSION_ANCHOR = "VERSION='__VERSION__';"
 _SW_KILL_ANCHOR = "KILL=__KILL__;"
@@ -1409,7 +1414,7 @@ def emit_service_worker(out_dir, kill=None):
     - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,
       newline-joined)[:12] — deterministic and media-independent, so unrelated
       media re-encodes never bump the cache version (see module docstring).
-    - Budget: sum of precached byte sizes must stay <= 10 MB, else the build
+    - Budget: sum of precached byte sizes must stay <= 11 MiB, else the build
       aborts via `sys.exit` with the offending size — a runaway precache list
       would make first-load worse for the offline win it's meant to buy.
     - `kill` (or env `SW_KILL=="1"`) emits `var KILL=true;`, which makes the
