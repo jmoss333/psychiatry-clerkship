@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-11-02",
+  "refreshedAt": "2026-11-23",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -3990,6 +3990,30 @@
       "status": "resolved",
       "resolvedAt": "2026-10-05",
       "pmid": "17074942"
+    },
+    "10.1176/appi.ajp.2009.09010039": {
+      "title": "A Randomized Trial of Dialectical Behavior Therapy Versus General Psychiatric Management for Borderline Personality Disorder",
+      "container": "AJP",
+      "containerAlt": [
+        "AJP",
+        "Am J Psychiatry",
+        "American Journal of Psychiatry",
+        "The American journal of psychiatry"
+      ],
+      "year": 2009,
+      "authors": [
+        "McMain",
+        "Links",
+        "Gnam",
+        "Guimond",
+        "Cardish",
+        "Korman",
+        "Streiner"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-23",
+      "pmid": "19755574"
     },
     "10.1176/appi.ajp.2011.10111704": {
       "title": "The Columbia–Suicide Severity Rating Scale: Initial Validity and Internal Consistency Findings From Three Multisite Studies With Adolescents and Adults",
