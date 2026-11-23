@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-11-22",
+  "updated": "2026-11-23",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -13320,6 +13320,67 @@
             "date": "2026-11-20",
             "note": "Linked in the case debrief on toxidromes.md.",
             "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brown-2002-prednisone-mood",
+      "type": "primary-study",
+      "citation": {
+        "title": "Mood changes during prednisone bursts in outpatients with asthma",
+        "authors": [
+          {
+            "family": "Brown",
+            "given": "ES"
+          },
+          {
+            "family": "Suppes",
+            "given": "T"
+          },
+          {
+            "family": "Khan",
+            "given": "DA"
+          },
+          {
+            "family": "Carmody",
+            "given": "TJ"
+          }
+        ],
+        "year": 2002,
+        "journal": "J Clin Psychopharmacol",
+        "volume": "22",
+        "pages": "55-61",
+        "doi": "10.1097/00004714-200202000-00009",
+        "pmid": "11799343",
+        "url": "https://doi.org/10.1097/00004714-200202000-00009",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 11799343 confirms the citation.",
+        "verifiedAt": "2026-11-23",
+        "note": "This prospective study followed 32 outpatients with asthma during prednisone bursts. It supports the first-week change in mania-rating scores cited in Alex’s debrief. It cannot determine whether prednisone caused an individual patient’s symptoms."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Prospective observational study",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-23",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "mood",
+          "diagnosis"
+        ],
+        "clerkshipRelevance": "Interpret the timing of mood symptoms alongside a corticosteroid exposure.",
+        "noteHistory": [
+          {
+            "date": "2026-11-23",
+            "note": "This prospective study followed 32 outpatients with asthma during prednisone bursts. It supports the first-week change in mania-rating scores cited in Alex’s debrief. It cannot determine whether prednisone caused an individual patient’s symptoms.",
+            "reason": "Document the evidence supporting the reviewed exercise."
           }
         ]
       }

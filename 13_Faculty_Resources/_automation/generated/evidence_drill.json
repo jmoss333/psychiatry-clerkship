@@ -1092,19 +1092,19 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Belkin et al. · 2021 · Psychiatr Serv",
-     "sourceId": "belkin-2021",
+     "t": "Lieberman et al. · 2005 · The New England Journal of Medicine",
+     "sourceId": "lieberman-2005-catie",
      "key": "A"
-    },
-    {
-     "t": "Mahon · 2024 · Community Ment Health J",
-     "sourceId": "mahon-2024",
-     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "c": true,
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Varese et al. · 2025 · Health Technol Assess",
+     "sourceId": "varese-2025",
      "key": "C"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "American Psychiatric Association · 2026",
-     "sourceId": "apa-practice-guidelines",
+     "t": "Pott et al. · 2022 · J Subst Abuse Treat",
+     "sourceId": "pott-2022",
      "key": "A"
     },
     {
-     "t": "Schünemann et al. · 2025 · Clin Psychol Eur",
-     "sourceId": "schunemann-2025",
+     "t": "Tarrier et al. · 2004 · Behav Res Ther",
+     "sourceId": "tarrier-wykes-2004",
      "key": "B"
     },
     {

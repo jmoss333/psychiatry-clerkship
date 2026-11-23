@@ -232,6 +232,7 @@
       "pronouns": "he",
       "role": "patient",
       "pages": [
+        "02_Clinical_Skills/Differential_Diagnosis/inpatient_differential_scaffolds.md",
         "03_Core_Topics/Mood/mood_disorders_inpatient_teaching.md"
       ]
     },

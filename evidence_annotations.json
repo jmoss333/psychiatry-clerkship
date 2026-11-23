@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-11-22",
+  "updated": "2026-11-23",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -4103,6 +4103,31 @@
           "direction": "descriptive",
           "usedBy": [
             "toxidromes.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "brown-2002-prednisone-mood",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/11799343",
+        "retrievedAt": "2026-11-23",
+        "pmid": "11799343",
+        "doi": "10.1097/00004714-200202000-00009",
+        "sourceSpan": "Outpatients with asthma (N = 32) receiving bursts of prednisone (>40 mg/day) were evaluated before, during, and after corticosteroid therapy by use of the Hamilton Rating Scale for Depression, the Young Mania Scale, the Brief Psychiatric Rating Scale, and the Internal State Scale. Highly significant increases in the Young Mania Scale and Activation subscale of the Internal State Scale (both measures of mania) were observed with no increase in depression measures during the first 3 to 7 days of prednisone therapy."
+      },
+      "claims": [
+        {
+          "claimId": "prednisone-first-week-mood",
+          "claimText": "In a prospective study of 32 adults with asthma, mania-rating scores rose during the first week of a prednisone course.",
+          "claimTerms": [
+            "increases in the Young Mania Scale",
+            "first 3 to 7 days"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "ddx.md"
           ]
         }
       ]
