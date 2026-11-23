@@ -7,6 +7,9 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountEveningCalls(body);
+  fdMountDinnerMap(body);
+  fdMountTherapyChain(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
@@ -474,6 +477,328 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountEveningCalls(body) {
+  const card = body.querySelector('#evening-calls');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#ec-' + id);
+  const copy = Object.fromEntries(Array.from(find('copy').content.children,
+    item => [item.dataset.copy, item.textContent]));
+  const calls = ['before', 'week'];
+  const heard = new Set();
+  const initialLabel = find('annotation-before').textContent;
+  let current = null;
+
+  function drawCalls() {
+    for (const call of calls) {
+      const open = call === current;
+      const button = find('call-' + call);
+      button.setAttribute('aria-expanded', String(open));
+      button.dataset.heard = String(heard.has(call));
+      button.querySelector('.symbol').textContent = open ? '−' : '+';
+      find('quote-' + call).hidden = !open;
+      find('annotation-' + call).textContent = heard.has(call) ? copy[call] : initialLabel;
+    }
+    find('count').textContent = heard.size + ' of 2 heard';
+    find('meaning-panel').hidden = heard.size !== calls.length;
+    find('reset').hidden = heard.size === 0;
+  }
+
+  function press(group, key) {
+    for (const button of group.querySelectorAll('button[aria-pressed]')) {
+      button.setAttribute('aria-pressed', String(button.id === 'ec-' + key));
+    }
+  }
+  function clearRounds() {
+    press(find('rounds-panel'), null);
+    find('feedback').hidden = find('sample').hidden = true;
+    find('feedback').textContent = '';
+  }
+
+  for (const call of calls) find('call-' + call).addEventListener('click', () => {
+    heard.add(call);
+    current = current === call ? null : call;
+    drawCalls();
+    const transcript = current ? find('quote-' + current).innerText + ' ' : '';
+    find('status').textContent = transcript + find('count').textContent +
+      (heard.size === calls.length ? '. Choose a follow-up question below.' : '.');
+  });
+
+  for (const ask of ['ask-fewer', 'ask-miss']) find(ask).addEventListener('click', () => {
+    clearRounds();
+    press(find('meaning-panel'), ask);
+    find('meaning-words').textContent = copy[ask];
+    find('meaning-reply').hidden = false;
+    const heardMeaning = ask === 'ask-miss';
+    find('retry').hidden = heardMeaning;
+    find('rounds-panel').hidden = !heardMeaning;
+    find('status').textContent = copy[ask] + ' ' +
+      (heardMeaning ? 'The rounds choices are available below.' : find('retry').textContent);
+  });
+
+  for (const line of ['line-fewer', 'line-role', 'line-conflict']) find(line).addEventListener('click', () => {
+    press(find('rounds-panel'), line);
+    const grounded = line === 'line-role';
+    find('sample').hidden = !grounded;
+    find('feedback').hidden = grounded;
+    find('feedback').textContent = grounded ? '' : copy[line];
+  });
+
+  find('reset').addEventListener('click', () => {
+    current = null;
+    heard.clear();
+    drawCalls();
+    clearRounds();
+    press(find('meaning-panel'), null);
+    find('meaning-words').textContent = '';
+    find('meaning-reply').hidden = find('retry').hidden = find('rounds-panel').hidden = true;
+    find('status').textContent = 'Started again. Choose either evening call.';
+    find('call-before').focus();
+  });
+}
+
+function fdMountDinnerMap(body) {
+  const card = body.querySelector('#dinner-map');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#dm-' + id);
+  const copy = Object.fromEntries(Array.from(find('copy').content.querySelectorAll('[data-copy]'),
+    piece => [piece.dataset.copy, piece.textContent]));
+  const stops = ['route', 'kitchen', 'dinner'];
+  const claims = ['requested', 'confirmed'];
+  const replies = ['pending', 'ready'];
+  const initialPrompt = find('evidence').textContent;
+  const heard = new Set();
+  let report = null;
+
+  function drawMap() {
+    find('pin-pantry').hidden = find('pin-home').hidden = !heard.has('route');
+    find('pin-kitchen').hidden = !heard.has('kitchen');
+    const meal = find('pin-meal');
+    meal.hidden = !heard.has('dinner');
+    meal.textContent = meal.dataset[report || 'requested'];
+    meal.classList.toggle('dm-verified', report === 'ready');
+    find('count').textContent = find('count').dataset.format.replace('{n}', heard.size);
+    find('reset').hidden = heard.size === 0;
+    find('handoff').hidden = heard.size !== stops.length;
+  }
+
+  function clearClaim() {
+    claims.forEach(key => find('claim-' + key).setAttribute('aria-pressed', 'false'));
+    for (const id of ['claim-feedback', 'team-note']) find(id).hidden = true;
+    find('claim-feedback').textContent = find('note-text').textContent = '';
+  }
+
+  function enableClaims(enabled) {
+    claims.forEach(key => { find('claim-' + key).disabled = !enabled; });
+  }
+
+  function ask(key) {
+    const open = find('quote-' + key).hidden;
+    heard.add(key);
+    for (const stop of stops) {
+      const active = open && stop === key;
+      find('stop-' + stop).setAttribute('aria-expanded', String(active));
+      find('quote-' + stop).hidden = !active;
+    }
+    find('map-' + key).textContent = find('map-' + key).dataset.fact;
+    find('stop-' + key).closest('li').classList.add('dm-heard');
+    drawMap();
+    find('announce').textContent = find('count').textContent +
+      (heard.size === stops.length ? '. The handoff is available below.' : '.');
+  }
+
+  function chooseClaim(key) {
+    clearClaim();
+    find('claim-' + key).setAttribute('aria-pressed', 'true');
+    if ((key === 'confirmed') !== (report === 'ready')) {
+      find('claim-feedback').textContent = copy['feedback-' + (report || 'requested')];
+      find('claim-feedback').hidden = false;
+      return;
+    }
+    find('note-text').textContent = copy.account + ' ' + copy[report ? report + '-summary' : 'requested'];
+    find('team-note').hidden = false;
+    find('call-unit').hidden = !find('callback').hidden;
+  }
+
+  function hearCallback(key) {
+    clearClaim();
+    report = key;
+    drawMap();
+    enableClaims(true);
+    replies.forEach(reply => find('reply-' + reply).setAttribute('aria-pressed', String(reply === key)));
+    find('nurse-quote').textContent = copy[key + '-quote'];
+    find('nurse-report').hidden = false;
+    find('evidence').textContent = copy['after-call'];
+    find('announce').textContent = copy[key + '-quote'] + ' Revise the handoff below.';
+  }
+
+  stops.forEach(key => find('stop-' + key).addEventListener('click', () => ask(key)));
+  claims.forEach(key => find('claim-' + key).addEventListener('click', () => chooseClaim(key)));
+  replies.forEach(key => find('reply-' + key).addEventListener('click', () => hearCallback(key)));
+  find('call-unit').addEventListener('click', () => {
+    clearClaim();
+    enableClaims(false);
+    find('evidence').textContent = copy['await-call'];
+    find('callback').hidden = false;
+    find('call-unit').hidden = true;
+    find('call-unit').setAttribute('aria-expanded', 'true');
+    find('reply-pending').focus();
+  });
+  find('reset').addEventListener('click', () => {
+    heard.clear();
+    report = null;
+    drawMap();
+    clearClaim();
+    enableClaims(true);
+    for (const key of stops) {
+      find('map-' + key).textContent = '';
+      find('stop-' + key).closest('li').classList.remove('dm-heard');
+      find('stop-' + key).setAttribute('aria-expanded', 'false');
+      find('quote-' + key).hidden = true;
+    }
+    for (const id of ['call-unit', 'callback', 'nurse-report']) find(id).hidden = true;
+    replies.forEach(key => find('reply-' + key).setAttribute('aria-pressed', 'false'));
+    find('call-unit').setAttribute('aria-expanded', 'false');
+    find('evidence').textContent = initialPrompt;
+    find('nurse-quote').textContent = '';
+    find('announce').textContent = 'Started again. The evening map is empty.';
+    find('stop-route').focus();
+  });
+}
+
+function fdMountTherapyChain(body) {
+  const card = body.querySelector('#therapy-chain');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#tc-' + id);
+  const slots = Array.from(card.querySelectorAll('[data-slot]'));
+  const moments = card.querySelectorAll('[data-moment]');
+  const prompts = slots.map(slot => slot.querySelector('[data-link-text]').textContent);
+  const completed = new Set();
+  let activeSlot;
+  let chosenMoment;
+
+  function getTemplate(kind, key) {
+    return find(kind + '-' + key).content;
+  }
+  function press(buttons, selected) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === selected));
+  }
+  function showOptions(group, template) {
+    const buttons = template.querySelector('[data-' + group + ']').children;
+    find(group).replaceChildren(...Array.from(buttons, button => button.cloneNode(true)));
+  }
+  function drawMap() {
+    slots.forEach((slot, index) => {
+      const key = slot.dataset.slot;
+      const complete = completed.has(key);
+      const record = getTemplate('link', key);
+      slot.setAttribute('aria-expanded', String(slot === activeSlot));
+      slot.dataset.filled = String(complete);
+      slot.querySelector('.tc-symbol').textContent = complete ? '✓' : '＋';
+      slot.querySelector('.case-kicker').textContent =
+        (complete ? 'Patient · ' : 'Missing link · ') + record.querySelector('[data-name]').textContent;
+      slot.querySelector('[data-link-text]').textContent = complete ? record.querySelector('[data-saved]').textContent : prompts[index];
+    });
+    find('count').textContent = find('count').dataset.format.replace('{n}', completed.size);
+  }
+  function clearAnswer() {
+    for (const id of ['reply', 'add-link', 'fill-feedback']) find(id).hidden = true;
+    find('answer').textContent = find('fill-feedback').textContent = '';
+    find('fills').replaceChildren();
+  }
+  function clearOffer() {
+    chosenMoment = null;
+    press(moments, null);
+    for (const id of ['offer-script', 'offer-reply', 'debrief', 'try-moment']) find(id).hidden = true;
+    for (const id of ['offer-line', 'their-preference', 'plan-summary']) find(id).textContent = '';
+    find('make-offer').hidden = false;
+  }
+  function closeInterview() {
+    activeSlot = null;
+    find('interview').hidden = true;
+    clearAnswer();
+    drawMap();
+    find('offer').hidden = completed.size !== slots.length;
+  }
+  function hear(question) {
+    const record = getTemplate('link', activeSlot.dataset.slot);
+    const invited = question.dataset.question === 'invite';
+    press(find('questions').children, question);
+    find('answer').textContent = record.querySelector(invited ? '[data-reply]' : '[data-correction]').textContent;
+    find('reply').hidden = false;
+    find('fill-feedback').hidden = true;
+    find('add-link').hidden = !invited;
+    if (invited) showOptions('fills', record);
+  }
+  for (const slot of slots) slot.addEventListener('click', () => {
+    activeSlot = slot;
+    const record = getTemplate('link', slot.dataset.slot);
+    clearOffer();
+    clearAnswer();
+    drawMap();
+    find('offer').hidden = true;
+    find('interview').hidden = find('reset').hidden = false;
+    find('interview-title').textContent = record.querySelector('[data-title]').textContent;
+    showOptions('questions', record);
+    if (completed.has(slot.dataset.slot)) hear(find('questions').querySelector('[data-question="invite"]'));
+    fdBedsideFocus(find('interview-title'));
+  });
+  find('questions').addEventListener('click', event => {
+    const button = event.target.closest('[data-question]');
+    if (button && activeSlot) hear(button);
+  });
+  find('fills').addEventListener('click', event => {
+    const button = event.target.closest('[data-fill]');
+    if (!button || !activeSlot) return;
+    const key = activeSlot.dataset.slot;
+    const record = getTemplate('link', key);
+    press(find('fills').children, button);
+    if (button.dataset.fill === 'inferred') {
+      find('fill-feedback').hidden = false;
+      find('fill-feedback').textContent = record.querySelector('[data-feedback]').textContent;
+      return;
+    }
+    completed.add(key);
+    closeInterview();
+    find('announce').textContent = record.querySelector('[data-saved]').textContent + ' ' + find('count').textContent;
+    fdBedsideFocus(slots.find(slot => !completed.has(slot.dataset.slot)) || find('offer-title'));
+  });
+  find('back').addEventListener('click', () => {
+    const previous = activeSlot;
+    closeInterview();
+    fdBedsideFocus(previous);
+  });
+  for (const moment of moments) moment.addEventListener('click', () => {
+    clearOffer();
+    chosenMoment = getTemplate('moment', moment.dataset.moment);
+    press(moments, moment);
+    find('offer-line').textContent = chosenMoment.querySelector('[data-line]').textContent;
+    find('offer-script').hidden = false;
+  });
+  find('make-offer').addEventListener('click', () => {
+    if (!chosenMoment || completed.size !== slots.length) return;
+    find('their-preference').textContent = chosenMoment.querySelector('[data-reply]').textContent;
+    find('plan-summary').textContent = chosenMoment.querySelector('[data-plan]').textContent;
+    for (const id of ['offer-reply', 'debrief', 'try-moment']) find(id).hidden = false;
+    find('make-offer').hidden = true;
+    fdBedsideFocus(find('offer-reply'));
+  });
+  find('try-moment').addEventListener('click', () => {
+    clearOffer();
+    fdBedsideFocus(moments[0]);
+  });
+  find('reset').addEventListener('click', () => {
+    completed.clear();
+    clearOffer();
+    closeInterview();
+    find('reset').hidden = true;
+    find('announce').textContent = find('count').textContent;
+    fdBedsideFocus(slots[0]);
+  });
 }
 
 function fdMountElenaVisit(body) {

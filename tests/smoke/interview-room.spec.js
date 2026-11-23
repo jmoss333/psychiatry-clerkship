@@ -32,6 +32,7 @@ const ID_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 const CONSENT_VERSION = '2026-09-26-realtime-v1';
 const REALTIME_MODEL = 'test-realtime-model';
 const TRANSCRIPTION_MODEL = 'test-transcription-model';
+const PILOT_CODE = 'supervisor-test-code';
 const ROOM_MODE_KEY = 'cw_sp_room_mode_v1';
 const CONSENT_KEY = 'cw_sp_spoken_consent_v1';
 
@@ -403,11 +404,15 @@ async function installFakes(page, scenario = {}, siteOrigin = '') {
       if (typeof init.body === 'string') {
         try { body = JSON.parse(init.body); } catch (error) { body = init.body; }
       }
-      const record = { url: requestUrl.pathname + requestUrl.search, method, headers, body, keepalive: !!init.keepalive };
+      const record = { origin: requestUrl.origin, url: requestUrl.pathname + requestUrl.search, method, headers, body, keepalive: !!init.keepalive, redirect: init.redirect };
       testLog.fetches.push(record);
 
       if (requestUrl.pathname.endsWith('/sp/realtime')) {
-        if (headers['x-student-key'] !== 'student-test-key') {
+        const pilotCode = window.__voiceScenario.pilotCode;
+        if (pilotCode && headers['x-student-key'] === 'student-test-key' && method === 'GET') {
+          return json({ enabled: false, acceptingSessions: false, cases: [] });
+        }
+        if (headers['x-student-key'] !== (pilotCode || 'student-test-key')) {
           return json({ error: { code: 'unauthorized', message: 'Correct the rotation passcode.' } }, 401);
         }
         if (method === 'GET') {
@@ -1268,6 +1273,80 @@ test('the speakers choice reaches the proxy as far-field audio setup', async ({ 
   expect(start.body.audioSetup).toBe('speakers');
   await expect(page.getByText('Spoken room · speakers')).toBeVisible();
   expect((await storageSnapshot(page)).local.cw_sp_audio_setup_v1).toBe('speakers');
+});
+
+test('a supervisor can unlock Dana speech for the page while typed setup and feedback use the learner passcode', async ({ page }) => {
+  await openRoom(page, { consented: true, pilotCode: PILOT_CODE });
+  await expect(supportedButton(page)).toBeDisabled();
+  await page.getByRole('button', { name: /setup/i }).click();
+  await page.getByText('Supervised voice pilot (optional)').click();
+  const field = page.getByLabel('Supervisor voice pilot code');
+  await field.fill(PILOT_CODE);
+  await page.getByRole('button', { name: 'Save & test connection' }).click();
+  await expect(page.getByText(/Dana’s supervised spoken pilot is unlocked/)).toBeVisible();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await enterSpokenRoom(page);
+  await learnerSays(page, LEARNER_LINE);
+  await expect(page.locator('.msg.pt').filter({ hasText: PATIENT_REPLY })).toBeVisible();
+  await page.getByRole('button', { name: 'End encounter' }).click();
+  await completeSelfAssessment(page);
+  await page.getByRole('button', { name: /show the debrief/i }).click();
+  await expect(page.getByText('Your read, then the room’s')).toBeVisible();
+
+  const captured = await log(page);
+  for (const op of [null, 'start', 'turn', 'end']) {
+    const calls = realtimeCalls(captured, op);
+    expect(calls.length).toBeGreaterThan(0);
+    expect(calls.at(-1).headers['x-student-key']).toBe(PILOT_CODE);
+    expect(calls.at(-1).redirect).toBe('error');
+  }
+  const typedRequests = captured.fetches.filter(({ url }) => url === '/api/sp');
+  expect(typedRequests.some(({ method }) => method === 'GET')).toBe(true);
+  expect(typedRequests.some(({ body }) => body?.mode === 'evaluate')).toBe(true);
+  for (const { headers } of typedRequests) expect(headers['x-student-key']).toBe('student-test-key');
+  for (const { url, body } of captured.fetches) {
+    expect(url).not.toContain(PILOT_CODE);
+    expect(JSON.stringify(body)).not.toContain(PILOT_CODE);
+  }
+  expect(JSON.stringify(await storageSnapshot(page))).not.toContain(PILOT_CODE);
+  expect(page.url()).not.toContain(PILOT_CODE);
+  await page.reload();
+  await expect(supportedButton(page)).toBeDisabled();
+  await expect.poll(async () => realtimeCalls(await log(page)).length).toBeGreaterThan(0);
+  expect(realtimeCalls(await log(page))[0].headers['x-student-key']).toBe('student-test-key');
+});
+
+test('a changed endpoint or cleared setup cannot reuse the supervisor voice code', async ({ page }) => {
+  await openRoom(page, { pilotCode: PILOT_CODE });
+  await page.getByRole('button', { name: /setup/i }).click();
+  await page.getByText('Supervised voice pilot (optional)').click();
+  const field = page.getByLabel('Supervisor voice pilot code');
+  const learner = page.getByLabel('Passcode', { exact: true });
+  const save = page.getByRole('button', { name: 'Save & test connection' });
+  await field.fill('invalid-pilot-code');
+  await save.click();
+  await expect(page.getByText(/supervised spoken pilot could not be opened/)).toBeVisible();
+  await field.fill(PILOT_CODE);
+  await save.click();
+  await expect(page.getByText(/Dana’s supervised spoken pilot is unlocked/)).toBeVisible();
+  await page.getByLabel('Endpoint URL').fill('https://another-site.example/api/sp');
+  await expect(field).toHaveValue('');
+  await save.click();
+  await expect.poll(async () => (await log(page)).fetches.filter(({ origin }) => origin === 'https://another-site.example').length).toBeGreaterThanOrEqual(2);
+  for (const request of (await log(page)).fetches.filter(({ origin }) => origin === 'https://another-site.example')) {
+    expect(request.headers['x-student-key']).toBe('student-test-key');
+  }
+  await page.getByLabel('Endpoint URL').fill('/api/sp');
+  await field.fill(PILOT_CODE);
+  await save.click();
+  await expect(page.getByText(/Dana’s supervised spoken pilot is unlocked/)).toBeVisible();
+  await page.getByRole('button', { name: 'Clear passcode', exact: true }).click();
+  await expect(field).toHaveValue('');
+  await expect(learner).toHaveValue('');
+  await learner.fill('student-test-key');
+  await save.click();
+  await expect.poll(async () => realtimeCalls(await log(page)).at(-1)?.headers['x-student-key']).toBe('student-test-key');
+  await expect(supportedButton(page)).toBeDisabled();
 });
 
 test('setup surfaces a typed server error message without object coercion', async ({ page }) => {

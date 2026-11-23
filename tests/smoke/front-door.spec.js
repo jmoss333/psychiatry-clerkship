@@ -2985,6 +2985,107 @@ test.describe('Interactive readings', () => {
     return activity;
   }
 
+  for (const order of [['meaning', 'body'], ['body', 'meaning']]) {
+    test('therapy chain starts with ' + order[0] + ' and matches each offer to the patient’s preference', async ({ page }) => {
+      const card = await openActivity(page, GUIDE_REF, 'therapy-chain', 'Matching the intervention to the presentation');
+      await expect(card.getByRole('heading', { name: 'Where could we have helped sooner?' })).toBeVisible();
+      const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+      await expect(section.locator('table')).toContainText('Distress-tolerance skill + behavior chain review');
+      expect(await card.evaluate(node => {
+        const table = node.closest('.fd-guide-section, .sec-c').querySelector('table');
+        return Boolean(table.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      })).toBe(true);
+      await expect(section.locator('xpath=following-sibling::section[1]').locator(':scope > :is(h2, .fd-guide-lead, .sec-h)'))
+        .toContainText('BPD without a DBT unit');
+
+      const id = name => card.locator('#tc-' + name);
+      const button = (attribute, value) => card.locator('button[data-' + attribute + '="' + value + '"]');
+      const linkText = key => button('slot', key).locator('[data-link-text]');
+      const links = {
+        meaning: {
+          blank: 'What did the call mean to them?',
+          correction: '“I don’t know why she didn’t pick up. Mad isn’t quite it.”',
+          answer: '“I thought my sister was done with me. I know it was just voicemail, but that’s where my mind went.”',
+          feedback: 'The patient told you what they feared. Their sister’s reason for missing the call is still unknown.',
+          saved: '“I thought my sister was done with me.”',
+        },
+        body: {
+          blank: 'What happened just before they left?',
+          correction: '“Nobody in group did anything. I just got quiet.”',
+          answer: '“I got really quiet. My face got hot. I wanted to get out before anyone saw me cry.”',
+          feedback: 'They described wanting privacy. Whether they want someone to follow is something you can ask.',
+          saved: '“My face got hot. I wanted to get out before anyone saw me cry.”',
+        },
+      };
+      await expect(id('offer')).toBeHidden();
+      for (const [index, key] of order.entries()) {
+        const link = links[key];
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('slot', key).click();
+        await button('question', 'guess').click();
+        await expect(id('answer')).toBeVisible();
+        await expect(id('answer')).toHaveText(link.correction);
+        await expect(button('fill', 'grounded')).toBeHidden();
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('question', 'invite').click();
+        await expect(id('answer')).toHaveText(link.answer);
+        await button('fill', 'inferred').click();
+        await expect(id('fill-feedback')).toBeVisible();
+        await expect(id('fill-feedback')).toHaveText(link.feedback);
+        await expect(linkText(key)).toHaveText(link.blank);
+        await expect(id('count')).toHaveText(index + ' of 2 links filled');
+        await expect(id('offer')).toBeHidden();
+        await button('fill', 'grounded').click();
+        await expect(linkText(key)).toHaveText(link.saved);
+        if (index === 0) await expect(id('offer')).toBeHidden();
+      }
+      await expect(linkText(order[0])).toHaveText(links[order[0]].saved);
+      await expect(id('count')).toHaveText('2 of 2 links filled');
+      await expect(id('offer')).toBeVisible();
+
+      const moments = [
+        { key: 'phone', line: '“If it goes to voicemail again, would you like me to stay with you while you decide what to do?”',
+          reply: '“Right then? Give me a minute to myself. You can check back after.”',
+          plan: 'Give them a minute alone after the call, then check back.' },
+        { key: 'quiet', line: '“If I notice you going quiet in group, would it help if I asked you to step into the hall with me?”',
+          reply: '“When I get quiet like that, ask if I want to step into the hall with you. Just ask me quietly.”',
+          plan: 'If they go quiet, discreetly offer to step into the hall together.' },
+        { key: 'hall', line: '“If you head into the hall, would it be okay if I came out and sat with you?”',
+          reply: '“Yeah. Sit with me for a minute? I might not be ready to go back in.”',
+          plan: 'Offer to sit with them in the hall and let them choose when to return.' },
+      ];
+      for (const moment of moments) {
+        await button('moment', moment.key).click();
+        await expect(id('offer-line')).toHaveText(moment.line);
+        await expect(id('offer-reply')).toBeHidden();
+        await expect(id('debrief')).toBeHidden();
+        await expect(id('plan-summary')).toBeEmpty();
+        await id('make-offer').click();
+        await expect(id('their-preference')).toBeVisible();
+        await expect(id('their-preference')).toHaveText(moment.reply);
+        await expect(id('plan-summary')).toBeVisible();
+        await expect(id('plan-summary')).toHaveText(moment.plan);
+        if (moment.key === 'quiet') {
+          await id('try-moment').click();
+          await expect(id('offer-reply')).toBeHidden();
+          await expect(id('debrief')).toBeHidden();
+          await expect(id('plan-summary')).toBeEmpty();
+        }
+      }
+      await expect(id('debrief').locator('dt')).toHaveText([
+        'What the nurse observed', 'What the patient described', 'What the patient wants next time',
+      ]);
+      await expect(id('account-summary')).toContainText('They thought their sister was done with them.');
+      await id('reset').click();
+      await expect(id('count')).toHaveText('0 of 2 links filled');
+      for (const key of order) await expect(linkText(key)).toHaveText(links[key].blank);
+      await expect(id('offer')).toBeHidden();
+      await expect(id('reply')).toBeHidden();
+      await expect(id('debrief')).toBeHidden();
+      await expect(id('plan-summary')).toBeEmpty();
+    });
+  }
+
   test('Sam’s night sign-out changes the receiving resident’s reply with each handoff detail', async ({ page }) => {
     await page.goto('/?page=doc_oral.md&guideSection=handoff-template');
     const section = page.locator('.fd-article__body section').filter({
@@ -3566,6 +3667,160 @@ test.describe('Interactive readings', () => {
       await toggleWithKeyboard(handoff);
       await expect(handoff.locator('p')).toBeVisible();
       await expect(handoff.locator('p')).toContainText(sample);
+    }
+  });
+
+  for (const callback of ['pending', 'ready']) {
+    test(`dinner map supports all six question orders with the ${callback} callback`, async ({ page }) => {
+      const card = await openActivity(page, 'nutrition_metabolic.md', 'dinner-map', 'Population / systems lens');
+      await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Food insecurity');
+      const at = id => card.locator('#dm-' + id);
+      const facts = {
+        route: 'Home around 6 p.m. · Pantry closes at 5 p.m.',
+        kitchen: 'Shared microwave · Food at home uncertain',
+        dinner: 'Would like a meal to take home',
+      };
+      const orders = [
+        ['route', 'kitchen', 'dinner'], ['route', 'dinner', 'kitchen'],
+        ['kitchen', 'route', 'dinner'], ['kitchen', 'dinner', 'route'],
+        ['dinner', 'route', 'kitchen'], ['dinner', 'kitchen', 'route'],
+      ];
+      const patientAccount = 'The patient expects to get home after the pantry closes. They can use a shared microwave and are unsure whether there is food at home. ';
+      const requested = 'They asked for a meal to take home. I’ll ask the unit nurse what’s available and update the patient before they leave.';
+      const pending = 'The patient asked for a take-home meal. The nurse has contacted dietary and will update the patient before their ride leaves. A meal is still unconfirmed.';
+      const ready = 'The patient asked for a take-home meal. The unit nurse confirms that a supper bag is ready for pickup at the desk and will give it to the patient before their ride leaves.';
+      const note = at('note-text');
+      const mapFacts = card.locator('[id^="dm-stop-"] [id^="dm-map-"]');
+      for (const order of orders) {
+        await test.step(order.join(' → '), async () => {
+          await expect(at('count')).toHaveText('0 of 3 heard');
+          await expect(at('handoff')).toBeHidden();
+          await expect(mapFacts).toHaveText(['', '', '']);
+          for (const [index, stop] of order.entries()) {
+            await at('stop-' + stop).click();
+            await expect(at('quote-' + stop)).toBeVisible();
+            const heard = order.slice(0, index + 1);
+            await expect(mapFacts).toHaveText(Object.entries(facts).map(([key, text]) => heard.includes(key) ? text : ''));
+            await expect(at('count')).toHaveText(heard.length + ' of 3 heard');
+            if (heard.length < 3) await expect(at('handoff')).toBeHidden();
+          }
+
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('Who has confirmed a meal is ready?');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + requested);
+          await at('call-unit').click();
+          await expect(at('claim-confirmed')).toBeDisabled();
+          await at('reply-' + callback).click();
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          if (callback === 'ready') {
+            await expect(at('nurse-quote')).toContainText('It’s ready for pickup.');
+            await expect(at('pin-meal')).toHaveText('Ready for pickup');
+            await at('claim-confirmed').click();
+            await expect(note).toBeVisible();
+            await expect(note).toHaveText(patientAccount + ready);
+            await at('reply-pending').click();
+            await expect(at('team-note')).toBeHidden();
+            await expect(note).toBeEmpty();
+          }
+          await expect(at('nurse-quote')).toContainText('I haven’t heard back yet.');
+          await expect(at('pin-meal')).toHaveText('Awaiting reply');
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('The nurse left a message.');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + pending);
+          await at('reset').click();
+          await expect(at('callback')).toBeHidden();
+          await expect(note).toBeEmpty();
+        });
+      }
+    });
+  }
+
+  test('evening calls unlock the bedside question in either order and clear the rounds sample on revision', async ({ page }) => {
+    const card = await openActivity(page, 'psychotherapy.md', 'evening-calls', 'The map — what each is, who it fits');
+    const map = card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]');
+    const modalities = card.locator('xpath=preceding-sibling::ul[1]').getByRole('listitem');
+    await expect(modalities).toHaveCount(7);
+    await expect(modalities.last()).toContainText('Family and group modalities');
+    await expect(map.locator('xpath=following-sibling::section[1]').locator(':scope > .fd-guide-lead'))
+      .toContainText('What the student does');
+
+    const at = id => card.locator('#ec-' + id);
+    const button = name => card.getByRole('button', { name });
+    const calls = {
+      before: { name: /Before admission/i, alt: /kitchen window/i, quote: 'can I run something by you', annotation: 'Daughter asks for advice about work' },
+      week: { name: /This week/i, alt: /on the unit/i, quote: 'Did you eat?', annotation: 'Daughter asks about meds and meals' },
+    };
+    for (const call of Object.values(calls)) {
+      const image = button(call.name).getByRole('img', { name: call.alt });
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
+    }
+
+    for (const order of [['before', 'week'], ['week', 'before']]) {
+      await test.step(order.join(' → '), async () => {
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        for (const [index, key] of order.entries()) {
+          const call = calls[key];
+          await button(call.name).click();
+          await expect(button(call.name)).toHaveAttribute('aria-expanded', 'true');
+          await expect(at('quote-' + key)).toBeVisible();
+          await expect(at('quote-' + key)).toContainText(call.quote);
+          await expect(at('annotation-' + key)).toHaveText(call.annotation);
+          await expect(at('count')).toHaveText((index + 1) + ' of 2 heard');
+          if (index === 0) {
+            await button(call.name).click();
+            await expect(at('quote-' + key)).toBeHidden();
+            await expect(at('count')).toHaveText('1 of 2 heard');
+            await expect(at('meaning-panel')).toBeHidden();
+          }
+        }
+        const fewer = button(/Would it help if she called less often/);
+        const miss = button(/What do you miss about the way you two used to talk/);
+        await fewer.click();
+        await expect(at('meaning-words')).toContainText('I look forward to her calls');
+        await expect(at('retry')).toBeVisible();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('meaning-words')).toContainText('I miss being the person she comes to');
+        await expect(at('retry')).toBeHidden();
+        for (const [choice, feedback] of [
+          [/They’d like fewer calls/, 'Did they ask for less contact?'],
+          [/They describe an argument/, 'They described a quiet pause'],
+        ]) {
+          await button(choice).click();
+          await expect(at('feedback')).toBeVisible();
+          await expect(at('feedback')).toContainText(feedback);
+          await expect(at('sample')).toBeHidden();
+        }
+        await button(/They value the calls and miss/).click();
+        await expect(at('feedback')).toBeHidden();
+        await expect(at('sample')).toBeVisible();
+        await expect(at('sample')).toContainText('what they’d like tonight’s call to sound like');
+        await expect(at('sample')).toContainText('Why interpersonal psychotherapy fits');
+        await fewer.click();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('rounds-panel')).toBeVisible();
+        await expect(at('sample')).toBeHidden();
+        await expect(at('rounds-panel').locator('[aria-pressed="true"]')).toHaveCount(0);
+        await button(/Start again/).click();
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        await expect(card.locator('[aria-pressed="true"], [aria-expanded="true"]')).toHaveCount(0);
+        await expect(card.locator('[id^="ec-annotation-"]')).toHaveText(['Ask about the call', 'Ask about the call']);
+        await expect(button(calls.before.name)).toBeFocused();
+      });
     }
   });
 
