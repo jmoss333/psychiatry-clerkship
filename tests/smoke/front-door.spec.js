@@ -3275,6 +3275,73 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('[data-coach-line][aria-pressed=true]')).toHaveCount(0);
   });
 
+  test('home-dose history requires both records and a handoff supported by the current patient reply', async ({ page }) => {
+    const sectionId = 'guide-start-here-five-questions-before-choosing-a-drug';
+    await page.goto('/?page=psychopharm_primer.md&guideSection=start-here-five-questions-before-choosing-a-drug');
+    const opening = page.locator('.fd-article__body :is(.sec-c,.fd-guide-section)').filter({
+      has: page.locator(':scope > #' + sectionId),
+    });
+    const items = opening.locator('ol').first().locator(':scope > li');
+    await expect(items).toHaveCount(5);
+    const questions = ['What are we treating?', 'What has already happened?',
+      'What could change the choice?', 'What will we measure?', 'What happens after discharge?'];
+    for (const [index, question] of questions.entries()) {
+      await expect(items.nth(index).locator('strong').first()).toHaveText(question);
+    }
+    const card = items.nth(1).locator('section#home-dose-history');
+    await expect(card).toBeVisible();
+    const field = name => card.locator('#mh-' + name);
+    const claim = name => card.locator('[data-claim="' + name + '"]');
+    const mark = (day, value) => card.locator('input[name="mh-' + day + '"][value="' + value + '"]').check();
+
+    for (const [first, second] of [['rx', 'fill'], ['fill', 'rx']]) {
+      await expect(field('interim')).toBeHidden();
+      await field(first).click();
+      await expect(field(first === 'rx' ? 'fill-line' : 'order-line')).toHaveText('Record unopened');
+      await expect(field('interim')).toBeHidden();
+      await field(second).click();
+      await expect(field('interim')).toBeVisible();
+      if (first === 'rx') await field('reset').click();
+    }
+    for (const unsupported of ['daily', 'never']) {
+      await claim(unsupported).click();
+      await expect(field('claim-feedback')).toBeVisible();
+      await expect(field('ask')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+    }
+    await claim('open').click();
+    await expect(field('revise')).toBeHidden();
+    await field('hear').press('Enter');
+
+    const replies = [
+      { quote: /haven’t started/, friday: 'none', dose: 'Patient reports no doses from the Friday fill.' },
+      { quote: /Friday’s the only time/, friday: 'taken', dose: 'Patient reports one dose from this fill, Friday night, and none since.' },
+    ];
+    for (const reply of replies) {
+      await expect(field('quote')).toContainText(reply.quote);
+      await expect(card.locator('input:checked')).toHaveCount(0);
+      await expect(field('final')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+      await expect(field('dose-line')).toHaveText('History pending');
+      await mark('fri', reply.friday);
+      await field('check').click();
+      await expect(field('revision-feedback')).toContainText('each night');
+      await expect(field('final')).toBeHidden();
+      await mark('sat', 'taken');
+      await field('check').click();
+      await expect(field('revision-feedback')).toBeVisible();
+      await expect(field('handoff')).toBeEmpty();
+      await mark('sat', 'none');
+      await field('check').click();
+      await expect(field('final')).toBeVisible();
+      await expect(field('dose-line')).toHaveText(reply.dose);
+      await expect(field('handoff')).toHaveText('“The outpatient prescription lists quetiapine nightly, and the pharmacy confirms Friday pickup. ' + reply.dose + '”');
+      await field('other').click();
+    }
+    await expect(field('handoff')).toBeEmpty();
+    await expect(card.locator('input:checked')).toHaveCount(0);
+  });
+
   test('Morgan builds a clozapine differential before revealing the studies and handoff', async ({ page }) => {
     const activity = await openActivity(page, 'psychopharm_primer.md', 'morgan-exposure', 'Antipsychotics');
     const select = (id, value) => activity.locator('#mg-' + id).selectOption(value);

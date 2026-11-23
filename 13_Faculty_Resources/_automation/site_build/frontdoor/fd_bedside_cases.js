@@ -1,5 +1,6 @@
 /* The clinical text lives with its reading. Each mounted exercise keeps its choices in the DOM. */
 function fdMountBedsideCases(body) {
+  fdMountHomeDoseHistory(body);
   fdMountMorganExposure(body);
   fdMountFeverExams(body);
   fdMountJoCall(body);
@@ -478,6 +479,114 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountHomeDoseHistory(body) {
+  const card = body.querySelector('#home-dose-history');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const get = id => card.querySelector('#mh-' + id);
+  const copy = Object.fromEntries(Array.from(get('copy').content.children,
+    row => [row.dataset.copy, row.textContent]));
+  const sources = {rx: 'order-line', fill: 'fill-line'};
+  const claims = card.querySelectorAll('[data-claim]');
+  const nights = get('nights');
+  const recordInputs = nights.querySelectorAll('input');
+  const opened = new Set();
+  const pending = get('dose-line').textContent;
+  const unopened = get('order-line').textContent;
+  const openLabel = get('rx').querySelector('.mh-state').textContent;
+  let history = 'unopened';
+
+  function clearHandoff() {
+    get('handoff').textContent = '';
+    get('final').hidden = true;
+    get('practice').open = false;
+    get('dose-line').textContent = pending;
+    get('dose-row').classList.remove('mh-complete');
+    get('revision-feedback').hidden = true;
+  }
+
+  function clearInterview() {
+    clearHandoff();
+    for (const input of recordInputs) input.checked = false;
+    get('quote').textContent = '';
+    get('reply').hidden = get('revise').hidden = true;
+    get('hear').hidden = false;
+    get('hear').setAttribute('aria-expanded', 'false');
+  }
+
+  function hear(nextHistory) {
+    clearInterview();
+    history = nextHistory;
+    get('quote').textContent = copy[history + '-quote'];
+    get('hear').hidden = true;
+    get('hear').setAttribute('aria-expanded', 'true');
+    get('reply').hidden = get('revise').hidden = false;
+    get('quote').focus();
+  }
+
+  for (const [key, line] of Object.entries(sources)) get(key).addEventListener('click', () => {
+    opened.add(key);
+    for (const id of opened) {
+      get(id).setAttribute('aria-pressed', String(id === key));
+      get(id).querySelector('.mh-state').textContent = id === key ? 'Reading' : 'Reviewed';
+    }
+    get('record-label').textContent = copy[key + '-label'];
+    get('record-copy').textContent = copy[key + '-full'];
+    get('record').hidden = false;
+    get(line).textContent = copy[key + '-line'];
+    get('interim').hidden = opened.size < 2;
+    get('reset').hidden = false;
+    if (opened.size === 2) get('status').textContent = 'Both records reviewed. Choose a handoff below.';
+  });
+
+  for (const choice of claims) choice.addEventListener('click', () => {
+    const key = choice.dataset.claim;
+    for (const option of claims) option.setAttribute('aria-pressed', String(option === choice));
+    clearInterview();
+    get('ask').hidden = key !== 'open';
+    get('claim-feedback').hidden = key === 'open';
+    get('claim-feedback').textContent = key === 'open' ? '' : copy[key];
+    if (key === 'open') get('ask-title').focus();
+  });
+
+  get('hear').addEventListener('click', () => hear('unopened'));
+  get('other').addEventListener('click', () => hear(history === 'unopened' ? 'friday' : 'unopened'));
+  nights.addEventListener('change', clearHandoff);
+  get('check').addEventListener('click', () => {
+    const friday = nights.querySelector('[name="mh-fri"]:checked');
+    const saturday = nights.querySelector('[name="mh-sat"]:checked');
+    if (!friday || !saturday || friday.value !== (history === 'friday' ? 'taken' : 'none') || saturday.value !== 'none') {
+      clearHandoff();
+      get('revision-feedback').textContent = !friday || !saturday ? copy.partial : copy[history + '-coach'];
+      get('revision-feedback').hidden = false;
+      return;
+    }
+    const dose = copy[history + '-dose'];
+    get('revision-feedback').hidden = true;
+    get('dose-line').textContent = dose;
+    get('dose-row').classList.add('mh-complete');
+    get('handoff').textContent = '“' + copy.handoff + ' ' + dose + '”';
+    get('final').hidden = false;
+    get('final-title').focus();
+  });
+
+  get('reset').addEventListener('click', () => {
+    opened.clear();
+    clearInterview();
+    for (const choice of claims) choice.setAttribute('aria-pressed', 'false');
+    for (const [key, line] of Object.entries(sources)) {
+      get(key).setAttribute('aria-pressed', 'false');
+      get(key).querySelector('.mh-state').textContent = openLabel;
+      get(line).textContent = unopened;
+    }
+    get('record-label').textContent = get('record-copy').textContent = '';
+    get('claim-feedback').hidden = get('interim').hidden = get('ask').hidden = get('record').hidden = true;
+    get('reset').hidden = true;
+    get('rx').focus();
+    get('status').textContent = 'Case restarted.';
+  });
 }
 
 function fdMountAlexTiming(body) {
