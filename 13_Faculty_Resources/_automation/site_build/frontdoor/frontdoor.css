@@ -3480,6 +3480,13 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #home-dose-history label:has(:checked){background:var(--fd-teal-wash)}
 #home-dose-history input{flex:none;margin:0;accent-color:var(--fd-teal)}
 #home-dose-history .mh-final blockquote{margin-block:var(--fd-space-4)}
+@container bedside (max-width:18em){
+  #home-dose-history .mh-source{grid-template-areas:"title title" "state glyph"}
+  #home-dose-history .mh-origin{grid-area:title}
+  #home-dose-history .mh-state{grid-area:state}
+  #home-dose-history .mh-glyph{grid-area:glyph}
+  #home-dose-history .mh-scene img{min-height:0;object-fit:contain;background:var(--fd-surface-warm)}
+}
 
 /* Alex's callback places one event on the same seven-day strip in either history. */
 #alex-timing .at-case{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);margin-block:var(--fd-space-5);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
