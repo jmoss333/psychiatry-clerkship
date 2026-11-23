@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountAlexTiming(body);
   fdMountEveningCalls(body);
   fdMountDinnerMap(body);
   fdMountTherapyChain(body);
@@ -477,6 +478,96 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountAlexTiming(body) {
+  const card = body.querySelector('#alex-timing');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const get = id => card.querySelector('#at-' + id);
+  const copy = Object.fromEntries(Array.from(get('copy').content.children,
+    item => [item.dataset.copy, item.textContent]));
+  const dates = ['before', 'after'];
+  const reasons = ['before', 'after', 'certain'];
+  const questions = ['prior', 'course'];
+  const initialLabel = get('call-label').textContent;
+  const initialHint = get('map-hint').textContent;
+  let version = null;
+
+  function select(group, keys, active) {
+    for (const key of keys) get(group + '-' + key).setAttribute('aria-pressed', String(key === active));
+  }
+
+  function clearNote() {
+    select('check', questions, null);
+    get('note').textContent = '';
+    get('sample').hidden = true;
+    get('evidence').open = false;
+  }
+
+  function clearReasoning() {
+    clearNote();
+    select('reason', reasons, null);
+    get('reason-feedback').hidden = get('next-step').hidden = true;
+  }
+
+  function drawPlacement(side) {
+    get('map').dataset.placement = side || 'unknown';
+    select('place', dates, side);
+    for (const key of dates) {
+      const pin = get('place-' + key);
+      pin.disabled = !version;
+      pin.querySelector('b').textContent = key === side ? '✓' : '+';
+    }
+    get('call-label').textContent = side ? copy[side + '-day'] + ' · First unusual call at 3 a.m.' : initialLabel;
+  }
+
+  function loadStory(next) {
+    version = next;
+    clearReasoning();
+    drawPlacement(null);
+    get('reasoning').hidden = get('placement-feedback').hidden = true;
+    get('callback').hidden = get('switch').hidden = get('restart').hidden = !next;
+    get('hear').hidden = Boolean(next);
+    get('hear').setAttribute('aria-expanded', String(Boolean(next)));
+    get('map-hint').textContent = next ? 'Tap the day of the first unusual call.' : initialHint;
+    get('caller').textContent = next ? copy[next + '-label'] : '';
+    get('quote').textContent = next ? copy[next + '-quote'] : '';
+    get(next ? 'caller' : 'hear').focus();
+    get('status').textContent = next ? 'New callback. Place the first unusual call on the timeline.' : 'Started again.';
+  }
+
+  get('hear').addEventListener('click', () => loadStory('before'));
+  get('switch').addEventListener('click', () => loadStory(version === 'before' ? 'after' : 'before'));
+  get('restart').addEventListener('click', () => loadStory(null));
+  for (const side of dates) get('place-' + side).addEventListener('click', () => {
+    clearReasoning();
+    const correct = side === version;
+    drawPlacement(correct ? side : null);
+    get('reasoning').hidden = !correct;
+    get('placement-feedback').hidden = correct;
+    get('placement-feedback').textContent = correct ? '' : copy[version + '-coached'];
+    if (correct) {
+      get('status').textContent = copy[side + '-day'] + ' placed. Choose how that changes your differential.';
+      get('rh').focus();
+    }
+  });
+  for (const reason of reasons) get('reason-' + reason).addEventListener('click', () => {
+    clearNote();
+    select('reason', reasons, reason);
+    const fits = version === reason;
+    get('reason-feedback').hidden = fits;
+    get('next-step').hidden = !fits;
+    get('reason-feedback').textContent = fits ? '' : copy[reason === 'certain' ? 'overclaim' : version + '-mismatch'];
+    if (fits) get('nh').focus();
+  });
+  for (const question of questions) get('check-' + question).addEventListener('click', () => {
+    select('check', questions, question);
+    get('note').textContent = '“' + [copy.intro, copy[version + '-interpretation'], copy[question]].join(' ') + '”';
+    get('sample').hidden = false;
+    get('sh').focus();
+  });
 }
 
 function fdMountEveningCalls(body) {
