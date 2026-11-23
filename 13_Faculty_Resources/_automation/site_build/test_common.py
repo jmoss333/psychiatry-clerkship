@@ -522,6 +522,24 @@ class TestSearchIndex(_SiteFixture):
         self.assertIn("lorazepam", idx["postings"])
         self.assertIn("widget", idx["postings"])
 
+    def test_indexes_activity_text_and_image_descriptions_without_layout_markup(self):
+        page = os.path.join(self.dir, "content", "a.md")
+        with open(page, "w", encoding="utf-8") as handle:
+            handle.write('# Reading\nWhen A < B, compare C > D.\n'
+                         '<button class="tilelayout" aria-controls="internalpanel">Compare calls</button>\n'
+                         '<img alt="Parent at the window" src="internalpath.avif">\n'
+                         '<textarea placeholder="Summarize the interview"></textarea>\n'
+                         '<a href="https://pubmed.ncbi.nlm.nih.gov/28027111/">Read the paper</a>\n'
+                         '<a href="https://doi.org/10.1000/abcd1234">Second paper</a>')
+        nav = [{"section": "Guide", "items": [{"t": "Reading", "f": "a.md", "k": "md"}]}]
+        index = common.build_search_index(nav, self.dir)
+        self.assertIn("A < B, compare C", index["docs"][0]["snip"])
+        for term in ["calls", "window", "summarize", "28027111", "abcd1234"]:
+            self.assertIn(term, index["postings"])
+        self.assertNotIn("pubmed.ncbi", index["docs"][0]["snip"])
+        for term in ["tilelayout", "internalpanel", "internalpath"]:
+            self.assertNotIn(term, index["postings"])
+
     def test_indexes_a_hidden_item_that_is_reachable(self):
         """A Library-placed page must be searchable even when nav hides it.
 

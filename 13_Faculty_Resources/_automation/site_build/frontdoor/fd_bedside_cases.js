@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountEveningCalls(body);
   fdMountDinnerMap(body);
   fdMountTherapyChain(body);
   fdMountEctMemory(body);
@@ -476,6 +477,86 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountEveningCalls(body) {
+  const card = body.querySelector('#evening-calls');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#ec-' + id);
+  const copy = Object.fromEntries(Array.from(find('copy').content.children,
+    item => [item.dataset.copy, item.textContent]));
+  const calls = ['before', 'week'];
+  const heard = new Set();
+  const initialLabel = find('annotation-before').textContent;
+  let current = null;
+
+  function drawCalls() {
+    for (const call of calls) {
+      const open = call === current;
+      const button = find('call-' + call);
+      button.setAttribute('aria-expanded', String(open));
+      button.dataset.heard = String(heard.has(call));
+      button.querySelector('.symbol').textContent = open ? '−' : '+';
+      find('quote-' + call).hidden = !open;
+      find('annotation-' + call).textContent = heard.has(call) ? copy[call] : initialLabel;
+    }
+    find('count').textContent = heard.size + ' of 2 heard';
+    find('meaning-panel').hidden = heard.size !== calls.length;
+    find('reset').hidden = heard.size === 0;
+  }
+
+  function press(group, key) {
+    for (const button of group.querySelectorAll('button[aria-pressed]')) {
+      button.setAttribute('aria-pressed', String(button.id === 'ec-' + key));
+    }
+  }
+  function clearRounds() {
+    press(find('rounds-panel'), null);
+    find('feedback').hidden = find('sample').hidden = true;
+    find('feedback').textContent = '';
+  }
+
+  for (const call of calls) find('call-' + call).addEventListener('click', () => {
+    heard.add(call);
+    current = current === call ? null : call;
+    drawCalls();
+    const transcript = current ? find('quote-' + current).innerText + ' ' : '';
+    find('status').textContent = transcript + find('count').textContent +
+      (heard.size === calls.length ? '. Choose a follow-up question below.' : '.');
+  });
+
+  for (const ask of ['ask-fewer', 'ask-miss']) find(ask).addEventListener('click', () => {
+    clearRounds();
+    press(find('meaning-panel'), ask);
+    find('meaning-words').textContent = copy[ask];
+    find('meaning-reply').hidden = false;
+    const heardMeaning = ask === 'ask-miss';
+    find('retry').hidden = heardMeaning;
+    find('rounds-panel').hidden = !heardMeaning;
+    find('status').textContent = copy[ask] + ' ' +
+      (heardMeaning ? 'The rounds choices are available below.' : find('retry').textContent);
+  });
+
+  for (const line of ['line-fewer', 'line-role', 'line-conflict']) find(line).addEventListener('click', () => {
+    press(find('rounds-panel'), line);
+    const grounded = line === 'line-role';
+    find('sample').hidden = !grounded;
+    find('feedback').hidden = grounded;
+    find('feedback').textContent = grounded ? '' : copy[line];
+  });
+
+  find('reset').addEventListener('click', () => {
+    current = null;
+    heard.clear();
+    drawCalls();
+    clearRounds();
+    press(find('meaning-panel'), null);
+    find('meaning-words').textContent = '';
+    find('meaning-reply').hidden = find('retry').hidden = find('rounds-panel').hidden = true;
+    find('status').textContent = 'Started again. Choose either evening call.';
+    find('call-before').focus();
+  });
 }
 
 function fdMountDinnerMap(body) {
