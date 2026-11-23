@@ -3449,7 +3449,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
-#evening-calls .opener{margin-block:var(--fd-space-6);padding-inline-start:var(--fd-space-6);border-inline-start:3px solid var(--fd-terracotta)}
+#evening-calls .opener{margin-block:var(--fd-space-6);padding-inline-start:var(--fd-space-6);border-inline-start:3px solid var(--fd-olive)}
 #evening-calls .opener blockquote,#evening-calls .case-reply blockquote{font-style:italic}
 #evening-calls :is(.speaker,.hint,.asked,.record small){color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
 #evening-calls .map{border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface);padding:var(--fd-space-6)}
@@ -3468,7 +3468,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #evening-calls .record small{grid-column:1/-1;font-weight:400;line-height:1.25}
 #evening-calls .step{padding-top:var(--fd-space-6);border-top:2px solid var(--fd-line-strong)}
 #evening-calls .choices{display:grid;gap:var(--fd-space-4)}
-#evening-calls .feedback{background:var(--fd-surface-warm);border-inline-start:3px solid var(--fd-terracotta);padding:var(--fd-space-5)}
+#evening-calls .feedback{background:var(--fd-surface-warm);border-inline-start:3px solid var(--fd-olive);padding:var(--fd-space-5)}
 #evening-calls .case-reply h5{margin:0 0 var(--fd-space-3);font-size:inherit}
 #ec-sample p{margin-top:var(--fd-space-4)}
 /* The illustrated observations bookend two links supplied by the patient. */
