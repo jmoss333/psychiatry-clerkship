@@ -3449,6 +3449,38 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* The two records stay visible as the patient’s account changes. */
+#home-dose-history .mh-section{margin-top:var(--fd-space-7)}
+#home-dose-history .mh-intro,#home-dose-history .mh-instruction{margin-block:var(--fd-space-3) var(--fd-space-5)}
+#home-dose-history .mh-instruction,#home-dose-history .mh-state,#home-dose-history small{color:var(--fd-text-mid)}
+#home-dose-history .mh-scene{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr);align-items:center;overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash)}
+#home-dose-history .mh-scene img{display:block;width:100%;height:100%;min-height:7em;object-fit:cover;object-position:60% center}
+#home-dose-history .mh-scene figcaption{padding:var(--fd-space-5);text-align:start;color:var(--fd-text)}
+#home-dose-history .mh-scene q{display:block;font-family:Georgia,serif;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#home-dose-history .mh-sources,#home-dose-history .mh-nights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-4)}
+#home-dose-history .mh-source{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:var(--fd-space-4);gap:var(--fd-space-2)}
+#home-dose-history .mh-state{grid-column:1/-1;font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1))}
+#home-dose-history .mh-record,#home-dose-history .mh-dialogue,#home-dose-history .mh-final,#home-dose-history .feedback{padding:var(--fd-space-5);margin-block:var(--fd-space-4);border-inline-start:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+#home-dose-history .mh-record strong{display:block}
+#home-dose-history .mh-dialogue,#home-dose-history .feedback{background:var(--fd-olive-wash);border-color:var(--fd-olive)}
+#home-dose-history .mh-paper{margin-top:var(--fd-space-5);padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);background:var(--fd-surface)}
+#home-dose-history .mh-paper-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--fd-space-3);padding-bottom:var(--fd-space-3);border-bottom:1px solid var(--fd-line-strong)}
+#home-dose-history h5{margin:0;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#home-dose-history dl,#home-dose-history dd{margin:0}
+#home-dose-history .mh-line{display:grid;grid-template-columns:minmax(0,5.2em) minmax(0,1fr);gap:var(--fd-space-3);padding-block:var(--fd-space-3);border-bottom:1px dashed var(--fd-line);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#home-dose-history .mh-line:last-child{border:0}
+#home-dose-history dt,#home-dose-history .mh-complete dd{font-weight:700}
+#home-dose-history .mh-complete dd{color:var(--fd-teal-deep)}
+#home-dose-history .mh-choices{display:grid;gap:var(--fd-space-3);margin-block:var(--fd-space-4)}
+#home-dose-history .mh-actions{margin-block:var(--fd-space-4)}
+#home-dose-history .mh-primary{background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#home-dose-history fieldset{min-width:0;margin:0;padding:var(--fd-space-3);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);background:var(--fd-surface)}
+#home-dose-history legend{padding-inline:var(--fd-space-2);font-weight:700}
+#home-dose-history label{display:flex;align-items:center;min-height:var(--fd-target-touch);gap:var(--fd-space-2);padding:var(--fd-space-2);border-radius:var(--fd-radius-xs);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));cursor:pointer}
+#home-dose-history label:has(:checked){background:var(--fd-teal-wash)}
+#home-dose-history input{flex:none;margin:0;accent-color:var(--fd-teal)}
+#home-dose-history .mh-final blockquote{margin-block:var(--fd-space-4)}
+
 /* Alex's callback places one event on the same seven-day strip in either history. */
 #alex-timing .at-case{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);margin-block:var(--fd-space-5);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
 #alex-timing .at-portrait{position:relative;min-height:8em}
