@@ -3597,12 +3597,16 @@ test.describe('Interactive readings', () => {
     await expect(compare).toBeHidden();
     await toggleWithKeyboard(frames.first());
     await expect(compare).toBeVisible();
-    const handoff = compare.locator('.vp-handoff');
+    const handoff = compare.locator('details').filter({has: page.getByText('Compare one way to call the resident', { exact: true })});
+    const decision = compare.locator('details').filter({has: page.getByText('Resident · What do you decide at the bedside?', { exact: true })});
     await toggleWithKeyboard(handoff);
     await expect(handoff.locator('p')).toContainText('nurse saw Kit drink');
     await expect(handoff.locator('p')).toContainText('I heard no reply');
+    await toggleWithKeyboard(decision);
+    await expect(decision.locator('p')).toContainText('lorazepam challenge');
     await toggleWithKeyboard(frames.last());
     await expect(compare).toBeHidden();
+    await expect(decision).toHaveJSProperty('open', false);
     await expect(handoff).toHaveJSProperty('open', false);
     await toggleWithKeyboard(frames.last());
     await expect(compare).toBeVisible();
@@ -3653,7 +3657,7 @@ test.describe('Interactive readings', () => {
     expect(tableFollows).toBe(true);
     await expect(measures).toHaveCount(2);
     for (const [index, values, reply, sample] of [
-      [0, '72 → 74 → 76 kg', 'helps me sleep', 'repeat weight together'],
+      [0, '72 → 74 → 76 kg', 'helps me sleep', 'about 5.6% of baseline'],
       [1, '124 → 122 → 124 mmHg', 'right after dinner', 'pressure is back at its baseline'],
     ]) {
       const measure = measures.nth(index);
@@ -3663,7 +3667,12 @@ test.describe('Interactive readings', () => {
       await toggleWithKeyboard(measure);
       await expect(activity.locator('details[name="vp-measure"][open]')).toHaveCount(1);
       await expect(measure.locator('.vp-reply > p').first()).toContainText(reply);
-      const handoff = measure.locator('.vp-handoff');
+      const handoff = measure.locator('details').filter({has: page.getByText('Compare a discharge handoff', { exact: true })});
+      if (index === 0) {
+        const decision = measure.locator('details').filter({has: page.getByText('Resident · What would you decide before discharge?', { exact: true })});
+        await toggleWithKeyboard(decision);
+        await expect(decision.locator('p')).toContainText('5% gain');
+      }
       await toggleWithKeyboard(handoff);
       await expect(handoff.locator('p')).toBeVisible();
       await expect(handoff.locator('p')).toContainText(sample);
@@ -4267,13 +4276,17 @@ test.describe('Clinical field guide', () => {
     const prompt = bedside.getByText('What would you ask the patient first?', { exact: false });
     await expect(prompt).toBeVisible();
 
-    const reveal = bedside.locator('summary');
+    const reveal = bedside.locator('.fd-bedside-case__prompt + details > summary');
     const hidden = [bedside.getByText('I feel like I have to keep moving.', { exact: false }),
       bedside.getByText('The antipsychotic dose was increased yesterday.'), bedside.getByText('Resident follow-up')];
     for (const text of hidden) await expect(text).toBeHidden();
     await reveal.click();
     for (const text of hidden) await expect(text).toBeVisible();
     await expect(bedside.getByText('What moves up your differential?', { exact: false })).toBeVisible();
+    const model = bedside.getByText('An urge to keep moving that starts', {exact: false});
+    await expect(model).toBeHidden();
+    await bedside.getByText('Compare with this page’s approach', {exact: true}).click();
+    await expect(model).toBeVisible();
     await reveal.press('Enter');
     for (const text of hidden) await expect(text).toBeHidden();
     await expect(prompt).toBeVisible();

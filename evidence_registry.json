@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-11-20",
+  "updated": "2026-11-21",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -12326,6 +12326,51 @@
             "date": "2026-11-20",
             "note": "Linked in the case debrief on toxidromes.md.",
             "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ada-apa-2004-antipsychotic-metabolic-consensus",
+      "type": "consensus",
+      "citation": {
+        "title": "Consensus Development Conference on Antipsychotic Drugs and Obesity and Diabetes",
+        "authors": [],
+        "organization": "American Diabetes Association; American Psychiatric Association; American Association of Clinical Endocrinologists; North American Association for the Study of Obesity",
+        "year": 2004,
+        "journal": "Diabetes Care",
+        "volume": "27",
+        "pages": "596-601",
+        "doi": "10.2337/diacare.27.2.596",
+        "pmid": "14747245",
+        "url": "https://doi.org/10.2337/diacare.27.2.596"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Crossref and PubMed",
+        "verifiedAt": "2026-11-21",
+        "note": "Verified the panel’s follow-up monitoring recommendation on page 599."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "Joint consensus statement",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-21",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "nutrition",
+          "antipsychotics",
+          "metabolic-monitoring"
+        ],
+        "clerkshipRelevance": "Identifies the historical threshold for considering a switch after weight gain.",
+        "noteHistory": [
+          {
+            "date": "2026-11-21",
+            "note": "Verified the panel’s follow-up monitoring recommendation on page 599.",
+            "reason": "Source for the draft Nutrition resident discussion."
           }
         ]
       }

@@ -54,7 +54,7 @@
     <ol class="sn-events">
       <li><time datetime="00:00">Around midnight</time><p>“I kept hearing people in the corridor.”</p></li>
       <li><time datetime="02:00">Around 2 a.m.</time><p>“The blood-pressure cuff woke me. Then I lay there worrying.”</p></li>
-      <li><time datetime="05:00">Around 5 a.m.</time><p>“I heard the trolley. By morning, I felt as if I had barely slept.”</p></li>
+      <li><time datetime="05:00">Around 5 a.m.</time><p>“I heard the cart. By morning, I felt as if I had barely slept.”</p></li>
     </ol>
     <p class="sn-unknown">Time in between remains unknown. These accounts do not measure total sleep or prove a single cause.</p>
   </template>
@@ -63,7 +63,7 @@
     <ol class="sn-events">
       <li><time datetime="00:10">12:10 a.m.</time><p>Nora was awake and asked whether the corridor could be quieter.</p></li>
       <li><time datetime="02:00">2 a.m.</time><p>Awake during a scheduled clinical assessment.</p></li>
-      <li><time datetime="05:10">5:10 a.m.</time><p>Awake when a supply trolley passed. Required observations continued.</p></li>
+      <li><time datetime="05:10">5:10 a.m.</time><p>Awake when a supply cart passed. Required checks continued.</p></li>
     </ol>
     <p class="sn-unknown">Time in between remains unknown. These accounts do not measure total sleep or prove a single cause.</p>
   </template>
@@ -84,13 +84,13 @@
     <button class="sn-priority" type="button" data-priority="contributors" aria-pressed="false" aria-controls="sn-feedback">Explore distress, daytime routine, and medications</button>
   </div>
   <div id="sn-feedback" class="sn-feedback" data-feedback aria-live="polite">Choose a first conversation. These priorities can be combined.</div>
-  <p class="sn-guard">Continue prescribed safety observations and clinically necessary care.</p>
+  <p class="sn-guard">Continue ordered safety checks and clinically necessary care.</p>
   <template data-plan-copy="care-nurse">The nursing record gives you specific contacts to discuss. Ask which nonurgent interruptions can safely be combined or rescheduled; reduce avoidable noise.</template>
   <template data-plan-copy="care-patient">Nora links some wakefulness to interruptions. Review the nursing record before proposing changes to overnight care.</template>
-  <template data-plan-copy="care-base">Review the patient’s account and nursing record before attributing her poor sleep to the ward.</template>
+  <template data-plan-copy="care-base">Review the patient’s account and nursing record before attributing her poor sleep to the unit.</template>
   <template data-plan-copy="contributors-patient">Nora describes lying awake worrying. Explore that distress, daytime sleep and activity, medications, and substances without assuming one explains everything.</template>
   <template data-plan-copy="contributors-base">Ask about wakefulness, distress, daytime routine, medications, and substances before choosing an explanation.</template>
-  <template data-plan-copy="home">The home history also needs a separate sleep evaluation; changing the ward routine will not settle that question.</template>
+  <template data-plan-copy="home">The home history also needs a separate sleep evaluation; changing the unit routine will not settle that question.</template>
 </section>
 
 **What the student does** —
@@ -101,7 +101,7 @@
 - Recognize cataplexy, sleep paralysis, and hypnagogic hallucinations as narcolepsy — not psychosis.
 
 <details id="sleep-followup" class="sn-resident" data-resident>
-  <summary><span><small>Resident follow-up</small>If the ward were quiet, what could still be wrong?</span></summary>
+  <summary><span><small>Resident follow-up</small>If the unit were quiet, what could still be wrong?</span></summary>
   <div class="sn-resbody">
     <p class="sn-resquestion">What does your evidence support—and what can it not establish?</p>
     <label for="sn-reflection">Rehearse a brief formulation and one follow-up question</label>
@@ -112,14 +112,14 @@
       <div class="sn-note" data-note></div>
       <p class="sn-coverage" data-coverage></p>
     </details>
-    <p class="sn-footer"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5337595/" target="_blank" rel="noopener">Sleep evaluation</a> · <a href="https://www.nice.org.uk/guidance/cg103/chapter/Recommendations#preventing-delirium" target="_blank" rel="noopener">Sleep on the ward</a></p>
+    <p class="sn-footer"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5337595/" target="_blank" rel="noopener">Sleep evaluation</a> · <a href="https://www.nice.org.uk/guidance/cg103/chapter/Recommendations#preventing-delirium" target="_blank" rel="noopener">Sleep on the unit</a></p>
   </div>
   <template data-note-copy="intro"><p>Nora reports three difficult hospital nights. I do not yet have enough information to name one cause.</p></template>
   <template data-note-copy="patient"><p>From Nora: she recalls noise, an awakening during care, and lying awake worrying. This makes distress and possible interruptions worth addressing.</p></template>
   <template data-note-copy="nurse"><p>From the nursing record: she was awake during three documented contacts. The record does not establish total sleep or what happened between observations.</p></template>
   <template data-note-copy="home"><p>From her home history: unrefreshing sleep and daytime dozing predate admission. Her report of a partner noticing snoring and breathing pauses raises concern for obstructive sleep apnea; it requires clinical evaluation and appropriate testing, not a diagnosis from this exercise.</p></template>
-  <template data-note-copy="care-nurse"><p>My first step tonight is to discuss reducing avoidable noise and safely coordinating nonurgent care with nursing. Required observations and necessary care continue.</p></template>
-  <template data-note-copy="care-base"><p>My first step is to review overnight care with nursing before deciding which interruptions could safely change. Required observations and necessary care continue.</p></template>
+  <template data-note-copy="care-nurse"><p>My first step tonight is to discuss reducing avoidable noise and safely coordinating nonurgent care with nursing. Required checks and necessary care continue.</p></template>
+  <template data-note-copy="care-base"><p>My first step is to review overnight care with nursing before deciding which interruptions could safely change. Required checks and necessary care continue.</p></template>
   <template data-note-copy="contributors"><p>My first step is to ask more about distress, daytime routine, medications, and substances with the treating team. I would review the contributors before escalating sleep medication.</p></template>
   <template data-note-copy="missing-all-known"><p>Still unresolved: the full sleep history, other contributors, and what follow-up testing is appropriate. Three difficult hospital nights alone do not establish chronic insomnia.</p></template>
   <template data-note-copy="no-priority"><p>I have not yet selected a first conversation for tonight.</p></template>

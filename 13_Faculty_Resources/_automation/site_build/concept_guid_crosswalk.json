@@ -1462,12 +1462,12 @@
       "oldOrdinal": 0,
       "editorialId": "t_sud-pearl1:1",
       "noteId": "t_sud-pearl1",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording; FACULTY REVIEW REQUIRED",
       "oldFront": "[…] withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
       "oldBack": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
-      "newFront": "[…] withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.",
-      "newBack": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly."
+      "newFront": "[…] withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly, and still ask about suicidal thoughts during the stimulant crash and plan for lost opioid tolerance at discharge.",
+      "newBack": "Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly, and still ask about suicidal thoughts during the stimulant crash and plan for lost opioid tolerance at discharge."
     },
     {
       "oldGuid": "P>J6nXjZQH",

@@ -15,6 +15,10 @@
       <div><dt>Medication history</dt><dd>The antipsychotic dose was increased yesterday.</dd></div>
     </dl>
     <p class="fd-bedside-case__follow"><span class="fd-bedside-case__label">Resident follow-up</span> What moves up your differential? What would you check before recommending a medication change on rounds?</p>
+    <details>
+      <summary>Compare with this page’s approach</summary>
+      <p>An urge to keep moving that starts the day after an antipsychotic increase moves akathisia up the differential. Before recommending a change, ask about the inner urge to move, inspect for akathisia, and check the timing against the dose change. Escalating the antipsychotic is the cardinal error. This page’s hierarchy: reduce the dose or switch to a lower-dopamine-affinity agent, then propranolol, then benztropine if parkinsonism coexists, then a benzodiazepine adjunct. See “When akathisia is identified” below.</p>
+    </details>
   </details>
 </figure>
 

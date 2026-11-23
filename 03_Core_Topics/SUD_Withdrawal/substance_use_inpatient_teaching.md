@@ -4,12 +4,13 @@
 
 **In one line** — On the inpatient unit, substance use disorders show up as intoxication, withdrawal, or a confounder of every other psychiatric presentation, and your job is to keep the patient physiologically safe while engaging them, without judgment, in treatment that continues after discharge.
 
-**How it presents on the unit** — Three overlapping patterns. *Intoxication* can mimic or unmask psychiatric illness (stimulant-induced paranoia, alcohol-related mood lability, sedative disinhibition). *Withdrawal* is the time-sensitive one: alcohol and benzodiazepine withdrawal can progress to seizures and delirium tremens and can kill, whereas opioid and stimulant withdrawal are intensely uncomfortable but rarely lethal. *Co-occurring psychiatric illness* is the rule, not the exception — depression, anxiety, PTSD, and psychotic disorders frequently travel with substance use, and you cannot reliably diagnose a primary mood or psychotic disorder while the patient is acutely intoxicated or withdrawing.
+**How it presents on the unit** — Three overlapping patterns. *Intoxication* can mimic or unmask psychiatric illness (stimulant-induced paranoia, alcohol-related mood lability, sedative disinhibition). *Withdrawal* is the time-sensitive one: alcohol and benzodiazepine withdrawal can progress to seizures and delirium tremens and can kill, whereas opioid and stimulant withdrawal are intensely uncomfortable but rarely lethal. Rarely lethal is not low risk: the stimulant crash can bring depressed mood with suicidal thoughts, and opioid tolerance falls during the admission. *Co-occurring psychiatric illness* is the rule, not the exception — depression, anxiety, PTSD, and psychotic disorders frequently travel with substance use, and you cannot reliably diagnose a primary mood or psychotic disorder while the patient is acutely intoxicated or withdrawing.
 
-| Withdrawal from | What makes it matter |
-|---|---|
-| Alcohol, benzodiazepines | Can progress to seizures and delirium tremens, and can kill |
-| Opioids, stimulants | Intensely uncomfortable but rarely lethal |
+| Withdrawal from | What makes it matter | Still watch for |
+|---|---|---|
+| Alcohol, benzodiazepines | Can progress to seizures and delirium tremens, and can kill | The can't-miss mimics in the next table |
+| Opioids | Intensely uncomfortable but rarely lethal | Lost tolerance: the dose used before admission can kill after discharge |
+| Stimulants | Intensely uncomfortable but rarely lethal | The crash: depressed mood that can include suicidal thoughts. Ask directly |
 
 **Differential & can't-miss mimics** — Altered mental status in a patient who uses substances is never automatically "just withdrawal." Keep these live: **Wernicke encephalopathy** (confusion, ophthalmoplegia, ataxia — often incomplete, so a low threshold is correct); **head injury / subdural hematoma** (falls and trauma are common); **occult infection / sepsis** (meningitis, pneumonia, aspiration); **hepatic encephalopathy** in the patient with alcohol-related liver disease (asterixis, elevated ammonia); and **polysubstance use masking** a more dangerous co-ingestant or an evolving metabolic, electrolyte, or anticholinergic picture. Anchor every withdrawal assessment with vitals and a neuro exam.
 
@@ -98,7 +99,7 @@
 External listings can change. Confirm current details with the organization, and do not place patient-identifying information in a link.
 
 **High-yield pearls**
-- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly.
+- Alcohol and benzodiazepine withdrawal can be lethal; opioid and stimulant withdrawal are miserable but rarely fatal — match your urgency accordingly, and still ask about suicidal thoughts during the stimulant crash and plan for lost opioid tolerance at discharge.
 - In hepatic impairment, reach for a **LOT drug** (Lorazepam, Oxazepam, Temazepam) — glucuronidation is preserved in cirrhosis; the oxidative CYP450 pathway (chlordiazepoxide, diazepam) is not.
 - Thiamine before (or with) glucose in withdrawal and refeeding — but never delay dextrose for documented hypoglycemia; give the sugar immediately and the thiamine as soon as it is in hand.
 - Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.

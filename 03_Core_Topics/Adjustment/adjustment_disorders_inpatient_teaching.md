@@ -19,7 +19,7 @@
 **Initial workup** — Anchor the timeline to the stressor (onset within 3 months). Confirm the symptoms don't meet criteria for another disorder and aren't a normal reaction. Screen for depression, anxiety, PTSD, and substance use. **Assess suicide risk explicitly** — impulsive self-harm can occur even with "subthreshold" symptoms, especially around acute stressors.
 
 <section class="bedside-case" id="lee-letter" aria-labelledby="lee-title">
-<header><p class="case-kicker">Adjustment disorders · Initial workup</p><h3 id="lee-title">Did it start with the letter?</h3><p>At admission on Thursday, Lee hands you a notice they received six days ago. The team knows what happened on Friday. You still need to know how Lee was doing before then.</p></header>
+<header><p class="case-kicker">Adjustment disorders · Initial workup</p><h3 id="lee-title">Did it start with the letter?</h3><p>Lee was admitted on Thursday for safety after an emergency evaluation. Lee hands you a notice they received six days ago. The team knows what happened on Friday. You still need to know how Lee was doing before then.</p></header>
 <figure class="desk"><div class="letter"><span class="stamp">Received Friday</span><p>Notice to tenants</p><div class="ruling" aria-hidden="true"></div></div><blockquote>“Six weeks to find another apartment. I keep that piece of paper in my pocket. I don’t know what I’m supposed to do.”</blockquote></figure>
 <section class="step"><p class="case-kicker">MS3 · At admission</p><h4>Put the first change on the timeline.</h4>
  <div><button type="button" id="lee-ask" aria-controls="lee-story" aria-expanded="false">Ask “How were things before Friday?”</button></div>
@@ -66,7 +66,7 @@
  <details id="lee-worked" hidden><summary>Compare your formulation</summary><blockquote id="lee-sample"></blockquote></details>
 </div>
 <button type="button" class="case-link" data-back>Return to Lee’s timeline</button>
-<footer>Fictional teaching case · <a href="https://www.veterans.gc.ca/en/mental-and-physical-health/mental-health-and-wellness/compensation-illness-or-injury/disability-benefits/entitlement-eligibility-guidelines/az-index/adjustment-disorder" target="_blank" rel="noopener noreferrer">Veterans Affairs Canada on adjustment disorder</a></footer>
+<footer>Fictional teaching case · <a href="https://medlineplus.gov/ency/article/000932.htm" target="_blank" rel="noopener noreferrer">MedlinePlus on adjustment disorder</a></footer>
 </section>
 
 **Disposition & discharge essentials** — Arrange brief outpatient psychotherapy and practical support around the stressor. Provide a safety plan. Ensure follow-up that can catch a transition to a full mood or anxiety disorder, or to prolonged grief, and reconcile any short-term medication with a stop date.

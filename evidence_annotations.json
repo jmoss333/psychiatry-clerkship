@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-11-20",
+  "updated": "2026-11-21",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -3573,6 +3573,55 @@
           "direction": "descriptive",
           "usedBy": [
             "toxidromes.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ada-apa-2004-antipsychotic-metabolic-consensus",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://diabetesjournals.org/care/article-pdf/27/2/596/661226/zdc00204000596.pdf",
+        "retrievedAt": "2026-11-21",
+        "doi": "10.2337/diacare.27.2.596",
+        "sourceSpan": "If a patient gains ≥5% of his or her initial weight at any time during therapy, one should consider switching the SGA.",
+        "pmid": "14747245"
+      },
+      "claims": [
+        {
+          "claimId": "ada-apa-2004-antipsychotic-metabolic-consensus-weight-threshold",
+          "claimText": "The consensus panel recommended considering a switch of second-generation antipsychotic after a gain of at least 5% of initial weight.",
+          "claimTerms": [
+            "initial weight",
+            "consider switching"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "nutrition_metabolic.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "dsm-5-tr",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://psychiatryonline.org/doi/abs/10.1176/appi.books.9780890425787.x16_Substance_Related_Disorders",
+        "retrievedAt": "2026-11-21",
+        "doi": "10.1176/appi.books.9780890425787.x16_Substance_Related_Disorders",
+        "sourceSpan": "Depressive symptoms with suicidal thoughts or behavior can occur and are generally the most serious problems seen during “crashing”"
+      },
+      "claims": [
+        {
+          "claimId": "dsm-5-tr-stimulant-crash",
+          "claimText": "During a stimulant crash, depressive symptoms can include suicidal thoughts.",
+          "claimTerms": [
+            "depressive symptoms",
+            "suicidal thoughts"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_sud.md"
           ]
         }
       ]

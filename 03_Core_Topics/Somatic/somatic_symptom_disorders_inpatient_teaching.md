@@ -27,7 +27,7 @@
 <div class="case-reply" data-answer hidden><p class="case-kicker">Rae</p><blockquote data-reply aria-live="polite"></blockquote></div>
 <figure aria-label="Rae’s return visit card"><div><span class="case-kicker">Return visit</span><strong data-time>Time open</strong></div>
 <div><p class="case-kicker">Rae’s bedside card</p><dl><dt>Who’s coming back?</dt><dd data-who>To be agreed</dd><dt>What matters to Rae?</dt><dd data-priority>Ask Rae</dd></dl></div></figure>
-<div data-closing hidden><h4 id="rae-close">How would you close the visit?</h4><div class="case-choices" role="group" aria-labelledby="rae-close"><button type="button" data-plan="call" aria-pressed="false">“That sounds hard. Ring if the pain gets worse.”</button><button type="button" data-plan="return" aria-pressed="false">“I hear you. Could we come back at two, even if the pain is the same?”</button></div></div>
+<div data-closing hidden><h4 id="rae-close">How would you close the visit?</h4><div class="case-choices" role="group" aria-labelledby="rae-close"><button type="button" data-plan="call" aria-pressed="false">“That sounds hard. Call if the pain gets worse.”</button><button type="button" data-plan="return" aria-pressed="false">“I hear you. Could we come back at two, even if the pain is the same?”</button></div></div>
 <p class="feedback" data-plan-note role="status"></p><button type="button" class="case-link" data-visit hidden>Return at 2 p.m. →</button></div>
 <template data-morning="goal">
 <span data-words>“It’s my niece’s birthday. I brought a card, and it’s been sitting there blank. I’d like to write her a line.”</span>
