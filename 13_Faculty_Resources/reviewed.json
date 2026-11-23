@@ -1593,5 +1593,25 @@
     "by": "Joshua Moss, MD",
     "contentHash": "bd8d043c553919f317b3bda1a7476f124d0a72bd",
     "clinicalHash": "f03d84017eb1624c1b9aefd5bc6b5c462fd53a04"
+  },
+  "cotw_20261123_bpd_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "Case of the Week 2026-11-23 (borderline personality disorder, MS3 version) added this week; de-identified synthetic teaching case; awaiting faculty attestation.",
+    "at": "2026-11-23",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261123_bpd_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "Case of the Week 2026-11-23 (borderline personality disorder, resident version) added this week; de-identified synthetic teaching case; awaiting faculty attestation.",
+    "at": "2026-11-23",
+    "by": "Pending faculty review"
   }
 }
