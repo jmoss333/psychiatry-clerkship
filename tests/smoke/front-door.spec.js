@@ -3824,6 +3824,90 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  test('Which came first? ties the timeline, interpretation and rounds note to Alex’s selected history', async ({ page }) => {
+    await page.goto('/?page=ddx.md&guideSection=4-manic-elevated-irritable');
+    const heading = page.locator('.fd-article__body #guide-4-manic-elevated-irritable');
+    await expect(heading).toContainText('4. Manic / elevated / irritable');
+    const card = heading.locator('xpath=parent::section').locator('#alex-timing');
+    await expect(card).toBeVisible();
+    const at = id => card.locator('#at-' + id);
+    const portrait = card.getByRole('img', { name: /Alex talks with a clinician over breakfast/i });
+    await portrait.scrollIntoViewIfNeeded();
+    await expect(portrait).toBeVisible();
+    await expect.poll(() => portrait.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+
+    const histories = [
+      { timing: 'before', day: 'Sunday', other: 'after', otherDay: 'Wednesday',
+        mismatch: 'a call that had already happened', interpretation: 'underlying mood episode' },
+      { timing: 'after', day: 'Wednesday', other: 'before', otherDay: 'Sunday',
+        mismatch: 'his sleep before the first dose', interpretation: 'possibility of a medication effect' },
+    ];
+    const followups = [
+      { key: 'prior', words: 'earlier stretches of short sleep', otherWords: 'after those calls' },
+      { key: 'course', words: 'how much he slept after those calls', otherWords: 'earlier stretches' },
+    ];
+    const evidence = at('evidence');
+    const source = evidence.locator('a');
+    await expect(at('place-before')).toBeDisabled();
+    await expect(at('place-after')).toBeDisabled();
+    await at('hear').click();
+    for (const history of histories) {
+      await test.step(history.day + ' callback', async () => {
+        await expect(at('quote')).toContainText(history.day);
+        await expect(at('map')).toHaveAttribute('data-placement', 'unknown');
+        await expect(at('reasoning')).toBeHidden();
+        await expect(at('next-step')).toBeHidden();
+        await expect(at('note')).toBeEmpty();
+        await expect(evidence).toBeHidden();
+        await expect(evidence).toHaveJSProperty('open', false);
+        await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+        await at('place-' + history.other).click();
+        await expect(at('placement-feedback')).toBeVisible();
+        await expect(at('placement-feedback')).toContainText(history.day);
+        await expect(at('reasoning')).toBeHidden();
+        await at('place-' + history.timing).click();
+        await expect(at('call-label')).toContainText(history.day);
+        await expect(at('placement-feedback')).toBeHidden();
+        await expect(at('map')).toHaveAttribute('data-placement', history.timing);
+        for (const [choice, feedback] of [[history.other, history.mismatch], ['certain', 'when Alex called']]) {
+          await at('reason-' + choice).click();
+          await expect(at('reason-feedback')).toBeVisible();
+          await expect(at('reason-feedback')).toContainText(feedback);
+          await expect(at('next-step')).toBeHidden();
+        }
+        await at('reason-' + history.timing).click();
+        await expect(at('reason-feedback')).toBeHidden();
+        await expect(at('next-step')).toBeVisible();
+        await expect(evidence).toBeHidden();
+        for (const question of followups) {
+          await at('check-' + question.key).click();
+          await expect(at('note')).toBeVisible();
+          await expect(at('note')).toContainText(history.day + ', ' + history.timing + ' Monday');
+          await expect(at('note')).toContainText(history.interpretation);
+          await expect(at('note')).toContainText(question.words);
+          await expect(at('note')).not.toContainText(history.otherDay);
+          await expect(at('note')).not.toContainText(question.otherWords);
+        }
+        await evidence.locator('summary').click();
+        await expect(source).toBeVisible();
+        await expect(source).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/11799343/');
+      });
+      if (history.timing === 'before') await at('switch').click();
+    }
+    await at('restart').click();
+    await expect(at('hear')).toBeFocused();
+    await expect(at('callback')).toBeHidden();
+    await expect(at('place-before')).toBeDisabled();
+    await expect(at('place-after')).toBeDisabled();
+    await expect(at('map')).toHaveAttribute('data-placement', 'unknown');
+    await expect(at('reasoning')).toBeHidden();
+    await expect(at('next-step')).toBeHidden();
+    await expect(at('note')).toBeEmpty();
+    await expect(evidence).toHaveJSProperty('open', false);
+    await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+  });
+
   test('follow-up study changes the denominator and separates cohort findings from individual decisions', async ({ page }) => {
     const card = await openActivity(page, 'evidence_inpatient.md', 'study-denominators', 'Follow-Up Interventions and Collaborative Care');
     const text = (label) => card.locator('[data-study-' + label + ']');

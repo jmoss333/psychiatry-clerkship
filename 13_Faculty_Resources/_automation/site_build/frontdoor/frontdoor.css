@@ -3449,6 +3449,43 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* Alex's callback places one event on the same seven-day strip in either history. */
+#alex-timing .at-case{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);margin-block:var(--fd-space-5);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+#alex-timing .at-portrait{position:relative;min-height:8em}
+#alex-timing .at-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:84% center}
+#alex-timing .at-account{align-self:center;padding:var(--fd-space-5)}
+#alex-timing .at-source{font-weight:650}
+#alex-timing :is(.at-source,.at-chartnote,.at-sub,.at-legend){font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#alex-timing .at-chartnote{margin-block:var(--fd-space-5);color:var(--fd-text-mid)}
+#alex-timing .at-primary{background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#alex-timing #at-callback{border-inline-start:3px solid var(--fd-olive);padding-inline-start:var(--fd-space-5)}
+#alex-timing .at-timeline{margin-block:var(--fd-space-6);padding:var(--fd-space-6);border-radius:var(--fd-radius-sm);background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#alex-timing .at-timeline :is(h4,p,figcaption){color:inherit;text-align:start}
+#alex-timing .at-strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));position:relative;isolation:isolate;margin-block:var(--fd-space-5)}
+#alex-timing .at-strip::before{content:"";position:absolute;left:7.14%;right:7.14%;top:calc(var(--fd-target-touch)/2);border-top:1px solid currentColor;opacity:.7;z-index:-1}
+#alex-timing .at-day{display:grid;min-width:0;justify-items:center;align-content:start;gap:var(--fd-space-2)}
+#alex-timing .at-weekday{font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1))}
+#alex-timing :is(.at-tick,.at-target){height:var(--fd-target-touch);display:grid;place-items:center}
+#alex-timing .at-tick:not(.at-anchor)::after,#alex-timing .at-target:disabled b::after{content:"";width:1px;height:.6em;background:currentColor}
+#alex-timing .at-dot,#alex-timing .at-key{display:inline-block;width:.65em;height:.65em;background:currentColor;transform:rotate(45deg)}
+#alex-timing .at-last,#alex-timing .at-call{border-radius:50%;transform:none}
+#alex-timing .at-last{background:transparent;border:2px solid currentColor}
+#alex-timing .at-target{width:var(--fd-target-touch);max-width:none;min-width:0;padding:0;border:0;background:transparent;color:inherit;box-shadow:none}
+#alex-timing .at-target b{display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:50%;border:1.5px dashed currentColor;background:var(--fd-teal-deep)}
+#alex-timing .at-target:disabled{opacity:1;cursor:default}
+#alex-timing .at-target:disabled b{font-size:0;border:0}
+#alex-timing .at-target:disabled b::after{height:8px}
+#alex-timing .at-target:focus-visible{outline-color:currentColor}
+#alex-timing .at-target[aria-pressed=true] b{background:var(--fd-on-accent);color:var(--fd-teal-deep);border-style:solid}
+#alex-timing .at-legend{display:grid;gap:var(--fd-space-2);border-top:1px solid currentColor;padding-top:var(--fd-space-4)}
+#alex-timing .at-legend>span{display:flex;align-items:baseline;gap:var(--fd-space-4)}
+#alex-timing .at-key{flex:none}
+#alex-timing .at-key.at-call{background:transparent;border:1px dashed currentColor}
+#alex-timing [data-placement=before] .at-key.at-call,#alex-timing [data-placement=after] .at-key.at-call{background:currentColor}
+#alex-timing .step{border-top:2px solid var(--fd-line-strong);padding-top:var(--fd-space-6)}
+#alex-timing .at-choices{display:grid;gap:var(--fd-space-4)}
+#alex-timing .feedback,#alex-timing .at-sample{padding:var(--fd-space-5);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
+#alex-timing .at-sample h5{margin:0 0 var(--fd-space-3);font-size:inherit}
 #evening-calls .opener{margin-block:var(--fd-space-6);padding-inline-start:var(--fd-space-6);border-inline-start:3px solid var(--fd-olive)}
 #evening-calls .opener blockquote,#evening-calls .case-reply blockquote{font-style:italic}
 #evening-calls :is(.speaker,.hint,.asked,.record small){color:var(--fd-text-mid);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}

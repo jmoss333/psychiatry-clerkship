@@ -410,6 +410,8 @@ ALL_SOURCE_IDS |= {
     "gurrera-2017-nms-criteria-validation",
     "white-1991-catatonia-preceding-nms",
 }
+# Primary study cited in Alex's prednisone timeline debrief.
+ALL_SOURCE_IDS.add("brown-2002-prednisone-mood")
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
