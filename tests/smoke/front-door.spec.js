@@ -3107,13 +3107,14 @@ test.describe('Interactive readings', () => {
     await opening.locator('.read').click();
     await opening.locator('.play').click();
     await expect(opening.locator('.play')).toHaveText('Pause reply');
-    // Seek the real clip into each sentence and the silence between them.
+    // Play through the two sentences as a learner would, including the pause between them.
     const spoken = opening.locator('blockquote .spoken');
-    await voice.evaluate(audio => { audio.playbackRate = 0.5; audio.currentTime = 1; });
     await expect(spoken).toHaveText(['Last night I could hardly keep my eyes open.']);
-    await voice.evaluate(audio => { audio.currentTime = 4.1; });
-    await expect(spoken).toHaveCount(0);
-    await voice.evaluate(audio => { audio.currentTime = 5.1; });
+    await page.waitForFunction(element => {
+      const audio = element.querySelector('audio');
+      return audio.currentTime >= 3.9 && audio.currentTime < 4.72 &&
+        !element.querySelector('blockquote .spoken');
+    }, await card.elementHandle(), { timeout: 10_000 });
     await expect(spoken).toHaveText(['Let me call my daughter first.']);
     await opening.locator('.play').click();
     await expect(spoken).toHaveCount(0);
@@ -3144,8 +3145,7 @@ test.describe('Interactive readings', () => {
     await decision.locator('.play').click();
     await expect(decision.locator('.play')).toHaveText('Pause reply');
     await expect(id('review')).toBeVisible();
-    await voice.evaluate(audio => { audio.currentTime = audio.duration - 0.15; });
-    await expect(decision.locator('.play')).toHaveText('Replay reply');
+    await expect(decision.locator('.play')).toHaveText('Replay reply', { timeout: 15_000 });
     await expect(id('review')).toBeHidden();
     await id('compare').click();
     await expect(id('revision').locator('mark.verbatim')).toContainText('decided');
