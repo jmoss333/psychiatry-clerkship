@@ -100,6 +100,22 @@
       "resolvedAt": "2026-09-27",
       "pmid": "28697253"
     },
+    "10.1001/jama.2022.22744": {
+      "title": "Anxiety Disorders",
+      "container": "JAMA",
+      "containerAlt": [
+        "JAMA"
+      ],
+      "year": 2022,
+      "authors": [
+        "Szuhany",
+        "Simon"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "36573969"
+    },
     "10.1001/jama.2022.9805": {
       "title": "Effect of Pharmacogenomic Testing for Drug-Gene Interactions on Medication Selection and Remission of Symptoms in Major Depressive Disorder",
       "container": "JAMA",
@@ -2220,6 +2236,26 @@
       "resolvedAt": "2026-10-11",
       "pmid": "31303314"
     },
+    "10.1016/s0140-6736(21)00359-7": {
+      "title": "Anxiety disorders",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2021,
+      "authors": [
+        "Penninx",
+        "Pine",
+        "Holmes",
+        "Reif"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "33581801"
+    },
     "10.1016/s0140-6736(21)00476-1": {
       "title": "Borderline personality disorder",
       "container": "The Lancet",
@@ -2391,6 +2427,36 @@
       "resolvedAt": "2026-09-27",
       "pmid": "33568244"
     },
+    "10.1017/s0033291722003683": {
+      "title": "CBT treatment delivery formats for panic disorder: a systematic review and network meta-analysis of randomised controlled trials",
+      "container": "Psychol. Med.",
+      "containerAlt": [
+        "Psychol Med",
+        "Psychol. Med.",
+        "Psychological Medicine",
+        "Psychological medicine"
+      ],
+      "year": 2022,
+      "authors": [
+        "Papola",
+        "Ostuzzi",
+        "Tedeschi",
+        "Gastaldon",
+        "Purgato",
+        "Del Giovane",
+        "Pompoli",
+        "Pauley",
+        "Karyotaki",
+        "Sijbrandij",
+        "Furukawa",
+        "Cuijpers",
+        "Barbui"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "37132646"
+    },
     "10.1017/s0033291724003441": {
       "title": "Panic disorder and suicide",
       "container": "Psychol. Med.",
@@ -2479,6 +2545,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "42275028"
+    },
+    "10.1038/nrdp.2017.24": {
+      "title": "Anxiety disorders",
+      "container": "Nat Rev Dis Primers",
+      "containerAlt": [
+        "Nat Rev Dis Primers",
+        "Nature Reviews Disease Primers",
+        "Nature reviews. Disease primers"
+      ],
+      "year": 2017,
+      "authors": [
+        "Craske",
+        "Stein",
+        "Eley",
+        "Milad",
+        "Holmes",
+        "Rapee",
+        "Wittchen"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "28470168"
     },
     "10.1038/s41380-020-00946-6": {
       "title": "Mood stabilizers and/or antipsychotics for bipolar disorder in the maintenance phase: a systematic review and network meta-analysis of randomized controlled trials",
@@ -2939,6 +3028,27 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "33913799"
+    },
+    "10.1080/14737175.2023.2254938": {
+      "title": "Pharmacological approaches to the management of panic disorder in older patients: a systematic review",
+      "container": "Expert Review of Neurotherapeutics",
+      "containerAlt": [
+        "Expert Rev Neurother",
+        "Expert Review of Neurotherapeutics",
+        "Expert review of neurotherapeutics"
+      ],
+      "year": 2023,
+      "authors": [
+        "Caldirola",
+        "De Donatis",
+        "Alciati",
+        "Daccò",
+        "Perna"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "37676054"
     },
     "10.1080/15504263.2024.2434218": {
       "title": "Outcomes and Challenges of Motivational Interviewing in Dual Diagnosis Treatment—A Systematic Review",
@@ -4900,6 +5010,30 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "41217072"
+    },
+    "10.3389/fpsyt.2020.595584": {
+      "title": "Pharmacotherapy of Anxiety Disorders: Current and Emerging Treatment Options",
+      "container": "Front. Psychiatry",
+      "containerAlt": [
+        "Front Psychiatry",
+        "Front. Psychiatry",
+        "Frontiers in Psychiatry",
+        "Frontiers in psychiatry"
+      ],
+      "year": 2020,
+      "authors": [
+        "Garakani",
+        "Murrough",
+        "Freire",
+        "Thom",
+        "Larkin",
+        "Buono",
+        "Iosifescu"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "33424664"
     },
     "10.4088/jcp.19m13191": {
       "title": "Esketamine Nasal Spray for Rapid Reduction of Major Depressive Disorder Symptoms in Patients Who Have Active Suicidal Ideation With Intent",
