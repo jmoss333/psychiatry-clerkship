@@ -3543,6 +3543,47 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
+    await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
+    const card = page.locator('.fd-reader:visible #catie-stop');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toHaveText('5. What did the CATIE trial show?');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toContainText('Answer:');
+    const interview = key => card.locator('[data-patient="' + key + '"]');
+    const choice = key => card.locator('[data-choice="' + key + '"]');
+    const feedback = card.locator('#catie-feedback');
+    const compare = card.locator('#catie-compare');
+    const patients = [
+      {key:'a', quote:'we missed the bus', options:[
+        ['symptoms','explains the ED visit'], ['uncertain','different reason for stopping'], ['burden','get up in the morning'],
+      ]},
+      {key:'b', quote:'one every night', options:[
+        ['burden','what kept them awake'], ['uncertain','home dose is unclear'], ['symptoms','dose actually taken'],
+      ]},
+    ];
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    for (const patient of patients) {
+      await interview(patient.key).press('Enter');
+      await expect(card.locator('#catie-quote')).toContainText(patient.quote);
+      await expect(feedback).toBeHidden();
+      for (const [value, explanation] of patient.options) {
+        await expect(compare).toBeHidden();
+        await choice(value).click();
+        await expect(feedback).toContainText(explanation);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/16172203/');
+    await interview('a').click();
+    await expect(choice('burden')).toHaveAttribute('aria-pressed', 'true');
+    await choice('uncertain').click();
+    await expect(compare).toBeHidden();
+    await interview('b').click();
+    await expect(choice('symptoms')).toHaveAttribute('aria-pressed', 'true');
+    await card.getByRole('button', {name:'Start again'}).click();
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    await expect(card.locator('#catie-progress')).toHaveText('0 of 2 handoffs matched');
+  });
+
   test('fever comparison gates patient-specific interpretations and primary studies', async ({ page }) => {
     const activity = await openActivity(page, 'toxidromes.md', 'febrile-exam-pair', 'The four, side by side');
     const act = selector => activity.locator(selector).press('Enter');
