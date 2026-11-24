@@ -2241,10 +2241,10 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   ));
   expect(renderedWeeks).toEqual(expectedWeeks);
 
-  const pending = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-compact[role="status"]');
+  const pending = page.locator(':is(.fd-article, .fd-guide-header, .fd-article__head, .fd-article__body) > .governance-notice.pending-compact[role="status"]');
   await expect(pending).toHaveCount(1);
   await expect(pending.locator('.governance-title')).toHaveText('Pending faculty review');
-  await expect(page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.reviewed-receipt')).toHaveCount(0);
+  await expect(page.locator(':is(.fd-article, .fd-guide-header, .fd-article__head, .fd-article__body) > .governance-notice.reviewed-receipt')).toHaveCount(0);
 
   const weekLinks = compassRoot.locator('[data-fd-compass-link]');
   await weekLinks.first().focus();
@@ -4478,7 +4478,7 @@ test.describe('Clinical field guide', () => {
     await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
     await seedApp(page, testInfo, { state: { tab: 'library' } });
     await page.goto(`${GUIDE_URL}&guideFind=behavioral%20activation`);
-    const warning = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-high');
+    const warning = page.locator(':is(.fd-article, .fd-guide-header, .fd-article__head, .fd-article__body) > .governance-notice.pending-high');
     await expect(page.locator('.fd-reader--guide')).toBeVisible();
     await expect(warning).toHaveCount(1);
     await expect(warning).toContainText('Pending faculty review');
@@ -4572,7 +4572,7 @@ test.describe('Clinical field guide', () => {
     await page.goto(`/?page=${ref}`);
 
     const header = page.locator('.fd-guide-header');
-    const bedside = header.locator('.fd-article__h1 + .fd-bedside-case');
+    const bedside = header.locator('.fd-article__h1 ~ .fd-bedside-case');
     await expect(header.locator('.governance-notice.pending-high ~ .fd-article__h1')).toBeVisible();
     await expect(bedside.locator('figcaption')).toContainText('What’s behind the pacing?');
     await expect(bedside.locator('img')).toBeVisible();
@@ -5083,7 +5083,7 @@ test.describe('Clinical field guide', () => {
     const warning = page.locator('.fd-reader .governance-notice.pending-high');
     await expect(warning).toHaveCount(1);
     await expect(warning).toBeVisible();
-    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 + .fd-bedside-case');
+    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 ~ .fd-bedside-case');
     await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
     const art = bedside.locator('img');
     await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
@@ -9484,6 +9484,41 @@ test('Library view switch fits at 320px with wider fallback font metrics', async
   await expectHealthy(page);
 });
 
+// Both guide formats use the page title as the entry point for practice.
+for (const [ref, section] of [['t_anxiety.md', 'initial-workup'], ['orientation.md', 'daily-rhythm']]) {
+  test(`practice panel precedes guide navigation and bedside teaching on ${ref}`, async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}`);
+
+    const reader = page.locator('.fd-reader--guide');
+    const header = reader.locator('.fd-guide-header');
+    const panel = header.locator('.fd-article__h1 ~ details.practice-panel');
+    const summary = panel.locator(':scope > summary');
+    await expect(reader.locator('details.practice-panel')).toHaveCount(1);
+    await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
+    await expect(summary).toBeInViewport();
+    await expect(panel).toHaveJSProperty('open', false);
+    const contents = reader.locator('.fd-guide-contents');
+    const summaryBox = await summary.boundingBox();
+    expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual((await contents.boundingBox()).y + 1);
+    if (ref === 't_anxiety.md') {
+      await expect(header.locator('details.practice-panel ~ .fd-bedside-case')).toBeVisible();
+    }
+
+    await summary.press('Enter');
+    await expect(panel.locator('.practice-body')).toBeVisible();
+    await summary.press('Space');
+    await expect(panel.locator('.practice-body')).toBeHidden();
+    await contents.locator('summary').click();
+    await contents.locator(`[data-guide-section="guide-${section}"]`).click();
+    await expect(reader.locator(`#guide-${section}`)).toBeFocused();
+    await expect(page).toHaveURL(new RegExp(`guideSection=${section}(?:&|$)`));
+    await expectHealthy(page);
+  });
+}
+
 // The Ward accessory is a native disclosure; a new page mount never carries its expanded
 // presentation. Saved study records and the article's own disclosures are independent.
 for (const width of [320, 390, 1280]) {
@@ -9499,7 +9534,7 @@ for (const width of [320, 390, 1280]) {
       await page.route(`**/content/${ref}`, route => route.fulfill({ contentType: 'text/markdown',
         body: '# Synthetic study notes\n\n<details id="unrelated-study" open><summary>Article study notes</summary><p>Synthetic notes remain available.</p></details>\n\n### Study section\n\nNeutral study text.' }));
     }
-    const ward = page.locator('.fd-article__body > details.practice-panel');
+    const ward = page.locator('.fd-reader details.practice-panel');
     const summary = ward.locator(':scope > summary');
     async function ready(ref) {
       await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', ref);
@@ -9507,7 +9542,12 @@ for (const width of [320, 390, 1280]) {
       await expect(ward).not.toHaveAttribute('open', '');
       expect(await ward.evaluate(el => el.open)).toBe(false);
       await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
-      await expect(page.locator('#unrelated-study')).toHaveAttribute('open', '');
+      const authored = page.locator('#unrelated-study');
+      const title = page.locator('.fd-article__h1');
+      const summaryBox = await summary.boundingBox();
+      expect(summaryBox.y).toBeGreaterThanOrEqual((await title.boundingBox()).y);
+      expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual((await authored.boundingBox()).y + 1);
+      await expect(authored).toHaveAttribute('open', '');
       await expect(page.locator('#unrelated-study p')).toBeVisible();
     }
     await page.goto('/?page=t_mood.md');
