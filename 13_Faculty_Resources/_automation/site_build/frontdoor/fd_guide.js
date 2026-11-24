@@ -45,6 +45,19 @@ function fdGuideLeads(body){
   });
   return heading||leads.length<FD_GUIDE_LEAD_MIN||words<FD_GUIDE_LEAD_MIN_WORDS?[]:leads;
 }
+/* Prefer a unique verbatim excerpt in the mounted reading. Before excerpts load, only
+   an unambiguous authored section lead is strong enough to target this way. */
+function fdGuideSearchTarget(candidates,query,sentence){
+  var phrase=fdGuideNormalize(query), quote=String(sentence||'').replace(/\s+/g,' ').trim();
+  if(!quote&&!phrase)return null;
+  var hits=candidates.filter(function(node){
+    if(node.closest('[hidden],[aria-hidden="true"],template'))return false;
+    if(quote)return node.textContent.replace(/\s+/g,' ').indexOf(quote)!==-1;
+    var label=fdGuideNormalize(fdGuideLeadLabel(node));
+    return !!label&&(label+' ').indexOf(phrase+' ')===0;
+  });
+  return hits.length===1?hits[0]:null;
+}
 function fdGuideMount(body,options){
   var o=options||{}, reader=body&&body.closest('.fd-reader');
   if(!reader||reader.classList.contains('fd-reader--tool'))return null;
@@ -235,7 +248,53 @@ function fdGuideMount(body,options){
     if(notice&&notice.parentNode===body)notice.insertAdjacentElement('afterend',cue);
     else body.insertBefore(cue,body.firstChild);
   }
-  function find(query,autoFocus){
+  var restoreSearchNotice=null;
+  function openSearchPassage(target,notice){
+    /* Temporarily place the ONE page warning immediately before the requested paragraph.
+       It returns to its normal header on leaving the passage, printing, or teardown. A late
+       ledger replaces the same node in the slot, so always retrieve its current child. */
+    var slot=el('div','fd-guide-passage-review');
+    var high=notice.classList.contains('pending-high');
+    var home=button(high?'Pending faculty review · High risk':'Review status unavailable—verify with faculty','fd-btn fd-btn--ghost');
+    notice.parentNode.insertBefore(home,notice);
+    target.parentNode.insertBefore(slot,target);
+    slot.appendChild(notice);
+    function focusNotice(){
+      expose(target);
+      var current=slot.firstElementChild;
+      current.tabIndex=-1;
+      current.focus({preventScroll:true});
+      slot.scrollIntoView({block:'start',behavior:'instant'});
+    }
+    home.onclick=focusNotice;
+    var observer;
+    restoreSearchNotice=function(){
+      if(observer)observer.disconnect();
+      var current=slot.firstElementChild, focused=doc.activeElement===current;
+      home.replaceWith(current);
+      if(focused)current.focus({preventScroll:true});
+      slot.remove();
+      restoreSearchNotice=null;
+    };
+    if(high){
+      target.classList.add('fd-guide-match');
+      focusNotice();
+    }else{
+      /* A reviewed or unavailable ledger must not remove the focused element when it
+         replaces the placeholder. A late high-risk ledger takes focus through the shell. */
+      go(target,true);
+    }
+    if(win.IntersectionObserver){
+      observer=new win.IntersectionObserver(function(entries){
+        if(restoreSearchNotice&&entries.some(function(entry){
+          return entry.target===home?entry.isIntersecting:!entry.isIntersecting;
+        }))restoreSearchNotice();
+      });
+      observer.observe(home);
+      observer.observe(target);
+    }
+  }
+  function find(query,autoFocus,selection){
     query=String(query||'').trim().slice(0,160);input.value=query;
     each(body.querySelectorAll('.fd-guide-match'),function(node){node.classList.remove('fd-guide-match');});
     if(cue){cue.remove();cue=null;}
@@ -252,6 +311,11 @@ function fdGuideMount(body,options){
       var bb=fdGuideNormalize(b.textContent).indexOf(phrase)===0?1:0;
       return bb-aa||candidates.indexOf(a)-candidates.indexOf(b);
     });
+    var selected=selection&&fdGuideSearchTarget(candidates,query,selection.sentence);
+    if(selected){
+      matches=matches.filter(function(node){return node!==selected;});
+      matches.unshift(selected);
+    }
     while(results.children.length>1)results.removeChild(results.lastChild);
     results.hidden=false;
     status.textContent=!words.length?'Enter a word or phrase.':
@@ -264,7 +328,9 @@ function fdGuideMount(body,options){
     });
     if(matches.length>20)results.appendChild(el('p','','Showing the first 20. Refine your phrase for fewer results.'));
     if(words.length)arrival(status.textContent+' Search: “'+query+'”.',matches[0]);
-    if(autoFocus&&matches.length)go(matches[0],true);
+    var notice=selected&&reader.querySelector('.governance-notice.pending-high,.governance-notice.unavailable');
+    if(notice)openSearchPassage(selected,notice);
+    else if(autoFocus&&matches.length)go(matches[0],true);
     return matches;
   }
   form.addEventListener('submit',function(event){event.preventDefault();replaceURL('',input.value.trim().slice(0,160));find(input.value,true);});
@@ -285,6 +351,7 @@ function fdGuideMount(body,options){
     updateCurrent();
   }
   function beforePrint(){
+    if(restoreSearchNotice)restoreSearchNotice();
     if(printOpened.length||printGroups.length)return;
     /* An exclusive disclosure would otherwise close its sibling during printing. */
     each(reader.querySelectorAll('.visual-practice details[name]'),function(d){
@@ -319,10 +386,10 @@ function fdGuideMount(body,options){
   return {
     /* A lead-promoted page keeps the saved reading place it had before it gained sections. */
     leads:leads.length>0,
-    arrive:function(search,focusAllowed){
+    arrive:function(search,focusAllowed,selection){
       var params=new URLSearchParams(search||''), query=params.get('guideFind'), id=params.get('guideSection');
       if(id&&id.length>130)id=null;
-      if(query)find(query,focusAllowed);
+      if(query)find(query,focusAllowed,selection);
       else if(id){
         var h=headings.filter(function(node){return node.id===id||node.id==='guide-'+id;})[0];
         if(h){arrival('Opened at “'+headingText(h)+'”.',h);if(focusAllowed)go(h,false);}
@@ -347,6 +414,7 @@ function fdGuideMount(body,options){
       win.requestAnimationFrame(function(){if(!disposed){win.scrollTo(0,bookmark.scroll);updateCurrent();}});
     },
     destroy:function(){
+      if(restoreSearchNotice)restoreSearchNotice();
       disposed=true;if(frame)win.cancelAnimationFrame(frame);afterPrint();
       win.removeEventListener('scroll',onScroll);win.removeEventListener('resize',onResize);
       win.removeEventListener('beforeprint',beforePrint);win.removeEventListener('afterprint',afterPrint);

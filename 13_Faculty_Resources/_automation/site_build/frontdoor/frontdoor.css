@@ -2871,6 +2871,7 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
   margin:var(--fd-space-8) 0;padding:var(--fd-space-7);border-left:3px solid var(--fd-teal);
   background:var(--fd-selected);font-size:var(--fd-font-md);line-height:1.6;
 }
+.fd-reader--guide .fd-guide-passage-review{scroll-margin-top:140px}
 .fd-reader--guide .fd-guide-match{
   outline:2px solid var(--fd-teal);outline-offset:var(--fd-space-3);
   background:var(--fd-selected);scroll-margin-top:160px;
@@ -2909,7 +2910,7 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
   .fd-reader--guide .fd-reader__cols{display:block}
   .fd-reader--guide .fd-guide-header{margin:0 auto var(--fd-space-9)}
   /* Wrapped shell controls are taller on narrow screens; keep focus and arrival cues below them. */
-  .fd-reader--guide .fd-article__body :is(h2,h3,.fd-guide-lead,.fd-guide-match){
+  .fd-reader--guide .fd-article__body :is(h2,h3,.fd-guide-lead,.fd-guide-match,.fd-guide-passage-review){
     scroll-margin-top:calc(var(--fd-target-touch) * 4 + var(--fd-space-9));
   }
   .fd-reader--guide .fd-article{margin-left:auto;margin-right:auto}

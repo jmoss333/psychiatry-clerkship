@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(861 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(862 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1215,6 +1215,7 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
 | `.fd-result` | A `8px | 1fr` grid at every width (title, badge and meta stack in column 2). `.is-first`: `--fd-danger-wash` background, 700 title. |
+| `.fd-guide-passage-review` | A guide opened from a matching search result shows its current high-risk review warning immediately before the selected paragraph. The warning receives focus and returns to its normal location above the title when the learner leaves the passage or prints. |
 | `.fd-result__excerpt` | Optional source sentence in column 2, up to 240 characters, wrapping without clipping. Literal query words (or the existing five-character prefix rule) are highlighted with escaped `<mark>` text. More distinct matching words wins; ties keep source order. A content-addressed prose file loads once after a nonempty search, outside the offline precache budget. Missing/offline prose and unmatched passages omit the excerpt. Late prose preserves focus and row visibility. Excerpts never change ranking, and the return-to-search snapshot preserves them alongside rows and scroll. |
 | `.fd-result__dot` | Default: outlined 1.5px `--fd-text-dim` ring (a page); `.is-tool` teal fill; `.is-safety` danger fill; `.is-care` olive-deep fill. |
 | `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. `data-care-resource` pairs the visible first result with the controller's Enter shortcut, so keyboard activation clicks that exact fixed anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |

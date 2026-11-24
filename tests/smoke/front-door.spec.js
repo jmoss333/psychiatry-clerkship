@@ -81,6 +81,107 @@ async function openHeaderSearch(page) {
 test.describe('matching search excerpts on a touch phone', () => {
   test.use({ hasTouch: true });
 
+  for (const scenario of ['reviewed', 'another matching paragraph', 'pending high', 'pending high without excerpts']) {
+    test('grief vs depression opens the authored Mood passage and returns to the same result · ' + scenario, async ({ page }, testInfo) => {
+      const query = 'grief vs depression';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      const pending = scenario.startsWith('pending high');
+      await pinGovernance(page, READING_REF, pending ? { status: 'pending', riskLevel: 'high' } : { status: 'reviewed', riskLevel: 'low' });
+      if (scenario === 'another matching paragraph') {
+        // The index points at the authored sentence, even if the reader has another keyword hit first.
+        await page.route('**/content/t_mood.md', async route => {
+          const response = await routeFetchWithRetry(route);
+          const text = (await response.text()).replace('**Grief vs depression anchor**',
+            'Grief vs depression also appears in the sample discussion.\n\n**Grief vs depression anchor**');
+          await route.fulfill({ response, body: text });
+        });
+      }
+      const hasExcerpts = scenario !== 'pending high without excerpts';
+      if (!hasExcerpts) await page.route('**/search-passages-*.json', route => route.fulfill({ json: { version: 1, docs: {} } }));
+      await page.goto('/?tab=library');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill(query);
+      const mood = search.getByRole('button', { name: /^Mood\b/i }).and(search.locator('[data-fd-open="t_mood.md"]'));
+      if (hasExcerpts) await expect(mood.locator('.fd-result__excerpt')).toContainText('Grief vs depression anchor');
+
+      const reader = page.locator('.fd-reader:visible .fd-article[data-ref="t_mood.md"]');
+      const passage = reader.locator('.fd-article__body p').filter({ hasText: /^Grief vs depression anchor\b/ });
+      const focusTarget = pending ? page.locator('.fd-reader .governance-notice.pending-high') : passage;
+      async function expectPassageArrival() {
+        await expect(focusTarget).toBeFocused();
+        await passage.evaluate(async el => {
+          await document.fonts.ready;
+          const animations = [];
+          for (let node = el; node; node = node.parentElement) animations.push(...node.getAnimations());
+          await Promise.all(animations.filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a => a.finished.catch(() => null)));
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        });
+        await expect(focusTarget).toBeFocused();
+        if (pending) await expect(focusTarget).toBeInViewport({ ratio: 1 });
+        const lead = passage.getByText('Grief vs depression anchor', { exact: true });
+        expect(await lead.evaluate(el => {
+          const firstLine = el.getClientRects()[0];
+          const x = firstLine.left + 1;
+          return [firstLine.top + 1, firstLine.bottom - 1].every(y => el.contains(document.elementFromPoint(x, y)));
+        }), 'the first line of the passage is on screen and clear of the sticky header and dock').toBe(true);
+      }
+
+      await mood.tap();
+      await expectPassageArrival();
+      await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+      await expect(input).toHaveValue(query);
+      await expect(mood).toBeFocused();
+      await expect(mood).toBeInViewport({ ratio: 1 });
+      await page.keyboard.press('Enter');
+      await expectPassageArrival();
+      if (pending) {
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        await expect(page.locator('.fd-guide-passage-review')).toHaveCount(0);
+        await expect(focusTarget).toHaveCount(1);
+        const heading = reader.locator('.fd-article__h1').or(page.locator('.fd-guide-header .fd-article__h1'));
+        expect(await focusTarget.evaluate((notice, title) =>
+          Boolean(notice.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING), await heading.elementHandle())).toBe(true);
+      }
+      await expectHealthy(page);
+    });
+  }
+
+  for (const status of ['reviewed', 'pending']) {
+    test('late ' + status + ' review status preserves the search passage landing', async ({ page }, testInfo) => {
+      const ledger = await (await requestGetWithRetry(page.request, '/governance.json')).json();
+      Object.assign(ledger.items[READING_REF], { status, riskLevel: 'high' });
+      let release;
+      const held = new Promise(resolve => { release = resolve; });
+      await page.route('**/governance.json', async route => {
+        await held;
+        await route.fulfill({ json: ledger });
+      });
+      try {
+        await page.setViewportSize(PHONE);
+        await seedApp(page, testInfo);
+        await page.goto('/?tab=library', { waitUntil: 'domcontentloaded' });
+        await openHeaderSearch(page);
+        await page.getByRole('textbox', { name: 'Search resources' }).fill('grief vs depression');
+        const row = page.locator('.fd-result[data-fd-open="t_mood.md"]');
+        await expect(row.locator('.fd-result__excerpt')).toContainText('Grief vs depression anchor');
+        await row.tap();
+        const passage = page.locator('.fd-guide-match').filter({ hasText: /^Grief vs depression anchor/ });
+        await expect(passage).toBeFocused();
+        release();
+        const receipt = page.locator('.fd-reader .governance-notice.' + (status === 'pending' ? 'pending-high' : 'reviewed-receipt'));
+        await expect(receipt).toBeVisible();
+        if (status === 'pending') await expect(receipt).toBeFocused();
+        else await expect(passage).toBeFocused();
+        await expect(passage.locator('strong').first()).toBeInViewport();
+      } finally {
+        release();
+      }
+    });
+  }
+
   test('late excerpts keep the keyboard-selected row visible and Enter opens it', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
     let release, requests = 0;
@@ -173,7 +274,7 @@ test.describe('matching search excerpts on a touch phone', () => {
       }, ref);
       expect(source.some(passage => passage.includes(text)), 'the excerpt is an unchanged source sentence').toBe(true);
       const before = await search.locator('.fd-result__excerpt').allTextContents();
-      await first.scrollIntoViewIfNeeded();
+      await first.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
       await expect(first).toBeInViewport({ ratio: 1 });
       expect(await excerpt.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
       await testInfo.attach('matching-excerpt-phone', { body: await page.screenshot(), contentType: 'image/png' });

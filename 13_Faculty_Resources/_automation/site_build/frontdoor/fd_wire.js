@@ -2154,6 +2154,7 @@ function fdWire(root, initialState, opts){
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
         fromHistory:!!fromHistory,host:freshResourceHost(),focusOnRestore:focusOnRestore===true,
+        searchPassage:effect.searchPassage,
         getState:function(){ return state; },
         isCurrent:function(){
           return !destroyed&&generation===navGeneration&&state.openId===effect.ref;
@@ -2327,6 +2328,12 @@ function fdWire(root, initialState, opts){
       (result.effect.type==='open-resource'||result.effect.type==='open-protocol');
     if(leavingSearch){
       var searchAction=searchRow.hasAttribute('data-fd-safety')?'data-fd-safety':'data-fd-open';
+      if(searchAction==='data-fd-open'&&!fdIsTool(result.effect.ref)){
+        /* Use the excerpt actually shown on the tapped row, even if a newer index is ready.
+           This hint belongs only to this opening, never the URL or saved learner state. */
+        var excerpt=searchRow.querySelector&&searchRow.querySelector('.fd-result__excerpt');
+        result.effect.searchPassage={sentence:excerpt?excerpt.textContent:''};
+      }
       patch.searchReturn={
         query:before.query||'',expanded:before.searchExpanded===true,
         action:searchAction,ref:searchRow.getAttribute(searchAction),scrollTop:searchBody.scrollTop,

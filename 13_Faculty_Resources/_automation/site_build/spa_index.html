@@ -4332,7 +4332,7 @@
               focusGovernanceNotice({fromHistory:!!options.fromHistory});
               var canFocus=fdPageFocusAllowed()&&!contentEl.querySelector('.governance-notice.pending-high');
               if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
-              else guide.arrive(arrivalSearch,canFocus);
+              else guide.arrive(arrivalSearch,canFocus,fdPageFocusAllowed()?options.searchPassage:null);
             });
           }else installReadingPlace(true);
           if(mediaArrival){

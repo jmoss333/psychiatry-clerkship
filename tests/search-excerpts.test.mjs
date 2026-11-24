@@ -56,6 +56,8 @@ test('old indexes work and adding excerpts does not alter result identities or o
 test('restored search keeps its exact excerpts when the live text index changes', () => {
   const matches = [explain('akathisia', ['Akathisia can be discussed with the team.'])];
   const state = { searchRestored: true, searchReturn: { query: 'akathisia', matches }, bodyIndex: makeIndex(['A replacement akathisia sentence must not move the saved list.']) };
-  assert.equal(F.fdSearchMatches({}, 'akathisia', {}, state), matches);
+  const restored = F.fdSearchMatches({}, 'akathisia', {}, state);
+  assert.equal(restored.length, 1);
+  assert.equal(restored[0], matches[0]);
   assert.equal(matches[0].excerpt.text, 'Akathisia can be discussed with the team.');
 });
