@@ -24,7 +24,8 @@ import lib_surveillance as L  # noqa: E402
 import run_firecrawl_pilot as R  # noqa: E402
 import run_firecrawl_review as V  # noqa: E402
 
-SECRET = 'fc-secret-token-should-never-print'
+# Stands in for an exception message that could carry a credential or crawled text.
+CANARY = 'canary-message-text-must-not-appear'
 
 
 def sources():
@@ -41,17 +42,17 @@ def ok_response(source):
 class FailureLocation(unittest.TestCase):
     def test_names_class_and_line_never_the_message(self):
         try:
-            L.load_registry(path=Path('/nonexistent/' + SECRET + '.json'))
+            L.load_registry(path=Path('/nonexistent/' + CANARY + '.json'))
         except OSError as exc:
             where = L.failure_location(exc)
         else:
             self.fail('expected the registry read to fail')
         self.assertTrue(where.startswith('FileNotFoundError at lib_surveillance.py:'), where)
         self.assertIn('in load_registry', where)
-        self.assertNotIn(SECRET, where)
+        self.assertNotIn(CANARY, where)
 
     def test_exception_raised_outside_these_scripts_is_still_named(self):
-        where = L.failure_location(KeyError(SECRET))
+        where = L.failure_location(KeyError(CANARY))
         self.assertEqual(where, 'KeyError at outside the surveillance scripts')
 
 
@@ -62,7 +63,7 @@ class OneSourceCrash(unittest.TestCase):
 
         def evaluate(source, *rest):
             if source['id'] == 'clozapine-rems':
-                raise KeyError(SECRET)
+                raise KeyError(CANARY)
             return real(source, *rest)
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -86,14 +87,14 @@ class OneSourceCrash(unittest.TestCase):
             if sid != 'clozapine-rems':
                 self.assertEqual(row['status'], 'first-observation', sid)
         self.assertIn('clozapine-rems could not be examined: KeyError at ', err.getvalue())
-        self.assertNotIn(SECRET, err.getvalue() + json.dumps(report))
+        self.assertNotIn(CANARY, err.getvalue() + json.dumps(report))
 
 
 class ReviewNamesTheFailure(unittest.TestCase):
     def test_missing_report_is_named_in_log_and_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
             bad = Path(tmp) / 'responses.json'
-            bad.write_text('{not json ' + SECRET)
+            bad.write_text('{not json ' + CANARY)
             out = Path(tmp) / 'run'
             argv = ['run_firecrawl_review.py', '--out-dir', str(out),
                     '--state', str(Path(tmp) / 'state.json'), '--responses', str(bad)]
@@ -107,7 +108,7 @@ class ReviewNamesTheFailure(unittest.TestCase):
         self.assertIn('Evidence collection incomplete (ValueError at run_firecrawl_review.py:', log)
         self.assertEqual(receipt['status'], 'incomplete')
         self.assertTrue(receipt['failure'].startswith('ValueError at run_firecrawl_review.py:'))
-        self.assertNotIn(SECRET, log + json.dumps(receipt))
+        self.assertNotIn(CANARY, log + json.dumps(receipt))
 
     def test_unexpected_exception_class_is_incomplete_not_a_crash(self):
         # Before the repair an AttributeError escaped as Python's exit 1, which the
@@ -116,12 +117,12 @@ class ReviewNamesTheFailure(unittest.TestCase):
             argv = ['run_firecrawl_review.py', '--out-dir', str(Path(tmp) / 'run'),
                     '--state', str(Path(tmp) / 'state.json')]
             err = io.StringIO()
-            with patch.object(sys, 'argv', argv), patch.object(V, 'collect', side_effect=AttributeError(SECRET)), \
+            with patch.object(sys, 'argv', argv), patch.object(V, 'collect', side_effect=AttributeError(CANARY)), \
                     contextlib.redirect_stderr(err):
                 code = V.main()
         self.assertEqual(code, 2)
         self.assertIn('Evidence collection incomplete (AttributeError at ', err.getvalue())
-        self.assertNotIn(SECRET, err.getvalue())
+        self.assertNotIn(CANARY, err.getvalue())
 
 
 if __name__ == '__main__':
