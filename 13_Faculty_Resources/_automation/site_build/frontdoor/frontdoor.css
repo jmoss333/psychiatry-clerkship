@@ -3449,6 +3449,21 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#pat-near-fall figure{margin-top:var(--fd-space-6);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash)}
+#pat-near-fall .pat-frame{position:relative}
+#pat-near-fall .pat-frame img{display:block;width:100%;height:auto;max-height:min(44vh,24rem);object-fit:contain}
+#pat-clock{position:absolute;inset:var(--fd-space-4) auto auto var(--fd-space-4);padding:var(--fd-space-2) var(--fd-space-4);border-radius:var(--fd-radius-xs);background:var(--fd-surface-warm);color:var(--fd-text);font:600 1em Georgia,serif}
+#pat-near-fall figcaption{padding:var(--fd-space-4) var(--fd-space-5);color:var(--fd-text);text-align:start}
+#pat-near-fall .pat-positions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+#pat-near-fall .pat-positions button{text-align:center}
+#pat-near-fall .pat-positions button[aria-pressed=true]{background:var(--fd-teal-deep);color:var(--fd-surface)}
+#pat-near-fall .step{border-top:1px solid var(--fd-line);padding-top:var(--fd-space-6);margin-top:var(--fd-space-7)}
+#pat-near-fall .pat-claims{display:grid;gap:var(--fd-space-4);margin-top:var(--fd-space-3)}
+#pat-near-fall button[aria-expanded=true]{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+#pat-near-fall .case-reply{margin-top:0}
+#pat-near-fall .pat-record{padding:var(--fd-space-5);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
+#pat-rounds a{display:inline-block;margin-top:var(--fd-space-4)}
+#pat-near-fall footer{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-5)}
 /* The two records stay visible as the patient’s account changes. */
 #home-dose-history .mh-section{margin-top:var(--fd-space-7)}
 #home-dose-history .mh-intro,#home-dose-history .mh-instruction{margin-block:var(--fd-space-3) var(--fd-space-5)}

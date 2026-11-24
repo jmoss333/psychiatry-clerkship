@@ -361,6 +361,15 @@
       "pages": [
         "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md"
       ]
+    },
+    {
+      "id": "pat-near-fall",
+      "name": "Pat",
+      "pronouns": "they",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Geriatric/geriatric_psychiatry_inpatient_teaching.md"
+      ]
     }
   ],
   "ignore": []

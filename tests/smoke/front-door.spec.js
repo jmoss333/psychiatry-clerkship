@@ -2797,6 +2797,88 @@ test.describe('Interactive readings', () => {
     await seedApp(page, info);
   });
 
+  for (const [first, second] of [['patient', 'nurse'], ['nurse', 'patient']]) {
+    test(`Pat near-fall builds the handoff from both accounts and reviewed chart entries (${first} first)`, async ({ page }) => {
+      if (first === 'patient') await page.setViewportSize({ width: 320, height: 844 });
+      await page.goto('/?page=t_geri.md&guideSection=acute-inpatient-management');
+      const card = page.locator('.fd-article__body #pat-near-fall[data-pat-fall]');
+      const section = card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section") or contains(@class,"sec-c")][1]');
+      await expect(section.locator(':scope > :is(.fd-guide-lead, .sec-h, h2)')).toContainText('Acute inpatient management');
+      await expect(card).toBeVisible();
+      const part = key => card.locator('#pat-' + key);
+      const control = (kind, value) => card.locator(`button[data-${kind}="${value}"]`);
+      const seated = control('position', 'seated');
+      const standing = control('position', 'standing');
+      const scene = part('scene');
+      const update = part('update');
+      const feedback = part('feedback');
+      const seatedImage = await scene.getAttribute('src');
+      await scene.evaluate(image => image.decode());
+      const account = {
+        patient: 'My head went light as soon as I got up.',
+        nurse: 'Pat swayed and grabbed the armrest.',
+      };
+      const records = {
+        overnight: 'The medication record shows a sedating PRN overnight.',
+        intake: 'The breakfast record documents a few bites and half a cup of tea.',
+      };
+      for (const reviewed of [['overnight', 'intake'], ['overnight'], ['intake'], []]) {
+        await test.step(`Chart entries reviewed: ${reviewed.join(' and ') || 'none'}`, async () => {
+          await expect(seated).toHaveAttribute('aria-pressed', 'true');
+          await expect(part('interview')).toBeHidden();
+          await expect(part('reason')).toBeHidden();
+          await expect(update).toBeEmpty();
+          await standing.press('Enter');
+          await expect(standing).toHaveAttribute('aria-pressed', 'true');
+          await expect(scene).not.toHaveAttribute('src', seatedImage);
+          await scene.evaluate(image => image.decode());
+          await expect(part('clock')).toHaveText('8:56 AM');
+          await expect(part('interview')).toBeVisible();
+          await control('hear', first).click();
+          await expect(part(first)).toContainText(account[first]);
+          await expect(part(second)).toBeHidden();
+          await expect(part('reason')).toBeHidden();
+          await control('hear', second).click();
+          await expect(part(second)).toContainText(account[second]);
+          await expect(part('reason')).toBeVisible();
+
+          for (const [claim, correction] of [
+            ['pressure', 'A blood pressure change was never measured during the episode.'],
+            ['medication', 'Timing and the medication record alone cannot establish the cause.'],
+          ]) {
+            await control('claim', claim).click();
+            await expect(feedback).toBeVisible();
+            await expect(feedback).toContainText(correction);
+            await expect(update).toBeHidden();
+            await expect(update).toBeEmpty();
+          }
+
+          await control('claim', 'event').click();
+          await expect(feedback).toBeHidden();
+          await expect(update).toBeVisible();
+          for (const key of reviewed) {
+            await control('record', key).click();
+            await expect(part(key)).toBeVisible();
+          }
+          await expect(update).toHaveText([
+            'Pat felt lightheaded immediately on standing. The nurse saw Pat sway and helped them sit. There was no fall.',
+            ...reviewed.map(key => records[key]),
+            'We need to assess Pat before another walk, including orthostatic vitals when it is safe to stand with assistance.',
+          ].join(' '));
+          expect(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+          await control('claim', 'pressure').click();
+          await expect(update).toBeHidden();
+          await expect(update).toBeEmpty();
+          await part('reset').click();
+          await expect(seated).toBeFocused();
+          await expect(scene).toHaveAttribute('src', seatedImage);
+          await expect(card.locator('[aria-expanded=true]')).toHaveCount(0);
+        });
+      }
+      await expectHealthy(page);
+    });
+  }
+
   test('Nico’s collateral rounds handoff uses only the nights and source the learner heard', async ({ page }) => {
     await page.goto('/?page=collateral_workflow.md&guideSection=5-bring-it-back-to-the-team');
     const section = page.locator('.fd-guide-section').filter({ has: page.locator(':scope > #guide-5-bring-it-back-to-the-team') });

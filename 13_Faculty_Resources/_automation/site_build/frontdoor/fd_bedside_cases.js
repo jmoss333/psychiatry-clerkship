@@ -1,6 +1,7 @@
 /* The clinical text lives with its reading. Each mounted exercise keeps its choices in the DOM. */
 function fdMountBedsideCases(body) {
   fdMountHomeDoseHistory(body);
+  fdMountPatNearFall(body);
   fdMountMorganExposure(body);
   fdMountFeverExams(body);
   fdMountJoCall(body);
@@ -479,6 +480,97 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountPatNearFall(body) {
+  const card = body.querySelector('#pat-near-fall');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const get = id => card.querySelector('#pat-' + id);
+  const positions = card.querySelectorAll('[data-position]');
+  const sources = card.querySelectorAll('[data-hear], [data-record]');
+  const claims = card.querySelectorAll('[data-claim]');
+  const scene = get('scene');
+  const clock = get('clock');
+  const caption = get('caption');
+  const standing = get('standing').content;
+  const frames = {
+    seated: {image: scene.cloneNode(false), time: clock.textContent, caption: caption.textContent},
+    standing: {image: standing.querySelector('img'), time: standing.querySelector('span').textContent,
+      caption: standing.querySelector('p').textContent}
+  };
+  const lines = Object.fromEntries(Array.from(get('copy').content.children,
+    row => [row.dataset.line, row.textContent]));
+  const heard = new Set();
+  const records = new Set();
+  let selected = '';
+
+  function showPosition(key) {
+    const frame = frames[key];
+    for (const button of positions) button.setAttribute('aria-pressed', String(button.dataset.position === key));
+    scene.src = frame.image.getAttribute('src');
+    scene.alt = frame.image.alt;
+    clock.textContent = frame.time;
+    caption.textContent = frame.caption;
+    if (key === 'standing') {
+      get('interview').hidden = false;
+      get('reset').hidden = false;
+    }
+  }
+
+  function showClaim(key) {
+    selected = key;
+    for (const button of claims) button.setAttribute('aria-pressed', String(button.dataset.claim === key));
+    const supported = key === 'event';
+    const feedback = get('feedback');
+    feedback.textContent = !key || supported ? '' : lines[key];
+    feedback.hidden = !feedback.textContent;
+    get('rounds').hidden = !supported;
+    const note = [];
+    if (supported) {
+      note.push(lines.event);
+      for (const record of ['overnight', 'intake']) {
+        if (records.has(record)) note.push(lines[record]);
+      }
+      note.push(lines.next);
+    }
+    get('update').textContent = note.join(' ');
+  }
+
+  for (const button of positions) {
+    button.addEventListener('click', () => showPosition(button.dataset.position));
+  }
+  for (const button of sources) {
+    const panel = card.querySelector('#' + button.getAttribute('aria-controls'));
+    button.addEventListener('click', () => {
+      const opening = panel.hidden;
+      panel.hidden = !opening;
+      button.setAttribute('aria-expanded', String(opening));
+      if (!opening) return;
+      if (button.dataset.hear) {
+        heard.add(button.dataset.hear);
+        get('reason').hidden = heard.size < 2;
+      } else {
+        records.add(button.dataset.record);
+        if (selected === 'event') showClaim(selected);
+      }
+    });
+  }
+  for (const button of claims) {
+    button.addEventListener('click', () => showClaim(button.dataset.claim));
+  }
+  get('reset').addEventListener('click', () => {
+    heard.clear();
+    records.clear();
+    showClaim('');
+    showPosition('seated');
+    for (const button of sources) {
+      button.setAttribute('aria-expanded', 'false');
+      card.querySelector('#' + button.getAttribute('aria-controls')).hidden = true;
+    }
+    for (const id of ['interview', 'reason', 'reset']) get(id).hidden = true;
+    card.querySelector('[data-position="seated"]').focus();
+  });
 }
 
 function fdMountHomeDoseHistory(body) {
