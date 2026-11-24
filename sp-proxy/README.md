@@ -248,6 +248,8 @@ offers the typed room, and sessions in flight end at their deadline. The reaper 
 `SP_ROTATION_ID`: end open spoken sessions (or run the reaper once) before turning a rotation over,
 or the previous rotation's open calls are stranded until the provider closes them.
 
+For a single supervised Dana admission interview, use the [Dana pilot procedure](DANA_PILOT.md). It uses a separate supervisor code, a closing time, and the production mode `dana-pilot`.
+
 ### Activation runbook (owner decisions of 2026-09-26)
 
 The five decisions in design §14 were made on 2026-09-26; §18 of the design records them with their

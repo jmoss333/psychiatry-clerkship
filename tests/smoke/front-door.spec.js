@@ -78,17 +78,358 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test.describe('reviewed Pharmacy card lookup', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  const agent = { id: 'study-med', generic: 'Study medication', brands: ['Studybrand'],
+    monitoring: { sourcePage: 'med_monitoring.md' }, qbankIds: ['study-question'],
+    review: { reviewer: 'Fixture reviewer', lastReviewed: '2026-11-01' } };
+  const publicFeedUrl = /\/pharmacy_public\.json(?:\?lookup=1)?$/;
+  const feed = agents => ({
+    schemaVersion: 1, agents, pendingCount: 0,
+    cards: agents.map(a => ({ id: 'RX#' + a.id + '#study', drug: a.id, prompt: 'Study prompt',
+      reveal: [{ label: 'Study answer', lines: ['Example'] }] })),
+  });
+
+  for (const name of ['Study medication', 'Studybrand']) {
+    test(`opens by ${name} and resumes the same paragraph`, async ({ page }, testInfo) => {
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed([agent]) }));
+      await seedApp(page, testInfo);
+      await controlledReading(page);
+      await page.goto('/?page=t_mood.md');
+      await readingReady(page);
+      await scrollReadingTo(page, 1);
+      const paragraph = page.locator('.fd-article__body h3').nth(1);
+      const original = await paragraph.elementHandle();
+      const position = await paragraph.evaluate(el => el.getBoundingClientRect().top);
+      const initialRoute = page.url();
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources' });
+      await input.fill(name);
+      const row = search.locator('.fd-result').first();
+      await expect(row).toHaveAttribute('data-fd-pharmacy-card', agent.id);
+      await row.tap();
+      const lookup = page.getByRole('dialog', { name: 'Study medication · Pharmacy card' });
+      const frame = lookup.frameLocator('iframe');
+      await expect(frame.getByRole('heading', { name: agent.generic, exact: true })).toBeInViewport();
+      await expect(frame.locator('.stamp')).toContainText('Fixture reviewer');
+      await expect(frame.getByRole('searchbox')).toHaveCount(0);
+      if (name === 'Studybrand') {
+        await frame.getByRole('button', { name: /^Quiz me on/ }).tap();
+        await frame.getByRole('button', { name: 'Show answer' }).tap();
+        await frame.getByRole('button', { name: 'Good', exact: true }).tap();
+        await expect(frame.getByRole('link', { name: /Open Daily Review/ })).toHaveAttribute('target', '_blank');
+        await frame.getByRole('button', { name: 'Close', exact: true }).tap();
+        await expect(frame.locator('button.drug')).toHaveCount(0);
+        await expect(frame.locator('#status')).toBeEmpty();
+        await expect(frame.getByRole('link', { name: /practice question/ })).toHaveAttribute('target', '_blank');
+        const opened = page.waitForEvent('popup');
+        await frame.getByRole('link', { name: /Monitoring & Labs/ }).tap();
+        const related = await opened;
+        await expect(related).toHaveURL(/\?page=med_monitoring\.md/);
+        await related.close();
+        await expect(frame.locator('#dname')).toHaveText(agent.generic);
+        expect(page.url()).toBe(initialRoute);
+      }
+      await frame.locator('#depth-toggle').focus();
+      await page.keyboard.press('Escape');
+      await expect(input).toHaveValue(name);
+      await expect(row).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      const back = lookup.getByRole('button', { name: 'Return to reading' });
+      await back.hover();
+      await page.mouse.wheel(0, 520);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await back.tap();
+      await expect(lookup).toHaveCount(0);
+      await expect(search).toHaveCount(0);
+      expect(page.url()).toBe(initialRoute);
+      expect(await original.evaluate(el => el.isConnected)).toBe(true);
+      await expect.poll(async () => Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await expectHealthy(page);
+    });
+  }
+
+  async function findStudybrand(page, testInfo) {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await openHeaderSearch(page);
+    await page.getByRole('textbox', { name: 'Search resources' }).fill('Studybrand');
+    const row = page.locator('[data-fd-pharmacy-card="study-med"]');
+    await expect(row).toBeVisible();
+    return row;
+  }
+
+  const renamed = { ...agent, brands: ['Newbrand'] };
+  const other = { ...agent, id: 'other-med', generic: 'Other medication' };
+  for (const [change, freshAgents] of [
+    ['a card withdrawn', []],
+    ['a brand removed from a reviewed card', [renamed]],
+    ['a brand reassigned to another reviewed card', [renamed, other]],
+    ['a brand shared by two reviewed cards', [agent, other]],
+  ]) {
+    test(`${change} between search and opening is unavailable in the lookup`, async ({ page }, testInfo) => {
+      let agents = [agent];
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed(agents) }));
+      const row = await findStudybrand(page, testInfo);
+      agents = freshAgents;
+      await row.tap();
+      const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+      await expect(frame.locator('#status')).toHaveText('This medication card is unavailable.');
+      await expect(frame.locator('#detail')).toBeEmpty();
+      await expect(frame.locator('button.drug')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Close lookup' }).tap();
+      await expect(page.locator('.fd-library')).toBeVisible();
+      await expectHealthy(page);
+    });
+  }
+
+  test('each tap reads the current card and the first read overlaps the frame load', async ({ page }, testInfo) => {
+    let freshReviewer = '';
+    let feedStarted = false, frameStarted = false;
+    let releaseFeed, releaseFrame;
+    const heldFeed = new Promise(resolve => { releaseFeed = resolve; });
+    const heldFrame = new Promise(resolve => { releaseFrame = resolve; });
+    await page.route(publicFeedUrl, async route => {
+      if (!freshReviewer) return route.fulfill({ json: feed([agent]) });
+      feedStarted = true;
+      await heldFeed;
+      const reviewed = { ...agent, review: { ...agent.review, reviewer: freshReviewer } };
+      await route.fulfill({ json: feed([reviewed]) });
+    });
+    await page.route('**/tools/pharmacy.html?*', async route => {
+      frameStarted = true;
+      await heldFrame;
+      await route.continue();
+    });
+    const row = await findStudybrand(page, testInfo);
+    freshReviewer = 'First tap reviewer';
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    try {
+      await row.tap();
+      // Neither route can finish until both have started, independently of network timing.
+      await expect.poll(() => ({ feedStarted, frameStarted })).toEqual({ feedStarted: true, frameStarted: true });
+      releaseFrame();
+      await expect(frame.locator('#detail')).toBeEmpty();
+      releaseFeed();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await page.getByRole('button', { name: 'Back to search results' }).tap();
+      freshReviewer = 'Second tap reviewer';
+      await row.tap();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await expectHealthy(page);
+    } finally {
+      releaseFrame();
+      releaseFeed();
+    }
+  });
+
+  test('a failed fresh request leaves the card empty and reopening retries', async ({ page }, testInfo) => {
+    let unavailable = true;
+    const updated = { ...agent, review: { ...agent.review, reviewer: 'Reviewer after recovery' } };
+    await page.route(publicFeedUrl, route => {
+      const fresh = new URL(route.request().url()).searchParams.get('lookup') === '1';
+      if (fresh && unavailable) return route.fulfill({ status: 503, body: 'Temporarily unavailable' });
+      return route.fulfill({ json: feed([fresh ? updated : agent]) });
+    });
+    const row = await findStudybrand(page, testInfo);
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    await row.tap();
+    await expect(frame.locator('#status')).toHaveText(/unavailable|could not be loaded/i);
+    await expect(frame.locator('#detail')).toBeEmpty();
+    await page.getByRole('button', { name: 'Back to search results' }).tap();
+    unavailable = false;
+    await row.tap();
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await expect(frame.locator('.stamp')).toContainText(updated.review.reviewer);
+  });
+});
+
+test.describe('Back to search results on a touch phone', () => {
+  test.use({ viewport: PHONE, hasTouch: true });
+
+  async function expandedSearch(page, testInfo) {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    // Settle the real index before taking a result-list snapshot; delayed hydration has its
+    // own regression below and must not make this navigation assertion depend on timing.
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    await search.getByRole('textbox', { name: 'Search resources', exact: true }).fill('treatment');
+    await search.getByRole('button', { name: 'Show all matches', exact: true }).tap();
+    await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveAttribute('aria-expanded', 'true');
+    expect(await search.locator('.fd-result').count()).toBeGreaterThan(8);
+    return search;
+  }
+
+  async function resultIdentity(search) {
+    return search.locator('.fd-result').evaluateAll(rows => rows.map(row => ({
+      action: row.hasAttribute('data-fd-safety') ? 'safety' : 'open',
+      ref: row.getAttribute('data-fd-safety') || row.getAttribute('data-fd-open') || row.getAttribute('href'),
+    })));
+  }
+
+  async function expectResultDestination(page, ref) {
+    const urlKey = ref.endsWith('.md') ? 'page' : 'tool';
+    await expect.poll(() => new URL(page.url()).searchParams.get(urlKey)).toBe(ref);
+    if (urlKey === 'page') {
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+      await expect(page.locator('.fd-reader .fd-article__body')).toBeVisible();
+    } else {
+      const frame = page.locator('iframe.toolframe');
+      await expect(frame).toBeVisible();
+      expect(new URL(await frame.getAttribute('src'), page.url()).pathname).toBe(`/tools/${ref}`);
+      await expect(page.frameLocator('iframe.toolframe').getByRole('heading', { name: 'Your 60-second update' })).toBeVisible();
+    }
+  }
+
+  for (const firstKind of ['reading', 'tool']) {
+    test(`${firstKind}: keeps query, expanded rows, selected action and scroll before opening another result`, async ({ page }, testInfo) => {
+      const search = await expandedSearch(page, testInfo);
+      const body = search.locator('.fd-searchpanel__body');
+      const reading = search.locator('.fd-result[data-fd-open$=".md"]').last();
+      const tool = search.locator('.fd-result[data-fd-open="oral.html"]');
+      const first = firstKind === 'reading' ? reading : tool;
+      const second = firstKind === 'reading' ? tool : reading;
+      const firstRef = await first.getAttribute('data-fd-open');
+      const secondRef = await second.getAttribute('data-fd-open');
+      expect(firstRef).not.toBe(secondRef);
+      const rows = await resultIdentity(search);
+      await first.scrollIntoViewIfNeeded();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      const scrollTop = await body.evaluate(el => el.scrollTop);
+      expect(scrollTop, 'the first result is reached by scrolling the expanded list').toBeGreaterThan(100);
+      await first.tap();
+      await expect(search).toHaveCount(0);
+      await expectResultDestination(page, firstRef);
+
+      const back = page.getByRole('button', { name: 'Back to search results', exact: true });
+      await expect(back).toBeVisible();
+      await back.tap();
+      await expect(search).toBeVisible();
+      await expect(search.getByRole('textbox', { name: 'Search resources', exact: true })).toHaveValue('treatment');
+      await expect(search.getByRole('button', { name: 'Show top 8', exact: true })).toHaveAttribute('aria-expanded', 'true');
+      expect(await resultIdentity(search)).toEqual(rows);
+      await expect(first).toBeFocused();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      await expect.poll(async () => Math.abs(await body.evaluate(el => el.scrollTop) - scrollTop)).toBeLessThanOrEqual(2);
+      await second.tap();
+      await expect(search).toHaveCount(0);
+      await expectResultDestination(page, secondRef);
+      await expectHealthy(page);
+    });
+  }
+
+  test('a delayed text index preserves the collapsed return list until the query is edited', async ({ page }, testInfo) => {
+    const releaseIndex = await delaySearchIndex(page);
+    try {
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=library');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      const body = search.locator('.fd-searchpanel__body');
+      await input.fill('treatment');
+      await expect(search.locator('.fd-result')).toHaveCount(8);
+      await expect(search.getByRole('button', { name: 'Show all matches', exact: true })).toHaveAttribute('aria-expanded', 'false');
+      const rows = await resultIdentity(search);
+      const summary = await body.getAttribute('aria-label');
+      const selected = search.locator('.fd-result[data-fd-open$=".md"]').last();
+      const ref = await selected.getAttribute('data-fd-open');
+      await selected.scrollIntoViewIfNeeded();
+      const scrollTop = await body.evaluate(el => el.scrollTop);
+      await selected.tap();
+      await expect(search).toHaveCount(0);
+      await expectResultDestination(page, ref);
+
+      releaseIndex();
+      await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+      await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+      await expect(input).toHaveValue('treatment');
+      await expect(search.getByRole('button', { name: 'Show all matches', exact: true })).toHaveAttribute('aria-expanded', 'false');
+      await expect(body).toHaveAttribute('aria-label', summary);
+      expect(await resultIdentity(search)).toEqual(rows);
+      await expect(selected).toBeFocused();
+      await expect(selected).toBeInViewport({ ratio: 1 });
+      await expect.poll(async () => Math.abs(await body.evaluate(el => el.scrollTop) - scrollTop)).toBeLessThanOrEqual(2);
+
+      // Editing the same term releases the snapshot. The now-loaded real index contributes
+      // page-text matches, which could not appear while its response was held above.
+      await input.fill('treatment ');
+      await search.getByRole('button', { name: 'Show all matches', exact: true }).tap();
+      await expect(search.locator('.fd-result__meta').filter({ hasText: 'mentioned in the text' }).first()).toBeVisible();
+      await expectHealthy(page);
+    } finally {
+      releaseIndex();
+    }
+  });
+
+  test('safety result and its full page return to the search row before opening another reading', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('suicide');
+    const row = search.locator('.fd-result[data-fd-safety="pg_suicide.md"]');
+    await expect(row).toBeVisible();
+    await row.tap();
+    await expect(search).toHaveCount(0);
+    const safety = page.locator('.fd-sheet[role="dialog"]');
+    await expect(safety).toBeVisible();
+    await safety.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(safety).toHaveCount(0);
+    await expect(input).toHaveValue('suicide');
+    await expect(row).toBeFocused();
+    await row.tap();
+    await safety.getByRole('button', { name: 'Open the full page →', exact: true }).tap();
+    await expect(safety).toHaveCount(0);
+    await expectResultDestination(page, 'pg_suicide.md');
+    await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(input).toHaveValue('suicide');
+    await expect(row).toBeFocused();
+    const reading = search.locator('.fd-result[data-fd-open$=".md"]').first();
+    const ref = await reading.getAttribute('data-fd-open');
+    await reading.tap();
+    await expect(search).toHaveCount(0);
+    await expectResultDestination(page, ref);
+    await expectHealthy(page);
+  });
+
+  test('a reader opened directly keeps its ordinary return control', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo, { state: { tab: 'library', fromTab: 'library' } });
+    await page.goto('/?page=t_mood.md');
+    await expectResultDestination(page, 't_mood.md');
+    await expect(page.getByRole('button', { name: 'Back to search results', exact: true })).toHaveCount(0);
+    const back = page.locator('.fd-reader__back[data-fd-back]');
+    await expect(back).toBeVisible();
+    await back.tap();
+    await expect(page.locator('.fd-library')).toBeVisible();
+    await expectHealthy(page);
+  });
+});
+
 test('search recovery edits and browses with usable targets at phone and desktop widths', async ({ page }, testInfo) => {
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
+  const unbrokenQuery = 'z'.repeat(256);
   for (const width of [320, 390, 1280]) {
     await page.setViewportSize({ width, height: 844 });
     await openHeaderSearch(page);
     const search = page.getByRole('dialog', { name: 'Search', exact: true });
     const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
-    await input.fill('zzzzqqq');
+    await input.fill(unbrokenQuery);
     const recovery = search.getByRole('group', { name: 'Search recovery', exact: true });
     await expect(recovery).toBeVisible();
+    await expect(search.locator('.fd-searchpanel__empty')).toContainText(unbrokenQuery);
+    expect(await search.locator('.fd-searchpanel__body').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
     for (const button of await recovery.getByRole('button').all()) {
       const box = await button.boundingBox();
       expect(box.width).toBeGreaterThanOrEqual(44);
@@ -97,7 +438,7 @@ test('search recovery edits and browses with usable targets at phone and desktop
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await recovery.getByRole('button', { name: 'Edit search', exact: true }).click();
     await expect(input).toBeFocused();
-    await expect(input).toHaveValue('zzzzqqq');
+    await expect(input).toHaveValue(unbrokenQuery);
     await input.fill('suicide');
     await expect(recovery).toHaveCount(0);
     await expect(search.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
@@ -106,6 +447,54 @@ test('search recovery edits and browses with usable targets at phone and desktop
     await expect(search).toHaveCount(0);
     await expect(page.locator('.fd-library')).toBeVisible();
   }
+});
+
+test.describe('phone search spelling suggestions', () => {
+  test.use({ viewport: PHONE, hasTouch: true });
+
+  for (const [typo, correction, result] of [
+    ['delerium', 'delirium', '[data-fd-safety="delirium.md"]'],
+    ['akathesia', 'akathisia', '[data-fd-open="med_monitoring.md"]'],
+  ]) {
+    test(`tapping the correction for ${typo} reruns the search`, async ({ page }, testInfo) => {
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=today');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill(typo);
+      const suggestion = search.getByRole('button', { name: `Did you mean ${correction}?`, exact: true });
+      await expect(suggestion).toBeVisible();
+      await expect(input).toHaveValue(typo);
+      await expect(search.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+      await suggestion.tap();
+      await expect(input).toHaveValue(correction);
+      await expect(search.locator(result)).toBeVisible();
+      await expect(search.getByRole('button', { name: /^Did you mean / })).toHaveCount(0);
+      await expectHealthy(page);
+    });
+  }
+
+  test('a late page-text match for the original spelling suppresses the correction', async ({ page }, testInfo) => {
+    const typo = 'akathesia';
+    const releaseIndex = await delaySearchIndex(page, typo);
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=today');
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    try {
+      await input.fill(typo);
+      await expect(search.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+      await expect(search.getByRole('button', { name: 'Did you mean akathisia?', exact: true })).toBeVisible();
+    } finally {
+      releaseIndex();
+    }
+    await expect(search.locator('[data-fd-open="t_mood.md"]')).toBeVisible();
+    await expect(input).toHaveValue(typo);
+    await expect(search.getByRole('button', { name: /^Did you mean / })).toHaveCount(0);
+    await expectHealthy(page);
+  });
 });
 
 test('related search terms update the transient query with safety first on phone and desktop', async ({ page }, testInfo) => {
@@ -990,13 +1379,23 @@ for (const mutation of ['save', 'delete']) {
   });
 }
 
-test('phone search: delayed Search hydration preserves input focus and the header invoker', async ({ page }, testInfo) => {
+async function delaySearchIndex(page, term) {
   let releaseIndex;
   const delayed = new Promise(resolve => { releaseIndex = resolve; });
   await page.route('**/search-index.json', async route => {
     await delayed;
-    await route.continue();
+    if (!term) return route.continue();
+    await route.fulfill({ json: {
+      n: 1, avgLen: 10, synonyms: {}, df: { [term]: 1 }, postings: { [term]: [[0, 1]] },
+      docs: [{ f: 't_mood.md', t: 'Mood Disorders', L: 10 }],
+    } });
   });
+  return releaseIndex;
+}
+
+test('phone search: delayed Search hydration shows page-text matches and preserves the selection and invoker', async ({ page }, testInfo) => {
+  const query = 'wordmarker';
+  const releaseIndex = await delaySearchIndex(page, query);
   await page.setViewportSize(DOCK_PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');
@@ -1009,12 +1408,16 @@ test('phone search: delayed Search hydration preserves input focus and the heade
   await search.click();
   const dialog = page.getByRole('dialog', { name: 'Search' });
   const input = dialog.getByRole('textbox', { name: 'Search resources' });
-  await input.fill('sleep');
+  await input.fill(query);
+  await expect(dialog.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+  await input.evaluate(el => el.setSelectionRange(2, 6, 'backward'));
   await expect(input).toBeFocused();
   releaseIndex();
-  await expect.poll(() => page.evaluate(() => Boolean(window.SI && Object.keys(window.SI.postings).length))).toBe(true);
+  await expect(dialog.locator('[data-fd-open="t_mood.md"]')).toBeVisible();
+  await expect(dialog.locator('#fd-search-results')).toHaveAccessibleName('1 result');
   await expect(input).toBeFocused();
-  await expect(input).toHaveValue('sleep');
+  await expect(input).toHaveValue(query);
+  expect(await input.evaluate(el => [el.selectionStart, el.selectionEnd, el.selectionDirection])).toEqual([2, 6, 'backward']);
   // The header is not re-rendered by hydration while search is open: the opener object survives,
   // and is where focus must return.
   expect(await page.evaluate(() => window.__dockSearchInvoker.isConnected)).toBe(true);
@@ -1027,6 +1430,65 @@ test('phone search: delayed Search hydration preserves input focus and the heade
   await expect(dialog).toHaveCount(0);
   await expect(search).toBeFocused();
   expect(await page.evaluate(() => document.activeElement === window.__dockSearchInvoker)).toBe(true);
+  await expectHealthy(page);
+});
+
+test('Library search: delayed page-text results keep the keyboard-selected tool visible on a phone', async ({ page }, testInfo) => {
+  const releaseIndex = await delaySearchIndex(page);
+  await page.setViewportSize(PHONE);
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=library');
+  await openHeaderSearch(page);
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  await input.fill('treatment');
+  await dialog.getByRole('button', { name: 'Show all matches' }).click();
+  const tool = dialog.locator('[data-fd-open="oral.html"]');
+  const position = () => dialog.locator('.fd-result').evaluateAll(rows => rows.findIndex(row => row.dataset.fdOpen === 'oral.html'));
+  const before = await position();
+  try {
+    expect(before).toBeGreaterThanOrEqual(0);
+    await input.press('Enter');
+    for (let i = 0; i < before; i++) await page.keyboard.press('Tab');
+    await expect(tool).toBeFocused();
+    await expect(tool).toBeInViewport({ ratio: 1 });
+  } finally {
+    releaseIndex();
+  }
+  // The real index inserts page-text hits above the tool. Wait for that visible change before
+  // checking focus and clipping by the scrollable results panel.
+  await expect.poll(position).toBeGreaterThan(before);
+  await expect(dialog.getByRole('button', { name: 'Show top 8' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(tool).toBeFocused();
+  await expect(tool).toBeInViewport({ ratio: 1 });
+  expect(new URL(page.url()).searchParams.get('tab')).toBe('library');
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get('tool')).toBe('oral.html');
+  await expect(page.frameLocator('iframe.toolframe').getByRole('heading', { name: 'Your 60-second update' })).toBeVisible();
+  await expectHealthy(page);
+});
+
+test('Library search: delayed page-text results respect dismissal and are ready on reopening', async ({ page }, testInfo) => {
+  const releaseIndex = await delaySearchIndex(page, 'wordmarker');
+  await seedApp(page, testInfo);
+  await page.goto('/?tab=library');
+  const opener = page.locator('.fd-header .fd-searchbtn');
+  await opener.click();
+  const dialog = page.getByRole('dialog', { name: 'Search' });
+  const input = dialog.getByRole('textbox', { name: 'Search resources' });
+  await input.fill('wordmarker');
+  await expect(dialog.locator('#fd-search-results')).toHaveAccessibleName('0 results');
+  await input.press('Escape');
+  await expect(opener).toBeFocused();
+  releaseIndex();
+  await page.evaluate(() => window.cwSearchIndexPromise.then(() => true));
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+  await opener.click();
+  await expect(input).toHaveValue('');
+  await input.fill('wordmarker');
+  await expect(dialog.locator('[data-fd-open="t_mood.md"]')).toBeVisible();
   await expectHealthy(page);
 });
 
@@ -1430,6 +1892,19 @@ test('learner-language search finds tasks, safety abbreviations and complete res
       row.getAttribute('data-fd-open') || row.getAttribute('data-fd-safety')));
     expect(refs.slice(0, 3)).toContain(ref);
     expect(new Set(refs).size).toBe(refs.length);
+  }
+  for (const query of ['suicidality', 'S.I.']) {
+    await input.fill(query);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+  }
+  for (const [query, ref] of [['show me mental status exam', 'mse.html'], ['rounding prep', 'oral.html']]) {
+    await input.fill(query);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-fd-open', ref);
+  }
+  for (const [title, id] of [['Find a podcast to share', 'podcast-navigator'],
+    ['Find services and community supports', 'resource-finder']]) {
+    await input.fill(title);
+    await expect(page.locator('.fd-result').first()).toHaveAttribute('data-care-resource', id);
   }
   await input.fill('BFCRS');
   await expect(page.getByRole('button', {
@@ -2488,7 +2963,1448 @@ async function guideRenderedInventory(page) {
   });
 }
 
+test.describe('Interactive readings', () => {
+  test.beforeEach(async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+  });
+
+  test('Nico’s collateral rounds handoff uses only the nights and source the learner heard', async ({ page }) => {
+    await page.goto('/?page=collateral_workflow.md&guideSection=5-bring-it-back-to-the-team');
+    const section = page.locator('.fd-guide-section').filter({ has: page.locator(':scope > #guide-5-bring-it-back-to-the-team') });
+    const card = section.locator('#night-witness');
+    await expect(section.locator(':scope > h2')).toHaveText('5. Bring It Back To The Team');
+    await expect(card.getByRole('heading', { name: 'Which nights can we account for?' })).toBeVisible();
+    await expect(page.locator('#jo-night').locator('xpath=preceding-sibling::h3[1]')).toHaveText('Baseline And Timeline');
+    await expect(section.locator('#jo-note')).toHaveCount(1);
+
+    const nights = [
+      { day: 'mon', speaker: 'Luz · Monday night', quote: 'if the van would fit', time: 'About 3 a.m.', source: 'Awake · Luz saw', fact: 'saw Nico measuring the garage around 3 a.m. Tuesday' },
+      { day: 'tue', speaker: 'Luz · Tuesday night', quote: 'My phone says 1:12.', time: '1:12 a.m.', source: 'Text from Nico', fact: 'got a 1:12 a.m. text Wednesday saying he felt wiped' },
+      { day: 'wed', speaker: 'Luz · Wednesday night', quote: 'Dad told me he saw Nico asleep', time: 'Time unknown', source: 'Sleep · relayed', fact: 'heard from their dad that Nico slept on the couch' },
+    ];
+    const sources = {
+      father: {
+        speaker: 'Dad · return call', quote: 'five this morning',
+        handoff: 'Dad saw him asleep at 5 a.m. Thursday and says the spending is new, so I’d ask Nico how rested he felt and when his energy changed.',
+        feedback: { need: 'He can’t tell you how much sleep Nico needed.', unclear: 'Dad’s 5 a.m. observation establishes some sleep.' },
+      },
+      patient: {
+        speaker: 'Nico · on the unit', quote: 'missed my stop',
+        handoff: 'Nico describes lying awake worrying and dozing on the bus, so I’d document difficulty sleeping and ask when his mood, energy and spending changed.',
+        feedback: { need: 'Nico wanted sleep and was tired enough to miss his stop.', tired: 'That fits Nico’s account.', unclear: 'You can already say how Nico felt yesterday' },
+      },
+    };
+    const factList = new Intl.ListFormat('en-US', { style: 'long', type: 'conjunction' });
+    const wednesday = card.locator('[data-night="wed"]');
+    const mark = wednesday.locator('[data-mark]');
+    const rounds = card.locator('#nw-rounds');
+    const sample = card.locator('#nw-sample');
+    const feedback = card.locator('#nw-feedback');
+    const reset = card.locator('[data-reset]');
+    async function expectUnasked() {
+      await expect(card.locator('.nw-value')).toHaveText(['Unasked', 'Unasked', 'Unasked']);
+      await expect(card.locator('.nw-kind')).toHaveText(['', '', '']);
+      await expect(card.locator('[data-mark]:visible, [data-heard="true"], [aria-pressed="true"]')).toHaveCount(0);
+      await expect(card.locator('#nw-res')).toBeHidden();
+      await expect(card.locator('#nw-consult-answer')).toBeEmpty();
+      await expect(feedback).toBeEmpty();
+      await expect(rounds).toBeHidden();
+      await expect(sample).toBeEmpty();
+      await expect(reset).toBeDisabled();
+    }
+    async function expectSource(source, heardWed) {
+      const dad = source === 'father';
+      await expect(card.locator('#nw-who')).toHaveText(sources[source].speaker);
+      await expect(card.locator('#nw-consult-answer')).toContainText(sources[source].quote);
+      await expect(wednesday.locator('.nw-value')).toHaveText(dad ? '5 a.m.' : heardWed ? 'Time unknown' : 'Unasked');
+      await expect(wednesday.locator('.nw-kind')).toHaveText(dad ? 'Asleep · Dad saw' : heardWed ? 'Sleep · relayed' : '');
+      await expect(mark).toBeVisible({ visible: dad });
+      if (dad) {
+        await expect(mark.locator('circle')).toHaveCount(1);
+        // On this 10 p.m.–6 a.m. arc, 5 a.m. is seven eighths of the way across.
+        const point = await mark.evaluate(el => {
+          const { e, f } = el.transform.baseVal.getItem(0).matrix;
+          return [e, f];
+        });
+        expect(point[0]).toBeCloseTo(123.58, 1);
+        expect(point[1]).toBeCloseTo(45.80, 1);
+      }
+      await expect(card.locator('#nw-assess')).toBeVisible();
+      await expect(feedback).toBeHidden();
+      await expect(rounds).toBeHidden();
+      await expect(sample).toBeEmpty();
+    }
+
+    await expectUnasked();
+    for (let mask = 1; mask < 8; mask++) {
+      const opened = nights.filter((_, index) => mask & (1 << index));
+      const heardTue = opened.some(night => night.day === 'tue');
+      const heardWed = opened.some(night => night.day === 'wed');
+      await test.step(opened.map(night => night.day).join(' + '), async () => {
+        for (const night of opened) {
+          await card.locator(`[data-ask="${night.day}"]`).click();
+          await expect(card.locator('#nw-label')).toHaveText(night.speaker);
+          await expect(card.locator('#nw-answer')).toContainText(night.quote);
+        }
+        await expect(card.locator('.nw-value')).toHaveText(nights.map(night => opened.includes(night) ? night.time : 'Unasked'));
+        await expect(card.locator('.nw-kind')).toHaveText(nights.map(night => opened.includes(night) ? night.source : ''));
+        await expect(mark).toBeHidden();
+        await expect(card.locator('#nw-assess')).toBeHidden();
+        await expect(rounds).toBeHidden();
+        for (const [source, account] of Object.entries(sources)) {
+          await card.locator(`[data-next="${source}"]`).click();
+          await expectSource(source, heardWed);
+          const handoff = 'Luz ' + factList.format(opened.map(night => night.fact)) + '. Total sleep is unclear. ' + account.handoff;
+          for (const reading of ['need', 'tired', 'unclear']) {
+            await card.locator(`[data-read="${reading}"]`).click();
+            const expected = source === 'father' && reading === 'tired'
+              ? heardTue ? 'His text tells you he felt wiped that night.' : 'Dad didn’t describe how Nico felt the next day.'
+              : account.feedback[reading];
+            await expect(feedback).toBeVisible();
+            await expect(feedback).toContainText(expected);
+            await expect(rounds).toHaveJSProperty('open', false);
+            await expect(sample).toBeHidden();
+            await expect(sample).toBeEmpty();
+            await rounds.locator('summary').click();
+            await expect(sample).toBeVisible();
+            await expect(sample).toHaveText(handoff);
+          }
+        }
+        // Switching back clears the patient interpretation and the already-open rounds disclosure.
+        await card.locator('[data-next="father"]').click();
+        await expectSource('father', heardWed);
+        await reset.click();
+        await expectUnasked();
+      });
+    }
+    await expectHealthy(page);
+  });
+
+  test('Elena’s interpreted visit connects both openings and the repair to the selected clinical follow-up', async ({ page }) => {
+    await page.goto('/?page=cultural_psychiatry.md&guideSection=working-with-interpreters');
+    const section = page.locator('.fd-guide-section').filter({has: page.locator(':scope > #guide-working-with-interpreters')});
+    const card = section.locator('#elena-visit');
+    await expect(card.getByRole('heading', {name:'Who gets the next turn?'})).toBeVisible();
+    const pointers = section.locator(':scope > #guide-working-with-interpreters + ul');
+    await expect(pointers.getByRole('listitem')).toHaveCount(4);
+    await expect(pointers).toContainText('Offer natural eye contact');
+    await expect(pointers).toContainText('one question at a time');
+    await expect(pointers).toContainText('let the interpreter finish');
+    await expect(pointers).toContainText('What are you expecting to happen tonight?');
+    await expect(section.locator(':scope > ul + #elena-visit')).toBeVisible();
+    await expect(page.locator('#cultural-chart').locator('..')).toContainText('Religion, spirituality & community');
+    const art = card.getByRole('img');
+    await art.scrollIntoViewIfNeeded();
+    expect(await art.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+    const exchange = card.locator('#ei-exchange'), followup = card.locator('#ei-followup');
+    const reply = card.locator('#ei-reply'), note = card.locator('#ei-note');
+    const btn = name => card.getByRole('button', {name,exact:true});
+    const final = ['Elena · via interpreter','“I kept hearing this click. Then I’d be wide awake again.”','direct'];
+    const branches = [
+      [
+        ['You · to Sofía','“Can you ask her how last night went?”','relay'],
+        ['Elena · via interpreter','“Were you asking me?”','relay'],
+        ['You · to Elena','“Yes, Elena. I was asking you. How did last night go for you?”','direct'],
+        final
+      ], [
+        ['You · to Elena','“How did last night go for you?”','direct'],
+        ['Sofía · interpreting into Spanish','“¿Cómo le fue anoche?”','direct'],
+        final
+      ]
+    ];
+    const answers = [
+      ['“What did you notice when you heard it?”','“A strip of light came across the floor. I wondered if someone was checking on me. I didn’t know how nights worked here.”','Elena recalls light crossing the floor and wonders if someone was checking on her. I’d ask the night team about its routine and explain it to her with the interpreter.'],
+      ['“Were you already awake when you heard it?”','“At least once, yes. I was lying there waiting for it. The other times? I’m not sure which came first.”','Elena remembers already being awake before at least one click. She’s unsure of the order on the other occasions.']
+    ];
+    await expect(exchange).toBeHidden();
+    for (const turns of branches) {
+      await btn(turns[0][1]).click();
+      await expect(reply).toBeHidden();
+      await expect(note).toBeEmpty();
+      for (const [index, [speaker, words, frame]] of turns.entries()) {
+        await expect(card.locator('#ei-speaker')).toHaveText(speaker);
+        await expect(card.locator('#ei-line')).toHaveText(words);
+        await expect(card.locator('#ei-line')).toHaveAttribute('lang', words.includes('¿') ? 'es' : 'en');
+        await expect(art).toHaveCSS('object-position', frame === 'relay' ? '50% 0%' : '50% 100%');
+        if (index < turns.length - 1) {
+          await expect(followup).toBeHidden();
+          await btn(words === '“Were you asking me?”' ? 'Try a repair' : 'Hear the next turn').click();
+        }
+      }
+      await expect(followup).toBeVisible();
+      for (const [question, answer, sample] of answers) {
+        await btn(question).click();
+        await expect(card.locator('#ei-answer')).toHaveText(answer);
+        await expect(note).toBeHidden();
+        await card.locator('#ei-rounds summary').click();
+        await expect(note).toHaveText(sample);
+      }
+    }
+    await btn('Start over').click();
+    await expect(exchange).toBeHidden();
+    await expect(followup).toBeHidden();
+    await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+    await expect(btn(branches[0][0][1])).toBeFocused();
+  });
+
+  async function openActivity(page, ref, id, heading) {
+    await page.goto('/?page=' + ref);
+    const activity = page.locator('.fd-article__body #' + id);
+    const section = activity.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > :is(h2, .fd-guide-lead, .sec-h)')).toContainText(heading);
+    await expect(activity).toBeVisible();
+    return activity;
+  }
+
+  for (const order of [['meaning', 'body'], ['body', 'meaning']]) {
+    test('therapy chain starts with ' + order[0] + ' and matches each offer to the patient’s preference', async ({ page }) => {
+      const card = await openActivity(page, GUIDE_REF, 'therapy-chain', 'Matching the intervention to the presentation');
+      await expect(card.getByRole('heading', { name: 'Where could we have helped sooner?' })).toBeVisible();
+      const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+      await expect(section.locator('table')).toContainText('Distress-tolerance skill + behavior chain review');
+      expect(await card.evaluate(node => {
+        const table = node.closest('.fd-guide-section, .sec-c').querySelector('table');
+        return Boolean(table.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      })).toBe(true);
+      await expect(section.locator('xpath=following-sibling::section[1]').locator(':scope > :is(h2, .fd-guide-lead, .sec-h)'))
+        .toContainText('BPD without a DBT unit');
+
+      const id = name => card.locator('#tc-' + name);
+      const button = (attribute, value) => card.locator('button[data-' + attribute + '="' + value + '"]');
+      const linkText = key => button('slot', key).locator('[data-link-text]');
+      const links = {
+        meaning: {
+          blank: 'What did the call mean to them?',
+          correction: '“I don’t know why she didn’t pick up. Mad isn’t quite it.”',
+          answer: '“I thought my sister was done with me. I know it was just voicemail, but that’s where my mind went.”',
+          feedback: 'The patient told you what they feared. Their sister’s reason for missing the call is still unknown.',
+          saved: '“I thought my sister was done with me.”',
+        },
+        body: {
+          blank: 'What happened just before they left?',
+          correction: '“Nobody in group did anything. I just got quiet.”',
+          answer: '“I got really quiet. My face got hot. I wanted to get out before anyone saw me cry.”',
+          feedback: 'They described wanting privacy. Whether they want someone to follow is something you can ask.',
+          saved: '“My face got hot. I wanted to get out before anyone saw me cry.”',
+        },
+      };
+      await expect(id('offer')).toBeHidden();
+      for (const [index, key] of order.entries()) {
+        const link = links[key];
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('slot', key).click();
+        await button('question', 'guess').click();
+        await expect(id('answer')).toBeVisible();
+        await expect(id('answer')).toHaveText(link.correction);
+        await expect(button('fill', 'grounded')).toBeHidden();
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('question', 'invite').click();
+        await expect(id('answer')).toHaveText(link.answer);
+        await button('fill', 'inferred').click();
+        await expect(id('fill-feedback')).toBeVisible();
+        await expect(id('fill-feedback')).toHaveText(link.feedback);
+        await expect(linkText(key)).toHaveText(link.blank);
+        await expect(id('count')).toHaveText(index + ' of 2 links filled');
+        await expect(id('offer')).toBeHidden();
+        await button('fill', 'grounded').click();
+        await expect(linkText(key)).toHaveText(link.saved);
+        if (index === 0) await expect(id('offer')).toBeHidden();
+      }
+      await expect(linkText(order[0])).toHaveText(links[order[0]].saved);
+      await expect(id('count')).toHaveText('2 of 2 links filled');
+      await expect(id('offer')).toBeVisible();
+
+      const moments = [
+        { key: 'phone', line: '“If it goes to voicemail again, would you like me to stay with you while you decide what to do?”',
+          reply: '“Right then? Give me a minute to myself. You can check back after.”',
+          plan: 'Give them a minute alone after the call, then check back.' },
+        { key: 'quiet', line: '“If I notice you going quiet in group, would it help if I asked you to step into the hall with me?”',
+          reply: '“When I get quiet like that, ask if I want to step into the hall with you. Just ask me quietly.”',
+          plan: 'If they go quiet, discreetly offer to step into the hall together.' },
+        { key: 'hall', line: '“If you head into the hall, would it be okay if I came out and sat with you?”',
+          reply: '“Yeah. Sit with me for a minute? I might not be ready to go back in.”',
+          plan: 'Offer to sit with them in the hall and let them choose when to return.' },
+      ];
+      for (const moment of moments) {
+        await button('moment', moment.key).click();
+        await expect(id('offer-line')).toHaveText(moment.line);
+        await expect(id('offer-reply')).toBeHidden();
+        await expect(id('debrief')).toBeHidden();
+        await expect(id('plan-summary')).toBeEmpty();
+        await id('make-offer').click();
+        await expect(id('their-preference')).toBeVisible();
+        await expect(id('their-preference')).toHaveText(moment.reply);
+        await expect(id('plan-summary')).toBeVisible();
+        await expect(id('plan-summary')).toHaveText(moment.plan);
+        if (moment.key === 'quiet') {
+          await id('try-moment').click();
+          await expect(id('offer-reply')).toBeHidden();
+          await expect(id('debrief')).toBeHidden();
+          await expect(id('plan-summary')).toBeEmpty();
+        }
+      }
+      await expect(id('debrief').locator('dt')).toHaveText([
+        'What the nurse observed', 'What the patient described', 'What the patient wants next time',
+      ]);
+      await expect(id('account-summary')).toContainText('They thought their sister was done with them.');
+      await id('reset').click();
+      await expect(id('count')).toHaveText('0 of 2 links filled');
+      for (const key of order) await expect(linkText(key)).toHaveText(links[key].blank);
+      await expect(id('offer')).toBeHidden();
+      await expect(id('reply')).toBeHidden();
+      await expect(id('debrief')).toBeHidden();
+      await expect(id('plan-summary')).toBeEmpty();
+    });
+  }
+
+  test('Sam’s night sign-out changes the receiving resident’s reply with each handoff detail', async ({ page }) => {
+    await page.goto('/?page=doc_oral.md&guideSection=handoff-template');
+    const section = page.locator('.fd-article__body section').filter({
+      has: page.locator(':scope > #guide-handoff-template'),
+    });
+    const template = section.locator('blockquote').filter({ hasText: 'If [trigger], do [plan]' });
+    const activity = section.locator('#night-signout');
+    await expect(template.locator('xpath=following-sibling::*[1][@id="night-signout"]')).toBeVisible();
+    await expect(activity.getByRole('heading', { name: 'Can the night team act on this?' })).toBeVisible();
+    const send = activity.getByRole('button', { name: 'Hand over to the night resident' });
+    const reset = activity.getByRole('button', { name: 'Start over' });
+    const question = activity.locator('#ns-question');
+    const card = activity.locator('#ns-card dd');
+    const details = {
+      wish: ['What did Sam ask for?', 'Privacy during the call and a check-in afterward.'],
+      time: ['When is the call?', 'Sam’s sister plans to call around seven tonight.'],
+      owner: ['Who agreed to check in?', 'Maya, Sam’s evening nurse, agreed to take the check-in.'],
+    };
+    const pick = key => activity.getByRole('button', { name: details[key][0], exact: true });
+    const expectCard = keys => expect(card).toHaveText(keys.map(key => details[key][1]));
+    const readback = 'So, their sister’s calling around seven. Sam wants to take it alone, and Maya will check in afterward. Have I got that right?';
+    const cases = [
+      [[], 'What did Sam ask us to do around the call?'],
+      [['wish'], 'I’ll give Sam some privacy. About what time is their sister calling?'],
+      [['time'], 'I’ve got the time. Does Sam want me there for the call, or would they rather I stop by afterward?'],
+      [['owner'], 'Maya has the check-in. What did Sam say would help them around the call?'],
+      [['wish', 'time'], 'Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?'],
+      [['wish', 'owner'], 'Maya’s checking in afterward. When is Sam expecting their sister to call?'],
+      [['time', 'owner'], 'I’ve got the time, and Maya has the check-in. Does Sam want company during the call, or would they rather talk afterward?'],
+      [['wish', 'time', 'owner'], readback],
+    ];
+    for (const [selected, reply] of cases) {
+      for (const key of selected) await pick(key).click();
+      await expectCard(selected);
+      await send.click();
+      await expect(question).toBeVisible();
+      await expect(question).toContainText(reply);
+      await expectCard(selected);
+      await reset.click();
+      await expectCard([]);
+      await expect(activity.locator('[aria-pressed=true]')).toHaveCount(0);
+      await expect(question).toBeEmpty();
+    }
+
+    await send.press('Enter');
+    await activity.getByRole('button', { name: 'Ask what Sam wants' }).click();
+    await expectCard(['wish']);
+    await expect(question).toContainText('About what time is their sister calling?');
+    await activity.getByRole('button', { name: 'Check the time of the call' }).click();
+    await expectCard(['wish', 'time']);
+    await expect(question).toContainText('Who’s agreed to check in with them afterward?');
+    await activity.getByRole('button', { name: 'Find out who agreed to check in' }).click();
+    await expectCard(['wish', 'time', 'owner']);
+    await expect(question).toContainText(readback);
+    await expect(activity.locator('#ns-clarify')).toBeHidden();
+    await activity.getByRole('button', { name: 'Edit handoff' }).click();
+    await expect(question).toBeEmpty();
+    await expectCard(['wish', 'time', 'owner']);
+    await pick('time').click();
+    await expectCard(['wish', 'owner']);
+    await expect(activity.locator('#ns-source-time')).toBeHidden();
+    await send.click();
+    await expect(question).toContainText('When is Sam expecting their sister to call?');
+    await expect(question).not.toContainText('around seven');
+  });
+
+  test('Quieter on the unit compares the same functional goal across both shifts', async ({ page }) => {
+    await page.goto('/?page=exp_tx.md&guideSection=how-to-present-a-treatment-rationale');
+    const card = page.locator('.fd-article__body #quieter-on-unit');
+    const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > :is(h2,.sec-h)')).toContainText('How To Present A Treatment Rationale');
+    const lens = name => card.getByRole('radio', {name, exact:true});
+    const open = card.getByRole('button', {name:'Open next-shift update'});
+    const worked = card.locator('[data-qt-worked]');
+    const trace = card.locator('.qt-trace');
+    const line = index => card.locator('[data-qt-statements] input').nth(index);
+
+    await expect(open).toBeDisabled();
+    await lens('Following the call').check();
+    await expect(trace).toContainText('1 of 3');
+    await expect(trace).not.toContainText('3 of 3');
+    await lens('Daytime alertness').check();
+    await open.press('Enter');
+    await expect(card.locator('[data-qt-question]')).toBeFocused();
+    await expect(card.locator('[data-qt-gap]')).toBeVisible();
+    await expect(line(0)).toBeHidden();
+    await lens('Following the call').check();
+    await expect(trace).toContainText('3 of 3');
+    await line(0).check();
+    await expect(worked).toBeHidden();
+    await line(1).check();
+    await expect(worked).toContainText('felt as awake as yesterday');
+    await expect(worked).not.toContainText('less time in the lounge');
+    await lens('Time in the lounge').check();
+    await expect(worked).toContainText('Nursing observed less time in the lounge');
+
+    await card.getByRole('button', {name:'Try the other history'}).press('Enter');
+    await expect(open).toBeDisabled();
+    await expect(worked).toBeHidden();
+    await lens('Following the call').check();
+    await open.press('Enter');
+    await expect(trace.locator('[data-qt-next-value]')).toHaveText('1 of 3');
+    await line(0).check();
+    await expect(card.locator('[data-qt-feedback]')).toContainText('timing alone cannot establish');
+    await line(2).check();
+    await expect(worked).toContainText('clinician assessing the new dozing now');
+    await expect(worked).toContainText('too sleepy to keep talking');
+    await expect(worked).not.toContainText('report nodding off');
+    await lens('Daytime alertness').check();
+    await expect(worked).toContainText('report nodding off');
+    await expect(worked).not.toContainText('less time in the lounge');
+    await card.getByRole('button', {name:'Start over'}).press('Enter');
+    await expect(card.locator('input:checked')).toHaveCount(0);
+    await lens('Following the call').check();
+    await open.press('Enter');
+    await line(1).check();
+    await expect(worked).toContainText('still need the patient’s own account');
+  });
+
+  test('Which line would you coach requires Jules’s self-assessment for each heard line', async ({ page }, info) => {
+    const ref = 'supervision_teaching.md';
+    if (!isResidentProject(info.project.name)) {
+      const response = await page.request.get('/content/' + ref);
+      expect(await response.text()).not.toContain('id="coach-line"');
+      return;
+    }
+    await page.goto('/?page=' + ref + '&guideSection=feedback-that-lands');
+    const card = page.locator('#guide-feedback-that-lands + #coach-line');
+    await expect(card.getByRole('heading', { name: 'Which line would you coach?' })).toBeVisible();
+    const reveal = card.getByRole('button', { name: 'Compare a feedback exchange' });
+    const model = card.locator('[data-coach-model]');
+    const self = card.locator('[data-coach-self]');
+    const echo = card.locator('[data-coach-echo]');
+    const ask = card.locator('[data-coach-open="ask"]');
+    const tell = card.getByRole('button', { name: 'Can I give you the wording I would use?' });
+    const back = card.getByRole('button', { name: 'Choose a different line' });
+    const scenes = [
+      ['At the bedside', [
+        ['quieter start', 'hoping to learn', 'noise might matter', 'offered a possible meaning', 'What did I miss?', 'invitation to correct it'],
+        ['team group went fine', 'team to take away', 'my summary lost', 'what made staying possible', 'part you want them to hear', 'next interview'],
+      ]],
+      ['At rounds', [
+        ['Group is going well', 'basing the opening', 'One group yesterday', 'a general conclusion', 'checked how today went', 'next presentation'],
+        ['Val told me they stayed', 'include the words', 'where the information came from', 'what was still open', 'who reported the change', 'remaining question'],
+      ]],
+    ];
+    await expect(reveal).toBeHidden();
+    for (const [setting, branches] of scenes) {
+      await card.getByRole('button', { name: setting, exact: true }).click();
+      await expect(echo).toBeEmpty();
+      await expect(card.getByText('Select one of Jules’s lines in the transcript.')).toBeVisible();
+      await expect(card.locator('[data-coach-line]:visible')).toHaveCount(2);
+      for (const [quote, question, selfCheck, example, retry, result] of branches) {
+        const line = card.getByRole('button', { name: new RegExp(quote) });
+        await line.press('Enter');
+        await expect(card.getByRole('heading', { name: 'Feedback for Jules' })).toBeFocused();
+        await expect(echo).toHaveText('“' + await line.locator('.cl-quote').innerText() + '”');
+        await expect(ask).toContainText(question);
+        await expect(model).toBeEmpty();
+        await expect(self).toBeEmpty();
+        await expect(card.locator('#cl-outcome')).toBeEmpty();
+        await expect(reveal).toBeHidden();
+        await tell.click();
+        await expect(card.locator('#cl-hint')).toContainText('First find out');
+        await expect(reveal).toBeHidden();
+        await ask.click();
+        await expect(self).toContainText(selfCheck);
+        await expect(model).toBeEmpty();
+        await reveal.press('Enter');
+        await expect(card.locator('#cl-worked-title')).toBeFocused();
+        await expect(model).toContainText(example);
+        await expect(card.locator('[data-coach-retry]')).toContainText(retry);
+        await card.locator('[data-coach-observe="other"]').click();
+        await expect(card.locator('#cl-outcome')).toContainText('particular move');
+        await card.locator('[data-coach-observe="match"]').click();
+        await expect(card.locator('#cl-outcome')).toContainText(result);
+        await back.press('Enter');
+        await expect(line).toBeFocused();
+      }
+    }
+    await tell.click();
+    await expect(reveal).toBeHidden();
+    await expect(model).toBeEmpty();
+    await expect(card.locator('#cl-outcome')).toBeEmpty();
+    await card.getByRole('button', { name: 'At the bedside' }).click();
+    await expect(card.locator('#cl-attempt')).toBeHidden();
+    await expect(card.locator('[data-coach-line][aria-pressed=true]')).toHaveCount(0);
+  });
+
+  test('home-dose history requires both records and a handoff supported by the current patient reply', async ({ page }) => {
+    const sectionId = 'guide-start-here-five-questions-before-choosing-a-drug';
+    await page.goto('/?page=psychopharm_primer.md&guideSection=start-here-five-questions-before-choosing-a-drug');
+    const opening = page.locator('.fd-article__body :is(.sec-c,.fd-guide-section)').filter({
+      has: page.locator(':scope > #' + sectionId),
+    });
+    const items = opening.locator('ol').first().locator(':scope > li');
+    await expect(items).toHaveCount(5);
+    const questions = ['What are we treating?', 'What has already happened?',
+      'What could change the choice?', 'What will we measure?', 'What happens after discharge?'];
+    for (const [index, question] of questions.entries()) {
+      await expect(items.nth(index).locator('strong').first()).toHaveText(question);
+    }
+    const card = items.nth(1).locator('section#home-dose-history');
+    await expect(card).toBeVisible();
+    const field = name => card.locator('#mh-' + name);
+    const claim = name => card.locator('[data-claim="' + name + '"]');
+    const mark = (day, value) => card.locator('input[name="mh-' + day + '"][value="' + value + '"]').check();
+
+    for (const [first, second] of [['rx', 'fill'], ['fill', 'rx']]) {
+      await expect(field('interim')).toBeHidden();
+      await field(first).click();
+      await expect(field(first === 'rx' ? 'fill-line' : 'order-line')).toHaveText('Record unopened');
+      await expect(field('interim')).toBeHidden();
+      await field(second).click();
+      await expect(field('interim')).toBeVisible();
+      if (first === 'rx') await field('reset').click();
+    }
+    for (const unsupported of ['daily', 'never']) {
+      await claim(unsupported).click();
+      await expect(field('claim-feedback')).toBeVisible();
+      await expect(field('ask')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+    }
+    await claim('open').click();
+    await expect(field('revise')).toBeHidden();
+    await field('hear').press('Enter');
+
+    const replies = [
+      { quote: /haven’t started/, friday: 'none', dose: 'Patient reports no doses from the Friday fill.' },
+      { quote: /Friday’s the only time/, friday: 'taken', dose: 'Patient reports one dose from this fill, Friday night, and none since.' },
+    ];
+    for (const reply of replies) {
+      await expect(field('quote')).toContainText(reply.quote);
+      await expect(card.locator('input:checked')).toHaveCount(0);
+      await expect(field('final')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+      await expect(field('dose-line')).toHaveText('History pending');
+      await mark('fri', reply.friday);
+      await field('check').click();
+      await expect(field('revision-feedback')).toContainText('each night');
+      await expect(field('final')).toBeHidden();
+      await mark('sat', 'taken');
+      await field('check').click();
+      await expect(field('revision-feedback')).toBeVisible();
+      await expect(field('handoff')).toBeEmpty();
+      await mark('sat', 'none');
+      await field('check').click();
+      await expect(field('final')).toBeVisible();
+      await expect(field('dose-line')).toHaveText(reply.dose);
+      await expect(field('handoff')).toHaveText('“The outpatient prescription lists quetiapine nightly, and the pharmacy confirms Friday pickup. ' + reply.dose + '”');
+      await field('other').click();
+    }
+    await expect(field('handoff')).toBeEmpty();
+    await expect(card.locator('input:checked')).toHaveCount(0);
+  });
+
+  test('Morgan builds a clozapine differential before revealing the studies and handoff', async ({ page }) => {
+    const activity = await openActivity(page, 'psychopharm_primer.md', 'morgan-exposure', 'Antipsychotics');
+    const select = (id, value) => activity.locator('#mg-' + id).selectOption(value);
+    const act = selector => activity.locator(selector).press('Enter');
+    await expect(activity.locator('[data-sources]')).toHaveCount(0);
+    await act('[data-stage="unit"]');
+    await act('[data-ask="meds"]');
+    await select('leading', 'sedative');
+    await select('alternate', 'sedative');
+    await select('next-check', 'sedative');
+    await act('[data-commit]');
+    await expect(activity.locator('[data-debrief]')).toBeHidden();
+    await select('alternate', 'illness');
+    await act('[data-commit]');
+    await expect(activity.locator('[data-result="leading"]')).toContainText('after the first sleepiness');
+    await act('[data-sample] summary');
+    await expect(activity.locator('[data-sample]')).not.toContainText('sore throat');
+    await expect(activity.locator('[data-blood-source]')).toHaveCount(0);
+    await act('[data-ask="illness"]');
+    await expect(activity.locator('[data-debrief]')).toBeHidden();
+    await act('[data-commit]');
+    await act('[data-sample] summary');
+    await expect(activity.locator('[data-result="safety"]')).toContainText('absolute neutrophil count');
+    await act('[data-sources] summary');
+    for (const pmid of ['11763003', '21599724', '26032842']) {
+      await expect(activity.locator('[data-sources] a[href$="/' + pmid + '/"]')).toBeVisible();
+    }
+  });
+
+  test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
+    await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
+    const card = page.locator('.fd-reader:visible #catie-stop');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toHaveText('5. What did the CATIE trial show?');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toContainText('Answer:');
+    const interview = key => card.locator('[data-patient="' + key + '"]');
+    const choice = key => card.locator('[data-choice="' + key + '"]');
+    const feedback = card.locator('#catie-feedback');
+    const compare = card.locator('#catie-compare');
+    const patients = [
+      {key:'a', quote:'we missed the bus', options:[
+        ['symptoms','explains the ED visit'], ['uncertain','different reason for stopping'], ['burden','get up in the morning'],
+      ]},
+      {key:'b', quote:'one every night', options:[
+        ['burden','what kept them awake'], ['uncertain','home dose is unclear'], ['symptoms','dose actually taken'],
+      ]},
+    ];
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    for (const patient of patients) {
+      await interview(patient.key).press('Enter');
+      await expect(card.locator('#catie-quote')).toContainText(patient.quote);
+      await expect(feedback).toBeHidden();
+      for (const [value, explanation] of patient.options) {
+        await expect(compare).toBeHidden();
+        await choice(value).click();
+        await expect(feedback).toContainText(explanation);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/16172203/');
+    await interview('a').click();
+    await expect(choice('burden')).toHaveAttribute('aria-pressed', 'true');
+    await choice('uncertain').click();
+    await expect(compare).toBeHidden();
+    await interview('b').click();
+    await expect(choice('symptoms')).toHaveAttribute('aria-pressed', 'true');
+    await card.getByRole('button', {name:'Start again'}).click();
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    await expect(card.locator('#catie-progress')).toHaveText('0 of 2 handoffs matched');
+  });
+
+  test('fever comparison gates patient-specific interpretations and primary studies', async ({ page }) => {
+    const activity = await openActivity(page, 'toxidromes.md', 'febrile-exam-pair', 'The four, side by side');
+    const act = selector => activity.locator(selector).press('Enter');
+    const article = activity.locator('xpath=ancestor::section[contains(@class,"fd-guide-section") or contains(@class,"sec-c")][1]');
+    expect(await article.evaluate(el => !!(el.querySelector('#febrile-exam-pair').compareDocumentPosition(el.querySelector('table')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+    const plate = activity.locator('.examphoto img');
+    expect(await plate.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(500);
+    const discuss = async (lead, rival, prediction) => {
+      await activity.locator('#fp-lead').selectOption(lead);
+      await activity.locator('#fp-rival').selectOption(rival);
+      await activity.locator('input[value="' + prediction + '"]').check();
+      await act('#fp-commit');
+    };
+    await act('.spot.taye-ankle');
+    await act('[data-pin="taye"]');
+    await expect(activity.locator('#fp-commit')).toBeDisabled();
+    await expect(activity.locator('#fp-evidence')).toBeHidden();
+    await act('[data-med="taye"]');
+    await discuss('serotonin', 'infection', 'temperature');
+    await expect(activity.locator('#fp-leading-line')).toContainText('linezolid');
+    await expect(activity.locator('#fp-prediction-line')).toContainText('limited diagnostic weight');
+    await act('#fp-report summary');
+    await expect(activity.locator('#fp-sample')).not.toContainText('draining wound');
+    await act('[data-ward="taye"]');
+    await expect(activity.locator('#fp-result')).toBeHidden();
+    await discuss('serotonin', 'infection', 'cultures');
+    await act('#fp-report summary');
+    await expect(activity.locator('#fp-sample')).toContainText('cultures are pending');
+    await act('.spot.ana-arm');
+    await act('[data-pin="ana"]');
+    await expect(activity.locator('#fp-lead')).toHaveValue('');
+    await act('[data-ward="ana"]');
+    await act('[data-med="ana"]');
+    await discuss('catatonia', 'nms', 'rigidity');
+    await act('#fp-report summary');
+    await expect(activity.locator('#fp-sample')).toContainText('superimposed NMS');
+    await expect(activity.locator('#fp-sample')).not.toContainText(/linezolid|wound/i);
+    await act('#fp-evidence summary');
+    for (const pmid of ['12925718', '28027111', '1674666']) {
+      await expect(activity.locator('#fp-evidence a[href$="/' + pmid + '/"]')).toBeVisible();
+    }
+    await act('#fp-reset');
+    await expect(activity.locator('#fp-result')).toBeHidden();
+  });
+
+  async function toggleWithKeyboard(details) {
+    await details.locator(':scope > summary').press('Enter');
+  }
+
+  test('withdrawal timeline ties the differential to changes in usual intake', async ({ page }) => {
+    const card = await openActivity(page, 't_sud.md', 'aw-timeline', 'Initial workup');
+    const choose = async (lead, check) => {
+      await card.locator('[data-et-lead]').selectOption(lead);
+      await card.locator('[data-et-check]').selectOption(check);
+      await card.locator('[data-et-commit]').press('Enter');
+    };
+    const open = key => card.locator('[data-et-source="' + key + '"]').press('Enter');
+    await expect(card.locator('[data-et-commit]')).toBeDisabled();
+    await open('usual');
+    await choose('fall','history');
+    await expect(card.locator('[data-et-feedback]')).toContainText('do not yet establish a drop');
+    await open('recent');
+    await expect(card.locator('[data-et-debrief]')).toBeHidden();
+    await choose('fall','exam');
+    await expect(card.locator('[data-et-feedback]')).toContainText('marked reduction');
+    await toggleWithKeyboard(card.locator('details').first());
+    await expect(card.locator('[data-et-sample]')).not.toContainText('seizure');
+    await open('prior');
+    await choose('fall','history');
+    await toggleWithKeyboard(card.locator('details').first());
+    await expect(card.locator('[data-et-sample]')).toContainText('prior discharge summary documents a withdrawal seizure');
+    await card.locator('[data-et-version="second"]').press('Enter');
+    await expect(card.locator('[data-et-debrief]')).toBeHidden();
+    await expect(card.locator('[data-reviewed]')).toHaveCount(0);
+    await open('recent');
+    await choose('fall','level');
+    await expect(card.locator('[data-et-feedback]')).toContainText('size of any reduction are uncertain');
+    await expect(card.locator('[data-et-next]')).toContainText('alone cannot settle');
+    await toggleWithKeyboard(card.locator('details').first());
+    await expect(card.locator('[data-et-sample]')).not.toContainText('withdrawal seizure');
+    await toggleWithKeyboard(card.locator('details').last());
+    await expect(card.locator('a[href*="16912820"]')).toBeVisible();
+  });
+
+  test('discharge barrier map distinguishes a filled prescription from a feasible pickup', async ({ page }) => {
+    const card = await openActivity(page, 'exp_family.md', 'remy-pickup', 'Discharge Barrier Map');
+    for (const [version, outcome] of [['first','pickup plan fits'],['second','ride misses closing time']]) {
+      await card.locator('[data-et-version="' + version + '"]').press('Enter');
+      await expect(card.locator('[data-et-debrief]')).toBeHidden();
+      await card.locator('[data-et-source="pharmacy"]').press('Enter');
+      await card.locator('[data-et-lead]').selectOption('ready');
+      await card.locator('[data-et-check]').selectOption('ride');
+      await card.locator('[data-et-commit]').press('Enter');
+      await toggleWithKeyboard(card.locator('details').first());
+      await expect(card.locator('[data-et-sample]')).toContainText('still need to confirm');
+      await expect(card.locator('[data-et-sample]')).not.toContainText('Tess');
+      await card.locator('[data-et-source="ride"]').press('Enter');
+      await expect(card.locator('[data-et-debrief]')).toBeHidden();
+      await card.locator('[data-et-commit]').press('Enter');
+      await toggleWithKeyboard(card.locator('details').first());
+      await expect(card.locator('[data-et-sample]')).toContainText(outcome);
+      await toggleWithKeyboard(card.locator('details').last());
+      await expect(card.locator('a[href*="24421481"]')).toBeVisible();
+    }
+    await card.locator('[data-et-reset]').press('Enter');
+    await expect(card.locator('[data-et-commit]')).toBeDisabled();
+  });
+
+  test('interview reply traces an answer, a redirect, or a privacy question', async ({ page }) => {
+    const card = await openActivity(page, 'pg_interview.md', 'reply-thread-case', 'MSE Structure');
+    const press = selector => card.locator(selector).press('Enter');
+    const last = () => card.locator('[data-rt-phrase]:visible').last().press('Enter');
+    await expect(card.locator('[data-rt-rounds]')).toBeHidden();
+    await press('[data-rt-next]');
+    await press('[data-rt-next]');
+    await last();
+    await press('[data-rt-rounds] summary');
+    await expect(card.locator('[data-rt-rounds]')).toContainText('without my asking again');
+    await card.locator('[data-rt-case="alternate"]').press('Enter');
+    await press('[data-rt-next]');
+    await press('[data-rt-next]');
+    await press('[data-rt-ask]');
+    await last();
+    await press('[data-rt-rounds] summary');
+    await expect(card.locator('[data-rt-rounds]')).toContainText('When I asked again');
+    await card.locator('[data-rt-case="eden"]').press('Enter');
+    await press('[data-rt-next]');
+    await press('[data-rt-open]');
+    await press('[data-rt-rounds] summary');
+    await expect(card.locator('[data-rt-rounds]')).toContainText('My brother comes to visit');
+    await expect(card.locator('.rt-return')).toHaveCount(0);
+  });
+
+  const nicoTurns = {
+    wait: {
+      action: 'You stay quiet and give him a moment.',
+      reply: '“Anyway, Dad drove me. We barely said a word the whole ride.”',
+      quote: '“Anyway, Dad drove me.”',
+      observation: 'He returned to the original question on his own.',
+      cue: 'Pause',
+      rationale: 'Nico supplied the link back to the ride himself.',
+      report: 'He came back to the question on his own.',
+    },
+    repeat: {
+      action: '“Let me come back to the ride. How did you get from home to the ED this morning?”',
+      reply: '“Oh, the ride? Dad drove me. His car was right outside.”',
+      quote: '“Oh, the ride? Dad drove me.”',
+      observation: 'He answered when I asked the original question again.',
+      cue: 'Ask again',
+      rationale: 'Whether he would have returned given more time is still open.',
+      report: 'He answered after one redirect.',
+    },
+    focus: {
+      action: '“Who drove you here?”',
+      reply: '“My dad.”',
+      quote: '“My dad.”',
+      observation: 'He answered a narrower question about the driver.',
+      cue: 'Who drove?',
+      rationale: 'you can’t tell whether he would have returned to the original question on his own.',
+      report: 'I’d want to hear another open-ended answer before describing his overall thought process.',
+    },
+  };
+  const nicoQuoteFeedback = {
+    rent: 'The rent quote shows what Nico remembered his father saying.',
+    end: 'This line gives Nico’s answer about the ride.',
+    job: 'The first-job quote explains why the deposit made sense to Nico.',
+  };
+
+  for (const [move, turn] of Object.entries(nicoTurns)) {
+    test(`Nico thought process: ${move} pairs every quotation with every observation`, async ({ page }) => {
+      const card = await openActivity(page, 'pg_interview.md', 'nico-interview', 'MSE Structure');
+      await expect(page.locator('#reply-thread-case + #nico-interview')).toBeVisible();
+      const at = id => card.locator('#ni-' + id);
+      const choose = (group, value) => card.locator(`[data-${group}="${value}"]`).click();
+      await expect(at('result')).toBeHidden();
+      await expect(at('rounds')).toBeHidden();
+      await choose('move', move);
+      await expect(at('result')).toBeVisible();
+      await expect(at('action')).toHaveText(turn.action);
+      await expect(at('reply')).toHaveText(turn.reply);
+      await expect(at('map-cue')).toHaveText(turn.cue);
+      await expect(card.locator('[data-quote]')).toHaveText([
+        '“Dad kept saying, ‘That’s the rent money.’”', turn.quote, '“I thought I’d earn it back on the first job.”',
+      ]);
+      await expect(at('compare')).toBeHidden();
+      for (const [quote, evidence] of Object.entries(nicoQuoteFeedback)) {
+        await choose('quote', quote);
+        await expect(at('feedback')).toBeHidden();
+        if (quote === 'rent') await expect(at('compare')).toBeHidden();
+        for (const reading of Object.keys(nicoTurns)) {
+          await test.step(`${quote} quotation, ${reading} observation`, async () => {
+            const observation = card.getByRole('button', { name: nicoTurns[reading].observation, exact: true });
+            await observation.click();
+            await expect(observation).toHaveAttribute('aria-pressed', 'true');
+            await expect(at('feedback')).toBeHidden();
+            await at('compare').click();
+            await expect(at('compare')).toHaveAttribute('aria-expanded', 'true');
+            await expect(at('feedback')).toBeVisible();
+            await expect(at('quote-feedback')).toContainText(evidence);
+            await expect(at('reading-feedback')).toContainText(move === reading ? 'That fits.' : 'Look again at your turn.');
+            await expect(at('reading-feedback')).toContainText(turn.rationale);
+            await expect(at('note')).toBeHidden();
+            await toggleWithKeyboard(at('sample'));
+            await expect(at('note')).toBeVisible();
+            await expect(at('note')).toContainText(turn.report);
+          });
+        }
+      }
+      await at('compare').click();
+      await expect(at('feedback')).toBeHidden();
+      await expect(at('compare')).toHaveAttribute('aria-expanded', 'false');
+      await at('compare').click();
+      await expect(at('note')).toBeHidden();
+      await at('replay').click();
+      await expect(at('result')).toBeHidden();
+      await expect(at('rounds')).toBeHidden();
+      await expect(at('end-label')).toHaveText('Next turn?');
+      await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+      await expect(card.locator('[data-move]').first()).toBeFocused();
+    });
+  }
+
+  test('dayroom choices reveal the requested change and reset the previous handoff', async ({ page }) => {
+    const activity = await openActivity(page, 'agitation.md', 'vp-dayroom', 'The least-restrictive ladder');
+    const paths = [
+      ['tv', 'ask me one thing at a time', 'ask the nurse to take the lead'],
+      ['voices', 'That game on TV', 'ask whether they want it turned down'],
+      ['calming', 'I’d rather stay here', 'offered the calming room'],
+    ];
+    const recheck = activity.locator('#vp-recheck');
+    await expect(recheck).toBeHidden();
+    await expect(activity.locator('.vp-result:visible')).toHaveCount(0);
+    for (const [place, reply, sample] of paths) {
+      const button = activity.locator('[data-vp-place="' + place + '"]');
+      const panel = activity.locator('#vp-' + place);
+      await expect(button).toHaveAttribute('aria-controls', 'vp-' + place);
+      await button.press('Enter');
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+      await expect(activity.locator('[data-vp-place][aria-pressed="true"]')).toHaveCount(1);
+      await expect(activity.locator('.vp-result:visible')).toHaveCount(1);
+      await expect(activity.locator('.vp-handoff[open]')).toHaveCount(0);
+      await expect(panel.locator('blockquote')).toBeVisible();
+      await expect(panel.locator('blockquote')).toContainText(reply);
+      const handoff = panel.locator('.vp-handoff');
+      await toggleWithKeyboard(handoff);
+      await expect(handoff.locator('p')).toBeVisible();
+      await expect(handoff.locator('p')).toContainText(sample);
+
+      await expect(recheck).toBeVisible();
+      await expect(recheck).toHaveJSProperty('open', false);
+      await toggleWithKeyboard(recheck);
+      await expect(recheck.locator(':scope > blockquote')).toContainText('still so wound up');
+      const offer = recheck.locator('#vp-prn-offer');
+      await expect(offer).toHaveJSProperty('open', false);
+      await toggleWithKeyboard(offer);
+      const firstStep = await panel.locator('[data-vp-opening]').textContent();
+      for (const [replyId, outcome, missing] of [
+        ['vp-prn-yes', 'chose the oral PRN and received it', 'No dose was given'],
+        ['vp-prn-no', 'No dose was given', 'chose the oral PRN and received it'],
+      ]) {
+        const decision = offer.locator('#' + replyId);
+        await toggleWithKeyboard(decision);
+        await expect(offer.locator('[name="vp-prn-reply"][open]')).toHaveCount(1);
+        const report = decision.locator('.vp-handoff');
+        await expect(report).toHaveJSProperty('open', false);
+        await toggleWithKeyboard(report);
+        const spoken = report.locator('p').last();
+        await expect(spoken).toBeVisible();
+        await expect(spoken).toContainText(firstStep);
+        await expect(spoken).toContainText(outcome);
+        await expect(spoken).not.toContainText(missing);
+      }
+    }
+    const image = activity.locator('.vp-room img');
+    await image.scrollIntoViewIfNeeded();
+    const box = await image.boundingBox();
+    for (const [x, place] of [[0.10, 'tv'], [0.70, 'voices'], [0.91, 'calming']]) {
+      await page.mouse.click(box.x + x * box.width, box.y + 0.45 * box.height);
+      await expect(activity.locator('[data-vp-place="' + place + '"]')).toHaveAttribute('aria-pressed', 'true');
+    }
+  });
+
+  test('catatonia comparison requires both moments and clears the sample on close', async ({ page }) => {
+    const activity = await openActivity(page, 'catatonia.md', 'vp-catatonia', 'How it presents on the unit');
+    const frames = activity.locator('details[data-vp-frame]');
+    const compare = activity.locator('[data-vp-compare]');
+    await expect(frames).toHaveCount(2);
+    await expect(compare).toBeHidden();
+    await toggleWithKeyboard(frames.last());
+    await expect(frames.last().locator('.vp-reply')).toBeVisible();
+    await expect(compare).toBeHidden();
+    await toggleWithKeyboard(frames.first());
+    await expect(compare).toBeVisible();
+    const handoff = compare.locator('.vp-handoff');
+    await toggleWithKeyboard(handoff);
+    await expect(handoff.locator('p')).toContainText('nurse saw Kit drink');
+    await expect(handoff.locator('p')).toContainText('I heard no reply');
+    await toggleWithKeyboard(frames.last());
+    await expect(compare).toBeHidden();
+    await expect(handoff).toHaveJSProperty('open', false);
+    await toggleWithKeyboard(frames.last());
+    await expect(compare).toBeVisible();
+    await expect(handoff.locator('p')).toBeHidden();
+  });
+
+  test('medical workup distinguishes copied text, firsthand findings and the opening line', async ({ page }) => {
+    const activity = await openActivity(page, 'medical_workup.md', 'vp-workup', 'When to suspect a medical cause');
+    await expect(activity.locator('.vp-safety')).toBeVisible();
+    const sources = activity.locator('details[name="vp-workup-source"]');
+    for (const [index, provenance] of ['copied this line from yesterday', 'nurse saw both conversations'].entries()) {
+      await toggleWithKeyboard(sources.nth(index));
+      await expect(sources.nth(index).locator('.vp-reply')).toBeVisible();
+      await expect(sources.nth(index).locator('.vp-reply')).toContainText(provenance);
+    }
+    const paths = [
+      { finding: 'Check attention', observation: 'need your voice to re-engage', lines: 'vp-workup-attention-line',
+        feedback: ['establish orientation', 'raises concern for delirium'], assessment: 'measurements are still pending' },
+      { finding: 'Repeat the vital signs', observation: '86% on room air', lines: 'vp-workup-vitals-line',
+        feedback: ['give the numbers', 'cannot tell you its cause'], assessment: 'immediate respiratory and medical assessment' },
+    ];
+    for (const path of paths) {
+      const card = activity.locator('details[name="vp-workup-finding"]').filter({ has: page.locator('summary').filter({ hasText: path.finding }) });
+      await toggleWithKeyboard(card);
+      await expect(activity.locator('details[name="vp-workup-finding"][open]')).toHaveCount(1);
+      await expect(card.locator('.vp-reply > p').first()).toContainText(path.observation);
+      for (const [index, response] of path.feedback.entries()) {
+        const line = card.locator('details[name="' + path.lines + '"]').nth(index);
+        await toggleWithKeyboard(line);
+        await expect(line.locator('p')).toBeVisible();
+        await expect(line.locator('p')).toContainText(response);
+      }
+      const handoff = card.locator('details.vp-handoff:not([name])');
+      await toggleWithKeyboard(handoff);
+      await expect(handoff.locator('p')).toBeVisible();
+      await expect(handoff.locator('p')).toContainText(path.assessment);
+    }
+  });
+
+  test('metabolic chart selection precedes the monitoring table and changes the discharge handoff', async ({ page }) => {
+    const activity = await openActivity(page, 'nutrition_metabolic.md', 'vp-metabolic', 'Metabolic monitoring you should know cold');
+    const measures = activity.locator('details[name="vp-measure"]');
+    const tableFollows = await activity.evaluate(node => {
+      const section = node.closest('.fd-guide-section, .sec-c');
+      const table = section.querySelector('table');
+      return Boolean(table && table.textContent.includes('Blood pressure') && (node.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING));
+    });
+    expect(tableFollows).toBe(true);
+    await expect(measures).toHaveCount(2);
+    for (const [index, values, reply, sample] of [
+      [0, '72 → 74 → 76 kg', 'helps me sleep', 'repeat weight together'],
+      [1, '124 → 122 → 124 mmHg', 'right after dinner', 'pressure is back at its baseline'],
+    ]) {
+      const measure = measures.nth(index);
+      const summary = measure.locator(':scope > summary');
+      await expect(summary.locator('svg.vp-plot')).toBeVisible();
+      await expect(summary).toContainText(values);
+      await toggleWithKeyboard(measure);
+      await expect(activity.locator('details[name="vp-measure"][open]')).toHaveCount(1);
+      await expect(measure.locator('.vp-reply > p').first()).toContainText(reply);
+      const handoff = measure.locator('.vp-handoff');
+      await toggleWithKeyboard(handoff);
+      await expect(handoff.locator('p')).toBeVisible();
+      await expect(handoff.locator('p')).toContainText(sample);
+    }
+  });
+
+  for (const callback of ['pending', 'ready']) {
+    test(`dinner map supports all six question orders with the ${callback} callback`, async ({ page }) => {
+      const card = await openActivity(page, 'nutrition_metabolic.md', 'dinner-map', 'Population / systems lens');
+      await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Food insecurity');
+      const at = id => card.locator('#dm-' + id);
+      const facts = {
+        route: 'Home around 6 p.m. · Pantry closes at 5 p.m.',
+        kitchen: 'Shared microwave · Food at home uncertain',
+        dinner: 'Would like a meal to take home',
+      };
+      const orders = [
+        ['route', 'kitchen', 'dinner'], ['route', 'dinner', 'kitchen'],
+        ['kitchen', 'route', 'dinner'], ['kitchen', 'dinner', 'route'],
+        ['dinner', 'route', 'kitchen'], ['dinner', 'kitchen', 'route'],
+      ];
+      const patientAccount = 'The patient expects to get home after the pantry closes. They can use a shared microwave and are unsure whether there is food at home. ';
+      const requested = 'They asked for a meal to take home. I’ll ask the unit nurse what’s available and update the patient before they leave.';
+      const pending = 'The patient asked for a take-home meal. The nurse has contacted dietary and will update the patient before their ride leaves. A meal is still unconfirmed.';
+      const ready = 'The patient asked for a take-home meal. The unit nurse confirms that a supper bag is ready for pickup at the desk and will give it to the patient before their ride leaves.';
+      const note = at('note-text');
+      const mapFacts = card.locator('[id^="dm-stop-"] [id^="dm-map-"]');
+      for (const order of orders) {
+        await test.step(order.join(' → '), async () => {
+          await expect(at('count')).toHaveText('0 of 3 heard');
+          await expect(at('handoff')).toBeHidden();
+          await expect(mapFacts).toHaveText(['', '', '']);
+          for (const [index, stop] of order.entries()) {
+            await at('stop-' + stop).click();
+            await expect(at('quote-' + stop)).toBeVisible();
+            const heard = order.slice(0, index + 1);
+            await expect(mapFacts).toHaveText(Object.entries(facts).map(([key, text]) => heard.includes(key) ? text : ''));
+            await expect(at('count')).toHaveText(heard.length + ' of 3 heard');
+            if (heard.length < 3) await expect(at('handoff')).toBeHidden();
+          }
+
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('Who has confirmed a meal is ready?');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + requested);
+          await at('call-unit').click();
+          await expect(at('claim-confirmed')).toBeDisabled();
+          await at('reply-' + callback).click();
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          if (callback === 'ready') {
+            await expect(at('nurse-quote')).toContainText('It’s ready for pickup.');
+            await expect(at('pin-meal')).toHaveText('Ready for pickup');
+            await at('claim-confirmed').click();
+            await expect(note).toBeVisible();
+            await expect(note).toHaveText(patientAccount + ready);
+            await at('reply-pending').click();
+            await expect(at('team-note')).toBeHidden();
+            await expect(note).toBeEmpty();
+          }
+          await expect(at('nurse-quote')).toContainText('I haven’t heard back yet.');
+          await expect(at('pin-meal')).toHaveText('Awaiting reply');
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('The nurse left a message.');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + pending);
+          await at('reset').click();
+          await expect(at('callback')).toBeHidden();
+          await expect(note).toBeEmpty();
+        });
+      }
+    });
+  }
+
+  test('evening calls unlock the bedside question in either order and clear the rounds sample on revision', async ({ page }) => {
+    const card = await openActivity(page, 'psychotherapy.md', 'evening-calls', 'The map — what each is, who it fits');
+    const map = card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]');
+    const modalities = card.locator('xpath=preceding-sibling::ul[1]').getByRole('listitem');
+    await expect(modalities).toHaveCount(7);
+    await expect(modalities.last()).toContainText('Family and group modalities');
+    await expect(map.locator('xpath=following-sibling::section[1]').locator(':scope > .fd-guide-lead'))
+      .toContainText('What the student does');
+
+    const at = id => card.locator('#ec-' + id);
+    const button = name => card.getByRole('button', { name });
+    const calls = {
+      before: { name: /Before admission/i, alt: /kitchen window/i, quote: 'can I run something by you', annotation: 'Daughter asks for advice about work' },
+      week: { name: /This week/i, alt: /on the unit/i, quote: 'Did you eat?', annotation: 'Daughter asks about meds and meals' },
+    };
+    for (const call of Object.values(calls)) {
+      const image = button(call.name).getByRole('img', { name: call.alt });
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
+    }
+
+    for (const order of [['before', 'week'], ['week', 'before']]) {
+      await test.step(order.join(' → '), async () => {
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        for (const [index, key] of order.entries()) {
+          const call = calls[key];
+          await button(call.name).click();
+          await expect(button(call.name)).toHaveAttribute('aria-expanded', 'true');
+          await expect(at('quote-' + key)).toBeVisible();
+          await expect(at('quote-' + key)).toContainText(call.quote);
+          await expect(at('annotation-' + key)).toHaveText(call.annotation);
+          await expect(at('count')).toHaveText((index + 1) + ' of 2 heard');
+          if (index === 0) {
+            await button(call.name).click();
+            await expect(at('quote-' + key)).toBeHidden();
+            await expect(at('count')).toHaveText('1 of 2 heard');
+            await expect(at('meaning-panel')).toBeHidden();
+          }
+        }
+        const fewer = button(/Would it help if she called less often/);
+        const miss = button(/What do you miss about the way you two used to talk/);
+        await fewer.click();
+        await expect(at('meaning-words')).toContainText('I look forward to her calls');
+        await expect(at('retry')).toBeVisible();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('meaning-words')).toContainText('I miss being the person she comes to');
+        await expect(at('retry')).toBeHidden();
+        for (const [choice, feedback] of [
+          [/They’d like fewer calls/, 'Did they ask for less contact?'],
+          [/They describe an argument/, 'They described a quiet pause'],
+        ]) {
+          await button(choice).click();
+          await expect(at('feedback')).toBeVisible();
+          await expect(at('feedback')).toContainText(feedback);
+          await expect(at('sample')).toBeHidden();
+        }
+        await button(/They value the calls and miss/).click();
+        await expect(at('feedback')).toBeHidden();
+        await expect(at('sample')).toBeVisible();
+        await expect(at('sample')).toContainText('what they’d like tonight’s call to sound like');
+        await expect(at('sample')).toContainText('Why interpersonal psychotherapy fits');
+        await fewer.click();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('rounds-panel')).toBeVisible();
+        await expect(at('sample')).toBeHidden();
+        await expect(at('rounds-panel').locator('[aria-pressed="true"]')).toHaveCount(0);
+        await button(/Start again/).click();
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        await expect(card.locator('[aria-pressed="true"], [aria-expanded="true"]')).toHaveCount(0);
+        await expect(card.locator('[id^="ec-annotation-"]')).toHaveText(['Ask about the call', 'Ask about the call']);
+        await expect(button(calls.before.name)).toBeFocused();
+      });
+    }
+  });
+
+  test('Which came first? ties the timeline, interpretation and rounds note to Alex’s selected history', async ({ page }) => {
+    await page.goto('/?page=ddx.md&guideSection=4-manic-elevated-irritable');
+    const heading = page.locator('.fd-article__body #guide-4-manic-elevated-irritable');
+    await expect(heading).toContainText('4. Manic / elevated / irritable');
+    const card = heading.locator('xpath=parent::section').locator('#alex-timing');
+    await expect(card).toBeVisible();
+    const at = id => card.locator('#at-' + id);
+    const portrait = card.getByRole('img', { name: /Alex talks with a clinician over breakfast/i });
+    await portrait.scrollIntoViewIfNeeded();
+    await expect(portrait).toBeVisible();
+    await expect.poll(() => portrait.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+
+    const histories = [
+      { timing: 'before', day: 'Sunday', other: 'after', otherDay: 'Wednesday',
+        mismatch: 'a call that had already happened', interpretation: 'underlying mood episode' },
+      { timing: 'after', day: 'Wednesday', other: 'before', otherDay: 'Sunday',
+        mismatch: 'his sleep before the first dose', interpretation: 'possibility of a medication effect' },
+    ];
+    const followups = [
+      { key: 'prior', words: 'earlier stretches of short sleep', otherWords: 'after those calls' },
+      { key: 'course', words: 'how much he slept after those calls', otherWords: 'earlier stretches' },
+    ];
+    const evidence = at('evidence');
+    const source = evidence.locator('a');
+    await expect(at('place-before')).toBeDisabled();
+    await expect(at('place-after')).toBeDisabled();
+    await at('hear').click();
+    for (const history of histories) {
+      await test.step(history.day + ' callback', async () => {
+        await expect(at('quote')).toContainText(history.day);
+        await expect(at('map')).toHaveAttribute('data-placement', 'unknown');
+        await expect(at('reasoning')).toBeHidden();
+        await expect(at('next-step')).toBeHidden();
+        await expect(at('note')).toBeEmpty();
+        await expect(evidence).toBeHidden();
+        await expect(evidence).toHaveJSProperty('open', false);
+        await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+        await at('place-' + history.other).click();
+        await expect(at('placement-feedback')).toBeVisible();
+        await expect(at('placement-feedback')).toContainText(history.day);
+        await expect(at('reasoning')).toBeHidden();
+        await at('place-' + history.timing).click();
+        await expect(at('call-label')).toContainText(history.day);
+        await expect(at('placement-feedback')).toBeHidden();
+        await expect(at('map')).toHaveAttribute('data-placement', history.timing);
+        for (const [choice, feedback] of [[history.other, history.mismatch], ['certain', 'when Alex called']]) {
+          await at('reason-' + choice).click();
+          await expect(at('reason-feedback')).toBeVisible();
+          await expect(at('reason-feedback')).toContainText(feedback);
+          await expect(at('next-step')).toBeHidden();
+        }
+        await at('reason-' + history.timing).click();
+        await expect(at('reason-feedback')).toBeHidden();
+        await expect(at('next-step')).toBeVisible();
+        await expect(evidence).toBeHidden();
+        for (const question of followups) {
+          await at('check-' + question.key).click();
+          await expect(at('note')).toBeVisible();
+          await expect(at('note')).toContainText(history.day + ', ' + history.timing + ' Monday');
+          await expect(at('note')).toContainText(history.interpretation);
+          await expect(at('note')).toContainText(question.words);
+          await expect(at('note')).not.toContainText(history.otherDay);
+          await expect(at('note')).not.toContainText(question.otherWords);
+        }
+        await evidence.locator('summary').click();
+        await expect(source).toBeVisible();
+        await expect(source).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/11799343/');
+      });
+      if (history.timing === 'before') await at('switch').click();
+    }
+    await at('restart').click();
+    await expect(at('hear')).toBeFocused();
+    await expect(at('callback')).toBeHidden();
+    await expect(at('place-before')).toBeDisabled();
+    await expect(at('place-after')).toBeDisabled();
+    await expect(at('map')).toHaveAttribute('data-placement', 'unknown');
+    await expect(at('reasoning')).toBeHidden();
+    await expect(at('next-step')).toBeHidden();
+    await expect(at('note')).toBeEmpty();
+    await expect(evidence).toHaveJSProperty('open', false);
+    await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+  });
+
+  test('follow-up study changes the denominator and separates cohort findings from individual decisions', async ({ page }) => {
+    const card = await openActivity(page, 'evidence_inpatient.md', 'study-denominators', 'Follow-Up Interventions and Collaborative Care');
+    const text = (label) => card.locator('[data-study-' + label + ']');
+    const choose = (name, value) => card.locator('[data-study-' + name + '="' + value + '"]').press('Enter');
+    const scale = card.getByRole('group', { name: 'Chart view' });
+    const study = card.getByRole('link', { name: 'Read the 2018 study in JAMA Psychiatry' });
+    await expect(text('count').first()).toContainText('36');
+    await expect(text('total').first()).toBeHidden();
+    await expect(text('result')).toBeHidden();
+    for (const guess of ['more', 'same', 'base']) {
+      await choose('pick', guess);
+      await expect(card.locator('[data-study-answer]:visible')).toHaveAttribute('data-study-answer', guess);
+      await expect(text('rate').nth(0)).toContainText('30');
+      await expect(text('rate').nth(1)).toContainText('53');
+      await expect(card.locator('.study-plot')).toBeFocused();
+      await expect(text('debrief')).toBeHidden();
+    }
+    await scale.getByRole('button', { name: 'Original groups' }).click();
+    await expect(text('total').nth(0)).toHaveText('out of 1,186');
+    await expect(text('total').nth(1)).toHaveText('out of 454');
+    await expect(text('rate').first()).toBeHidden();
+    await scale.getByRole('button', { name: 'Per 1,000 patients' }).click();
+    await expect(card.getByRole('meter').first()).toBeVisible();
+    for (const claim of ['individual', 'call', 'cohort']) {
+      await choose('claim', claim);
+      await expect(card.locator('[data-study-reply]:visible')).toHaveAttribute('data-study-reply', claim);
+      await expect(text('debrief')).toBeFocused();
+      await expect(study).toBeHidden();
+      await text('debrief').getByText('Check the primary study', { exact: true }).press('Enter');
+      await expect(study).toHaveAttribute('href','https://pubmed.ncbi.nlm.nih.gov/29998307/');
+    }
+    await text('reset').click();
+    await expect(text('controls')).toBeHidden();
+    await expect(text('total').first()).toBeHidden();
+    await expect(text('result')).toBeHidden();
+    await expect(text('pick').first()).toBeFocused();
+  });
+
+  test('first evening link opens Leah’s discharge rehearsal', async ({ page }) => {
+    await page.goto('/?page=suicide.md');
+    const link = page.getByRole('link', { name: 'Rehearse the first evening home with Leah' });
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page.getByRole('tabpanel')).toContainText('Make the safety plan usable at home');
+    await expect(page.getByRole('tab', { selected: true })).toBeVisible();
+  });
+
+  test('perinatal accounts answer the same questions with distinct safety assessments', async ({ page }) => {
+    const activity = await openActivity(page, 't_perinatal.md', 'vp-perinatal', 'Initial workup');
+    await expect(activity.locator('.vp-safety')).toBeVisible();
+    await expect(activity.locator('.vp-safety')).toContainText('get help now');
+    const prompts = ['What was happening the last time', 'Who is with your baby now'];
+    const accounts = [
+      { name: 'Robin', replies: ['picture in my head', 'checking her crib'], assessments: ['intent to harm the infant', 'sister’s availability'] },
+      { name: 'Morgan', replies: ['baby monitor spoke to me', 'take him away right now'], assessments: ['Emergency psychiatric and obstetric assessment', 'immediate risk'] },
+    ];
+    for (const account of accounts) {
+      const chart = activity.locator('details[name="vp-perinatal-parent"]').filter({ has: page.locator('summary').filter({ hasText: 'Open ' + account.name }) });
+      await toggleWithKeyboard(chart);
+      await expect(activity.locator('details[name="vp-perinatal-parent"][open]')).toHaveCount(1);
+      const questions = chart.locator('details[name="vp-perinatal-' + account.name.toLowerCase() + '-question"]');
+      await expect(questions).toHaveCount(2);
+      for (const [index, prompt] of prompts.entries()) {
+        const question = questions.nth(index);
+        await expect(question.locator(':scope > summary')).toContainText(prompt);
+        await toggleWithKeyboard(question);
+        await expect(question.locator(':scope > p').first()).toBeVisible();
+        await expect(question.locator(':scope > p').first()).toContainText(account.replies[index]);
+        const handoff = question.locator('.vp-handoff');
+        await toggleWithKeyboard(handoff);
+        await expect(handoff.locator('p')).toBeVisible();
+        await expect(handoff.locator('p')).toContainText(account.assessments[index]);
+      }
+    }
+    for (const turn of ['next', 'moment']) {
+      const morgan = activity.locator('#vp-morgan-' + turn);
+      const robin = activity.locator('#vp-robin-' + turn);
+      if (!(await morgan.evaluate(node => node.open))) await toggleWithKeyboard(morgan);
+      await morgan.locator('[data-vp-ask-other]').press('Enter');
+      await expect(robin.locator(':scope > summary')).toBeFocused();
+      await expect(robin.locator(':scope > p').first()).toBeVisible();
+      await expect(robin.locator('.vp-handoff')).toHaveJSProperty('open', false);
+      await robin.locator('[data-vp-ask-other]').press('Enter');
+      await expect(morgan.locator(':scope > summary')).toBeFocused();
+      await expect(morgan.locator(':scope > p').first()).toBeVisible();
+    }
+
+    const openBeforePrinting = await activity.locator('details').evaluateAll(items => items.map(item => item.open));
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(activity.locator('details:not([open])')).toHaveCount(0);
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    expect(await activity.locator('details').evaluateAll(items => items.map(item => item.open))).toEqual(openBeforePrinting);
+    await expect(activity.locator('details[name="vp-perinatal-parent"]')).toHaveCount(2);
+  });
+});
+
 test.describe('Clinical field guide', () => {
+  test('Noor’s dayroom check-in carries only her selected reply into rounds', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=brief_psychotherapy.md&guideSection=match-the-skill-to-the-mechanism');
+    const mechanismSection = page.locator('#guide-match-the-skill-to-the-mechanism').locator('..');
+    const dayroom = mechanismSection.locator('#noor-dayroom');
+    const mechanismTable = mechanismSection.locator('table').filter({
+      has: page.locator('th', { hasText: /^Likely mechanism$/ }),
+    });
+    const checkin = page.locator('#guide-what-the-student-does').locator('..').locator('#noor-checkin');
+    const result = checkin.locator('[data-result]');
+    const answer = checkin.locator('[data-answer]');
+    const rounds = checkin.locator('details[data-rounds]');
+    const sample = rounds.locator('[data-sample]');
+    await expect(dayroom).toBeVisible();
+    await expect(checkin).toHaveCount(1);
+    await expect(dayroom.locator('button[data-place]')).toHaveCount(3);
+    await expect(mechanismTable.and(dayroom.locator('xpath=following::table'))).toHaveCount(1);
+    await expect(result).toBeHidden();
+
+    const paths = [
+      {
+        place: 'window', account: 'We did see that little brown bird',
+        questions: [
+          ['meaning', 'enormous boots', 'We sat by the window after breakfast. Noor said she still felt low and went back to bed. The bird reminded her of her niece, and for a moment she wanted to call her.'],
+          ['next', 'Come find me after breakfast tomorrow', 'Noor sat by the window with me and saw a bird. She still felt low afterward. She asked me to sit with her there after breakfast tomorrow and to leave the paper behind.'],
+        ],
+      },
+      {
+        place: 'lap', account: 'To the clock was plenty',
+        questions: [
+          ['meaning', 'nice to have company and not have to talk', 'Noor and I walked to the clock, where she wanted to stop. She still had a rough morning. What she liked was having someone beside her without having to make conversation.'],
+          ['next', 'I’ll see how I feel then', 'Noor walked with me to the clock this morning. She said that was far enough and was glad I came along. She asked me to check in after breakfast tomorrow and will decide about another walk then.'],
+        ],
+      },
+      {
+        place: 'table', account: 'Didn’t draw a thing',
+        questions: [
+          ['meaning', 'The feet have to be yellow', 'Noor picked a yellow crayon and left when the chairs got noisy. She said the color made her smile because her niece always draws the feet in yellow.'],
+          ['next', 'I could start with the feet', 'Noor picked up a yellow crayon and left when the chairs got noisy. She’d like to try the window seat after breakfast tomorrow. She thinks she might start by drawing the feet.'],
+        ],
+      },
+    ];
+    for (const path of paths) {
+      const choice = dayroom.locator(`[data-place="${path.place}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(dayroom.locator('[data-place][aria-pressed="true"]')).toHaveCount(1);
+      await expect(result).toBeHidden();
+      await expect(result).toBeEmpty();
+      await expect(answer).toBeEmpty();
+      await expect(sample).toBeEmpty();
+      await checkin.locator('[data-check]').click();
+      await expect(result).toBeVisible();
+      await expect(result).toContainText(path.account);
+      await expect(rounds).toBeHidden();
+      for (const [question, reply, summary] of path.questions) {
+        await checkin.locator(`[data-ask="${question}"]`).click();
+        await expect(answer).toBeVisible();
+        await expect(answer).toContainText(reply);
+        await expect(sample).toBeHidden();
+        await rounds.locator('summary').press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toHaveText(summary);
+      }
+    }
+    await expectHealthy(page);
+  });
+
+  test('OARS reflection follows the chosen ending and coaches the resident on the reply Ren gave', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=motivational_interviewing.md&guideSection=your-core-moves-oars');
+    const card = page.locator('#last-words-on-rounds');
+    const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+    await expect(section.locator(':scope > h2')).toContainText('Your core moves — OARS');
+    await expect(card).toBeVisible();
+    const line = card.locator('[data-line]');
+    const reply = card.locator('[data-reply-text]');
+    const sample = card.locator('[data-note-copy]');
+    const worked = card.locator('[data-note]');
+    const cases = [
+      { quote: 'Nobody ever asked', coach: ['Ask the question Ren was missing', 'You heard the discharge preference', 'Check where Ren wants to go next'], handoff: 'previous visits focused on the voices' },
+      { quote: 'tell them I said yes', coach: ['Answer the concern about today’s rounds', 'Check the words you will carry into rounds', 'Check your understanding first'], handoff: 'clear on rounds that they have not agreed' },
+      { quote: 'Could I be there', coach: ['Connect the past experience to this request', 'Carry the invitation forward', 'Make room for Ren on rounds'], handoff: 'join the discussion of alternatives' },
+    ];
+    await expect(card.locator('#lw-reply')).toBeHidden();
+    for (const [ending, last] of [['weight', 'your jeans didn’t fit'], ['call', 'hear your sister again']]) {
+      await card.locator('[data-order="' + ending + '"]').click();
+      await expect(line).toContainText('You don’t want to go home on this medicine.');
+      await expect(line).toContainText('hear your sister again');
+      await expect(line).toContainText('your jeans didn’t fit');
+      await expect(line.locator('.lw-accent')).toContainText(last);
+      expect((await line.innerText()).endsWith(last + '.”')).toBe(true);
+      await expect(reply).toBeEmpty();
+      await card.locator('[data-reveal]').press('Enter');
+      for (const current of cases) {
+        await expect(reply).toContainText(current.quote);
+        await expect(card.locator('[data-coach]')).toBeHidden();
+        await expect(worked).toBeHidden();
+        for (const [i, move] of ['evoke','repair','plan'].entries()) {
+          await card.locator('[data-move="' + move + '"]').click();
+          await expect(card.locator('[data-coach] h6')).toHaveText(current.coach[i]);
+          await expect(sample).toBeEmpty();
+          await worked.locator('summary').press('Enter');
+          await expect(sample).toBeVisible();
+          await expect(sample).toContainText(current.handoff);
+          for (const other of cases.filter(item => item !== current)) await expect(sample).not.toContainText(other.handoff);
+        }
+        await card.locator('[data-another]').click();
+        await expect(sample).toBeEmpty();
+      }
+    }
+    await card.locator('[data-reset]').click();
+    await expect(card.locator('[data-order=weight]')).toBeFocused();
+    await expect(line).toHaveText('Pick an ending to build your reflection.');
+    await expect(card.locator('#lw-reply')).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('resource aliases and dated titles arrive honestly when no passage matches', async ({ page }, testInfo) => {
     const resident = isResidentProject(testInfo.project.name);
     const cases = [
@@ -2698,6 +4614,718 @@ test.describe('Clinical field guide', () => {
     });
   }
 
+  test('the Anxiety bedside case keeps both clues and the resident question behind one reveal', async ({ page }, testInfo) => {
+    const ref = 't_anxiety.md';
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+    await page.goto(`/?page=${ref}`);
+
+    const header = page.locator('.fd-guide-header');
+    const bedside = header.locator('.fd-article__h1 + .fd-bedside-case');
+    await expect(header.locator('.governance-notice.pending-high ~ .fd-article__h1')).toBeVisible();
+    await expect(bedside.locator('figcaption')).toContainText('What’s behind the pacing?');
+    await expect(bedside.locator('img')).toBeVisible();
+    expect(await bedside.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+    await expect(bedside.locator('.fd-bedside-case__prompt + details')).toHaveCount(1);
+    const prompt = bedside.getByText('What would you ask the patient first?', { exact: false });
+    await expect(prompt).toBeVisible();
+
+    const reveal = bedside.locator('summary');
+    const hidden = [bedside.getByText('I feel like I have to keep moving.', { exact: false }),
+      bedside.getByText('The antipsychotic dose was increased yesterday.'), bedside.getByText('Resident follow-up')];
+    for (const text of hidden) await expect(text).toBeHidden();
+    await reveal.click();
+    for (const text of hidden) await expect(text).toBeVisible();
+    await expect(bedside.getByText('What moves up your differential?', { exact: false })).toBeVisible();
+    await reveal.press('Enter');
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(prompt).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    for (const text of hidden) await expect(text).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    for (const text of hidden) await expect(text).toBeHidden();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
+  async function openDeliriumShift(page, testInfo) {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 'delirium.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=delirium.md');
+    await expect(page.locator('.fd-reader--guide .governance-notice.pending-high').first()).toBeVisible();
+    const root = page.locator('#delirium-shift');
+    await expect(root).toBeVisible();
+    return {
+      root,
+      time: key => root.locator(`[data-shift-time="${key}"]`),
+      choice: key => root.locator(`[data-shift-choice="${key}"]`),
+      encounter: root.locator('#delirium-shift-encounter'),
+      feedback: root.locator('[data-shift-feedback]'),
+      comparison: root.locator('details[data-shift-comparison]'),
+      patterns: root.locator('[data-shift-patterns]'),
+      followup: page.locator('details#delirium-shift-followup'),
+      draft: page.locator('#delirium-shift-draft'),
+      worked: page.locator('details[data-shift-worked]'),
+    };
+  }
+
+  test('Delirium shift separates quiet movement from attention and reveals comparison after a choice', async ({ page }, testInfo) => {
+    const shift = await openDeliriumShift(page, testInfo);
+    const { root, time, choice, encounter, feedback, comparison, patterns, followup } = shift;
+    await expect(root.locator('[data-shift-time]')).toHaveCount(3);
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(encounter).toContainText('Drifts asleep mid-sentence; needs repeated prompts to re-engage.');
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    expect(await root.evaluate(node => node.closest('.fd-guide-section')?.querySelector('.fd-guide-lead')?.textContent))
+      .toMatch(/^How it presents on the unit/);
+    expect(await followup.evaluate(node => node.closest('.fd-guide-section')?.querySelector('.fd-guide-lead')?.textContent))
+      .toMatch(/^Recognize and screen/);
+
+    // A guide search must not pre-open a gated answer and expose it when a choice is made.
+    const find = page.locator('.fd-guide-find');
+    await find.getByRole('searchbox').fill('diagnostic score');
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await expect(comparison).not.toHaveAttribute('open');
+
+    const scene = encounter.locator('img');
+    const sceneAlts = new Set();
+    for (const [key, observation] of [
+      ['morning', 'Follows this brief exchange.'],
+      ['midday', 'Loses the thread of a short conversation.'],
+      ['afternoon', 'Drifts asleep mid-sentence; needs repeated prompts to re-engage.'],
+    ]) {
+      await time(key).focus();
+      await time(key).press('Enter');
+      await expect(time(key)).toHaveAttribute('aria-pressed', 'true');
+      await expect(root.locator('[data-shift-time][aria-pressed="true"]')).toHaveCount(1);
+      await expect(encounter).toContainText(observation);
+      await expect(scene).toBeVisible();
+      expect(await scene.evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+      const alt = await scene.getAttribute('alt');
+      expect(alt).toBeTruthy();
+      sceneAlts.add(alt);
+      await expect(feedback).toBeHidden();
+      await expect(comparison).toBeHidden();
+    }
+    expect(sceneAlts.size, 'each selected time describes its own patient scene').toBe(3);
+
+    await time('midday').press('Enter');
+    await choice('quiet').press('Enter');
+    await expect(choice('quiet')).toHaveAttribute('aria-pressed', 'true');
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toBeVisible();
+    await expect(feedback).toContainText('That describes his movement. What changed in his engagement?');
+    await expect(feedback).toContainText('prompt bedside reassessment');
+    await expect(comparison).toBeVisible();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await expect(comparison).not.toHaveAttribute('open');
+
+    await choice('attention').press('Space');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(1);
+    await expect(feedback).toContainText('Lead with the change in attention and wakefulness.');
+    await expect(feedback).toContainText('prompt bedside reassessment');
+    await expect(comparison).not.toHaveAttribute('open');
+    await comparison.locator(':scope > summary').press('Enter');
+    await expect(patterns).toBeVisible();
+    await comparison.locator(':scope > summary').press('Enter');
+    await expect(patterns).toBeHidden();
+    for (const width of [320, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `case fits ${width}px`).toBe(true);
+      expect(await followup.evaluate(el => el.scrollWidth <= el.clientWidth + 1), `follow-up fits ${width}px`).toBe(true);
+    }
+    await expectHealthy(page);
+  });
+
+  test('Delirium shift preserves independent follow-up during reading changes and clears it on reset or a new visit', async ({ page }, testInfo) => {
+    const { root, time, choice, feedback, comparison, followup, draft, worked } = await openDeliriumShift(page, testInfo);
+    const workedBody = worked.locator(':scope > :not(summary)').first();
+    await expect(draft).toBeHidden();
+    await expect(worked.locator(':scope > summary')).toBeHidden();
+    await followup.locator(':scope > summary').press('Enter');
+    await expect(draft).toBeVisible();
+    await draft.fill('Synthetic handoff: new drowsiness and difficulty staying engaged.');
+    await expect(workedBody).toBeHidden();
+    await worked.locator(':scope > summary').press('Enter');
+    await expect(workedBody).toBeVisible();
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+
+    await choice('attention').click();
+    await comparison.locator(':scope > summary').click();
+    await time('midday').click();
+    const selectedFeedback = await feedback.innerText();
+    await page.getByRole('button', { name: 'Settings', exact: true }).click();
+    const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
+    await settings.getByRole('group', { name: 'Reading text size', exact: true })
+      .getByRole('button', { name: 'Largest', exact: true }).click();
+    await settings.getByRole('button', { name: 'Close side sheet', exact: true }).click();
+    await expect(draft).toHaveValue('Synthetic handoff: new drowsiness and difficulty staying engaged.');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(time('midday')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toHaveText(selectedFeedback, { useInnerText: true });
+    await expect(comparison).toHaveAttribute('open', '');
+    await expect(followup).toHaveAttribute('open', '');
+    await expect(workedBody).toBeVisible();
+    expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    expect(await followup.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+
+    await root.locator('[data-shift-reset]').click();
+    await expect(time('afternoon')).toBeFocused();
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+
+    await choice('quiet').click();
+    await time('morning').click();
+    await followup.locator(':scope > summary').click();
+    await draft.fill('Synthetic draft that must not persist to the next visit.');
+    await worked.locator(':scope > summary').click();
+    // Keep app storage intact so an accidentally persisted answer or draft cannot be masked.
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.goto('/?page=orientation.md');
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 'orientation.md');
+    await page.goto('/?page=delirium.md');
+    await expect(root).toBeVisible();
+    await expect(time('afternoon')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+    await expectHealthy(page);
+  });
+
+  test('Delirium shift printing restores disclosures without answering or unlocking comparison', async ({ page }, testInfo) => {
+    const { root, time, choice, feedback, comparison, patterns, followup, draft, worked } = await openDeliriumShift(page, testInfo);
+    const printEvent = name => page.evaluate(async eventName => {
+      window.dispatchEvent(new Event(eventName));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }, name);
+
+    await time('morning').click();
+    await printEvent('beforeprint');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await printEvent('afterprint');
+    await expect(time('morning')).toHaveAttribute('aria-pressed', 'true');
+    await expect(root.locator('[data-shift-choice][aria-pressed="true"]')).toHaveCount(0);
+    await expect(feedback).toBeHidden();
+    await expect(comparison).toBeHidden();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).not.toHaveAttribute('open');
+    await expect(worked).not.toHaveAttribute('open');
+    await expect(draft).toHaveValue('');
+
+    await choice('attention').click();
+    await followup.locator(':scope > summary').click();
+    await draft.fill('Synthetic print-state draft.');
+    await worked.locator(':scope > summary').click();
+    const selectedFeedback = await feedback.innerText();
+    await printEvent('beforeprint');
+    await printEvent('afterprint');
+    await expect(choice('attention')).toHaveAttribute('aria-pressed', 'true');
+    await expect(feedback).toHaveText(selectedFeedback, { useInnerText: true });
+    await expect(comparison).toBeVisible();
+    await expect(comparison).not.toHaveAttribute('open');
+    await expect(patterns).toBeHidden();
+    await expect(followup).toHaveAttribute('open', '');
+    await expect(worked).toHaveAttribute('open', '');
+    await expect(draft).toHaveValue('Synthetic print-state draft.');
+    await expectHealthy(page);
+  });
+
+  const referralSources = ['weight', 'symptoms', 'vitals'];
+  const referralSubsets = [[], ['weight'], ['symptoms'], ['vitals'], ['weight', 'symptoms'],
+    ['weight', 'vitals'], ['symptoms', 'vitals'], referralSources];
+
+  // Match either wording of each finding. The complete case shortens the two supporting findings.
+  const referralFacts = {
+    weight: ['Their weight fell from 69 to 61 kg in eight weeks.', 'They lost 8 kg in eight weeks.'],
+    symptoms: ['Their vision went dark on standing this morning and they had to sit down.', 'They nearly fainted on standing.'],
+    vitals: ['On standing, their blood pressure fell from 104/66 to 82/52 and their pulse rose from 54 to 94.',
+      'Standing BP was 82/52 with a pulse of 94.'],
+  };
+
+  async function checkReferral(page, reviewed) {
+    const root = page.locator('#referral-call');
+    const sources = root.locator('details[data-referral-source]');
+    const source = key => root.locator(`details[data-referral-source="${key}"]`);
+    const lead = key => root.locator(`button[data-referral-lead="${key}"]`);
+    const line = root.locator('[data-referral-line]');
+    const call = root.locator('details[data-referral-call] > summary');
+    const worked = root.locator('details[data-referral-worked] > summary');
+
+    await expect(root).toBeVisible();
+    await expect(sources).toHaveCount(3);
+    await expect(root.locator('details[open]')).toHaveCount(0);
+    await expect(line).toBeHidden();
+    expect(await root.evaluate(node => {
+      const sections = [...node.closest('.fd-article__body').querySelectorAll('.fd-guide-lead,h2,.sec-h')];
+      const before = sections.find(s => s.textContent.trim().startsWith('Medical instability'));
+      const after = sections.find(s => s.textContent.trim().startsWith('Refeeding syndrome'));
+      const precedes = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      return Boolean(before && after && precedes(before, node) && precedes(node, after));
+    }), 'the exercise follows medical instability and precedes refeeding').toBe(true);
+
+    await call.click();
+    await expect(line).toBeHidden();
+    await worked.press('Enter');
+    await expect(line).toBeVisible();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('I have one weight of 61 kg.');
+    const assertFindings = (sample, chosen) => {
+      const match = sample.match(/^“Robin, 26, was referred for restrictive intake\. (.+) Can we assess medical stability together now\?”$/);
+      expect(match, sample).toBeTruthy();
+      if (!reviewed.length) {
+        expect(match[1]).toBe('I have one weight of 61 kg.');
+        return;
+      }
+      const sentences = match[1].split(/(?<=\.) /);
+      const findings = sentences.map(sentence => referralSources.find(key => referralFacts[key].includes(sentence)));
+      expect([...findings].sort(), sample).toEqual([...reviewed].sort());
+      if (chosen) expect(findings[0], sample).toBe(chosen);
+    };
+
+    for (const key of reviewed) await source(key).locator('summary').click();
+    assertFindings(await line.innerText());
+    for (const key of reviewed) {
+      await lead(key).click();
+      await expect(lead(key)).toHaveAttribute('aria-pressed', 'true');
+      await expect(root.locator('[data-referral-lead][aria-pressed="true"]')).toHaveCount(1);
+      assertFindings(await line.innerText(), key);
+    }
+    const selectedSample = await line.innerText();
+    for (const key of reviewed) await source(key).locator('summary').press('Enter');
+    await expect(root.locator('details[data-referral-source][open]')).toHaveCount(0);
+    await expect(line).toHaveText(selectedSample);
+
+    // Print may expand disclosures. Those programmatic changes must never count as learner review.
+    await page.emulateMedia({ media: 'print' });
+    await page.evaluate(async () => {
+      window.dispatchEvent(new Event('beforeprint'));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await expect(line).toHaveText(selectedSample);
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await page.emulateMedia({ media: 'screen' });
+    await expect(root.locator('details[data-referral-source][open]')).toHaveCount(0);
+    await expect(line).toBeVisible();
+    await expect(line).toHaveText(selectedSample);
+    expect(await root.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  }
+
+  for (const reviewed of referralSubsets) {
+    test(`Eating Disorders referral call uses only reviewed sources (${reviewed.join(', ') || 'none'})`, async ({ page }, testInfo) => {
+      const ref = 't_eating.md';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+      await page.goto(`/?page=${ref}`);
+      await checkReferral(page, reviewed);
+
+      // Preserve ordinary app storage across this reload so a mistakenly saved answer would surface.
+      if (reviewed.length === referralSources.length) {
+        await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+        await page.reload();
+        await checkReferral(page, []);
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('104/66');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(page.locator('#referral-call [data-referral-source="vitals"]')).toHaveAttribute('open', '');
+        await expect(page.locator('[data-referral-line]')).toContainText(referralFacts.vitals[0]);
+      }
+    });
+  }
+
+  test('Sleep case keeps observations in their sections and ties the formulation to the opened sources and first step', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, 't_sleep.md', { status: 'pending', riskLevel: 'moderate' });
+    await page.goto('/?page=t_sleep.md&guideSection=initial-workup');
+    const workup = page.locator('#sleep-workup');
+    const plan = page.locator('#sleep-plan');
+    const followup = page.locator('#sleep-followup');
+    const worked = followup.locator('[data-worked]');
+    const note = worked.locator('[data-note]');
+    for (const [block, section] of [[workup, 'Initial workup'], [plan, 'Acute inpatient management'], [followup, 'What the student does']]) {
+      await expect(block.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]').locator('> .fd-guide-lead')).toContainText(section);
+    }
+    const ask = source => workup.locator('[data-source="' + source + '"]').click();
+    const choose = priority => plan.locator('[data-priority="' + priority + '"]').click();
+    const compare = async () => {
+      await expect(note).toBeEmpty();
+      expect(await worked.evaluate(el => el.open)).toBe(false);
+      await worked.locator('> summary').press('Enter');
+      await expect(note).toBeVisible();
+    };
+    await ask('nurse');
+    await expect(workup.locator('[data-track=nurse] .sn-marker')).toHaveCount(3);
+    await expect(workup.locator('[data-track=patient] .sn-marker')).toHaveCount(0);
+    await followup.locator('> summary').click();
+    // Expanding disclosures for print must not generate an answer.
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(note).toBeEmpty();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await compare();
+    await expect(note).toContainText('From the nursing record');
+    await expect(note).not.toContainText('lying awake worrying');
+    await expect(note).not.toContainText('breathing pauses');
+    await expect(note).toContainText('not yet selected');
+    await choose('care');
+    await compare();
+    await expect(note).toContainText('coordinating nonurgent care');
+    await ask('home');
+    await expect(workup.locator('.sn-marker')).toHaveCount(3);
+    await compare();
+    await expect(note).toContainText('breathing pauses');
+    await expect(note).not.toContainText('lying awake worrying');
+    await choose('contributors');
+    await compare();
+    await expect(note).toContainText('My first step is to ask more');
+    await expect(note).not.toContainText('coordinating nonurgent care');
+    await ask('patient');
+    await compare();
+    await expect(note).toContainText('lying awake worrying');
+    await expect(note).toContainText('breathing pauses');
+    await expect(note).toContainText('From the nursing record');
+    await expect(worked.locator('[data-coverage]')).toContainText('3 of 3');
+    await workup.locator('[data-reset]').click();
+    await expect(note).toBeEmpty();
+    await expect(workup.locator('.sn-marker')).toHaveCount(0);
+    await expect(plan.locator('[aria-pressed=true]')).toHaveCount(0);
+    await expect(workup.locator('[data-source=patient]')).toBeFocused();
+    await followup.locator('> summary').click();
+    await compare();
+    await expect(note).not.toContainText('From Nora:');
+    await expect(note).not.toContainText('From the nursing record');
+    await expect(note).not.toContainText('breathing pauses');
+    await expect(worked.locator('[data-coverage]')).toContainText('0 of 3');
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.locator('.fd-reader').evaluate(el => el.style.setProperty('--fd-reading-scale', '2'));
+    const clockRow = workup.locator('.sn-clockrow');
+    expect(await clockRow.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    await expectHealthy(page);
+  });
+
+  async function openPersonalityCrisis(page, testInfo) {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, 't_personality.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_personality.md&guideSection=initial-workup');
+    const card = page.locator('#personality-crisis');
+    await expect(card).toBeVisible();
+    return { card, plan: page.locator('#personality-response'), follow: page.locator('#personality-followup') };
+  }
+
+  test('Personality crisis map keeps the three teaching moments in their requested sections', async ({ page }, testInfo) => {
+    const { card, plan, follow } = await openPersonalityCrisis(page, testInfo);
+    for (const [block, section] of [[card, 'Initial workup'], [plan, 'Acute inpatient management'], [follow, 'What the student does']]) {
+      const lead = block.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]').locator('> .fd-guide-lead');
+      await expect(lead).toContainText(section);
+    }
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(card.locator('[data-personality-answer]')).toBeHidden();
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    expect(await follow.evaluate(el => el.open)).toBe(false);
+    expect(await card.locator('img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+    await expect(page.locator('.fd-reader [role="alert"]').filter({ hasText: /faculty review/i })).toHaveCount(1);
+    await expectHealthy(page);
+  });
+
+  test('Personality crisis map uses explicit inquiry and a visit-only response', async ({ page }, testInfo) => {
+    const { card, plan, follow } = await openPersonalityCrisis(page, testInfo);
+    const answer = card.locator('[data-personality-answer]');
+    await card.locator('[data-personality-question="leading"]').click();
+    await expect(card.locator('[data-personality-question-feedback]')).toContainText('supplies an explanation');
+    await expect(answer.locator('[data-personality-answer-body]')).toBeEmpty();
+    await answer.locator('> summary').press('Enter');
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('May miss the chance');
+    await expect(card.locator('[data-personality-node="feeling"]')).toContainText('Sam reports');
+    await plan.locator('[data-personality-response="promise"]').click();
+    await expect(plan.locator('[data-personality-response-feedback]')).toContainText('not confirmed');
+    await plan.locator('[data-personality-response="plan"]').click();
+    await expect(plan.locator('[data-personality-response-feedback]')).toContainText('does not guarantee immediate calm');
+    await follow.locator('> summary').click();
+    await follow.locator('textarea').fill('Fictional rehearsal, not saved.');
+    await page.setViewportSize({ width: 600, height: 900 });
+    await card.locator('[data-personality-reset]').click();
+    await expect(card.locator('[data-personality-question="open"]')).toBeFocused();
+    expect(await card.locator('[data-personality-question="open"]').evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
+    })).toBe(true);
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    await expect(follow.locator('textarea')).toHaveValue('');
+    const findAfterReset = page.locator('.fd-guide-find');
+    await findAfterReset.getByRole('searchbox').fill('May miss the chance');
+    await findAfterReset.getByRole('button', { name: 'Find passages' }).click();
+    await expect(page.locator('.fd-guide-results button')).toHaveCount(0);
+    await card.locator('[data-personality-question="open"]').click();
+    await answer.locator('> summary').click();
+    await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+    await page.reload();
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    const find = page.locator('.fd-guide-find');
+    await find.getByRole('searchbox').fill('only chance to speak');
+    await find.getByRole('button', { name: 'Find passages' }).click();
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(card.locator('[data-personality-node="meaning"]')).toContainText('Not yet asked.');
+    await expect(plan.locator('[data-personality-plan-body]')).toBeEmpty();
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expectHealthy(page);
+  });
+
+  test('Personality resident response follows the selected account and clears the prior answer', async ({ page }, testInfo) => {
+    const { follow } = await openPersonalityCrisis(page, testInfo);
+    await follow.locator('> summary').click();
+    const worked = follow.locator('[data-personality-worked]');
+    const body = worked.locator('[data-personality-worked-body]');
+    await expect(body).toBeEmpty();
+    for (const [key, expected, absent] of [
+      ['practical', 'closing time window', 'experience of being overlooked'],
+      ['forgotten', 'experience of being overlooked', 'closing time window'],
+      ['practical', 'closing time window', 'experience of being overlooked'],
+    ]) {
+      await follow.locator(`[data-personality-account="${key}"]`).click();
+      await expect(follow.locator('[data-personality-account][aria-pressed="true"]')).toHaveCount(1);
+      await expect(body).toBeEmpty();
+      expect(await worked.evaluate(el => el.open)).toBe(false);
+      // Search/printing can expand native details but must not mount an unrequested answer.
+      await worked.evaluate(el => { el.open = true; });
+      await expect(body).toBeEmpty();
+      await worked.evaluate(el => { el.open = false; });
+      await worked.locator('> summary').press('Enter');
+      await expect(body).toContainText(expected);
+      await expect(body).not.toContainText(absent);
+      await expect(body).toContainText('Do not promise the sister will answer.');
+    }
+    await page.setViewportSize({ width: 320, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    await expectHealthy(page);
+  });
+
+  test('the Mood bedside case shows both sleep records before the patients’ accounts', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    await pinGovernance(page, 't_mood.md', { status: 'pending', riskLevel: 'high' });
+    await page.goto('/?page=t_mood.md');
+
+    const header = page.locator('.fd-guide-header');
+    const warning = page.locator('.fd-reader .governance-notice.pending-high');
+    await expect(warning).toHaveCount(1);
+    await expect(warning).toBeVisible();
+    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 + .fd-bedside-case');
+    await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
+    const art = bedside.locator('img');
+    await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
+    await art.evaluate(img => img.decode());
+    const record = bedside.getByRole('img', { name: /Maya and Alex.*three hours.*1 to 4 a.m/ });
+    await expect(record).toBeVisible();
+    await expect(record.locator('b')).toHaveText(['3 h', '3 h']);
+    const prompt = bedside.locator('.fd-bedside-case__prompt');
+    await expect(prompt).toContainText('What would you ask each patient at breakfast');
+    const disclosure = bedside.locator('.fd-bedside-case__prompt + details');
+    const toggle = disclosure.locator('summary');
+    const accounts = disclosure.locator('dd');
+    const follow = disclosure.getByText('Resident follow-up', { exact: true });
+    await expect(accounts).toHaveText([/kept trying to fall back asleep/, /felt rested/]);
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await toggle.focus();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeVisible();
+    await expect(disclosure.getByText('Compare the accounts', { exact: true })).toBeVisible();
+    await toggle.press('Enter');
+    for (const element of [accounts.first(), accounts.last(), follow]) await expect(element).toBeHidden();
+    await expect(record).toBeVisible();
+    await expect(prompt).toBeVisible();
+    await expect(page.locator('.fd-guide-contents > summary')).toBeVisible();
+  });
+
+  test('Mood rounds uses only the case sources opened on this visit', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedApp(page, testInfo, { state: { tab: 'library' } });
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const family = workup.locator('[data-rounds-source="family"] > summary');
+    const medication = workup.locator('[data-rounds-source="med"] > summary');
+    const interview = page.locator('.fd-bedside-case [data-rounds-source="interview"] > summary');
+    const rounds = student.locator('[data-rounds-sample]');
+    const line = rounds.locator('p');
+
+    await page.goto('/?page=t_mood.md');
+    await expect(workup.locator('details[data-rounds-source]')).toHaveCount(2);
+    await rounds.locator('summary').click();
+    const baseline = await line.innerText();
+    expect(baseline).toContain('how he felt on waking');
+    await page.emulateMedia({ media: 'print' });
+    expect(await page.locator('.fd-rounds-jump').evaluateAll(buttons =>
+      buttons.every(button => getComputedStyle(button).display === 'none'))).toBe(true);
+    await page.emulateMedia({ media: 'screen' });
+    await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(2);
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
+    await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    await expect(workup.locator('details[open]')).toHaveCount(0);
+    await expect(line).toHaveText(baseline);
+
+    await medication.focus();
+    await medication.press('Enter');
+    await expect(line).toContainText('prednisone');
+    await expect(line).not.toContainText('sister');
+    await expect(line).not.toContainText('feels rested');
+    await medication.press('Enter');
+    await workup.getByRole('button', { name: 'Present Alex on rounds' }).click();
+    await expect(student.locator('#mood-rounds')).toBeFocused();
+    await expect(line).toContainText('prednisone');
+
+    await student.getByRole('button', { name: 'Try the other source' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await family.click();
+    await expect(line).toContainText('late-night calls his sister described');
+    await expect(line).toContainText('prednisone');
+    await interview.click();
+    await expect(line).toContainText('he says he feels rested');
+
+    await page.reload();
+    await expect(rounds.locator('p')).toBeHidden();
+    await family.click();
+    await rounds.locator('summary').click();
+    await expect(line).toContainText('his sister reports');
+    await expect(line).not.toContainText('prednisone');
+    await expect(line).not.toContainText('feels rested');
+    await interview.click();
+    await page.getByRole('button', { name: 'Choose what to check next' }).click();
+    await expect(workup.locator('#mood-workup')).toBeFocused();
+    await expect(line).toContainText('he says he feels rested');
+  });
+
+  const culturalAnswers = ['experience', 'meaning', 'impact'];
+  const culturalClauses = {
+    opening: 'Since the funeral, the patient sometimes feels their mother nearby',
+    experience: 'describes a sense of presence without seeing or hearing her during these moments',
+    meaning: 'says the feeling helps them stay close to her',
+    impact: 'sometimes pauses briefly before carrying on',
+  };
+
+  for (let mask = 0; mask < 8; mask++) {
+    const opened = culturalAnswers.filter((key, i) => mask & (1 << i));
+    test(`Cultural chart uses only opened answers (${opened.join(', ') || 'none'})`, async ({ page }, testInfo) => {
+      const ref = 'cultural_psychiatry.md';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      await pinGovernance(page, ref, { status: 'pending', riskLevel: 'high' });
+      await page.goto(`/?page=${ref}`);
+      const card = page.locator('#cultural-chart');
+      const follow = page.locator('#cultural-chart-followup');
+      const interview = card.locator('[data-culture-interview]');
+      const note = follow.locator('[data-culture-line]');
+      const source = key => card.locator(`[data-culture-source="${key}"]`);
+
+      await expect(card).toBeVisible();
+      await expect(card.locator('img')).toBeVisible();
+      await card.locator('img').scrollIntoViewIfNeeded();
+      expect(await card.locator('img').evaluate(async img => { await img.decode(); return img.naturalWidth; })).toBeGreaterThan(0);
+      await expect(card.locator('[data-culture-prompt]')).toBeVisible();
+      await expect(card.locator('details[open]')).toHaveCount(0);
+      await expect(note).toBeHidden();
+      await expect(card.locator('..')).toContainText('Religion, spirituality & community');
+      await expect(follow.locator('..')).toContainText('What the student does');
+      expect(await card.evaluate(node => node.closest('.fd-guide-section').querySelector('.fd-guide-lead').textContent.startsWith('Religion, spirituality & community'))).toBe(true);
+      expect(await follow.evaluate(node => node.closest('.fd-guide-section').querySelector('.fd-guide-lead').textContent.startsWith('What the student does'))).toBe(true);
+
+      if (mask === 0) {
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('experience has changed over time');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(page.locator('.fd-guide-results [role="status"]')).toHaveText('No matching passage in this guide.');
+      }
+      await card.locator('[data-culture-word="reports"]').press('Enter');
+      await expect(interview).not.toHaveAttribute('open', '');
+      await card.locator('[data-culture-word="hallucinations"]').press('Enter');
+      await expect(interview).toHaveAttribute('open', '');
+      for (const key of opened) await source(key).locator('summary').press('Enter');
+
+      await follow.locator(':scope > summary').press('Enter');
+      const draft = follow.locator('textarea');
+      await draft.fill('Fictional practice note <draft>.');
+      await expect(note).toBeHidden();
+      await follow.locator('[data-culture-worked] > summary').press('Enter');
+
+      const expected = ['opening', ...opened];
+      await expect(note.locator('[data-culture-trace]')).toHaveCount(expected.length);
+      for (const key of ['opening', ...culturalAnswers]) {
+        const phrase = note.locator(`[data-culture-trace="${key}"]`);
+        if (expected.includes(key)) {
+          await expect(phrase).toContainText(culturalClauses[key]);
+          await phrase.press('Enter');
+          await expect(phrase).toHaveAttribute('aria-pressed', 'true');
+          const quote = key === 'opening' ? card.locator('[data-culture-opening]') : source(key).locator('blockquote p');
+          await expect(follow.locator('[data-culture-quote]')).toHaveText(await quote.textContent());
+        } else {
+          await expect(phrase).toHaveCount(0);
+          await expect(note).not.toContainText(culturalClauses[key]);
+        }
+      }
+      const sample = await note.innerText();
+      for (const key of opened) await source(key).locator('summary').click();
+      await expect(note).toHaveText(sample);
+      await page.emulateMedia({ media: 'print' });
+      await page.evaluate(async () => {
+        window.dispatchEvent(new Event('beforeprint'));
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      });
+      await expect(note).toHaveText(sample);
+      await expect(note.locator('[data-culture-trace="opening"]')).toBeVisible();
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await page.emulateMedia({ media: 'screen' });
+      await expect(card.locator('[data-culture-source][open]')).toHaveCount(0);
+      await expect(draft).toHaveValue('Fictional practice note <draft>.');
+      expect(await card.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      expect(await follow.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+
+      await follow.locator('[data-culture-reset]').click();
+      await expect(card.locator('[data-culture-word="reports"]')).toBeFocused();
+      await expect(card.locator('details[open]')).toHaveCount(0);
+      await expect(follow).not.toHaveAttribute('open', '');
+      await expect(draft).toHaveValue('');
+      await expect(note.locator('[data-culture-trace]')).toHaveCount(1);
+
+      if (mask === 7) {
+        const find = page.locator('.fd-guide-find');
+        await find.getByRole('searchbox').fill('one way I stay close');
+        await find.getByRole('button', { name: 'Find passages' }).click();
+        await expect(interview).toHaveAttribute('open', '');
+        await expect(source('meaning')).toHaveAttribute('open', '');
+        await expect(note.locator('[data-culture-trace]')).toHaveCount(2);
+        await expect(note).toContainText(culturalClauses.meaning);
+        await page.evaluate(() => sessionStorage.setItem('__fd_test_preserve_seed', '1'));
+        await page.goto('/?page=cultural_psychiatry.md');
+        await expect(page.locator('#cultural-chart details[open]')).toHaveCount(0);
+        await expect(page.locator('[data-culture-line] [data-culture-trace]')).toHaveCount(1);
+        await expect(page.locator('#cultural-chart-draft')).toHaveValue('');
+      }
+    });
+  }
+
   // Next Ten #10: pages authored without H2s open each section with a bold lead. The guide
   // promotes those at render time. Pinned as a FLOOR plus the Safety-sheet kit targets, never an
   // exact page list — a list would turn every content edit into a build breaker.
@@ -2886,6 +5514,520 @@ test.describe('Clinical field guide', () => {
       await expectHealthy(page);
     });
   }
+
+  test('bedside reading · faculty preview mounts Jo’s case and opens the selected observation', async ({ page }) => {
+    const ref = 'collateral_workflow.md';
+    await page.goto(`/?page=${ref}&reviewKey=page:${ref}&reviewToken=${'a'.repeat(32)}`);
+    const card = page.locator('#content #jo-night');
+    await card.locator('[data-source="call"]').click();
+    await expect(card.locator('#jo-call')).toBeVisible();
+    await expect(card.locator('#jo-home')).toBeHidden();
+    await expect(page.locator('#content #jo-note [data-ready]')).toBeVisible();
+  });
+
+  test('bedside reading · Jo limits the handoff to opened observations', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=collateral_workflow.md&guideFind=How+much+of+the+night+did+Jo+see');
+    const card = page.locator('#jo-night');
+    const note = page.locator('#jo-note');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#jo-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=preceding-sibling::h3[1]')).toHaveText('Baseline And Timeline');
+    await expect(note.locator('xpath=ancestor::section[h2][1]/h2')).toContainText('Bring It Back To The Team');
+    const sample = note.locator('#jo-sample');
+    const call = card.locator('[data-source="call"]');
+    const home = card.locator('[data-source="home"]');
+    await expect(note.locator('[data-ready]')).toBeHidden();
+    for (const [change, withCall, withHome] of [[call, true, false], [home, true, true], [call, false, true]]) {
+      await change.click();
+      await expect(sample).toBeEmpty();
+      await expect(card.locator('.call')).toBeVisible({ visible: withCall });
+      await expect(card.locator('.visit')).toBeVisible({ visible: withHome });
+      await card.locator('[data-continue]').click();
+      await expect(note.locator('[data-claim="night"]')).toBeFocused();
+      await note.locator('[data-claim="night"]').click();
+      await expect(note.locator('summary')).toBeHidden();
+      await note.locator('[data-claim="contact"]').click();
+      await note.locator('summary').click();
+      const text = await sample.innerText();
+      expect(text.includes('for six minutes')).toBe(withCall);
+      expect(text.includes('making coffee at seven')).toBe(withHome);
+      expect(text).toContain('We still don’t know how long Sam slept');
+    }
+    await home.click();
+    await expect(note.locator('[data-ready]')).toBeHidden();
+    await expect(sample).toBeEmpty();
+  });
+
+  test('bedside reading · Rae’s return visit and handoff follow the morning question and afternoon update', async ({ page }, info) => {
+    const ref = 't_somatic.md';
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto(`/?page=${ref}&guideSection=acute-inpatient-management`);
+    const management = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-acute-inpatient-management') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const card = management.locator('#rae-visit');
+    const handoff = student.locator('#rae-handoff');
+    const call = card.locator('[data-plan="call"]');
+    const book = card.locator('[data-plan="return"]');
+    const visit = card.locator('[data-visit]');
+    const update = handoff.locator('[data-update]');
+    const compare = handoff.locator('details > summary');
+    const sample = handoff.locator('[data-handoff-sample]');
+    await expect(card.getByText('Will you still come back?', { exact: true })).toBeVisible();
+    await expect(handoff).toHaveCount(1);
+    await expect(card.locator('[data-reply]')).toBeHidden();
+    await expect(call).toBeHidden();
+    await expect(book).toBeHidden();
+    const expectUnbooked = async () => {
+      await expect(visit).toBeHidden();
+      await expect(update).toBeHidden();
+      await expect(handoff.locator('[data-lead]:visible')).toHaveCount(0);
+      await expect(handoff.locator('[data-switch]')).toBeHidden();
+      await expect(compare).toBeHidden();
+      await expect(sample).toBeEmpty();
+    };
+    await expectUnbooked();
+    const questions = [
+      {
+        ask: 'goal', reply: 'niece’s birthday', priority: 'birthday card', afternoon: 'outgoing mail',
+        progress: 'line they wrote in the birthday card', history: 'niece’s birthday card', other: /dayroom|next shift/,
+      },
+      {
+        ask: 'worry', reply: 'We already checked', priority: 'who will listen', afternoon: 'dayroom',
+        progress: 'dayroom', history: 'next shift might dismiss', other: /birthday card/,
+      },
+    ];
+    for (const question of questions) {
+      await card.locator(`[data-ask="${question.ask}"]`).click();
+      await expect(card.locator('[data-reply]')).toContainText(question.reply);
+      await expect(card.locator('[data-priority]')).toContainText(question.priority);
+      await expect(card.locator('[data-time]')).toHaveText('Time open');
+      await expectUnbooked();
+      await call.click();
+      await expect(card.getByText(/Give Rae a time they can count on/)).toBeVisible();
+      await expect(visit).toBeHidden();
+      await book.click();
+      await expect(card.locator('[data-time]')).toHaveText('2 p.m.');
+      await expect(update).toBeHidden();
+      await visit.click();
+      for (const lead of ['function', 'change']) {
+        if (lead === 'change') await handoff.locator('[data-switch]').click();
+        await expect(update).toBeVisible();
+        await expect(update).toContainText(lead === 'function' ? question.afternoon : 'sharp, here on the right');
+        await expect(compare).toBeHidden();
+        await expect(sample).toBeEmpty();
+        const otherLead = lead === 'function' ? 'change' : 'function';
+        await handoff.locator(`[data-lead="${otherLead}"]`).click();
+        const coaching = lead === 'function' ? /ache as familiar/ : /new focal, worsening pain/;
+        await expect(handoff.getByText(coaching)).toBeVisible();
+        await expect(compare).toBeHidden();
+        await expect(sample).toBeEmpty();
+        await handoff.locator(`[data-lead="${lead}"]`).click();
+        await expect(sample).toBeEmpty();
+        await compare.press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toContainText(lead === 'function' ? question.progress : question.history);
+        await expect(sample).not.toContainText(question.other);
+        if (lead === 'change') {
+          await expect(sample).toContainText('right-sided abdominal pain');
+          await expect(sample).toContainText('reassess Rae with the nurse now');
+        } else {
+          await expect(sample).toContainText('next check-in');
+          await expect(sample).not.toContainText('right-sided');
+        }
+      }
+    }
+    await call.click();
+    await expectUnbooked();
+    await expectHealthy(page);
+  });
+
+  test('bedside reading · Lee matches onset and follow-up in each formulation', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=t_adjustment.md&guideFind=Did+it+start+with+the+letter');
+    const card = page.locator('#lee-letter');
+    const resident = page.locator('#lee-res');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#lee-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]')).toContainText('Initial workup');
+    await expect(resident.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]')).toContainText('What the student does');
+    const sample = resident.locator('#lee-sample');
+    await card.locator('#lee-ask').click();
+    for (const [onset, work, mood] of [['after', 'missed two shifts', 'enjoy the call'], ['before', 'difficulty concentrating at work', 'loss of enjoyment']]) {
+      if (onset === 'before') await card.locator('#lee-switch').click();
+      await expect(sample).toBeEmpty();
+      await card.locator('[data-onset="' + (onset === 'before' ? 'after' : 'before') + '"]').click();
+      await expect(resident.locator('[data-ready]')).toBeHidden();
+      await card.locator('[data-onset="' + onset + '"]').click();
+      await card.locator('[data-continue]').click();
+      await expect(resident.locator('[data-follow="function"]')).toBeFocused();
+      for (const [follow, phrase] of [['function', work], ['mood', mood]]) {
+        await resident.locator('[data-follow="' + follow + '"]').click();
+        await expect(sample).toBeEmpty();
+        await resident.locator('summary').click();
+        await expect(sample).toContainText(phrase);
+      }
+    }
+    await card.locator('#lee-ask').click();
+    await expect(sample).toBeEmpty();
+    await expect(resident.locator('[data-ready]')).toBeHidden();
+  });
+
+  test('bedside reading · Robin’s counseling and handoff follow the memory concern', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=ect_neuromodulation.md&guideFind=Which+memory+matters+to+you');
+    const card = page.locator('#ect-memory-conversation');
+    const resident = page.locator('#em-resident');
+    const model = resident.locator('[data-em-model-body]');
+    await page.getByRole('button', { name: 'Go to matching passage' }).click();
+    await expect(card.locator('#ect-memory-title')).toHaveClass(/fd-guide-match/);
+    await expect(card.locator('xpath=preceding-sibling::p[1]')).toContainText('Workup & safety');
+    await expect(resident.locator('xpath=preceding-sibling::p[1]')).toContainText('What the student does');
+    await expect(card.locator('img')).toBeVisible();
+    await expect.poll(() => card.locator('img').evaluate(i => i.naturalWidth)).toBe(1320);
+    for (const [concern, general, specific, handoff, other] of [
+      ['event', 'toast back', 'part of that day', 'wedding toast today', 'evening calls'],
+      ['calls', 'fine on a test', 'pick up where we left off', 'remembering evening calls', 'wedding toast']
+    ]) {
+      await card.locator('[data-em-concern="' + concern + '"]').click();
+      await expect(resident.locator('[data-em-ready]')).toBeHidden();
+      await expect(model).toBeEmpty();
+      for (const [reply, response] of [['general', general], ['specific', specific]]) {
+        await card.locator('[data-em-reply="' + reply + '"]').click();
+        await expect(card.locator('[data-em-interpretation]')).toContainText(response);
+        await expect(model).toBeEmpty();
+        await card.locator('[data-em-continue]').click();
+        await expect(resident.locator('#em-resident-title')).toBeFocused();
+        await resident.locator('summary').click();
+        await expect(model).toContainText(handoff);
+        await expect(model).not.toContainText(other);
+      }
+    }
+    await card.locator('[data-em-reset]').click();
+    await expect(model).toBeEmpty();
+    await expect(resident.locator('[data-em-ready]')).toBeHidden();
+  });
+
+
+  test('Mara’s pillbox handoff follows the Sunday history and preserves the Tuesday account', async ({ page }, testInfo) => {
+    const ref = 't_neurocog.md';
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}&guideSection=initial-workup`);
+    const workup = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const interview = workup.locator('#mara-pillbox');
+    const handoff = student.locator('#mara-handoff');
+    await expect(interview).toBeVisible();
+    await expect(handoff).toBeVisible();
+
+    const sunday = interview.locator('[data-day="sunday"]');
+    const tuesday = interview.locator('[data-day="tuesday"]');
+    const sundayAnswer = interview.locator(`[id="${await sunday.getAttribute('aria-controls')}"]`);
+    const tuesdayAnswer = interview.locator(`[id="${await tuesday.getAttribute('aria-controls')}"]`);
+    const ready = handoff.locator('[data-ready]');
+    const feedback = handoff.locator('[data-feedback]');
+    const model = handoff.locator('details[data-model]');
+    const sample = model.locator('[data-sample]');
+    const claims = ['opens', 'fills', 'all'];
+    const histories = [
+      {
+        sunday: 'those stubborn caps', coaching: ['choosing and sorting', 'Nina opens the caps', 'leaves to Nina'],
+        sample: 'Nina helping to open the bottles', other: 'two mix-ups',
+      },
+      {
+        sunday: 'Nina filled the whole thing', coaching: ['Nina sorts the pills', 'recent change', 'recently handed over sorting'],
+        sample: 'Nina started filling the box last month after two mix-ups', other: 'Nina helping to open the bottles',
+      },
+    ];
+    await expect(sundayAnswer).toBeHidden();
+    await expect(tuesdayAnswer).toBeHidden();
+    await expect(ready).toBeHidden();
+    await sunday.press('Enter');
+    await expect(sundayAnswer).toContainText(histories[0].sunday);
+    await expect(ready).toBeHidden();
+    await tuesday.click();
+    await expect(tuesdayAnswer).toBeVisible();
+    await expect(tuesdayAnswer).toContainText('took what was there');
+    const morning = await tuesdayAnswer.textContent();
+
+    for (const [index, history] of histories.entries()) {
+      if (index === 1) {
+        await handoff.locator('[data-swap]').click();
+        await expect(sunday).toHaveAttribute('aria-expanded', 'false');
+        await expect(sundayAnswer).toBeHidden();
+        await expect(tuesday).toHaveAttribute('aria-expanded', 'true');
+        await expect(tuesdayAnswer).toBeVisible();
+        await expect(tuesdayAnswer).toHaveText(morning);
+        await expect(ready).toBeHidden();
+        await expect(feedback).toBeEmpty();
+        await expect(sample).toBeEmpty();
+        await expect(model).toHaveJSProperty('open', false);
+        await sunday.click();
+      }
+      await expect(sundayAnswer).toBeVisible();
+      await expect(sundayAnswer).toContainText(history.sunday);
+      await expect(ready).toBeVisible();
+      await expect(ready.locator('[data-claim][aria-pressed="true"]')).toHaveCount(0);
+      await expect(model).toBeHidden();
+      for (const [i, claim] of claims.entries()) {
+        const choice = ready.locator(`[data-claim="${claim}"]`);
+        await choice.click();
+        await expect(choice).toHaveAttribute('aria-pressed', 'true');
+        await expect(feedback).toBeVisible();
+        await expect(feedback).toContainText(history.coaching[i]);
+        await expect(sample).toBeEmpty();
+        await model.locator('summary').press('Enter');
+        await expect(sample).toBeVisible();
+        await expect(sample).toContainText(history.sample);
+        await expect(sample).not.toContainText(history.other);
+      }
+    }
+    await expectHealthy(page);
+  });
+
+  test('Jules’s lithium handoff follows the collection time, nurse report, and selected lead', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=med_monitoring.md&guideSection=baseline-and-ongoing-by-agent');
+    const baseline = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-baseline-and-ongoing-by-agent') });
+    const timing = baseline.locator('#li-eight-am');
+    const table = baseline.locator('table').filter({ hasText: 'Lithium' });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const resident = student.locator('#li-resident');
+    await expect(timing).toBeVisible();
+    await expect(table).toBeVisible();
+    const timingBox = await timing.boundingBox();
+    expect(timingBox.y + timingBox.height).toBeLessThanOrEqual((await table.boundingBox()).y + 1);
+    await expect(resident).toBeVisible();
+    await expect(resident.getByText(/return to the timing exercise/i)).toBeVisible();
+
+    const posted = timing.locator('[data-time="posted"]');
+    const collection = timing.locator('[data-time="collection"]');
+    const interval = timing.locator('[data-interval]');
+    const hear = resident.locator('[data-hear]');
+    const voice = resident.locator('[data-voice]');
+    const coach = resident.locator('[data-coach]');
+    const worked = resident.locator('details[data-worked]');
+    const note = resident.locator('[data-note]');
+    await expect(hear).toBeHidden();
+    await posted.click();
+    await expect(interval).toHaveText('12 hours from dose to report');
+    await expect(hear).toBeHidden();
+    await collection.press('Enter');
+    await expect(interval).toHaveText('8 hours from dose to draw');
+    await hear.click();
+
+    const reports = [
+      {
+        voice: 'walked down to breakfast', timing: 'Give the collection time', bedside: 'Add that the sample was drawn eight hours',
+        handoff: 'walked to breakfast, ate', plan: 'coordinate a 12-hour pre-dose level', otherHandoff: 'newly need help walking',
+      },
+      {
+        voice: 'vomited twice', timing: 'Go to Jules now and alert your supervisor', bedside: 'Lead with the new vomiting and gait change',
+        handoff: 'newly need help walking', plan: 'hold lithium, alert the supervising clinician', otherHandoff: 'walked to breakfast, ate',
+      },
+    ];
+    for (const report of reports) {
+      await expect(voice).toContainText(report.voice);
+      await expect(resident.locator('[data-first][aria-pressed="true"]')).toHaveCount(0);
+      await expect(coach).toBeEmpty();
+      await expect(worked).toBeHidden();
+      await expect(note).toBeEmpty();
+      for (const lead of ['timing', 'bedside']) {
+        await resident.locator(`[data-first="${lead}"]`).click();
+        await expect(coach).toBeVisible();
+        await expect(coach).toContainText(report[lead]);
+        await expect(worked).toHaveJSProperty('open', false);
+        await expect(note).toBeEmpty();
+        await worked.locator('summary').press('Enter');
+        await expect(note).toBeVisible();
+        await expect(note).toContainText(report.handoff);
+        await expect(note).toContainText(report.plan);
+        await expect(note).not.toContainText(report.otherHandoff);
+      }
+      if (report === reports[0]) await resident.locator('[data-switch]').click();
+    }
+
+    await posted.click();
+    await expect(resident.getByText(/return to the timing exercise/i)).toBeVisible();
+    await expect(hear).toBeHidden();
+    await expect(voice).toBeEmpty();
+    await expect(coach).toBeEmpty();
+    await expect(note).toBeEmpty();
+    await expect(worked).toBeHidden();
+    await collection.click();
+    await expect(hear).toHaveAttribute('aria-expanded', 'false');
+    await hear.click();
+    await expect(voice).toContainText(reports[0].voice);
+    await expect(resident.locator('[data-first][aria-pressed="true"]')).toHaveCount(0);
+    await expectHealthy(page);
+  });
+
+  test('Ari’s psychosis timeline carries each patient reply and chosen record into the rounds handoff', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=t_psychosis.md&guideSection=duration-and-mood-anchors');
+    const duration = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-duration-and-mood-anchors') });
+    const timeline = duration.locator('#ari-weeks');
+    const table = duration.locator('table').filter({ hasText: 'Schizophreniform disorder' });
+    const student = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') });
+    const handoff = student.locator('#aw-handoff');
+    await expect(timeline).toBeVisible();
+    await expect(table).toBeVisible();
+    const timelineBox = await timeline.boundingBox();
+    expect(timelineBox.y + timelineBox.height).toBeLessThanOrEqual((await table.boundingBox()).y + 1);
+    await expect(handoff).toHaveCount(1);
+
+    const gap = timeline.locator('[data-gap]');
+    const reply = timeline.locator('[data-reply]');
+    const ready = handoff.locator('[data-ready]');
+    const record = handoff.locator('[data-record]');
+    const summary = handoff.locator('summary');
+    const sentence = handoff.locator('[data-sentence]');
+    const histories = [
+      { mark: 'heard', words: 'Every day, all three weeks', rounds: 'daily for three weeks' },
+      { mark: 'quiet', words: 'quiet the whole time', rounds: 'only during periods of major depression' },
+      { mark: 'uncertain', words: 'before or after I went back', rounds: 'outside a major mood episode remains open' },
+    ];
+    const records = [
+      { source: 'course', text: '18 months earlier', next: 'how much of the full illness' },
+      { source: 'exposures', text: 'using cannabis some evenings', next: 'when Ari used cannabis relative to the voice' },
+    ];
+    for (const history of histories) {
+      await expect(reply).toBeEmpty();
+      await expect(timeline.locator('[data-mark-choice][aria-pressed="true"]')).toHaveCount(0);
+      await expect(ready).toBeHidden();
+      await expect(handoff.locator('[data-source][aria-pressed="true"]')).toHaveCount(0);
+      await expect(record).toBeEmpty();
+      await expect(sentence).toBeEmpty();
+      await expect(summary).toBeHidden();
+      await gap.press('Enter');
+      await expect(reply).toBeVisible();
+      await expect(reply).toContainText(history.words);
+      const choice = timeline.locator(`[data-mark-choice="${history.mark}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(ready).toBeVisible();
+      for (const evidence of records) {
+        const source = handoff.locator(`[data-source="${evidence.source}"]`);
+        await source.click();
+        await expect(source).toHaveAttribute('aria-pressed', 'true');
+        await expect(handoff.locator('[data-source][aria-pressed="true"]')).toHaveCount(1);
+        await expect(record).toBeVisible();
+        await expect(record).toContainText(evidence.text);
+        await expect(sentence).toBeEmpty();
+        await expect(sentence).toBeHidden();
+        await summary.press('Enter');
+        await expect(sentence).toBeVisible();
+        await expect(sentence).toContainText(history.rounds);
+        await expect(sentence).toContainText(evidence.next);
+        await expect(sentence).not.toContainText(records.find(other => other !== evidence).next);
+      }
+      if (history === histories[0]) {
+        // Correcting a previously matched interval invalidates even an opened sample.
+        await timeline.locator('[data-mark-choice="quiet"]').click();
+        await expect(ready).toBeHidden();
+        await expect(record).toBeEmpty();
+        await expect(sentence).toBeEmpty();
+        await choice.click();
+        await expect(handoff.locator('[data-source][aria-pressed="true"]')).toHaveCount(0);
+        await expect(summary).toBeHidden();
+      }
+      await handoff.locator('[data-another]').click();
+    }
+    await expect(reply).toBeEmpty();
+    await gap.click();
+    await expect(reply).toContainText(histories[0].words);
+    await expect(ready).toBeHidden();
+    await expectHealthy(page);
+  });
+
+  test('Alex’s lunch handoff follows the accommodation and distinguishes chewing pain from appetite', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?page=t_neurodev.md&guideSection=initial-workup');
+    const interview = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-initial-workup') }).locator('#alex-lunch');
+    const handoff = page.locator('.fd-guide-section').filter({ has: page.locator('#guide-what-the-student-does') }).locator('#al-res');
+    const ask = interview.locator('#al-ask');
+    const answer = interview.locator('#al-answer');
+    const seen = handoff.locator('[data-phrase="seen"]');
+    const appetite = handoff.locator('[data-phrase="appetite"]');
+    const summary = handoff.locator('details > summary');
+    const sample = handoff.locator('#al-sample');
+    const interpretation = handoff.locator('#al-interpret');
+    await expect(interview).toBeVisible();
+    await expect(ask).toBeHidden();
+    await expect(appetite).toBeHidden();
+
+    const accommodations = [
+      { mode: 'type', speaker: 'Alex types', used: /asked to type/i, other: /quiet table/i },
+      { mode: 'quiet', speaker: 'Alex says', used: /quiet table, one question at a time/i, other: /asked to type/i },
+    ];
+    for (const accommodation of accommodations) {
+      const choice = interview.locator(`[data-mode="${accommodation.mode}"]`);
+      await choice.click();
+      await expect(choice).toHaveAttribute('aria-pressed', 'true');
+      await expect(answer).toBeHidden();
+      await expect(appetite).toBeHidden();
+      await expect(sample).toBeEmpty();
+      await expect(interpretation).toBeEmpty();
+      await ask.press('Enter');
+      await expect(answer).toBeVisible();
+      await expect(answer).toContainText(accommodation.speaker);
+      await expect(answer).toContainText(/wanted the sandwich/i);
+      await expect(answer).toContainText(/hurts when I bite down/i);
+      await interview.locator('[data-continue]').click();
+      await expect(seen).toBeFocused();
+      await seen.press('Enter');
+      await expect(handoff.locator('#al-feedback')).toContainText(/observation/i);
+      await expect(summary).toBeHidden();
+      await appetite.click();
+      await expect(summary).toBeVisible();
+      // The print handler expands guide disclosures. Only a learner may request the worked answer.
+      await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+      await expect(sample).toBeEmpty();
+      await expect(interpretation).toBeEmpty();
+      await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+      await summary.press('Enter');
+      await expect(sample).toBeVisible();
+      await expect(sample).toContainText(/saw Alex push the tray aside/i);
+      await expect(sample).toContainText(accommodation.used);
+      await expect(sample).not.toContainText(accommodation.other);
+      await expect(sample).toContainText(/pain with chewing is why they set it aside/i);
+      await expect(sample).not.toContainText(/abscess|caries|cracked tooth/i);
+      await expect(sample).toContainText(/examine their mouth/i);
+      await expect(sample).toContainText(/eat and drink|intake/i);
+      await expect(interpretation).toBeVisible();
+      await expect(interpretation).toContainText(/diagnostic overshadowing/i);
+      await handoff.locator('[data-back]').click();
+      await expect(choice).toBeFocused();
+    }
+
+    await seen.click();
+    await expect(summary).toBeHidden();
+    await expect(sample).toBeEmpty();
+    await expect(interpretation).toBeEmpty();
+    await appetite.click();
+    await summary.click();
+    await ask.click();
+    await expect(answer).toBeHidden();
+    await expect(sample).toBeEmpty();
+    await expect(interpretation).toBeEmpty();
+    await ask.click();
+    await expect(seen).toBeVisible();
+    await expect(summary).toBeHidden();
+    await page.goto('/?page=t_neurodev.md&guideSection=what-the-student-does');
+    await handoff.locator('[data-back]').click();
+    await expect(interview.locator('[data-mode="type"]')).toBeFocused();
+    await expect(ask).toBeHidden();
+    await expectHealthy(page);
+  });
 
   test('print reveals the complete guide and safety context while hiding interactive chrome', async ({ page }, testInfo) => {
     await page.setViewportSize(PHONE);
@@ -4096,6 +7238,10 @@ test('Care status clears on Home, browser history, and resource opening', async 
 test('phone chrome: one dock stays at the bottom and the first screen belongs to the page', async ({ page }, testInfo) => {
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
+  // Measure the ordinary header here. The Mood bedside case test covers the warning above the title.
+  await pinGovernance(page, 't_mood.md', {
+    status: 'reviewed', riskLevel: 'low', reviewer: 'Test Faculty', reviewedAt: '2026-10-01',
+  });
   await page.goto('/?tab=today');
   await expect(page.locator('.fd-today')).toBeVisible();
   const dock = page.locator('.fd-dock:visible');
@@ -4132,6 +7278,7 @@ test('phone chrome: one dock stays at the bottom and the first screen belongs to
   // One row: 10px padding + 44px controls + 10px padding + the hairline (one-thread phone top bar).
   expect(readerHeader.height, 'reader header is a single row').toBeLessThanOrEqual(66);
   await expect(page.locator('.fd-reader > .fd-reader__back')).toBeVisible();
+  await expect(page.locator('.fd-reader .reviewed-receipt')).toHaveText('Reviewed by Test Faculty · 2026-10-01');
   const h1 = await page.locator('.fd-article__h1').boundingBox();
   expect(h1.y, 'the topic title sits in the top quarter of a phone screen').toBeLessThanOrEqual(PHONE.height * 0.25);
   expect(await page.locator('details.practice-panel').evaluate(el => el.open)).toBe(false);
@@ -6181,9 +9328,7 @@ test('shared Library navigation: the phone dock\'s Library slot survives delayed
   // One-thread (2026-10-04): the dock's Browse <details> is gone; the Library slot is a plain button
   // and the in-Library view switch chooses Essentials / Everything. A dock refresh mid-hydration
   // must leave the focused slot focused (same-route focus restoration) and never re-add a menu.
-  let releaseIndex;
-  const delayed = new Promise(resolve => { releaseIndex = resolve; });
-  await page.route('**/search-index.json', async route => { await delayed; await route.continue(); });
+  const releaseIndex = await delaySearchIndex(page);
   await page.setViewportSize(PHONE);
   await seedApp(page, testInfo);
   await page.goto('/?tab=today');

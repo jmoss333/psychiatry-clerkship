@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-11-10",
+  "refreshedAt": "2026-11-23",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -4033,6 +4033,30 @@
       "resolvedAt": "2026-10-05",
       "pmid": "17074942"
     },
+    "10.1176/appi.ajp.2009.09010039": {
+      "title": "A Randomized Trial of Dialectical Behavior Therapy Versus General Psychiatric Management for Borderline Personality Disorder",
+      "container": "AJP",
+      "containerAlt": [
+        "AJP",
+        "Am J Psychiatry",
+        "American Journal of Psychiatry",
+        "The American journal of psychiatry"
+      ],
+      "year": 2009,
+      "authors": [
+        "McMain",
+        "Links",
+        "Gnam",
+        "Guimond",
+        "Cardish",
+        "Korman",
+        "Streiner"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-23",
+      "pmid": "19755574"
+    },
     "10.1176/appi.ajp.2011.10111704": {
       "title": "The Columbia–Suicide Severity Rating Scale: Initial Validity and Internal Consistency Findings From Three Multisite Studies With Adolescents and Adults",
       "container": "AJP",
@@ -4967,6 +4991,34 @@
       "resolvedAt": "2026-09-27",
       "pmid": "32412700"
     },
+    "10.4088/jcp.v69n0404": {
+      "title": "Prevalence, Correlates, Disability, and Comorbidity of DSM-IV Borderline Personality Disorder",
+      "container": "J. Clin. Psychiatry",
+      "containerAlt": [
+        "J Clin Psychiatry",
+        "J. Clin. Psychiatry",
+        "The Journal of Clinical Psychiatry",
+        "The Journal of clinical psychiatry"
+      ],
+      "year": 2008,
+      "authors": [
+        "Grant",
+        "Chou",
+        "Goldstein",
+        "Huang",
+        "Stinson",
+        "Saha",
+        "Smith",
+        "Dawson",
+        "Pulay",
+        "Pickering",
+        "Ruan"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-23",
+      "pmid": "18426259"
+    },
     "10.4088/pcc.17r02185": {
       "title": "Neuroleptic Malignant Syndrome",
       "container": "Prim. Care Companion CNS Disord.",
@@ -5206,6 +5258,28 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37236789"
+    },
+    "10.1111/acer.14843": {
+      "title": "What is the optimum thiamine dose to treat or prevent Wernicke's encephalopathy or Wernicke–Korsakoff syndrome? Results of a randomized controlled trial",
+      "container": "Alcoholism Clin &amp; Exp Res",
+      "containerAlt": [
+        "Alcohol Clin Exp Res",
+        "Alcoholism Clin &amp; Exp Res",
+        "Alcoholism, clinical and experimental research",
+        "Alcoholism: Clinical and Experimental Research"
+      ],
+      "year": 2022,
+      "authors": [
+        "Dingwall",
+        "Delima",
+        "Binks",
+        "Batey",
+        "Bowden"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-15",
+      "pmid": "35428992"
     }
   },
   "pmids": {

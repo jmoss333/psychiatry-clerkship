@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(789 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(860 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -853,6 +853,12 @@ the Library.
 
 ## 6. Reader (reading / tool pane)
 
+When a resource opens from Search, the top `.fd-reader__back` button becomes “Back to search results.”
+It restores the query, expansion, selected action and results scroll from the current visit.
+The saved result order survives a delayed page-text load. Editing or starting a new search uses
+the current index. Opening a safety card's full reading keeps the same return path.
+Resources opened from the ordinary navigation retain their tab return control.
+
 ```
 .fd-reader                              + .is-nav-next | .is-nav-prev
   [tool only, same element] &.fd-reader--tool  + &.is-tool-expanded
@@ -870,6 +876,27 @@ the Library.
       .fd-article__h1                    (tool: clipped, never removed — the outer document keeps its heading)
       .fd-article__lead                  (tool: hidden when empty)
       .fd-article__body                  (rendered long-form content)
+        figure.fd-case-timeline          (Case Formulation, before the MS3 prompt)
+          figcaption + ol > li ×3        (illustration and text per event, stacked at ≤640px)
+        [Delirium guide body, under How it presents on the unit]
+        .fd-shift-case#delirium-shift
+          .fd-shift-case__head > .fd-shift-case__label + h3 + p
+          .fd-shift-case__times [role=group] > button[data-shift-time][aria-pressed] ×3
+          .fd-shift-case__encounter[data-shift-encounter] [aria-live=polite]
+            .fd-shift-case__picture + --morning | --midday | --afternoon (one cropped triptych)
+            .fd-shift-case__observation > dl ×2 + p
+          .fd-shift-case__practice
+            .fd-shift-case__label / .fd-shift-case__question / .fd-shift-case__hint
+            .fd-shift-case__choices > button[data-shift-choice][aria-pressed] ×2
+            .fd-shift-case__feedback[data-shift-feedback] [hidden until choice]
+            details[data-shift-comparison] [hidden until choice; closed until explicit reveal]
+              summary + [data-shift-comparison-body] > .fd-shift-case__patterns > div ×3
+              (answer template mounts only on explicit summary activation; one column at ≤640px)
+            .fd-shift-case__reset[data-shift-reset]
+        [Delirium guide body, under Recognize and screen]
+        .fd-shift-followup#delirium-shift-followup <details>
+          summary + .fd-shift-followup__body (draft and native worked-response disclosure)
+          (visit-local choices and text; Settings preserves them, reset/new visit clears them)
       .fd-keypoints
         .fd-keypoints__label
         .fd-keypoints__item ×N
@@ -937,6 +964,24 @@ the Library.
 | `html:has(.fd-reader--tool)` | `scroll-padding-top` = the sticky header's height (68px ≤640px, 112px above) while a tool is open. The frame is content-height, so the page is its only scroll surface and the tool cannot see the header: without this, focus or `scrollIntoView` inside the frame parks a control under the bar, where a tap lands on ✚ Safety (2026-10-04). In-page readers keep their own `scroll-margin-top`. |
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
+| `.fp-case` / `.mg-case` | Paired bedside fever exams and the clozapine interview timeline. Both keep histories with their source and require a differential and next finding or check before the debrief. |
+| `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
+| `#catie-stop` | Under the CATIE rounds question, each illustrated timeline opens a separate medication history and three handoffs. Selecting a supported handoff for each patient opens the comparison. Revising either answer updates it. |
+| `#quieter-on-unit` | The two-row chart compares the same observation across shifts. The handoff uses the patient’s call and any additional observations the learner opened. |
+| `#home-dose-history` | In the second Primer question, learners open the prescription and pickup record, mark both nights from the patient’s reply, and revise the home-dose line in the handoff. |
+| `#alex-timing` | Alex’s weekly timeline compares two possible callbacks about the first unusual call. Each rounds update uses the current callback and follow-up question. |
+| `#evening-calls` | Comparing two illustrated calls opens a bedside question and a rounds exercise about the change in the patient’s role. |
+| `#dinner-map` | Three patient answers add stops to the evening map. The nurse’s callback updates the unit pin and determines whether the handoff can confirm a meal is ready for pickup. |
+| `#therapy-chain` | Two illustrated ward observations bracket the patient’s account. Eliciting and recording both links opens three offers. The team update reflects the selected offer and the patient’s reply. |
+| `#coach-line` | Select a transcript and a student line, invite self-assessment, then rehearse feedback and a next attempt. The transcript and coaching panel stack on narrow screens. |
+| `.visual-practice` | In-reading room choices, paired observation frames, evidence cards, parent accounts and selectable trend charts. Named disclosures keep each answer with its source. The two catatonia frames open independently so learners can compare both observations. |
+| `.bedside-case` | Paired bedside and rounds exercises in Collateral, Adjustment Disorders, ECT and Somatic Symptom Disorders. Choices update the observation log, symptom timeline, patient-specific counseling or return visit card. Each worked handoff uses the current choices and opens on request. |
+| `.al-case` | Neurodevelopmental Disorders. The conversation in `#alex-lunch` unlocks the handoff edit in `#al-res`. The learner opens the worked handoff and its interpretation after identifying the unsupported appetite claim. Changing Alex’s reply clears both. |
+| `.aw-case` | Psychotic Disorders. In `#ari-weeks`, the two rows share an eight-week scale and the learner fills weeks 4–6 from Ari’s reply. A matching mark opens the handoff in `#aw-handoff`. Its disclosure combines that history with the selected record. The case clears the previous sentence when the reply, mark or record changes. |
+| `.study-plot` | Two study cohorts on the inpatient evidence page. Learners compare six-month event counts, switch to the same denominator, and test a claim about the combined intervention. |
+| `.noor-case` | Brief Psychotherapy pairs the three `.nd-invitations` in `#noor-dayroom` with the after-lunch exchange in `#noor-checkin`. Reading settings apply to both, invitation buttons stack at narrow widths, and the rounds disclosure follows the selected reply. |
+| `#lucia-rehearsal` | A day and night illustration frame Lucía’s Safety Planning rehearsal. The reader opens her answers and applies an overnight revision. The original and revised lines appear together. |
+| `#last-words-on-rounds` | OARS exercise in Motivational Interviewing. The two `.lw-scene` buttons span the illustration and its caption row inside `.lw-plate > .lw-hotspots`. Their shared grid keeps both captions below the image as labels wrap. The pressed button shows a check, and `.lw-accent` underlines the chosen ending in `[data-line].lw-composed`. The `.lw-reply` contains three follow-up buttons in `.lw-lines`, coaching in `.lw-coach`, and a native disclosure for the rounds note. The buttons stack in a narrow reading column. Reader type size and spacing apply throughout, and `[hidden]` takes precedence over each control’s layout. |
 | `.fd-reading-place` | Under `.fd-article` after Source, before actions. Ordinary readings only; initially empty. Runtime writes the exact device-only success copy after a successful store write, or the failure copy when storage is disallowed or fails. No live region or status badge. Tools, Progress, not-found, setup, faculty preview, and enhanced guides do not retain it. |
 | `.fd-reading-place__top` | Sibling button following the status, initially `hidden`. Runtime reveals it only for a valid restored heading; activation clears this page's record, scrolls and focuses its H1, then hides it again. `[hidden]` explicitly wins over the button's display rule. |
 | `.fd-compass` | Six-Week Compass, build-injected into `.fd-article__body` on the six-week Welcome (`welcome_compass.py`). Children: `.fd-compass__title`, `.fd-compass__weeks` (`<ol>`, markerless card grid), `.fd-compass__week` (`<li>` card), `.fd-compass__heading` (`<h3>`), `.fd-compass__kicker` (the `Week N` span inside that heading), `.fd-compass__link` *(no rule)*. Every rule but the root is written as a two-class selector so it outranks the `.fd-article__body` element rules it sits inside. Links reserve bottom scroll margin for the phone dock and tablet action bar, so native Tab focus stays unobscured. |
@@ -1015,11 +1060,25 @@ preview. Full behavior and content-preservation contract:
 |---|---|
 | `.fd-reader--guide` | Modifier on the existing reader. Removes the enclosing article card; 18px/1.75 prose, 720px maximum reading column, serif display title and section headings. Existing activity layout remains separate. |
 | `.fd-guide-header` | Original identity, H1 and lead nodes move into this semantic header. First in DOM; desktop column two/row one, centered in natural narrow-screen flow. |
+| `.fd-bedside-case` | Authored bedside exercise moved below the guide title, before its lead. The initial case information and MS3 prompt remain visible. One native disclosure holds the patient accounts or clues and the resident follow-up. |
+| `.evidence-rail` | Selectable history and discharge milestones. The current stop and previously opened sources remain visible. A committed assessment opens the evidence-specific resident handoff. |
+| `#reply-thread-case` | Interview turns can be traced back to the opening question before the learner compares an observation with a worked MSE note. |
+| `#nico-interview` | Immediately after the thought-process exercise in MSE Structure. The trace distinguishes interviewer turns from Nico’s answers. A quote and an observation unlock feedback and a worked rounds sentence for the selected exchange. |
+| `.fd-rounds-exercise`, `.fd-rounds-quote`, `.fd-rounds-jump` | The Mood reading places the two source disclosures in Initial workup and the tailored sample in What the student does. Jumps move focus within the mounted reading and preserve the sources opened there. |
+| `.fd-sleep-record` | The Mood case’s estimate of overnight sleep. The two bars and time labels share the same clock scale, with an accessible description naming both patients, their interval, and duration. |
 | `.fd-guide-margin` | Sticky 180–220px desktop column with bounded scrolling, spanning header/article rows. Natural document flow below 1000px. Follows `.fd-guide-header` and precedes `.fd-article` in DOM; CSS never reverses keyboard order. |
 | `.fd-guide-practice` | Full-width shortcut to the existing related activity; long canonical titles wrap. Uses the real `data-fd-open` route and carries no simulated activity. |
 | `.fd-guide-contents` | Native `<details>` containing a labeled section `<nav>`. Desktop starts expanded; narrow views start collapsed. Links expose current location with `aria-current="location"`. |
 | `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
 | `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
+| `#elena-visit` | Two illustrated views from Elena’s chair show whom the student addresses. Replaying an opening controls the dialogue and repair. Each resident question supplies its own answer and rounds sentence. |
+| `#night-witness` | Nico’s collateral call under Bring It Back to the Team. Three overnight dials track reports from Luz and the selected follow-up. The learner’s interpretation controls coaching. Opening the rounds sample combines only the selected accounts. |
+| `.cultural-chart` | Cultural Formulation interview and note-writing disclosure in their authored sections. Native question disclosures share visit-local evidence with the worked note. Phrase buttons trace to exact patient quotations. Source opening through guide search counts, print expansion does not. |
+| `#referral-call` | Eating Disorders exercise within Medical instability. The three source disclosures, lead-selection buttons and sample handoff share visit-local state. The compact vitals table fits the phone reading column. |
+| `#sleep-workup`, `#sleep-plan`, `#sleep-followup` | Sleep history exercise. The two `.sn-track` lanes use round and square time markers for opened accounts. Home history appears separately. The resident sample combines the opened sources with the chosen first step. |
+| `#personality-crisis`, `.fd-before-*` | Personality exercise under Initial workup. Four-node map separates observed behavior from unknown meaning/feeling; explicit patient-account summary activation supplies the two reported cells. Native question buttons expose authored feedback and the initially closed answer. Warm/teal/olive surfaces use existing tokens and stack at phone widths. |
+| `#personality-response` | Acute inpatient management continuation. The response-choice template mounts only after the patient account is explicitly opened. Feedback, choices and map are visit-only and reset together. |
+| `#personality-followup` | What the student does continuation. The resident account selector updates the quote, clears and closes any prior worked response, and mounts only the selected account's template on explicit reveal. Programmatic guide-find/print expansion does not supply answers. Rehearsal is neither saved nor scored. |
 | `.fd-guide-section` | Wrapper preserving a non-collapsible authored heading and its following content. `.sec-c` keeps the existing explicit disclosure behavior where allowed. |
 | `.fd-guide-lead` | The authored paragraph that opens a section on a page with no H2: its first element is a bold label followed by a separator (`—`, `:`) or ending in `.`/`:`, or standing alone. It stays a `<p>` with its inline `<strong>` untouched; the class adds only the landing scroll margin. The section's navigation label is the bold text without trailing punctuation. A page qualifies only with no H2 anywhere (an embedded component's own heading keeps it out), at least four leads and 500 words — the rotation week pages stay plain. **Trap:** such a page keeps its reading place (`[data-fd-reading-status]`, Start at top), unlike an H2 guide, and the reading-place anchor is the lead's `<strong>`, not the paragraph, so editing the prose keeps a saved place. |
 | `.fd-guide-orientation` | Teal summary/orientation treatment applied to an authored section by a narrow heading match. |
@@ -1028,6 +1087,8 @@ preview. Full behavior and content-preservation contract:
 | `.fd-guide-references` | Ruled reference region with 14px/1.7 text and long citation wrapping. |
 | `.fd-guide-match` | Temporary passage outline and wash; no completion or review meaning. Scroll margin keeps it below sticky chrome. |
 | `.fd-guide-arrival` | Visible context for passage arrival. Hidden on paper, while the passage itself remains. |
+| `.mp-case` | Neurocognitive Disorders. The Sunday and Tuesday question buttons in `#mara-pillbox` reveal Mara’s answers in Initial workup. Both answers unlock the three rounds claims in `#mara-handoff`. Changing Sunday preserves the open Tuesday answer and clears the selected claim, feedback and worked note. The scene buttons stack in a narrow reading column and follow reader type scaling. |
+| `.li-case` | Medication Monitoring & Labs. The timeline in `#li-eight-am` ends at the selected clock time. The resident exercise in `#li-resident` uses the current nurse report for its coaching and worked handoff. The illustrated timing and handoff cards inherit the reader’s type size and stack their controls in a narrow reading column. |
 | `.fd-guide-table-controls` | Wrapping buttons with real `aria-pressed` state. Minimum 44px height. |
 | `.fd-guide-table-rows` | Derived row reading view, one `<dl>` per original row; exact source header/cell text. The semantic table remains the print representation. |
 | `.fd-guide-return` | Temporary practice return control; deliberately styled outside the guide modifier because it appears while a real activity is open. |
@@ -1127,9 +1188,9 @@ patient information, or an attestation, and it never turns a website action into
           .fd-result__title
           governanceBadge
           .fd-result__meta
-      .fd-searchpanel__empty          (no-results state, replaces the results)
+      .fd-searchpanel__empty          (no-results state; long pasted words wrap within the panel)
       .fd-searchpanel__related        (up to three curated equivalent-query buttons after results)
-      .fd-searchpanel__recovery       (zero matches: Edit search / Browse Library / blank Capture)
+      .fd-searchpanel__recovery       (zero matches: suggested spelling when available / Edit search / Browse Library / blank Capture)
     .fd-searchpanel__foot             ("Searches page and tool titles, summaries, related terms, and page text. Not here? ＋ Ask a question saves it for supervision.")
 ```
 
@@ -1148,7 +1209,8 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-searchpanel__esc` | Re-valued: a 44×44 text button reading "Close" (teal-deep 700), no border. The class name is unchanged so the mobile 44px rule keeps matching. |
 | `.fd-searchpanel__browse` | Standard MS3/resident Search offers an explicit Library route above suggestions/matches. At zero matches the route moves into the recovery group. APP already has The Essentials in dock slot 2, so this row is absent. |
 | `.fd-searchpanel__related` | Up to three alternatives from the same curated synonym groups used for matching; no suggestions for unknown terms. Appears after results, preserving safety priority. Buttons wrap at phone widths with 44px targets, update the transient query, reset expansion and focus the input; nothing is saved. |
-| `.fd-searchpanel__recovery` | Zero-match actions stack with at least 44px targets. Edit search focuses the existing query. Browse opens the current audience's Library. Capture closes Search and opens a blank editor; Cancel/Escape restores the transient query and input focus. Only explicit Save stores the learner's question. Faculty preview omits Capture; APP omits the Library route. |
+| `.fd-searchpanel__recovery` | Zero-match actions stack with at least 44px targets. A known misspelling offers “Did you mean …?” when the correction has results on this site. Tapping it searches for the corrected term. Edit search focuses the existing query. Browse opens the current audience's Library. Capture closes Search and opens a blank editor; Cancel/Escape restores the transient query and input focus. Only explicit Save stores the learner's question. Faculty preview omits Capture; APP omits the Library route. |
+| `.fd-searchpanel[data-pharmacy-lookup]` | A reviewed medication opens in an embedded Pharmacy card between Back to search results and the return control. The originating surface stays mounted. |
 | `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
 | `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
@@ -1255,7 +1317,7 @@ projection and the existing attested flag is true. The preview itself adds no at
 | Class | Notes |
 |---|---|
 | `.fd-sheetbackdrop` | Separate sibling element, before `.fd-sheet`. Carries the click-to-close. |
-| `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). |
+| `.fd-sheet__body` | The scroll container (`flex:1; overflow-y:auto`). Safety results opened from Search start with a “Back to search results” button using `.fd-btn.fd-btn--ghost`. |
 | `.fd-doccallout` | Amber "Document:" callout. Border is derived via `color-mix` from the two olive tokens. |
 | `.fd-sheet__attribution` | "✓ From: <page title> · faculty-attested". Names the page, never the file (the prototype's `protoSrc` was a readable source); the ref rides on `data-ref`. |
 | `.fd-sheet__pending` | Affirmative not-yet-reviewed state for a valid 3–5-step protocol; mutually exclusive with attribution and failure. |
@@ -1421,3 +1483,15 @@ hidden, everywhere else.
 | `.fd-usage-notice` | `<p>` | One muted line (`--fd-font-xs`, `--fd-text-mid`). |
 | `.fd-usage-notice__btn` | `<button data-fd-settings>` | Text-style link that opens Settings › Usage — the only opt-out writer stays the emitter. |
 
+
+### OSCE stations
+
+The teaching plan uses two `.fd-session__choices` navigation groups for duration and teaching goal. Each group marks its selected link with `aria-current="page"`.
+
+The reader's `.fd-station` section contains role links in `.fd-station__roles`. The capacity station has two timed phases. The family meeting agenda uses a single timer. Both use `.fd-station__clock` and `.fd-station__actions`. Role views reuse the same article typography and shared buttons. The full OSCE reading is accessible from each view.
+
+Both circuits label the current case with `.fd-circuit__case`. The facilitator uses `.fd-circuit__timer` for a fixed clock and controls above the phone dock. Each learner link has an expandable `.fd-circuit__qr` and follows its assigned roles as the group advances. The full circuit remembers the last station for each learner link on that browser.
+
+During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
+
+When the repeat ends, the primary timer button takes the facilitator to the receiver read-back. On phones up to 430px wide, a selected feedback focus shares the first row with the countdown. The controls sit on a separate row so switching from Start to Read-back leaves the focus and time readable.

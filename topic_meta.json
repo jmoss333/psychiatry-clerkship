@@ -1098,11 +1098,11 @@
   },
   "t_anxiety.md": {
     "read": 4,
-    "tldr": "SSRIs plus exposure-based therapy are first-line across anxiety, OCD, and PTSD (SNRIs are alternatives for anxiety disorders and PTSD, not OCD) — standing benzodiazepines are a trap on the unit.",
+    "tldr": "SSRIs are first-line medication options for anxiety disorders and OCD; SNRIs are options for anxiety disorders, not OCD. For PTSD, prioritize CPT, PE, or EMDR; choose sertraline, paroxetine, or venlafaxine when medication is selected, considering preference and access. Routine benzodiazepines are not recommended for PTSD.",
     "points": [
       "Rule out medical mimics (hyperthyroidism, arrhythmia, substance withdrawal).",
       "OCD: exposure and response prevention plus a higher-dose SSRI.",
-      "PTSD: trauma-focused therapy (CPT/PE) is first-line."
+      "PTSD: individual trauma-focused psychotherapy (CPT/PE/EMDR) is preferred; sertraline, paroxetine, or venlafaxine when medication is chosen."
     ],
     "cant": "Don't start scheduled benzodiazepines for PTSD — they don't treat core symptoms and carry dependence risk.",
     "quiz": {
@@ -1177,7 +1177,8 @@
     "safetyLevel": "high",
     "evidenceIds": [
       "lima-2004-betablockers-akathisia",
-      "project-beta-psychopharm-agitation-2012"
+      "project-beta-psychopharm-agitation-2012",
+      "vadod-2023-ptsd-cpg"
     ],
     "facultyReview": {
       "status": "reviewed",
@@ -6263,10 +6264,10 @@
     "tldr": "A formulation answers why this patient, why now — built on the biopsychosocial axis and sharpened by the four P's (predisposing, precipitating, perpetuating, protective) — and turns a diagnosis into a plan.",
     "points": [
       "The differential gives the diagnosis; the formulation gives the 'why now' and the plan.",
-      "Always name a precipitant ('why now?') and at least one protective factor — the two cells students most often skip.",
+      "Ask what changed before admission and what helps the patient stay well. Identify any gap worth clarifying.",
       "Every perpetuating factor is a treatment target; every protective factor is a lever."
     ],
-    "cant": "Don't stop at a diagnosis or write an all-biology story — force a psychological and a social contributor into the formulation.",
+    "cant": "Ask about psychological and social contributors. When the history leaves a gap, name what you would ask next.",
     "workflowModes": [
       "ward",
       "5min",

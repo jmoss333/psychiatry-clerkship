@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-31",
+  "updated": "2026-11-23",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -1840,7 +1840,8 @@
           ],
           "direction": "descriptive",
           "usedBy": [
-            "cotw_20260914_ssnms_res"
+            "cotw_20260914_ssnms_res",
+            "toxidromes.md"
           ]
         }
       ]
@@ -3335,6 +3336,77 @@
       ]
     },
     {
+      "sourceId": "vadod-2017-ptsd-cpg",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://www.ptsd.va.gov/professional/articles/article-pdf/id88366.pdf#page=62",
+        "retrievedAt": "2026-10-11",
+        "pmid": "",
+        "doi": "",
+        "sourceSpan": "For global symptoms of PTSD, we suggest against the use of prazosin as mono- or augmentation therapy. For nightmares associated with PTSD, there is insufficient evidence to recommend for or against the use of prazosin as mono- or augmentation therapy."
+      },
+      "claims": [
+        {
+          "claimId": "historical-prazosin-nightmares-and-global-ptsd",
+          "claimText": "For PTSD-related nightmares, evidence was insufficient to recommend for or against prazosin as monotherapy or augmentation; for global PTSD symptoms the guideline suggested against it. This historical insufficient-evidence position is not the later nightmare-specific recommendation.",
+          "claimTerms": [
+            "For nightmares associated with PTSD",
+            "insufficient evidence to recommend for or against",
+            "For global symptoms of PTSD"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "rounds_questions"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "vadod-2023-ptsd-cpg",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://web.archive.org/web/20230721190354id_/https://www.healthquality.va.gov/guidelines/MH/ptsd/VA-DoD-CPG-PTSD-Full-CPG.pdf#page=35",
+        "retrievedAt": "2026-10-11",
+        "pmid": "",
+        "doi": "",
+        "sourceSpan": "1 mg at bedtime; titrate to clinical response. We recommend individual psychotherapies, listed in Recommendation 8, over pharmacologic interventions for the treatment of PTSD. We recommend the individual, manualized trauma-focused psychotherapies for the treatment of PTSD: Cognitive Processing Therapy, Eye Movement Desensitization and Reprocessing, or Prolonged Exposure. We recommend paroxetine, sertraline, or venlafaxine for the treatment of PTSD. We suggest against divalproex, guanfacine, ketamine, prazosin, risperidone, tiagabine, or vortioxetine for the treatment of PTSD. We recommend against benzodiazepines for the treatment of PTSD. There is insufficient evidence to recommend for or against the combination or augmentation of psychotherapy (see Recommendation 8 and Recommendation 9) or medications (see Recommendation 15) with any psychotherapy or medication for the treatment of PTSD (see Recommendation 22 for antipsychotic medications and Recommendation 23 for 3,4-methylenedioxymethamphetamine). We suggest prazosin for the treatment of nightmares associated with PTSD. Prazosin might cause syncope with a sudden loss of consciousness. Syncopal episodes usually occur within 30 to 90 minutes of the initial dose. Addition of a diuretic, other antihypertensive agents, or a PDE5 inhibitor might cause an additive hypotensive effect. Some patients might experience side effects from prazosin, such as orthostatic hypotension, dizziness, or headaches. However, these side effects might be mitigated by slowly increasing the dose to the desired result. Caution should be used in patients on other medications that affect blood pressure or can cause orthostasis, including the concomitant use of phosphodiesterase type 5 inhibitors. Evidence suggests treatment with prazosin improves nightmares related to PTSD, as demonstrated by two SRs and one RCT.(240-242) Treatment with prazosin was associated with a clinically significant improvement in nightmares in an SR with six studies.(240) The other SR, which included seven studies, also found a clinically significant improvement with overlap between the SRs the studies included.(241) One additional RCT, not included in the SRs, found no significant difference in nightmare outcomes between prazosin and placebo; however, the study might have been underpowered because of a small sample size.(242) Included in the SRs was a large, well-designed, VA Cooperative multisite trial with Veterans in which prazosin failed to improve global symptoms of PTSD and nightmares compared with placebo.(243) However, the recent SRs identified by this evidence review determined a benefit with the treatment of prazosin for nightmares even when including the large VA Cooperative trial. The Work Group notes that this Weak against recommendation covers prazosin when used as monotherapy for PTSD. Please see Recommendation 32 for information on using prazosin to treat nightmares associated with PTSD."
+      },
+      "claims": [
+        {
+          "claimId": "ptsd-therapy-named-medications-and-combination-uncertainty",
+          "claimText": "The guideline recommends individual manualized trauma-focused psychotherapy with cognitive processing therapy, eye movement desensitization and reprocessing, or prolonged exposure over medication; recommends paroxetine, sertraline or venlafaxine when medication is selected; and recommends against benzodiazepines for PTSD. Evidence is insufficient for the specified psychotherapy/medication combinations or augmentation, so this is not a universal requirement to combine treatments.",
+          "claimTerms": [
+            "over pharmacologic interventions",
+            "paroxetine, sertraline, or venlafaxine",
+            "We recommend against benzodiazepines",
+            "insufficient evidence to recommend for or against the combination or augmentation"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "t_anxiety",
+            "qb_anx_002"
+          ]
+        },
+        {
+          "claimId": "prazosin-nightmares-dose-and-limitations",
+          "claimText": "The guideline suggests prazosin for PTSD-related nightmares, not as monotherapy for PTSD overall. It considers the large VA trial that failed to improve global PTSD symptoms and nightmares alongside systematic reviews finding nightmare benefit. Its initial-dose table lists 1 mg at bedtime, titrated to clinical response, with first-dose syncope and additive hypotension warnings; the nightmare discussion advises slow titration to mitigate orthostatic hypotension, dizziness or headaches.",
+          "claimTerms": [
+            "We suggest prazosin for the treatment of nightmares associated with PTSD",
+            "Weak against recommendation covers prazosin when used as monotherapy for PTSD",
+            "1 mg at bedtime; titrate to clinical response.",
+            "failed to improve global symptoms of PTSD and nightmares",
+            "orthostatic hypotension"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "rounds_questions",
+            "t_anxiety",
+            "pharmacy:prazosin"
+          ]
+        }
+      ]
+    },
+    {
       "sourceId": "lowe-2004-phq9-monitoring",
       "verifiedAgainst": {
         "spanType": "abstract",
@@ -3381,6 +3453,151 @@
           "direction": "descriptive",
           "usedBy": [
             "screeners.html"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "meyer-2001-clozapine-smoking-cessation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/11763003",
+        "retrievedAt": "2026-11-20",
+        "pmid": "11763003",
+        "doi": "10.1097/00004714-200112000-00005",
+        "sourceSpan": "A mean increase in clozapine levels of 71.9% (442.4 ng/ml +/- 598.8 ng/ml) occurred upon smoking cessation"
+      },
+      "claims": [
+        {
+          "claimId": "meyer-2001-clozapine-smoking-cessation-case-debrief",
+          "claimText": "Clozapine levels rose on average after smoking cessation in patients on a stable dose.",
+          "claimTerms": [
+            "smoking cessation"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "hukkanen-2011-nicotine-cyp1a2",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3243019/",
+        "retrievedAt": "2026-11-20",
+        "pmid": "21599724",
+        "doi": "10.1111/j.1365-2125.2011.04023.x",
+        "sourceSpan": "There was no significant influence of nicotine administration on the pharmacokinetic parameters of caffeine or the formation pharmacokinetics of paraxanthine, theophylline and theobromine."
+      },
+      "claims": [
+        {
+          "claimId": "hukkanen-2011-nicotine-cyp1a2-case-debrief",
+          "claimText": "Nicotine did not significantly change caffeine metabolism in this crossover study.",
+          "claimTerms": [
+            "no significant influence of nicotine"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "hefner-2016-crp-clozapine",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/26032842",
+        "retrievedAt": "2026-11-20",
+        "pmid": "26032842",
+        "doi": "10.1007/s00213-015-3976-0",
+        "sourceSpan": "Elevated levels of C-reactive protein were found in 105 patients. They were significantly associated with elevated values in C/D for clozapine (n = 33, P < 0.01)"
+      },
+      "claims": [
+        {
+          "claimId": "hefner-2016-crp-clozapine-case-debrief",
+          "claimText": "Elevated C-reactive protein was associated with higher dose-adjusted clozapine concentrations.",
+          "claimTerms": [
+            "elevated values in C/D for clozapine"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "psychopharm_primer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "gurrera-2017-nms-criteria-validation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/28027111",
+        "retrievedAt": "2026-11-20",
+        "pmid": "28027111",
+        "doi": "10.1097/jcp.0000000000000640",
+        "sourceSpan": "Data were extracted from 221 archived telephone contact reports of clinician-initiated calls to a national telephone consultation service from 1997 to 2009"
+      },
+      "claims": [
+        {
+          "claimId": "gurrera-2017-nms-criteria-validation-case-debrief",
+          "claimText": "The NMS criteria validation used reports from 221 archived telephone consultations.",
+          "claimTerms": [
+            "221 archived telephone contact reports"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "toxidromes.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "white-1991-catatonia-preceding-nms",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/1674666",
+        "retrievedAt": "2026-11-20",
+        "pmid": "1674666",
+        "doi": "10.1192/bjp.158.3.419",
+        "sourceSpan": "Five consecutive cases of the NMS are presented, in all of which a catatonic state preceded the onset of the condition."
+      },
+      "claims": [
+        {
+          "claimId": "white-1991-catatonia-preceding-nms-case-debrief",
+          "claimText": "Catatonic signs preceded NMS in five consecutive cases in this series.",
+          "claimTerms": [
+            "a catatonic state preceded"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "toxidromes.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "brown-2002-prednisone-mood",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/11799343",
+        "retrievedAt": "2026-11-23",
+        "pmid": "11799343",
+        "doi": "10.1097/00004714-200202000-00009",
+        "sourceSpan": "Outpatients with asthma (N = 32) receiving bursts of prednisone (>40 mg/day) were evaluated before, during, and after corticosteroid therapy by use of the Hamilton Rating Scale for Depression, the Young Mania Scale, the Brief Psychiatric Rating Scale, and the Internal State Scale. Highly significant increases in the Young Mania Scale and Activation subscale of the Internal State Scale (both measures of mania) were observed with no increase in depression measures during the first 3 to 7 days of prednisone therapy."
+      },
+      "claims": [
+        {
+          "claimId": "prednisone-first-week-mood",
+          "claimText": "In a prospective study of 32 adults with asthma, mania-rating scores rose during the first week of a prednisone course.",
+          "claimTerms": [
+            "increases in the Young Mania Scale",
+            "first 3 to 7 days"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "ddx.md"
           ]
         }
       ]

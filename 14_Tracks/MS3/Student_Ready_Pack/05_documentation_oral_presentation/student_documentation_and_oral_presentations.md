@@ -187,6 +187,44 @@ Use when handing off a psychiatric patient:
 > escalating intervention]. The patient responds best to [approach]. Family/
 > collateral issue to know: [X]."
 
+<section id="night-signout" class="bedside-case visual-practice" aria-labelledby="ns-title">
+<h3 id="ns-title">Can the night team act on this?</h3>
+<div class="ns-route"><span>Day team</span><i aria-hidden="true"></i><span>Night team</span></div>
+<div class="ns-slip" id="ns-slip"><h4 class="case-kicker" id="ns-slip-label">Your opening line</h4>
+<blockquote>“Sam’s expecting a call from their sister. Could you check in with them?”</blockquote>
+<dl id="ns-card" hidden></dl></div>
+<section id="ns-compose" aria-labelledby="ns-compose-title"><h4 id="ns-compose-title">What will you pass on?</h4>
+<p class="ns-brief">Tap a question to add its answer. Try handing over with one detail left out.</p>
+<div class="ns-options" role="group" aria-label="Details to include in the handoff">
+<div><button type="button" data-pick="wish" aria-pressed="false" aria-controls="ns-source-wish">What did Sam ask for?</button><p id="ns-source-wish" hidden><strong>Sam</strong> · “I’d like to talk to her alone. Could someone come by afterward?”</p></div>
+<div><button type="button" data-pick="time" aria-pressed="false" aria-controls="ns-source-time">When is the call?</button><p id="ns-source-time" hidden><strong>Sam</strong> · “She said she’d call around seven tonight.”</p></div>
+<div><button type="button" data-pick="owner" aria-pressed="false" aria-controls="ns-source-owner">Who agreed to check in?</button><p id="ns-source-owner" hidden><strong>Maya, evening nurse</strong> · “I’m Sam’s nurse tonight. I can take the check-in.”</p></div>
+</div><button type="button" class="ns-primary" id="ns-send">Hand over to the night resident <span aria-hidden="true">→</span></button></section>
+<section id="ns-received" hidden aria-labelledby="ns-resident-label">
+<div class="ns-reader"><h4 class="case-kicker" id="ns-resident-label">Receiving resident</h4><blockquote id="ns-question" data-missing="none"></blockquote></div>
+<div id="ns-repair"><p class="ns-brief">Say what you’d add to the handoff. Then check the detail with the day team.</p><button type="button" class="ns-primary" id="ns-clarify">Clarify with the day team</button></div>
+<div class="case-choices"><button type="button" id="ns-edit" class="case-link">Edit handoff</button><button type="button" id="ns-reset" class="case-link">Start over</button></div></section>
+<footer>Fictional inpatient case · Evening sign-out</footer>
+<span class="fd-visually-hidden" role="status" id="ns-status"></span>
+<template data-ns-bank>
+<dl>
+<div data-fact="wish" data-clarify="Ask what Sam wants"><dt>Sam wants</dt><dd>Privacy during the call and a check-in afterward.</dd></div>
+<div data-fact="time" data-clarify="Check the time of the call"><dt>When</dt><dd>Sam’s sister plans to call around seven tonight.</dd></div>
+<div data-fact="owner" data-clarify="Find out who agreed to check in"><dt>Who</dt><dd>Maya, Sam’s evening nurse, agreed to take the check-in.</dd></div>
+</dl>
+<p data-heard="none">“Sure. What did Sam ask us to do around the call?”</p>
+<p data-heard="time">“I’ve got the time. Does Sam want me there for the call, or would they rather I stop by afterward?”</p>
+<p data-heard="owner">“Maya has the check-in. What did Sam say would help them around the call?”</p>
+<p data-heard="time-owner">“I’ve got the time, and Maya has the check-in. Does Sam want company during the call, or would they rather talk afterward?”</p>
+<p data-heard="wish">“Okay, I’ll give Sam some privacy. About what time is their sister calling?”</p>
+<p data-heard="wish-owner">“Maya’s checking in afterward. When is Sam expecting their sister to call?”</p>
+<p data-heard="wish-time">“Got it. Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?”</p>
+<p data-heard="wish-time-owner">“So, their sister’s calling around seven. Sam wants to take it alone, and Maya will check in afterward. Have I got that right?”</p>
+<span data-ns-draft>Your handoff so far</span><span data-ns-sent>What you handed over</span><span data-ns-readback>Receiving resident · read-back</span>
+<span data-ns-editing>Editing your handoff.</span><span data-ns-restarted>New handoff. No details selected.</span><span data-ns-removed>Detail removed from the handoff.</span>
+</template>
+</section>
+
 ## Faculty Feedback Prompts
 
 - "What was the clinical question in that presentation?"
