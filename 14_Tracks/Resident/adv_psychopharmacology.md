@@ -22,6 +22,78 @@
 - Build the monitoring scaffolding at order entry — lithium levels and renal/thyroid/PTH, clozapine ANC and bowel regimen, antipsychotic metabolic panel, QTc on stacking.
 - Reconcile interaction risks at admission, especially smoking-cessation effects on clozapine and serotonergic washouts around MAOIs.
 
+<section id="mar-overlap" class="bedside-case" data-mar-case aria-labelledby="mar-title">
+<header><h3 id="mar-title">Why are both antipsychotics still on the MAR?</h3></header>
+<figure class="mar-scene"><figcaption><p class="folio">Thursday, March 12 · 18:45</p><blockquote>“I’ve got olanzapine and risperidone on here for eight. Did days mean for both to stay on?”</blockquote></figcaption><img src="illustrations/evening-med-pass.webp" alt="An evening nurse asks the covering resident about the medication record at the nurses’ station."></figure>
+<div class="mar-bar"><h4>Review the chart</h4><div class="mar-charts" role="group" aria-label="Choose chart version">
+<button type="button" data-chart="a" aria-pressed="true">Chart A</button>
+<button type="button" data-chart="b" aria-pressed="false">Chart B</button>
+</div></div>
+<p>Open the three sources in any order. Use their dates to decide what to tell the nurse before the next pass.</p>
+<div class="mar-sheet" role="group" aria-label="Three-day medication timeline">
+<div class="mar-days" aria-hidden="true"><span>March</span><span><b>Wed 11</b>Yesterday</span><span><b>Thu 12</b>Tonight</span><span><b>Fri 13</b>Tomorrow</span></div>
+<button type="button" class="mar-track" data-source="orders" aria-pressed="false" aria-controls="mar-record"><strong>Orders</strong><span class="mar-fold">Open active orders</span></button>
+<button type="button" class="mar-track" data-source="plan" aria-pressed="false" aria-controls="mar-record"><strong>Switch plan</strong><span class="mar-fold">Open prescriber’s note</span></button>
+<button type="button" class="mar-track" data-source="given" aria-pressed="false" aria-controls="mar-record"><strong>Given</strong><span class="mar-fold">Check the signed MAR</span></button>
+</div>
+<p class="mar-legend"><span>— No entry in this source.</span><span role="status" data-mar-progress>0 of 3 reviewed</span></p>
+<div id="mar-record" class="case-reply" data-mar-record aria-live="polite" hidden></div>
+<div class="step" data-mar-handoff hidden><h4>What will you hand off before 20:00?</h4>
+<div class="mar-options" data-mar-options role="group" aria-label="Choose a handoff"></div>
+<p class="case-reply" id="mar-feedback" data-mar-feedback aria-live="polite" hidden></p>
+<details id="mar-debrief" data-mar-debrief hidden><summary>Compare your reasoning</summary><p data-mar-lesson></p>
+<p>The medication administration record (MAR) documents what was given. Active orders show what is scheduled. The prescriber’s dated plan tells you whether today’s overlap was intended.</p>
+<p>Guidance recognizes brief overlap during a medication change. This fictional chart rehearses reconciling the record before a dose. <a href="https://www.nice.org.uk/guidance/cg178/resources/psychosis-and-schizophrenia-in-adults-prevention-andmanagement-pdf-35109758952133#page=17">NICE CG178, recommendation 1.3.6.10 (PDF)</a></p>
+<button type="button" class="case-link" data-mar-swap>Try the other chart</button></details></div>
+<footer class="mar-bar"><span>Fictional medication record</span><button type="button" class="case-link" data-reset>Start this chart again</button></footer>
+<template data-mar-document="orders"><div data-mar-entries>
+<span data-mar-cell aria-label="Wednesday: no entry in this source">—</span>
+<span data-mar-cell aria-label="Thursday: Both active">Both active</span>
+<span data-mar-cell aria-label="Friday: no entry in this source">—</span>
+</div><div data-mar-excerpt><p class="case-kicker">Active orders · Thu 12 Mar, 18:45</p>
+<ul><li>Olanzapine · scheduled nightly · next due 20:00</li><li>Risperidone · scheduled nightly · next due 20:00</li></ul>
+</div></template>
+<template data-mar-document="given"><div data-mar-entries>
+<span data-mar-cell aria-label="Wednesday: Both given">Both given</span>
+<span data-mar-cell aria-label="Thursday: None yet">None yet</span>
+<span data-mar-cell aria-label="Friday: no entry in this source">—</span>
+</div><div data-mar-excerpt><p class="case-kicker">Medication administration record · checked with evening RN</p>
+<ul><li>Wed 11 Mar, 20:05 · Olanzapine and risperidone both signed as given.</li><li>Thu 12 Mar, 18:45 · No administration signed for tonight’s 20:00 pass.</li></ul>
+</div></template>
+<template data-mar-document="plan-a"><div data-mar-entries>
+<span data-mar-cell aria-label="Wednesday: Overlap">Overlap</span>
+<span data-mar-cell aria-label="Thursday: Overlap">Overlap</span>
+<span data-mar-cell aria-label="Friday: 09:00 review">09:00 review</span>
+</div><div data-mar-excerpt><p class="case-kicker">Prescriber’s note · Wed 11 Mar, 15:40</p>
+<p class="mar-voice">“Switching from olanzapine to risperidone. Both are planned for Wednesday and Thursday evenings. Day team to review response and tolerability Friday at 09:00 and decide whether to stop olanzapine.”</p>
+</div></template>
+<template data-mar-document="plan-b"><div data-mar-entries>
+<span data-mar-cell aria-label="Wednesday: Last overlap">Last overlap</span>
+<span data-mar-cell aria-label="Thursday: Risperidone only">Risperidone only</span>
+<span data-mar-cell aria-label="Friday: no entry in this source">—</span>
+</div><div data-mar-excerpt><p class="case-kicker">Prescriber’s note · Wed 11 Mar, 15:40</p>
+<p class="mar-voice">“Switching from olanzapine to risperidone. Wednesday evening is the last planned olanzapine dose. From Thursday evening, risperidone alone. Day team to discontinue the olanzapine order Thursday morning.”</p>
+</div></template>
+<template data-mar-chart="a"><div data-mar-buttons>
+<button type="button" data-choice="defer" aria-pressed="false" aria-controls="mar-feedback mar-debrief">“Both are still ordered. The note leaves tonight unresolved, so I’ll ask days why they didn’t stop olanzapine this morning.”</button>
+<button type="button" data-choice="fit" aria-pressed="false" aria-controls="mar-feedback mar-debrief">“Both were given last night, and tonight’s overlap matches the switch plan. I’ll flag the Friday 09:00 olanzapine review for the day team.”</button>
+<button type="button" data-choice="assume" aria-pressed="false" aria-controls="mar-feedback mar-debrief">“Both were given last night and they’re active again tonight. I’ll list both as the ongoing regimen when I sign out.”</button>
+</div>
+<p data-mar-comment="defer">Read the days named in the note. It includes Thursday evening and puts the decision about olanzapine on Friday.</p>
+<p data-mar-comment="fit">The signed doses, tonight’s orders, and the dated plan line up. You also handed off who owns the next decision and when.</p>
+<p data-mar-comment="assume">Two signed administrations establish exposure. The plan describes a temporary overlap and a review, so an open-ended two-drug regimen overstates the record.</p>
+<p data-mar-interpretation>Friday is a review point. The note does not commit the team to stopping olanzapine on Friday or to continuing both medications indefinitely.</p></template>
+<template data-mar-chart="b"><div data-mar-buttons>
+<button type="button" data-choice="assume" aria-pressed="false" aria-controls="mar-feedback mar-debrief">“Both were given last night and both remain active. I’ll tell the nurse tonight is another planned night of the switch.”</button>
+<button type="button" data-choice="defer" aria-pressed="false" aria-controls="mar-feedback mar-debrief">“Wednesday was the planned last olanzapine dose. I’ll leave the order discrepancy for tomorrow’s team to sort out on rounds.”</button>
+<button type="button" data-choice="fit" aria-pressed="false" aria-controls="mar-feedback mar-debrief">“Both were given last night. Olanzapine is still active after its planned stop. I’ll reconcile that order with the responsible prescriber and nurse before 20:00.”</button>
+</div>
+<p data-mar-comment="assume">Last night’s doses matched Wednesday’s plan. They cannot establish Thursday’s intent. Tonight’s olanzapine order conflicts with the note.</p>
+<p data-mar-comment="defer">Tonight’s pass comes first. The nurse needs a reconciled plan from the responsible prescriber before that administration.</p>
+<p data-mar-comment="fit">You identified the conflict and who will resolve it before the dose. Tonight’s MAR has no signed administration yet.</p>
+<p data-mar-interpretation>Wednesday’s plan and Thursday’s active order disagree. That discrepancy needs clarification now. It does not establish that an extra dose was given.</p></template>
+</section>
+
 **High-yield pearls**
 - Clozapine carries an anti-suicidal indication in schizophrenia and schizoaffective disorder; lithium's anti-suicidal signal is meaningful but uncertain (Cipriani 2013; Katz 2022; Wang 2025). Weigh both in your risk-benefit math.
 - Clozapine-associated constipation is a lethal, under-recognized complication; a bowel regimen is part of the prescription, not an afterthought.
