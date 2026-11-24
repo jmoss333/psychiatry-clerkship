@@ -16,6 +16,7 @@ function fdMountBedsideCases(body) {
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
+  fdMountCatieStop(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountOvernightPlan(body);
@@ -1270,6 +1271,83 @@ function fdMountTreatmentRationale(body) {
   }
   find('[data-qt-other]').addEventListener('click', () => restart(1 - historyIndex));
   find('[data-qt-reset]').addEventListener('click', () => restart(0));
+}
+
+function fdMountCatieStop(body) {
+  const card = body.querySelector('#catie-stop');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = id => card.querySelector('#catie-' + id);
+  const patients = Array.from(card.querySelectorAll('button[data-patient]'));
+  const handoffs = field('handoffs');
+  const feedback = field('feedback');
+  const compare = field('compare');
+  const answers = new Map();
+  const visited = new Set();
+  let active = null;
+  let account = null;
+
+  function updateResults() {
+    const matched = Array.from(answers.values()).filter(answer => answer.matched).length;
+    field('progress').textContent = matched + ' of ' + patients.length + ' handoffs matched';
+    compare.hidden = matched !== patients.length;
+    if (compare.hidden) compare.open = false;
+    const answer = answers.get(active);
+    for (const button of handoffs.children) {
+      button.setAttribute('aria-pressed', String(button.dataset.choice === answer?.choice));
+    }
+    feedback.hidden = !answer;
+    feedback.dataset.supported = String(Boolean(answer?.matched));
+    feedback.textContent = answer ? account.querySelector('[data-explanation="' + answer.choice + '"]').textContent : '';
+    field('other').hidden = !answer || !compare.hidden;
+  }
+
+  function renderPatientButtons() {
+    for (const button of patients) {
+      const key = button.dataset.patient;
+      const isActive = key === active;
+      button.setAttribute('aria-pressed', String(isActive));
+      const state = button.querySelector('.ct-open-state');
+      state.textContent = isActive ? 'Open now' : visited.has(key) ? 'Revisit' : 'Open interview';
+    }
+  }
+
+  function openInterview(key) {
+    active = key;
+    visited.add(key);
+    account = card.querySelector('template[data-interview="' + key + '"]').content;
+    renderPatientButtons();
+    field('overnight').textContent = account.querySelector('[data-note]').textContent;
+    field('quote').textContent = account.querySelector('[data-account]').textContent;
+    field('interview-title').textContent = 'Patient ' + key.toUpperCase() + '’s account';
+    field('other').textContent = 'Open Patient ' + (key === 'a' ? 'B' : 'A') + '’s interview';
+    handoffs.replaceChildren(...account.querySelector('[data-options]').cloneNode(true).children);
+    field('interview').hidden = false;
+    updateResults();
+    field('interview-title').focus();
+  }
+
+  for (const patient of patients) patient.addEventListener('click', () => openInterview(patient.dataset.patient));
+  handoffs.addEventListener('click', event => {
+    const button = event.target.closest('button[data-choice]');
+    if (!button || !active) return;
+    answers.set(active, {choice: button.dataset.choice, matched: button.hasAttribute('data-matched')});
+    updateResults();
+  });
+  field('other').addEventListener('click', () => openInterview(active === 'a' ? 'b' : 'a'));
+  card.querySelector('[data-reset]').addEventListener('click', () => {
+    active = null;
+    account = null;
+    answers.clear();
+    visited.clear();
+    field('interview').hidden = true;
+    field('overnight').textContent = field('quote').textContent = '';
+    handoffs.replaceChildren();
+    renderPatientButtons();
+    updateResults();
+    patients[0].focus();
+  });
 }
 
 function fdMountFollowupStudy(body) {
