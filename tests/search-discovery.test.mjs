@@ -55,6 +55,52 @@ for (const site of ['ms3', 'res']) {
   const p = projections[site];
   const index = F.fdBuildIndex(p.curriculum, meta, tools, p.manifest);
   const results = q => F.fdSearchResults(index, q, p.curriculum.synonyms, {});
+  for (const [query, ref, kind] of [
+    ['I need to call family', 'collateral_workflow.md', 'item'],
+    ['Call family?', 'collateral_workflow.md', 'item'],
+    ['call family about suicidal thoughts', 'pg_suicide.md', 'protocol'],
+    ['I need to call family about delirium', 'delirium.md', 'protocol'],
+  ]) {
+    test(`${site}: "${query}" opens first on ${ref}`, () => {
+      const [first] = results(query);
+      assert.equal(first?.item.ref, ref);
+      assert.equal(first.kind, kind);
+    });
+  }
+  test(`${site}: suicidality and dotted SI lead with the safety card`, () => {
+    for (const q of ['suicidality', 'S.I.', 'S.I.?', 'concern about S.I.', 'rounding prep for suicidality']) {
+      const [first] = results(q);
+      assert.equal(first?.item.ref, 'pg_suicide.md', q);
+      assert.equal(first.kind, 'protocol', q);
+    }
+    for (const q of ['S.I.D.', 'M.S.I.', 'fictitious.s.i.md']) {
+      assert.ok(!results(q).some(row => row.kind === 'protocol' && row.item.ref === 'pg_suicide.md'), q);
+    }
+  });
+  test(`${site}: conversational requests keep the named tool first`, () => {
+    assert.equal(results('how do I do a mental status exam')[0]?.item.ref, 'mse.html');
+    assert.equal(results('rounding prep')[0]?.item.ref, 'oral.html');
+    for (const tool of Object.values(index.byRef).filter(i => i.kind === 'tool' && !i.readerOnly)) {
+      const title = tool.searchTitle || tool.title;
+      const [bare] = results(title);
+      for (const prefix of ['show me ', 'how do I use ', 'where can I find ', 'open ']) {
+        const [first] = results(prefix + title);
+        assert.equal(first?.item.ref, bare?.item.ref, prefix + title);
+        assert.equal(first.kind, bare.kind, prefix + title);
+      }
+    }
+  });
+  test(`${site}: patient-care shortcuts are searchable by their displayed titles and configured terms`, () => {
+    assert.ok(index.careResources.length);
+    for (const resource of index.careResources) {
+      const [first] = results(resource.title);
+      assert.equal(first?.kind, 'care', resource.title);
+      assert.equal(first.item.id, resource.id, resource.title);
+      for (const term of resource.searchTerms) {
+        assert.ok(results(term).some(row => row.kind === 'care' && row.item.id === resource.id), term);
+      }
+    }
+  });
   test(`${site}: generated date and duration title variants preserve discovery and safety intent`, t => {
     const cases = shipped.pages.filter(page => page.sites.includes(site)).map(page => ({
       ref: page.slug, variants: datedOrTimedTitleVariants(page.title),

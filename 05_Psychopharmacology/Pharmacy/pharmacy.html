@@ -126,6 +126,7 @@ footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-
 </head>
 <body>
 <main class="shell">
+  <div id="directory">
   <p class="kicker">Psychopharmacology · Pharmacy</p>
   <h1>Psychiatric Pharmacy</h1>
   <p class="lede">Drug cards for the medicines you will meet on the unit: what the boxed warning covers, what to check
@@ -142,6 +143,7 @@ footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--border);font-
     <p class="scen__links" id="scenlinks"></p>
   </div>
   <div id="cmpbar"></div>
+  </div>
   <p class="status" id="status" role="status" aria-live="polite">Loading reviewed drug cards…</p>
 
   <ul class="list" id="list"></ul>
@@ -542,6 +544,7 @@ function rxLabelHref(a){
     host.appendChild(box);
   }
   function renderList(){
+    if($('directory').hidden)return;
     var host=$('list'),shown=shownAgents();host.textContent='';
     shown.forEach(function(a){
       var li=el('li'),b=el('button','drug');b.type='button';b.id='drug-'+a.id;
@@ -568,6 +571,14 @@ function rxLabelHref(a){
       shown.length===total?total+' faculty-reviewed drug'+(total===1?'':'s'):shown.length+' of '+total+' shown')
       +(pend?' · '+pend+' more in faculty review':'');
     if(!shown.length)host.appendChild(el('li','empty','No reviewed drug matches that search.'));
+  }
+  function relatedLink(text,href){
+    var link=el('a',null,text);link.href=href;
+    if($('directory').hidden){
+      link.target='_blank';link.rel='noopener noreferrer';
+      link.appendChild(document.createTextNode(' (opens in new tab)'));
+    }
+    return link;
   }
   function renderDetail(){
     var host=$('detail');host.textContent='';
@@ -634,12 +645,13 @@ function rxLabelHref(a){
     if(label){var l=el('a',null,'Prescribing information (DailyMed)');l.href=label;l.target='_blank';l.rel='noopener noreferrer';links.appendChild(l);}
     if(a.monitoring&&typeof a.monitoring.sourcePage==='string'&&/^[\w.-]+\.md$/.test(a.monitoring.sourcePage)){
       if(label)links.appendChild(document.createTextNode(' · '));
-      var m=el('a',null,'Monitoring & Labs page');m.href='../index.html?page='+encodeURIComponent(a.monitoring.sourcePage);links.appendChild(m);
+      var reader=$('directory').hidden?'../?page=':'../index.html?page=';
+      links.appendChild(relatedLink('Monitoring & Labs page',reader+encodeURIComponent(a.monitoring.sourcePage)));
     }
     var qb=(a.qbankIds||[]).length;
     if(qb){
       if(links.childNodes.length)links.appendChild(document.createTextNode(' · '));
-      var q=el('a',null,qb+' practice question'+(qb===1?'':'s')+' cover this drug');q.href='question-bank-practice.html';links.appendChild(q);
+      links.appendChild(relatedLink(qb+' practice question'+(qb===1?'':'s')+' cover this drug','question-bank-practice.html'));
     }
     if(links.childNodes.length)box.appendChild(links);
     host.appendChild(box);renderQuiz();
@@ -658,7 +670,7 @@ function rxLabelHref(a){
     if(z.pos>=z.queue.length){
       box.appendChild(el('p','quiz__q','Done — '+z.graded+' card'+(z.graded===1?'':'s')+' scheduled.'));
       var p=el('p',null,'They come back in Daily Review when they are due. ');
-      var r=el('a',null,'Open Daily Review');r.href='review.html';p.appendChild(r);box.appendChild(p);
+      p.appendChild(relatedLink('Open Daily Review','review.html'));box.appendChild(p);
       box.appendChild(button('btn btn--ghost','Close',function(){state.quiz=null;renderQuiz();renderList();}));
       host.appendChild(box);return;
     }
@@ -691,11 +703,27 @@ function rxLabelHref(a){
     $('list').textContent='';$('detail').textContent='';$('filters').textContent='';$('scenarios').textContent='';$('scenlinks').textContent='';$('cmpbar').textContent='';$('grid').textContent='';
   }
   function init(){
+    var lookup=new URLSearchParams(location.search).get('view')==='card';
+    if(lookup){
+      $('directory').hidden=true;
+      $('list').hidden=true;
+      $('grid').hidden=true;
+    }
     $('q').addEventListener('input',function(e){state.query=e.target.value;if(state.scenario){state.scenario='';renderScenarios();}renderList();});
-    fetch('../pharmacy_public.json').then(function(r){if(!r.ok)throw Error('missing');return r.json();})
+    var searchLookup=lookup&&window.frameElement&&window.frameElement.fdPharmacyLookup;
+    var response=searchLookup?searchLookup.read():fetch('../pharmacy_public.json');
+    response.then(function(r){if(!r||!r.ok)throw Error('missing');return r.json();})
       .then(rxVerifiedPublic).then(function(data){
-        state.data=data;renderFilters();renderScenarios();renderList();
+        state.data=data;
         var want=(location.hash||'').slice(1);
+        if(lookup){
+          var current=searchLookup?searchLookup.matches(data.agents,want):
+            rxFilterAgents(data,'','').some(function(agent){return agent.id===want;});
+          $('status').textContent=current?'':'This medication card is unavailable.';
+          if(current){state.open=want;renderDetail();}
+          return;
+        }
+        renderFilters();renderScenarios();renderList();
         if(want&&rxFilterAgents(data,'','').some(function(a){return a.id===want;}))open(want);
       }).catch(fail);
   }
