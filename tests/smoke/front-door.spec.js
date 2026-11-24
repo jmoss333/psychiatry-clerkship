@@ -3258,6 +3258,91 @@ test.describe('Interactive readings', () => {
     });
   }
 
+  test('med-pass chart quotes follow the accounts opened under Subjective and keep the later callback separate', async ({ page }) => {
+    await pinGovernance(page, 'doc_oral.md', { status: 'reviewed', riskLevel: 'low' });
+    await page.goto('/?page=doc_oral.md&guideSection=student-progress-note-template');
+    const section = page.locator('.fd-article__body section').filter({
+      has: page.locator(':scope > #guide-student-progress-note-template'),
+    });
+    const card = section.locator('#quote-med-pass');
+    await expect(card.locator('xpath=preceding-sibling::h3[1]')).toHaveText('Subjective');
+    const id = name => card.locator(`#qp-${name}`);
+    const clip = key => card.locator(`[data-clip="${key}"]`);
+    const opening = clip('opening');
+    const voice = card.locator('audio');
+    const note = id('note');
+    const original = await note.inputValue();
+    const decisionQuote = 'The patient said, “I haven’t decided about the pill.”';
+
+    await card.locator('[data-flag="quote"]').click();
+    await expect(id('follow')).toBeHidden();
+    await opening.locator('.read').click();
+    await opening.locator('.play').click();
+    await expect(opening.locator('.play')).toHaveText('Pause reply');
+    // Play through the two sentences as a learner would, including the pause between them.
+    const spoken = opening.locator('blockquote .spoken');
+    await expect(spoken).toHaveText(['Last night I could hardly keep my eyes open.']);
+    await page.waitForFunction(element => {
+      const audio = element.querySelector('audio');
+      return audio.currentTime >= 3.9 && audio.currentTime < 4.72 &&
+        !element.querySelector('blockquote .spoken');
+    }, await card.elementHandle(), { timeout: 10_000 });
+    await expect(spoken).toHaveText(['Let me call my daughter first.']);
+    await opening.locator('.play').click();
+    await expect(spoken).toHaveCount(0);
+
+    await card.locator('[data-ask="experience"]').click();
+    const experience = clip('experience');
+    await voice.evaluate(audio => { audio.play = () => Promise.reject(new Error('Playback unavailable')); });
+    await experience.locator('.play').click();
+    await expect(experience.getByRole('status')).toContainText(/read the transcript/i);
+    await experience.locator('.read').click();
+    await expect(note).toBeHidden();
+    await id('nurse').locator('summary').click();
+    await expect(note).toBeVisible();
+    await expect(id('compare')).toBeDisabled();
+    await note.fill(decisionQuote);
+    await id('compare').click();
+    await expect(id('revision').locator('mark.checkquote')).toContainText('decided');
+    await id('example').locator('summary').click();
+    await expect(id('sample')).toContainText('was unsure why');
+    await expect(id('sample')).toContainText('decision about tonight’s dose is unclear');
+    await expect(id('sample')).not.toContainText('I haven’t decided');
+
+    // The same revision changes only after the learner obtains the patient's decision reply.
+    await card.locator('[data-ask="decision"]').click();
+    await expect(id('review')).toBeVisible();
+    await voice.evaluate(audio => { delete audio.play; });
+    const decision = clip('decision');
+    await decision.locator('.play').click();
+    await expect(decision.locator('.play')).toHaveText('Pause reply');
+    await expect(id('review')).toBeVisible();
+    await expect(decision.locator('.play')).toHaveText('Replay reply', { timeout: 15_000 });
+    await expect(id('review')).toBeHidden();
+    await id('compare').click();
+    await expect(id('revision').locator('mark.verbatim')).toContainText('decided');
+    await id('example').locator('summary').click();
+    await expect(id('sample')).toContainText('I haven’t decided about the pill.');
+    await expect(id('sample')).toContainText('was unsure why');
+
+    await id('call').click();
+    await card.locator('[data-add="witness"]').click();
+    await expect(id('add-feedback')).toContainText('nurse was the witness');
+    await expect(id('addendum')).toBeHidden();
+    await card.locator('[data-add="report"]').click();
+    await expect(id('addendum')).toHaveText(/20:40.*RN reports.*20:36/);
+    await expect(id('revision')).toHaveText(decisionQuote);
+    await id('reset').click();
+    await expect(id('evidence')).toBeHidden();
+    await expect(id('review')).toBeHidden();
+    await expect(note).toHaveValue(original);
+    await expect(card.locator('[aria-pressed="true"], .spoken')).toHaveCount(0);
+    await card.locator('[data-flag="quote"]').click();
+    await expect(id('follow')).toBeHidden();
+    await expect(opening.locator('blockquote')).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('Sam’s night sign-out changes the receiving resident’s reply with each handoff detail', async ({ page }) => {
     await page.goto('/?page=doc_oral.md&guideSection=handoff-template');
     const section = page.locator('.fd-article__body section').filter({

@@ -968,6 +968,7 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
 | `#catie-stop` | Under the CATIE rounds question, each illustrated timeline opens a separate medication history and three handoffs. Selecting a supported handoff for each patient opens the comparison. Revising either answer updates it. |
 | `#quieter-on-unit` | The two-row chart compares the same observation across shifts. The handoff uses the patient’s call and any additional observations the learner opened. |
+| `#quote-med-pass` | In Subjective, students compare an unsigned note with a nurse and patient interview. Transcript highlighting follows speech and the source check uses the replies the learner opened. |
 | `#home-dose-history` | In the second Primer question, learners open the prescription and pickup record, mark both nights from the patient’s reply, and revise the home-dose line in the handoff. |
 | `#alex-timing` | Alex’s weekly timeline compares two possible callbacks about the first unusual call. Each rounds update uses the current callback and follow-up question. |
 | `#evening-calls` | Comparing two illustrated calls opens a bedside question and a rounds exercise about the change in the patient’s role. |
