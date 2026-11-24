@@ -59,6 +59,7 @@ const EXTRAS = JSON.parse(execFileSync('python3', [
     'import site_extras as e',
     'print(json.dumps({',
     '  "ms3_tools": e.MS3_EXTRA_TOOLS,',
+    '  "ms3_only_pages": getattr(e, "MS3_ONLY_PAGES", []),',
     '  "resident_pages": e.RESIDENT_EXTRA_PAGES,',
     '  "resident_tools": e.RESIDENT_PROTO_TOOLS,',
     '}))',
@@ -66,6 +67,29 @@ const EXTRAS = JSON.parse(execFileSync('python3', [
   new URL('13_Faculty_Resources/_automation/site_build/', ROOT).pathname,
 ], { encoding: 'utf8' }));
 const MS3_TOOLS = EXTRAS.ms3_tools.length;
+
+// Manifest pages are shared unless a producer explicitly limits an edition.
+// Keep this parity expectation independent of shipped_pages.json: a wrong
+// derived audience must fail rather than becoming its own expected result.
+function manifestPageSites(slug, ms3Only = EXTRAS.ms3_only_pages) {
+  return ms3Only.includes(slug) ? ['ms3'] : ['ms3', 'res'];
+}
+
+test('manifest edition scope keeps the new catalog MS3-only and existing pages shared', () => {
+  const scope = ['ms3_book_catalog.md'];
+  assert.deepEqual(manifestPageSites('ms3_book_catalog.md', scope), ['ms3']);
+  assert.deepEqual(manifestPageSites('book_library.md', scope), ['ms3', 'res']);
+  assert.deepEqual(manifestPageSites('welcome.md', scope), ['ms3', 'res']);
+  assert.deepEqual(manifestPageSites('ms3_book_catalog.md', []), ['ms3', 'res']);
+  const fixture = { version: 1, pages: [
+    { slug: 'ms3_book_catalog.md', kind: 'page', sites: ['ms3'], title: 'Catalog', source: 'catalog.md' },
+    { slug: 'book_library.md', kind: 'page', sites: ['ms3', 'res'], title: 'Curated', source: 'curated.md' },
+  ] };
+  const actual = shippedItemsWithSites({ shipped: fixture });
+  assert.deepEqual(actual.find(p => p.slug === 'ms3_book_catalog.md').sites, ['ms3']);
+  assert.deepEqual(actual.find(p => p.slug === 'book_library.md').sites, ['ms3', 'res']);
+});
+
 
 // The exact Python expression the one shared slug helper uses. Asserting on the source
 // text — not on a hand-copied restatement of it — is what makes "byte-identical" a claim
@@ -159,7 +183,7 @@ test('the real repository universe is exactly what shipped_pages.json ships', ()
 test('shipped_pages.json agrees with the producers it claims to be derived from', () => {
   const expected = new Map();
   for (const [source, slug, title] of MANIFEST.md) {
-    expected.set(slug, { slug, kind: 'page', sites: ['ms3', 'res'], title, source });
+    expected.set(slug, { slug, kind: 'page', sites: manifestPageSites(slug), title, source });
   }
   for (const [source, slug, title] of MANIFEST.tools) {
     expected.set(slug, { slug, kind: 'tool', sites: ['ms3', 'res'], title, source });
