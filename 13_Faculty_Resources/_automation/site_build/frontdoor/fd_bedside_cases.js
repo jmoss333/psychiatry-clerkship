@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountNicoCall(body);
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
+  fdMountQuoteMedPass(body);
   fdMountCoachLine(body);
   fdMountAlexTiming(body);
   fdMountEveningCalls(body);
@@ -1784,5 +1785,271 @@ function fdMountEctMemory(body) {
     card.querySelector('[data-em-reply="specific"]').textContent = '';
     fdBedsideFocus(concerns[0]);
     status.textContent = status.dataset.resetMessage;
+  });
+}
+
+function fdMountQuoteMedPass(body) {
+  const card = body.querySelector('#quote-med-pass');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const el = id => card.querySelector('#qp-' + id);
+  const copy = Object.fromEntries(Array.from(el('copy').content.children,
+    line => [line.dataset.line, line.textContent]));
+  const note = el('note');
+  const voice = el('voice');
+  const clips = new Map();
+  const heard = new Set();
+  let nurseReviewed = false;
+  let activeClip = null;
+  let playAttempt = 0;
+
+  function focusStage(id) {
+    el(id).focus({preventScroll: true});
+    el(id).scrollIntoView({block: 'start'});
+  }
+  function selectButton(selector, selected) {
+    for (const button of card.querySelectorAll(selector)) {
+      button.setAttribute('aria-pressed', String(button === selected));
+    }
+  }
+  function clearReview() {
+    el('review').hidden = true;
+    el('example').open = false;
+    for (const id of ['revision', 'quote-check', 'claim-check', 'sources', 'sample', 'add-feedback', 'addendum']) {
+      el(id).replaceChildren();
+    }
+    el('call').hidden = false;
+    el('call').setAttribute('aria-expanded', 'false');
+    el('callback-body').hidden = el('addendum').hidden = true;
+    selectButton('[data-add]', null);
+  }
+  function updateAccess() {
+    const hasOpening = heard.has('opening');
+    const ready = nurseReviewed && hasOpening && (heard.has('decision') || heard.has('experience'));
+    el('follow').hidden = !hasOpening;
+    el('editor').hidden = !ready;
+    el('compare').disabled = !ready || !note.value.trim() || note.value.trim() === note.defaultValue;
+    el('unlock').hidden = ready;
+    el('unlock').textContent = copy[!hasOpening ? 'unlock-opening' : nurseReviewed ? 'unlock-follow' : 'unlock-nurse'];
+  }
+  function reviewSource(key) {
+    if (heard.has(key)) return;
+    heard.add(key);
+    clearReview();
+    updateAccess();
+  }
+
+  function paintPhrase() {
+    for (const clip of clips.values()) {
+      const time = clip === activeClip && !voice.paused && !clip.quote.hidden ? voice.currentTime : -1;
+      for (const phrase of clip.phrases) {
+        phrase.classList.toggle('spoken', time >= Number(phrase.dataset.start) && time < Number(phrase.dataset.end));
+      }
+    }
+  }
+  function stopAudio() {
+    playAttempt++;
+    if (activeClip) activeClip.play.textContent = heard.has(activeClip.key) ? 'Replay reply' : 'Play reply';
+    activeClip = null;
+    voice.pause();
+    voice.removeAttribute('src');
+    voice.load();
+    paintPhrase();
+  }
+  async function playReply(clip) {
+    if (activeClip === clip && !voice.paused) {
+      voice.pause();
+      return;
+    }
+    if (activeClip !== clip) {
+      stopAudio();
+      activeClip = clip;
+      voice.src = clip.figure.dataset.audio;
+    }
+    const attempt = ++playAttempt;
+    clip.status.textContent = '';
+    try {
+      await voice.play();
+      if (attempt === playAttempt) clip.play.textContent = 'Pause reply';
+    } catch (error) {
+      if (attempt !== playAttempt || error.name === 'AbortError') return;
+      clip.status.textContent = 'Audio is unavailable. Read the transcript to continue.';
+      clip.play.textContent = 'Try audio again';
+    }
+  }
+  for (const figure of card.querySelectorAll('[data-clip]')) {
+    const key = figure.dataset.clip;
+    const quote = figure.querySelector('blockquote');
+    const clip = {
+      key, figure, quote, phrases: quote.querySelectorAll('[data-start]'),
+      play: figure.querySelector('.play'), read: figure.querySelector('.read'), status: figure.querySelector('[role=status]')
+    };
+    clips.set(key, clip);
+    clip.play.addEventListener('click', () => playReply(clip));
+    clip.read.addEventListener('click', () => {
+      quote.hidden = !quote.hidden;
+      clip.read.setAttribute('aria-expanded', String(!quote.hidden));
+      clip.read.textContent = quote.hidden ? 'Read transcript' : 'Hide transcript';
+      if (!quote.hidden) {
+        clip.status.textContent = '';
+        reviewSource(key);
+      }
+      paintPhrase();
+    });
+  }
+  voice.addEventListener('pause', () => {
+    if (activeClip && voice.paused && !voice.ended) activeClip.play.textContent = 'Resume reply';
+  });
+  voice.addEventListener('ended', () => {
+    if (!activeClip || !voice.ended) return;
+    reviewSource(activeClip.key);
+    activeClip.play.textContent = 'Replay reply';
+    activeClip.status.textContent = 'Reply complete.';
+  });
+  for (const event of ['timeupdate', 'playing', 'pause', 'seeking', 'ended', 'emptied']) {
+    voice.addEventListener(event, paintPhrase);
+  }
+
+  for (const button of card.querySelectorAll('[data-flag]')) {
+    button.addEventListener('click', () => {
+      selectButton('[data-flag]', button);
+      el('lead').textContent = copy['lead-' + button.dataset.flag];
+      el('evidence').hidden = el('reset').hidden = false;
+      updateAccess();
+      focusStage('ev-title');
+    });
+  }
+  el('nurse').addEventListener('toggle', () => {
+    if (!el('nurse').open || nurseReviewed) return;
+    nurseReviewed = true;
+    clearReview();
+    updateAccess();
+  });
+  for (const button of card.querySelectorAll('[data-ask]')) {
+    button.addEventListener('click', () => {
+      const key = button.dataset.ask;
+      if (activeClip && activeClip.key !== key) stopAudio();
+      selectButton('[data-ask]', button);
+      for (const clip of clips.values()) clip.figure.hidden = clip.key !== 'opening' && clip.key !== key;
+    });
+  }
+
+  // Only words in reviewed speech are eligible for a direct quotation. Other prose remains the learner’s.
+  const words = value => (value.toLowerCase().replace(/[’‘]/g, "'").match(/[\p{L}\p{N}]+(?:'[\p{L}\p{N}]+)*/gu) || []).join(' ');
+  const contains = (source, part) => part && (' ' + words(source) + ' ').includes(' ' + part + ' ');
+  function compareQuotes(text) {
+    const output = el('revision');
+    output.replaceChildren();
+    const spans = /[“"]([^“”"]*)[”"]|(?:^|(?<=[\s(]))[‘']([^‘’'\n]*(?:['’](?=[a-z])[^‘’'\n]*)*)[’'](?=$|[\s.,;:!?)])/giu;
+    const feedback = new Set();
+    let unquoted = '';
+    let cursor = 0;
+    function appendPlain(value) {
+      output.append(value);
+      unquoted += value + ' ';
+      if (/[“”"]|(?:^|\s)[‘'](?=\S)/u.test(value)) feedback.add('incomplete');
+    }
+    for (const found of text.matchAll(spans)) {
+      appendPlain(text.slice(cursor, found.index));
+      const part = words(found[1] ?? found[2]);
+      const patient = [...heard].some(key => contains(clips.get(key).quote.textContent, part));
+      const nurse = nurseReviewed && contains(el('rn-words').textContent, part);
+      const source = nurse ? (patient ? 'both' : 'nurse') : (patient ? 'patient' : 'unmatched');
+      const mark = document.createElement('mark');
+      mark.className = nurse ? 'srmark' : (patient ? 'verbatim' : 'checkquote');
+      mark.textContent = found[0];
+      output.append(mark);
+      feedback.add(source);
+      cursor = found.index + found[0].length;
+    }
+    appendPlain(text.slice(cursor));
+    if (!feedback.size) feedback.add('paraphrase');
+    el('quote-check').textContent = [...feedback].map(key => copy['feedback-' + key]).join(' ');
+    return unquoted;
+  }
+  function checkClaims(unquoted) {
+    const statements = unquoted.toLowerCase().replace(/[’‘]/g, "'").split(/[.!?;\n]/);
+    const cautions = [];
+    const qualified = /\b(no|not|never|unclear|whether|unconfirmed|cannot|can't|didn't|hasn't)\b/;
+    if (statements.some(s => /\b(refus(?:al|ed|ing)|declined)\b/.test(s) && !qualified.test(s) && !/\b(denies|denied)\b/.test(s))) {
+      cautions.push(copy['caution-refusal']);
+    }
+    if (statements.some(s => /\b(will take|would take|agrees? to take|agreed to take|promised to take|consented|accepted|took (?:tonight|the evening))\b/.test(s)
+        && !qualified.test(s) && !/\b(unsure|hadn't)\b/.test(s))) {
+      cautions.push(copy[heard.has('decision') ? 'caution-decided' : 'caution-pending']);
+    }
+    if (statements.some(s => /\b(sleep[a-z]*|drows[a-z]*|sedat[a-z]*|groggy|tired|fatigue[a-z]*)\b/.test(s)
+        && /\b(caused|due to|because of|drug.induced|medication.induced|made (?:them|her|him) (?:sleepy|drowsy))\b/.test(s)
+        && !/\b(possible|possibly|may|might|could|unclear|unsure|whether|associates?|attributes?|attributed|suspects?|reports?|reported|says|said|not|never)\b/.test(s))) {
+      cautions.push(copy['caution-cause']);
+    }
+    el('claim-check').textContent = cautions.join(' ');
+  }
+  function showEvidence() {
+    const sources = el('sources');
+    sources.replaceChildren();
+    function row(label, value) {
+      const line = document.createElement('div');
+      line.className = 'source';
+      const title = document.createElement('strong');
+      title.textContent = label;
+      const detail = document.createElement('span');
+      detail.textContent = value;
+      line.append(title, detail);
+      sources.append(line);
+    }
+    row('You saw', copy.observed);
+    row('Nurse saw', copy.rn);
+    row('Patient said', clips.get('opening').quote.textContent);
+    if (heard.has('experience')) row('Last night', copy['last-night']);
+    if (heard.has('decision')) row('Tonight', copy.tonight);
+    row('Still open', copy[heard.has('decision') ? 'undecided' : 'unasked']);
+    el('sample').textContent = [copy['sample-start'], copy[heard.has('experience') ? 'sample-experience' : 'sample-opening'],
+      copy[heard.has('decision') ? 'sample-decided' : 'sample-pending']].join(' ');
+  }
+
+  note.addEventListener('input', () => { clearReview(); updateAccess(); });
+  el('compare').addEventListener('click', () => {
+    if (el('compare').disabled) return;
+    checkClaims(compareQuotes(note.value.trim()));
+    showEvidence();
+    el('review').hidden = false;
+    focusStage('review-title');
+  });
+  el('edit-again').addEventListener('click', () => { clearReview(); note.focus(); });
+  el('call').addEventListener('click', () => {
+    el('call').hidden = true;
+    el('call').setAttribute('aria-expanded', 'true');
+    el('callback-body').hidden = false;
+    focusStage('rn-late');
+  });
+  for (const button of card.querySelectorAll('[data-add]')) {
+    button.addEventListener('click', () => {
+      const key = button.dataset.add;
+      selectButton('[data-add]', button);
+      el('add-feedback').textContent = copy['add-' + key];
+      el('addendum').hidden = key !== 'report';
+      el('addendum').textContent = key === 'report' ? copy.addendum : '';
+    });
+  }
+  el('reset').addEventListener('click', () => {
+    stopAudio();
+    nurseReviewed = false;
+    heard.clear();
+    note.value = note.defaultValue;
+    el('nurse').open = false;
+    for (const clip of clips.values()) {
+      clip.figure.hidden = clip.key !== 'opening';
+      clip.read.setAttribute('aria-expanded', 'false');
+      clip.read.textContent = 'Read transcript';
+      clip.play.textContent = 'Play reply';
+      clip.status.textContent = '';
+      clip.quote.hidden = true;
+    }
+    selectButton('[data-flag], [data-ask]', null);
+    clearReview();
+    updateAccess();
+    el('evidence').hidden = el('reset').hidden = true;
+    card.querySelector('[data-flag]').focus();
   });
 }

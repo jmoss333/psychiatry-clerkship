@@ -169,6 +169,14 @@ _abort_missing(_missing_req)
 _aud=LIB+"/07_Evidence_and_Reading/Landmark_Trials/audio"
 if os.path.isdir(_aud): common.copytree_with_virtiofs_retry(_aud, OUT+"/audio")
 
+# Patient replies in the Documentation reading share the same URLs in both editions.
+_quote_audio = os.path.join("audio", "quote-med-pass")
+os.makedirs(os.path.join(OUT, _quote_audio), exist_ok=True)
+for _reply in ("opening.mp3", "experience.mp3", "decision.mp3"):
+    _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Documentation", _quote_audio, _reply),
+                   os.path.join(OUT, _quote_audio, _reply), _missing_req)
+_abort_missing(_missing_req)
+
 # ---- OE NotebookLM brief audio: copy + deck-align into quizzes.json (exact-title join) ----
 import csv as _csv, re as _re2
 # OE NotebookLM brief audio is a hard deploy input (live /audio_oe/ media).
