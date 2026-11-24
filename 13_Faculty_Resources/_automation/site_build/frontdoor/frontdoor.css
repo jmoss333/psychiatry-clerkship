@@ -3449,6 +3449,39 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* The learner advances the unit clock, then maps what the patient experienced. */
+#ocd-breakfast .ocd-admission,#ocd-breakfast .ocd-rounds{border-inline-start:3px solid var(--fd-olive);padding-inline-start:var(--fd-space-5);margin-block:var(--fd-space-5)}
+#ocd-breakfast #ocd-drawer{position:relative;display:block;width:100%;padding:0;overflow:hidden;border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash)}
+#ocd-drawer img{display:block;width:100%;height:auto;max-height:15em;object-fit:cover}
+#ocd-drawer .ocd-late,#ocd-drawer[aria-pressed=true] .ocd-early{display:none}
+#ocd-drawer[aria-pressed=true] .ocd-late{display:block}
+#ocd-drawer :is(.ocd-time,.ocd-action){position:absolute;background:var(--fd-surface-warm);color:var(--fd-teal-deep);padding:var(--fd-space-2) var(--fd-space-4);border-radius:var(--fd-radius-xs)}
+#ocd-drawer .ocd-time{inset-block-start:var(--fd-space-3);inset-inline-start:var(--fd-space-3);font-family:Georgia,serif}
+#ocd-drawer .ocd-action{inset-block-end:var(--fd-space-3);inset-inline-end:var(--fd-space-3);font-size:.88em;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill)}
+#ocd-breakfast .ocd-observation{margin-top:var(--fd-space-3);color:var(--fd-text-mid)}
+#ocd-breakfast .ocd-observation b{color:var(--fd-teal-deep)}
+#ocd-breakfast :is(.ocd-patient,.ocd-task){margin-top:var(--fd-space-7)}
+#ocd-breakfast .ocd-hint{margin-block:var(--fd-space-3);color:var(--fd-text-mid)}
+#ocd-breakfast .ocd-map{padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+#ocd-breakfast .ocd-stop{position:relative;padding-inline-start:var(--fd-space-6);padding-bottom:var(--fd-space-5);border-inline-start:2px solid var(--fd-line-strong)}
+#ocd-breakfast .ocd-stop:last-child{padding-bottom:0;border-color:transparent}
+#ocd-breakfast .ocd-stop::before{content:"";position:absolute;inset-inline-start:-.35em;top:.45em;width:.56em;height:.56em;box-sizing:border-box;border:2px solid var(--fd-teal);border-radius:50%;background:var(--fd-surface)}
+#ocd-breakfast .ocd-fixed::before,#ocd-breakfast .ocd-stop:has(:checked)::before{background:var(--fd-teal)}
+#ocd-breakfast fieldset{margin:0;padding:0;border:0;min-width:0}
+#ocd-breakfast legend{padding:0;font-weight:700}
+#ocd-breakfast :is(.ocd-options,.ocd-questions){display:grid;gap:var(--fd-space-3);margin-block:var(--fd-space-3)}
+#ocd-breakfast .ocd-opt{display:flex;align-items:center;gap:var(--fd-space-3);padding:var(--fd-space-3);min-height:var(--fd-target-touch);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);cursor:pointer}
+#ocd-breakfast .ocd-opt:has(:checked){background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+#ocd-breakfast input{flex:none;margin:0;accent-color:var(--fd-teal)}
+#ocd-breakfast .ocd-primary{margin-top:var(--fd-space-4);background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#ocd-breakfast :is(.ocd-exchange,.ocd-note){margin-block:var(--fd-space-4);padding:var(--fd-space-5);background:var(--fd-olive-wash);border-inline-start:3px solid var(--fd-olive)}
+#ocd-breakfast .ocd-feedback{color:var(--fd-text-mid);margin-block-start:var(--fd-space-4)}
+#ocd-breakfast .ocd-rounds{padding:var(--fd-space-4);margin-bottom:0;background:var(--fd-surface);border-color:var(--fd-teal)}
+#ocd-breakfast .ocd-compare-line{margin-block:var(--fd-space-4)}
+#ocd-breakfast :is(.ocd-compare-line b,.ocd-echo){display:block}
+#ocd-breakfast .ocd-echo{font:inherit;font-style:italic}
+@container bedside (min-width:32em){#ocd-breakfast .ocd-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* The two records stay visible as the patient’s account changes. */
 #home-dose-history .mh-section{margin-top:var(--fd-space-7)}
 #home-dose-history .mh-intro,#home-dose-history .mh-instruction{margin-block:var(--fd-space-3) var(--fd-space-5)}

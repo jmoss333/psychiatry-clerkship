@@ -1,5 +1,6 @@
 /* The clinical text lives with its reading. Each mounted exercise keeps its choices in the DOM. */
 function fdMountBedsideCases(body) {
+  fdMountOcdDrawer(body);
   fdMountHomeDoseHistory(body);
   fdMountMorganExposure(body);
   fdMountFeverExams(body);
@@ -479,6 +480,126 @@ function fdBedsideFocus(control) {
   if (section && !section.classList.contains('open')) section.querySelector('.sec-h button').click();
   control.focus({preventScroll: true});
   control.scrollIntoView({block: 'center'});
+}
+
+function fdMountOcdDrawer(body) {
+  const card = body.querySelector('[data-ocd-drawer]');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const find = name => card.querySelector('#ocd-' + name);
+  const read = (source, key) => source.querySelector('[data-copy="' + key + '"]').textContent;
+  const common = find('copy').content;
+  const accounts = Array.from(card.querySelectorAll('template[data-account]'));
+  const replies = card.querySelectorAll('button[data-story]');
+  const questions = card.querySelectorAll('button[data-question]');
+  const radios = card.querySelectorAll('input[type="radio"]');
+  const drawer = find('drawer');
+  const earlyLabel = drawer.getAttribute('aria-label');
+  const earlyNote = find('scene-note').textContent;
+  const states = new Map();
+  let current;
+
+  function resetMaps() {
+    for (const account of accounts) {
+      states.set(account.dataset.account, { account, before: '', after: '', verified: false, question: '' });
+    }
+  }
+
+  function showMoment(later) {
+    drawer.setAttribute('aria-pressed', String(later));
+    drawer.setAttribute('aria-label', later ? 'Return to the 7:45 breakfast call' : earlyLabel);
+    find('scene-note').textContent = later ? read(common, 'later') : earlyNote;
+    if (later) find('interview').hidden = find('reset').hidden = false;
+  }
+
+  function clearFeedback() {
+    find('map-feedback').hidden = true;
+    find('map-feedback').textContent = '';
+  }
+
+  function followSource(state) {
+    return state.account.content.querySelector('[data-follow="' + state.question + '"]');
+  }
+
+  function renderFollow() {
+    const question = current && current.question;
+    const source = question && followSource(current);
+    find('next').hidden = !current || !current.verified;
+    find('exchange').hidden = find('other').hidden = !source;
+    for (const button of questions) button.setAttribute('aria-pressed', String(button.dataset.question === question));
+    for (const key of ['answer', 'reason', 'handoff']) find(key).textContent = source ? read(source, key) : '';
+    const finished = Array.from(states.values()).every(state => state.verified && state.question);
+    const comparison = find('comparison');
+    comparison.hidden = !finished;
+    if (!finished) comparison.open = false;
+    for (const [key, state] of states) {
+      find('echo-' + key).textContent = finished
+        ? read(common, 'echo-' + state.question) + ' ' + read(followSource(state), 'answer')
+        : '';
+    }
+  }
+
+  function alternate() {
+    return accounts.find(account => account !== current.account).dataset.account;
+  }
+
+  function selectAccount(key) {
+    current = states.get(key);
+    for (const button of replies) {
+      const active = button.dataset.story === key;
+      button.setAttribute('aria-pressed', String(active));
+      if (active) find('reply-label').textContent = button.textContent + ' · Patient';
+    }
+    find('quote').textContent = read(current.account.content, 'quote');
+    find('reply').hidden = find('work').hidden = false;
+    for (const input of radios) input.checked = current[input.name.slice(4)] === input.value;
+    find('other').textContent = read(common, 'other-' + alternate());
+    clearFeedback();
+    renderFollow();
+    fdBedsideFocus(find('quote'));
+  }
+
+  resetMaps();
+  drawer.addEventListener('click', () => showMoment(drawer.getAttribute('aria-pressed') !== 'true'));
+  for (const button of replies) button.addEventListener('click', () => selectAccount(button.dataset.story));
+  for (const input of radios) input.addEventListener('change', () => {
+    current[input.name.slice(4)] = input.value;
+    current.verified = false;
+    current.question = '';
+    clearFeedback();
+    renderFollow();
+  });
+  find('check').addEventListener('click', () => {
+    const { account, before, after } = current;
+    let message;
+    if (!before || !after) message = read(common, 'missing');
+    else if (before !== account.dataset.before) message = read(account.content, 'before-hint');
+    else if (after !== account.dataset.after) message = read(account.content, 'after-hint');
+    current.verified = !message;
+    find('map-feedback').textContent = message || read(common, 'matched');
+    find('map-feedback').hidden = false;
+    renderFollow();
+    if (current.verified) fdBedsideFocus(find('next-title'));
+  });
+  for (const button of questions) button.addEventListener('click', () => {
+    current.question = button.dataset.question;
+    renderFollow();
+    fdBedsideFocus(find('answer'));
+  });
+  find('other').addEventListener('click', () => selectAccount(alternate()));
+  find('reset').addEventListener('click', () => {
+    current = null;
+    resetMaps();
+    showMoment(false);
+    for (const button of replies) button.setAttribute('aria-pressed', 'false');
+    for (const input of radios) input.checked = false;
+    for (const key of ['interview','reply','work','reset']) find(key).hidden = true;
+    for (const key of ['quote','reply-label']) find(key).textContent = '';
+    clearFeedback();
+    renderFollow();
+    fdBedsideFocus(drawer);
+  });
 }
 
 function fdMountHomeDoseHistory(body) {
