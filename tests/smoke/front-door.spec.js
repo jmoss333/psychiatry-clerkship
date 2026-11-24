@@ -3205,6 +3205,53 @@ test.describe('Interactive readings', () => {
     await expect(worked).toContainText('still need the patient’s own account');
   });
 
+  test('Resident MAR overlap uses the dated plan for the handoff before the next pass', async ({ page }, info) => {
+    const ref = 'adv_psychopharm.md';
+    if (!isResidentProject(info.project.name)) {
+      const response = await page.request.get('/content/' + ref);
+      expect(await response.text()).not.toContain('data-mar-case');
+      return;
+    }
+    await page.goto('/?page=' + ref + '&guideSection=what-the-resident-does');
+    const card = page.locator('.fd-guide-section').filter({has: page.locator('#guide-what-the-resident-does')}).locator('#mar-overlap');
+    await expect(card.getByRole('heading', {name: 'Why are both antipsychotics still on the MAR?'})).toBeVisible();
+    const handoff = card.locator('[data-mar-handoff]');
+    const feedback = card.locator('[data-mar-feedback]');
+    const debrief = card.locator('[data-mar-debrief]');
+    const source = name => card.locator('[data-source="' + name + '"]');
+    const versions = [
+      {chart:'a', tonight:'Overlap', comments:{defer:'includes Thursday evening', fit:'who owns the next decision', assume:'temporary overlap and a review'}},
+      {chart:'b', tonight:'Risperidone only', comments:{assume:'cannot establish Thursday’s intent', defer:'Tonight’s pass comes first', fit:'resolve it before the dose'}},
+    ];
+    for (const {chart, tonight, comments} of versions) {
+      await card.locator('[data-chart="' + chart + '"]').click();
+      await expect(card.locator('[data-mar-progress]')).toHaveText('0 of 3 reviewed');
+      await expect(handoff).toBeHidden();
+      await source('given').click();
+      await source('given').click();
+      await expect(card.locator('[data-mar-progress]')).toHaveText('1 of 3 reviewed');
+      await source('orders').click();
+      await expect(handoff).toBeHidden();
+      await source('plan').press('Enter');
+      await expect(source('plan').locator('[data-mar-cell]').nth(1)).toHaveText(tonight);
+      await expect(handoff).toBeVisible();
+      await expect(feedback).toBeHidden();
+      for (const [choice, explanation] of Object.entries(comments)) {
+        await card.locator('[data-choice="' + choice + '"]').click();
+        await expect(feedback).toContainText(explanation);
+        if (choice === 'fit') {
+          await debrief.locator('summary').click();
+          await expect(debrief.getByRole('link', {name:/NICE CG178/})).toBeVisible();
+        } else {
+          await expect(debrief).toBeHidden();
+        }
+      }
+    }
+    await card.getByRole('button', {name:'Start this chart again'}).click();
+    await expect(handoff).toBeHidden();
+    await expect(card.locator('[data-mar-cell]')).toHaveCount(0);
+  });
+
   test('Which line would you coach requires Jules’s self-assessment for each heard line', async ({ page }, info) => {
     const ref = 'supervision_teaching.md';
     if (!isResidentProject(info.project.name)) {
