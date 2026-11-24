@@ -1560,14 +1560,14 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
    + the chevron. The "Ward" tab and the "Click to open" pill stay in the markup (the panel's
    pinned snapshots are unchanged) and are hidden only in this closed reader state; opening the
    panel restores today's full header. Open-by-default on a handheld is unchanged. */
-.fd-reader .practice-panel:not([open])>.practice-summary{min-height:52px;padding-top:var(--fd-space-4);padding-bottom:var(--fd-space-4);gap:var(--fd-space-6)}
+.fd-reader .practice-panel:not([open])>.practice-summary{display:flex;min-height:52px;padding-top:var(--fd-space-4);padding-bottom:var(--fd-space-4);gap:var(--fd-space-6)}
 .fd-reader .practice-panel:not([open]) .practice-tab,
 .fd-reader .practice-panel:not([open]) .practice-hint{display:none}
 .fd-reader .practice-panel:not([open]) .practice-title{font-size:var(--fd-font-base)}
-.fd-reader .practice-panel:not([open]) .practice-sub{margin-left:0;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.fd-reader .practice-panel:not([open]) .practice-sub{margin-left:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fd-reader .practice-panel:not([open]) .practice-chev{margin-left:auto}
-@media(max-width:680px){
-  .fd-reader .practice-panel:not([open])>.practice-summary{grid-template-columns:minmax(0,1fr) auto;gap:0 var(--fd-space-4);align-content:center}
+@media(max-width:640px){
+  .fd-reader .practice-panel:not([open])>.practice-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--fd-space-4);align-content:center}
   .fd-reader .practice-panel:not([open]) .practice-title{grid-column:1;grid-row:1}
   .fd-reader .practice-panel:not([open]) .practice-sub{grid-column:1;grid-row:2;white-space:nowrap}
   .fd-reader .practice-panel:not([open]) .practice-chev{grid-column:2;grid-row:1 / span 2}
