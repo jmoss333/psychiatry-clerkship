@@ -78,6 +78,98 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test.describe('reviewed Pharmacy card lookup', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  const agent = { id: 'study-med', generic: 'Study medication', brands: ['Studybrand'],
+    monitoring: { sourcePage: 'med_monitoring.md' }, qbankIds: ['study-question'],
+    review: { reviewer: 'Fixture reviewer', lastReviewed: '2026-11-01' } };
+  const feed = agents => ({
+    schemaVersion: 1, agents, pendingCount: 0,
+    cards: agents.map(a => ({ id: 'RX#' + a.id + '#study', drug: a.id, prompt: 'Study prompt',
+      reveal: [{ label: 'Study answer', lines: ['Example'] }] })),
+  });
+
+  for (const name of ['Study medication', 'Studybrand']) {
+    test(`opens by ${name} and resumes the same paragraph`, async ({ page }, testInfo) => {
+      await page.route('**/pharmacy_public.json', route => route.fulfill({ json: feed([agent]) }));
+      await seedApp(page, testInfo);
+      await controlledReading(page);
+      await page.goto('/?page=t_mood.md');
+      await readingReady(page);
+      await scrollReadingTo(page, 1);
+      const paragraph = page.locator('.fd-article__body h3').nth(1);
+      const original = await paragraph.elementHandle();
+      const position = await paragraph.evaluate(el => el.getBoundingClientRect().top);
+      const initialRoute = page.url();
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources' });
+      await input.fill(name);
+      const row = search.locator('.fd-result').first();
+      await expect(row).toHaveAttribute('data-fd-pharmacy-card', agent.id);
+      await row.tap();
+      const lookup = page.getByRole('dialog', { name: 'Study medication · Pharmacy card' });
+      const frame = lookup.frameLocator('iframe');
+      await expect(frame.getByRole('heading', { name: agent.generic, exact: true })).toBeInViewport();
+      await expect(frame.locator('.stamp')).toContainText('Fixture reviewer');
+      await expect(frame.getByRole('searchbox')).toHaveCount(0);
+      if (name === 'Studybrand') {
+        await frame.getByRole('button', { name: /^Quiz me on/ }).tap();
+        await frame.getByRole('button', { name: 'Show answer' }).tap();
+        await frame.getByRole('button', { name: 'Good', exact: true }).tap();
+        await expect(frame.getByRole('link', { name: /Open Daily Review/ })).toHaveAttribute('target', '_blank');
+        await frame.getByRole('button', { name: 'Close', exact: true }).tap();
+        await expect(frame.locator('button.drug')).toHaveCount(0);
+        await expect(frame.locator('#status')).toBeEmpty();
+        await expect(frame.getByRole('link', { name: /practice question/ })).toHaveAttribute('target', '_blank');
+        const opened = page.waitForEvent('popup');
+        await frame.getByRole('link', { name: /Monitoring & Labs/ }).tap();
+        const related = await opened;
+        await expect(related).toHaveURL(/\?page=med_monitoring\.md/);
+        await related.close();
+        await expect(frame.locator('#dname')).toHaveText(agent.generic);
+        expect(page.url()).toBe(initialRoute);
+      }
+      await frame.locator('#depth-toggle').focus();
+      await page.keyboard.press('Escape');
+      await expect(input).toHaveValue(name);
+      await expect(row).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      const back = lookup.getByRole('button', { name: 'Return to reading' });
+      await back.hover();
+      await page.mouse.wheel(0, 520);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await back.tap();
+      await expect(lookup).toHaveCount(0);
+      await expect(search).toHaveCount(0);
+      expect(page.url()).toBe(initialRoute);
+      expect(await original.evaluate(el => el.isConnected)).toBe(true);
+      await expect.poll(async () => Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await expectHealthy(page);
+    });
+  }
+
+  test('a card withdrawn between search and opening is unavailable in the lookup', async ({ page }, testInfo) => {
+    await page.route('**/pharmacy_public.json', route => route.fulfill({
+      json: feed(route.request().frame().parentFrame() ? [] : [agent]),
+    }));
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await openHeaderSearch(page);
+    await page.getByRole('textbox', { name: 'Search resources' }).fill('Studybrand');
+    await page.locator('[data-fd-pharmacy-card="study-med"]').tap();
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    await expect(frame.locator('#status')).toHaveText('This medication card is unavailable.');
+    await expect(frame.locator('#dname')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Close lookup' }).tap();
+    await expect(page.locator('.fd-library')).toBeVisible();
+    await expectHealthy(page);
+  });
+});
+
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
 
