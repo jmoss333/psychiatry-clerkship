@@ -609,6 +609,10 @@ for scene in ("therapy-chain-phone.avif", "therapy-chain-hall.avif",
               "evening-call-home.avif", "evening-call-unit.avif"):
     _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Psychotherapy", "illustrations", scene),
                    os.path.join(OUT, "illustrations", scene), _missing_req)
+for posture in ("lying", "sitting", "standing"):
+    scene = f"duarte-{posture}.webp"
+    _copy_required(os.path.join(LIB, "03_Core_Topics", "Geriatric", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
