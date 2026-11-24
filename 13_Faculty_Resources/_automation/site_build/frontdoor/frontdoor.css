@@ -1454,6 +1454,9 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-article__body ol{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body li{margin:6px 0}
 .fd-article__body a{color:var(--fd-teal-deep);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.fd-article__body [data-fd-reading-pharmacy]{display:inline;margin:0;padding:0;border:0;background:transparent;font:inherit;color:var(--fd-teal-deep);text-align:inherit;text-decoration:underline dotted;text-underline-offset:.18em;cursor:pointer}
+.fd-article__body [data-fd-reading-pharmacy]:hover,.fd-article__body [data-fd-reading-pharmacy]:focus-visible{text-decoration-style:solid}
+@media print{.fd-article__body [data-fd-reading-pharmacy]{color:inherit;text-decoration:none}}
 .fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:var(--fd-radius-2xs);padding:1px 4px;color:var(--fd-text)}
 .fd-article__body blockquote{margin:20px 0;padding:4px 0 4px 16px;border-left:3px solid var(--fd-teal);color:var(--fd-text-mid)}
 

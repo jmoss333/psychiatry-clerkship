@@ -159,6 +159,22 @@ test('direct drug lookup requires a placed Pharmacy tool and a learner search', 
   }
 });
 
+test('a reading lookup opens only the reviewed name at hand and Escape returns directly to the reading', () => {
+  const reading = { openId: 'med_monitoring.md' };
+  const action = { 'data-fd-reading-pharmacy': 'lithium' };
+  const medication = { id: 'lithium', title: 'lithium carbonate' };
+  const context = { readingMedication: medication };
+  const opened = F.fdDispatch(action, context, reading);
+  assert.equal(opened.route, null);
+  assert.deepEqual(opened.patch, { searchOpen: true, pharmacyLookup: { ...medication, fromReading: true } });
+  assert.deepEqual(F.fdDispatch({ close: true }, {}, { ...reading, ...opened.patch }).patch,
+    { searchOpen: false, pharmacyLookup: null });
+  for (const [ctx, state] of [[{}, reading], [{ readingMedication: { id: 'other' } }, reading],
+    [context, { openId: 'pharmacy.html' }], [context, { ...reading, searchOpen: true }]]) {
+    assert.deepEqual(F.fdDispatch(action, ctx, state).patch, {});
+  }
+});
+
 test('explicit safety takes precedence even when the complete query also names a reviewed drug', () => {
   const kit = [{ item: { ref: 'protocol.md', title: 'Safety protocol', summary: '' }, triggers: ['lithium'] }];
   const index = { ...REAL_INDEX, kit };

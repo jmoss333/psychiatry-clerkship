@@ -2927,7 +2927,10 @@
       }).catch(function(){rxDueState={status:'unavailable',releasedIds:null};})
       .then(function(){
         if(typeof specialRefresh==='function')specialRefresh();
-        if(fdController)fdRefreshSearchResults(fdController.getState());
+        if(fdController){
+          fdRefreshSearchResults(fdController.getState());
+          fdEnhanceReadingMedications();
+        }
       });
   }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
@@ -3802,6 +3805,14 @@
     live.facultyPreview=!!facultyPreviewRequest;
     return live;
   }
+  function fdReadingPharmacyNames(){
+    return !facultyPreviewRequest&&FD_INDEX.byRef['pharmacy.html']&&rxDueState.pharmacyNames;
+  }
+  function fdEnhanceReadingMedications(){
+    var names=fdReadingPharmacyNames();
+    var body=names&&contentEl&&contentEl.querySelector('.fd-article__body[data-pharmacy-reading]');
+    if(body)fdLinkReadingMedications(body,names);
+  }
   function fdSearchMarkup(live){
     return fdSurface('search',function(){
       return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},fdSearchLiveState(live));
@@ -4266,6 +4277,9 @@
             isPractice:function(target){return fdIsTool(target)&&!!((FD_INDEX.byRef||{})[target]||(FD_INDEX.known||{})[target]);},
             onPractice:function(bookmark){fdGuideBookmark=bookmark;fdGuideReturning=false;}
           });
+          /* The guide builds its alternate table view before prose gains inline buttons. */
+          body.setAttribute('data-pharmacy-reading','');
+          fdEnhanceReadingMedications();
           if(fdGuideSession){
             var guide=fdGuideSession, bookmark=fdGuideBookmark;
             var returning=bookmark&&bookmark.ref===ref&&(fdGuideReturning||options.fromHistory);
@@ -4792,6 +4806,10 @@
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
+      readingMedication:function(text){
+        var names=fdReadingPharmacyNames();
+        return names&&names.get(fdPharmacyName(text));
+      },
       searchMatches:function(state){
         var live=fdSearchLiveState(fdLiveState(state));
         return fdSearchMatches(FD_INDEX,state.query,FD_CURRICULUM.synonyms||{},live);

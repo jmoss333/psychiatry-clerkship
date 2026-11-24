@@ -29,7 +29,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-pharmacy-card','data-fd-pharmacy-back','data-fd-close-search','data-fd-search-expand','data-fd-search-return','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-pharmacy-card','data-fd-pharmacy-back','data-fd-reading-pharmacy','data-fd-close-search','data-fd-search-expand','data-fd-search-return','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details','data-fd-library-task',
   'data-fd-tool-pin','data-fd-tool-pins-clear','data-fd-reading-place-remove','data-fd-reading-places-clear','data-fd-continuity-show',
@@ -118,6 +118,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
   'data-fd-pharmacy-card':'look up a reviewed Pharmacy card',
+  'data-fd-reading-pharmacy':'open a reviewed medication mentioned in a reading',
   'data-fd-pharmacy-back':'return to medication search results',
   'data-fd-search-expand':'toggle all search matches for this query',
   'data-fd-close-sheet':'close side sheet',
@@ -473,6 +474,12 @@ function fdCloseSheet(state){
 function fdDispatch(attrs, context, state){
   var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab, picked;
 
+  if(fdOwn(a,'data-fd-reading-pharmacy')){
+    var medication=c.readingMedication;
+    if(s.searchOpen||s.sheet||s.careShareId||!/\.md$/.test(s.openId||'')||
+       !medication||medication.id!==a['data-fd-reading-pharmacy']) return {patch:{},route:null,effect:null};
+    return {patch:{searchOpen:true,pharmacyLookup:{id:medication.id,title:medication.title,fromReading:true}},route:null,effect:null};
+  }
   if(fdOwn(a,'data-fd-pharmacy-card')){
     var id=a['data-fd-pharmacy-card'];
     var rows=s.searchOpen&&!s.pharmacyLookup&&c.searchMatches?c.searchMatches(s):[];
@@ -481,6 +488,7 @@ function fdDispatch(attrs, context, state){
     return {patch:{pharmacyLookup:{id:id,title:card.item.title,scrollTop:c.searchScroll||0}},route:null,effect:null};
   }
   if(s.pharmacyLookup&&(fdOwn(a,'data-fd-pharmacy-back')||fdOwn(a,'close'))){
+    if(s.pharmacyLookup.fromReading)return {patch:{searchOpen:false,pharmacyLookup:null},route:null,effect:null};
     return {patch:{pharmacyLookup:null},route:null,effect:{type:'restore-pharmacy-result'}};
   }
   if(fdOwn(a,'close')){
@@ -1388,7 +1396,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
-  '[data-fd-pharmacy-card],[data-fd-pharmacy-back],[data-fd-close-search],[data-fd-search-expand],[data-fd-search-return],[data-fd-close-sheet],[data-fd-close-nudge],'+
+  '[data-fd-pharmacy-card],[data-fd-pharmacy-back],[data-fd-reading-pharmacy],[data-fd-close-search],[data-fd-search-expand],[data-fd-search-return],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
 /* The dock stopped forwarding the page's primary action on 2026-10-04 (one-thread redesign,
@@ -1795,7 +1803,9 @@ function fdWire(root, initialState, opts){
         if(!isShown(el)) el=null;
       }
       if(el&&el.focus){
-        try{el.focus();}catch(_){}
+        if(original&&original.hasAttribute&&original.hasAttribute('data-fd-reading-pharmacy')){
+          try{el.focus({preventScroll:true});}catch(_){el.focus();}
+        }else try{el.focus();}catch(_){}
         return;
       }
     }
@@ -2631,6 +2641,9 @@ function fdWire(root, initialState, opts){
     if(fdOwn(attrs,'data-fd-pharmacy-card')){
       var list=target.closest('.fd-searchpanel__body');
       extra.searchScroll=list?list.scrollTop:0;
+    }
+    if(fdOwn(attrs,'data-fd-reading-pharmacy')&&o.readingMedication&&target.closest('.fd-article__body')){
+      extra.readingMedication=o.readingMedication(target.textContent);
     }
     apply(fdDispatch(attrs,context(extra),state),target,false);
     /* Path rerenders its route and detail together, so the activated tab no longer exists after

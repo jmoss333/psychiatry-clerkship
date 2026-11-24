@@ -121,3 +121,48 @@ test('scenario and comparison controls retain keyboard focus through updates', a
   await expect(choices.first()).toBeFocused();
   await expect(page.locator('#cmpbar')).toBeEmpty();
 });
+
+test('reading medication buttons preserve prose and skip protected content', async ({ page }) => {
+  const frontdoor = new URL('../../13_Faculty_Resources/_automation/site_build/frontdoor/', import.meta.url);
+  await page.setContent(`<div class="fd-article__body">
+    <h2>Alpha heading</h2>
+    <p id="first">Try <em>ALPHA</em> and <b>Beta</b> XR. Repeat Alpha and B.</p>
+    <section class="fd-guide-section"><p class="fd-guide-lead"><strong>Alpha</strong> — Beta.</p></section>
+    <p id="bounds">pre<strong>Alpha</strong> and <em>Beta</em>-like. <a href="#alpha">Alpha</a>
+      <button>Beta</button> <cite>Alpha</cite> <code>Beta</code> <sup>Alpha</sup></p>
+    <ul><li><strong>Alpha</strong><ul><li>Beta XR</li></ul></li></ul>
+    <section class="sec-c"><h2 class="sec-h"><button>▸ References</button></h2>
+      <div class="sec-b"><ol><li>Alpha, Beta. Journal.</li></ol></div></section>
+    <section class="fd-guide-section"><h2>Teaching</h2><p>Alpha.</p>
+      <h3>Selected citations</h3><p>Beta XR et al.</p><h4>Trials</h4><ul><li>Alpha.</li></ul>
+      <h3>Return to teaching</h3><p>Beta XR.</p></section>
+    <div class="table-scroll"><div class="fd-guide-table-controls"><button>Alpha</button></div>
+      <div class="table-scroll-viewport" role="region" tabindex="0"><table><thead><tr><th>Alpha</th></tr></thead>
+        <tbody><tr><td>Beta XR</td></tr></tbody></table></div>
+      <div class="fd-guide-table-rows" hidden><dl><dt>Alpha</dt><dd>Beta XR</dd></dl></div></div>
+    <p class="footnote">Alpha.</p><section class="bedside-case"><p>Alpha.</p><button>Beta</button></section>
+    <details><summary>Alpha</summary><p>Beta</p></details><div contenteditable><p>Alpha</p></div>
+  </div>`);
+  for (const name of ['fd_search.js', 'fd_guide.js']) {
+    await page.addScriptTag({ path: new URL(name, frontdoor).pathname });
+  }
+  const body = page.locator('.fd-article__body');
+  const original = await body.textContent();
+  const apply = () => body.evaluate(el => fdLinkReadingMedications(el, fdSearchPharmacyNames([
+    { id: 'alpha', generic: 'Alpha' }, { id: 'beta', generic: 'Beta XR', brands: ['B', 'Beta'] },
+  ])));
+  await apply();
+  const buttons = body.locator('[data-fd-reading-pharmacy]');
+  expect(await buttons.allTextContents()).toEqual([
+    'ALPHA', 'Beta XR', 'Beta', 'Alpha', 'Beta XR', 'Alpha', 'Beta XR', 'Beta XR', 'Beta XR',
+  ]);
+  await expect(buttons.first()).toHaveAccessibleName('ALPHA — open Pharmacy card');
+  await expect(buttons.first()).toHaveAttribute('type', 'button');
+  await expect(buttons.first()).toHaveAttribute('data-fd-reading-pharmacy', 'alpha');
+  await expect(body.locator('#first em')).toHaveText('ALPHA');
+  await expect(body.locator('#first button b')).toHaveText('Beta');
+  expect(await body.textContent()).toBe(original);
+  const rendered = await body.innerHTML();
+  await apply();
+  expect(await body.innerHTML()).toBe(rendered);
+});

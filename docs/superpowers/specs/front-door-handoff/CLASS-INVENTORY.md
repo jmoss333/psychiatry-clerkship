@@ -853,6 +853,10 @@ the Library.
 
 ## 6. Reader (reading / tool pane)
 
+In reading text, a dotted underline on a medication name opens its reviewed Pharmacy card.
+The inline button inherits the surrounding type and prints as ordinary text. Closing the
+card returns focus to the same word and preserves the reading position.
+
 When a resource opens from Search, the top `.fd-reader__back` button becomes “Back to search results.”
 It restores the query, expansion, selected action and results scroll from the current visit.
 The saved result order survives a delayed page-text load. Editing or starting a new search uses
