@@ -9,6 +9,7 @@ import {
   config as netlifyConfig,
   createRealtimeHandler,
   default as productionRealtimeHandler,
+  createProductionRealtimeHandler,
   runtimeRealtimeConfig,
   validLedgerPolicy,
 } from '../netlify/functions/sp-realtime.mjs';
@@ -43,6 +44,7 @@ const ORIGIN = 'https://learn.example.test';
 const STUDENT_KEY = 'student-secret';
 const OPERATIONS_KEY = 'operations-secret';
 const RECEIPT_SECRET = '0123456789abcdef0123456789abcdef';
+const STUDENT_CREDENTIAL_HASH = credentialHash(STUDENT_KEY, RECEIPT_SECRET);
 const ROTATION = 'rotation-2026-09';
 const MODEL = 'gpt-realtime-mini-2025-12-15';
 const TRANSCRIPTION = 'gpt-4o-mini-transcribe';
@@ -227,7 +229,7 @@ function receiptCodecFactory() {
 }
 
 function bindingFor({ caseId = CASE, credential = STUDENT_KEY, origin = ORIGIN, packHash = PACK_HASH } = {}) {
-  return receiptBinding({ caseId, packHash, origin, rotationId: ROTATION, credentialHash: credentialHash(credential) });
+  return receiptBinding({ caseId, packHash, origin, rotationId: ROTATION, credentialHash: credentialHash(credential, RECEIPT_SECRET) });
 }
 
 // What the provider must receive: the shared module's session object with the
@@ -279,7 +281,7 @@ function enabledHandler({
       transcriptionModel: TRANSCRIPTION,
       deadlineMinutes: 15,
       rotationId: ROTATION,
-      credentialHash: credentialHash(STUDENT_KEY),
+      credentialHash: STUDENT_CREDENTIAL_HASH,
       now,
       randomBytes(size) {
         assert.equal(size, 16);
@@ -437,7 +439,7 @@ test('enabled without both model pins, or with an out-of-range deadline, fails c
     transcriptionModel: TRANSCRIPTION,
     deadlineMinutes: 15,
     rotationId: ROTATION,
-    credentialHash: credentialHash(STUDENT_KEY),
+    credentialHash: STUDENT_CREDENTIAL_HASH,
     now: () => NOW,
   };
   for (const broken of [
@@ -788,7 +790,7 @@ test('turn: cap, forged, foreign-case and replaced-passcode receipts are refused
   const replaced = enabledHandler({
     fake: harness.fake,
     http: createTestHttp({ studentKey: 'replaced-passcode' }),
-    config: { credentialHash: credentialHash('replaced-passcode') },
+    config: { credentialHash: credentialHash('replaced-passcode', RECEIPT_SECRET) },
   });
   const afterRotation = await replaced.handler(jsonRequest('turn', turnBody(started.receipt, itemsFrom(['Hello?'])), { studentKey: 'replaced-passcode' }));
   assert.equal(afterRotation.status, 400);
@@ -1114,6 +1116,7 @@ test('the runtime environment parser defaults, bounds and fails closed; the defa
   const defaults = runtimeRealtimeConfig(env({ CONTEXT: 'production', SP_REALTIME_ENABLED: 'true', SP_REALTIME_MODEL: MODEL, SP_REALTIME_TRANSCRIPTION_MODEL: TRANSCRIPTION, SP_ROTATION_ID: ROTATION }));
   assert.deepEqual(defaults, {
     production: true,
+    danaPilot: false,
     enabled: true,
     model: MODEL,
     transcriptionModel: TRANSCRIPTION,
@@ -1176,4 +1179,71 @@ test('the runtime environment parser defaults, bounds and fails closed; the defa
       else process.env[name] = prior[name];
     }
   }
+});
+
+test('supervised Dana pilot requires the distinct supervisor code and explicit production mode', async () => {
+  const pilotKey = 'supervised-pilot-test-secret';
+  const settings = {
+    CONTEXT: 'production', SP_REALTIME_ENABLED: 'dana-pilot',
+    SP_STUDENT_PASSCODE: STUDENT_KEY, SP_OPERATIONS_KEY: OPERATIONS_KEY,
+    SP_ALLOWED_ORIGINS: ORIGIN, SP_REALTIME_PILOT_PASSCODE: pilotKey,
+    SP_ROTATION_ID: ROTATION, SP_REALTIME_MAX_SESSION_MINUTES: '5', SP_REALTIME_ROTATION_CAP_USD: '3',
+    SP_REALTIME_STARTS_PER_DAY: '2', SP_REALTIME_STARTS_PER_HALF_HOUR: '2',
+    OPENAI_API_KEY: API_KEY, SP_SPEECH_TICKET_SECRET: RECEIPT_SECRET,
+    // Closed window allows checking the production HTTP wiring without external dependencies.
+    SP_REALTIME_PILOT_ENDS_AT: '2020-01-01T00:00:00.000Z',
+  };
+  const handlerFor = (changes = {}) => {
+    const env = { ...settings, ...changes };
+    return createProductionRealtimeHandler((name) => env[name]);
+  };
+  const handler = handlerFor();
+  assert.equal((await handler(learnerRequest())).status, 401);
+  assert.equal((await handler(jsonRequest('start', startBody()))).status, 401);
+  assert.deepEqual(await (await handler(learnerRequest('', { studentKey: pilotKey }))).json(), DISABLED_HEALTH);
+  for (const overrides of [
+    { SP_REALTIME_PILOT_PASSCODE: undefined }, { SP_REALTIME_PILOT_PASSCODE: STUDENT_KEY },
+    { SP_REALTIME_PILOT_PASSCODE: OPERATIONS_KEY }, { SP_REALTIME_PILOT_ENDS_AT: undefined },
+    { SP_REALTIME_PILOT_ENDS_AT: '2026-02-31T10:00:00.000Z' }, { OPENAI_API_KEY: undefined },
+    { SP_REALTIME_ROTATION_CAP_USD: undefined }, { SP_SPEECH_TICKET_SECRET: 'short' },
+  ]) assert.throws(() => handlerFor(overrides), { code: 'invalid_configuration' });
+  for (const overrides of [
+    { CONTEXT: 'deploy-preview' }, { SP_REALTIME_ENABLED: 'false' }, { SP_REALTIME_ENABLED: 'true' },
+  ]) {
+    assert.deepEqual(await (await handlerFor(overrides)(learnerRequest())).json(), DISABLED_HEALTH);
+  }
+});
+
+test('pilot offers only Dana admission, closes at the window deadline, and can still hang up', async () => {
+  const pilotEndsAt = NOW + 3 * MINUTE;
+  const h = enabledHandler({ config: { pilotEndsAt, model: 'gpt-realtime-2.1-mini' }, ledgerOptions: { startLimit: 1 } });
+  const health = await (await h.handler(learnerRequest())).json();
+  assert.equal(health.acceptingSessions, true);
+  assert.deepEqual(health.cases.map(({ id }) => id), [CASE]);
+  for (const { id } of PACK.cases.filter((c) => c.id !== CASE)) {
+    for (const op of ['start', 'turn', 'end']) {
+      const res = await h.handler(jsonRequest(op, { caseId: id }));
+      assert.equal((await errorBody(res)).code, 'unknown_case');
+    }
+  }
+  assert.equal(h.fetch.calls.length, 0);
+  const start = await startSession(h);
+  assert.equal(start.deadline, pilotEndsAt);
+  assert.equal((await (await h.handler(learnerRequest())).json()).acceptingSessions, false);
+  const items = itemsFrom(['Hello Dana.']);
+  assert.equal((await h.handler(jsonRequest('turn', turnBody(start.receipt, items)))).status, 200);
+  h.now = pilotEndsAt;
+  assert.deepEqual(await (await h.handler(learnerRequest())).json(), DISABLED_HEALTH);
+  assert.equal((await errorBody(await h.handler(jsonRequest('start', startBody())))).code, 'realtime_disabled');
+  assert.equal(h.fetch.exchanges.length, 1);
+  const ended = await h.handler(jsonRequest('end', { caseId: CASE, encounterId: ENCOUNTER, receipt: start.receipt }));
+  assert.equal(ended.status, 200);
+  assert.equal(h.fetch.hangups.length, 1);
+});
+
+test('pilot health refuses an unpriced model before advertising a session', async () => {
+  const h = enabledHandler({ config: { pilotEndsAt: NOW + MINUTE, model: 'unpriced-model' } });
+  const response = await h.handler(learnerRequest());
+  assert.equal((await errorBody(response)).code, 'invalid_configuration');
+  assert.equal(h.fetch.calls.length, 0);
 });

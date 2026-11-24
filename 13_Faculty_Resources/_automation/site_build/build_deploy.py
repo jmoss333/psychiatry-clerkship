@@ -242,7 +242,8 @@ if _pp_problems:
 _qb_public=qbank_public.project_question_bank(
     json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
 with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
-    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    # The released bank is precached on phones. Whitespace counts towards the offline budget.
+    json.dump(_qb_public,_fh,ensure_ascii=False,separators=(",",":"))
     _fh.write("\n")
 # Placement is another publication of question text, so it takes the same released
 # bytes as practice and Anki. Missing categories are reported by static QA.
@@ -602,6 +603,12 @@ _copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation",
                os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
                os.path.join(OUT, "illustrations", "noor-dayroom.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Nutrition", "illustrations", "evening-route.avif"),
+               os.path.join(OUT, "illustrations", "evening-route.avif"), _missing_req)
+for scene in ("therapy-chain-phone.avif", "therapy-chain-hall.avif",
+              "evening-call-home.avif", "evening-call-unit.avif"):
+    _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Psychotherapy", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
@@ -611,12 +618,15 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustra
                os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Personality", "illustrations", "personality-conversation.webp"),
                os.path.join(OUT, "illustrations", "personality-conversation.webp"), _missing_req)
-_copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", "cultural-chart.webp"),
-               os.path.join(OUT, "illustrations", "cultural-chart.webp"), _missing_req)
+for scene in ("cultural-chart.webp", "elena-interpreter.avif"):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
                os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
 for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),
                       ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-on-unit.avif"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-at-night.avif"),
                       ("Toxidromes", "paired-fever-exams.webp")):
     _copy_required(os.path.join(LIB, "04_Acute_and_Safety", _topic, "illustrations", _plate),
                    os.path.join(OUT, "illustrations", _plate), _missing_req)
