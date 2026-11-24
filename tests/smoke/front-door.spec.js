@@ -3543,6 +3543,44 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  test('Ms. Lang’s culture stays paired with each interview and both handoffs unlock the comparison', async ({ page }) => {
+    await page.goto('/?page=medical_workup.md&guideSection=baseline-workup-of-the-new-admission&guideFind=The+urine+culture+is+positive');
+    const card = page.locator('.fd-reader:visible [data-lang-culture]');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('urinalysis, with culture');
+    const image = card.locator('#lang-case-photo');
+    await expect(image).toBeVisible();
+    expect(await image.evaluate(async img => {
+      await img.decode();
+      const box = img.getBoundingClientRect();
+      return Math.abs(box.height - box.width * img.naturalHeight / img.naturalWidth);
+    })).toBeLessThan(1);
+    const compare = card.locator('#lang-compare');
+    const feedback = card.locator('#lang-feedback');
+    for (const [key, reply, order, expected] of [
+      ['a', 'twice last night', [0, 2, 1], ['cause of her inattention open', 'twice at home', 'insufficient reason']],
+      ['b', 'had to rush', [0, 1, 2], ['new burning and urgency', 'other contributors', 'remaining uncertainty']],
+    ]) {
+      await card.locator('[data-visit="' + key + '"]').click();
+      await card.locator('[data-ask="change"]').click();
+      await expect(card.locator('#lang-words')).toContainText(reply);
+      await expect(card.locator('#lang-handoffs')).toBeHidden();
+      await card.locator('[data-ask="pain"]').click();
+      for (const [index, choice] of order.entries()) {
+        await expect(compare).toBeHidden();
+        await card.locator('[data-choice="' + choice + '"]').click();
+        await expect(feedback).toContainText(expected[index]);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toBeVisible();
+    await card.locator('[data-visit="a"]').click();
+    await expect(card.locator('[data-choice="1"]')).toHaveAttribute('aria-pressed', 'true');
+    await card.locator('[data-choice="2"]').click();
+    await expect(compare).toBeHidden();
+    await card.locator('[data-reset]').click();
+    await expect(card.locator('#lang-progress')).toHaveText('0 of 2 handoffs matched');
+  });
+
   test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
     await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
     const card = page.locator('.fd-reader:visible #catie-stop');
