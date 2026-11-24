@@ -6251,6 +6251,24 @@ test('Today announces the newest Case of the Week only in the week it ships, as 
   await expectHealthy(page);
 });
 
+test('Nov 23 case keeps rendered learner guidance aligned and faculty notes private', async ({ page }, testInfo) => {
+  const resident = isResidentProject(testInfo.project.name);
+  const slug = `cotw_20261123_bpd_${resident ? 'res' : 'ms3'}.md`;
+  await seedApp(page, testInfo);
+  for (const viewport of [PHONE, DESKTOP]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`/?page=${slug}`);
+    await expect(page.locator('.fd-article__h1')).toBeVisible();
+    const body = page.locator('.fd-article__body');
+    await expect(body).toContainText('no statistically significant sex difference');
+    await expect(body).toContainText('what evidence would change your working formulation');
+    await expect(body).not.toContainText(/facilitator notes|not for learner distribution|assess trauma first|men carry this pattern as often as women|is not bipolar disorder/i);
+    if (resident) {
+      await expect(body).toContainText('Decreased need for sleep can support hypomania but is not required.');
+    }
+  }
+});
+
 test('One Thing First D2: the Today shortcuts are unchanged with a primary present', async ({ page }, testInfo) => {
   await seedApp(page, testInfo, { storage: { cw_srs_v1: OTF.srs } });
   await page.goto('/');

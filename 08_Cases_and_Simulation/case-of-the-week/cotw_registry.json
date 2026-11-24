@@ -7,8 +7,11 @@
       "label": "Borderline Personality Disorder (Nov 23)",
       "ms3_src": "2026-11-23_borderline-personality-disorder_MS3.md",
       "res_src": "2026-11-23_borderline-personality-disorder_Resident.md",
-      "tldr_ms3": "Mood that flips in hours around relationship ruptures is not bipolar disorder: name the borderline traits you see, screen the trauma, separate chronic from acute-on-chronic risk — and leave the official diagnosis to the provider who knows him longitudinally.",
-      "tldr_res": "Audit the ‘treatment-resistant bipolar’ label and the four-drug regimen behind it: document traits rather than a single-visit personality diagnosis, assess trauma first — and know that no drug beats placebo on core outcomes and men carry this pattern as often as women."
+      "tldr_ms3": "Distinguish brief, reactive shifts from sustained mood episodes. Document observed features and diagnostic uncertainty, assess possible trauma alongside other explanations, and reassess risk before deciding on disposition.",
+      "tldr_res": "Reassess the chart’s bipolar label and medication indications. Assess trauma alongside the differential, verify supports before disposition, and avoid a default crisis medication.",
+      "workflow": {
+        "rounds": "For rounds, name one observation, your working differential, and what evidence would change your working formulation."
+      }
     },
     {
       "date": "2026-10-12",
