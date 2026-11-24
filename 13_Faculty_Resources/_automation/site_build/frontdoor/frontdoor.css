@@ -3449,6 +3449,29 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* Celia and her sister occupy opposite sides of the illustrated call and its two-way record. */
+#celia-family-call figure{overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);margin-block:var(--fd-space-6)}
+#celia-family-call .art{display:block;width:100%;height:auto;aspect-ratio:2/1;border-radius:0}
+#celia-family-call .names,#celia-family-call .cf-preferences{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+#celia-family-call .names{padding:0;margin:0;text-align:start;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));font-weight:650}
+#celia-family-call .names span{padding:var(--fd-space-3) var(--fd-space-4);background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+#celia-family-call .names span+span{background:var(--fd-surface-warm);color:var(--fd-text-mid)}
+#celia-family-call .cf-preferences,#celia-family-call .cf-options{gap:var(--fd-space-3);margin-block:var(--fd-space-4)}
+#celia-family-call .cf-options{display:grid}
+#celia-family-call .cf-options button{width:100%;color:var(--fd-text);font-weight:500}
+#celia-family-call .ask,#celia-family-call .source-note{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));color:var(--fd-text-mid)}
+#celia-family-call .speaker{font-weight:700;color:var(--fd-teal-deep)}
+#celia-family-call .cf-sister,#celia-family-call .cf-feedback{border-color:var(--fd-line-strong);background:var(--fd-surface)}
+#celia-family-call .cf-supported{border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+#celia-family-call .cf-ledger{margin:0;overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+#celia-family-call .cf-ledger div{position:relative;padding:var(--fd-space-4) var(--fd-space-4) var(--fd-space-4) 2.4em}
+#celia-family-call .cf-ledger div+div{border-block-start:1px solid var(--fd-line);background:var(--fd-teal-wash)}
+#celia-family-call .dir{position:absolute;inset-inline-start:var(--fd-space-3);font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#celia-family-call dt{font-weight:700}
+#celia-family-call dd{margin:0}
+#celia-family-call details p{margin-block-start:var(--fd-space-4)}
+#celia-family-call footer{display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-3)}
+
 /* The two records stay visible as the patient’s account changes. */
 #home-dose-history .mh-section{margin-top:var(--fd-space-7)}
 #home-dose-history .mh-intro,#home-dose-history .mh-instruction{margin-block:var(--fd-space-3) var(--fd-space-5)}

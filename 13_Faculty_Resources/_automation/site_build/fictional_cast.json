@@ -10,6 +10,15 @@
       ]
     },
     {
+      "id": "celia-family-call",
+      "name": "Celia",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "03_Core_Topics/Ethics_Legal/ethics_law_confidentiality_inpatient_teaching.md"
+      ]
+    },
+    {
       "id": "noor-brief-psychotherapy",
       "name": "Noor",
       "pronouns": "she",

@@ -6,6 +6,66 @@
 
 **Confidentiality and its limits** — Protect patient information by default. The recognized exceptions where disclosure is permitted or required include: a **serious, credible threat to an identifiable person** (duty to protect), **mandatory reporting of abuse**, **imminent danger to self**, certain communicable-disease reporting, and specific legal/court mandates. Disclose the **minimum necessary**. Note that HIPAA permits sharing for treatment, payment, and operations — but do not take that as the whole rule on an inpatient unit, because two carve-outs sit on top of it. Records originating from a **federally assisted substance use disorder treatment program** fall under **42 CFR Part 2**, which carries its own consent requirements; recent rulemaking has been aligning Part 2 more closely with HIPAA, so confirm the current rule and whether your program is a Part 2 program rather than assuming either way. **Psychotherapy notes** are separately protected. The practical default: assume SUD-treatment information needs its own consent before you repeat it to an outside provider or a family member.
 
+<section class="bedside-case" id="celia-family-call" aria-labelledby="cf-title">
+<h3 id="cf-title">What can you tell her sister?</h3>
+<p class="stem">Celia’s sister is on hold. “I was with her before she left home. Can you tell me if she’s there?” You and your resident check with Celia first.</p>
+<figure><img class="art" src="illustrations/celia-and-sister.webp" width="1080" height="540" alt="Celia sits in the unit interview room. Her sister is on the phone at home."><figcaption class="names"><span>Celia · on the unit</span><span>Her sister · at home</span></figcaption></figure>
+<div><h4>What does Celia want?</h4><p class="ask">Choose one version of her answer to rehearse the call.</p>
+<div class="cf-preferences" role="group" aria-label="Choose Celia’s preference"><button type="button" data-case="glasses" aria-controls="cf-wish cf-phone" aria-pressed="false">“She can know I’m here.”</button><button type="button" data-case="private" aria-controls="cf-wish cf-phone" aria-pressed="false">“I’ll call her myself.”</button></div>
+<div id="cf-wish" class="case-reply" aria-live="polite" hidden><p class="speaker">Celia, in private</p><blockquote id="cf-wish-words"></blockquote></div></div>
+<div id="cf-phone" class="step" hidden><h4>How do you pick up the call?</h4>
+<p class="source-note">Celia understands the choice and has made her wishes clear. Your resident verifies the caller’s identity, documents Celia’s limits, and takes the call with you.</p>
+<p class="caller spoken">“I just want to know how she’s doing. I was up with her the other night.”</p>
+<div id="cf-phone-choices" class="cf-options" role="group" aria-label="Choose what to say to the caller"></div><p id="cf-phone-feedback" role="status" class="case-reply cf-feedback" hidden></p>
+<div id="cf-sister-detail" class="case-reply cf-sister" hidden><p class="speaker">Her sister</p><blockquote>“At three in the morning she was sorting the kitchen drawers. I sat with her for an hour, then I went back to bed. I don’t know when she finally slept.”</blockquote></div>
+<dl class="cf-ledger" id="cf-ledger" aria-label="What crossed the phone line" hidden><div><dt><span class="dir" aria-hidden="true">←</span>Sister to team</dt><dd id="cf-incoming">At about 3 a.m., Celia was sorting drawers. Her sister stayed with her for an hour.</dd></div><div id="cf-out-row"><dt><span class="dir" aria-hidden="true">→</span>Team to sister</dt><dd id="cf-outgoing"></dd></div></dl></div>
+<div id="cf-handoffs" class="step" hidden><h4>Which handoff belongs on rounds?</h4><p class="ask">Carry forward what the sister observed and the limit Celia set.</p><div class="cf-options" id="cf-rounds-options" role="group" aria-label="Choose a handoff"></div><p class="case-reply cf-feedback" id="cf-handoff-feedback" role="status" hidden></p>
+<details id="cf-debrief" hidden><summary>Why this changes the handoff</summary><p id="cf-lesson"></p><p>The sister can contribute information even when Celia asks the team to keep her admission private. For an actual family call, review the patient’s wishes and applicable unit policy with the supervising clinician.</p><p><a href="https://www.hhs.gov/hipaa/for-professionals/faq/what-options-do-family-members-adult-patient-mental-illness-have-if-they-are-concerned-about.html">HHS guidance on listening to families</a> · <a href="https://legislature.maine.gov/statutes/34-b/title34-Bsec1207.html">Maine confidentiality statute</a></p></details></div>
+<footer><span>Fictional encounter</span><button type="button" data-reset class="case-link">Start again</button></footer>
+<template data-account="glasses">
+<span data-copy="wish">“Yes, tell her I’m here. And could she bring my glasses? They’re on the hall table. I’ll tell her about the rest myself.”</span>
+<span data-copy="outgoing">Presence on the unit and Celia’s request for her glasses.</span>
+<span data-copy="lesson">Being allowed to ask for the glasses does not answer a later question about diagnosis, medication, or discharge. Check back with Celia if the topic changes.</span>
+<div data-options="phone">
+<button type="button" data-phone="spill" aria-pressed="false" aria-controls="cf-phone-feedback cf-sister-detail">“She’s here. She’s getting some rest today. Would you bring her glasses when you come?”</button>
+<button type="button" data-phone="scope" aria-pressed="false" aria-controls="cf-phone-feedback cf-sister-detail">“Yes, she’s here. She asked if you’d bring her glasses. You said you were up with her. What did you see?”</button>
+<button type="button" data-phone="shut" aria-pressed="false" aria-controls="cf-phone-feedback cf-sister-detail">“Yes, she’s here and she needs her glasses. I’ll have to leave the rest of the conversation to her.”</button>
+</div>
+<span data-comment="phone-spill">Saying how Celia is doing adds a clinical update. She gave you permission to confirm her admission and ask for her glasses.</span>
+<span data-comment="phone-scope">You passed along Celia’s request and gave her sister room to describe what she saw.</span>
+<span data-comment="phone-shut">You stayed within the limit on sharing. You can also invite her sister to tell you about that night. Try that opening.</span>
+<div data-options="handoff">
+<button type="button" data-handoff="authority" aria-pressed="false" aria-controls="cf-handoff-feedback cf-debrief">Her sister saw her up around three. Celia is comfortable with her sister receiving updates during the admission.</button>
+<button type="button" data-handoff="certainty" aria-pressed="false" aria-controls="cf-handoff-feedback cf-debrief">Her sister confirmed Celia was awake all night. We asked her to bring the glasses Celia requested.</button>
+<button type="button" data-handoff="supported" aria-pressed="false" aria-controls="cf-handoff-feedback cf-debrief">Her sister saw Celia up from about three to four. With Celia’s permission, we confirmed she’s here and asked for her glasses.</button>
+</div>
+<span data-comment="handoff-authority">Celia named two things you could share. Regular updates would need a fresh conversation about her wishes.</span>
+<span data-comment="handoff-certainty">Her sister saw roughly one hour. What happened after she went back to bed is still unknown.</span>
+<span data-comment="handoff-supported">That gives the team an observed window and a precise record of what Celia authorized.</span>
+</template>
+<template data-account="private">
+<span data-copy="wish">“Please don’t tell her I’m here. I know she’s worried. I want her to hear it from me when I call.”</span>
+<span data-copy="outgoing">No patient details. The team listened without confirming an admission.</span>
+<span data-copy="lesson">A private admission still leaves room to listen. Record the sister’s observation, its limits, and Celia’s request so the next shift can handle a second call consistently.</span>
+<div data-options="phone">
+<button type="button" data-phone="shut" aria-pressed="false" aria-controls="cf-phone-feedback cf-sister-detail">“I can’t discuss anyone on the unit. You’ll need to wait until you hear from your sister.”</button>
+<button type="button" data-phone="spill" aria-pressed="false" aria-controls="cf-phone-feedback cf-sister-detail">“I understand you’re worried. She wants to call you herself, so I’ll let her give you the update.”</button>
+<button type="button" data-phone="scope" aria-pressed="false" aria-controls="cf-phone-feedback cf-sister-detail">“I hear how worried you are. I can’t confirm who’s here, but I can listen. What happened that night?”</button>
+</div>
+<span data-comment="phone-shut">This protects privacy, but closes off a firsthand observation. Try an opening that also lets the caller speak.</span>
+<span data-comment="phone-spill">Relaying Celia’s private message would signal you have spoken with her. She asked you to keep even her presence private.</span>
+<span data-comment="phone-scope">You invited the sister’s account while keeping Celia’s presence private.</span>
+<div data-options="handoff">
+<button type="button" data-handoff="supported" aria-pressed="false" aria-controls="cf-handoff-feedback cf-debrief">Her sister saw Celia awake from about three to four. We heard her account and respected Celia’s request for privacy about her admission.</button>
+<button type="button" data-handoff="authority" aria-pressed="false" aria-controls="cf-handoff-feedback cf-debrief">Her sister gave us useful sleep history. Since she’s involved now, the team can confirm the admission on the next call.</button>
+<button type="button" data-handoff="certainty" aria-pressed="false" aria-controls="cf-handoff-feedback cf-debrief">We kept the admission private. Her sister confirmed that Celia went the entire night without sleep.</button>
+</div>
+<span data-comment="handoff-supported">The next shift knows both the source of the history and the limit on what it may say to this caller.</span>
+<span data-comment="handoff-authority">Providing information gives the sister a voice in the history. It does not give the team permission to confirm the admission.</span>
+<span data-comment="handoff-certainty">The privacy limit is correct. The sister went back to bed after about an hour and could not observe the rest of the night.</span>
+</template>
+</section>
+
 **Duty to protect / warn (Tarasoff)** — When a patient makes a **serious threat of violence against a reasonably identifiable victim**, the clinician may have a duty to take reasonable protective steps — which may include **warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment**. The duty, and what discharges it, varies by state (mandatory in some, permissive in others, absent in a few). Check your state's statute; in Maine, 34-B M.R.S. §1207(6-A) directs a licensed mental health professional to disclose, in good faith, the information needed to avert a serious and imminent threat to health or safety to anyone reasonably able to prevent or minimize it, including the target. The tested principle is: *a specific threat to a specific person overrides confidentiality.*
 
 **Mandatory reporting** — Report suspected **child abuse or neglect** (mandated in every state) and, where your state mandates it (most do, not all), **elder/dependent-adult abuse** to the appropriate agency — reporting requires **reasonable suspicion, not proof**, and mandated reporters are generally protected when reporting in good faith. Check your state's statute; in Maine, physicians, residents and mental health professionals must report immediately when they know or have reasonable cause to suspect that an incapacitated or dependent adult has been or is likely to be abused, neglected or exploited (22 M.R.S. §3477) — the trigger is incapacity or dependency, not age alone. Remember: **factitious disorder imposed on another (medical child abuse)** is reportable, and many jurisdictions add specific duties (e.g., certain injuries, some intimate-partner situations). When in doubt, protect the vulnerable person.

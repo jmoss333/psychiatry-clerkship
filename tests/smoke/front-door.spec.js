@@ -2797,6 +2797,112 @@ test.describe('Interactive readings', () => {
     await seedApp(page, info);
   });
 
+  test('Celia’s family call limits disclosure and carries only the sister’s observation into rounds', async ({ page }) => {
+    const ref = 'ethics_legal.md';
+    const route = '/?page=' + ref + '&guideSection=confidentiality-and-its-limits&guideFind=What+can+you+tell+her+sister%3F&ntl-drawer-state=hidden';
+    await page.goto(route);
+    const article = page.locator('.fd-reader:visible .fd-article[data-ref="' + ref + '"] .fd-article__body');
+    const section = article.locator('.fd-guide-section').filter({ has: page.locator(':scope > #guide-confidentiality-and-its-limits') });
+    const card = section.locator('#celia-family-call');
+    const field = id => card.locator('#cf-' + id);
+    const choice = (stage, value) => card.locator('button[data-' + stage + '="' + value + '"]');
+    const debrief = field('debrief');
+    const sources = card.locator('a[href]:visible');
+    const handoffFeedback = field('handoff-feedback');
+    const phoneFeedback = field('phone-feedback');
+
+    await expect(article.locator('#celia-family-call')).toHaveCount(1);
+    await expect(card).toBeVisible();
+    await expect(field('title')).toHaveText('What can you tell her sister?');
+    await expect(card.locator('textarea,input:not([type]),input[type=text],[contenteditable=true]')).toHaveCount(0);
+    const art = card.locator('img');
+    await expect(art).toBeVisible();
+    expect(await art.evaluate(async img => {
+      await img.decode();
+      return img.naturalWidth > 0 && img.naturalHeight > 0 && !!img.alt.trim();
+    })).toBe(true);
+
+    async function noCallResult() {
+      for (const id of ['sister-detail', 'ledger', 'handoffs', 'handoff-feedback', 'debrief']) {
+        await expect(field(id)).toBeHidden();
+      }
+      await expect(sources).toHaveCount(0);
+    }
+    async function initial() {
+      await expect(card.locator('button[data-case]')).toHaveCount(2);
+      await expect(card.locator('button[data-case][aria-pressed=true]')).toHaveCount(0);
+      await expect(field('wish')).toBeHidden();
+      await expect(field('phone')).toBeHidden();
+      await expect(phoneFeedback).toBeHidden();
+      await noCallResult();
+    }
+    await initial();
+    await choice('case', 'glasses').focus();
+    await page.keyboard.press('Tab');
+    await expect(choice('case', 'private')).toBeFocused();
+    for (const [preference, wish, disclosure, supported, spill, shut, authority, certainty] of [
+      ['glasses', /glasses/i, /presence.*glasses/i, /permission.*glasses/i, /clinical update/i, /invite/i, /fresh conversation/i, /unknown/i],
+      ['private', /don.t tell her/i, /no patient details.*without confirming/i, /privacy.*admission/i, /private message/i, /firsthand observation/i, /permission/i, /could not observe/i],
+    ]) {
+      await choice('case', preference).press('Enter');
+      await expect(choice('case', preference)).toHaveAttribute('aria-pressed', 'true');
+      await expect(field('wish-words')).toContainText(wish);
+      await expect(phoneFeedback).toBeHidden();
+      await expect(card.locator('button[data-phone]')).toHaveCount(3);
+      await noCallResult();
+      for (const [reply, feedback] of [['spill', spill], ['shut', shut]]) {
+        await choice('phone', reply).click();
+        await expect(phoneFeedback).toBeVisible();
+        await expect(phoneFeedback).toContainText(feedback);
+        await noCallResult();
+      }
+      await choice('phone', 'scope').press('Enter');
+      await expect(field('sister-detail')).toContainText(/kitchen drawers.*don.t know when she finally slept/i);
+      await expect(field('incoming')).toBeVisible();
+      await expect(field('incoming')).toContainText(/3 a\.m\..*drawers.*sister.*hour/i);
+      await expect(field('outgoing')).toBeVisible();
+      await expect(field('outgoing')).toContainText(disclosure);
+      await expect(card.locator('button[data-handoff]')).toHaveCount(3);
+      await expect(choice('handoff', 'supported')).toContainText(/sister.*three to four/i);
+      await expect(choice('handoff', 'supported')).toContainText(supported);
+      await expect(debrief).toBeHidden();
+      await expect(sources).toHaveCount(0);
+      for (const [handoff, feedback] of [['authority', authority], ['certainty', certainty]]) {
+        await choice('handoff', handoff).click();
+        await expect(handoffFeedback).toBeVisible();
+        await expect(handoffFeedback).toContainText(feedback);
+        await expect(debrief).toBeHidden();
+        await expect(sources).toHaveCount(0);
+      }
+      await choice('handoff', 'supported').press('Enter');
+      await expect(handoffFeedback).toBeVisible();
+      await expect(debrief).toBeVisible();
+      await debrief.locator('summary').press('Enter');
+      await expect(field('lesson')).toContainText(preference === 'glasses' ? /glasses/i : /private admission/i);
+      await expect(debrief.locator('a[href*="hhs.gov/hipaa/"]')).toBeVisible();
+      await expect(debrief.locator('a[href*="legislature.maine.gov/statutes/34-b/title34-Bsec1207.html" i]')).toBeVisible();
+
+      if (preference === 'glasses') {
+        // A learner can reconsider either decision after opening the sources.
+        await choice('handoff', 'authority').click();
+        await expect(debrief).toBeHidden();
+        await expect(sources).toHaveCount(0);
+        await choice('handoff', 'supported').click();
+        await debrief.locator('summary').press('Enter');
+        await choice('phone', 'shut').click();
+        await noCallResult();
+        await choice('phone', 'scope').click();
+        await expect(handoffFeedback).toBeHidden();
+        await choice('handoff', 'supported').click();
+        await debrief.locator('summary').press('Enter');
+        // Switch Celia's preference with the previous interpretation still open.
+      }
+    }
+    await card.locator('[data-reset]').click();
+    await initial();
+    await expectHealthy(page);
+  });
+
   test('Nico’s collateral rounds handoff uses only the nights and source the learner heard', async ({ page }) => {
     await page.goto('/?page=collateral_workflow.md&guideSection=5-bring-it-back-to-the-team');
     const section = page.locator('.fd-guide-section').filter({ has: page.locator(':scope > #guide-5-bring-it-back-to-the-team') });
