@@ -157,6 +157,34 @@ def fetch(source, token, *, tracking_tag=None):
         return json.load(response)
 
 
+def examine(source, response, previous, inverted, questions, passage_config):
+    row = assess(source, response, previous)
+    row['affects'] = inverted.get(source['id'], []) if inverted is not None else []
+    row['mapping_status'] = ('unavailable' if inverted is None else
+                             'recorded citations' if row['affects'] else 'no recorded citations')
+    row['question_mapping_status'] = 'available' if questions is not None and inverted is not None else 'unavailable'
+    row['questions'] = question_links(questions, source, row['affects']) if row['question_mapping_status'] == 'available' else []
+    data = response.get('data') if isinstance(response, dict) else None
+    markdown = data.get('markdown') if isinstance(data, dict) else None
+    row['passage_review'] = P.evaluate(source, row, markdown, previous,
+                                      passage_config, questions, Path(L.LIB_ROOT))
+    return row
+
+
+def unexamined(source, inverted, reason):
+    """A row that records a failed examination; it never counts as a comparison."""
+    affects = inverted.get(source['id'], []) if inverted is not None else []
+    return {'source_id': source['id'], 'source_name': source.get('name', source['id']),
+            'source_url': source['url'], 'extractor': EXTRACTOR, 'observed_at': L.utcnow(),
+            'status': 'unable-to-check', 'reason': reason, 'affects': affects,
+            'mapping_status': ('unavailable' if inverted is None else
+                               'recorded citations' if affects else 'no recorded citations'),
+            'question_mapping_status': 'unavailable', 'questions': [],
+            'passage_review': {'status': 'unavailable', 'packets': [], 'observations': {},
+                               'coverage': 'Only the explicitly mapped passages; all links are proposed.',
+                               'reason': reason}}
+
+
 def exit_code(rows):
     if not rows or any(r['status'] == 'unable-to-check' or r.get('passage_review', {}).get('status') == 'unavailable' for r in rows):
         return 2
@@ -284,17 +312,15 @@ def main():
         except Exception:
             # Never serialize exception text: network errors may contain credentials or response bodies.
             response = None
-        row = assess(source, response, prior.get(source['id']))
-        row['affects'] = inverted.get(source['id'], []) if inverted is not None else []
-        row['mapping_status'] = ('unavailable' if inverted is None else
-                                 'recorded citations' if row['affects'] else 'no recorded citations')
-        row['question_mapping_status'] = 'available' if questions is not None and inverted is not None else 'unavailable'
-        row['questions'] = question_links(questions, source, row['affects']) if row['question_mapping_status'] == 'available' else []
-        data = response.get('data') if isinstance(response, dict) else None
-        markdown = data.get('markdown') if isinstance(data, dict) else None
-        row['passage_review'] = P.evaluate(source, row, markdown, prior.get(source['id']),
-                                          passage_config, questions, Path(L.LIB_ROOT))
-        rows.append(row)
+        try:
+            rows.append(examine(source, response, prior.get(source['id']), inverted, questions, passage_config))
+        except Exception as exc:
+            # One source's unexpected page must not erase the report for the other four.
+            # Before this, a crash here left no report.json and the weekly job said only
+            # "incomplete", with nothing in its log to say why.
+            where = L.failure_location(exc)
+            print('Firecrawl pilot: ' + source['id'] + ' could not be examined: ' + where, file=sys.stderr)
+            rows.append(unexamined(source, inverted, 'Examination failed: ' + where))
     report = {'generated_at': L.utcnow(), 'extractor': EXTRACTOR,
               'mode': 'fixture' if args.fixture else 'imported' if args.responses else 'live',
               'question_coverage': questions['coverage'] if questions is not None else None,
@@ -306,5 +332,14 @@ def main():
     return code
 
 
+def guarded_main():
+    """Name an unexpected failure by class and line; the default traceback would print its message."""
+    try:
+        return main()
+    except Exception as exc:
+        print('Firecrawl pilot failure: ' + L.failure_location(exc), file=sys.stderr)
+        return 3
+
+
 if __name__ == '__main__':
-    raise SystemExit(main())
+    raise SystemExit(guarded_main())
