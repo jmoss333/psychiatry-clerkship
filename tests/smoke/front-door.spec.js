@@ -2802,9 +2802,9 @@ test.describe('Interactive readings', () => {
       if (first === 'patient') await page.setViewportSize({ width: 320, height: 844 });
       await page.goto('/?page=t_geri.md&guideSection=acute-inpatient-management');
       const card = page.locator('.fd-article__body #pat-near-fall[data-pat-fall]');
-      const section = card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section") or contains(@class,"sec-c")][1]');
-      await expect(section.locator(':scope > :is(.fd-guide-lead, .sec-h, h2)')).toContainText('Acute inpatient management');
       await expect(card).toBeVisible();
+      // The same authored bold lead survives both the plain reader and the field guide.
+      await expect(card.locator('xpath=preceding::p[strong[1]][1]/strong[1]')).toHaveText('Acute inpatient management');
       const part = key => card.locator('#pat-' + key);
       const control = (kind, value) => card.locator(`button[data-${kind}="${value}"]`);
       const seated = control('position', 'seated');
@@ -2813,6 +2813,7 @@ test.describe('Interactive readings', () => {
       const update = part('update');
       const feedback = part('feedback');
       const seatedImage = await scene.getAttribute('src');
+      await scene.scrollIntoViewIfNeeded();
       await scene.evaluate(image => image.decode());
       const account = {
         patient: 'My head went light as soon as I got up.',
