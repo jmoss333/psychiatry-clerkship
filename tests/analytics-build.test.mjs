@@ -55,7 +55,18 @@ for (const site of ['ms3', 'res']) {
     const connect = /connect-src ([^;]+);/.exec(headers);
     assert.ok(connect, 'connect-src present');
     const origins = connect[1].trim().split(/\s+/);
+    const shell = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
+    const stamp = /var FD_OS_READING_CONFIG=(null|\{[^\n]*\});/.exec(shell);
+    assert.ok(stamp, 'the build declares its reading-sync configuration');
+    const reading = JSON.parse(stamp[1]);
+    const readingOrigins = reading ? [reading.origin] : [];
+    if (reading) {
+      const url = new URL(reading.origin);
+      assert.equal(url.protocol, 'https:');
+      assert.equal(url.origin, reading.origin, 'strict origin without a path or credentials');
+    }
     assert.deepEqual(origins.sort(), [
+      ...readingOrigins,
       "'self'", METRICS_ORIGIN, 'https://sp-interview-proxy.netlify.app', 'https://clerkship-faculty-attest.netlify.app',
     ].sort(), 'connect-src contains only the exact application service origins');
   });
