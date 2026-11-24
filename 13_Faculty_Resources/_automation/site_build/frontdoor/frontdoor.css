@@ -3931,17 +3931,17 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #mar-overlap .mar-sheet{margin-top:var(--fd-space-4);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);overflow:hidden}
 #mar-overlap .mar-days,#mar-overlap .mar-track{display:grid;grid-template-columns:minmax(0,1.12fr) repeat(3,minmax(0,1fr));align-items:stretch}
 #mar-overlap .mar-days{background:var(--fd-teal-wash)}
-#mar-overlap .mar-days span,#mar-overlap [data-mar-cell]{display:grid;align-content:center;text-align:center;padding:var(--fd-space-3) var(--fd-space-1);font-size:.82em;line-height:1.25;overflow-wrap:anywhere}
+#mar-overlap .mar-days span,#mar-overlap [data-mar-cell]{display:grid;align-content:center;text-align:center;padding:var(--fd-space-3) var(--fd-space-1);font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1));line-height:1.25;overflow-wrap:anywhere}
 #mar-overlap .mar-days span:first-child,#mar-overlap .mar-track strong{text-align:start;padding-inline-start:var(--fd-space-3)}
 #mar-overlap .mar-days span:nth-child(3){box-shadow:inset 0 2px var(--fd-teal)}
 #mar-overlap .mar-track{width:100%;padding:0;border:0;border-top:1px solid var(--fd-line);border-radius:0;font-weight:500;color:var(--fd-text)}
 #mar-overlap .mar-track:focus-visible{outline-offset:-3px}
-#mar-overlap .mar-track strong{align-self:center;font-size:.85em;line-height:1.25}
-#mar-overlap .mar-fold{grid-column:2 / 5;align-self:center;padding:var(--fd-space-2) var(--fd-space-3);margin:var(--fd-space-2);background:var(--fd-surface-warm);border-radius:var(--fd-radius-xs);font-size:.85em}
+#mar-overlap .mar-track strong{align-self:center;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));line-height:1.25}
+#mar-overlap .mar-fold{grid-column:2 / 5;align-self:center;padding:var(--fd-space-2) var(--fd-space-3);margin:var(--fd-space-2);background:var(--fd-surface-warm);border-radius:var(--fd-radius-xs);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
 #mar-overlap .mar-fold::after{content:'›';float:right}
 #mar-overlap [data-mar-cell]{border-inline-start:1px solid var(--fd-line)}
 #mar-overlap [data-source=plan] [data-mar-cell]{color:var(--fd-olive-deep);font-weight:650}
-#mar-overlap .mar-legend{font-size:.8em;color:var(--fd-text-mid);margin-top:var(--fd-space-2)}
+#mar-overlap .mar-legend{font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1));color:var(--fd-text-mid);margin-top:var(--fd-space-2)}
 #mar-overlap [data-mar-record] ul{padding-left:1.2em;margin-block:var(--fd-space-3) 0}
 #mar-overlap .mar-voice{font-family:Georgia,serif}
 #mar-overlap .mar-options{display:grid;gap:var(--fd-space-3)}
@@ -3950,8 +3950,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 #mar-overlap details p{margin-top:var(--fd-space-4)}
 @container bedside (max-width:360px){
   #mar-overlap .mar-scene figcaption{padding:var(--fd-space-4)}
-  #mar-overlap .mar-scene blockquote{font-size:1em}
-  #mar-overlap .mar-days span{font-size:.74em}
+  #mar-overlap .mar-scene blockquote{font-size:calc(var(--fd-font-base)*var(--fd-reading-scale,1))}
+  #mar-overlap .mar-days span{font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1))}
 }
 
 #coach-line header{gap:var(--fd-space-3)}
