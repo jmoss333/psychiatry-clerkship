@@ -589,6 +589,8 @@ for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formul
 for scene in ("catie-patient-a.webp", "catie-patient-b.webp"):
     _copy_required(os.path.join(LIB, "07_Evidence_and_Reading", "Rounds_Questions", "illustrations", scene),
                    os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Medical_Workup", "illustrations", "lang-morning-interview.webp"),
+               os.path.join(OUT, "illustrations", "lang-morning-interview.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
                os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),

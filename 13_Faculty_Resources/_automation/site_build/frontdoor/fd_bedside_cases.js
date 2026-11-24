@@ -16,6 +16,7 @@ function fdMountBedsideCases(body) {
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
+  fdMountLangCulture(body);
   fdMountCatieStop(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
@@ -1271,6 +1272,87 @@ function fdMountTreatmentRationale(body) {
   }
   find('[data-qt-other]').addEventListener('click', () => restart(1 - historyIndex));
   find('[data-qt-reset]').addEventListener('click', () => restart(0));
+}
+
+function fdMountLangCulture(body) {
+  const card = body.querySelector('[data-lang-culture]');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = name => card.querySelector('#lang-' + name);
+  const visits = Array.from(card.querySelectorAll('button[data-visit]'));
+  const questions = Array.from(field('questions').querySelectorAll('button[data-ask]'));
+  const options = field('options');
+  const feedback = field('feedback');
+  const comparison = field('compare');
+  const histories = new Map();
+  let account;
+  let history;
+
+  function update() {
+    const matched = Array.from(histories.values()).filter(item => item.matched).length;
+    field('progress').textContent = matched + ' of ' + visits.length + ' handoffs matched';
+    comparison.hidden = matched !== visits.length;
+    if (comparison.hidden) comparison.open = false;
+    if (!history) return;
+
+    for (const question of questions) {
+      const key = question.dataset.ask;
+      const answer = account.querySelector('[data-reply="' + key + '"]');
+      question.setAttribute('aria-pressed', String(history.last === key));
+      question.querySelector('.lang-tag').textContent = history.heard.has(key) ? answer.dataset.label : 'Ask';
+    }
+    field('reply').hidden = !history.last;
+    field('words').textContent = history.last ? account.querySelector('[data-reply="' + history.last + '"]').textContent : '';
+    field('handoffs').hidden = history.heard.size !== questions.length;
+    for (const button of options.children) {
+      button.setAttribute('aria-pressed', String(button.dataset.choice === history.choice));
+    }
+    feedback.hidden = history.choice === null;
+    feedback.textContent = feedback.hidden ? '' : account.querySelector('[data-coaching="' + history.choice + '"]').textContent;
+    feedback.dataset.fit = String(history.matched);
+    field('other').hidden = feedback.hidden || !comparison.hidden;
+  }
+
+  function enter(visit) {
+    const key = visit.dataset.visit;
+    if (!histories.has(key)) histories.set(key, { heard: new Set(), last: null, choice: null, matched: false });
+    account = card.querySelector('template[data-account="' + key + '"]').content;
+    history = histories.get(key);
+    for (const tab of visits) tab.setAttribute('aria-pressed', String(tab === visit));
+    field('interview-title').textContent = visit.textContent + ' · At the bedside';
+    const otherVisit = visits.find(tab => tab !== visit);
+    field('other').textContent = 'Open interview ' + otherVisit.dataset.visit.toUpperCase();
+    options.replaceChildren(...account.querySelector('[data-handoffs]').cloneNode(true).children);
+    field('interview').hidden = false;
+    update();
+    field('interview-title').focus();
+  }
+
+  for (const visit of visits) visit.addEventListener('click', () => enter(visit));
+  for (const question of questions) question.addEventListener('click', () => {
+    history.last = question.dataset.ask;
+    history.heard.add(history.last);
+    update();
+  });
+  options.addEventListener('click', event => {
+    const choice = event.target.closest('button[data-choice]');
+    if (!choice || field('handoffs').hidden) return;
+    history.choice = choice.dataset.choice;
+    history.matched = choice.hasAttribute('data-matched');
+    update();
+  });
+  field('other').addEventListener('click', () => enter(visits.find(tab => tab.getAttribute('aria-pressed') === 'false')));
+  card.querySelector('[data-reset]').addEventListener('click', () => {
+    histories.clear();
+    history = account = null;
+    for (const tab of visits) tab.setAttribute('aria-pressed', 'false');
+    field('interview').hidden = field('reply').hidden = field('handoffs').hidden = feedback.hidden = true;
+    options.replaceChildren();
+    field('words').textContent = feedback.textContent = '';
+    update();
+    visits[0].focus();
+  });
 }
 
 function fdMountCatieStop(body) {
