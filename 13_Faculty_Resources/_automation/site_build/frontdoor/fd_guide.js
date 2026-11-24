@@ -45,12 +45,12 @@ function fdGuideLeads(body){
   });
   return heading||leads.length<FD_GUIDE_LEAD_MIN||words<FD_GUIDE_LEAD_MIN_WORDS?[]:leads;
 }
-/* Prefer a unique verbatim excerpt in the mounted reading. Before excerpts load, only
+/* Among matching passages, prefer a unique verbatim excerpt. Before excerpts load, only
    an unambiguous authored section lead is strong enough to target this way. */
-function fdGuideSearchTarget(candidates,query,sentence){
+function fdGuideSearchTarget(matches,query,sentence){
   var phrase=fdGuideNormalize(query), quote=String(sentence||'').replace(/\s+/g,' ').trim();
   if(!quote&&!phrase)return null;
-  var hits=candidates.filter(function(node){
+  var hits=matches.filter(function(node){
     if(node.closest('[hidden],[aria-hidden="true"],template'))return false;
     if(quote)return node.textContent.replace(/\s+/g,' ').indexOf(quote)!==-1;
     var label=fdGuideNormalize(fdGuideLeadLabel(node));
@@ -311,9 +311,11 @@ function fdGuideMount(body,options){
       var bb=fdGuideNormalize(b.textContent).indexOf(phrase)===0?1:0;
       return bb-aa||candidates.indexOf(a)-candidates.indexOf(b);
     });
-    var selected=selection&&fdGuideSearchTarget(candidates,query,selection.sentence);
+    /* A partial excerpt can explain why Search offered a resource. It can reorder a
+       guide's genuine matches, but cannot create one for a resource alias or title. */
+    var selected=selection&&fdGuideSearchTarget(matches,query,selection.sentence);
     if(selected){
-      matches=matches.filter(function(node){return node!==selected;});
+      matches.splice(matches.indexOf(selected),1);
       matches.unshift(selected);
     }
     while(results.children.length>1)results.removeChild(results.lastChild);

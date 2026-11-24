@@ -4586,30 +4586,36 @@ test.describe('Clinical field guide', () => {
     await expectHealthy(page);
   });
 
-  test('resource aliases and dated titles arrive honestly when no passage matches', async ({ page }, testInfo) => {
-    const resident = isResidentProject(testInfo.project.name);
-    const cases = [
-      ['ask family for collateral', 'collateral_workflow.md'],
-      [`First-Episode Psychosis [Sep 7] — ${resident ? 'Resident' : 'MS3'}?`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
-    ];
-    await seedApp(page, testInfo);
-    for (const [query, ref] of cases) {
-      await page.goto('/');
-      await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
-      await page.getByRole('textbox', { name: 'Search resources', exact: true }).fill(query);
-      const result = page.locator(`.fd-result[data-fd-open="${ref}"]`);
-      await expect(result).toHaveCount(1);
-      await result.press('Enter');
-      await expect(page.locator('.fd-reader--guide')).toBeVisible();
-      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
-      expect(new URL(page.url()).searchParams.get('guideFind')).toBe(query);
-      await expect(page.locator('.fd-guide-arrival')).toContainText('No matching passage in this guide.');
-      await expect(page.locator('.fd-guide-match')).toHaveCount(0);
-      await expect(page.locator('.fd-article__h1')).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeVisible();
-      await expectHealthy(page);
-    }
-  });
+  for (const viewport of [DESKTOP, PHONE]) {
+    test(`resource aliases and dated titles arrive honestly when no passage matches at ${viewport.width}px`, async ({ page }, testInfo) => {
+      const resident = isResidentProject(testInfo.project.name);
+      const cases = [
+        ['ask family for collateral', 'collateral_workflow.md'],
+        [`First-Episode Psychosis [Sep 7] — ${resident ? 'Resident' : 'MS3'}?`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
+      ];
+      await page.setViewportSize(viewport);
+      await seedApp(page, testInfo);
+      for (const [query, ref] of cases) {
+        await page.goto('/');
+        await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+        await page.getByRole('textbox', { name: 'Search resources', exact: true }).fill(query);
+        const result = page.locator(`.fd-result[data-fd-open="${ref}"]`);
+        // A partial source excerpt may arrive after the resource is already selectable.
+        await expect(result.locator('.fd-result__excerpt')).toBeVisible();
+        await result.press('Enter');
+        await expect(page.locator('.fd-reader--guide')).toBeVisible();
+        await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+        expect(new URL(page.url()).searchParams.get('guideFind')).toBe(query);
+        await expect(page.locator('.fd-guide-arrival')).toContainText('No matching passage in this guide.');
+        await expect(page.getByRole('button', { name: 'Go to matching passage', exact: true })).toHaveCount(0);
+        await expect(page.locator('.fd-guide-match')).toHaveCount(0);
+        await expect(page.locator('.fd-article__h1')).toBeVisible();
+        if (viewport === PHONE) await page.locator('.fd-guide-contents > summary').click();
+        await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeVisible();
+        await expectHealthy(page);
+      }
+    });
+  }
 
   test('global search hands a literal phrase to the guide and clears it for a practice tool', async ({ page }, testInfo) => {
     await seedApp(page, testInfo);
