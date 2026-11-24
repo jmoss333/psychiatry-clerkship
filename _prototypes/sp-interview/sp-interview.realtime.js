@@ -493,6 +493,7 @@
           headers: { 'x-student-key': studentKey() },
           cache: 'no-store',
           credentials: 'omit',
+          redirect: 'error',
           referrerPolicy: 'no-referrer',
         };
         if (body !== undefined) {

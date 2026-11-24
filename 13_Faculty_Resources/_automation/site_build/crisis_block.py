@@ -20,6 +20,7 @@ never build time, so the build stays byte-reproducible.
 
 import json
 import os
+import re
 
 MARKER = "<!-- crisis-block -->"
 HTML_MARKER = "<!-- crisis-block-html -->"
@@ -150,6 +151,14 @@ def inject_markdown(text, data):
     """
     if MARKER not in text:
         return text, False
+    # First-person rehearsals can quote a dial or text number straight from the same snapshot.
+    for marker, key in (("{{lifeline-number}}", "lifeline_988"), ("{{emergency-number}}", "emergency_911")):
+        if marker in text:
+            contact = next(resource["contact"] for resource in data["resources"] if resource["id"] == key)
+            number = re.fullmatch(r"(?:Call or text )?([0-9-]+)", contact)
+            if not number:
+                raise ValueError(f"Cannot identify an unambiguous number for {key}: {contact}")
+            text = text.replace(marker, number.group(1))
     return text.replace(MARKER, render_markdown(data)), True
 
 
