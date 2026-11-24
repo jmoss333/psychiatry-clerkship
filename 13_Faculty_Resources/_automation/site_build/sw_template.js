@@ -76,6 +76,9 @@ self.addEventListener('fetch', function(ev){
   if(KILL) return;
   var url=new URL(ev.request.url);
   if(url.origin!==self.location.origin) return;         /* sp-proxy etc: browser-native */
+  /* A learner tapped a specific medication name. Only the network can revalidate the
+     current public feed. The ordinary Pharmacy directory still has its offline copy. */
+  if(url.pathname==='/pharmacy_public.json'&&url.searchParams.get('lookup')==='1') return;
   if(isMedia(url.pathname)) return;                     /* Range semantics: never respondWith */
   if(ev.request.mode==='navigate'){
     ev.respondWith(raceNetwork(ev.request).catch(function(){

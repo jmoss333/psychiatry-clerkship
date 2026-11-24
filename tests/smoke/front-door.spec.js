@@ -84,6 +84,7 @@ test.describe('reviewed Pharmacy card lookup', () => {
   const agent = { id: 'study-med', generic: 'Study medication', brands: ['Studybrand'],
     monitoring: { sourcePage: 'med_monitoring.md' }, qbankIds: ['study-question'],
     review: { reviewer: 'Fixture reviewer', lastReviewed: '2026-11-01' } };
+  const publicFeedUrl = /\/pharmacy_public\.json(?:\?lookup=1)?$/;
   const feed = agents => ({
     schemaVersion: 1, agents, pendingCount: 0,
     cards: agents.map(a => ({ id: 'RX#' + a.id + '#study', drug: a.id, prompt: 'Study prompt',
@@ -92,7 +93,7 @@ test.describe('reviewed Pharmacy card lookup', () => {
 
   for (const name of ['Study medication', 'Studybrand']) {
     test(`opens by ${name} and resumes the same paragraph`, async ({ page }, testInfo) => {
-      await page.route('**/pharmacy_public.json', route => route.fulfill({ json: feed([agent]) }));
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed([agent]) }));
       await seedApp(page, testInfo);
       await controlledReading(page);
       await page.goto('/?page=t_mood.md');
@@ -152,21 +153,100 @@ test.describe('reviewed Pharmacy card lookup', () => {
     });
   }
 
-  test('a card withdrawn between search and opening is unavailable in the lookup', async ({ page }, testInfo) => {
-    await page.route('**/pharmacy_public.json', route => route.fulfill({
-      json: feed(route.request().frame().parentFrame() ? [] : [agent]),
-    }));
+  async function findStudybrand(page, testInfo) {
     await seedApp(page, testInfo);
     await page.goto('/?tab=library');
     await openHeaderSearch(page);
     await page.getByRole('textbox', { name: 'Search resources' }).fill('Studybrand');
-    await page.locator('[data-fd-pharmacy-card="study-med"]').tap();
+    const row = page.locator('[data-fd-pharmacy-card="study-med"]');
+    await expect(row).toBeVisible();
+    return row;
+  }
+
+  const renamed = { ...agent, brands: ['Newbrand'] };
+  const other = { ...agent, id: 'other-med', generic: 'Other medication' };
+  for (const [change, freshAgents] of [
+    ['a card withdrawn', []],
+    ['a brand removed from a reviewed card', [renamed]],
+    ['a brand reassigned to another reviewed card', [renamed, other]],
+    ['a brand shared by two reviewed cards', [agent, other]],
+  ]) {
+    test(`${change} between search and opening is unavailable in the lookup`, async ({ page }, testInfo) => {
+      let agents = [agent];
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed(agents) }));
+      const row = await findStudybrand(page, testInfo);
+      agents = freshAgents;
+      await row.tap();
+      const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+      await expect(frame.locator('#status')).toHaveText('This medication card is unavailable.');
+      await expect(frame.locator('#detail')).toBeEmpty();
+      await expect(frame.locator('button.drug')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Close lookup' }).tap();
+      await expect(page.locator('.fd-library')).toBeVisible();
+      await expectHealthy(page);
+    });
+  }
+
+  test('each tap reads the current card and the first read overlaps the frame load', async ({ page }, testInfo) => {
+    let freshReviewer = '';
+    let feedStarted = false, frameStarted = false;
+    let releaseFeed, releaseFrame;
+    const heldFeed = new Promise(resolve => { releaseFeed = resolve; });
+    const heldFrame = new Promise(resolve => { releaseFrame = resolve; });
+    await page.route(publicFeedUrl, async route => {
+      if (!freshReviewer) return route.fulfill({ json: feed([agent]) });
+      feedStarted = true;
+      await heldFeed;
+      const reviewed = { ...agent, review: { ...agent.review, reviewer: freshReviewer } };
+      await route.fulfill({ json: feed([reviewed]) });
+    });
+    await page.route('**/tools/pharmacy.html?*', async route => {
+      frameStarted = true;
+      await heldFrame;
+      await route.continue();
+    });
+    const row = await findStudybrand(page, testInfo);
+    freshReviewer = 'First tap reviewer';
     const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
-    await expect(frame.locator('#status')).toHaveText('This medication card is unavailable.');
-    await expect(frame.locator('#dname')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Close lookup' }).tap();
-    await expect(page.locator('.fd-library')).toBeVisible();
-    await expectHealthy(page);
+    try {
+      await row.tap();
+      // Neither route can finish until both have started, independently of network timing.
+      await expect.poll(() => ({ feedStarted, frameStarted })).toEqual({ feedStarted: true, frameStarted: true });
+      releaseFrame();
+      await expect(frame.locator('#detail')).toBeEmpty();
+      releaseFeed();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await page.getByRole('button', { name: 'Back to search results' }).tap();
+      freshReviewer = 'Second tap reviewer';
+      await row.tap();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await expectHealthy(page);
+    } finally {
+      releaseFrame();
+      releaseFeed();
+    }
+  });
+
+  test('a failed fresh request leaves the card empty and reopening retries', async ({ page }, testInfo) => {
+    let unavailable = true;
+    const updated = { ...agent, review: { ...agent.review, reviewer: 'Reviewer after recovery' } };
+    await page.route(publicFeedUrl, route => {
+      const fresh = new URL(route.request().url()).searchParams.get('lookup') === '1';
+      if (fresh && unavailable) return route.fulfill({ status: 503, body: 'Temporarily unavailable' });
+      return route.fulfill({ json: feed([fresh ? updated : agent]) });
+    });
+    const row = await findStudybrand(page, testInfo);
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    await row.tap();
+    await expect(frame.locator('#status')).toHaveText(/unavailable|could not be loaded/i);
+    await expect(frame.locator('#detail')).toBeEmpty();
+    await page.getByRole('button', { name: 'Back to search results' }).tap();
+    unavailable = false;
+    await row.tap();
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await expect(frame.locator('.stamp')).toContainText(updated.review.reviewer);
   });
 });
 

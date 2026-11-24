@@ -478,7 +478,7 @@ function fdDispatch(attrs, context, state){
     var rows=s.searchOpen&&!s.pharmacyLookup&&c.searchMatches?c.searchMatches(s):[];
     var card=rows.find(function(row){return row.kind==='pharmacy'&&row.item.id===id;});
     if(!card||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) return {patch:{},route:null,effect:null};
-    return {patch:{pharmacyLookup:{id:id,title:card.item.title,scrollTop:c.searchScroll||0}},route:null,effect:null};
+    return {patch:{pharmacyLookup:{id:id,title:card.item.title,matchedName:fdPharmacyName(s.query),scrollTop:c.searchScroll||0}},route:null,effect:null};
   }
   if(s.pharmacyLookup&&(fdOwn(a,'data-fd-pharmacy-back')||fdOwn(a,'close'))){
     return {patch:{pharmacyLookup:null},route:null,effect:{type:'restore-pharmacy-result'}};
