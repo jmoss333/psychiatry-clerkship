@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 import {
-  AUDIENCES, TOPIC_META, formatPanel, shippedPanelRefs, snapshotDir, snapshotName, unformatPanel,
+  AUDIENCES, formatPanel, shippedPanelRefs, snapshotDir, snapshotName, unformatPanel,
 } from './_panel_render.mjs';
 
 const REGEN = 'rebuild, then run `node bin/render_panels.mjs --write` and commit the diff';
@@ -44,11 +44,7 @@ test('every shipped page that renders a panel has a snapshot, and nothing else d
     const shipped = [...shippedPanelRefs(site)].sort();
 
     const missing = shipped.filter((ref) => !stored.has(snapshotName(ref)));
-    assert.deepEqual(missing, ['rapid_review.md'],
-      `${site}: the set of shipped pages with no snapshot changed.\n`
-      + '  rapid_review.md is expected here and only here: it has no topic_meta entry, so it\n'
-      + '  renders no panel. Anything else means a page that ships lost or gained a panel, or a\n'
-      + `  new page-producing route appeared — snapshot it (${REGEN}) or record why not.`);
+    assert.deepEqual(missing, [], `${site}: every full reading needs a practice panel — ${REGEN}`);
 
     const shippedFiles = new Set(shipped.map(snapshotName));
     const extra = [...stored].filter((f) => !shippedFiles.has(f)).sort();
@@ -57,11 +53,12 @@ test('every shipped page that renders a panel has a snapshot, and nothing else d
   }
 });
 
-test('the one uncovered page is uncovered because it has no metadata at all', () => {
-  // Guards the exemption above from decaying into a permanent excuse. If rapid_review.md ever
-  // gains a topic_meta entry it can render a panel, and it needs a snapshot like everything else.
-  assert.ok(!TOPIC_META['rapid_review.md'],
-    'rapid_review.md now has a topic_meta entry — it may render a panel and needs snapshotting');
+test('readings without teaching metadata offer working practice and review destinations', () => {
+  for (const site of AUDIENCES) {
+    const rapid = readFileSync(path.join(dirOf(site), snapshotName('rapid_review.md')), 'utf8');
+    assert.match(rapid, /href="\?tool=question-bank-practice\.html"/);
+    assert.match(rapid, /href="\?tool=review\.html"/);
+  }
 });
 
 test('the stored snapshots are real panels, not an empty render agreeing with an empty file', () => {
@@ -158,11 +155,7 @@ test('every stored snapshot is that formatting applied to a one-line panel, noth
 });
 
 test('the audiences are stored apart, and their difference is real', () => {
-  // 68 refs are stored under both audiences and only a handful render differently. 68 is the
-  // shared-SNAPSHOT count, not the shared-PAGE count: 69 pages ship to both sites, and the 69th
-  // (rapid_review.md) renders no panel, so it has no snapshot to share. Storing them per audience
-  // costs duplication and buys the ability to say WHICH site a file describes — the ambiguity
-  // that let a resident-only change report zero drift (Codex P2 on #539).
+  // Separate snapshots identify which edition a change affects.
   const resFiles = new Set(filesOf('res'));
   const shared = filesOf('ms3').filter((f) => resFiles.has(f));
   assert.ok(shared.length > 50, `expected many pages to ship to both sites, saw ${shared.length}`);

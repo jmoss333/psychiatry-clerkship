@@ -25,9 +25,7 @@
  * data — and backs the per-audience snapshots. The slicing and the `new Function` construction
  * are shared; only the inputs differ, so there is still no second renderer.
  *
- * COVERAGE: 96 of the 97 shipped pages, across both audiences. rapid_review.md has no
- * topic_meta entry and therefore renders no panel; tests/panel-snapshots.test.mjs asserts that
- * it is the only page missing, by name, rather than counting around it.
+ * Every full reading has a panel, including the shared tools when it has no topic metadata.
  *
  * ORDERING: the byte-comparison gate runs from build_and_check.sh AFTER build_deploy.py, so a
  * failure leaves _build/ current and `node bin/render_panels.mjs --write --site <that site>`
@@ -319,14 +317,11 @@ export function renderFromBuild(site) {
     `${site}: the build left PRACTICE_CASE_TITLES uninjected; drills would render unnamed`);
 
   const built = new Function('esc', 'ctaHref', 'ctaAttrs', 'FD_INDEX', 'FD_TOOL_REGISTRY', 'window',
-    `${builtWorkflow}\n${builtPanel}\nreturn { buildTpl: buildTpl, hasPracticeTpl: hasPracticeTpl };`,
+    `${builtWorkflow}\n${builtPanel}\nreturn { buildTpl: buildTpl };`,
   )(esc, ctaHref, ctaAttrs, index, ctx.FD_TOOL_REGISTRY, {});
 
-  const ships = shippedPanelRefs(site);
-  return Object.entries(ctx.FD_TOPIC_META)
-    .filter(([ref, m]) => m && typeof m === 'object' && ships.has(ref) && built.hasPracticeTpl(m))
-    .map(([ref, m]) => [ref, built.buildTpl(m, ref)])
-    .sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  return [...shippedPanelRefs(site)].sort()
+    .map(ref => [ref, built.buildTpl(ctx.FD_TOPIC_META[ref], ref)]);
 }
 
 /** tests/__panels__/<site>/ — one directory per audience, because a single directory could

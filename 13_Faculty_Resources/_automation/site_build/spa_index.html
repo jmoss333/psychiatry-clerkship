@@ -2088,13 +2088,14 @@
     return html;
   }
   function buildTpl(m,file){
-    if(!hasPracticeTpl(m))return '';
+    var hasTopic=hasPracticeTpl(m);
     /* Ward is a native disclosure, closed on every page mount at every width. Its
        expansion is transient DOM state, never a stored preference or a route field.
        Keep the body and summary intact so native keyboard activation reveals the same content. */
     var h='<details class="topic-tpl practice-panel">';
-    h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">Quick take · bedside use · self-test · drills/tools</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
+    h+='<summary class="practice-summary"><span class="practice-tab">Ward</span><span class="practice-title">On the Unit Practice and Tools</span><span class="practice-sub">'+(hasTopic?'Quick take · bedside use · self-test · drills/tools':'Practice and review')+'</span><span class="practice-hint"><span class="practice-hint-open">Click to open</span><span class="practice-hint-close">Click to close</span></span><span class="practice-chev" aria-hidden="true">›</span></summary>';
     h+='<div class="practice-body">';
+    if(!hasTopic)return h+buildPracticeTools(m,file)+'</div></details>';
     h+='<div class="tpl-meta">'; if(m.read) h+='<span class="tpl-chip read">'+m.read+' min read</span>'; if(m.hy) h+='<span class="tpl-chip hy">★ High-yield</span>'; if(m.safetyLevel==='high') h+='<span class="tpl-chip safety">High-risk workflow</span>'; if(m.evidenceIds&&m.evidenceIds.length) h+='<span class="tpl-chip evidence">'+m.evidenceIds.length+' source'+(m.evidenceIds.length===1?'':'s')+'</span>'; /* No review chip: the governance receipt above the panel already states review status and date, and the head's ✓ pill states attestation — a third rendering on one page was the 2026-09-18 critique's consistency finding. */ h+='</div>';
     var reason=practiceReason(m);
     if(reason) h+='<div class="practice-mode-note"><span class="k">Can\u2019t miss</span><span class="v">'+esc(reason)+'</span></div>';
@@ -2282,7 +2283,7 @@
       var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
-      if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      var _w=document.createElement('div'); _w.innerHTML=buildTpl(_m,item.f); _insertAfterTitle(_w.firstElementChild);
       fdMountPsychosisTimeline(contentEl);
       fdMountLunchInterview(contentEl);
       fdMountNoorDayroom(contentEl);
@@ -4230,7 +4231,7 @@
           if(station)return station;
         }
         var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
-        return (meta?buildTpl(meta,ref):'')+html;
+        return buildTpl(meta,ref)+html;
       },
       facultyPreviewMatches:facultyPreviewMatchesItem,
       facultyPreviewLock:showFacultyPreviewLockNotice,

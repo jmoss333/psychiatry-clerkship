@@ -2413,10 +2413,10 @@ test('Welcome preserves audience scope and gives the MS3 Compass responsive keyb
   ));
   expect(renderedWeeks).toEqual(expectedWeeks);
 
-  const pending = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-compact[role="status"]');
+  const pending = page.locator(':is(.fd-article, .fd-guide-header, .fd-article__head, .fd-article__body) > .governance-notice.pending-compact[role="status"]');
   await expect(pending).toHaveCount(1);
   await expect(pending.locator('.governance-title')).toHaveText('Pending faculty review');
-  await expect(page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.reviewed-receipt')).toHaveCount(0);
+  await expect(page.locator(':is(.fd-article, .fd-guide-header, .fd-article__head, .fd-article__body) > .governance-notice.reviewed-receipt')).toHaveCount(0);
 
   const weekLinks = compassRoot.locator('[data-fd-compass-link]');
   await weekLinks.first().focus();
@@ -4104,6 +4104,169 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  test('breakfast drawer ties both patient accounts and all six rounds updates to the learner’s choices', async ({ page }) => {
+    await page.goto('/?page=t_anxiety.md&guideSection=initial-workup');
+    const workup = page.locator('.fd-article__body .fd-guide-section').filter({ has: page.locator(':scope > #guide-initial-workup') });
+    const card = workup.locator('[data-ocd-drawer]');
+    await expect(card).toBeVisible();
+    const at = id => card.locator('#ocd-' + id);
+    const radio = (slot, value) => card.locator(`input[name="ocd-${slot}"][value="${value}"]`);
+    const scene = at('drawer');
+    const compare = at('comparison');
+    const early = 'Breakfast is called. The patient puts a notebook in the drawer and heads for the hall.';
+    const late = 'For 45 minutes the nurse has seen them go back and forth between the drawer and the doorway. Their breakfast is untouched.';
+    const questions = {
+      meaning: '“Say we got halfway to breakfast. What would be going through your mind?”',
+      intake: '“What have you managed to eat and drink since yesterday?”',
+      support: '“What would help you get to breakfast this morning?”',
+    };
+    // Independent copy of the reviewed dialogue so a swapped answer, rationale or rounds update fails here.
+    const accounts = {
+      responsibility: {
+        title: "First reply",
+        before: "fear",
+        after: "relief",
+        quote: "“My sister’s number is on that page. What if it fell out and somebody picked it up? I open the book, see it’s still there and I can breathe. Then I get to the door and think, did I actually see it? Could you look with me?”",
+        beforeHint: "What does the patient imagine could happen to the page as they walk away?",
+        afterHint: "The patient says they can breathe when they see the page. What changes by the doorway?",
+        follow: {
+          meaning: [
+            "“I’d be trying to picture her number on that page. Then I’d start picking the memory apart. Was that today, or was it yesterday?”",
+            "Mentally replaying the check follows the patient into the hall. Ask about time spent on these quieter rituals, too.",
+            "The patient describes checking the page for brief relief, then mentally replaying the check on the way to breakfast."
+          ],
+          intake: [
+            "“Some soup at lunch yesterday. By the time I got out for dinner they’d cleared it. I’ve had a few sips of water this morning. I really do want to eat.”",
+            "Tell the nurse and supervising clinician about the limited intake now so they can assess hydration and help the patient access a meal.",
+            "The patient reports soup yesterday, a missed dinner and only a few sips of water this morning. I’ll update nursing and my supervisor now."
+          ],
+          support: [
+            "“If you check it for me, I’ll just ask you again. Could you walk with me instead? It’d help to talk about something else on the way.”",
+            "The patient anticipates what another check would lead to and asks for company. Share that preference so staff can offer consistent support.",
+            "The patient asked for company on the walk to breakfast and expects another check would bring another request. We can offer to walk together."
+          ]
+        }
+      },
+      incomplete: {
+        title: "Alternate reply",
+        before: "unfinished",
+        after: "tension",
+        quote: "“I know the book’s there. It’s like when you stop halfway through a word. I shut the drawer and it still feels half done. I open it again hoping that feeling will go. It hasn’t. I’m hungry and I’m still standing here.”",
+        beforeHint: "The patient knows where the book is. What do they say closing the drawer feels like?",
+        afterHint: "Listen to “It hasn’t.” What is the patient still waiting to feel before they go to breakfast?",
+        follow: {
+          meaning: [
+            "“I don’t think anything bad would happen. My hand would be itching to go back and close it properly. It’s hard to listen to anyone when it feels like that.”",
+            "The patient names a bodily urge and difficulty shifting attention. Use those words without supplying a feared event.",
+            "The patient describes a persistent unfinished feeling and a physical urge to repeat the action. They identify no feared consequence."
+          ],
+          intake: [
+            "“Dinner was yogurt and water. The nurse sat with me. This morning I haven’t had a drink yet. My tea’s in the dining room.”",
+            "Share what the patient actually ate and drank. Check intake with nursing and help them reach food and fluids this morning.",
+            "The patient reports yogurt and water at dinner with nursing support and no fluid yet this morning. I’ll check intake with nursing."
+          ],
+          support: [
+            "“Give me a minute. Then could you come back and say breakfast is still there? When everyone stands in the doorway waiting, I feel rushed.”",
+            "Ask when to return and check that breakfast will still be available. A brief agreed check-in gives the patient space and a route back to the meal.",
+            "The patient asked for a minute alone and a return visit. I’ll agree on a time and confirm with nursing that breakfast can be kept available."
+          ]
+        }
+      }
+    };
+
+    const breakfastImage = scene.locator('.ocd-early img');
+    const laterImage = scene.locator('.ocd-late img');
+    await scene.scrollIntoViewIfNeeded();
+    await expect(scene).toHaveAccessibleName('Show the 8:30 nursing observation');
+    await expect(breakfastImage).toBeVisible();
+    await expect.poll(() => breakfastImage.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+    await expect(laterImage).toBeHidden();
+    await expect(at('scene-note')).toHaveText(early);
+    await expect(at('interview')).toBeHidden();
+    await scene.press('Enter');
+    await expect(breakfastImage).toBeHidden();
+    await expect(laterImage).toBeVisible();
+    await expect.poll(() => laterImage.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+    await expect(at('scene-note')).toHaveText(late);
+    await expect(scene).toHaveAccessibleName('Return to the 7:45 breakfast call');
+    await scene.click();
+    await expect(at('scene-note')).toHaveText(early);
+    await scene.click();
+    await card.getByRole('button', { name: 'First reply', exact: true }).click();
+    for (const [key, account] of Object.entries(accounts)) {
+      await test.step(account.title, async () => {
+        const other = key === 'responsibility' ? accounts.incomplete : accounts.responsibility;
+        await expect(card.locator(`[data-story="${key}"]`)).toHaveAttribute('aria-pressed', 'true');
+        await expect(at('quote')).toHaveText(account.quote);
+        await expect(at('next')).toBeHidden();
+        await expect(compare).toBeHidden();
+
+        await at('check').click();
+        await expect(at('map-feedback')).toHaveText('Fill in both ends of the map before checking it.');
+        await radio('before', other.before).check();
+        await radio('after', other.after).check();
+        await at('check').click();
+        await expect(at('map-feedback')).toHaveText(account.beforeHint);
+        await expect(at('next')).toBeHidden();
+        await radio('before', account.before).check();
+        await at('check').click();
+        await expect(at('map-feedback')).toHaveText(account.afterHint);
+        await expect(at('next')).toBeHidden();
+        await radio('after', account.after).check();
+        await at('check').click();
+        await expect(at('map-feedback')).toHaveText('Your map matches this account. Choose what you would ask next.');
+        await expect(at('next')).toBeVisible();
+        await expect(at('exchange')).toBeHidden();
+        await expect(compare).toBeHidden();
+
+        for (const [question, [answer, reason, handoff]] of Object.entries(account.follow)) {
+          const choice = card.getByRole('button', { name: questions[question], exact: true });
+          await choice.click();
+          await expect(choice).toHaveAttribute('aria-pressed', 'true');
+          await expect(at('exchange')).toBeVisible();
+          await expect(at('answer')).toHaveText(answer);
+          await expect(at('reason')).toHaveText(reason);
+          await expect(at('handoff')).toBeVisible();
+          await expect(at('handoff')).toHaveText(handoff);
+          if (key === 'responsibility') await expect(compare).toBeHidden();
+        }
+      });
+      if (key === 'responsibility') {
+        await card.getByRole('button', { name: questions.intake, exact: true }).click();
+        await at('other').click();
+      }
+    }
+
+    await compare.locator('summary').click();
+    await expect(at('echo-responsibility')).toHaveText('When you asked about food and fluids, the patient said ' + accounts.responsibility.follow.intake[0]);
+    await expect(at('echo-incomplete')).toHaveText('When you asked about help getting to breakfast, the patient said ' + accounts.incomplete.follow.support[0]);
+    await at('other').click();
+    await expect(at('handoff')).toHaveText(accounts.responsibility.follow.intake[2]);
+    await radio('before', 'unfinished').check();
+    await expect(compare).toBeHidden();
+    await expect(compare).toHaveJSProperty('open', false);
+    await expect(at('next')).toBeHidden();
+    await expect(at('handoff')).toBeEmpty();
+    await card.getByRole('button', { name: 'Alternate reply', exact: true }).click();
+    await expect(at('handoff')).toBeVisible();
+    await expect(at('handoff')).toHaveText(accounts.incomplete.follow.support[2]);
+    await expect(compare).toBeHidden();
+    await at('reset').click();
+    await expect(scene).toBeFocused();
+    await expect(at('scene-note')).toHaveText(early);
+    await expect(at('interview')).toBeHidden();
+    await expect(at('work')).toBeHidden();
+    await expect(at('handoff')).toBeEmpty();
+    await expect(compare).toBeHidden();
+    await expect(card.locator('[aria-pressed="true"], input:checked')).toHaveCount(0);
+    await scene.click();
+    for (const key of Object.keys(accounts)) {
+      await card.locator(`[data-story="${key}"]`).click();
+      await expect(card.locator('input:checked')).toHaveCount(0);
+      await expect(at('next')).toBeHidden();
+    }
+  });
+
   test('Which came first? ties the timeline, interpretation and rounds note to Alex’s selected history', async ({ page }) => {
     await page.goto('/?page=ddx.md&guideSection=4-manic-elevated-irritable');
     const heading = page.locator('.fd-article__body #guide-4-manic-elevated-irritable');
@@ -4528,7 +4691,7 @@ test.describe('Clinical field guide', () => {
     await page.route('**/governance.json', route => route.fulfill({ json: ledger }));
     await seedApp(page, testInfo, { state: { tab: 'library' } });
     await page.goto(`${GUIDE_URL}&guideFind=behavioral%20activation`);
-    const warning = page.locator(':is(.fd-article, .fd-article__head, .fd-article__body) > .governance-notice.pending-high');
+    const warning = page.locator(':is(.fd-article, .fd-guide-header, .fd-article__head, .fd-article__body) > .governance-notice.pending-high');
     await expect(page.locator('.fd-reader--guide')).toBeVisible();
     await expect(warning).toHaveCount(1);
     await expect(warning).toContainText('Pending faculty review');
@@ -4622,7 +4785,7 @@ test.describe('Clinical field guide', () => {
     await page.goto(`/?page=${ref}`);
 
     const header = page.locator('.fd-guide-header');
-    const bedside = header.locator('.fd-article__h1 + .fd-bedside-case');
+    const bedside = header.locator('.fd-article__h1 ~ .fd-bedside-case');
     await expect(header.locator('.governance-notice.pending-high ~ .fd-article__h1')).toBeVisible();
     await expect(bedside.locator('figcaption')).toContainText('What’s behind the pacing?');
     await expect(bedside.locator('img')).toBeVisible();
@@ -5133,7 +5296,7 @@ test.describe('Clinical field guide', () => {
     const warning = page.locator('.fd-reader .governance-notice.pending-high');
     await expect(warning).toHaveCount(1);
     await expect(warning).toBeVisible();
-    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 + .fd-bedside-case');
+    const bedside = header.locator('.governance-notice.pending-high ~ .fd-article__h1 ~ .fd-bedside-case');
     await expect(bedside.locator('figcaption')).toContainText('Both slept three hours.');
     const art = bedside.locator('img');
     await expect(art).toHaveAttribute('src', 'illustrations/mood-breakfast.webp');
@@ -9534,6 +9697,41 @@ test('Library view switch fits at 320px with wider fallback font metrics', async
   await expectHealthy(page);
 });
 
+// Both guide formats use the page title as the entry point for practice.
+for (const [ref, section] of [['t_anxiety.md', 'initial-workup'], ['orientation.md', 'daily-rhythm']]) {
+  test(`practice panel precedes guide navigation and bedside teaching on ${ref}`, async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
+    await page.goto(`/?page=${ref}`);
+
+    const reader = page.locator('.fd-reader--guide');
+    const header = reader.locator('.fd-guide-header');
+    const panel = header.locator('.fd-article__h1 ~ details.practice-panel');
+    const summary = panel.locator(':scope > summary');
+    await expect(reader.locator('details.practice-panel')).toHaveCount(1);
+    await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
+    await expect(summary).toBeInViewport();
+    await expect(panel).toHaveJSProperty('open', false);
+    const contents = reader.locator('.fd-guide-contents');
+    const summaryBox = await summary.boundingBox();
+    expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual((await contents.boundingBox()).y + 1);
+    if (ref === 't_anxiety.md') {
+      await expect(header.locator('details.practice-panel ~ .fd-bedside-case')).toBeVisible();
+    }
+
+    await summary.press('Enter');
+    await expect(panel.locator('.practice-body')).toBeVisible();
+    await summary.press('Space');
+    await expect(panel.locator('.practice-body')).toBeHidden();
+    await contents.locator('summary').click();
+    await contents.locator(`[data-guide-section="guide-${section}"]`).click();
+    await expect(reader.locator(`#guide-${section}`)).toBeFocused();
+    await expect(page).toHaveURL(new RegExp(`guideSection=${section}(?:&|$)`));
+    await expectHealthy(page);
+  });
+}
+
 // The Ward accessory is a native disclosure; a new page mount never carries its expanded
 // presentation. Saved study records and the article's own disclosures are independent.
 for (const width of [320, 390, 1280]) {
@@ -9549,7 +9747,7 @@ for (const width of [320, 390, 1280]) {
       await page.route(`**/content/${ref}`, route => route.fulfill({ contentType: 'text/markdown',
         body: '# Synthetic study notes\n\n<details id="unrelated-study" open><summary>Article study notes</summary><p>Synthetic notes remain available.</p></details>\n\n### Study section\n\nNeutral study text.' }));
     }
-    const ward = page.locator('.fd-article__body > details.practice-panel');
+    const ward = page.locator('.fd-reader details.practice-panel');
     const summary = ward.locator(':scope > summary');
     async function ready(ref) {
       await expect(page.locator('.fd-article')).toHaveAttribute('data-ref', ref);
@@ -9557,7 +9755,12 @@ for (const width of [320, 390, 1280]) {
       await expect(ward).not.toHaveAttribute('open', '');
       expect(await ward.evaluate(el => el.open)).toBe(false);
       await expect(summary).toHaveAccessibleName(/^On the Unit Practice and Tools\b/);
-      await expect(page.locator('#unrelated-study')).toHaveAttribute('open', '');
+      const authored = page.locator('#unrelated-study');
+      const title = page.locator('.fd-article__h1');
+      const summaryBox = await summary.boundingBox();
+      expect(summaryBox.y).toBeGreaterThanOrEqual((await title.boundingBox()).y);
+      expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual((await authored.boundingBox()).y + 1);
+      await expect(authored).toHaveAttribute('open', '');
       await expect(page.locator('#unrelated-study p')).toBeVisible();
     }
     await page.goto('/?page=t_mood.md');

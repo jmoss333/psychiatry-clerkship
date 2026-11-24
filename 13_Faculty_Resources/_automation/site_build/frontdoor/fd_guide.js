@@ -48,6 +48,10 @@ function fdGuideLeads(body){
 function fdGuideMount(body,options){
   var o=options||{}, reader=body&&body.closest('.fd-reader');
   if(!reader||reader.classList.contains('fd-reader--tool'))return null;
+  /* Place the same disclosure beneath the title on both plain readings and field guides. */
+  var article=body.closest('.fd-article'), title=article.querySelector(':scope > .fd-article__h1');
+  var panel=body.querySelector(':scope > .practice-panel');
+  if(panel&&title)title.insertAdjacentElement('afterend',panel);
   /* Embedded components may contain their own headings (the orientation Compass does).
      Only the reader's top-level teaching sections opt into this layout. */
   var leads=[];
@@ -118,7 +122,7 @@ function fdGuideMount(body,options){
   }
   function expose(target){
     var node=target;
-    while(node&&node!==body){
+    while(node&&node!==reader){
       if(node.tagName==='DETAILS')node.open=true;
       if(node.classList&&node.classList.contains('sec-c')){
         node.classList.add('open');
@@ -132,7 +136,7 @@ function fdGuideMount(body,options){
   function go(target,highlight){
     if(!target)return;
     expose(target);
-    each(body.querySelectorAll('.fd-guide-match'),function(n){n.classList.remove('fd-guide-match');});
+    each(reader.querySelectorAll('.fd-guide-match'),function(n){n.classList.remove('fd-guide-match');});
     if(highlight)target.classList.add('fd-guide-match');
     if(!desktop())contents.open=false;
     target.tabIndex=-1;
@@ -165,13 +169,12 @@ function fdGuideMount(body,options){
     shortcut.setAttribute('data-fd-open',practice.getAttribute('data-fd-open'));
     margin.insertBefore(shortcut,contents);
   }
-  var columns=reader.querySelector('.fd-reader__cols'), article=reader.querySelector('.fd-article');
+  var columns=reader.querySelector('.fd-reader__cols');
   var guideHeader=el('header','fd-guide-header');
   var bedsideCase=body.querySelector(':scope > .fd-bedside-case');
   each([].slice.call(article.children),function(node){
-    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead')||
-        (bedsideCase&&node.classList.contains('governance-notice')))guideHeader.appendChild(node);
-    if(bedsideCase&&node.classList.contains('fd-article__h1'))guideHeader.appendChild(bedsideCase);
+    if(node.matches('.governance-notice,.fd-article__head,.fd-article__h1,.fd-article__lead')||node===panel)guideHeader.appendChild(node);
+    if(bedsideCase&&node===(panel||title))guideHeader.appendChild(bedsideCase);
   });
   columns.insertBefore(guideHeader,article);columns.insertBefore(margin,article);
   if(bedsideCase)fdMountCaseRounds(reader,function(source){return printOpened.indexOf(source)!==-1;});
@@ -222,7 +225,9 @@ function fdGuideMount(body,options){
     });
   });
 
-  var candidates=[].slice.call(body.querySelectorAll('p,li,tr,h3')).filter(function(node){
+  var passages='p,li,tr,h3';
+  var panelPassages=panel?[].slice.call(panel.querySelectorAll(passages)):[];
+  var candidates=panelPassages.concat([].slice.call(body.querySelectorAll(passages))).filter(function(node){
     return !node.closest('.fd-guide-table-rows,.governance-notice,.pgfb,.tpl')&&
       !(node.tagName==='P'&&node.closest('li'))&&node.textContent.trim().length>2;
   });
@@ -237,7 +242,7 @@ function fdGuideMount(body,options){
   }
   function find(query,autoFocus){
     query=String(query||'').trim().slice(0,160);input.value=query;
-    each(body.querySelectorAll('.fd-guide-match'),function(node){node.classList.remove('fd-guide-match');});
+    each(reader.querySelectorAll('.fd-guide-match'),function(node){node.classList.remove('fd-guide-match');});
     if(cue){cue.remove();cue=null;}
     var words=fdGuideNormalize(query).split(/\s+/).filter(Boolean), matches=[];
     if(words.length)candidates.forEach(function(node){
@@ -290,7 +295,7 @@ function fdGuideMount(body,options){
     each(reader.querySelectorAll('.visual-practice details[name]'),function(d){
       printGroups.push([d,d.getAttribute('name')]);d.removeAttribute('name');
     });
-    each(reader.querySelectorAll('.fd-article__body details:not([open]),.fd-bedside-case details:not([open])'),function(d){printOpened.push(d);d.open=true;});
+    each(reader.querySelectorAll('.fd-article__body details:not([open]),.fd-bedside-case details:not([open]),.practice-panel:not([open]),.practice-panel details:not([open])'),function(d){printOpened.push(d);d.open=true;});
   }
   function afterPrint(){
     printOpened.forEach(function(d){d.open=false;});printOpened=[];
