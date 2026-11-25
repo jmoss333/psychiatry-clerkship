@@ -89,6 +89,16 @@ function boot(engineOverride, seed) {
       click({ 'data-act': 'home' });
       return app.innerHTML;
     },
+    /** Play `first` to its end, press "Try again from this moment" at step `at`, play `then`. */
+    playRewound(scId, first, at, then) {
+      store.clear();
+      click({ 'data-act': 'open', 'data-id': scId });
+      for (const s of first) click({ 'data-act': 'choose', 'data-choice': s.choice });
+      click({ 'data-act': 'rewind', 'data-step': at });
+      for (const s of then) click({ 'data-act': 'choose', 'data-choice': s.choice });
+      click({ 'data-act': 'home' });
+      return app.innerHTML;
+    },
   };
 }
 
@@ -241,14 +251,26 @@ const LEGACY_FILES = {
   'v0-3f1a24f6.html': '82580da530eb8174c60e154eb7aad981d09d6c093eeb220baf39d0a0fc477e5c',
   'v1-61530b10.html': '98b52ef80fcfef8687485da05c1a3c685cf9ec8c0ae432b6ad182a5708409d9c',
   'v2-f8ad7c90.html': '61aa1211d3800962a72bed8f3359c884aa1edf948d2a2daf744e8216c5dc06e3',
+  // main 2026-11-17 (#1232, LEDGER-MAIN) to 2026-11-25: same scenario data as v2-f8ad7c90, but a
+  // rewound attempt that carried a miss stored the LOWEST safety % over its passes (attemptTally),
+  // so a value a clean path reaches could still have been written by an attempt with a miss.
+  'v2ledger-ac59dddc.html': '21ded1ef5cff3fc0a7e52a3faf3df14dcce7b7ceebd5000b28b5be55fad90518',
 };
+/** Files whose picker stored min(safety) over the passes of an attempt that carried a miss. */
+const LEDGER_FILES = new Set(['v2ledger-ac59dddc.html']);
 
-/** Safety % values reachable by a clean run and by no other run, across every shipped version. */
+/** Safety % values reachable by a clean run and by no other run, across every shipped version.
+ *  For a ledger-era file, a stored value V could also be min(V, W) for a final pass V after an
+ *  earlier pass W that had a miss; so V counts as 'other' whenever some path with a miss reaches
+ *  W >= V. This over-approximates which pass combinations a rewind allows, so it can only remove
+ *  more legacy bests, never keep one that a missed run could have written. */
 function deriveLegacyClean() {
   const clean = {}, other = {};
   const add = (m, id, v) => { (m[id] = m[id] || new Set()).add(v); };
-  const files = Object.keys(LEGACY_FILES).map((f) => readFileSync(new URL(f, FIX), 'utf8')).concat([html]);
-  for (const src of files) {
+  const files = Object.keys(LEGACY_FILES).map((f) => [f, readFileSync(new URL(f, FIX), 'utf8')]).concat([['(shipped)', html]]);
+  for (const [fname, src] of files) {
+    const ledger = LEDGER_FILES.has(fname);
+    const cleanHere = {}, missHere = {};
     const b = (re) => { const m = src.match(re); return m ? m[1] : null; };
     const D = JSON.parse(b(/<script type="application\/json" id="fms-scenarios">([\s\S]*?)<\/script>/));
     const Eng = new Function(`${b(/<script id="fms-engine">([\s\S]*?)<\/script>/)}\nreturn FMSEngine;`)();
@@ -272,7 +294,15 @@ function deriveLegacyClean() {
           if (g.items.some((i) => i.status === 'missed')) cls = 'missed';
           else if (cls === 'clean' && (g.items.some((i) => i.status === 'met-after-miss') || g.flags.some((f) => f.kind === 'safety'))) cls = 'after-miss';
         }
-        add(cls === 'clean' ? clean : other, sc.id, Eng.tally(sc, p.steps).safety.pct);
+        const pct = Eng.tally(sc, p.steps).safety.pct;
+        add(cls === 'clean' ? clean : other, sc.id, pct);
+        add(cls === 'clean' ? cleanHere : missHere, sc.id, pct);
+      }
+    }
+    if (ledger) {
+      for (const id of Object.keys(cleanHere)) {
+        const maxMiss = Math.max(-Infinity, ...[...(missHere[id] || [])].filter((v) => v !== null));
+        for (const v of cleanHere[id]) if (v !== null && v <= maxMiss) add(other, id, v);
       }
     }
   }
@@ -383,4 +413,40 @@ test('known-miss: an identity migration and a wipe migration are both caught', (
   assert.ok(identity.some((p) => p.includes('legacy-v1-mixed.json removed')), `identity keeps unsafe bests: ${identity.join(' | ')}`);
   const wipe = migrationProblems(() => ({ v: 2 }));
   assert.ok(wipe.some((p) => p.includes('removed') && p.includes('/runs')), `wipe drops unrelated progress: ${wipe.join(' | ')}`);
+});
+
+// --- a step done only on a later try (Josh, 2026-11-25) ------------------------------------------
+// Real property: a run on which a required safety step was missed and then done only after
+// "Try again from this moment" is 'completed after a miss' on the picker, never a clean run, even
+// though the final pass alone would read as clean. This matches the miss ledger (#1232): a rewind
+// never erases a miss. Known-miss: the pass-only class (ignoring the attempt) labels it clean.
+
+const S8_MISSED = 'open#0 picture#0 drinking#0 worry#2 repair-dismiss#2 roles-unrouted#0 close#0';
+const S8_CLEAN = 'open#0 picture#0 drinking#0 worry#0 worry-answer#0 roles#0 close#0';
+function s8Rewound(page) {
+  const s8 = DATA.scenarios.find((s) => s.id === 'parent-own-untreated-illness');
+  const find = (refs) => E.paths(s8).find((p) => p.steps.map((s) => `${s.node}#${s.choice}`).join(' ') === refs).steps;
+  const missed = find(S8_MISSED), clean = find(S8_CLEAN);
+  const at = missed.findIndex((s) => s.node === 'worry');
+  assert.ok(at > 0, 'the missed path reaches worry');
+  const html = page.playRewound(s8.id, missed, at, clean.slice(at));
+  return { s8, html, rec: JSON.parse(page.store.get('cw_family_sim_v1')).scenarios[s8.id] };
+}
+
+test('later try: a safety step done only after a rewind is completed after a miss, never clean', () => {
+  const { s8, html, rec } = s8Rewound(boot());
+  assert.equal(rec.runs, 2, 'each finished pass counts as a played run, as on main');
+  assert.equal(rec.safetyRun, 'after-miss');
+  const labels = new Function(`${ENGINE_SRC}\n${RENDER_SRC}\nreturn FMSRender;`)().TEXT.safetyRun;
+  const card = html.split('<li>').find((li) => li.includes(`data-id="${s8.id}"`));
+  assert.ok(card.includes(labels['after-miss'].replace(/&/g, '&amp;')), 'picker says completed after a miss');
+  assert.ok(!card.includes(labels.clean), 'picker does not say clean run');
+});
+
+test('known-miss: classing the rewound attempt by its final pass alone calls it clean', () => {
+  // The page reads the attempt's gate through FMSEngine.attemptGate; the pass-only reading is the
+  // plain gate of the final pass.
+  const passOnly = (Eng) => { Eng.attemptGate = (sc, steps, flagDefs) => Eng.gateStatus(sc, steps, flagDefs); };
+  const { rec } = s8Rewound(boot(passOnly));
+  assert.equal(rec.safetyRun, 'clean', 'without the attempt, the rewound run would read as clean');
 });
