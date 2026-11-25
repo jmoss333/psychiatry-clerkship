@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(860 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(866 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -853,6 +853,10 @@ the Library.
 
 ## 6. Reader (reading / tool pane)
 
+In reading text, a dotted underline on a medication name opens its reviewed Pharmacy card.
+The inline button inherits the surrounding type and prints as ordinary text. Closing the
+card returns focus to the same word and preserves the reading position.
+
 When a resource opens from Search, the top `.fd-reader__back` button becomes “Back to search results.”
 It restores the query, expansion, selected action and results scroll from the current visit.
 The saved result order survives a delayed page-text load. Editing or starting a new search uses
@@ -1496,3 +1500,41 @@ Both circuits label the current case with `.fd-circuit__case`. The facilitator u
 During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
 
 When the repeat ends, the primary timer button takes the facilitator to the receiver read-back. On phones up to 430px wide, a selected feedback focus shares the first row with the countdown. The controls sit on a separate row so switching from Start to Read-back leaves the focus and time readable.
+
+### Reference excerpts — "In the paper's own words" (2026-11-25)
+
+`fd_ref_evidence.js` appends one collapsed `<details class="fd-ref-evidence">` to the end of a
+reading's list item (`li`) when the item cites a PMID or DOI that `evidence_excerpts.json` knows.
+Four selectors, no new colour, no state class:
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-ref-evidence` | `details` | Sits inside the citing `li`, after the citation text. Scales with `--fd-reading-scale`. |
+| `.fd-ref-evidence__toggle` | `summary` | "In the paper's own words"; a 44px touch target with the shared 3px focus ring. |
+| `.fd-ref-evidence__quote` | `blockquote` | The verbatim span. Upright, not italic: it is a quotation, not emphasis. |
+| `.fd-ref-evidence__meta` | `p` | Span kind and the date it was checked against the source. |
+
+⚠ trap: the excerpt lives inside the `li`, so any rule that styles `li > *` in a reading also
+reaches it. It carries text only: no links, buttons or storage.
+
+**Tappable citations.** `fdRefCiteMarkup` gives each entry of the page's closing References list
+`id="fd-ref-N"` and `tabindex="-1"`, and turns each bracketed number in the text above it that
+names an entry into `<button type="button" class="fd-cite">N</button>` (the brackets stay text).
+A tap opens a collapsed `.sec-c` section if the entry sits in one, scrolls the entry to the
+middle of the screen and focuses it. One selector:
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-cite` | `button` | Inline, inherits the sentence's font; underlined teal like a link. Never inside a link, code, a heading or another button. |
+
+### "Updated since you last opened it" (2026-11-25)
+
+`fd_page_changed.js` keeps a fingerprint of each reading's text on the device (`cw_page_seen_v1`,
+ref → `{h, at}`, capped at 400 pages) each time the reader opens it. When a page the learner marked
+read is opened and its fingerprint changed, one status line goes directly after the page's `h1`,
+once; the next open is silent. Learner reader only, never the faculty preview.
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-page-changed` | `p[role=status]` | Olive wash and rule (information, not danger). Scales with `--fd-reading-scale`. |
+

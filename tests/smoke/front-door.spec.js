@@ -29,11 +29,11 @@ const READING_FAILURE = 'Reading place could not be saved on this device';
 // to the top. t_mood.md drifted on 2026-09-24 (#763) and this suite went intermittently red for
 // it: a test of the reading place, failing on the faculty's queue (CLAUDE.md: never depend on
 // live governance state). Pinning it reviewed/low keeps these tests about the reading place.
-async function controlledReading(page, ref = READING_REF) {
+async function controlledReading(page, ref = READING_REF, sectionTwoText = '') {
   await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
   const filler = 'A short note about organizing study time. '.repeat(28);
   const markdown = '# Study notes\n\n' + [1, 2, 3].map(n =>
-    `### Section ${n}\n\n${filler}\n\n${filler}\n`).join('\n');
+    `### Section ${n}\n\n${n === 2 && sectionTwoText ? sectionTwoText + '\n\n' : ''}${filler}\n\n${filler}\n`).join('\n');
   await page.route(`**/content/${ref}`, route => route.fulfill({
     contentType: 'text/markdown', body: markdown,
   }));
@@ -152,6 +152,51 @@ test.describe('reviewed Pharmacy card lookup', () => {
       await expectHealthy(page);
     });
   }
+
+  test('tapping a medication in a reading returns to the same word after the card list arrives', async ({ page }, testInfo) => {
+    let release;
+    const ready = new Promise(resolve => { release = resolve; });
+    await page.route('**/pharmacy_public.json', async route => {
+      await ready;
+      await route.fulfill({ json: feed([agent]) });
+    });
+    await seedApp(page, testInfo);
+    await controlledReading(page, READING_REF, 'Compare **Studybrand** with the notes from yesterday.');
+    await page.goto('/?page=' + READING_REF);
+    await readingReady(page);
+    const paragraph = page.locator('.fd-article__body p').filter({ hasText: 'Compare Studybrand' });
+    await paragraph.evaluate(el => window.scrollTo(0, scrollY + el.getBoundingClientRect().top - 160));
+    const original = await paragraph.elementHandle();
+    const position = () => original.evaluate(el => ({ y: scrollY, top: el.getBoundingClientRect().top }));
+    const before = await position();
+    const url = page.url();
+    const word = paragraph.locator('[data-fd-reading-pharmacy="study-med"]');
+    await expect(word).toHaveCount(0);
+    release();
+    await expect(word).toHaveText('Studybrand');
+    await expect(word).toBeInViewport();
+    await word.tap();
+    const lookup = page.getByRole('dialog', { name: 'Study medication · Pharmacy card' });
+    const frame = lookup.frameLocator('iframe');
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await expect(lookup.getByRole('button', { name: 'Back to search results' })).toHaveCount(0);
+    await lookup.getByRole('button', { name: 'Return to reading' }).tap();
+    await expect(word).toBeFocused();
+    expect(await position()).toEqual(before);
+    await page.keyboard.press('Enter');
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await page.keyboard.press('Tab');
+    await expect(frame.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(frame.locator('#depth-toggle')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(word).toBeFocused();
+    expect(await original.evaluate(el => el.isConnected)).toBe(true);
+    expect(await position()).toEqual(before);
+    expect(page.url()).toBe(url);
+    await expectHealthy(page);
+  });
 
   async function findStudybrand(page, testInfo) {
     await seedApp(page, testInfo);
@@ -2936,7 +2981,10 @@ async function guideRenderedInventory(page) {
   return page.locator('.fd-article__body').evaluate(body => {
     const root = body.cloneNode(true);
     // Exclude enhancement-only controls and the alternative table view, never authored nodes.
-    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint')
+    // .fd-ref-evidence is the collapsed verified-excerpt box the reader appends inside a cited
+    // reference (fd_ref_evidence.js) and .fd-page-changed the one-time changed-page notice
+    // (fd_page_changed.js): both are added by the reader, not authored on the page.
+    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint, .fd-ref-evidence, .fd-page-changed')
       .forEach(el => el.remove());
     const normalize = text => text.replace(/\s+/g, ' ').trim();
     const text = element => normalize(element.textContent);
@@ -7864,10 +7912,14 @@ test.describe('Essentials Phase 2', () => {
     await page.reload();
     await expect(filterField(page)).toHaveValue('');
     await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
-    // Opening the reading above recorded cw_last (an existing store); nothing else changed, and no
-    // stored value ever carried the query.
+    // Opening the reading above recorded cw_last (an existing store) and the page's text
+    // fingerprint in cw_page_seen_v1 (fd_page_changed.js, keyed by ref); nothing else changed,
+    // and no stored value ever carried the query.
     const after = await page.evaluate(shellMemory);
+    // (The ref itself may contain the query's word, e.g. t_mood.md; the store holds only refs.)
+    expect(Object.keys(JSON.parse(after.local.cw_page_seen_v1 || '{}'))).toEqual([ref]);
     delete after.local.cw_last;
+    delete after.local.cw_page_seen_v1;
     expect(after).toEqual({ ...before, url: page.url() });
     await expectHealthy(page);
   });
