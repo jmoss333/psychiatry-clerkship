@@ -1166,6 +1166,7 @@ function App(){
   var busy=useState(false); var isBusy=busy[0],setBusy=busy[1];
   var shs=useState(false); var showSettings=shs[0],setShowSettings=shs[1];
   var cfs=useState(null); var cfg=cfs[0],setCfg=cfs[1];
+  var pilotAccessRef=useRef(null);
   /* Room mode: the spoken room (real-time voice) is the default; the typed room stays equal and
      adjacent, with optional device read-aloud. Legacy voice-mode keys are migrated once, then removed. */
   var rm=useState(function(){try{var saved=localStorage.getItem('cw_sp_room_mode_v1');if(saved==='spoken'||saved==='typed'||saved==='typed-device')return saved;var legacyMode=localStorage.getItem('cw_sp_voice_mode_v2');localStorage.removeItem('cw_sp_voice_mode_v2');localStorage.removeItem('cw_sp_voice_consent_v1');var legacyFlag=localStorage.getItem('cw_sp_voice');localStorage.removeItem('cw_sp_voice');return (legacyMode==='device'||legacyFlag==='1')?'typed-device':'spoken';}catch(x){return'spoken';}}); var roomMode=rm[0],setRoomMode=rm[1];
@@ -1214,6 +1215,10 @@ function App(){
 
   function normalizedEndpoint(endpoint){return String(endpoint||'').trim().replace(/\/+$/,'');}
   function realtimeEndpointFor(endpoint){return normalizedEndpoint(endpoint)+'/realtime';}
+  function pilotCodeFor(endpoint){
+    var access=pilotAccessRef.current;
+    return access&&access.endpoint===normalizedEndpoint(endpoint)?access.code:'';
+  }
   function spokenAvailable(){var h=realtimeHealth.data;return !!(providerModeRef.current==='live'&&readPasscode()&&h&&h.enabled===true&&h.acceptingSessions===true);}
   function spokenCaseAvailable(caseDef){var h=realtimeHealth.data;return !!(spokenAvailable()&&caseDef&&Array.isArray(h.cases)&&h.cases.some(function(c){return !!(c&&c.id===caseDef.id);}));}
   function spokenUnavailableReason(caseDef){
@@ -1284,7 +1289,7 @@ function App(){
     rtBookRef.current={stateByTurn:{},applied:{},recorded:{},repeated:{},lastTurn:0};rtPhaseRef.current='';audioSinkRef.current=null;
     var session=null;
     try{
-      session=window.SPInterviewRealtime.createSession({endpoint:realtimeEndpointFor(ep),getStudentKey:readPasscode,caseId:caseDef.id,encounterId:encounterId,eagerness:quickReplies?'medium':'low',audioSetup:audioSetup,adapters:browserRealtimeAdapters(),
+      session=window.SPInterviewRealtime.createSession({endpoint:realtimeEndpointFor(ep),getStudentKey:function(){return pilotCodeFor(ep)||readPasscode();},caseId:caseDef.id,encounterId:encounterId,eagerness:quickReplies?'medium':'low',audioSetup:audioSetup,adapters:browserRealtimeAdapters(),
         onChange:function(snapshot){if(rtRef.current!==session)return;var book=rtBookRef.current;if(snapshot&&snapshot.turn>book.lastTurn&&snapshot.state){book.stateByTurn[snapshot.turn]=snapshot.state;book.lastTurn=snapshot.turn;}setRt(snapshot);}});
     }catch(error){
       setRt(null);setActorIssue({kind:'spoken',text:'',error:{code:(error&&error.code)||'spoken_unavailable',message:(error&&error.message)||'The spoken room could not start.',retryDisposition:'offline-only'}});return;
@@ -1362,14 +1367,14 @@ function App(){
     healthRequestRef.current={generation:generation,abort:abortController};
     if(!endpoint||!key||providerModeRef.current!=='live'){setRealtimeHealth({status:'unavailable',data:null});return Promise.resolve(null);}
     setRealtimeHealth({status:'checking',data:null});
-    return fetch(realtimeEndpointFor(endpoint),{headers:{'x-student-key':key||''},cache:'no-store',signal:abortController?abortController.signal:undefined})
+    return fetch(realtimeEndpointFor(endpoint),{headers:{'x-student-key':pilotCodeFor(endpoint)||key},cache:'no-store',redirect:'error',signal:abortController?abortController.signal:undefined})
       .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error('realtime '+r.status);return j;});})
       .then(function(health){if(healthRequestRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return null;var valid=!!(health&&typeof health==='object'&&typeof health.enabled==='boolean'&&typeof health.acceptingSessions==='boolean'&&Array.isArray(health.cases));setRealtimeHealth(valid?{status:'ready',data:health}:{status:'unavailable',data:null});healthRequestRef.current.abort=null;return valid?health:null;})
       .catch(function(){if(healthRequestRef.current.generation===generation){setRealtimeHealth({status:'unavailable',data:null});healthRequestRef.current.abort=null;}return null;});
   }
   function loadCfg(){ var ep=previewConfig.endpoint===null?'https://sp-interview-proxy.netlify.app/api/sp':previewConfig.endpoint; clearLegacyPasscode();
     try{ep=localStorage.getItem('cw_sp_endpoint')||ep;}catch(x){}
-    return {ep:ep,pc:readPasscode(),msg:''}; }
+    return {ep:ep,pc:readPasscode(),pilotCode:pilotCodeFor(ep),msg:''}; }
   function openSettings(){ setCfg(loadCfg()); setShowSettings(true); }
   function cancelProviderCheck(){
     var generation=providerCheckRef.current.generation+1;
@@ -1382,6 +1387,7 @@ function App(){
     var abortController=typeof AbortController!=='undefined'?new AbortController():null;
     providerCheckRef.current={generation:generation,abort:abortController};
     try{localStorage.setItem('cw_sp_endpoint',ep);}catch(x){}
+    pilotAccessRef.current=null;
     writePasscode(pc);setShowSpokenConsent(false);pendingBeginRef.current=null;
     refreshRealtimeHealth('', '');
     setCfg(Object.assign({},cfg,{msg:'Testing…'}));
@@ -1392,15 +1398,24 @@ function App(){
         providerCheckRef.current.abort=null;
         var detail=res.j&&res.j.error,setupError=typeof detail==='string'?detail:detail&&typeof detail.message==='string'?detail.message:'HTTP '+res.status;
         setCfg(function(c){return Object.assign({},c,{msg:res.ok?('✓ Connected — pack v'+res.j.packVersion+' ('+res.j.packStatus+'), actor '+res.j.actorModel):('✗ '+setupError)});});
-        if(res.ok){if(E&&E.provider&&('passcode' in E.provider)){E.provider.endpoint=ep;E.provider.passcode=pc;}setActorIssue(function(issue){var auth=issue&&issue.error&&(issue.error.status===401||issue.error.code==='unauthorized');return auth?Object.assign({},issue,{authRecovered:true,error:Object.assign({},issue.error,{message:'Connection restored. Restart this room before sending another live turn.'})}):issue;});return refreshRealtimeHealth(ep,pc);}return null;
+        if(!res.ok)return null;
+        if(E&&E.provider&&('passcode' in E.provider)){E.provider.endpoint=ep;E.provider.passcode=pc;}
+        setActorIssue(function(issue){var auth=issue&&issue.error&&(issue.error.status===401||issue.error.code==='unauthorized');return auth?Object.assign({},issue,{authRecovered:true,error:Object.assign({},issue.error,{message:'Connection restored. Restart this room before sending another live turn.'})}):issue;});
+        if(cfg.pilotCode)pilotAccessRef.current={endpoint:normalizedEndpoint(ep),code:cfg.pilotCode};
+        return refreshRealtimeHealth(ep,pc).then(function(health){
+          if(!cfg.pilotCode||providerCheckRef.current.generation!==generation)return;
+          var ready=health&&health.enabled&&health.acceptingSessions&&health.cases.some(function(patient){return patient.id==='sp_depression_gated_si_001';});
+          var message=ready?'✓ Learner passcode accepted. Dana’s supervised spoken pilot is unlocked.':'Learner passcode accepted. The supervised spoken pilot could not be opened. Check the supervisor code or use the typed room.';
+          setCfg(function(c){return Object.assign({},c,{msg:message});});
+        });
       })
       .catch(function(err){if(providerCheckRef.current.generation!==generation||(abortController&&abortController.signal.aborted))return;providerCheckRef.current.abort=null;setCfg(function(c){return Object.assign({},c,{msg:'✗ Could not reach endpoint ('+err.message+')'});});});
   }
-  function clearPasscode(){ cancelProviderCheck();writePasscode(''); clearLegacyPasscode();setShowSpokenConsent(false);pendingBeginRef.current=null;
+  function clearPasscode(){ cancelProviderCheck();pilotAccessRef.current=null;writePasscode(''); clearLegacyPasscode();setShowSpokenConsent(false);pendingBeginRef.current=null;
     if(E&&E.provider&&('passcode' in E.provider)){E.provider.passcode='';}
     refreshRealtimeHealth('', '');
-    setCfg(function(c){return Object.assign({},c,{pc:'',msg:'Passcode cleared for this browser tab.'});});
-    announce('Passcode cleared for this browser tab.'); }
+    setCfg(function(c){return Object.assign({},c,{pc:'',pilotCode:'',msg:'Passcodes cleared for this browser tab.'});});
+    announce('Passcodes cleared for this browser tab.'); }
   function trapDialogKey(ev,onEscape){
     if(ev.key==='Escape'){ev.preventDefault();onEscape();return;}
     if(ev.key!=='Tab')return;
@@ -1639,10 +1654,16 @@ function App(){
       e('p',{style:{fontSize:'.82rem',color:'var(--text-mid)',marginTop:0}},'Paste the sp-proxy endpoint URL and the passcode from Dr. Moss. The endpoint is saved in this browser. The passcode is kept only for this browser tab. The API key never leaves the server.'),
       e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_ep'},'Endpoint URL'),
       e('input',{id:'cfg_ep',type:'url',className:'cfgin',placeholder:'https://<sp-proxy-site>.netlify.app/api/sp',value:cfg.ep,
-        onChange:function(ev){setCfg(Object.assign({},cfg,{ep:ev.target.value}));}}),
+        onChange:function(ev){setCfg(Object.assign({},cfg,{ep:ev.target.value,pilotCode:'',msg:''}));}}),
       e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_pc'},'Passcode'),
       e('input',{id:'cfg_pc',ref:passcodeRef,type:'password',className:'cfgin',value:cfg.pc,autoComplete:'off',
         onChange:function(ev){setCfg(Object.assign({},cfg,{pc:ev.target.value}));}}),
+      e('details',null,
+        e('summary',null,'Supervised voice pilot (optional)'),
+        e('label',{style:{fontWeight:600,fontSize:'.82rem'},htmlFor:'cfg_pilot'},'Supervisor voice pilot code'),
+        e('input',{id:'cfg_pilot',type:'password',className:'cfgin',value:cfg.pilotCode,autoComplete:'off','aria-describedby':'cfg_pilot_help',
+          onChange:function(ev){setCfg(Object.assign({},cfg,{pilotCode:ev.target.value,msg:''}));}}),
+        e('p',{id:'cfg_pilot_help',style:{fontSize:'.82rem'}},'Enter the code from your supervisor for a spoken visit with Dana. Refreshing this page clears the pilot code.')),
       cfg.msg?e('p',{style:{fontSize:'.82rem',fontWeight:600,color:cfg.msg.indexOf('✓')===0?'var(--success)':'var(--warning)'}},cfg.msg):null,
       e('div',{style:{display:'flex',gap:'10px',flexWrap:'wrap'}},
         e('button',{className:'btn primary',onClick:saveAndTest,disabled:!(cfg.ep||'').trim()},'Save & test connection'),

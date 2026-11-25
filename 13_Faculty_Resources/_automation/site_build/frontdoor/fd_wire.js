@@ -29,7 +29,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-app-practice-open','data-fd-app-practice-reveal','data-fd-app-practice-classify',
   'data-fd-app-practice-question','data-fd-app-practice-reset','data-fd-app-practice-close',
   'data-fd-clear-ask','data-fd-clear-cancel','data-fd-clear-confirm',
-  'data-fd-close-search','data-fd-search-expand','data-fd-close-sheet','data-fd-close-nudge',
+  'data-fd-pharmacy-card','data-fd-pharmacy-back','data-fd-close-search','data-fd-search-expand','data-fd-search-return','data-fd-close-sheet','data-fd-close-nudge',
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details','data-fd-library-task',
   'data-fd-tool-pin','data-fd-tool-pins-clear','data-fd-reading-place-remove','data-fd-reading-places-clear','data-fd-continuity-show',
@@ -92,6 +92,7 @@ var FD_ACTION_SEMANTICS={
   'data-fd-back':'return to originating tab',
   'data-fd-home':fdLandsOnEssentials()?'return to Library Essentials':'return to Today',
   'data-fd-search':'open search dialog',
+  'data-fd-search-return':'return to the saved search results',
   'data-fd-change-week':'reopen week setup',
   'data-fd-progress':'open Progress and mastery',
   'data-fd-reading-size':'set saved reading text size',
@@ -116,6 +117,8 @@ var FD_ACTION_SEMANTICS={
   'data-fd-clear-cancel':'cancel device data erase',
   'data-fd-clear-confirm':'erase device data',
   'data-fd-close-search':'close search dialog',
+  'data-fd-pharmacy-card':'look up a reviewed Pharmacy card',
+  'data-fd-pharmacy-back':'return to medication search results',
   'data-fd-search-expand':'toggle all search matches for this query',
   'data-fd-close-sheet':'close side sheet',
   'data-fd-close-nudge':'dismiss protocol nudge',
@@ -470,6 +473,16 @@ function fdCloseSheet(state){
 function fdDispatch(attrs, context, state){
   var a=attrs||{}, c=context||{}, s=state||{}, ref, n, patch, done, raw, next, tab, picked;
 
+  if(fdOwn(a,'data-fd-pharmacy-card')){
+    var id=a['data-fd-pharmacy-card'];
+    var rows=s.searchOpen&&!s.pharmacyLookup&&c.searchMatches?c.searchMatches(s):[];
+    var card=rows.find(function(row){return row.kind==='pharmacy'&&row.item.id===id;});
+    if(!card||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) return {patch:{},route:null,effect:null};
+    return {patch:{pharmacyLookup:{id:id,title:card.item.title,matchedName:fdPharmacyName(s.query),scrollTop:c.searchScroll||0}},route:null,effect:null};
+  }
+  if(s.pharmacyLookup&&(fdOwn(a,'data-fd-pharmacy-back')||fdOwn(a,'close'))){
+    return {patch:{pharmacyLookup:null},route:null,effect:{type:'restore-pharmacy-result'}};
+  }
   if(fdOwn(a,'close')){
     if(s.careShareId) return {patch:{careShareId:''},route:null,effect:null};
     if(s.searchOpen) return {patch:{searchOpen:false,query:'',searchExpanded:false},route:null,effect:null};
@@ -982,6 +995,14 @@ function fdDispatch(attrs, context, state){
       route:fdRouteForTab('today',c.search),effect:null
     };
   }
+  if(fdOwn(a,'data-fd-search-return')){
+    if(!s.searchReturn) return {patch:{},route:null,effect:null};
+    return {
+      patch:{searchOpen:true,query:s.searchReturn.query,searchExpanded:s.searchReturn.expanded,searchRestored:true,
+        sheet:null,sheetFrom:null,stepsDone:{},treePath:[],escalate:null,nudge:null},
+      route:null,effect:{type:'restore-search'}
+    };
+  }
   if(fdOwn(a,'data-fd-search')){
     patch={searchOpen:true,searchExpanded:false};
     /* The Library hands its filter query to Search (zero results, filtered footer). The query is
@@ -1367,7 +1388,7 @@ var FD_ACTION_SELECTOR='[data-fd-open],[data-fd-safety],[data-fd-toggle],[data-f
   '[data-fd-theme],[data-fd-settings],[data-fd-analytics],'+
   '[data-fd-clear-ask],[data-fd-clear-cancel],[data-fd-clear-confirm],'+
   '[data-fd-tree-answer],[data-fd-tree-back],[data-fd-tree-restart],[data-fd-escalate],[data-fd-escalate-close],'+
-  '[data-fd-close-search],[data-fd-search-expand],[data-fd-close-sheet],[data-fd-close-nudge],'+
+  '[data-fd-pharmacy-card],[data-fd-pharmacy-back],[data-fd-close-search],[data-fd-search-expand],[data-fd-search-return],[data-fd-close-sheet],[data-fd-close-nudge],'+
   '[data-fd-try-now],[data-fd-expand-tool],[data-fd-reading-top]';
 
 /* The dock stopped forwarding the page's primary action on 2026-10-04 (one-thread redesign,
@@ -1672,7 +1693,7 @@ function fdWire(root, initialState, opts){
 
   function overlayIdentity(value){
     var s=value||{};
-    if(s.searchOpen) return 'search';
+    if(s.searchOpen) return s.pharmacyLookup?'pharmacy:'+s.pharmacyLookup.id:'search';
     if(s.sheet) return 'sheet:'+s.sheet;
     if(s.careShareId) return 'care-share:'+s.careShareId;
     return '';
@@ -1689,6 +1710,23 @@ function fdWire(root, initialState, opts){
     if(!d) return;
     var first=(d.querySelector&&d.querySelector('.fd-searchpanel__input'))||fdFocusable(d)[0]||d;
     if(first&&first.focus) try{first.focus();}catch(_){}
+  }
+  function restoreSearchPosition(saved){
+    var d=dialog();
+    saved=saved||state.searchReturn;
+    var body=d&&d.querySelector&&d.querySelector('.fd-searchpanel__body');
+    if(!saved||!body) return;
+    var ref=String(saved.ref).replace(/["\\]/g,'\\$&');
+    var row=body.querySelector('['+saved.action+'="'+ref+'"]');
+    if(row&&row.focus) try{row.focus({preventScroll:true});}catch(_){row.focus();}
+    body.scrollTop=saved.scrollTop;
+    /* A late index may have moved the selected row. Keep that action visible while
+       leaving the original list offset intact when it still fits. */
+    if(row&&row.getBoundingClientRect&&body.getBoundingClientRect){
+      var box=row.getBoundingClientRect(), top=body.getBoundingClientRect().top+body.clientTop;
+      if(box.top<top) body.scrollTop-=top-box.top;
+      else if(box.bottom>top+body.clientHeight) body.scrollTop+=box.bottom-top-body.clientHeight;
+    }
   }
   /* The tree's one focus target. refocusInvoker cannot serve a tree action: an answer's
      "equivalent control" is whichever button happens to share its attribute in the next node. */
@@ -1892,7 +1930,7 @@ function fdWire(root, initialState, opts){
     /* settingsConfirmClear belongs here because arming the erase changes the PANEL and nothing
        under it. Left out, it falls to the else branch and is classed as a base change, so every
        arm and every cancel rebuilds contentEl.innerHTML beneath an open sheet. */
-    var overlayKeys={searchOpen:true,query:true,searchExpanded:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
+    var overlayKeys={pharmacyLookup:true,searchOpen:true,query:true,searchExpanded:true,searchReturn:true,searchRestored:true,sheet:true,sheetFrom:true,stepsDone:true,careShareId:true,
       nudge:true,settingsConfirmClear:true,readingComfort:true,readingComfortNotice:true,treePath:true,escalate:true};
     var actionKeys={done:true,justDone:true,progressRaw:true};
     for(var key in patch){
@@ -2283,10 +2321,33 @@ function fdWire(root, initialState, opts){
     var beforeRefreshScope=offlineRefreshScope(state);
     var beforeHistory=historyValue();
     var patch=result.patch||{};
+    var searchRow=before.searchOpen&&invoker&&invoker.closest&&invoker.closest('.fd-result');
+    var searchBody=searchRow&&searchRow.closest('.fd-searchpanel__body');
+    var leavingSearch=searchBody&&result.effect&&
+      (result.effect.type==='open-resource'||result.effect.type==='open-protocol');
+    if(leavingSearch){
+      var searchAction=searchRow.hasAttribute('data-fd-safety')?'data-fd-safety':'data-fd-open';
+      patch.searchReturn={
+        query:before.query||'',expanded:before.searchExpanded===true,
+        action:searchAction,ref:searchRow.getAttribute(searchAction),scrollTop:searchBody.scrollTop,
+        matches:o.searchMatches?o.searchMatches(before):fdSearchMatches(index,before.query,o.synonyms,before)
+      };
+    }
     var continuity=result.effect&&result.effect.type==='library-continuity';
     var beforeHadOverlay=!!beforeOverlay;
     if(!beforeHadOverlay&&invoker) invokers.push(invoker);
     for(var k in patch){ if(fdOwn(patch,k)) state[k]=patch[k]; }
+    var searchFullPage=before.searchReturn&&before.sheet===before.searchReturn.ref&&
+      result.effect&&result.effect.type==='open-resource'&&result.effect.ref===before.sheet;
+    if(!leavingSearch&&!searchFullPage&&state.searchReturn&&baseChanged(before,state)){
+      state.searchReturn=null;
+      patch.searchReturn=null;
+    }
+    if(state.searchRestored&&(leavingSearch||!state.searchReturn||
+       result.effect&&result.effect.type==='focus-search')){
+      state.searchRestored=false;
+      patch.searchRestored=false;
+    }
     if(continuity&&result.effect.action!=='show'){
       var action=result.effect.action, changed=false, message='';
       if(action==='pin'){
@@ -2309,7 +2370,7 @@ function fdWire(root, initialState, opts){
       }
       state.continuityNotice=message;patch.continuityNotice=message;
     }
-    /* Every way out of Search ends this query's expansion, including a result or another tab. */
+    /* A new search starts collapsed. A result keeps its expansion in searchReturn. */
     if(!state.searchOpen&&state.searchExpanded){
       state.searchExpanded=false;
       patch.searchExpanded=false;
@@ -2338,6 +2399,10 @@ function fdWire(root, initialState, opts){
       var resourceInvoker=before.sheetFrom==='library'&&before.sheet==='item:'+state.openId
         ?libraryRowOpener(state.openId)||invoker:invoker;
       rememberOpener(state.openId,resourceInvoker);
+    }
+    if(state.pharmacyLookup&&(!state.searchOpen||(result.effect&&result.effect.type==='focus-search'))){
+      state.pharmacyLookup=null;
+      patch.pharmacyLookup=null;
     }
     var afterOverlay=overlayIdentity(state);
     if(!afterOverlay&&!beforeHadOverlay&&invokers.length) invokers.pop();
@@ -2518,6 +2583,10 @@ function fdWire(root, initialState, opts){
       var headed=!!(result.effect&&result.effect.type==='focus-sheet-heading')&&focusSheetHeading();
       if(!headed&&!refocusInvoker(invoker)&&invoker) focusDialog();
     }
+    if(result.effect&&result.effect.type==='restore-search') restoreSearchPosition();
+    if(result.effect&&result.effect.type==='restore-pharmacy-result'){
+      restoreSearchPosition({ref:before.pharmacyLookup.id,action:'data-fd-pharmacy-card',scrollTop:before.pharmacyLookup.scrollTop});
+    }
     return state;
   }
   function context(extra){
@@ -2525,6 +2594,7 @@ function fdWire(root, initialState, opts){
       nowMs:Date.now(),theme:currentTheme(),
       search:(win&&win.location&&win.location.search)||'',
       progressRaw:progressRaw(),weekItems:fdItemsForWeek(index,fdProgressWeek(state,index)),index:index,
+      searchMatches:o.searchMatches,
       appPracticePacks:o.appPracticePacks||[],
       feedbackRisky:typeof o.feedbackRisky==='function'?o.feedbackRisky:null
     };
@@ -2557,7 +2627,12 @@ function fdWire(root, initialState, opts){
       if(readingSession)readingSession.startAtTop();
       return;
     }
-    apply(fdDispatch(attrs,context({inSheet:!!state.sheet}),state),target,false);
+    var extra={inSheet:!!state.sheet};
+    if(fdOwn(attrs,'data-fd-pharmacy-card')){
+      var list=target.closest('.fd-searchpanel__body');
+      extra.searchScroll=list?list.scrollTop:0;
+    }
+    apply(fdDispatch(attrs,context(extra),state),target,false);
     /* Path rerenders its route and detail together, so the activated tab no longer exists after
        apply(). Restore its equivalent without scrolling the learner away from the route. */
     if(retainPathFocus){
@@ -2634,8 +2709,9 @@ function fdWire(root, initialState, opts){
     var before=fdClone(state);
     state.query=String(target.value||'');
     state.searchExpanded=false;
+    state.searchRestored=false;
     renderTransient(state,transitionDetail(
-      before,{query:state.query,searchExpanded:false},{type:'search-input'},false
+      before,{query:state.query,searchExpanded:false,searchRestored:false},{type:'search-input'},false
     ));
     var fresh=root&&root.querySelector?root.querySelector('.fd-searchpanel__input'):null;
     if(fresh&&fresh.focus){
@@ -2786,6 +2862,9 @@ function fdWire(root, initialState, opts){
     merged.offlineOpen=false;
     merged.searchOpen=false;
     merged.searchExpanded=false;
+    merged.searchReturn=null;
+    merged.pharmacyLookup=null;
+    merged.searchRestored=false;
     merged.query='';
     merged.sheet=null;
     merged.sheetFrom=null;

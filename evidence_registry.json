@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-10-31",
+  "updated": "2026-11-23",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -12033,6 +12033,360 @@
             "date": "2026-10-31",
             "note": "Added for the Screeners page measurement-based-care card (screeners.html, 2026-10-31): why the card teaches no individual-change threshold for the GAD-7. Scope note: it supports the parent-scale cutpoint of 10 and that sensitivity to change is established for the PHQ-9 but emerging for the GAD-7; it gives no GAD-7 change threshold. Annotation is AI-drafted from the abstract and awaits faculty signature.",
             "reason": "Screeners measurement-based-care card (enhancement A, owner request 2026-10-31); not faculty attestation"
+          }
+        ]
+      }
+    },
+    {
+      "id": "meyer-2001-clozapine-smoking-cessation",
+      "type": "primary-study",
+      "citation": {
+        "title": "Individual changes in clozapine levels after smoking cessation: results and a predictive model",
+        "authors": [
+          {
+            "family": "Meyer",
+            "given": "JM"
+          }
+        ],
+        "year": 2001,
+        "journal": "J Clin Psychopharmacol",
+        "volume": "21",
+        "pages": "569-574",
+        "doi": "10.1097/00004714-200112000-00005",
+        "pmid": "11763003",
+        "url": "https://doi.org/10.1097/00004714-200112000-00005",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 11763003 confirms article metadata.",
+        "verifiedAt": "2026-11-20",
+        "note": "Linked in the case debrief on psychopharm_primer.md."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Within-person observational study",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-20",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "clozapine",
+          "psychopharmacology"
+        ],
+        "clerkshipRelevance": "Clozapine levels rose on average after smoking cessation in patients on a stable dose.",
+        "noteHistory": [
+          {
+            "date": "2026-11-20",
+            "note": "Linked in the case debrief on psychopharm_primer.md.",
+            "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "hukkanen-2011-nicotine-cyp1a2",
+      "type": "primary-study",
+      "citation": {
+        "title": "Effect of nicotine on cytochrome P450 1A2 activity",
+        "authors": [
+          {
+            "family": "Hukkanen",
+            "given": "J"
+          },
+          {
+            "family": "Jacob",
+            "given": "P"
+          },
+          {
+            "family": "Peng",
+            "given": "M"
+          },
+          {
+            "family": "Dempsey",
+            "given": "D"
+          },
+          {
+            "family": "Benowitz",
+            "given": "NL"
+          }
+        ],
+        "year": 2011,
+        "journal": "Br J Clin Pharmacol",
+        "volume": "72",
+        "pages": "836-838",
+        "doi": "10.1111/j.1365-2125.2011.04023.x",
+        "pmid": "21599724",
+        "url": "https://doi.org/10.1111/j.1365-2125.2011.04023.x",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 21599724 confirms article metadata.",
+        "verifiedAt": "2026-11-20",
+        "note": "Linked in the case debrief on psychopharm_primer.md."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "Randomized crossover study using caffeine as a metabolic probe",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-20",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "clozapine",
+          "psychopharmacology"
+        ],
+        "clerkshipRelevance": "Nicotine did not significantly change caffeine metabolism in this crossover study.",
+        "noteHistory": [
+          {
+            "date": "2026-11-20",
+            "note": "Linked in the case debrief on psychopharm_primer.md.",
+            "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "hefner-2016-crp-clozapine",
+      "type": "primary-study",
+      "citation": {
+        "title": "Inflammation and psychotropic drugs: the relationship between C-reactive protein and antipsychotic drug levels",
+        "authors": [
+          {
+            "family": "Hefner",
+            "given": "G"
+          },
+          {
+            "family": "Shams",
+            "given": "ME"
+          },
+          {
+            "family": "Unterecker",
+            "given": "S"
+          },
+          {
+            "family": "Falter",
+            "given": "T"
+          },
+          {
+            "family": "Hiemke",
+            "given": "C"
+          }
+        ],
+        "year": 2016,
+        "journal": "Psychopharmacology (Berl)",
+        "volume": "233",
+        "pages": "1695-1705",
+        "doi": "10.1007/s00213-015-3976-0",
+        "pmid": "26032842",
+        "url": "https://doi.org/10.1007/s00213-015-3976-0",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 26032842 confirms article metadata.",
+        "verifiedAt": "2026-11-20",
+        "note": "Linked in the case debrief on psychopharm_primer.md."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Retrospective within-person therapeutic drug monitoring study",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-20",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "clozapine",
+          "psychopharmacology"
+        ],
+        "clerkshipRelevance": "Elevated C-reactive protein was associated with higher dose-adjusted clozapine concentrations.",
+        "noteHistory": [
+          {
+            "date": "2026-11-20",
+            "note": "Linked in the case debrief on psychopharm_primer.md.",
+            "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "gurrera-2017-nms-criteria-validation",
+      "type": "primary-study",
+      "citation": {
+        "title": "A Validation Study of the International Consensus Diagnostic Criteria for Neuroleptic Malignant Syndrome",
+        "authors": [
+          {
+            "family": "Gurrera",
+            "given": "RJ"
+          },
+          {
+            "family": "Mortillaro",
+            "given": "G"
+          },
+          {
+            "family": "Velamoor",
+            "given": "V"
+          },
+          {
+            "family": "Caroff",
+            "given": "SN"
+          }
+        ],
+        "year": 2017,
+        "journal": "J Clin Psychopharmacol",
+        "volume": "37",
+        "pages": "67-71",
+        "doi": "10.1097/jcp.0000000000000640",
+        "pmid": "28027111",
+        "url": "https://doi.org/10.1097/jcp.0000000000000640",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 28027111 confirms article metadata.",
+        "verifiedAt": "2026-11-20",
+        "note": "Linked in the case debrief on toxidromes.md."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Retrospective validation using clinical consultation records",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-20",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "toxidromes",
+          "diagnosis"
+        ],
+        "clerkshipRelevance": "The NMS criteria validation used reports from 221 archived telephone consultations.",
+        "noteHistory": [
+          {
+            "date": "2026-11-20",
+            "note": "Linked in the case debrief on toxidromes.md.",
+            "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "white-1991-catatonia-preceding-nms",
+      "type": "primary-study",
+      "citation": {
+        "title": "Catatonia: harbinger of the neuroleptic malignant syndrome",
+        "authors": [
+          {
+            "family": "White",
+            "given": "DA"
+          },
+          {
+            "family": "Robins",
+            "given": "AH"
+          }
+        ],
+        "year": 1991,
+        "journal": "Br J Psychiatry",
+        "volume": "158",
+        "pages": "419-421",
+        "doi": "10.1192/bjp.158.3.419",
+        "pmid": "1674666",
+        "url": "https://doi.org/10.1192/bjp.158.3.419",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 1674666 confirms article metadata.",
+        "verifiedAt": "2026-11-20",
+        "note": "Linked in the case debrief on toxidromes.md."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Consecutive case series",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-20",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "toxidromes",
+          "diagnosis"
+        ],
+        "clerkshipRelevance": "Catatonic signs preceded NMS in five consecutive cases in this series.",
+        "noteHistory": [
+          {
+            "date": "2026-11-20",
+            "note": "Linked in the case debrief on toxidromes.md.",
+            "reason": "Add primary evidence for the clinical reasoning exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brown-2002-prednisone-mood",
+      "type": "primary-study",
+      "citation": {
+        "title": "Mood changes during prednisone bursts in outpatients with asthma",
+        "authors": [
+          {
+            "family": "Brown",
+            "given": "ES"
+          },
+          {
+            "family": "Suppes",
+            "given": "T"
+          },
+          {
+            "family": "Khan",
+            "given": "DA"
+          },
+          {
+            "family": "Carmody",
+            "given": "TJ"
+          }
+        ],
+        "year": 2002,
+        "journal": "J Clin Psychopharmacol",
+        "volume": "22",
+        "pages": "55-61",
+        "doi": "10.1097/00004714-200202000-00009",
+        "pmid": "11799343",
+        "url": "https://doi.org/10.1097/00004714-200202000-00009",
+        "organization": ""
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Europe PMC MED record for PMID 11799343 confirms the citation.",
+        "verifiedAt": "2026-11-23",
+        "note": "This prospective study followed 32 outpatients with asthma during prednisone bursts. It supports the first-week change in mania-rating scores cited in Alex’s debrief. It cannot determine whether prednisone caused an individual patient’s symptoms."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Prospective observational study",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-23",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "mood",
+          "diagnosis"
+        ],
+        "clerkshipRelevance": "Interpret the timing of mood symptoms alongside a corticosteroid exposure.",
+        "noteHistory": [
+          {
+            "date": "2026-11-23",
+            "note": "This prospective study followed 32 outpatients with asthma during prednisone bursts. It supports the first-week change in mania-rating scores cited in Alex’s debrief. It cannot determine whether prednisone caused an individual patient’s symptoms.",
+            "reason": "Document the evidence supporting the reviewed exercise."
           }
         ]
       }

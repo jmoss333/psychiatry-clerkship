@@ -772,9 +772,805 @@
       shell.classList.toggle('is-scrollable',!!viewport&&viewport.scrollWidth>viewport.clientWidth+1);
     });
   }
+  function fdMountLunchInterview(body) {
+    const interview = body.querySelector('#alex-lunch');
+    const handoff = body.querySelector('#al-res');
+    if (!interview || !handoff || interview.dataset.mounted) return;
+    interview.dataset.mounted = 'true';
+
+    const choices = interview.querySelectorAll('[data-mode]');
+    const phrases = handoff.querySelectorAll('[data-phrase]');
+    const ask = interview.querySelector('#al-ask');
+    const askLabel = ask.textContent;
+    const answer = interview.querySelector('#al-answer');
+    const next = interview.querySelector('[data-continue]');
+    const ready = handoff.querySelector('[data-ready]');
+    const worked = handoff.querySelector('details');
+    const sample = handoff.querySelector('#al-sample');
+    const interpretation = handoff.querySelector('#al-interpret');
+    const rounds = handoff.querySelector('template[data-rounds]').content;
+    let choice;
+    let history;
+
+    function selectPhrase(button) {
+      for (const phrase of phrases) phrase.setAttribute('aria-pressed', String(button === phrase));
+      const correct = button?.dataset.phrase === 'appetite';
+      const feedback = handoff.querySelector('#al-feedback');
+      feedback.textContent = button ? rounds.querySelector(correct ? '[data-correct]' : '[data-retry]').textContent : '';
+      handoff.querySelector('#al-finish').hidden = !correct;
+      worked.open = false;
+      sample.textContent = interpretation.textContent = '';
+    }
+
+    function showAnswer(open) {
+      ask.setAttribute('aria-expanded', String(open));
+      ask.textContent = open ? 'Hide Alex’s reply' : askLabel;
+      answer.hidden = next.hidden = ready.hidden = !open;
+      handoff.querySelector('[data-locked]').hidden = open;
+      answer.querySelector('#al-by').textContent = open ? history.querySelector('[data-by]').textContent : '';
+      answer.querySelector('blockquote').textContent = open ? interview.querySelector('[data-answer]').content.textContent : '';
+      selectPhrase(null);
+    }
+
+    for (const button of choices) button.addEventListener('click', () => {
+      if (choice === button) return;
+      choice = button;
+      history = interview.querySelector('template[data-history="' + button.dataset.mode + '"]').content;
+      for (const option of choices) option.setAttribute('aria-pressed', String(option === choice));
+      interview.querySelector('#al-adapt').hidden = false;
+      interview.querySelector('#al-support').textContent = history.querySelector('[data-support]').textContent;
+      showAnswer(false);
+    });
+    ask.addEventListener('click', () => showAnswer(answer.hidden));
+    for (const button of phrases) button.addEventListener('click', () => selectPhrase(button));
+    function jump(control) {
+      control.focus({preventScroll:true});
+      control.scrollIntoView({block:'center'});
+    }
+    next.addEventListener('click', () => jump(phrases[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => jump(choice || choices[0]));
+    // Printing and in-page search can expand details. Only a learner action supplies the answers.
+    worked.querySelector('summary').addEventListener('click', () => {
+      const reveal = !worked.open && !handoff.querySelector('#al-finish').hidden;
+      sample.textContent = reveal ? '“' + [
+        rounds.querySelector('[data-opening]').textContent, history.querySelector('[data-report]').textContent,
+        rounds.querySelector('[data-inference]').textContent, history.querySelector('[data-next]').textContent
+      ].join(' ') + '”' : '';
+      interpretation.textContent = reveal ? rounds.querySelector('[data-meaning]').textContent : '';
+    });
+  }
+
+  function fdMountPsychosisTimeline(body) {
+    const timeline = body.querySelector('#ari-weeks');
+    const handoff = body.querySelector('#aw-handoff');
+    if (!timeline || !handoff || timeline.dataset.mounted) return;
+    timeline.dataset.mounted = 'true';
+
+    const histories = Array.from(timeline.querySelectorAll('template[data-history]'));
+    const gap = timeline.querySelector('[data-gap]');
+    const interview = timeline.querySelector('#aw-interview');
+    const description = timeline.querySelector('#aw-description');
+    const initialDescription = description.textContent;
+    const feedback = timeline.querySelector('[data-feedback]');
+    const next = timeline.querySelector('[data-continue]');
+    const marks = timeline.querySelectorAll('[data-mark-choice]');
+    const sources = handoff.querySelectorAll('[data-source]');
+    const record = handoff.querySelector('[data-record]');
+    const worked = handoff.querySelector('[data-worked]');
+    const sample = worked.querySelector('[data-sentence]');
+    let historyIndex = 0;
+    let evidence;
+
+    function historyText(field) {
+      return histories[historyIndex].content.querySelector('[data-' + field + ']').textContent;
+    }
+    function selectRecord(button) {
+      for (const source of sources) source.setAttribute('aria-pressed', String(source === button));
+      evidence = button && handoff.querySelector('template[data-evidence="' + button.dataset.source + '"]');
+      record.hidden = worked.hidden = !evidence;
+      record.textContent = evidence ? evidence.content.querySelector('[data-text]').textContent : '';
+      worked.open = false;
+      sample.textContent = '';
+    }
+    function markInterval(button) {
+      for (const mark of marks) mark.setAttribute('aria-pressed', String(mark === button));
+      const key = histories[historyIndex].dataset.history;
+      const matched = button && button.dataset.markChoice === key;
+      const label = matched ? historyText('label') : '';
+      gap.dataset.mark = matched ? key : 'pending';
+      gap.textContent = label || (interview.hidden ? 'Ask Ari ↗' : 'Read reply');
+      gap.setAttribute('aria-label', 'Weeks 4 to 6: ' + (label || 'voice history unknown') + '. ' + (interview.hidden ? 'Ask Ari.' : 'Read Ari’s reply.'));
+      description.textContent = matched ? initialDescription.replace('not yet established', label) : initialDescription;
+      feedback.hidden = !button;
+      feedback.textContent = button ? historyText(matched ? 'teach' : 'retry') : '';
+      next.hidden = handoff.querySelector('[data-ready]').hidden = !matched;
+      handoff.querySelector('[data-locked]').hidden = Boolean(matched);
+      selectRecord(null);
+    }
+    function focusControl(control) {
+      control.focus({preventScroll:true});
+      control.scrollIntoView({block:'center'});
+    }
+
+    gap.addEventListener('click', () => {
+      if (interview.hidden) {
+        interview.hidden = false;
+        gap.setAttribute('aria-expanded','true');
+        interview.querySelector('[data-reply]').textContent = historyText('words');
+        markInterval(null);
+      }
+      interview.scrollIntoView({block:'nearest'});
+    });
+    for (const button of marks) button.addEventListener('click', () => markInterval(button));
+    for (const button of sources) button.addEventListener('click', () => selectRecord(button));
+    next.addEventListener('click', () => focusControl(sources[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => focusControl(gap));
+    // Print and in-page search may open disclosures. Only the learner reveals the sample.
+    worked.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = !worked.open && evidence
+        ? '“' + historyText('rounds') + ' ' + evidence.content.querySelector('[data-next]').textContent + '”' : '';
+    });
+    handoff.querySelector('[data-another]').addEventListener('click', () => {
+      historyIndex = (historyIndex + 1) % histories.length;
+      interview.hidden = true;
+      interview.querySelector('[data-reply]').textContent = '';
+      gap.setAttribute('aria-expanded','false');
+      markInterval(null);
+      focusControl(gap);
+    });
+  }
+
+  function fdMountNoorDayroom(body) {
+    const morning = body.querySelector('#noor-dayroom');
+    const afternoon = body.querySelector('#noor-checkin');
+    if (!morning || !afternoon || morning.dataset.mounted) return;
+    morning.dataset.mounted = 'true';
+    const invitations = morning.querySelectorAll('[data-place]');
+    const agreement = morning.querySelector('#nd-agreement');
+    const check = afternoon.querySelector('[data-check]');
+    const showLabel = check.textContent;
+    const later = afternoon.querySelector('#nd-later');
+    const questions = later.querySelector('.nd-questions');
+    const answer = later.querySelector('[data-answer]');
+    const rounds = later.querySelector('[data-rounds]');
+    const sample = rounds.querySelector('[data-sample]');
+    const back = afternoon.querySelector('[data-return]');
+    let visit, reply;
+
+    function showCheckin(open) {
+      later.hidden = !open;
+      check.setAttribute('aria-expanded', String(open));
+      check.textContent = open ? check.dataset.hideLabel : showLabel;
+      later.querySelector('[data-checkin-line]').textContent = open ? visit.querySelector('[data-afternoon] p').textContent : '';
+      later.querySelector('[data-result]').textContent = open ? visit.querySelector('[data-afternoon] blockquote').textContent : '';
+      questions.replaceChildren();
+      if (open) questions.append(...visit.querySelector('[data-questions]').cloneNode(true).children);
+      showReply(null);
+    }
+
+    function showReply(choice) {
+      for (const button of questions.children) button.setAttribute('aria-pressed', String(button === choice));
+      reply = choice && visit.querySelector('[data-reply="' + choice.dataset.ask + '"]');
+      answer.textContent = reply ? reply.querySelector('[data-quote]').textContent : '';
+      answer.parentElement.hidden = !reply;
+      rounds.open = false;
+      rounds.hidden = !reply;
+      sample.textContent = '';
+    }
+
+    for (const invitation of invitations) {
+      invitation.addEventListener('click', () => {
+        if (invitation.getAttribute('aria-pressed') === 'true') return;
+        for (const button of invitations) button.setAttribute('aria-pressed', String(button === invitation));
+        visit = afternoon.querySelector('template[data-visit="' + invitation.dataset.place + '"]').content;
+        morning.querySelector('[data-exchange]').replaceChildren(...visit.querySelector('[data-morning]').cloneNode(true).children);
+        agreement.hidden = false;
+        check.hidden = false;
+        back.textContent = back.dataset.changeLabel;
+        showCheckin(false);
+      });
+    }
+    function jump(target) {
+      const section = target.closest('.sec-c:not(.open)');
+      if (section) section.querySelector('.sec-h button').click();
+      target.focus({preventScroll:true});
+      target.scrollIntoView({block:'center'});
+    }
+    morning.querySelector('[data-continue]').addEventListener('click', () => jump(check));
+    back.addEventListener('click', () => jump(morning.querySelector('[data-place][aria-pressed=true]') || invitations[0]));
+    check.addEventListener('click', () => showCheckin(later.hidden));
+    questions.addEventListener('click', event => {
+      const choice = event.target.closest('button[data-ask]');
+      if (choice) showReply(choice);
+    });
+    // A guide search or print can expand details without a learner asking for the sample.
+    rounds.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = reply && !rounds.open ? reply.querySelector('[data-rounds-text]').textContent : '';
+    });
+  }
+
+  function fdMountRoundsReflection(body) {
+    const card = body.querySelector('#last-words-on-rounds');
+    if (!card || card.dataset.mounted) return;
+    card.dataset.mounted = 'true';
+
+    const endings = card.querySelectorAll('[data-order]');
+    const moves = card.querySelectorAll('[data-move]');
+    const replies = Array.from(card.querySelectorAll('template[data-patient-reply]'));
+    const reflection = card.querySelector('[data-line]');
+    const openingPrompt = reflection.textContent;
+    const reveal = card.querySelector('[data-reveal]');
+    const revealLabel = reveal.querySelector('[data-reveal-label]');
+    const showLabel = revealLabel.textContent;
+    const replyPanel = card.querySelector('#lw-reply');
+    const replyText = card.querySelector('[data-reply-text]');
+    const coach = card.querySelector('[data-coach]');
+    const sample = card.querySelector('[data-note]');
+    const sampleText = sample.querySelector('[data-note-copy]');
+    const reset = card.querySelector('[data-reset]');
+    let replyIndex = 0;
+
+    function clearSample() {
+      sample.open = false;
+      sampleText.replaceChildren();
+    }
+
+    function showReply(visible) {
+      replyPanel.hidden = !visible;
+      reveal.setAttribute('aria-expanded', String(visible));
+      revealLabel.textContent = visible ? reveal.dataset.hideLabel : showLabel;
+      reveal.querySelector('[aria-hidden]').textContent = visible ? '↑' : '↓';
+      replyText.textContent = visible ? replies[replyIndex].content.querySelector('[data-quote]').textContent : '';
+      for (const move of moves) move.setAttribute('aria-pressed', 'false');
+      coach.hidden = true;
+      coach.replaceChildren();
+      sample.hidden = true;
+      clearSample();
+    }
+
+    for (const ending of endings) {
+      ending.addEventListener('click', () => {
+        if (ending.getAttribute('aria-pressed') === 'true') return;
+        for (const other of endings) other.setAttribute('aria-pressed', String(other === ending));
+        const template = card.querySelector('template[data-reflection-for="' + ending.dataset.order + '"]');
+        reflection.replaceChildren(template.content.cloneNode(true));
+        reflection.classList.add('lw-composed');
+        card.querySelector('[data-reveal-wrap]').hidden = false;
+        reset.hidden = false;
+        showReply(false);
+      });
+    }
+    reveal.addEventListener('click', () => showReply(replyPanel.hidden));
+    card.querySelector('[data-another]').addEventListener('click', () => {
+      replyIndex = (replyIndex + 1) % replies.length;
+      showReply(true);
+    });
+    for (const move of moves) {
+      move.addEventListener('click', () => {
+        for (const other of moves) other.setAttribute('aria-pressed', String(other === move));
+        const feedback = replies[replyIndex].content.querySelector('[data-feedback-for="' + move.dataset.move + '"]');
+        coach.replaceChildren(feedback.cloneNode(true));
+        coach.hidden = false;
+        clearSample();
+        sample.hidden = false;
+      });
+    }
+    // Guide search and print can expand details. Only a learner's activation supplies the handoff.
+    sample.querySelector('summary').addEventListener('click', () => {
+      sampleText.textContent = sample.open ? '' : replies[replyIndex].content.querySelector('[data-rounds]').textContent;
+    });
+    reset.addEventListener('click', () => {
+      replyIndex = 0;
+      showReply(false);
+      for (const ending of endings) ending.setAttribute('aria-pressed', 'false');
+      reflection.textContent = openingPrompt;
+      reflection.classList.remove('lw-composed');
+      card.querySelector('[data-reveal-wrap]').hidden = true;
+      reset.hidden = true;
+      endings[0].focus();
+    });
+  }
+
+  /* Both reader paths mount fresh clinical markup. Store choices for this visit and read
+     the sample sentences from the page, in its authored order of priority. */
+  function fdMountReferralCall(body){
+    var card=body.querySelector('#referral-call');
+    if(!card)return;
+    var findings=card.querySelector('[data-referral-findings]');
+    var templates=[].slice.call(card.querySelectorAll('template[data-referral-finding]'));
+    var seen=new Set(), lead=null;
+    function render(){
+      var opened=templates.filter(function(t){return seen.has(t.dataset.referralFinding);});
+      var first=opened.find(function(t){return t.dataset.referralFinding===lead;});
+      if(first)opened=[first].concat(opened.filter(function(t){return t!==first;}));
+      findings.textContent=opened.map(function(t,i){
+        var brief=opened.length===templates.length&&i>0;
+        return (brief?t.content.lastElementChild:t.content.firstElementChild).textContent;
+      }).join(' ');
+    }
+    function record(source){
+      var key=source.dataset.referralSource;
+      if(!seen.has(key)){seen.add(key);render();}
+    }
+    // A result in "Find in this guide" can open a disclosure and focus the passage directly.
+    card.addEventListener('focusin',function(event){
+      var source=event.target.closest('details[open][data-referral-source]');
+      if(source)record(source);
+    });
+    card.addEventListener('click',function(event){
+      var choice=event.target.closest('[data-referral-lead]');
+      if(choice){
+        lead=choice.dataset.referralLead;
+        seen.add(lead);
+        card.querySelectorAll('[data-referral-lead]').forEach(function(b){b.setAttribute('aria-pressed',String(b===choice));});
+        render();return;
+      }
+      // Native pointer and keyboard activation both click the summary. Print expands
+      // disclosures programmatically and must not supply a finding the learner did not open.
+      var summary=event.target.closest('summary');
+      var source=summary&&summary.parentElement;
+      if(source&&source.hasAttribute('data-referral-source')&&!source.open){
+        record(source);
+      }
+    });
+  }
+  /* All teaching copy is authored in the page; choices last only for this mounted visit. */
+  function fdMountPersonalityCrisis(body){
+    var card=body.querySelector('#personality-crisis'), plan=body.querySelector('#personality-response'), follow=body.querySelector('#personality-followup');
+    if(!card||!plan||!follow||card._personalityMounted)return;
+    card._personalityMounted=true;
+    var answer=card.querySelector('[data-personality-answer]'), answerBody=answer.querySelector('[data-personality-answer-body]');
+    var planBody=plan.querySelector('[data-personality-plan-body]'), locked=plan.querySelector('[data-personality-plan-locked]');
+    var worked=follow.querySelector('[data-personality-worked]'), workedBody=worked.querySelector('[data-personality-worked-body]');
+    var questionFeedback=card.querySelector('[data-personality-question-feedback]');
+    var heard=false, account='practical', unknown={};
+    card.querySelectorAll('[data-personality-node]').forEach(function(node){unknown[node.dataset.personalityNode]=node.cloneNode(true);});
+    function copy(parent,selector,target){
+      var template=parent.querySelector(selector);
+      if(template)target.replaceChildren(template.content.cloneNode(true));
+    }
+    function hearAccount(){
+      if(!answerBody.childNodes.length)copy(answer,'template[data-personality-answer-copy]',answerBody);
+      if(heard)return;
+      heard=true;
+      card.querySelectorAll('[data-personality-node]').forEach(function(node){
+        var heading=node.querySelector('h4');
+        copy(card,'template[data-personality-map-for="'+node.dataset.personalityNode+'"]',node);
+        node.prepend(heading);node.dataset.state='reported';
+      });
+      copy(plan,'template[data-personality-plan-copy]',planBody);locked.hidden=true;
+    }
+    card.addEventListener('click',function(event){
+      var summary=event.target.closest('summary');
+      // Guide find and print can open details programmatically. Only summary activation
+      // supplies the patient's account and unlocks the downstream response choices.
+      if(summary&&summary.parentElement===answer){hearAccount();return;}
+      var question=event.target.closest('[data-personality-question]');
+      if(question){
+        card.querySelectorAll('[data-personality-question]').forEach(function(b){b.setAttribute('aria-pressed',String(b===question));});
+        copy(card,'template[data-personality-question-feedback-for="'+question.dataset.personalityQuestion+'"]',questionFeedback);
+        questionFeedback.dataset.kind=question.dataset.personalityQuestion==='leading'?'revise':'continue';questionFeedback.hidden=false;
+        if(answer.hidden)answer.open=false;
+        answer.hidden=false;return;
+      }
+      if(!event.target.closest('[data-personality-reset]'))return;
+      heard=false;account='practical';
+      card.querySelectorAll('[data-personality-question]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      // The guide finder retains these list items. Reset their contents in place so it
+      // cannot return a detached, previously reported answer after Start again.
+      card.querySelectorAll('[data-personality-node]').forEach(function(node){
+        var original=unknown[node.dataset.personalityNode].cloneNode(true);
+        node.replaceChildren.apply(node,[].slice.call(original.childNodes));node.dataset.state='unknown';
+      });
+      questionFeedback.replaceChildren();questionFeedback.hidden=true;
+      answer.open=false;answer.hidden=true;answerBody.replaceChildren();
+      planBody.replaceChildren();locked.hidden=false;
+      follow.open=false;worked.open=false;workedBody.replaceChildren();
+      follow.querySelector('textarea').value='';
+      showAccount();
+      var opening=card.querySelector('[data-personality-question="open"]');
+      opening.focus({preventScroll:true});opening.scrollIntoView({block:'center'});
+    });
+    plan.addEventListener('click',function(event){
+      var choice=event.target.closest('[data-personality-response]');
+      if(!heard||!choice)return;
+      plan.querySelectorAll('[data-personality-response]').forEach(function(b){b.setAttribute('aria-pressed',String(b===choice));});
+      var feedback=plan.querySelector('[data-personality-response-feedback]');
+      copy(plan,'template[data-personality-response-feedback-for="'+choice.dataset.personalityResponse+'"]',feedback);
+      feedback.dataset.kind=choice.dataset.personalityResponse==='promise'?'revise':'continue';feedback.hidden=false;
+    });
+    function showAccount(){
+      follow.querySelectorAll('[data-personality-account]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.personalityAccount===account));});
+      var quote=follow.querySelector('[data-personality-account-quote]');
+      var template=follow.querySelector('template[data-personality-account-for="'+account+'"]');
+      quote.replaceWith(template.content.firstElementChild.cloneNode(true));
+    }
+    follow.addEventListener('click',function(event){
+      var choice=event.target.closest('[data-personality-account]');
+      if(choice){
+        account=choice.dataset.personalityAccount;
+        worked.open=false;workedBody.replaceChildren();showAccount();return;
+      }
+      var summary=event.target.closest('summary');
+      if(summary&&summary.parentElement===worked){
+        copy(follow,'template[data-personality-worked-for="'+account+'"]',workedBody);
+      }
+    });
+  }
+  function fdFocusGuideControl(button) {
+    const collapsed = button.closest('.sec-c:not(.open)');
+    if (collapsed) collapsed.querySelector('.sec-h button').click();
+    button.focus({preventScroll:true});
+    button.scrollIntoView({block:'center'});
+  }
+
+  function fdMountPillboxHandoff(body) {
+    const interview = body.querySelector('#mara-pillbox');
+    const handoff = body.querySelector('#mara-handoff');
+    if (!interview || !handoff || interview.dataset.mounted) return;
+    interview.dataset.mounted = 'true';
+    const days = Array.from(interview.querySelectorAll('[data-day]'));
+    const sunday = interview.querySelector('[data-day=sunday]');
+    const claims = handoff.querySelectorAll('[data-claim]');
+    const feedback = handoff.querySelector('[data-feedback]');
+    const model = handoff.querySelector('[data-model]');
+    const sample = model.querySelector('[data-sample]');
+    const next = interview.querySelector('[data-continue]');
+    const swap = handoff.querySelector('[data-swap]');
+    const hint = interview.querySelector('[data-hint]');
+    const initialHint = hint.textContent;
+    let history = handoff.querySelector('template[data-history=caps]');
+
+    function selectClaim(choice) {
+      for (const button of claims) button.setAttribute('aria-pressed', String(button === choice));
+      feedback.textContent = choice ? history.content.querySelector('[data-for="' + choice.dataset.claim + '"]').textContent : '';
+      feedback.hidden = model.hidden = swap.hidden = !choice;
+      model.open = false;
+      sample.textContent = '';
+    }
+
+    function setAnswer(button, open) {
+      button.setAttribute('aria-expanded', String(open));
+      interview.querySelector('#' + button.getAttribute('aria-controls')).hidden = !open;
+      button.querySelector('[data-indicator]').textContent = open ? '−' : '+';
+      button.querySelector('[data-action]').textContent = open ? 'Close answer' : 'Hear Mara';
+      interview.querySelector('[data-words=sunday]').textContent = sunday.getAttribute('aria-expanded') === 'true' ? history.content.querySelector('blockquote').textContent : '';
+      const left = days.filter(day => day.getAttribute('aria-expanded') === 'false');
+      handoff.querySelector('[data-ready]').hidden = next.hidden = left.length > 0;
+      handoff.querySelector('[data-locked]').hidden = hint.hidden = !left.length;
+      hint.textContent = left.length === 1 ? 'Now ask about ' + left[0].querySelector('.mp-dayname').textContent + '.' : initialHint;
+      selectClaim(null);
+    }
+
+    for (const button of days) button.addEventListener('click', () => setAnswer(button, button.getAttribute('aria-expanded') !== 'true'));
+    for (const button of claims) button.addEventListener('click', () => selectClaim(button));
+    next.addEventListener('click', () => fdFocusGuideControl(claims[0]));
+    handoff.querySelector('[data-back]').addEventListener('click', () => fdFocusGuideControl(days.find(day => day.getAttribute('aria-expanded') === 'false') || sunday));
+    model.querySelector('summary').addEventListener('click', () => {
+      sample.textContent = !model.open && !model.hidden ? history.content.querySelector('[data-handoff]').textContent : '';
+    });
+    swap.addEventListener('click', () => {
+      history = handoff.querySelector(history.dataset.history === 'caps' ? 'template[data-history=setup]' : 'template[data-history=caps]');
+      setAnswer(sunday, false);
+      fdFocusGuideControl(sunday);
+    });
+  }
+
+  function fdMountLithiumHandoff(body) {
+    const timing = body.querySelector('#li-eight-am');
+    const resident = body.querySelector('#li-resident');
+    if (!timing || !resident || timing.dataset.mounted) return;
+    timing.dataset.mounted = 'true';
+    const axis = timing.querySelector('[data-axis]');
+    const choices = timing.querySelectorAll('[data-time]');
+    const next = timing.querySelector('[data-continue]');
+    const hear = resident.querySelector('[data-hear]');
+    const hearLabel = hear.textContent;
+    const call = resident.querySelector('#li-call');
+    const leads = call.querySelectorAll('[data-first]');
+    const worked = call.querySelector('[data-worked]');
+    const note = worked.querySelector('[data-note]');
+    let report;
+
+    function selectLead(choice) {
+      for (const button of leads) button.setAttribute('aria-pressed', String(button === choice));
+      call.querySelector('#li-feedback').hidden = !choice;
+      call.querySelector('[data-coach]').textContent = choice ? report.content.querySelector('[data-lead="' + choice.dataset.first + '"]').textContent : '';
+      worked.hidden = !choice;
+      worked.open = false;
+      note.textContent = '';
+    }
+
+    function showReport(key) {
+      report = key && resident.querySelector('template[data-report="' + key + '"]');
+      call.hidden = !report;
+      hear.textContent = report ? hear.dataset.closeLabel : hearLabel;
+      hear.setAttribute('aria-expanded', String(Boolean(report)));
+      call.querySelector('[data-voice]').textContent = report ? report.content.querySelector('blockquote').textContent : '';
+      selectLead(null);
+    }
+
+    for (const choice of choices) {
+      choice.addEventListener('click', () => {
+        if (choice.getAttribute('aria-pressed') === 'true') return;
+        for (const other of choices) other.setAttribute('aria-pressed', String(other === choice));
+        const end = choice.dataset.time;
+        const interval = timing.querySelector('template[data-interval-for="' + end + '"]').content;
+        const label = interval.querySelector('h5').textContent;
+        axis.dataset.end = end;
+        axis.setAttribute('aria-label', label);
+        timing.querySelector('[data-interval]').textContent = label;
+        timing.querySelector('[data-explain]').textContent = interval.querySelector('p').textContent;
+        timing.querySelector('#li-read').hidden = false;
+        next.hidden = hear.hidden = end !== 'collection';
+        showReport(null);
+      });
+    }
+    next.addEventListener('click', () => fdFocusGuideControl(hear));
+    resident.querySelector('[data-back]').addEventListener('click', () => fdFocusGuideControl(timing.querySelector('[data-time][aria-pressed=true]') || choices[0]));
+    hear.addEventListener('click', () => showReport(report ? null : 'breakfast'));
+    call.querySelector('[data-switch]').addEventListener('click', () => showReport(report.dataset.report === 'breakfast' ? 'change' : 'breakfast'));
+    for (const lead of leads) lead.addEventListener('click', () => selectLead(lead));
+    // Guide search and print also expand disclosures. Only a learner's reveal supplies a handoff.
+    worked.querySelector('summary').addEventListener('click', () => {
+      note.textContent = report && !worked.open ? report.content.querySelector('[data-handoff]').textContent : '';
+    });
+  }
+
+  /* The interview and note sit in separate reading sections. All clinical wording is
+     authored in the page. Explicitly opened answers belong to this mounted visit only. */
+  function fdMountCulturalChart(body){
+    var card=body.querySelector('#cultural-chart');
+    var follow=body.querySelector('#cultural-chart-followup');
+    if(!card||!follow)return;
+    var doc=body.ownerDocument;
+    var sources=[].slice.call(card.querySelectorAll('[data-culture-source]'));
+    var templates=[].slice.call(follow.querySelectorAll('template[data-culture-clause]'));
+    var interview=card.querySelector('[data-culture-interview]');
+    var line=follow.querySelector('[data-culture-line]');
+    var excerpt=follow.querySelector('#cultural-chart-excerpt');
+    var feedback=card.querySelector('[data-culture-feedback]');
+    var seen=new Set(), traced=null;
+
+    function renderTrace(){
+      follow.querySelectorAll('[data-culture-trace]').forEach(function(b){
+        b.setAttribute('aria-pressed',String(b.dataset.cultureTrace===traced));
+      });
+      excerpt.hidden=!traced;
+      if(!traced)return;
+      var source=card.querySelector('[data-culture-source="'+traced+'"]');
+      var quote=source?source.querySelector('blockquote p'):card.querySelector('[data-culture-opening]');
+      var label=source?source.querySelector('.cultural-chart__question-type'):card.querySelector('.cultural-chart__voice .fd-bedside-case__label');
+      excerpt.querySelector('[data-culture-quote]').textContent=quote.textContent;
+      excerpt.querySelector('[data-culture-quote-label]').textContent=label.textContent;
+    }
+    function renderNote(){
+      var opened=templates.filter(function(t){return t.dataset.cultureClause==='opening'||seen.has(t.dataset.cultureClause);});
+      line.replaceChildren();
+      opened.forEach(function(t,index){
+        var last=index===opened.length-1;
+        var phrase=doc.createElement('button');
+        phrase.type='button';
+        phrase.dataset.cultureTrace=t.dataset.cultureClause;
+        phrase.setAttribute('aria-controls',excerpt.id);
+        phrase.textContent=(index>0&&last?'and ':'')+t.content.textContent.trim()+(last?'.':opened.length>2?',':'');
+        if(index)line.appendChild(doc.createTextNode(' '));
+        line.appendChild(phrase);
+      });
+      var missing=sources.find(function(s){return !seen.has(s.dataset.cultureSource);});
+      var challenge=follow.querySelector('[data-culture-challenge-for="'+(missing?missing.dataset.cultureSource:'all')+'"]');
+      follow.querySelector('[data-culture-challenge]').textContent=challenge.content.textContent;
+      renderTrace();
+    }
+    function record(source){
+      var key=source.dataset.cultureSource;
+      if(!seen.has(key)){seen.add(key);renderNote();}
+    }
+    // Guide search opens the answer disclosure and focuses its actual passage.
+    card.addEventListener('focusin',function(event){
+      var source=event.target.closest('details[open][data-culture-source]');
+      if(source)record(source);
+    });
+    card.addEventListener('click',function(event){
+      var word=event.target.closest('[data-culture-word]');
+      if(word){
+        card.querySelectorAll('[data-culture-word]').forEach(function(b){
+          b.setAttribute('aria-pressed',String(b===word));
+        });
+        feedback.textContent=card.querySelector('[data-culture-feedback-for="'+word.dataset.cultureWord+'"]').content.textContent;
+        feedback.hidden=false;
+        if(word.dataset.cultureWord==='hallucinations')interview.open=true;
+        return;
+      }
+      // Native summary activation covers pointer and keyboard. Print-only expansion
+      // must never add an answer to the learner's note.
+      var summary=event.target.closest('summary');
+      var source=summary&&summary.parentElement;
+      if(source&&source.hasAttribute('data-culture-source')&&!source.open)record(source);
+    });
+    follow.addEventListener('click',function(event){
+      var phrase=event.target.closest('[data-culture-trace]');
+      if(phrase){traced=phrase.dataset.cultureTrace;renderTrace();return;}
+      if(!event.target.closest('[data-culture-reset]'))return;
+      seen.clear();traced=null;
+      card.querySelectorAll('details').forEach(function(d){d.open=false;});
+      follow.querySelectorAll('details').forEach(function(d){d.open=false;});
+      follow.open=false;
+      follow.querySelector('textarea').value='';
+      card.querySelectorAll('[data-culture-word]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      feedback.hidden=true;feedback.textContent='';
+      renderNote();
+      card.querySelector('[data-culture-word]').focus();
+    });
+    renderNote();
+  }
+  /* Clinical wording stays in the authored page. Only this visit's display state lives here. */
+  function fdMountDeliriumShift(body){
+    var card=body.querySelector('#delirium-shift'), follow=body.querySelector('#delirium-shift-followup');
+    if(!card||!follow||card._shiftMounted)return;
+    card._shiftMounted=true;
+    var encounter=card.querySelector('[data-shift-encounter]');
+    var afternoon=document.createDocumentFragment();
+    [].forEach.call(encounter.childNodes,function(node){afternoon.appendChild(node.cloneNode(true));});
+    var scenes={afternoon:afternoon};
+    card.querySelectorAll('template[data-shift-scene]').forEach(function(t){scenes[t.dataset.shiftScene]=t.content;});
+    var feedback=card.querySelector('[data-shift-feedback]'), comparison=card.querySelector('[data-shift-comparison]');
+    var time='afternoon';
+    function showTime(key){
+      if(!scenes[key])return;
+      card.querySelectorAll('[data-shift-time]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.shiftTime===key));});
+      if(time!==key){encounter.replaceChildren(scenes[key].cloneNode(true));time=key;}
+    }
+    card.addEventListener('click',function(event){
+      var reveal=event.target.closest('summary');
+      if(reveal&&reveal.parentElement===comparison){
+        var comparisonBody=comparison.querySelector('[data-shift-comparison-body]');
+        // Only explicit pointer/keyboard reveal mounts the answer. Guide find and print
+        // may open native details programmatically; neither supplies the comparison.
+        if(!comparisonBody.childNodes.length)comparisonBody.appendChild(comparison.querySelector('template').content.cloneNode(true));
+        return;
+      }
+      var observation=event.target.closest('[data-shift-time]');
+      if(observation){showTime(observation.dataset.shiftTime);return;}
+      var choice=event.target.closest('[data-shift-choice]');
+      if(choice){
+        var answer=card.querySelector('[data-shift-feedback-for="'+choice.dataset.shiftChoice+'"]');
+        if(!answer)return;
+        showTime('afternoon');
+        card.querySelectorAll('[data-shift-choice]').forEach(function(b){b.setAttribute('aria-pressed',String(b===choice));});
+        feedback.replaceChildren(answer.content.cloneNode(true));feedback.hidden=false;
+        if(comparison.hidden)comparison.open=false;
+        comparison.hidden=false;
+        return;
+      }
+      if(!event.target.closest('[data-shift-reset]'))return;
+      showTime('afternoon');
+      card.querySelectorAll('[data-shift-choice]').forEach(function(b){b.setAttribute('aria-pressed','false');});
+      feedback.replaceChildren();feedback.hidden=true;
+      comparison.open=false;comparison.hidden=true;
+      comparison.querySelector('[data-shift-comparison-body]').replaceChildren();
+      follow.open=false;follow.querySelector('[data-shift-worked]').open=false;
+      follow.querySelector('textarea').value='';
+      card.querySelector('[data-shift-time="afternoon"]').focus();
+    });
+  }
+  function fdMountSleepNight(body) {
+    const workup = body.querySelector('#sleep-workup');
+    const plan = body.querySelector('#sleep-plan');
+    const followup = body.querySelector('#sleep-followup');
+    if (!workup || !plan || !followup || workup.dataset.sleepMounted) return;
+    workup.dataset.sleepMounted = 'true';
+
+    const opened = new Set();
+    const sources = Array.from(workup.querySelectorAll('button[data-source]'));
+    const priorities = plan.querySelectorAll('button[data-priority]');
+    const feedback = plan.querySelector('[data-feedback]');
+    const baseline = workup.querySelector('[data-baseline]');
+    const evidence = workup.querySelector('#sn-evidence');
+    const tracks = workup.querySelectorAll('[data-track]');
+    const timeline = workup.querySelector('[data-night]');
+    const initialDescription = timeline.getAttribute('aria-label');
+    const worked = followup.querySelector('[data-worked]');
+    const note = worked.querySelector('[data-note]');
+    const coverage = worked.querySelector('[data-coverage]');
+    let priority = null;
+
+    const initialContents = new Map();
+    for (const node of [feedback, baseline, evidence, ...tracks]) {
+      initialContents.set(node, Array.from(node.childNodes, child => child.cloneNode(true)));
+    }
+    const captions = new Map(sources.map(button => [button, button.querySelector('small').textContent]));
+
+    function copy(section, selector) {
+      return section.querySelector(selector).content.cloneNode(true);
+    }
+    function choiceCopy(kind, key) {
+      const section = kind === 'note' ? followup : plan;
+      return copy(section, 'template[data-' + kind + '-copy="' + key + '"]');
+    }
+    function clearSample() {
+      worked.open = false;
+      note.replaceChildren();
+      coverage.textContent = '';
+    }
+    function showFeedback() {
+      if (!priority) return;
+      let key = priority + '-base';
+      if (priority === 'care' && opened.has('nurse')) key = 'care-nurse';
+      else if (opened.has('patient')) key = priority + '-patient';
+      feedback.replaceChildren(choiceCopy('plan', key));
+      if (opened.has('home')) feedback.append(' ', choiceCopy('plan', 'home'));
+    }
+    function openSource(button) {
+      const key = button.dataset.source;
+      if (!opened.has(key)) clearSample();
+      opened.add(key);
+      sources.forEach(source => source.setAttribute('aria-pressed', String(source === button)));
+      button.querySelector('small').textContent = 'Opened';
+      evidence.replaceChildren(copy(workup, 'template[data-evidence="' + key + '"]'));
+      const track = workup.querySelector('[data-track="' + key + '"]');
+      if (track) {
+        track.replaceChildren(copy(workup, 'template[data-markers="' + key + '"]'));
+        const descriptions = Array.from(workup.querySelectorAll('template[data-markers]'))
+          .filter(template => opened.has(template.dataset.markers))
+          .map(template => template.dataset.description);
+        timeline.setAttribute('aria-label', [timeline.querySelector('.sn-nightcaption').textContent, ...descriptions].join(' '));
+      }
+      if (key === 'home') baseline.replaceChildren(copy(workup, 'template[data-home-baseline]'));
+      showFeedback();
+    }
+    function showSample() {
+      const fragments = [choiceCopy('note', 'intro')];
+      const missing = [];
+      for (const button of sources) {
+        if (opened.has(button.dataset.source)) fragments.push(choiceCopy('note', button.dataset.source));
+        else missing.push(button.querySelector('[data-source-label]').textContent);
+      }
+      if (priority === 'care') fragments.push(choiceCopy('note', opened.has('nurse') ? 'care-nurse' : 'care-base'));
+      if (priority === 'contributors') fragments.push(choiceCopy('note', 'contributors'));
+      if (missing.length) {
+        const remaining = document.createElement('p');
+        remaining.textContent = 'Still to obtain: ' + missing.join(', ') + '.';
+        fragments.push(remaining);
+      } else {
+        fragments.push(choiceCopy('note', 'missing-all-known'));
+      }
+      if (!priority) fragments.push(choiceCopy('note', 'no-priority'));
+      note.replaceChildren(...fragments);
+      coverage.textContent = opened.size + ' of ' + sources.length + ' sources opened.';
+    }
+    function reset() {
+      clearSample();
+      opened.clear();
+      priority = null;
+      followup.open = false;
+      timeline.setAttribute('aria-label', initialDescription);
+      followup.querySelector('textarea').value = '';
+      for (const [node, children] of initialContents) node.replaceChildren(...children.map(child => child.cloneNode(true)));
+      for (const [button, caption] of captions) button.querySelector('small').textContent = caption;
+      for (const button of [...sources, ...priorities]) button.setAttribute('aria-pressed', 'false');
+      sources[0].focus({preventScroll:true});
+      sources[0].scrollIntoView({block:'center'});
+    }
+    for (const button of sources) button.addEventListener('click', () => openSource(button));
+    for (const button of priorities) {
+      button.addEventListener('click', () => {
+        if (priority !== button.dataset.priority) clearSample();
+        priority = button.dataset.priority;
+        priorities.forEach(option => option.setAttribute('aria-pressed', String(option === button)));
+        showFeedback();
+      });
+    }
+    workup.querySelector('[data-reset]').addEventListener('click', reset);
+    // Print and guide search can expand details. Build the example only on explicit activation.
+    worked.querySelector('summary').addEventListener('click', () => {
+      if (!worked.open) showSample();
+    });
+  }
   function enhanceTables(body){
     if(!body)return;
     [].forEach.call(body.querySelectorAll('table'),function(table,index){
+      if(table.hasAttribute('data-compact-table'))return; // Authored to fit the narrow reader.
       if(table.parentNode&&table.parentNode.classList.contains('table-scroll-viewport'))return;
       var shell=document.createElement('div'); shell.className='table-scroll';
       var hint=document.createElement('p'); hint.className='table-scroll-hint'; hint.setAttribute('aria-hidden','true'); hint.textContent='Scroll to see all columns →';
@@ -1454,6 +2250,10 @@
      that script hands the renderer across through this one global (set right after the Reader is
      injected). Null until then, and the preview simply shows no block. */
   var fdMediaPreviewHtml=null;
+  /*__FD_MORGAN_EXPOSURE__*/
+  /*__FD_FEVER_EXAMS__*/
+  /*__FD_BEDSIDE_CASES__*/
+  /*__FD_CASE_ROUNDS__*/
   function fdFacultyPreviewMedia(ref){
     if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
     var html=fdMediaPreviewHtml(ref);
@@ -1483,6 +2283,19 @@
       var _ledger=document.createElement('div'); _ledger.innerHTML=buildReviewLedger(item.f); if(_ledger.firstChild) _insertAfterTitle(_ledger.firstChild);
       var _m=TOPIC_META&&TOPIC_META[item.f];
       if(_m){ var _html=buildTpl(_m, item.f); if(_html){ var _w=document.createElement('div'); _w.innerHTML=_html; if(_w.firstChild) _insertAfterTitle(_w.firstChild); } }
+      fdMountPsychosisTimeline(contentEl);
+      fdMountLunchInterview(contentEl);
+      fdMountNoorDayroom(contentEl);
+      fdMountRoundsReflection(contentEl);
+      fdMountReferralCall(contentEl);
+      fdMountPersonalityCrisis(contentEl);
+      fdMountBedsideCases(contentEl);
+      fdMountLithiumHandoff(contentEl);
+      fdMountPillboxHandoff(contentEl);
+      fdMountCaseRounds(contentEl);
+      fdMountCulturalChart(contentEl);
+      fdMountDeliriumShift(contentEl);
+      fdMountSleepNight(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -2109,9 +2922,13 @@
     rxDueState={status:'checking',releasedIds:null};
     return fetch('pharmacy_public.json').then(function(r){if(!r.ok)throw Error('pharmacy feed unavailable');return r.json();})
       .then(rxVerifiedPublic).then(function(data){
-        rxDueState={status:'ready',releasedIds:new Set(rxRecallCards(data).map(function(c){return c.id;}))};
+        rxDueState={status:'ready',releasedIds:new Set(rxRecallCards(data).map(function(c){return c.id;})),
+          pharmacyNames:fdSearchPharmacyNames(data.agents)};
       }).catch(function(){rxDueState={status:'unavailable',releasedIds:null};})
-      .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
+      .then(function(){
+        if(typeof specialRefresh==='function')specialRefresh();
+        if(fdController)fdRefreshSearchResults(fdController.getState());
+      });
   }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
@@ -2979,11 +3796,15 @@
     }
   }
 
+  function fdSearchLiveState(live){
+    live.pharmacyNames=rxDueState.pharmacyNames;
+    live.bodyIndex=fdBodyIndex;
+    live.facultyPreview=!!facultyPreviewRequest;
+    return live;
+  }
   function fdSearchMarkup(live){
     return fdSurface('search',function(){
-      live.bodyIndex=fdBodyIndex;
-      live.facultyPreview=!!facultyPreviewRequest;
-      return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},live);
+      return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},fdSearchLiveState(live));
     });
   }
 
@@ -3020,6 +3841,30 @@
     }
   }
 
+  /* Start the tap-time read while the Pharmacy document is loading. The request belongs
+     to this frame and this selection. A reload of the same frame needs another fresh read. */
+  function fdPreparePharmacyLookup(frame,card){
+    function request(){
+      return fetch('pharmacy_public.json?lookup=1',{cache:'no-cache'}).then(function(response){
+        /* An older installed worker ignores query strings on cache hits. Its unmarked
+           precache response cannot confirm which drug this name identifies now. */
+        return new URL(response.url).searchParams.get('lookup')==='1'?response:null;
+      }).catch(function(){return null;});
+    }
+    var pending=request();
+    frame.fdPharmacyLookup={
+      read:function(){
+        var response=pending||request();
+        pending=null;
+        return response;
+      },
+      matches:function(agents,id){
+        var match=fdSearchPharmacyNames(agents).get(card.matchedName);
+        return !!match&&match.id===id&&id===card.id;
+      }
+    };
+  }
+
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
     if(state.searchOpen)overlays+=fdSearchMarkup(live);
@@ -3027,7 +3872,23 @@
     if(state.careShareId)overlays+=fdSurface('care-share',function(){
       return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
     });
-    if(fdOverlayMount)fdOverlayMount.innerHTML=overlays;
+    if(fdOverlayMount){
+      var mounted=fdOverlayMount.querySelector('[data-pharmacy-lookup]');
+      if(!(state.searchOpen&&state.pharmacyLookup&&mounted&&mounted.getAttribute('data-pharmacy-lookup')===state.pharmacyLookup.id)){
+        fdOverlayMount.innerHTML=overlays;
+        var frame=fdOverlayMount.querySelector('[data-pharmacy-lookup] iframe');
+        if(frame&&state.pharmacyLookup.matchedName)fdPreparePharmacyLookup(frame,state.pharmacyLookup);
+        if(frame)frame.addEventListener('load',function(){
+          // Keyboard events inside the same-origin Pharmacy tool do not bubble into Search.
+          if(frame.contentDocument)frame.contentDocument.addEventListener('keydown',function(event){
+            if(event.key==='Escape'&&!event.defaultPrevented){
+              event.preventDefault();
+              fdController.dispatch({'data-fd-pharmacy-back':''});
+            }
+          });
+        });
+      }
+    }
     if(fdNudgeMount){
       var nudge=state.nudge&&(FD_INDEX.byRef||{})[state.nudge];
       fdNudgeMount.innerHTML=nudge?fdNudge(nudge):'';
@@ -3383,6 +4244,18 @@
         if(body){
           var stationPanel=body.querySelector('[data-osce-station]');
           if(stationPanel)fdMountOsceStation(stationPanel);
+          fdMountPsychosisTimeline(body);
+          fdMountLunchInterview(body);
+          fdMountNoorDayroom(body);
+          fdMountRoundsReflection(body);
+          fdMountReferralCall(body);
+          fdMountPersonalityCrisis(body);
+          fdMountBedsideCases(body);
+          fdMountLithiumHandoff(body);
+          fdMountPillboxHandoff(body);
+          fdMountCulturalChart(body);
+          fdMountDeliriumShift(body);
+          fdMountSleepNight(body);
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';
@@ -3944,6 +4817,10 @@
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
+      searchMatches:function(state){
+        var live=fdSearchLiveState(fdLiveState(state));
+        return fdSearchMatches(FD_INDEX,state.query,FD_CURRICULUM.synonyms||{},live);
+      },
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
       readingPlaceSession:function(){return fdReadingPlaceSession;},
       disposeReadingPlace:fdDisposeReadingPlace,
