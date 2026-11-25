@@ -1454,6 +1454,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-article__body ol{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body li{margin:6px 0}
 .fd-article__body a{color:var(--fd-teal-deep);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.fd-article__body [data-fd-reading-pharmacy]{display:inline;margin:0;padding:0;border:0;background:transparent;font:inherit;color:var(--fd-teal-deep);text-align:inherit;text-decoration:underline dotted;text-underline-offset:.18em;cursor:pointer}
+.fd-article__body [data-fd-reading-pharmacy]:hover,.fd-article__body [data-fd-reading-pharmacy]:focus-visible{text-decoration-style:solid}
 .fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:var(--fd-radius-2xs);padding:1px 4px;color:var(--fd-text)}
 .fd-article__body blockquote{margin:20px 0;padding:4px 0 4px 16px;border-left:3px solid var(--fd-teal);color:var(--fd-text-mid)}
 
@@ -1654,6 +1656,9 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-searchpanel__esc{min-width:var(--fd-target-touch);min-height:var(--fd-target-touch);border:0;background:transparent;border-radius:var(--fd-radius-sm);font:inherit;font-size:var(--fd-font-md);font-weight:700;color:var(--fd-teal-deep);padding:0 var(--fd-space-3);cursor:pointer}
 .fd-searchpanel__esc:hover{background:var(--fd-teal-wash)}
 .fd-searchpanel__browse{padding:var(--fd-space-2) var(--fd-space-5);border-bottom:1px solid var(--fd-line);background:var(--fd-callout)}
+html:has([data-pharmacy-lookup]){overflow:hidden}
+.fd-searchpanel[data-pharmacy-lookup]{display:flex;flex-direction:column;height:min(84vh,48rem);height:min(84dvh,48rem)}
+.fd-searchpanel[data-pharmacy-lookup] iframe{width:100%;min-height:0;flex:1;border:0}
 .fd-searchpanel__body{max-height:46vh;overflow-y:auto;padding:var(--fd-space-3) var(--fd-space-4) var(--fd-space-5)}
 .fd-searchpanel__summary{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--fd-space-3);padding:var(--fd-space-3) var(--fd-space-4);font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
 .fd-searchpanel__summary p{margin:0}
@@ -3034,6 +3039,7 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 }
 
 @media print{
+  .fd-article__body [data-fd-reading-pharmacy]{min-height:0;color:inherit;text-decoration:none}
   #cultural-chart-followup [data-culture-trace]{display:inline!important;text-decoration:none;border:0;outline:0;padding:0}
   #cultural-chart-followup [data-culture-reset],#cultural-chart-followup .cultural-chart__hint{display:none!important}
   #referral-call [data-referral-lead]{display:none !important}
@@ -3449,6 +3455,45 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .bedside-case summary{align-content:center;padding-block:.25em}
 .bedside-case footer,.bedside-case .feedback{color:var(--fd-text-mid)}
 .bedside-case footer{margin-top:1em;border-top:1px solid var(--fd-line);padding-top:.6em;font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+/* The two records stay visible as the patient’s account changes. */
+#home-dose-history .mh-section{margin-top:var(--fd-space-7)}
+#home-dose-history .mh-intro,#home-dose-history .mh-instruction{margin-block:var(--fd-space-3) var(--fd-space-5)}
+#home-dose-history .mh-instruction,#home-dose-history .mh-state,#home-dose-history small{color:var(--fd-text-mid)}
+#home-dose-history .mh-scene{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr);align-items:center;overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-olive-wash)}
+#home-dose-history .mh-scene img{display:block;width:100%;height:100%;min-height:7em;object-fit:cover;object-position:60% center}
+#home-dose-history .mh-scene figcaption{padding:var(--fd-space-5);text-align:start;color:var(--fd-text)}
+#home-dose-history .mh-scene q{display:block;font-family:Georgia,serif;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#home-dose-history .mh-sources,#home-dose-history .mh-nights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-4)}
+#home-dose-history .mh-source{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:var(--fd-space-4);gap:var(--fd-space-2)}
+#home-dose-history .mh-state{grid-column:1/-1;font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1))}
+#home-dose-history .mh-record,#home-dose-history .mh-dialogue,#home-dose-history .mh-final,#home-dose-history .feedback{padding:var(--fd-space-5);margin-block:var(--fd-space-4);border-inline-start:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+#home-dose-history .mh-record strong{display:block}
+#home-dose-history .mh-dialogue,#home-dose-history .feedback{background:var(--fd-olive-wash);border-color:var(--fd-olive)}
+#home-dose-history .mh-paper{margin-top:var(--fd-space-5);padding:var(--fd-space-5);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);background:var(--fd-surface)}
+#home-dose-history .mh-paper-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:var(--fd-space-3);padding-bottom:var(--fd-space-3);border-bottom:1px solid var(--fd-line-strong)}
+#home-dose-history h5{margin:0;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#home-dose-history dl,#home-dose-history dd{margin:0}
+#home-dose-history .mh-line{display:grid;grid-template-columns:minmax(0,5.2em) minmax(0,1fr);gap:var(--fd-space-3);padding-block:var(--fd-space-3);border-bottom:1px dashed var(--fd-line);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1))}
+#home-dose-history .mh-line:last-child{border:0}
+#home-dose-history dt,#home-dose-history .mh-complete dd{font-weight:700}
+#home-dose-history .mh-complete dd{color:var(--fd-teal-deep)}
+#home-dose-history .mh-choices{display:grid;gap:var(--fd-space-3);margin-block:var(--fd-space-4)}
+#home-dose-history .mh-actions{margin-block:var(--fd-space-4)}
+#home-dose-history .mh-primary{background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#home-dose-history fieldset{min-width:0;margin:0;padding:var(--fd-space-3);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-xs);background:var(--fd-surface)}
+#home-dose-history legend{padding-inline:var(--fd-space-2);font-weight:700}
+#home-dose-history label{display:flex;align-items:center;min-height:var(--fd-target-touch);gap:var(--fd-space-2);padding:var(--fd-space-2);border-radius:var(--fd-radius-xs);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));cursor:pointer}
+#home-dose-history label:has(:checked){background:var(--fd-teal-wash)}
+#home-dose-history input{flex:none;margin:0;accent-color:var(--fd-teal)}
+#home-dose-history .mh-final blockquote{margin-block:var(--fd-space-4)}
+@container bedside (max-width:18em){
+  #home-dose-history .mh-source{grid-template-areas:"title title" "state glyph"}
+  #home-dose-history .mh-origin{grid-area:title}
+  #home-dose-history .mh-state{grid-area:state}
+  #home-dose-history .mh-glyph{grid-area:glyph}
+  #home-dose-history .mh-scene img{min-height:0;object-fit:contain;background:var(--fd-surface-warm)}
+}
+
 /* Alex's callback places one event on the same seven-day strip in either history. */
 #alex-timing .at-case{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);margin-block:var(--fd-space-5);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
 #alex-timing .at-portrait{position:relative;min-height:8em}
@@ -3647,6 +3692,78 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
   #study-denominators .study-plot{grid-template-columns:1fr}
   #study-denominators .study-plot>div+div{border-inline-start:0;border-block-start:1px solid var(--fd-line-strong)}
 }
+#lang-culture .lang-scene {
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); align-items:center;
+  margin-block:var(--fd-space-6); overflow:hidden; border-radius:var(--fd-radius-sm);
+  background:var(--fd-teal-deep); color:var(--fd-on-accent);
+}
+#lang-culture .lang-scene figcaption { padding:var(--fd-space-6); }
+#lang-culture .lang-scene .case-kicker { color:inherit; margin-bottom:var(--fd-space-3); }
+#lang-culture .lang-art img { display:block; width:100%; height:auto; margin:0; }
+#lang-culture .lang-packet {
+  margin-block:var(--fd-space-7); border:1px solid var(--fd-line-strong); border-radius:var(--fd-radius-sm);
+  background:var(--fd-surface); overflow:hidden;
+}
+#lang-culture .lang-lab { padding:var(--fd-space-5); border-inline-start:4px solid var(--fd-teal); background:var(--fd-olive-wash); }
+#lang-culture :is(.lang-lab-top,.lang-result,.lang-vitals,.lang-foot) { display:flex; flex-wrap:wrap; gap:var(--fd-space-3) var(--fd-space-6); align-items:baseline; }
+#lang-culture :is(.lang-lab-top,.lang-result,.lang-foot) { justify-content:space-between; }
+#lang-culture :is(.lang-lab-top,.lang-lab p,.lang-vitals,.lang-tag) { font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1)); }
+#lang-culture .lang-result em { font:italic 1.4em Georgia,serif; }
+#lang-culture .lang-vitals { padding:var(--fd-space-4) var(--fd-space-5); border-top:1px solid var(--fd-line); }
+#lang-culture :is(.lang-questions,.lang-options,.lang-tabs) { display:grid; gap:var(--fd-space-4); margin-block:var(--fd-space-5); }
+#lang-culture .lang-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
+#lang-culture .lang-tabs button { text-align:center; }
+#lang-culture .lang-questions button { display:flex; flex-wrap:wrap; gap:var(--fd-space-3); justify-content:space-between; align-items:center; }
+#lang-culture .lang-tag { color:var(--fd-teal-deep); }
+#lang-culture .lang-options button { font-weight:500; color:var(--fd-text); }
+#lang-culture :is(.lang-interview,.lang-handoffs,.lang-debrief,.lang-foot) { margin-top:var(--fd-space-7); }
+#lang-culture #lang-feedback[data-fit=false] { background:var(--fd-olive-wash); border-color:var(--fd-olive); }
+#lang-culture .lang-debrief dl { padding:0; }
+#lang-culture .lang-debrief dt { font-weight:650; color:var(--fd-teal-deep); }
+#lang-culture .lang-debrief dd { margin:0 0 var(--fd-space-4); }
+#lang-culture .lang-debrief a { display:inline-block; padding-block:var(--fd-space-4); }
+@container bedside (max-width:36rem) {
+  #lang-culture .lang-scene { grid-template-columns:minmax(0,1fr); }
+  #lang-culture .lang-art { grid-row:1; }
+}
+
+#catie-stop .ct-intro,#catie-stop .ct-signout{margin-top:var(--fd-space-4)}
+#catie-stop .ct-chart{margin-top:var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);overflow:hidden}
+#catie-stop .ct-chart-head,#catie-stop .ct-name,#catie-stop footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--fd-space-3)}
+#catie-stop .ct-chart-head{padding:var(--fd-space-4) var(--fd-space-5);background:var(--fd-teal-deep);color:var(--fd-on-accent)}
+#catie-stop .ct-chart-head h4{color:inherit}
+#catie-stop .ct-chart-head span,#catie-stop .ct-dates,#catie-stop .ct-open-state,#catie-stop .ct-comparison small{font-size:calc(var(--fd-font-xs)*var(--fd-reading-scale,1))}
+#catie-stop .ct-course{display:grid;grid-template-columns:minmax(4.1em,24%) minmax(0,1fr);width:100%;min-height:6.4em;padding:0;border:0;border-radius:0;color:var(--fd-text)}
+#catie-stop .ct-course+.ct-course{border-top:1px solid var(--fd-line)}
+#catie-stop .ct-course:focus-visible{outline-offset:-3px}
+#catie-stop .ct-portrait{position:relative;display:block;overflow:hidden}
+#catie-stop .ct-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 32%}
+#catie-stop .ct-course-body{display:grid;align-content:center;gap:var(--fd-space-3);padding:var(--fd-space-4) var(--fd-space-5)}
+#catie-stop .ct-name{line-height:1.25}
+#catie-stop .ct-name strong{font-family:Georgia,serif;font-size:calc(var(--fd-font-lg)*var(--fd-reading-scale,1))}
+#catie-stop .ct-open-state{font-weight:650;color:var(--fd-teal-deep);text-decoration:underline}
+#catie-stop .ct-dates{display:flex;align-items:start;justify-content:space-between;gap:var(--fd-space-4);line-height:1.25;font-weight:500;color:var(--fd-text-mid)}
+#catie-stop .ct-dates span:last-child{text-align:end}
+#catie-stop .ct-rail{position:relative;margin-inline:var(--fd-space-2);border-top:2px solid var(--fd-teal)}
+#catie-stop .ct-rail::before,#catie-stop .ct-rail::after{content:"";position:absolute;top:-1px;transform:translateY(-50%);width:var(--fd-space-3);height:var(--fd-space-3);border:2px solid var(--fd-teal);border-radius:50%;background:var(--fd-surface)}
+#catie-stop .ct-rail::before{left:0}
+#catie-stop .ct-rail::after{right:0;background:var(--fd-teal)}
+#catie-stop .ct-interview,#catie-stop .ct-comparison{margin-top:var(--fd-space-7)}
+#catie-stop .ct-overnight{margin-block:var(--fd-space-4);padding:var(--fd-space-4) var(--fd-space-5);background:var(--fd-surface);border:1px solid var(--fd-line);border-radius:var(--fd-radius-xs)}
+#catie-stop blockquote{margin-block:var(--fd-space-4) var(--fd-space-7);padding:var(--fd-space-5);border-inline-start:3px solid var(--fd-teal);background:var(--fd-surface)}
+#catie-stop .ct-handoffs{display:grid;gap:var(--fd-space-4);margin-top:var(--fd-space-4)}
+#catie-stop .ct-handoffs button{font-weight:500;color:var(--fd-text)}
+#catie-stop #catie-feedback[data-supported=false]{border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+#catie-stop .ct-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--fd-space-6);margin-block:var(--fd-space-4)}
+#catie-stop .ct-comparison>div{padding-top:var(--fd-space-4);border-top:2px solid var(--fd-teal)}
+#catie-stop .ct-comparison :is(b,small){display:block}
+#catie-stop details a{display:inline-block;margin-top:var(--fd-space-4)}
+@container bedside (max-width:300px){
+  #catie-stop .ct-course-body{padding:var(--fd-space-4)}
+  #catie-stop .ct-name{gap:var(--fd-space-1)}
+  #catie-stop .ct-comparison{grid-template-columns:minmax(0,1fr)}
+}
+
 #night-signout .ns-route{display:flex;align-items:center;gap:var(--fd-space-5);font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));font-weight:600;color:var(--fd-teal-deep)}
 #night-signout .ns-route i{flex:1;position:relative;border-top:1px solid var(--fd-line-strong)}
 #night-signout .ns-route i::after{content:"";position:absolute;inset-inline-end:0;top:-3px;width:5px;height:5px;transform:rotate(45deg);border-block-start:1px solid var(--fd-text-mid);border-inline-end:1px solid var(--fd-text-mid)}
@@ -4287,3 +4404,20 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
   .mg-case .mg-workspace,.mg-case .mg-fields{grid-template-columns:minmax(0,1fr)}
   .mg-case .mg-interview,.mg-case .mg-chart{grid-column:auto;grid-row:auto}
 }
+
+/* "In the paper's own words" (fd_ref_evidence.js, 2026-11-25): a verified verbatim excerpt,
+   collapsed under the reference list item that cites it. Reading-scale aware; no new colour. */
+.fd-ref-evidence{margin:var(--fd-space-2) 0 var(--fd-space-3);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+.fd-ref-evidence__toggle{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);cursor:pointer;color:var(--fd-teal-deep);font-weight:700}
+.fd-ref-evidence__toggle:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.fd-ref-evidence__quote{margin:var(--fd-space-2) 0;padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font-style:normal;line-height:var(--fd-leading-normal,1.55)}
+.fd-ref-evidence__meta{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-xs)}
+/* Tappable in-text citations (fd_ref_evidence.js fdRefCiteMarkup): an inline button that reads as
+   the bracketed number it replaced. Inline in a sentence, so the 44px target rule's inline
+   exception applies; the focus ring does not. */
+.fd-cite{display:inline;margin:0;padding:0 .08em;border:0;background:none;color:var(--fd-teal-deep);font:inherit;text-decoration:underline;text-underline-offset:.15em;cursor:pointer}
+.fd-cite:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+/* "Updated since you last opened it" (fd_page_changed.js): a one-time status line under the title
+   of a reading the learner marked read whose text has since changed. Information, not a warning:
+   olive, never danger. */
+.fd-page-changed{margin:var(--fd-space-3) 0 var(--fd-space-5);padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));line-height:var(--fd-leading-normal)}

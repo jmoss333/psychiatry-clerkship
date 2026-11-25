@@ -213,6 +213,11 @@ _canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
 with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
     json.dump(build_public_projection(_canonical_evidence),_fh,separators=(",", ":"),sort_keys=True)
     _fh.write("\n")
+# "In the paper's own words": the verbatim spans from evidence_annotations.json, projected into
+# the read-only index frontdoor/fd_ref_evidence.js loads under a reading's reference list. Spans
+# only -- never the library's claimText (see evidence_excerpts.py). The resident build copies it.
+import evidence_excerpts as _evidence_excerpts
+_evidence_excerpts.write(OUT, Path(LIB)/"evidence_annotations.json")
 for _jn, _fallback in [
     ("tool_registry.json", '{"tools":[]}'),
     ("communication_cases.json", '{"cases":[]}'),
@@ -586,6 +591,11 @@ illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "ill
 os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
 for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
     _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
+for scene in ("catie-patient-a.webp", "catie-patient-b.webp"):
+    _copy_required(os.path.join(LIB, "07_Evidence_and_Reading", "Rounds_Questions", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Medical_Workup", "illustrations", "lang-morning-interview.webp"),
+               os.path.join(OUT, "illustrations", "lang-morning-interview.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
                os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),

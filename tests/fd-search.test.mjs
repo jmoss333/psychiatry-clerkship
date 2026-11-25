@@ -30,6 +30,7 @@ function make(governanceBadge) {
     return {
       fdExpandQuery: fdExpandQuery, fdSearchResults: fdSearchResults,
       fdSearchOverlay: fdSearchOverlay, fdSearchResultRow: fdSearchResultRow,
+      fdSearchPharmacyNames: fdSearchPharmacyNames,
       fdBuildIndex: fdBuildIndex, fdSearchContentWords: fdSearchContentWords,
       fdSearchScore: fdSearchScore, fdSearchTriggerHit: fdSearchTriggerHit,
       fdDispatch: fdDispatch,
@@ -109,8 +110,124 @@ test('care suggestions never outrank an explicit safety trigger', () => {
   assert.ok(results.some((result) => result.kind === 'care' && result.item.id === 'meeting-calendar'));
 });
 
+const review = { reviewer: 'Test Faculty', lastReviewed: '2026-01-01' };
+const pharmacyAgents = [
+  { id: 'lithium', generic: 'lithium carbonate', brands: ['Lithobid', 'Shared brand'], review },
+  { id: 'olanzapine', generic: 'olanzapine', brands: ['Zyprexa', 'Zyprexa Zydis', 'Shared brand'], review },
+  { id: 'haloperidol', generic: 'haloperidol', brands: [], review },
+];
+const pharmacy = { pharmacyNames: F.fdSearchPharmacyNames(pharmacyAgents) };
+
+test('an exact, published medication name adds a labelled Pharmacy card above the usual matches', () => {
+  for (const [query, agent] of [
+    ['lithium carbonate', pharmacyAgents[0]], ['lithium', pharmacyAgents[0]], ['LiThoBiD', pharmacyAgents[0]],
+    ['OLANZAPINE', pharmacyAgents[1]], ['  zyprexa   zydis  ', pharmacyAgents[1]],
+  ]) {
+    const rows = F.fdSearchResults(REAL_INDEX, query, SYN, { ...pharmacy, searchExpanded: true });
+    assert.deepEqual(rows[0], { item: { id: agent.id, title: agent.generic }, kind: 'pharmacy', meta: 'Pharmacy card' });
+    assert.deepEqual(rows.slice(1), F.fdSearchResults(REAL_INDEX, query, SYN, { searchExpanded: true }));
+    const html = F.fdSearchOverlay(REAL_INDEX, query, SYN, pharmacy);
+    const row = html.match(/<button type="button" class="fd-result" data-fd-pharmacy-card="[^"]+">[\s\S]*?<\/button>/)?.[0];
+    assert.ok(row?.includes(`data-fd-pharmacy-card="${agent.id}"`));
+    assert.ok(row.includes(`class="fd-result__title">${agent.generic}</span>`));
+    assert.ok(row.includes('class="fd-result__meta">Pharmacy card</span>'));
+  }
+});
+
+test('partial, ambiguous, unlisted and contextual names preserve the existing result list', () => {
+  for (const query of ['', 'lithi', 'Haldol', 'shared brand', 'lithium toxicity', 'open olanzapine',
+    'sertraline', 'antipsychotic', 'suicide Zyprexa', 'Zyprexa! Zydis']) {
+    assert.deepEqual(F.fdSearchResults(REAL_INDEX, query, SYN, pharmacy),
+      F.fdSearchResults(REAL_INDEX, query, SYN, {}), query);
+  }
+  const malformed = { pharmacyNames: F.fdSearchPharmacyNames([
+    { id: '../alpha', generic: 'alpha', review }, { id: 'internal-123', generic: 'beta salt', review },
+  ]) };
+  for (const query of ['alpha', 'internal-123']) {
+    assert.ok(!F.fdSearchResults(REAL_INDEX, query, SYN, malformed).some(row => row.kind === 'pharmacy'));
+  }
+});
+
+test('direct drug lookup requires a placed Pharmacy tool and a learner search', () => {
+  const byRef = { ...REAL_INDEX.byRef };
+  delete byRef['pharmacy.html'];
+  for (const [index, state] of [
+    [{ ...REAL_INDEX, byRef }, pharmacy],
+    [REAL_INDEX, { ...pharmacy, facultyPreview: true }],
+  ]) {
+    assert.ok(!F.fdSearchResults(index, 'Lithobid', SYN, state).some(row => row.kind === 'pharmacy'));
+  }
+});
+
+test('a reading lookup opens only the reviewed name at hand and Escape returns directly to the reading', () => {
+  const reading = { openId: 'med_monitoring.md' };
+  const action = { 'data-fd-reading-pharmacy': 'lithium' };
+  const medication = { id: 'lithium', title: 'lithium carbonate' };
+  const context = { readingMedication: medication };
+  const opened = F.fdDispatch(action, context, reading);
+  assert.equal(opened.route, null);
+  assert.deepEqual(opened.patch, { searchOpen: true, pharmacyLookup: { ...medication, fromReading: true } });
+  assert.deepEqual(F.fdDispatch({ close: true }, {}, { ...reading, ...opened.patch }).patch,
+    { searchOpen: false, pharmacyLookup: null });
+  for (const [ctx, state] of [[{}, reading], [{ readingMedication: { id: 'other' } }, reading],
+    [context, { openId: 'pharmacy.html' }], [context, { ...reading, searchOpen: true }]]) {
+    assert.deepEqual(F.fdDispatch(action, ctx, state).patch, {});
+  }
+});
+
+test('explicit safety takes precedence even when the complete query also names a reviewed drug', () => {
+  const kit = [{ item: { ref: 'protocol.md', title: 'Safety protocol', summary: '' }, triggers: ['lithium'] }];
+  const index = { ...REAL_INDEX, kit };
+  const rows = F.fdSearchResults(index, 'lithium', SYN, pharmacy);
+  assert.deepEqual(rows.slice(0, 2).map(row => row.kind), ['protocol', 'pharmacy']);
+  const html = F.fdSearchOverlay(index, 'lithium', SYN, pharmacy);
+  assert.ok(html.indexOf('data-fd-safety="protocol.md"') < html.indexOf('data-fd-pharmacy-card="lithium"'));
+});
+
+test('Search and due counts share the verified fetch and a failed feed exposes no lookup', async () => {
+  const shell = read('spa_index.html');
+  const loader = shell.slice(shell.indexOf('var rxDueState='), shell.indexOf('function srsState()'));
+  const feed = { schemaVersion: 1, agents: pharmacyAgents, cards: [] };
+  const urls = [];
+  const load = new Function('fetch', 'fdSearchPharmacyNames', 'fdController',
+    `${read('rx_retrieval.js')}\n${loader}\nreturn async function(){await loadRxDue();return rxDueState;};`)(
+    async url => { urls.push(url); return { ok: true, json: () => feed }; }, F.fdSearchPharmacyNames, null);
+  const ready = await load();
+  const matches = F.fdSearchResults(REAL_INDEX, 'Lithobid', SYN, ready);
+  assert.equal(matches[0].item.id, 'lithium');
+  feed.agents = [...pharmacyAgents, { id: 'unstamped', generic: 'unstamped' }];
+  const failed = await load();
+  assert.equal(failed.status, 'unavailable');
+  for (const query of ['unstamped', 'Lithobid']) {
+    assert.ok(!F.fdSearchResults(REAL_INDEX, query, SYN, failed).some(row => row.kind === 'pharmacy'));
+  }
+  const restored = F.fdSearchResults(REAL_INDEX, 'Lithobid', SYN,
+    { ...failed, searchRestored: true, searchReturn: { query: 'Lithobid', matches } });
+  assert.ok(!restored.some(row => row.kind === 'pharmacy'));
+  assert.deepEqual(urls, ['pharmacy_public.json', 'pharmacy_public.json']);
+});
+
 test('results are capped at 8 however many match', () => {
   assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
+});
+
+test('a lookup discards an old worker’s unmarked cached feed and revalidates again on frame reload', async () => {
+  const shell = read('spa_index.html');
+  const helper = shell.slice(shell.indexOf('function fdPreparePharmacyLookup('), shell.indexOf('function fdRenderOverlays('));
+  const calls = [];
+  const fresh = { url: 'https://library.example/pharmacy_public.json?lookup=1' };
+  const prepare = new Function('fetch', 'fdSearchPharmacyNames', helper + '\nreturn fdPreparePharmacyLookup;')(
+    async (url, options) => {
+      calls.push([url, options.cache]);
+      return calls.length === 1 ? { url: 'https://library.example/pharmacy_public.json' } : fresh;
+    }, F.fdSearchPharmacyNames);
+  const frame = {};
+  prepare(frame, { id: 'lithium', matchedName: 'lithobid' });
+  assert.equal(calls.length, 1);
+  assert.equal(await frame.fdPharmacyLookup.read(), null);
+  assert.equal(calls.length, 1);
+  assert.equal(await frame.fdPharmacyLookup.read(), fresh);
+  assert.deepEqual(calls, Array(2).fill(['pharmacy_public.json?lookup=1', 'no-cache']));
 });
 
 test('a query matching nothing returns an empty list rather than throwing', () => {

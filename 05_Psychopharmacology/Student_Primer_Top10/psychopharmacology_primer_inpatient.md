@@ -8,6 +8,69 @@ This adult inpatient primer supports supervised learning. It provides no startin
 
 1. **What are we treating?** Name the diagnosis, illness phase, and target symptom. Psychosis, mania, bipolar depression, unipolar depression, withdrawal, and delirium call for different plans. Sedation alone does not show that the underlying illness is improving.
 2. **What has already happened?** Ask about previous benefit, adverse effects, adequate trials, missed doses, access, and the patient's explanation of the problem.
+
+   <section class="bedside-case" id="home-dose-history" aria-labelledby="mh-title">
+   <p class="case-kicker">Sunday evening · Fictional inpatient admission</p>
+   <h3 id="mh-title">What did they actually take?</h3>
+   <p class="mh-intro">You’re admitting a patient to the psychiatry unit. The home medication list includes quetiapine. The night resident has one question.</p>
+   <figure class="mh-scene"><img src="illustrations/formulation-pharmacy.webp" loading="lazy" width="400" height="248" alt="Illustration of a patient and pharmacist at a pickup counter."><figcaption><span class="case-kicker">Night resident</span><q>When did they last take it at home?</q></figcaption></figure>
+   <div class="mh-section" aria-labelledby="mh-record-title"><h4 id="mh-record-title">Open the two records</h4>
+   <p class="mh-instruction">Read them in either order. Build the first line of your handoff.</p>
+   <div class="mh-sources">
+   <button type="button" class="mh-source" id="mh-rx" aria-pressed="false" aria-controls="mh-record"><span class="mh-origin">Prescription</span><span class="mh-glyph" aria-hidden="true">↗</span><span class="mh-state">Open record</span></button>
+   <button type="button" class="mh-source" id="mh-fill" aria-pressed="false" aria-controls="mh-record"><span class="mh-origin">Pharmacy</span><span class="mh-glyph" aria-hidden="true">↗</span><span class="mh-state">Open record</span></button>
+   </div><div class="mh-record" id="mh-record" aria-live="polite" hidden><strong id="mh-record-label"></strong><span id="mh-record-copy"></span></div>
+   <div class="mh-paper"><div class="mh-paper-head"><h5>Admission handoff</h5><small>Sunday PM</small></div><dl>
+   <div class="mh-line"><dt>Order</dt><dd id="mh-order-line">Record unopened</dd></div>
+   <div class="mh-line"><dt>Pickup</dt><dd id="mh-fill-line">Record unopened</dd></div>
+   <div class="mh-line" id="mh-dose-row"><dt>Home doses</dt><dd id="mh-dose-line">History pending</dd></div>
+   </dl></div></div>
+   <div class="mh-section" id="mh-interim" aria-labelledby="mh-interim-title" hidden><p class="case-kicker">Before the interview</p><h4 id="mh-interim-title">What can you tell the resident?</h4><div class="mh-choices">
+   <button type="button" class="mh-choice" data-claim="daily" aria-pressed="false">“They’ve been taking quetiapine nightly since Friday.”</button>
+   <button type="button" class="mh-choice" data-claim="open" aria-pressed="false">“It was picked up Friday. I still need to ask when they took it.”</button>
+   <button type="button" class="mh-choice" data-claim="never" aria-pressed="false">“There’s no dose on our chart, so they haven’t started it.”</button>
+   </div><p id="mh-claim-feedback" class="feedback" role="status" hidden></p></div>
+   <div class="mh-section" id="mh-ask" hidden><h4 tabindex="-1" id="mh-ask-title">Ask the patient</h4><p class="mh-instruction">“Walk me through Friday and Saturday nights. What did you end up taking?”</p><button type="button" class="mh-primary" id="mh-hear" aria-expanded="false" aria-controls="mh-reply">Hear their reply</button>
+   <div id="mh-reply" class="mh-dialogue" hidden><p class="case-kicker">At the bedside</p><blockquote id="mh-quote" tabindex="-1"></blockquote></div>
+   </div>
+   <div class="mh-section" id="mh-revise" hidden><p class="case-kicker">Resident follow-up</p><h4>Revise the home-dose history</h4><p class="mh-instruction">Mark what the patient recalls taking from this fill on each night.</p>
+   <div class="mh-nights" id="mh-nights">
+   <fieldset><legend>Friday night</legend>
+   <label><input type="radio" id="mh-fri-taken" name="mh-fri" value="taken"> Took a dose</label>
+   <label><input type="radio" id="mh-fri-none" name="mh-fri" value="none"> No dose</label>
+   <label><input type="radio" id="mh-fri-unclear" name="mh-fri" value="unclear"> Unclear</label>
+   </fieldset>
+   <fieldset><legend>Saturday night</legend>
+   <label><input type="radio" id="mh-sat-taken" name="mh-sat" value="taken"> Took a dose</label>
+   <label><input type="radio" id="mh-sat-none" name="mh-sat" value="none"> No dose</label>
+   <label><input type="radio" id="mh-sat-unclear" name="mh-sat" value="unclear"> Unclear</label>
+   </fieldset>
+   </div>
+   <div class="mh-actions"><button class="mh-primary" type="button" id="mh-check">Check my handoff</button></div><p id="mh-revision-feedback" class="feedback" role="status" hidden></p>
+   <div id="mh-final" class="mh-final" hidden><h5 id="mh-final-title" tabindex="-1">Your handoff to the night resident</h5><blockquote id="mh-handoff"></blockquote><details id="mh-practice"><summary>Why ask about the last dose?</summary><p>The pharmacy can verify pickup. The patient can tell you how they used the medication at home. Naming each source makes the handoff easier to act on. <a href="https://www.ahrq.gov/patient-safety/settings/hospital/match/figure-9.html">AHRQ medication interview guide</a></p></details></div>
+   <button type="button" id="mh-other" class="case-link">Hear the other patient reply</button></div>
+   <div class="mh-actions"><button type="button" class="case-link" id="mh-reset" hidden>Start again</button></div>
+   <p id="mh-status" role="status" class="fd-visually-hidden"></p>
+   <template id="mh-copy">
+   <span data-copy="rx-label">Outpatient prescription · Friday</span>
+   <span data-copy="rx-full">New prescription: quetiapine by mouth at bedtime.</span>
+   <span data-copy="rx-line">Quetiapine prescribed nightly.</span>
+   <span data-copy="fill-label">Community pharmacy · Friday</span>
+   <span data-copy="fill-full">Pickup log: new quetiapine prescription collected on Friday afternoon.</span>
+   <span data-copy="fill-line">Pharmacy confirms Friday pickup.</span>
+   <span data-copy="unopened-quote">“I picked it up after work on Friday. It’s still in the bag on my kitchen counter. I haven’t started it.”</span>
+   <span data-copy="unopened-dose">Patient reports no doses from the Friday fill.</span>
+   <span data-copy="unopened-coach">They said the new bottle is still unopened. Which nights could they have taken a dose from it?</span>
+   <span data-copy="friday-quote">“I took it Friday night when I got home. Saturday I stayed over at my brother’s and left the bottle at my place. Friday’s the only time I’ve taken it.”</span>
+   <span data-copy="friday-dose">Patient reports one dose from this fill, Friday night, and none since.</span>
+   <span data-copy="friday-coach">They remember taking it when they got home on Friday. Where was the bottle on Saturday night?</span>
+   <span data-copy="daily">Pickup establishes that the medication was collected. Which source would tell you whether a dose was taken?</span>
+   <span data-copy="never">Home doses can be missing from the hospital chart. What does the pharmacy record actually establish?</span>
+   <span data-copy="partial">Choose an answer for each night. You can mark a night unclear if the patient didn’t say.</span>
+   <span data-copy="handoff">The outpatient prescription lists quetiapine nightly, and the pharmacy confirms Friday pickup.</span>
+   </template>
+   </section>
+
 3. **What could change the choice?** Review kidney/liver function, other medical illness, reproductive goals and pregnancy potential, overdose risk, substance use, interactions, and patient priorities.
 4. **What will we measure?** Record a target such as sleep need, hallucination distress, ability to eat, or participation in care, alongside adverse effects and necessary labs.
 5. **What happens after discharge?** Confirm supply, affordability, follow-up, monitoring responsibility, and a plan for missed doses or problems.

@@ -29,11 +29,11 @@ const READING_FAILURE = 'Reading place could not be saved on this device';
 // to the top. t_mood.md drifted on 2026-09-24 (#763) and this suite went intermittently red for
 // it: a test of the reading place, failing on the faculty's queue (CLAUDE.md: never depend on
 // live governance state). Pinning it reviewed/low keeps these tests about the reading place.
-async function controlledReading(page, ref = READING_REF) {
+async function controlledReading(page, ref = READING_REF, sectionTwoText = '') {
   await pinGovernance(page, ref, { status: 'reviewed', riskLevel: 'low' });
   const filler = 'A short note about organizing study time. '.repeat(28);
   const markdown = '# Study notes\n\n' + [1, 2, 3].map(n =>
-    `### Section ${n}\n\n${filler}\n\n${filler}\n`).join('\n');
+    `### Section ${n}\n\n${n === 2 && sectionTwoText ? sectionTwoText + '\n\n' : ''}${filler}\n\n${filler}\n`).join('\n');
   await page.route(`**/content/${ref}`, route => route.fulfill({
     contentType: 'text/markdown', body: markdown,
   }));
@@ -77,6 +77,223 @@ async function openHeaderSearch(page) {
   await pill.click();
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
+
+test.describe('reviewed Pharmacy card lookup', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  const agent = { id: 'study-med', generic: 'Study medication', brands: ['Studybrand'],
+    monitoring: { sourcePage: 'med_monitoring.md' }, qbankIds: ['study-question'],
+    review: { reviewer: 'Fixture reviewer', lastReviewed: '2026-11-01' } };
+  const publicFeedUrl = /\/pharmacy_public\.json(?:\?lookup=1)?$/;
+  const feed = agents => ({
+    schemaVersion: 1, agents, pendingCount: 0,
+    cards: agents.map(a => ({ id: 'RX#' + a.id + '#study', drug: a.id, prompt: 'Study prompt',
+      reveal: [{ label: 'Study answer', lines: ['Example'] }] })),
+  });
+
+  for (const name of ['Study medication', 'Studybrand']) {
+    test(`opens by ${name} and resumes the same paragraph`, async ({ page }, testInfo) => {
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed([agent]) }));
+      await seedApp(page, testInfo);
+      await controlledReading(page);
+      await page.goto('/?page=t_mood.md');
+      await readingReady(page);
+      await scrollReadingTo(page, 1);
+      const paragraph = page.locator('.fd-article__body h3').nth(1);
+      const original = await paragraph.elementHandle();
+      const position = await paragraph.evaluate(el => el.getBoundingClientRect().top);
+      const initialRoute = page.url();
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources' });
+      await input.fill(name);
+      const row = search.locator('.fd-result').first();
+      await expect(row).toHaveAttribute('data-fd-pharmacy-card', agent.id);
+      await row.tap();
+      const lookup = page.getByRole('dialog', { name: 'Study medication · Pharmacy card' });
+      const frame = lookup.frameLocator('iframe');
+      await expect(frame.getByRole('heading', { name: agent.generic, exact: true })).toBeInViewport();
+      await expect(frame.locator('.stamp')).toContainText('Fixture reviewer');
+      await expect(frame.getByRole('searchbox')).toHaveCount(0);
+      if (name === 'Studybrand') {
+        await frame.getByRole('button', { name: /^Quiz me on/ }).tap();
+        await frame.getByRole('button', { name: 'Show answer' }).tap();
+        await frame.getByRole('button', { name: 'Good', exact: true }).tap();
+        await expect(frame.getByRole('link', { name: /Open Daily Review/ })).toHaveAttribute('target', '_blank');
+        await frame.getByRole('button', { name: 'Close', exact: true }).tap();
+        await expect(frame.locator('button.drug')).toHaveCount(0);
+        await expect(frame.locator('#status')).toBeEmpty();
+        await expect(frame.getByRole('link', { name: /practice question/ })).toHaveAttribute('target', '_blank');
+        const opened = page.waitForEvent('popup');
+        await frame.getByRole('link', { name: /Monitoring & Labs/ }).tap();
+        const related = await opened;
+        await expect(related).toHaveURL(/\?page=med_monitoring\.md/);
+        await related.close();
+        await expect(frame.locator('#dname')).toHaveText(agent.generic);
+        expect(page.url()).toBe(initialRoute);
+      }
+      await frame.locator('#depth-toggle').focus();
+      await page.keyboard.press('Escape');
+      await expect(input).toHaveValue(name);
+      await expect(row).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      const back = lookup.getByRole('button', { name: 'Return to reading' });
+      await back.hover();
+      await page.mouse.wheel(0, 520);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await back.tap();
+      await expect(lookup).toHaveCount(0);
+      await expect(search).toHaveCount(0);
+      expect(page.url()).toBe(initialRoute);
+      expect(await original.evaluate(el => el.isConnected)).toBe(true);
+      await expect.poll(async () => Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await expectHealthy(page);
+    });
+  }
+
+  test('tapping a medication in a reading returns to the same word after the card list arrives', async ({ page }, testInfo) => {
+    let release;
+    const ready = new Promise(resolve => { release = resolve; });
+    await page.route('**/pharmacy_public.json', async route => {
+      await ready;
+      await route.fulfill({ json: feed([agent]) });
+    });
+    await seedApp(page, testInfo);
+    await controlledReading(page, READING_REF, 'Compare **Studybrand** with the notes from yesterday.');
+    await page.goto('/?page=' + READING_REF);
+    await readingReady(page);
+    const paragraph = page.locator('.fd-article__body p').filter({ hasText: 'Compare Studybrand' });
+    await paragraph.evaluate(el => window.scrollTo(0, scrollY + el.getBoundingClientRect().top - 160));
+    const original = await paragraph.elementHandle();
+    const position = () => original.evaluate(el => ({ y: scrollY, top: el.getBoundingClientRect().top }));
+    const before = await position();
+    const url = page.url();
+    const word = paragraph.locator('[data-fd-reading-pharmacy="study-med"]');
+    await expect(word).toHaveCount(0);
+    release();
+    await expect(word).toHaveText('Studybrand');
+    await expect(word).toBeInViewport();
+    await word.tap();
+    const lookup = page.getByRole('dialog', { name: 'Study medication · Pharmacy card' });
+    const frame = lookup.frameLocator('iframe');
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await expect(lookup.getByRole('button', { name: 'Back to search results' })).toHaveCount(0);
+    await lookup.getByRole('button', { name: 'Return to reading' }).tap();
+    await expect(word).toBeFocused();
+    expect(await position()).toEqual(before);
+    await page.keyboard.press('Enter');
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await page.keyboard.press('Tab');
+    await expect(frame.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(frame.locator('#depth-toggle')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(word).toBeFocused();
+    expect(await original.evaluate(el => el.isConnected)).toBe(true);
+    expect(await position()).toEqual(before);
+    expect(page.url()).toBe(url);
+    await expectHealthy(page);
+  });
+
+  async function findStudybrand(page, testInfo) {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await openHeaderSearch(page);
+    await page.getByRole('textbox', { name: 'Search resources' }).fill('Studybrand');
+    const row = page.locator('[data-fd-pharmacy-card="study-med"]');
+    await expect(row).toBeVisible();
+    return row;
+  }
+
+  const renamed = { ...agent, brands: ['Newbrand'] };
+  const other = { ...agent, id: 'other-med', generic: 'Other medication' };
+  for (const [change, freshAgents] of [
+    ['a card withdrawn', []],
+    ['a brand removed from a reviewed card', [renamed]],
+    ['a brand reassigned to another reviewed card', [renamed, other]],
+    ['a brand shared by two reviewed cards', [agent, other]],
+  ]) {
+    test(`${change} between search and opening is unavailable in the lookup`, async ({ page }, testInfo) => {
+      let agents = [agent];
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed(agents) }));
+      const row = await findStudybrand(page, testInfo);
+      agents = freshAgents;
+      await row.tap();
+      const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+      await expect(frame.locator('#status')).toHaveText('This medication card is unavailable.');
+      await expect(frame.locator('#detail')).toBeEmpty();
+      await expect(frame.locator('button.drug')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Close lookup' }).tap();
+      await expect(page.locator('.fd-library')).toBeVisible();
+      await expectHealthy(page);
+    });
+  }
+
+  test('each tap reads the current card and the first read overlaps the frame load', async ({ page }, testInfo) => {
+    let freshReviewer = '';
+    let feedStarted = false, frameStarted = false;
+    let releaseFeed, releaseFrame;
+    const heldFeed = new Promise(resolve => { releaseFeed = resolve; });
+    const heldFrame = new Promise(resolve => { releaseFrame = resolve; });
+    await page.route(publicFeedUrl, async route => {
+      if (!freshReviewer) return route.fulfill({ json: feed([agent]) });
+      feedStarted = true;
+      await heldFeed;
+      const reviewed = { ...agent, review: { ...agent.review, reviewer: freshReviewer } };
+      await route.fulfill({ json: feed([reviewed]) });
+    });
+    await page.route('**/tools/pharmacy.html?*', async route => {
+      frameStarted = true;
+      await heldFrame;
+      await route.continue();
+    });
+    const row = await findStudybrand(page, testInfo);
+    freshReviewer = 'First tap reviewer';
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    try {
+      await row.tap();
+      // Neither route can finish until both have started, independently of network timing.
+      await expect.poll(() => ({ feedStarted, frameStarted })).toEqual({ feedStarted: true, frameStarted: true });
+      releaseFrame();
+      await expect(frame.locator('#detail')).toBeEmpty();
+      releaseFeed();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await page.getByRole('button', { name: 'Back to search results' }).tap();
+      freshReviewer = 'Second tap reviewer';
+      await row.tap();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await expectHealthy(page);
+    } finally {
+      releaseFrame();
+      releaseFeed();
+    }
+  });
+
+  test('a failed fresh request leaves the card empty and reopening retries', async ({ page }, testInfo) => {
+    let unavailable = true;
+    const updated = { ...agent, review: { ...agent.review, reviewer: 'Reviewer after recovery' } };
+    await page.route(publicFeedUrl, route => {
+      const fresh = new URL(route.request().url()).searchParams.get('lookup') === '1';
+      if (fresh && unavailable) return route.fulfill({ status: 503, body: 'Temporarily unavailable' });
+      return route.fulfill({ json: feed([fresh ? updated : agent]) });
+    });
+    const row = await findStudybrand(page, testInfo);
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    await row.tap();
+    await expect(frame.locator('#status')).toHaveText(/unavailable|could not be loaded/i);
+    await expect(frame.locator('#detail')).toBeEmpty();
+    await page.getByRole('button', { name: 'Back to search results' }).tap();
+    unavailable = false;
+    await row.tap();
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await expect(frame.locator('.stamp')).toContainText(updated.review.reviewer);
+  });
+});
 
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
@@ -2764,7 +2981,10 @@ async function guideRenderedInventory(page) {
   return page.locator('.fd-article__body').evaluate(body => {
     const root = body.cloneNode(true);
     // Exclude enhancement-only controls and the alternative table view, never authored nodes.
-    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint')
+    // .fd-ref-evidence is the collapsed verified-excerpt box the reader appends inside a cited
+    // reference (fd_ref_evidence.js) and .fd-page-changed the one-time changed-page notice
+    // (fd_page_changed.js): both are added by the reader, not authored on the page.
+    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint, .fd-ref-evidence, .fd-page-changed')
       .forEach(el => el.remove());
     const normalize = text => text.replace(/\s+/g, ' ').trim();
     const text = element => normalize(element.textContent);
@@ -3275,6 +3495,73 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('[data-coach-line][aria-pressed=true]')).toHaveCount(0);
   });
 
+  test('home-dose history requires both records and a handoff supported by the current patient reply', async ({ page }) => {
+    const sectionId = 'guide-start-here-five-questions-before-choosing-a-drug';
+    await page.goto('/?page=psychopharm_primer.md&guideSection=start-here-five-questions-before-choosing-a-drug');
+    const opening = page.locator('.fd-article__body :is(.sec-c,.fd-guide-section)').filter({
+      has: page.locator(':scope > #' + sectionId),
+    });
+    const items = opening.locator('ol').first().locator(':scope > li');
+    await expect(items).toHaveCount(5);
+    const questions = ['What are we treating?', 'What has already happened?',
+      'What could change the choice?', 'What will we measure?', 'What happens after discharge?'];
+    for (const [index, question] of questions.entries()) {
+      await expect(items.nth(index).locator('strong').first()).toHaveText(question);
+    }
+    const card = items.nth(1).locator('section#home-dose-history');
+    await expect(card).toBeVisible();
+    const field = name => card.locator('#mh-' + name);
+    const claim = name => card.locator('[data-claim="' + name + '"]');
+    const mark = (day, value) => card.locator('input[name="mh-' + day + '"][value="' + value + '"]').check();
+
+    for (const [first, second] of [['rx', 'fill'], ['fill', 'rx']]) {
+      await expect(field('interim')).toBeHidden();
+      await field(first).click();
+      await expect(field(first === 'rx' ? 'fill-line' : 'order-line')).toHaveText('Record unopened');
+      await expect(field('interim')).toBeHidden();
+      await field(second).click();
+      await expect(field('interim')).toBeVisible();
+      if (first === 'rx') await field('reset').click();
+    }
+    for (const unsupported of ['daily', 'never']) {
+      await claim(unsupported).click();
+      await expect(field('claim-feedback')).toBeVisible();
+      await expect(field('ask')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+    }
+    await claim('open').click();
+    await expect(field('revise')).toBeHidden();
+    await field('hear').press('Enter');
+
+    const replies = [
+      { quote: /haven’t started/, friday: 'none', dose: 'Patient reports no doses from the Friday fill.' },
+      { quote: /Friday’s the only time/, friday: 'taken', dose: 'Patient reports one dose from this fill, Friday night, and none since.' },
+    ];
+    for (const reply of replies) {
+      await expect(field('quote')).toContainText(reply.quote);
+      await expect(card.locator('input:checked')).toHaveCount(0);
+      await expect(field('final')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+      await expect(field('dose-line')).toHaveText('History pending');
+      await mark('fri', reply.friday);
+      await field('check').click();
+      await expect(field('revision-feedback')).toContainText('each night');
+      await expect(field('final')).toBeHidden();
+      await mark('sat', 'taken');
+      await field('check').click();
+      await expect(field('revision-feedback')).toBeVisible();
+      await expect(field('handoff')).toBeEmpty();
+      await mark('sat', 'none');
+      await field('check').click();
+      await expect(field('final')).toBeVisible();
+      await expect(field('dose-line')).toHaveText(reply.dose);
+      await expect(field('handoff')).toHaveText('“The outpatient prescription lists quetiapine nightly, and the pharmacy confirms Friday pickup. ' + reply.dose + '”');
+      await field('other').click();
+    }
+    await expect(field('handoff')).toBeEmpty();
+    await expect(card.locator('input:checked')).toHaveCount(0);
+  });
+
   test('Morgan builds a clozapine differential before revealing the studies and handoff', async ({ page }) => {
     const activity = await openActivity(page, 'psychopharm_primer.md', 'morgan-exposure', 'Antipsychotics');
     const select = (id, value) => activity.locator('#mg-' + id).selectOption(value);
@@ -3302,6 +3589,85 @@ test.describe('Interactive readings', () => {
     for (const pmid of ['11763003', '21599724', '26032842']) {
       await expect(activity.locator('[data-sources] a[href$="/' + pmid + '/"]')).toBeVisible();
     }
+  });
+
+  test('Ms. Lang’s culture stays paired with each interview and both handoffs unlock the comparison', async ({ page }) => {
+    await page.goto('/?page=medical_workup.md&guideSection=baseline-workup-of-the-new-admission&guideFind=The+urine+culture+is+positive');
+    const card = page.locator('.fd-reader:visible [data-lang-culture]');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('urinalysis, with culture');
+    const image = card.locator('#lang-case-photo');
+    await expect(image).toBeVisible();
+    expect(await image.evaluate(async img => {
+      await img.decode();
+      const box = img.getBoundingClientRect();
+      return Math.abs(box.height - box.width * img.naturalHeight / img.naturalWidth);
+    })).toBeLessThan(1);
+    const compare = card.locator('#lang-compare');
+    const feedback = card.locator('#lang-feedback');
+    for (const [key, reply, order, expected] of [
+      ['a', 'twice last night', [0, 2, 1], ['cause of her inattention open', 'twice at home', 'insufficient reason']],
+      ['b', 'had to rush', [0, 1, 2], ['new burning and urgency', 'other contributors', 'remaining uncertainty']],
+    ]) {
+      await card.locator('[data-visit="' + key + '"]').click();
+      await card.locator('[data-ask="change"]').click();
+      await expect(card.locator('#lang-words')).toContainText(reply);
+      await expect(card.locator('#lang-handoffs')).toBeHidden();
+      await card.locator('[data-ask="pain"]').click();
+      for (const [index, choice] of order.entries()) {
+        await expect(compare).toBeHidden();
+        await card.locator('[data-choice="' + choice + '"]').click();
+        await expect(feedback).toContainText(expected[index]);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toBeVisible();
+    await card.locator('[data-visit="a"]').click();
+    await expect(card.locator('[data-choice="1"]')).toHaveAttribute('aria-pressed', 'true');
+    await card.locator('[data-choice="2"]').click();
+    await expect(compare).toBeHidden();
+    await card.locator('[data-reset]').click();
+    await expect(card.locator('#lang-progress')).toHaveText('0 of 2 handoffs matched');
+  });
+
+  test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
+    await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
+    const card = page.locator('.fd-reader:visible #catie-stop');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toHaveText('5. What did the CATIE trial show?');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toContainText('Answer:');
+    const interview = key => card.locator('[data-patient="' + key + '"]');
+    const choice = key => card.locator('[data-choice="' + key + '"]');
+    const feedback = card.locator('#catie-feedback');
+    const compare = card.locator('#catie-compare');
+    const patients = [
+      {key:'a', quote:'we missed the bus', options:[
+        ['symptoms','explains the ED visit'], ['uncertain','different reason for stopping'], ['burden','get up in the morning'],
+      ]},
+      {key:'b', quote:'one every night', options:[
+        ['burden','what kept them awake'], ['uncertain','home dose is unclear'], ['symptoms','dose actually taken'],
+      ]},
+    ];
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    for (const patient of patients) {
+      await interview(patient.key).press('Enter');
+      await expect(card.locator('#catie-quote')).toContainText(patient.quote);
+      await expect(feedback).toBeHidden();
+      for (const [value, explanation] of patient.options) {
+        await expect(compare).toBeHidden();
+        await choice(value).click();
+        await expect(feedback).toContainText(explanation);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/16172203/');
+    await interview('a').click();
+    await expect(choice('burden')).toHaveAttribute('aria-pressed', 'true');
+    await choice('uncertain').click();
+    await expect(compare).toBeHidden();
+    await interview('b').click();
+    await expect(choice('symptoms')).toHaveAttribute('aria-pressed', 'true');
+    await card.getByRole('button', {name:'Start again'}).click();
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    await expect(card.locator('#catie-progress')).toHaveText('0 of 2 handoffs matched');
   });
 
   test('fever comparison gates patient-specific interpretations and primary studies', async ({ page }) => {
@@ -7546,10 +7912,14 @@ test.describe('Essentials Phase 2', () => {
     await page.reload();
     await expect(filterField(page)).toHaveValue('');
     await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
-    // Opening the reading above recorded cw_last (an existing store); nothing else changed, and no
-    // stored value ever carried the query.
+    // Opening the reading above recorded cw_last (an existing store) and the page's text
+    // fingerprint in cw_page_seen_v1 (fd_page_changed.js, keyed by ref); nothing else changed,
+    // and no stored value ever carried the query.
     const after = await page.evaluate(shellMemory);
+    // (The ref itself may contain the query's word, e.g. t_mood.md; the store holds only refs.)
+    expect(Object.keys(JSON.parse(after.local.cw_page_seen_v1 || '{}'))).toEqual([ref]);
     delete after.local.cw_last;
+    delete after.local.cw_page_seen_v1;
     expect(after).toEqual({ ...before, url: page.url() });
     await expectHealthy(page);
   });

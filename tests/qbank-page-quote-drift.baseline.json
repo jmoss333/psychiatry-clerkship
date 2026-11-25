@@ -1,4 +1,4 @@
 {
-  "_note": "Pinned 2026-11-10 at 32 on the main this PR merges into (29 on its original base; #1192's F02 rewrite of t_anxiety.md then left qb_anx_006, qb_anx_011 and qb_anx_012 quoting wording the page no longer has): live questions whose quote-length evidence shares under 25% of its wording with the cited page (true drift and loose paraphrase both count; the psychopharm_primer.md items are true drift -- the primer was rewritten). May only fall. Lowered to 30 on 2026-11-22 by the family-evidence corrections, whose rewritten qb_rel_* items quote their pages as the pages now read.",
-  "max": 30
+  "_note": "Pinned 2026-11-10 at 32 on the main this PR merges into (29 on its original base; #1192's F02 rewrite of t_anxiety.md then left qb_anx_006, qb_anx_011 and qb_anx_012 quoting wording the page no longer has): live questions whose quote-length evidence shares under 25% of its wording with the cited page (true drift and loose paraphrase both count; the psychopharm_primer.md items are true drift -- the primer was rewritten). May only fall. Lowered by one on main by #1209 (lithium wording in qb_pha_005 and qb_mood_007) and by two by the family-evidence corrections (#1281), whose rewritten qb_rel_* items quote their pages as the pages now read; 29 when the two met on 2026-11-25.",
+  "max": 29
 }
