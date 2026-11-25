@@ -6264,10 +6264,10 @@
     "tldr": "A formulation answers why this patient, why now — built on the biopsychosocial axis and sharpened by the four P's (predisposing, precipitating, perpetuating, protective) — and turns a diagnosis into a plan.",
     "points": [
       "The differential gives the diagnosis; the formulation gives the 'why now' and the plan.",
-      "Always name a precipitant ('why now?') and at least one protective factor — the two cells students most often skip.",
+      "Ask what changed before admission and what helps the patient stay well. Identify any gap worth clarifying.",
       "Every perpetuating factor is a treatment target; every protective factor is a lever."
     ],
-    "cant": "Don't stop at a diagnosis or write an all-biology story — force a psychological and a social contributor into the formulation.",
+    "cant": "Ask about psychological and social contributors. When the history leaves a gap, name what you would ask next.",
     "workflowModes": [
       "ward",
       "5min",

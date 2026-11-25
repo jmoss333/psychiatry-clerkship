@@ -28,6 +28,7 @@ statically-inspectable literal in that file.
 import errno
 import glob
 import hashlib
+from html.parser import HTMLParser
 import json
 import os
 import re
@@ -228,7 +229,7 @@ _TOOLKW_MS3 = {
     # treatment), because common.tok() does not stem: "refuses" cannot reach "refusal".
     # Audience-neutral and free of patient-specific legal or clinical direction by
     # design — it says what capacity IS assessed by, never what to do about a refusal.
-    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient may refuse or decline a medication, or decline treatment outright, and still have capacity. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient who refuses medication may still have capacity to refuse a dose or decline treatment outright. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
     "oral.html": "treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst agitation safety prediction de-escalation",
     "cssrs.html": "columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
@@ -294,6 +295,34 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 
 
+class _SearchProse(HTMLParser):
+    """Keep the words learners can read or hear in embedded activity markup."""
+
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.links = []
+        self.skip = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self.skip = True
+        elif not self.skip:
+            self.parts.extend(value for key, value in attrs
+                              if key in ("alt", "aria-label", "placeholder", "title") and value)
+            if tag == "a":
+                self.links.extend(value for key, value in attrs
+                                  if key == "href" and value and value.startswith(("https://", "http://")))
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style"):
+            self.skip = False
+
+    def handle_data(self, text):
+        if not self.skip:
+            self.parts.append(text)
+
+
 def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_refs=None):
     """Pre-tokenized inverted index + bidirectional synonyms → search-index.json.
 
@@ -349,7 +378,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
             if it.get("hidden") and it["f"] not in reachable:
                 continue
             f, k, title, section = it["f"], it["k"], it["t"], sec["section"]
-            heads = body = ""
+            heads = body = link_targets = ""
             if k == "md":
                 p = os.path.join(out_dir, "content", f)
                 raw = open(p, encoding="utf-8").read() if os.path.exists(p) else ""
@@ -360,7 +389,14 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
                         heads += " " + s.lstrip("#").strip()
                     else:
                         btxt.append(s)
-                body = " ".join(btxt)
+                # Button IDs and layout classes would otherwise dilute the clinical
+                # terms on illustrated pages under the index's length normalization.
+                prose = _SearchProse()
+                prose.feed("\n".join(btxt))
+                prose.close()
+                body = " ".join(prose.parts)
+                # Keep linked sources searchable by identifier without putting URLs in the snippet.
+                link_targets = " ".join(prose.links)
             else:
                 body = keywords.get(f, "")
             docid = len(docs)
@@ -380,7 +416,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
             # Raw token count, NOT the weighted sum: document length is a property of
             # the page, and weighting it would make a long title count as four pages.
             doc["L"] = (addtok(docid, title, 4) + addtok(docid, section, 2)
-                        + addtok(docid, heads, 2) + addtok(docid, body, 1))
+                        + addtok(docid, heads, 2) + addtok(docid, body, 1) + addtok(docid, link_targets, 1))
             lengths.append(doc["L"])
 
     post, df = {}, {}
@@ -396,7 +432,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
     idx = {"version": 1, "n": len(docs), "avgLen": avg_len,
            "synonyms": syn, "docs": docs, "postings": post, "df": df}
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as fh:
-        fh.write(json.dumps(idx, ensure_ascii=False))
+        fh.write(json.dumps(idx, ensure_ascii=False, separators=(",", ":")))
     print(
         "search-index%s: docs %d | tokens %d | synonym-keys %d"
         % (" (" + label + ")" if label else "", len(docs), len(post), len(syn))
@@ -925,6 +961,11 @@ SNIPPET_MARKERS = {
     "/*__FD_CARE_SEARCH__*/": "frontdoor/fd_care_search.js",
     "/*__FD_CARE__*/": "frontdoor/fd_care.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_OSCE_STATION__*/": "frontdoor/fd_osce_station.js",
+    "/*__FD_MORGAN_EXPOSURE__*/": "frontdoor/fd_morgan_exposure.js",
+    "/*__FD_FEVER_EXAMS__*/": "frontdoor/fd_fever_exams.js",
+    "/*__FD_BEDSIDE_CASES__*/": "frontdoor/fd_bedside_cases.js",
+    "/*__FD_CASE_ROUNDS__*/": "frontdoor/fd_case_rounds.js",
     "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
     "/*__FD_TREE__*/": "frontdoor/fd_tree.js",
@@ -1230,7 +1271,12 @@ SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html", "tool-governance.json"}
 # are excluded for the same reason (Netlify does not reliably serve hidden files).
 # check-static-site.mjs (section 7c) HARD-fails if any of these reappear in sw.js.
 SW_NETLIFY_RESERVED_ROOT_NAMES = {"_headers", "_redirects", "netlify.toml"}
-SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
+# The budget is a tripwire against media creeping into a precached directory, not a size the
+# sites aim for. Raised 10 -> 11 MiB on 2026-11-22 (owner's decision, D-2026-11-22-02): a
+# content PR (#1281) put the resident precache at 10,491,905 bytes, 6,145 over, and every
+# precached byte was pages, JSON, CSS or scripts. check-static-site.mjs (section 7c) enforces
+# the same number; test_common.py pins the two together.
+SW_PRECACHE_BUDGET_BYTES = 11 * 1024 * 1024
 SW_TEMPLATE_NAME = "sw_template.js"
 _SW_VERSION_ANCHOR = "VERSION='__VERSION__';"
 _SW_KILL_ANCHOR = "KILL=__KILL__;"
@@ -1368,7 +1414,7 @@ def emit_service_worker(out_dir, kill=None):
     - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,
       newline-joined)[:12] — deterministic and media-independent, so unrelated
       media re-encodes never bump the cache version (see module docstring).
-    - Budget: sum of precached byte sizes must stay <= 10 MB, else the build
+    - Budget: sum of precached byte sizes must stay <= 11 MiB, else the build
       aborts via `sys.exit` with the offending size — a runaway precache list
       would make first-load worse for the offline win it's meant to buy.
     - `kill` (or env `SW_KILL=="1"`) emits `var KILL=true;`, which makes the

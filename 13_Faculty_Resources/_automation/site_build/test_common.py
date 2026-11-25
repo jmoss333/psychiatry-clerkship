@@ -522,6 +522,24 @@ class TestSearchIndex(_SiteFixture):
         self.assertIn("lorazepam", idx["postings"])
         self.assertIn("widget", idx["postings"])
 
+    def test_indexes_activity_text_and_image_descriptions_without_layout_markup(self):
+        page = os.path.join(self.dir, "content", "a.md")
+        with open(page, "w", encoding="utf-8") as handle:
+            handle.write('# Reading\nWhen A < B, compare C > D.\n'
+                         '<button class="tilelayout" aria-controls="internalpanel">Compare calls</button>\n'
+                         '<img alt="Parent at the window" src="internalpath.avif">\n'
+                         '<textarea placeholder="Summarize the interview"></textarea>\n'
+                         '<a href="https://pubmed.ncbi.nlm.nih.gov/28027111/">Read the paper</a>\n'
+                         '<a href="https://doi.org/10.1000/abcd1234">Second paper</a>')
+        nav = [{"section": "Guide", "items": [{"t": "Reading", "f": "a.md", "k": "md"}]}]
+        index = common.build_search_index(nav, self.dir)
+        self.assertIn("A < B, compare C", index["docs"][0]["snip"])
+        for term in ["calls", "window", "summarize", "28027111", "abcd1234"]:
+            self.assertIn(term, index["postings"])
+        self.assertNotIn("pubmed.ncbi", index["docs"][0]["snip"])
+        for term in ["tilelayout", "internalpanel", "internalpath"]:
+            self.assertNotIn(term, index["postings"])
+
     def test_indexes_a_hidden_item_that_is_reachable(self):
         """A Library-placed page must be searchable even when nav hides it.
 
@@ -1094,12 +1112,24 @@ class TestServiceWorkerEmission(unittest.TestCase):
 
     def test_budget_failure_and_kill_mode(self):
         d = self._site()
-        open(os.path.join(d, "big.json"), "wb").write(b"0" * (11 * 1024 * 1024))
+        # One byte over the budget, so the fixture keeps failing whatever the budget is.
+        over = common.SW_PRECACHE_BUDGET_BYTES + 1
+        open(os.path.join(d, "big.json"), "wb").write(b"0" * over)
         with self.assertRaises(SystemExit):
             common.emit_service_worker(d)
         os.remove(os.path.join(d, "big.json"))
         common.emit_service_worker(d, kill=True)
         self.assertIn("var KILL=true;", open(os.path.join(d, "sw.js")).read())
+
+    def test_budget_is_raised_value_and_matches_static_check(self):
+        """The precache budget is enforced twice: by the emitter here and again by
+        check-static-site.mjs on the built site. If the two disagree, a build passes one and
+        fails the other. Pinned at 11 MiB by the owner's decision of 2026-11-22."""
+        self.assertEqual(common.SW_PRECACHE_BUDGET_BYTES, 11 * 1024 * 1024)
+        mjs = open(os.path.join(os.path.dirname(os.path.abspath(common.__file__)),
+                                "check-static-site.mjs"), encoding="utf-8").read()
+        found = re.findall(r"const SW_PRECACHE_BUDGET_BYTES = (\d+) \* 1024 \* 1024;", mjs)
+        self.assertEqual(found, ["11"])
 
     def test_tool_governance_excluded_and_version_stable_across_revision_changes(self):
         """tool-governance.json embeds current_revision() = git rev-parse HEAD, so

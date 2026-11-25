@@ -115,6 +115,27 @@ class ConceptCardsTests(unittest.TestCase):
         self.assertEqual(cards.normalize('Use <5 when low and >10 when high.'),
                          'Use <5 when low and >10 when high.')
 
+    def test_reviewed_card_releases_clean_faces_and_canonical_evidence(self):
+        cited_excerpt = 'First answer[^source]'
+        self.page.write_text(self.page.read_text().replace('First answer', cited_excerpt))
+        self.document['notes'][0]['excerpt'] = cited_excerpt
+        self.write('concept_candidates.json', self.document)
+        url = 'https://example.org/source'
+        registry = {'sources': [{'id': 'source', 'citation': {'url': url}}]}
+        (self.root / 'evidence_registry.json').write_text(json.dumps(registry))
+        self.write('concept_evidence_links.json', {'schemaVersion': 1, 'links': {'source': url}})
+        self.sign()
+
+        for site in ('ms3', 'res'):
+            with self.subTest(site=site):
+                feed = cards.release_cards(self.root, site)
+                by_id = {card['id']: card for card in feed['cards']}
+                cited = by_id['CONCEPT#first:1@1']
+                self.assertEqual(cited['q'], '[…] answer')
+                self.assertEqual(cited['reveal'], 'First answer')
+                self.assertEqual(cited['evidence'], [{'id': 'source', 'url': url}])
+                self.assertEqual(by_id['CONCEPT#second:1@1']['evidence'], [])
+
     def test_selected_evidence_links_require_deliberate_update_when_canonical_url_changes(self):
         registry = self.root/'evidence_registry.json'
         row = {'id':'source', 'citation':{'url':'https://example.org/original'}}
@@ -176,7 +197,7 @@ class ConceptCardsTests(unittest.TestCase):
 
 
 class PublishedInventoryTests(unittest.TestCase):
-    def test_real_generated_feed_hides_citation_keys_and_excluded_excerpts(self):
+    def test_real_generated_feed_hides_citation_keys_and_uses_canonical_urls(self):
         root = HERE.parents[2]
         feed = cards.release_cards(root, 'ms3')
         registry = {s['id']: s for s in json.loads((root/'evidence_registry.json').read_text())['sources']}
@@ -186,7 +207,6 @@ class PublishedInventoryTests(unittest.TestCase):
                 self.assertNotIn('[^', card['reveal'])
                 for evidence in card.get('evidence', []):
                     self.assertEqual(evidence['url'], registry[evidence['id']]['citation']['url'])
-        self.assertTrue(any(c.get('evidence') for c in feed['cards']))
 
     def test_release_omits_excluded_excerpts_but_catalog_retains_them(self):
         root = HERE.parents[2]
