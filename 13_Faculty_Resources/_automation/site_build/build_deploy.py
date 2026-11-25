@@ -213,6 +213,11 @@ _canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
 with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
     json.dump(build_public_projection(_canonical_evidence),_fh,separators=(",", ":"),sort_keys=True)
     _fh.write("\n")
+# "In the paper's own words": the verbatim spans from evidence_annotations.json, projected into
+# the read-only index frontdoor/fd_ref_evidence.js loads under a reading's reference list. Spans
+# only -- never the library's claimText (see evidence_excerpts.py). The resident build copies it.
+import evidence_excerpts as _evidence_excerpts
+_evidence_excerpts.write(OUT, Path(LIB)/"evidence_annotations.json")
 for _jn, _fallback in [
     ("tool_registry.json", '{"tools":[]}'),
     ("communication_cases.json", '{"cases":[]}'),
@@ -782,6 +787,19 @@ if _spa_t.count(_cotw_newest_needle)!=1:
     print("BUILD ABORTED — FD_COTW_NEWEST needle missing or duplicated in spa_index.html")
     raise SystemExit(1)
 _spa_t=_spa_t.replace(_cotw_newest_needle,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_data,"ms3")))
+# "Presenting tomorrow" (F4, 2026-10-18): which fields and links each hospital phase shows, and
+# the syndromes that qualify on this site (presenting_tomorrow.py over topic_hubs.json, topic_meta
+# and the case registries). Validated here -- a syndrome x phase cell that would render fewer than
+# the registry's minimum items aborts the build -- then inlined like FD_MEDIA. The resident build
+# swaps in its own value. The clinical lines themselves come from FD_TOPIC_META at render time.
+import presenting_tomorrow as _presenting
+_presenting_data=_presenting.resolve(_presenting.load(LIB))
+_presenting_needle="var FD_PRESENTING=null;"
+if _spa_t.count(_presenting_needle)!=1:
+    print("BUILD ABORTED — FD_PRESENTING needle missing or duplicated in spa_index.html")
+    raise SystemExit(1)
+_spa_t=_spa_t.replace(_presenting_needle,"var FD_PRESENTING=%s;"%frontdoor_catalog._inline_json(_presenting.payload(_presenting_data,"ms3")))
+print("presenting tomorrow (ms3): %d syndromes"%len(_presenting.syndromes(_presenting_data,"ms3")))
 # Safety-drawer draft trees: previews only (common.apply_draft_trees_flag). The resident build
 # copies this index.html, so both sites inherit the same value from the same CONTEXT.
 try:

@@ -299,6 +299,17 @@ if ix.count(_cotw_ms3_inline)!=1:
     print("BUILD ABORTED — the MS3 FD_COTW_NEWEST value is missing or duplicated in the copied index.html")
     raise SystemExit(1)
 ix=ix.replace(_cotw_ms3_inline,"var FD_COTW_NEWEST=%s;"%frontdoor_catalog._inline_json(_archive.newest(_archive_res_data,"res")))
+# "Presenting tomorrow" (F4): the copied index.html carries the MS3 payload; swap in the resident
+# one by matching that exact inlined value, so a drifted needle aborts rather than offering MS3's
+# syndrome list (and its case titles) to residents.
+import presenting_tomorrow as _presenting
+_presenting_res_data=_presenting.resolve(_presenting.load(LIB))
+_presenting_ms3_inline="var FD_PRESENTING=%s;"%frontdoor_catalog._inline_json(_presenting.payload(_presenting_res_data,"ms3"))
+if ix.count(_presenting_ms3_inline)!=1:
+    print("BUILD ABORTED — the MS3 FD_PRESENTING value is missing or duplicated in the copied index.html")
+    raise SystemExit(1)
+ix=ix.replace(_presenting_ms3_inline,"var FD_PRESENTING=%s;"%frontdoor_catalog._inline_json(_presenting.payload(_presenting_res_data,"res")))
+print("presenting tomorrow (res): %d syndromes"%len(_presenting.syndromes(_presenting_res_data,"res")))
 open(OUT+"/index.html","w",encoding="utf-8").write(ix)
 
 # ---- resident-level reasoning cases: same tool, harder audience-specific payload ----

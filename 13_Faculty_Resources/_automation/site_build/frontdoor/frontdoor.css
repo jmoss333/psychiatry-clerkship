@@ -1454,6 +1454,8 @@ html:has(.fd-reader--tool){scroll-padding-top:112px}
 .fd-article__body ol{margin:0 0 18px;padding-left:1.35em}
 .fd-article__body li{margin:6px 0}
 .fd-article__body a{color:var(--fd-teal-deep);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.fd-article__body [data-fd-reading-pharmacy]{display:inline;margin:0;padding:0;border:0;background:transparent;font:inherit;color:var(--fd-teal-deep);text-align:inherit;text-decoration:underline dotted;text-underline-offset:.18em;cursor:pointer}
+.fd-article__body [data-fd-reading-pharmacy]:hover,.fd-article__body [data-fd-reading-pharmacy]:focus-visible{text-decoration-style:solid}
 .fd-article__body code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.88em;background:var(--fd-chip);border-radius:var(--fd-radius-2xs);padding:1px 4px;color:var(--fd-text)}
 .fd-article__body blockquote{margin:20px 0;padding:4px 0 4px 16px;border-left:3px solid var(--fd-teal);color:var(--fd-text-mid)}
 
@@ -3037,6 +3039,7 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
 }
 
 @media print{
+  .fd-article__body [data-fd-reading-pharmacy]{min-height:0;color:inherit;text-decoration:none}
   #cultural-chart-followup [data-culture-trace]{display:inline!important;text-decoration:none;border:0;outline:0;padding:0}
   #cultural-chart-followup [data-culture-reset],#cultural-chart-followup .cultural-chart__hint{display:none!important}
   #referral-call [data-referral-lead]{display:none !important}
@@ -3246,6 +3249,26 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
 .fd-prepare__copy{flex:1 1 240px;margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-sm);line-height:1.5}
 .fd-prepare__title{color:var(--fd-text);font-weight:700}
 .fd-prepare .fd-btn{color:var(--fd-teal-deep);margin:0}
+/* "Presenting tomorrow" (fd_today.js fdPrepPicker / fdPrepCard, F4): under "Before rounds", the
+ * syndrome pills, the hospital-day pills, then one card -- a kicker-style title, the phase's lead,
+ * the attested lines as a definition list (label 13/700 dim over text 15/1.5), the ghost links in a
+ * wrapping row, and the EPA line (one audience's build only). Pills reuse the chooser's pill rule. */
+.fd-prep{margin:var(--fd-space-6) 0 0;padding:var(--fd-space-5) 0 0;border-top:1px solid var(--fd-line)}
+.fd-prep__prompt{margin:0 0 var(--fd-space-3);font-size:var(--fd-font-sm);font-weight:700;color:var(--fd-text)}
+.fd-prep__syndromes,.fd-prep__phases{display:flex;flex-wrap:wrap;gap:var(--fd-space-3)}
+.fd-prep__syndromes button,.fd-prep__phases button{white-space:normal;min-width:0;max-width:100%;overflow-wrap:anywhere;min-height:var(--fd-target-touch);padding:0 var(--fd-space-6);border:1.5px solid var(--fd-line-strong);border-radius:var(--fd-radius-pill);font-size:var(--fd-font-sm);font-weight:600}
+.fd-prep__syndromes button[aria-pressed="true"],.fd-prep__phases button[aria-pressed="true"]{background:var(--fd-teal-wash);border-color:var(--fd-teal);color:var(--fd-teal-deep);font-weight:700}
+.fd-prep__phases{margin-top:var(--fd-space-5)}
+.fd-prep__card{margin:var(--fd-space-5) 0 0;padding:var(--fd-space-6) var(--fd-space-7);border:1px solid var(--fd-line);border-left:3px solid var(--fd-teal);border-radius:var(--fd-radius-lg);background:var(--fd-surface)}
+.fd-prep__title{margin:0;font-family:inherit;font-size:var(--fd-font-md);font-weight:700;color:var(--fd-text)}
+.fd-prep__lead{margin:var(--fd-space-1) 0 var(--fd-space-5);font-size:var(--fd-font-sm);line-height:1.5;color:var(--fd-text-mid)}
+.fd-prep__lines{margin:0;display:grid;gap:var(--fd-space-4)}
+.fd-prep__line dt{font-size:var(--fd-font-xs);font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--fd-text-dim)}
+.fd-prep__line dd{margin:var(--fd-space-1) 0 0;font-size:var(--fd-font-base);line-height:1.5;color:var(--fd-text)}
+.fd-prep__links{display:flex;flex-wrap:wrap;gap:var(--fd-space-3);margin:var(--fd-space-6) 0 0;padding:0;list-style:none}
+.fd-prep__links li{display:contents}
+.fd-prep__links .fd-btn{min-height:var(--fd-target-touch);white-space:normal;text-align:left;color:var(--fd-teal-deep)}
+.fd-prep__epa{margin:var(--fd-space-5) 0 0;font-size:var(--fd-font-sm);font-weight:600;color:var(--fd-text-mid)}
 
 /* Today: disclose new study planning while keeping unfinished work visible. */
 .fd-study-planner{margin:0;border-bottom:0}
@@ -4401,3 +4424,20 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
   .mg-case .mg-workspace,.mg-case .mg-fields{grid-template-columns:minmax(0,1fr)}
   .mg-case .mg-interview,.mg-case .mg-chart{grid-column:auto;grid-row:auto}
 }
+
+/* "In the paper's own words" (fd_ref_evidence.js, 2026-11-25): a verified verbatim excerpt,
+   collapsed under the reference list item that cites it. Reading-scale aware; no new colour. */
+.fd-ref-evidence{margin:var(--fd-space-2) 0 var(--fd-space-3);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+.fd-ref-evidence__toggle{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);cursor:pointer;color:var(--fd-teal-deep);font-weight:700}
+.fd-ref-evidence__toggle:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.fd-ref-evidence__quote{margin:var(--fd-space-2) 0;padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font-style:normal;line-height:var(--fd-leading-normal,1.55)}
+.fd-ref-evidence__meta{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-xs)}
+/* Tappable in-text citations (fd_ref_evidence.js fdRefCiteMarkup): an inline button that reads as
+   the bracketed number it replaced. Inline in a sentence, so the 44px target rule's inline
+   exception applies; the focus ring does not. */
+.fd-cite{display:inline;margin:0;padding:0 .08em;border:0;background:none;color:var(--fd-teal-deep);font:inherit;text-decoration:underline;text-underline-offset:.15em;cursor:pointer}
+.fd-cite:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+/* "Updated since you last opened it" (fd_page_changed.js): a one-time status line under the title
+   of a reading the learner marked read whose text has since changed. Information, not a warning:
+   olive, never danger. */
+.fd-page-changed{margin:var(--fd-space-3) 0 var(--fd-space-5);padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));line-height:var(--fd-leading-normal)}

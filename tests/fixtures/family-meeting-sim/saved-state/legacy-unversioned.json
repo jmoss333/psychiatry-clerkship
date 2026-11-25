@@ -1,0 +1,6 @@
+{
+  "scenarios": {
+    "parent-own-untreated-illness": { "runs": 5, "last": "2026-11-11", "best": { "validation": 100, "structure": 100, "safety": 89, "nonblaming": 100 } },
+    "hold-disagreement-admission": { "runs": 1, "last": "2026-10-30", "best": { "validation": 60, "structure": 50, "safety": 60, "nonblaming": 40 } }
+  }
+}
