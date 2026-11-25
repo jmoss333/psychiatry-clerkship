@@ -86,7 +86,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
 <script type="application/json" id="fms-scenarios">
 {
   "version": 2,
-  "rubricVersion": "2.0-draft",
+  "rubricVersion": "3.0-draft",
   "status": "draft",
   "axes": [
     { "id": "validation", "label": "Validation", "anchor": "Names the emotion and the concrete event before informing or correcting; translates anger as fear and silence as protection, as a hypothesis the family can correct; validates fear without accepting blame as the plan.", "levels": {"0": "Neither the feeling nor the concrete event is named, or a stock phrase ('I understand', 'that sounds hard') stands in for both.", "1": "Names the feeling or the event, not both, or names them after informing or correcting.", "2": "Names both the feeling and the event before informing or correcting; any translation (anger as fear, silence as protection) is offered as a hypothesis."} },
@@ -1175,7 +1175,7 @@ button:focus-visible,a:focus-visible,[tabindex="-1"]:focus-visible{outline:3px s
       "gate": {
         "required": [
           { "id": "s8-ask-directly", "label": "Ask Joanne directly about thoughts of suicide", "offeredAt": ["worry", "repair-dismiss"], "satisfiedBy": ["worry#0", "repair-dismiss#0"], "claimTerms": ["was asked", "was heard"] },
-          { "id": "s8-handover", "label": "Hand what Joanne said to your attending before anyone leaves; do not leave her alone if there is any concern", "offeredAt": ["worry-answer", "close"], "satisfiedBy": ["worry-answer#0", "close#0"], "claimTerms": ["attending", "someone to call who is hers"] },
+          { "id": "s8-handover", "label": "Hand what Joanne said to your attending before anyone leaves; do not leave her alone if there is any concern", "offeredAt": ["worry-answer", "close"], "satisfiedBy": ["worry-answer#0"], "claimTerms": ["attending", "someone to call who is hers"] },
           { "id": "s8-means-asked", "label": "Ask about a gun and other quick-harm means in the house, held by someone else for now", "offeredAt": ["roles", "roles-unrouted"], "satisfiedBy": ["roles#0", "roles-unrouted#0"], "claimTerms": ["quick-harm", "out of reach"] }
         ]
       },
