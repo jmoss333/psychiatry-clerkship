@@ -1375,7 +1375,7 @@
     },
     {
       "id": "qb_cog_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1397,7 +1397,7 @@
           "t": "Start scheduled haloperidol — antipsychotics prevent delirium progression in post-surgical patients.",
           "trap": {
             "name": "Agitation = antipsychotic",
-            "note": "Scheduled antipsychotics are not indicated for delirium prevention and carry a black-box mortality warning in older patients."
+            "note": "Scheduled antipsychotics are not indicated for delirium prevention. Their boxed mortality warning covers older patients with dementia-related psychosis, which this patient does not have; the reason to avoid them here is that they do not prevent delirium."
           }
         },
         {
