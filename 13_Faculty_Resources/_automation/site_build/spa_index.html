@@ -2253,6 +2253,8 @@
   /*__FD_MORGAN_EXPOSURE__*/
   /*__FD_FEVER_EXAMS__*/
   /*__FD_BEDSIDE_CASES__*/
+  /*__FD_REF_EVIDENCE__*/
+  /*__FD_PAGE_CHANGED__*/
   /*__FD_CASE_ROUNDS__*/
   function fdFacultyPreviewMedia(ref){
     if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
@@ -2276,7 +2278,7 @@
     contentEl.innerHTML=skel();
     fetch('content/'+item.f).then(function(r){if(!r.ok){var pageError=new Error('faculty preview page failed');pageError.facultyPreviewStatus=r.status===404?'not_found':'error';throw pageError;}return r.text()}).then(function(t){
       t=(function(_t){var _i=_t.indexOf('\n## ');var _h=_i>-1?_t.slice(0,_i):_t;var _r=_i>-1?_t.slice(_i):'';return _h.replace(/^[ \t]*(Generated|Audience):.*$/gim,'').replace(/\n{3,}/g,'\n\n')+_r;})(t);
-      contentEl.innerHTML=marked.parse(t);
+      contentEl.innerHTML=fdRefCiteMarkup(marked.parse(t),t);
       var _anchor=installTitleReviewButton(item.f)||contentEl.querySelector('h1');
       function _insertAfterTitle(node){ if(!node)return; if(_anchor&&_anchor.parentNode){ _anchor.parentNode.insertBefore(node,_anchor.nextSibling); _anchor=node; } else contentEl.insertBefore(node,contentEl.firstChild); }
       var _governance=document.createElement('div'); _governance.innerHTML=renderGovernanceNotice(item); if(_governance.firstChild) _insertAfterTitle(_governance.firstChild);
@@ -2296,6 +2298,7 @@
       fdMountCulturalChart(contentEl);
       fdMountDeliriumShift(contentEl);
       fdMountSleepNight(contentEl);
+      fdMountRefEvidence(contentEl);
       makeCollapsible(contentEl); enhanceTables(contentEl); fdFacultyPreviewMedia(item.f); var _fb=document.createElement('div'); _fb.className='pgfb'; _fb.innerHTML='<button type="button" class="pgfb-b">Feedback on this page →</button>'; contentEl.appendChild(_fb); announceRoute(item); focusGovernanceNotice(opts); postFacultyPreviewStatus('ready','page');
     }).catch(function(err){contentEl.innerHTML='<div class="error" role="alert"><h1>Page unavailable</h1><p>Could not load '+esc(item.t)+'. Check your connection and try again.</p></div>';postFacultyPreviewStatus((err&&err.facultyPreviewStatus)||'error','page');});
     return true;
@@ -4229,6 +4232,7 @@
       return facultyPreviewRequest?state:fdLiveState(state);
     };
     var launchSearch=facultyPreviewRequest?options.search:fdPracticeLaunchSearch(ref,options.search===undefined?location.search:options.search,readState(),FD_INDEX);
+    var renderedMarkdown=null;
     return fdOpenResource(ref,{
       index:FD_INDEX,state:readState(),
       search:launchSearch,fromHistory:options.fromHistory,host:options.host||contentEl,
@@ -4236,11 +4240,12 @@
       isCurrent:options.isCurrent,governanceNotice:renderGovernanceNotice,
       signal:options.signal,
       parseMarkdown:function(markdown){
+        renderedMarkdown=markdown;
         if(ref==='osce.md'&&!facultyPreviewRequest){
           var station=fdOsceStation(markdown,launchSearch,marked.parse);
           if(station)return station;
         }
-        var html=marked.parse(markdown), meta=TOPIC_META&&TOPIC_META[ref];
+        var html=fdRefCiteMarkup(marked.parse(markdown),markdown), meta=TOPIC_META&&TOPIC_META[ref];
         return (meta?buildTpl(meta,ref):'')+html;
       },
       facultyPreviewMatches:facultyPreviewMatchesItem,
@@ -4267,6 +4272,8 @@
           fdMountCulturalChart(body);
           fdMountDeliriumShift(body);
           fdMountSleepNight(body);
+          fdMountRefEvidence(body);
+          if(!facultyPreviewRequest&&item.kind==='read'){ var _seenProg=progLoad(); fdMountPageChanged(body,ref,renderedMarkdown,!!(_seenProg[ref]&&_seenProg[ref].done)); }
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';

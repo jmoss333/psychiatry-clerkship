@@ -4404,3 +4404,20 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
   .mg-case .mg-workspace,.mg-case .mg-fields{grid-template-columns:minmax(0,1fr)}
   .mg-case .mg-interview,.mg-case .mg-chart{grid-column:auto;grid-row:auto}
 }
+
+/* "In the paper's own words" (fd_ref_evidence.js, 2026-11-25): a verified verbatim excerpt,
+   collapsed under the reference list item that cites it. Reading-scale aware; no new colour. */
+.fd-ref-evidence{margin:var(--fd-space-2) 0 var(--fd-space-3);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+.fd-ref-evidence__toggle{display:inline-flex;align-items:center;min-height:var(--fd-target-touch);cursor:pointer;color:var(--fd-teal-deep);font-weight:700}
+.fd-ref-evidence__toggle:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+.fd-ref-evidence__quote{margin:var(--fd-space-2) 0;padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-line-strong);background:var(--fd-surface);color:var(--fd-text);font-style:normal;line-height:var(--fd-leading-normal,1.55)}
+.fd-ref-evidence__meta{margin:0;color:var(--fd-text-mid);font-size:var(--fd-font-xs)}
+/* Tappable in-text citations (fd_ref_evidence.js fdRefCiteMarkup): an inline button that reads as
+   the bracketed number it replaced. Inline in a sentence, so the 44px target rule's inline
+   exception applies; the focus ring does not. */
+.fd-cite{display:inline;margin:0;padding:0 .08em;border:0;background:none;color:var(--fd-teal-deep);font:inherit;text-decoration:underline;text-underline-offset:.15em;cursor:pointer}
+.fd-cite:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+/* "Updated since you last opened it" (fd_page_changed.js): a one-time status line under the title
+   of a reading the learner marked read whose text has since changed. Information, not a warning:
+   olive, never danger. */
+.fd-page-changed{margin:var(--fd-space-3) 0 var(--fd-space-5);padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));line-height:var(--fd-leading-normal)}

@@ -2981,7 +2981,10 @@ async function guideRenderedInventory(page) {
   return page.locator('.fd-article__body').evaluate(body => {
     const root = body.cloneNode(true);
     // Exclude enhancement-only controls and the alternative table view, never authored nodes.
-    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint')
+    // .fd-ref-evidence is the collapsed verified-excerpt box the reader appends inside a cited
+    // reference (fd_ref_evidence.js) and .fd-page-changed the one-time changed-page notice
+    // (fd_page_changed.js): both are added by the reader, not authored on the page.
+    root.querySelectorAll('.sec-chev, .sec-toolbar, .pgfb, .fd-guide-table-controls, .fd-guide-table-rows, .table-scroll-hint, .fd-ref-evidence, .fd-page-changed')
       .forEach(el => el.remove());
     const normalize = text => text.replace(/\s+/g, ' ').trim();
     const text = element => normalize(element.textContent);
@@ -7909,10 +7912,14 @@ test.describe('Essentials Phase 2', () => {
     await page.reload();
     await expect(filterField(page)).toHaveValue('');
     await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
-    // Opening the reading above recorded cw_last (an existing store); nothing else changed, and no
-    // stored value ever carried the query.
+    // Opening the reading above recorded cw_last (an existing store) and the page's text
+    // fingerprint in cw_page_seen_v1 (fd_page_changed.js, keyed by ref); nothing else changed,
+    // and no stored value ever carried the query.
     const after = await page.evaluate(shellMemory);
+    // (The ref itself may contain the query's word, e.g. t_mood.md; the store holds only refs.)
+    expect(Object.keys(JSON.parse(after.local.cw_page_seen_v1 || '{}'))).toEqual([ref]);
     delete after.local.cw_last;
+    delete after.local.cw_page_seen_v1;
     expect(after).toEqual({ ...before, url: page.url() });
     await expectHealthy(page);
   });
