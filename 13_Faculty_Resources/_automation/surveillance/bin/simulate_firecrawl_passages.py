@@ -55,7 +55,7 @@ def main():
     scenarios = [
         ('unchanged', raw, 0, 'unchanged', []),
         ('anc-change', raw.replace(anc, anc + marker), 1, 'changed', ['qb_pha_002', 'qb_pha_011', 'qb_psy_007']),
-        ('enrollment-change', raw.replace(enrollment, enrollment + marker), 1, 'changed', ['qb_anx_003', 'qb_pha_002', 'qb_pha_011']),
+        ('enrollment-change', raw.replace(enrollment, enrollment + marker), 1, 'changed', ['qb_pha_002', 'qb_pha_011']),
         ('unrelated-change', raw + '\n\n## Unrelated footer\n\nSIMULATED FOOTER EDIT', 1, 'outside-mapped-passages', []),
         ('missing-heading', raw.replace('What Is FDA Doing?', 'SIMULATED MISSING HEADING'), 2, 'unavailable', []),
     ]
@@ -70,8 +70,8 @@ def main():
         for packet in review['packets']:
             assert {r['page'] for r in packet['readings']} == {'psychopharm_primer.md', 't_psychosis.md'}
         summary.append(f"| [{name}]({name}/faculty-brief.md) | {review['status']} | {', '.join(actual) or 'None'} |")
-    summary += ['', 'All five scenarios passed. The ANC-only edit leaves the enrollment-only question '
-                'qb_anx_003 unflagged; both changes leave unrelated questions such as qb_psy_012 unflagged. '
+    summary += ['', 'All five scenarios passed. Each edit flags only the questions mapped to its own passage; '
+                'both changes leave unrelated questions such as qb_psy_012 unflagged. '
                 'Broad reading dependencies remain visible as context, not targeted flags.', '',
                 'Two readings are selected for each mapped change: psychopharm_primer.md and t_psychosis.md. '
                 'Missing headings fail closed. Changes outside mapped paragraphs stay visible as source-level '

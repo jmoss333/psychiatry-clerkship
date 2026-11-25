@@ -98,8 +98,8 @@ level-two heading and zero-based paragraph number. It links each to exact questi
 field excerpts and shipped-reading excerpts. These are proposed review-routing
 dependencies, **not faculty approval, clinical validation, or exhaustive coverage**.
 The source retrieval receipt is recorded with the map. The enrollment mapping
-includes a potential wording discrepancy in `qb_anx_003`; including it does not
-endorse its current wording or automatically edit the item.
+once included a wording discrepancy in `qb_anx_003` ("ANC monitoring
+enrollment"); the 2026-11-25 safety fixes rewrote that item and dropped the link.
 
 On the first observation, the extracted paragraph must match the recorded source
 quote. Subsequent observations compare that paragraph against the prior pilot
@@ -131,12 +131,12 @@ inventing medical recommendations. `SUMMARY.md` links to all five review briefs:
 |---|---|
 | No change | None |
 | ANC paragraph edited | qb_pha_002, qb_pha_011, qb_psy_007 |
-| Enrollment paragraph edited | qb_anx_003, qb_pha_002, qb_pha_011 |
+| Enrollment paragraph edited | qb_pha_002, qb_pha_011 |
 | Unrelated footer edited | None; source-level change remains visible |
 | Expected heading missing | Unable to localize; exit 2 |
 
 The two targeted readings are `psychopharm_primer.md` and `t_psychosis.md`.
-The ANC-only change leaves the enrollment-only question `qb_anx_003` unflagged;
+Each edit flags only the questions mapped to its own passage;
 both mapped changes leave unrelated `qb_psy_012` unflagged. Tests execute the real
 CLI through each case and also break question, reading, heading, and mapping
 receipts independently:
