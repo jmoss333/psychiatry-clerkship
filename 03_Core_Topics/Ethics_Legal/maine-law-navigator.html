@@ -195,6 +195,24 @@ table.clocks th{background:var(--bg-alt)}
       "excerpt": "The court may grant a psychiatric hospital power to implement a recommended treatment plan without a person's consent for up to 120 days or until the end of the commitment, whichever is sooner, if upon application the court finds: (1) That the person lacks the capacity to make an informed decision regarding treatment;",
       "meaning": "The other findings: unable or unwilling to comply; need outweighs risks and side effects; least intrusive appropriate option."
     },
+    "3861-3": {
+      "cite": "34-B M.R.S. §3861(3)",
+      "title": "Involuntary treatment — clinical review panel",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3861.html",
+      "extractedOn": "2026-10-05",
+      "readOn": "2026-11-25",
+      "excerpt": "The clinical review panel may approve a request for involuntary treatment and order the treatment if the clinical review panel finds, at a minimum: (a) That the patient lacks the capacity to make an informed decision regarding treatment;",
+      "meaning": "For a committed patient at a state institute or designated nonstate hospital. The other findings: unable or unwilling to comply; need outweighs risks and side effects; least intrusive option. Order lasts 120 days or to the end of commitment."
+    },
+    "3861-4": {
+      "cite": "34-B M.R.S. §3861(4)",
+      "title": "Emergency involuntary treatment",
+      "url": "https://legislature.maine.gov/statutes/34-B/title34-Bsec3861.html",
+      "extractedOn": "2026-10-05",
+      "readOn": "2026-11-25",
+      "excerpt": "Nothing in this section precludes a medical practitioner from administering involuntary treatment to a person who is being held or detained by a hospital against the person's will under the provisions of this subchapter, if the following conditions are met:",
+      "meaning": "All six must hold, including a serious and immediate risk of harm from mental illness AND a lack of decisional capacity, with no authorized consenter reasonably available. Danger alone is not enough."
+    },
     "3873A": {
       "cite": "34-B M.R.S. §3873-A",
       "title": "Progressive treatment program",
@@ -365,16 +383,16 @@ table.clocks th{background:var(--bg-alt)}
     },
     "treatment": {
       "title": "Treatment over objection",
-      "lead": "Involuntary hospitalization is not consent to treat. A court order under §3864(7-A) requires four findings and lasts up to 120 days or the end of the commitment.",
+      "lead": "Involuntary hospitalization is not consent to treat. A committed patient can be treated over objection by court order (§3864(7-A)) or clinical review panel order (§3861(3)); each needs the same four findings, starting with a lack of capacity. An emergency has its own statutory test (§3861(4)).",
       "steps": [
         "Assess and document capacity for this specific treatment decision, after a thorough explanation.",
-        "If the patient lacks capacity and the other findings apply, the request is made with the commitment application (§3864(1-A)); the examiner must be qualified to prescribe relevant medication.",
-        "The court may instead appoint a surrogate for the commitment's duration.",
-        "Emergencies on the unit are governed by hospital policy — ask your attending."
+        "Court route: if the patient lacks capacity and the other findings apply, the request is made with the commitment application (§3864(1-A)); the examiner must be qualified to prescribe relevant medication. The court may instead appoint a surrogate for the commitment's duration.",
+        "Panel route, for a committed patient at a state institute or designated nonstate hospital: the treating physician requests a clinical review panel in writing, with a second opinion on capacity from someone outside the patient's care (§3861(3)). The patient gets notice, a lay advisor and a hearing.",
+        "Emergency, for a patient held under the involuntary-admission subchapter: all six §3861(4) conditions must be met, including a serious and immediate risk of harm from mental illness and a lack of decisional capacity, with no authorized consenter reasonably available. Hospital policy sets the procedure on top of these criteria; ask your attending."
       ],
-      "clocks": [["Involuntary treatment order", "up to 120 days or end of commitment", "§3864(7-A)(A)"]],
-      "pitfalls": ["Equating refusal with incapacity.", "Treating a committed patient over objection without an order outside a policy-defined emergency."],
-      "statutes": ["3864-7A", "3801-10", "5-802"],
+      "clocks": [["Court treatment order", "up to 120 days or end of commitment", "§3864(7-A)(A)"], ["Panel treatment order", "120 days or end of commitment", "§3861(3)(E)"]],
+      "pitfalls": ["Equating refusal with incapacity.", "Treating imminent danger as the whole emergency test: §3861(4) also requires a lack of decisional capacity.", "Treating a committed patient over objection with neither a court order, a panel order nor all six emergency conditions."],
+      "statutes": ["3864-7A", "3861-3", "3861-4", "3801-10", "5-802"],
       "links": ["capacity.html", "ethics_legal.md"]
     },
     "capacity": {
@@ -479,7 +497,7 @@ table.clocks th{background:var(--bg-alt)}
       '<blockquote>' + esc(s.excerpt) + '</blockquote>' +
       '<div class="meaning"><strong>On the unit:</strong> ' + esc(s.meaning) + '</div>' +
       '<div class="meta"><a href="' + esc(s.url) + '" target="_blank" rel="noopener">Official text</a> · Revisor data extracted ' +
-      esc(s.extractedOn) + ' · read ' + esc(DATA.verifiedOn) + '</div></div>';
+      esc(s.extractedOn) + ' · read ' + esc(s.readOn || DATA.verifiedOn) + '</div></div>';
   }
   function render(pid){
     var p = DATA.pathways[pid];

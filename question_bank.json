@@ -1245,7 +1245,7 @@
     },
     {
       "id": "qb_eth_002",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "ethics",
       "competency": [
@@ -1276,7 +1276,7 @@
           "t": "Document the threat and continue outpatient treatment with increased session frequency",
           "trap": {
             "name": "Document and continue",
-            "note": "Documentation alone does not fulfill the duty to protect — when there is a specific, credible threat to an identifiable person, protective action is required."
+            "note": "Documentation alone does not meet a duty to protect: when there is a specific, credible threat to an identifiable person, reasonable protective action is expected."
           }
         },
         {
@@ -1294,8 +1294,8 @@
         }
       ],
       "why": "Confidentiality always wins, Document and continue, and Wait for action are three forms of inaction in the face of the duty to protect. A specific, credible threat to a named, identifiable person — with described means and timeline — triggers a duty to take reasonable protective steps. The options are broad: warning the victim, notifying police, hospitalizing, or intensifying treatment. The duty does not require certainty that harm will occur.",
-      "pearl": "A specific, credible threat to a reasonably identifiable victim overrides confidentiality — the duty to protect obligates action, not only documentation.",
-      "evidence": "ethics_legal.md — When a patient makes a serious threat of violence against a reasonably identifiable victim, the clinician has a duty to take reasonable protective steps — which may include warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment.",
+      "pearl": "A specific, credible threat to a reasonably identifiable victim can override confidentiality; where a duty to protect arises, it calls for action, not only documentation.",
+      "evidence": "ethics_legal.md — When a patient makes a serious threat of violence against a reasonably identifiable victim, the clinician may have a duty to take reasonable protective steps — which may include warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment.",
       "tier2": {
         "q": "Why does this duty override therapeutic confidentiality?",
         "options": [
@@ -6266,7 +6266,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6302,7 +6302,7 @@
           "t": "Document the threat and reassess at the next session — the duty to warn only applies to imminent threats.",
           "trap": {
             "name": "Imminence required for Tarasoff",
-            "note": "The Tarasoff duty does not require the threat to be imminent — a serious, credible threat to an identifiable victim (here, named with a specific plan) is sufficient to trigger the duty; waiting is not appropriate."
+            "note": "Whether imminence is required depends on the state; Maine's 34-B M.R.S. §1207(6-A) speaks of a \"serious and imminent threat\". Here the threat is specific, armed, named and dated, so documenting and waiting is not safe: act now and involve your attending and risk management."
           }
         },
         {
@@ -6314,9 +6314,9 @@
           }
         }
       ],
-      "why": "Family exception, Imminence required, and Legal clearance first all create barriers to a clinically required action. The page states: 'A specific threat to a specific person overrides confidentiality.' The duty to protect may be fulfilled by warning the victim, notifying police, hospitalizing the patient, or intensifying treatment — and specifics vary by state, but the tested principle is clear.",
-      "pearl": "Tarasoff: a specific threat to an identifiable victim overrides confidentiality — warn, notify police, or hospitalize; inaction in a credible threat is not a safe option.",
-      "evidence": "ethics_legal.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields."
+      "why": "Family exception, Imminence required, and Legal clearance first all create barriers to a clinically required action. A serious threat to an identifiable victim can trigger a duty to protect, and the duty is mandatory, permissive or absent depending on the state. Whatever the state's wording on imminence, this threat is specific, armed, named and dated, so it calls for protective action: warning the victim, notifying police, hospitalizing the patient or intensifying treatment, with your attending and risk management involved.",
+      "pearl": "A specific threat to an identifiable victim can trigger a duty to protect, which varies by state; when it applies, act (warn, notify police or hospitalize) with your attending rather than document and wait.",
+      "evidence": "ethics_legal.md — A serious threat to an identifiable victim can trigger a duty to protect (Tarasoff) — mandatory, permissive or absent depending on the state; where it applies, confidentiality yields."
     },
     {
       "id": "qb_eth_008",
@@ -6374,7 +6374,7 @@
     },
     {
       "id": "qb_eth_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6408,7 +6408,7 @@
         },
         {
           "key": "C",
-          "t": "Involuntary hospitalization does NOT authorize involuntary medication; overriding the refusal requires either a true emergency (imminent danger) or a separate legal or adjudicated process independent of the commitment.",
+          "t": "Involuntary hospitalization does NOT authorize involuntary medication; overriding the refusal requires either a true emergency (in Maine, danger plus a lack of decisional capacity) or a separate legal process such as a court or review-panel order.",
           "c": true
         },
         {
@@ -6420,9 +6420,9 @@
           }
         }
       ],
-      "why": "Commitment = consent to medicate, Route reduces ethical constraint, and Diagnosis = impaired capacity are all versions of the same error. The page is clear: 'Involuntary hospitalization does NOT by itself authorize involuntary medication.' Overriding refusal requires an imminent-danger emergency or a separate legal/adjudicated process. Commitment status and medication consent are independent legal states.",
+      "why": "Commitment = consent to medicate, Route reduces ethical constraint, and Diagnosis = impaired capacity are all versions of the same error. The page is clear: commitment doesn't equal consent to medicate. Overriding a refusal requires a true emergency or a separate legal process. In Maine the emergency test (34-B M.R.S. §3861(4)) is not danger alone: it also requires that the person lack decisional capacity and that no authorized consenter be reasonably available; the routine routes are a court order (§3864(7-A)) or a clinical review panel (§3861(3)), each starting from a finding that the patient lacks capacity.",
       "pearl": "Commitment ≠ consent to medicate — involuntary hospitalization does not override medication refusal; a separate emergency or legal process is required.",
-      "evidence": "ethics_legal.md — Involuntary hospitalization does NOT by itself authorize involuntary medication. Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent."
+      "evidence": "ethics_legal.md — Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent — commitment doesn't equal consent to medicate."
     },
     {
       "id": "qb_eth_004",
