@@ -20,12 +20,115 @@ function fdMountBedsideCases(body) {
   fdMountCatieStop(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
+  fdMountConsultCallback(body);
   fdMountOvernightPlan(body);
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountConsultCallback(body) {
+  const card = body.querySelector('#consult-callback');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = key => card.querySelector('#cc-' + key);
+  const answers = card.querySelector('template[data-answers]').content;
+  const sourceButtons = [...card.querySelectorAll('button[data-source]')];
+  const callButtons = [...card.querySelectorAll('button[data-call]')];
+  const accounts = new Map([...answers.querySelectorAll('[data-account]')].map(el => [el.dataset.account, el]));
+  const heard = new Set();
+  const panel = field('source-card');
+  const reply = field('reply');
+  const receipt = field('receipt');
+  const focused = card.querySelector('[data-call="focused"]');
+  let expanded = null;
+
+  function accountText(key, fieldName) {
+    return accounts.get(key).querySelector('[data-' + fieldName + ']').textContent;
+  }
+  function clearCall() {
+    for (const button of callButtons) button.setAttribute('aria-pressed', 'false');
+    reply.hidden = true;
+    reply.replaceChildren();
+    receipt.hidden = true;
+    receipt.querySelector('details').open = false;
+  }
+  function renderMap() {
+    const opened = [];
+    for (const button of sourceButtons) {
+      const key = button.dataset.source;
+      const slot = button.closest('[data-slot]');
+      const instruction = accountText(key, 'instruction');
+      const summary = accountText(key, 'summary');
+      slot.dataset.opened = String(heard.has(key));
+      slot.querySelector('.slot-text').textContent = heard.has(key) ? summary : instruction;
+      button.setAttribute('aria-label', heard.has(key) ? instruction + '. Heard. ' + summary : instruction);
+      button.setAttribute('aria-expanded', String(expanded === key));
+      if (heard.has(key)) opened.push(key);
+      if (expanded === key) {
+        slot.append(panel);
+        panel.querySelector('.speaker').textContent = accountText(key, 'speaker');
+        panel.querySelector('[data-quote]').textContent = accountText(key, 'quote');
+      }
+    }
+    panel.hidden = expanded === null;
+    field('count').textContent = heard.size + ' of ' + sourceButtons.length + ' heard';
+    const evidence = opened.join(' ') || 'none';
+    focused.textContent = answers.querySelector('[data-question-for="' + evidence + '"]').textContent;
+  }
+  for (const button of sourceButtons) button.addEventListener('click', () => {
+    const key = button.dataset.source;
+    const isNew = !heard.has(key);
+    heard.add(key);
+    expanded = expanded === key ? null : key;
+    if (isNew || receipt.hidden) clearCall();
+    renderMap();
+  });
+
+  function replyVariant(choice, missing) {
+    if (choice === 'broad') return heard.has('intern') ? 'intern' : 'initial';
+    if (choice === 'premature') return heard.has('patient') ? 'patient' : 'initial';
+    return missing || 'complete';
+  }
+  for (const button of callButtons) button.addEventListener('click', () => {
+    const choice = button.dataset.call;
+    for (const other of callButtons) other.setAttribute('aria-pressed', String(other === button));
+    const missing = ['intern', 'patient', 'nurse'].find(key => !heard.has(key));
+    const variant = choice + '-' + replyVariant(choice, missing);
+    const words = document.createElement('p');
+    words.textContent = answers.querySelector('[data-reply-for="' + variant + '"]').textContent;
+    const speaker = document.createElement('strong');
+    speaker.textContent = accountText('intern', 'speaker');
+    reply.replaceChildren(speaker, words);
+    if (choice === 'focused' && missing) {
+      const followUp = document.createElement('button');
+      followUp.type = 'button';
+      followUp.className = 'follow-up';
+      followUp.textContent = missing === 'intern'
+        ? answers.querySelector('[data-ask-intern]').textContent : accountText(missing, 'instruction');
+      followUp.addEventListener('click', () => {
+        const source = sourceButtons.find(item => item.dataset.source === missing);
+        source.click();
+        source.focus();
+        source.scrollIntoView({block:'center'});
+      });
+      reply.append(followUp);
+    }
+    reply.hidden = false;
+    receipt.hidden = choice !== 'focused' || Boolean(missing);
+    if (receipt.hidden) receipt.querySelector('details').open = false;
+  });
+  field('reset').addEventListener('click', () => {
+    heard.clear();
+    expanded = null;
+    clearCall();
+    renderMap();
+    sourceButtons[0].focus();
+  });
+  renderMap();
 }
 
 function fdMountOvernightPlan(body) {
