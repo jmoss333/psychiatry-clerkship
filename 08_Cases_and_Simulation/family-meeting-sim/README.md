@@ -40,7 +40,7 @@ The display title deliberately avoids the phrase "Family Meeting": `tests/fd-sea
 
 ## Storage
 
-One literal key, `cw_family_sim_v1`, on the learner's device: scenario ids, run counts, best percentage per axis and the date of the last run (day only). Nothing else is stored or sent. "Clear my saved progress" removes the key.
+One literal key, `cw_family_sim_v1`, on the learner's device: scenario ids, run counts, best percentage per axis, a safety-steps status per scenario (`safetyRun`: `clean`, `after-miss` or `missed`) and the date of the last run (day only). Nothing else is stored or sent. Store `v: 2` keeps the safety-actions best only from runs with no missed required step; on first load, a store written before v2 loses only the safety bests that may have come from such a run (`FMSEngine.migrateStore`). "Clear my saved progress" removes the key.
 
 ## Not in this version
 

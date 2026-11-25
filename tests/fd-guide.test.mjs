@@ -108,3 +108,25 @@ test('a search landing belongs to a unique rendered excerpt or, before hydration
   assert.equal(find('A later sentence.', [...candidates, duplicate]), null);
   assert.equal(G.fdGuideSearchTarget(candidates, 'grief vs dep', ''), null);
 });
+
+test('reading names keep the longest literal formulation and original spelling', () => {
+  const search = readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_search.js',
+    import.meta.url), 'utf8');
+  const match = new Function(`${guide}\n${search}\nreturn function(agents, text) {
+    var names = fdSearchPharmacyNames(agents);
+    return fdReadingNameMatches(text, names, fdReadingNamePattern(names))
+      .map(function(hit){ return [hit.id, text.slice(hit.start, hit.end)]; });
+  };`)();
+  const agents = [
+    { id: 'alpha', generic: 'Alpha', brands: ['A+ (long)', 'Shared XR'] },
+    { id: 'beta', generic: 'Beta', brands: ['Alpha XR', 'Shared', 'Shared XR'] },
+  ];
+  assert.deepEqual(match(agents, 'ALPHA\nXR, a+ (long), (aLpHa).'), [
+    ['beta', 'ALPHA\nXR'], ['alpha', 'a+ (long)'], ['alpha', 'aLpHa'],
+  ]);
+  assert.deepEqual(match(agents, 'Shared XR, then Shared.'), [['beta', 'Shared']]);
+  for (const text of ['preAlpha βAlpha Alphaβ 𐐀Alpha Alpha𐐀', 'Alpha_2 Alpha-XR X‑Alpha',
+    'Alpha/Beta Alpha+Beta', 'alphas aX (long) Alpha XR-related']) {
+    assert.deepEqual(match(agents, text), [], text);
+  }
+});

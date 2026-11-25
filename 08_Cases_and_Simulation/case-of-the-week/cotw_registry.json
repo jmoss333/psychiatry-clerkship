@@ -2,6 +2,15 @@
   "_note": "Case of the Week registry - the single source of truth for the weekly case section. To add a week, PREPEND one object to 'weeks' (newest first) and drop the two source .md files (ms3_src, res_src) into this folder. build_deploy.py (MS3 site) and resident_section.py (resident site) read this file to copy the pages and generate the nav section; no edits to those scripts or to site_manifest.json are needed. Built slugs are derived deterministically: cotw_<YYYYMMDD>_<topic>_ms3.md and cotw_<YYYYMMDD>_<topic>_res.md. Keep 'topic' short, lowercase, and unique per date. OPTIONAL per-week fields, all defaulted so an entry written without them still builds: 'blueprint' (list of shelfBlueprint codes - this is what puts the case on the curriculum crosswalk; vocabulary in CROSSWALK_TAXONOMY.md), 'epa' (AAMC EPA1..EPA13), 'read' (int, estimated read minutes), 'tldr' (one-line summary shown above the prose). These feed cotw_meta.py, which derives each case's topic_meta entry at build time so topic_meta.json never needs a weekly hand-edit.",
   "weeks": [
     {
+      "date": "2026-11-09",
+      "topic": "lithium",
+      "label": "Lithium: Monitoring, Toxicity & Interactions (Nov 9)",
+      "ms3_src": "2026-11-09_lithium-monitoring-toxicity-interactions_MS3.md",
+      "res_src": "2026-11-09_lithium-monitoring-toxicity-interactions_Resident.md",
+      "tldr_ms3": "A stable lithium patient who gets dehydrated and starts ibuprofen is a toxicity case waiting to happen: recognize the coarse tremor and ataxia, stop the drug, give saline, and know the big-three interacting drug classes.",
+      "tldr_res": "Chronic toxicity at a “therapeutic-looking” level: grade severity clinically, dismantle the thiazide–ACEi–NDI clearance spiral, argue the dialysis decision beyond the numeric thresholds, and structure the stay-or-stop lithium conversation."
+    },
+    {
       "date": "2026-10-12",
       "topic": "safety",
       "label": "Suicide Risk & Safety Planning (Oct 12)",

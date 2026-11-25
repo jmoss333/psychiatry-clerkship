@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(862 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(879 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -279,6 +279,11 @@ concept-count status line when nothing is due), `caseWeek`):
           .fd-newcase <button data-fd-open>            the Case-of-the-Week announcement, only in the week it ships (fdNewCase)
             .fd-newcase__kicker / .fd-newcase__title / .fd-newcase__action
       .fd-purpose        <details>                    5. the preparation chooser (shell-owned open state)
+        .fd-prep                                       (only while "Before rounds" is the active purpose) "Presenting tomorrow" (F4)
+          .fd-prep__prompt <p> / .fd-prep__syndromes [role=group] button[data-today-prep] ×N / .fd-prep__phases [role=group] button[data-today-prep-phase] ×3
+          .fd-prep__card[data-prep-ref][data-prep-phase]   (once a syndrome is picked)
+            .fd-prep__title <h3> / .fd-prep__lead <p> / .fd-prep__lines <dl> > .fd-prep__line (dt label, dd attested text) ×N
+            .fd-prep__links <ul> > li > .fd-btn.fd-btn--ghost (data-fd-open for a page, href for a query-bearing drill/tool) / .fd-prep__epa <p> (resident build)
         .fd-prepare                                    the Prepare-for-tomorrow line + ghost button (sites shipping the tool)
       .fd-today__exam    <div>                        exam-date nudge: exam path only, until a date is stored
         .fd-today__examtext <p> / .fd-today__examcta <button data-fd-settings>
@@ -330,6 +335,7 @@ Removed from Today (2026-10-04): `.fd-consistency` (D2 — it now opens Learning
 | `.fd-quicktool` (label) | `fdQuickToolLabel` shows the title before its ` — ` subtitle ("The Interview Room"), and the full title rides on the button as `title` (2026-10-01). |
 | `.fd-list` | Flat rows separated by `.fd-row`'s own hairline (gap 0 since 2026-10-04). |
 | `.fd-consistency` | Seven-day activity strip (2026-09-02, not in the prototype). Derived at render time by `fdActivityDays` from the timestamps every tool already stores; nothing new is persisted. Since 2026-10-04 (owner decision D2) it renders at the top of **Learning activity & review** (`fdProgressMarkup`), not on Today. |
+| `.fd-prep`, `.fd-prep__prompt`, `.fd-prep__syndromes`, `.fd-prep__phases`, `.fd-prep__card`, `.fd-prep__title`, `.fd-prep__lead`, `.fd-prep__lines`, `.fd-prep__line`, `.fd-prep__links`, `.fd-prep__epa` | "Presenting tomorrow" (F4, 2026-10-18; `fdPrepPicker` / `fdPrepCard`, `fd_today.js`), rendered inside the purpose chooser only while *Before rounds* is active: syndrome pills (the topic hubs that carry a `clinicalWorkflow` block and ship on the site, from the build-injected `FD_PRESENTING`, minus any hub whose governance triplet is not `reviewed` — `fdPrepBound`, 2026-11-10: a drifted hub gets no pill and no card), hospital-day pills (Admission · Day 2–3 · presenting · Pre-discharge), then one card with a 3px teal left rule: `h3` "Topic · Phase", the phase's lead, the syndrome's own attested `clinicalWorkflow` / `firstMove` / `ruleOut` lines as `dt`/`dd` (label 12/700 uppercase dim, text 15/1.5), ghost links (guide → `data-fd-open`; Case of the Week → `data-fd-open`; drill / family scenario / tool → real `href`, since the Front Door action drops query parameters; a destination awaiting review carries `.fd-kit__pending` inside the link, as `.fd-newcase` does), and on the resident build the record's EPA codes. Every label is payload data (`presenting_tomorrow.json`); every line is the record's. `presenting_tomorrow.py` fails the build if any syndrome × phase cell renders fewer than 3 items. |
 | `.fd-prepare`, `.fd-prepare__title`, `.fd-prepare__copy` | Optional preparation invitation, emitted only for the resolved known tool item — INSIDE the preparation chooser (`fdTodayPurpose`) since 2026-10-04: a hairline-topped line (title in bold, the 5/15-minute sentence, the compact governance badge) plus one `.fd-btn--ghost[data-fd-open]`. No primary rule, durable state or nested scrolling. |
 | `.fd-offline` | One in-flow cache receipt after Today's actual primary card, or immediately after the APP's marked primary resource inside its starting-route resources or selected task's Prepare links. The Care entry stays in flow at ≤640px; the five-item dock is unchanged. State classes `.is-checking`, `.is-ready`, `.is-update`, and `.is-not-ready` change border shape/color and surface wash while visible text carries the meaning. It uses the existing warm palette tokens in light and dark themes; all controls meet `--fd-target-touch`. |
 | `.fd-today__exam` | Today's exam-date nudge, after the primary action (and the offline availability receipt when present), before the week list. Rendered only on the path that ends in an exam and only until a parseable date is stored (`fdExamDatePrompt`, `fd_state.js`). The date has exactly one home, the settings panel's Pacing field (`.fd-set__date`, `fd_sheet.js`) — this nudge carries no field of its own. `.fd-today__examcta` reopens Settings via the SAME `data-fd-settings` action the gear exposes: a second *trigger* for one action, not a second action. It does not disappear on its own — closing the field's `change` handler only sets `baseStale` (`fd_wire.js`); Today's base render, this nudge included, is rebuilt the next time `absorbStaleBase` finds that flag set, which is exactly when the panel closes (`data-fd-close-sheet` always touches `sheet`, a base-triggering settlement). That render destroys the CTA along with the rest of the stale Today markup, so `restoreInvoker` finds it disconnected and falls back to `equivalentControl` — any live control sharing the same action attribute and value, i.e. the gear — needing no bespoke focus-restore code of its own. (2026-09-26 — previously this duplicated the panel's own `<input type=date>` inline and deliberately avoided `data-fd-settings` for this same reason, before this settle-on-close path was confirmed to cover it.) |
@@ -853,6 +859,10 @@ the Library.
 
 ## 6. Reader (reading / tool pane)
 
+In reading text, a dotted underline on a medication name opens its reviewed Pharmacy card.
+The inline button inherits the surrounding type and prints as ordinary text. Closing the
+card returns focus to the same word and preserves the reading position.
+
 When a resource opens from Search, the top `.fd-reader__back` button becomes “Back to search results.”
 It restores the query, expansion, selected action and results scroll from the current visit.
 The saved result order survives a delayed page-text load. Editing or starting a new search uses
@@ -966,6 +976,8 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fp-case` / `.mg-case` | Paired bedside fever exams and the clozapine interview timeline. Both keep histories with their source and require a differential and next finding or check before the debrief. |
 | `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
+| `#lang-culture` | In Medical Workup, the full portrait stacks above the quote on phones. Each interview remembers which questions and handoff the learner selected. The comparison opens after both handoffs fit. |
+| `#catie-stop` | Under the CATIE rounds question, each illustrated timeline opens a separate medication history and three handoffs. Selecting a supported handoff for each patient opens the comparison. Revising either answer updates it. |
 | `#quieter-on-unit` | The two-row chart compares the same observation across shifts. The handoff uses the patient’s call and any additional observations the learner opened. |
 | `#home-dose-history` | In the second Primer question, learners open the prescription and pickup record, mark both nights from the patient’s reply, and revise the home-dose line in the handoff. |
 | `#alex-timing` | Alex’s weekly timeline compares two possible callbacks about the first unusual call. Each rounds update uses the current callback and follow-up question. |
@@ -1497,3 +1509,41 @@ Both circuits label the current case with `.fd-circuit__case`. The facilitator u
 During “Repeat the handoff,” the timer caption displays the observer’s selected feedback focus. The observer can share a link or QR code that opens the facilitator timer with that focus selected.
 
 When the repeat ends, the primary timer button takes the facilitator to the receiver read-back. On phones up to 430px wide, a selected feedback focus shares the first row with the countdown. The controls sit on a separate row so switching from Start to Read-back leaves the focus and time readable.
+
+### Reference excerpts — "In the paper's own words" (2026-11-25)
+
+`fd_ref_evidence.js` appends one collapsed `<details class="fd-ref-evidence">` to the end of a
+reading's list item (`li`) when the item cites a PMID or DOI that `evidence_excerpts.json` knows.
+Four selectors, no new colour, no state class:
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-ref-evidence` | `details` | Sits inside the citing `li`, after the citation text. Scales with `--fd-reading-scale`. |
+| `.fd-ref-evidence__toggle` | `summary` | "In the paper's own words"; a 44px touch target with the shared 3px focus ring. |
+| `.fd-ref-evidence__quote` | `blockquote` | The verbatim span. Upright, not italic: it is a quotation, not emphasis. |
+| `.fd-ref-evidence__meta` | `p` | Span kind and the date it was checked against the source. |
+
+⚠ trap: the excerpt lives inside the `li`, so any rule that styles `li > *` in a reading also
+reaches it. It carries text only: no links, buttons or storage.
+
+**Tappable citations.** `fdRefCiteMarkup` gives each entry of the page's closing References list
+`id="fd-ref-N"` and `tabindex="-1"`, and turns each bracketed number in the text above it that
+names an entry into `<button type="button" class="fd-cite">N</button>` (the brackets stay text).
+A tap opens a collapsed `.sec-c` section if the entry sits in one, scrolls the entry to the
+middle of the screen and focuses it. One selector:
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-cite` | `button` | Inline, inherits the sentence's font; underlined teal like a link. Never inside a link, code, a heading or another button. |
+
+### "Updated since you last opened it" (2026-11-25)
+
+`fd_page_changed.js` keeps a fingerprint of each reading's text on the device (`cw_page_seen_v1`,
+ref → `{h, at}`, capped at 400 pages) each time the reader opens it. When a page the learner marked
+read is opened and its fingerprint changed, one status line goes directly after the page's `h1`,
+once; the next open is silent. Learner reader only, never the faculty preview.
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-page-changed` | `p[role=status]` | Olive wash and rule (information, not danger). Scales with `--fd-reading-scale`. |
+

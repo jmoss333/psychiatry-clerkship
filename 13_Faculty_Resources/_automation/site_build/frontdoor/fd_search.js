@@ -860,8 +860,8 @@ function fdSearchPharmacyLookup(card, state){
   var title=fdEsc(card.title+' · Pharmacy card');
   var resume=/\.md$/.test(state.openId||'')?'Return to reading':'Close lookup';
   return '<div class="fd-search" role="dialog" aria-modal="true" aria-label="'+title+'">'+
-    '<div class="fd-searchpanel" data-pharmacy-lookup="'+fdEsc(card.id)+'">'+
-    '<div class="fd-searchpanel__browse"><button type="button" class="fd-btn" data-fd-pharmacy-back>Back to search results</button></div>'+
+    '<div class="fd-searchpanel" data-pharmacy-lookup="'+fdEsc(card.id)+'"'+(card.fromReading?' role="document" tabindex="0"':'')+'>'+
+    (card.fromReading?'':'<div class="fd-searchpanel__browse"><button type="button" class="fd-btn" data-fd-pharmacy-back>Back to search results</button></div>')+
     '<iframe title="'+title+'" src="tools/pharmacy.html?view=card#'+encodeURIComponent(card.id)+'"></iframe>'+
     '<div class="fd-searchpanel__browse"><button type="button" class="fd-btn" data-fd-close-search>'+resume+'</button></div>'+
     '</div></div>';

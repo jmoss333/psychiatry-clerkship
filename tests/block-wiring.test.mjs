@@ -82,7 +82,10 @@ test('the shell picks exactly one primary and hands the faces to the renderer on
   assert.doesNotMatch(today.replace(/\/\*[\s\S]*?\*\//g, ''), /FD_TODAY_LEAD_END|fd-lead-end|'<div class="fd-primary">'|Also today|\.replace\(/);
   assert.match(today, /if\(kind===primary\.kind\) live\.nowHtml=faces\[kind\];/);
   assert.match(today, /live\.alsoRows=rows;/);
-  assert.match(today, /live\.purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose\(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen\);/);
+  // F4 (2026-10-18): the chooser also receives the "Presenting tomorrow" routing payload, the
+  // attested topic records and the session-only syndrome/phase picks -- still one pure call.
+  assert.match(today, /live\.purposeHtml=facultyPreviewRequest\?'':fdTodayPurpose\(FD_INDEX,fdTodayPurposeId,fdTodayPurposeOpen,\{prep:FD_PRESENTING,meta:FD_TOPIC_META,prepRef:fdTodayPrepRef,prepPhase:fdTodayPrepPhase,audience:FD_AUDIENCE\}\);/);
+  once(shell, 'var FD_PRESENTING=null;', 'spa_index.html');
   assert.match(today, /live\.caseWeek=fdWeekCaseStep\(FD_INDEX,FD_CASE_ARC,weekN\);/);
   // The case arc is build-injected (build_deploy.py replaces this exact needle), never fetched at
   // runtime: a fetch made Today's DOM churn after boot and two loads disagree on their render signature.
@@ -90,6 +93,8 @@ test('the shell picks exactly one primary and hands the faces to the renderer on
   assert.doesNotMatch(shell, /fetch\(['"]longitudinal_case\.json/, 'no runtime fetch of the case arc');
   const build = read(`${BUILD}/build_deploy.py`);
   assert.match(build, /_case_needle="var FD_CASE_ARC=null;"/);
+  assert.match(build, /_presenting_needle="var FD_PRESENTING=null;"/);
+  assert.match(build, /_presenting\.resolve\(_presenting\.load\(LIB\)\)/, 'the build fails closed on a thin syndrome x phase cell');
   assert.match(build, /frontdoor_catalog\._inline_json\(_case_arc\)/);
   // The newest Case of the Week is handed in raw (fd_today.js fdNewCase owns the week window), from
   // the same build-injected needle pattern; the resident build swaps in its own edition.
