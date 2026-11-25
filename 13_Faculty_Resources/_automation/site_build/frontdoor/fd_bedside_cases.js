@@ -20,12 +20,249 @@ function fdMountBedsideCases(body) {
   fdMountCatieStop(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
+  fdMountConsultCallback(body);
+  fdMountGriefConsult(body);
   fdMountOvernightPlan(body);
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountGriefConsult(body) {
+  const card = body.querySelector('#grief-consult');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = key => card.querySelector('#gc-' + key);
+  const buttons = key => Array.from(card.querySelectorAll('button[data-' + key + ']'));
+  const versions = buttons('version');
+  const openings = buttons('opening');
+  const questions = buttons('ask');
+  const choices = buttons('line');
+  const views = buttons('view');
+  const common = card.querySelector('template[data-grief-common]').content;
+  const nursePage = field('scene-quote').textContent;
+  const nurseLabel = field('scene-speaker').textContent;
+  const heard = new Set();
+  let script, opening, patientWords;
+
+  function line(source, key) {
+    const alternatives = source.querySelectorAll('[data-text="' + key + '"]');
+    const selected = Array.from(alternatives).find(el => el.dataset.after && heard.has(el.dataset.after));
+    return (selected || alternatives[0]).textContent;
+  }
+  function select(buttons, fieldName, value) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset[fieldName] === value));
+  }
+  function showSource(source) {
+    select(views, 'view', source);
+    field('scene-quote').textContent = source === 'page' ? nursePage : patientWords;
+    field('scene-speaker').textContent = source === 'page' ? nurseLabel : line(common, 'patient-label');
+  }
+  function hear(id, words) {
+    field(id).textContent = words;
+    patientWords = words;
+    views.find(button => button.dataset.view === 'words').disabled = false;
+    showSource('words');
+  }
+  function clearHandoff() {
+    select(choices, 'line', null);
+    for (const id of ['feedback', 'update', 'debrief']) field(id).hidden = true;
+    field('debrief').open = false;
+  }
+  function clearFollowup() {
+    heard.clear();
+    select(questions, 'ask', null);
+    for (const id of ['clue-panel', 'questions', 'answer-panel', 'immediate', 'handoffs']) field(id).hidden = true;
+    clearHandoff();
+  }
+  function enter(version) {
+    script = card.querySelector('template[data-grief-version="' + version + '"]');
+    opening = null;
+    patientWords = '';
+    views.find(button => button.dataset.view === 'words').disabled = true;
+    showSource('page');
+    clearFollowup();
+    select(versions, 'version', version);
+    select(openings, 'opening', null);
+    for (const id of ['reaction-panel', 'repair', 'meaning']) field(id).hidden = true;
+    for (const button of questions) button.textContent = line(script.content, 'question-' + button.dataset.ask);
+  }
+  function refreshChoices() {
+    for (const button of choices) {
+      if (button.dataset.line !== 'diagnosis') button.textContent = line(script.content, 'label-' + button.dataset.line);
+    }
+  }
+  for (const button of views) button.addEventListener('click', () => showSource(button.dataset.view));
+  for (const button of versions) button.addEventListener('click', () => {
+    if (button.dataset.version !== script.dataset.griefVersion) enter(button.dataset.version);
+  });
+  for (const button of openings) button.addEventListener('click', () => {
+    opening = button.dataset.opening;
+    clearFollowup();
+    select(openings, 'opening', opening);
+    hear('reaction', line(common, 'opening-' + opening));
+    field('reaction-panel').hidden = false;
+    const needsRepair = opening !== 'presence';
+    field('repair').hidden = !needsRepair;
+    if (needsRepair) field('repair').textContent = line(common, 'repair-' + opening);
+    field('meaning').hidden = needsRepair;
+  });
+  field('repair').addEventListener('click', () => {
+    hear('reaction', line(common, 'repaired-' + opening));
+    field('repair').hidden = true;
+    field('meaning').hidden = false;
+    field('meaning').focus();
+  });
+  field('meaning').addEventListener('click', () => {
+    hear('clue', line(script.content, 'clue'));
+    field('meaning').hidden = true;
+    for (const id of ['clue-panel', 'questions', 'handoffs']) field(id).hidden = false;
+    refreshChoices();
+    field('clue').focus();
+  });
+  for (const button of questions) button.addEventListener('click', () => {
+    const key = button.dataset.ask;
+    if (!heard.has(key)) clearHandoff();
+    heard.add(key);
+    select(questions, 'ask', key);
+    hear('answer', line(script.content, 'answer-' + key));
+    field('answer-panel').hidden = false;
+    field('immediate').hidden = !(script.dataset.urgent && heard.has('safety'));
+    refreshChoices();
+  });
+  for (const button of choices) button.addEventListener('click', () => {
+    const choice = button.dataset.line;
+    select(choices, 'line', choice);
+    field('feedback').textContent = line(script.content, 'feedback-' + choice);
+    field('feedback').hidden = false;
+    const supported = choice === script.dataset.match && heard.has(script.dataset.requires);
+    field('update').hidden = !supported;
+    field('debrief').hidden = !supported;
+    if (supported) {
+      field('update').querySelector('p').textContent = line(script.content, 'update');
+      field('teaching').textContent = line(script.content, 'teaching');
+    } else {
+      field('debrief').open = false;
+    }
+  });
+  field('contacts').addEventListener('click', event => {
+    const contacts = body.querySelector('.crisis-block-hook')?.closest('blockquote');
+    if (!contacts) return;
+    event.preventDefault();
+    contacts.tabIndex = -1;
+    contacts.focus();
+    contacts.scrollIntoView({block: 'center'});
+  });
+  field('reset').addEventListener('click', () => {
+    enter('a');
+    openings[0].focus();
+  });
+  enter('a');
+}
+
+function fdMountConsultCallback(body) {
+  const card = body.querySelector('#consult-callback');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = key => card.querySelector('#cc-' + key);
+  const answers = card.querySelector('template[data-answers]').content;
+  const sourceButtons = [...card.querySelectorAll('button[data-source]')];
+  const callButtons = [...card.querySelectorAll('button[data-call]')];
+  const accounts = new Map([...answers.querySelectorAll('[data-account]')].map(el => [el.dataset.account, el]));
+  const heard = new Set();
+  const panel = field('source-card');
+  const reply = field('reply');
+  const receipt = field('receipt');
+  const focused = card.querySelector('[data-call="focused"]');
+  let expanded = null;
+
+  function accountText(key, fieldName) {
+    return accounts.get(key).querySelector('[data-' + fieldName + ']').textContent;
+  }
+  function clearCall() {
+    for (const button of callButtons) button.setAttribute('aria-pressed', 'false');
+    reply.hidden = true;
+    reply.replaceChildren();
+    receipt.hidden = true;
+    receipt.querySelector('details').open = false;
+  }
+  function renderMap() {
+    const opened = [];
+    for (const button of sourceButtons) {
+      const key = button.dataset.source;
+      const slot = button.closest('[data-slot]');
+      const instruction = accountText(key, 'instruction');
+      const summary = accountText(key, 'summary');
+      slot.dataset.opened = String(heard.has(key));
+      slot.querySelector('.slot-text').textContent = heard.has(key) ? summary : instruction;
+      button.setAttribute('aria-label', heard.has(key) ? instruction + '. Heard. ' + summary : instruction);
+      button.setAttribute('aria-expanded', String(expanded === key));
+      if (heard.has(key)) opened.push(key);
+      if (expanded === key) {
+        slot.append(panel);
+        panel.querySelector('.speaker').textContent = accountText(key, 'speaker');
+        panel.querySelector('[data-quote]').textContent = accountText(key, 'quote');
+      }
+    }
+    panel.hidden = expanded === null;
+    field('count').textContent = heard.size + ' of ' + sourceButtons.length + ' heard';
+    const evidence = opened.join(' ') || 'none';
+    focused.textContent = answers.querySelector('[data-question-for="' + evidence + '"]').textContent;
+  }
+  for (const button of sourceButtons) button.addEventListener('click', () => {
+    const key = button.dataset.source;
+    const isNew = !heard.has(key);
+    heard.add(key);
+    expanded = expanded === key ? null : key;
+    if (isNew || receipt.hidden) clearCall();
+    renderMap();
+  });
+
+  function replyVariant(choice, missing) {
+    if (choice === 'broad') return heard.has('intern') ? 'intern' : 'initial';
+    if (choice === 'premature') return heard.has('patient') ? 'patient' : 'initial';
+    return missing || 'complete';
+  }
+  for (const button of callButtons) button.addEventListener('click', () => {
+    const choice = button.dataset.call;
+    for (const other of callButtons) other.setAttribute('aria-pressed', String(other === button));
+    const missing = ['intern', 'patient', 'nurse'].find(key => !heard.has(key));
+    const variant = choice + '-' + replyVariant(choice, missing);
+    const words = document.createElement('p');
+    words.textContent = answers.querySelector('[data-reply-for="' + variant + '"]').textContent;
+    const speaker = document.createElement('strong');
+    speaker.textContent = accountText('intern', 'speaker');
+    reply.replaceChildren(speaker, words);
+    if (choice === 'focused' && missing) {
+      const followUp = document.createElement('button');
+      followUp.type = 'button';
+      followUp.className = 'follow-up';
+      followUp.textContent = missing === 'intern'
+        ? answers.querySelector('[data-ask-intern]').textContent : accountText(missing, 'instruction');
+      followUp.addEventListener('click', () => {
+        const source = sourceButtons.find(item => item.dataset.source === missing);
+        source.click();
+        source.focus();
+        source.scrollIntoView({block:'center'});
+      });
+      reply.append(followUp);
+    }
+    reply.hidden = false;
+    receipt.hidden = choice !== 'focused' || Boolean(missing);
+    if (receipt.hidden) receipt.querySelector('details').open = false;
+  });
+  field('reset').addEventListener('click', () => {
+    heard.clear();
+    expanded = null;
+    clearCall();
+    renderMap();
+    sourceButtons[0].focus();
+  });
+  renderMap();
 }
 
 function fdMountOvernightPlan(body) {

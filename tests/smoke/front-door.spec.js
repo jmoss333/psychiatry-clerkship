@@ -3629,6 +3629,74 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('#lang-progress')).toHaveText('0 of 2 handoffs matched');
   });
 
+  test('The consult callback follows the opened interviews and keeps the assessment decision-specific', async ({ page }) => {
+    await page.goto('/?page=exp_consult.md&guideSection=consult-psychiatry-the-student-frame&guideFind=What+decision+is+the+team+waiting+on');
+    const card = page.locator('.fd-reader:visible #consult-callback');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Please evaluate.');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toHaveAttribute('id', 'grief-consult');
+    const focused = card.locator('[data-call="focused"]');
+    const reply = card.locator('#cc-reply');
+    const receipt = card.locator('#cc-receipt');
+    await card.locator('[data-source="patient"]').click();
+    await expect(focused).toContainText('name on the bag');
+    await expect(focused).not.toContainText('attention');
+    await focused.click();
+    await expect(receipt).toBeHidden();
+    await reply.getByRole('button', {name:'Ask the intern what decision is pending'}).click();
+    await expect(card.locator('[data-source="intern"]')).toBeFocused();
+    await expect(reply).toBeHidden();
+    await focused.click();
+    await reply.getByRole('button', {name:'Check with the bedside nurse'}).click();
+    await focused.click();
+    await expect(receipt).toContainText('change in attention');
+    await card.locator('[data-call="premature"]').click();
+    await expect(reply).toContainText('name on the bag');
+    await expect(receipt).toBeHidden();
+    await card.locator('#cc-reset').click();
+    await expect(card.locator('#cc-count')).toHaveText('0 of 3 heard');
+  });
+
+  test('The grief pager handoff reflects only the patient’s answers in that conversation', async ({ page }) => {
+    await page.goto('/?page=exp_consult.md&guideSection=consult-psychiatry-the-student-frame&guideFind=He+just+lost+his+wife');
+    const card = page.locator('.fd-reader:visible #grief-consult');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toHaveAttribute('id', 'consult-callback');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toContainText('Better consult question');
+    const update = card.locator('#gc-update');
+    const field = key => card.locator('#gc-' + key);
+    const choose = (group, value) => card.locator('[data-' + group + '="' + value + '"]').press('Enter');
+    for (const version of ['a', 'b']) {
+      await choose('version', version);
+      for (const opening of ['presence', 'practical', 'history']) {
+        await choose('opening', opening);
+        await expect(update).toBeHidden();
+        if (opening !== 'presence') {
+          await expect(field('meaning')).toBeHidden();
+          await field('repair').press('Enter');
+        }
+        await field('meaning').press('Enter');
+        const handoff = version === 'a' ? 'call' : 'urgent';
+        await choose('line', handoff);
+        await expect(update).toBeHidden();
+        if (version === 'a') {
+          await choose('ask', 'support');
+          await choose('line', handoff);
+          await expect(update).toContainText('asked me to sit with him while he calls');
+          await expect(update).not.toContainText('denied');
+        }
+        await choose('ask', 'safety');
+        await expect(update).toBeHidden();
+        await choose('line', handoff);
+        await expect(update).toContainText(version === 'a' ? 'denied current suicidal thoughts' : 'thinking about suicide now and feels unsafe alone');
+        await choose('line', 'diagnosis');
+        await expect(update).toBeHidden();
+      }
+    }
+    await field('reset').press('Enter');
+    await expect(card.locator('[data-view="words"]')).toBeDisabled();
+    await expect(field('handoffs')).toBeHidden();
+    await expect(page.locator('.fd-reader:visible #cc-count')).toHaveText('0 of 3 heard');
+  });
+
   test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
     await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
     const card = page.locator('.fd-reader:visible #catie-stop');
