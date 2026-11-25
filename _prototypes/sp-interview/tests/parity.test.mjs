@@ -104,6 +104,17 @@ for (const sc of scenarios) {
     console.log((ok ? 'PASS' : 'FAIL') + ' IR-1 — ' + side + ': flagged-turn SI screen reads asked-not-answered (' + (si && si.status) + ')');
     if (!ok) fails++;
   }
+  // Live mode accepts the server's state through ProxyProvider._applyState; it must mark the same thing.
+  {
+    const sv = _internals.deriveState(dana, flagged);
+    const PP = new T.ProxyProvider('/x', 'k', { rapportMin: -3, rapportMax: 4 });
+    const ls = PP.start(dana, { difficulty: 'supported' });
+    PP._applyState(ls, { reply: 'Sure.', ticket: null, state: { intents: sv.lastIntents, flags: sv.lastFlags, rapport: sv.rapport, unlocked: Object.keys(sv.unlocked) } }, flagged[0]);
+    const si = T.computeCoverage(ls).find((c) => c.id === 'c_si');
+    const ok = si && si.status === 'partial' && si.askedNotAnswered === true;
+    console.log((ok ? 'PASS' : 'FAIL') + ' IR-1 — live _applyState: flagged-turn SI screen reads asked-not-answered (' + (si && si.status) + ')');
+    if (!ok) fails++;
+  }
   const clean = [...flagged, "Have you had thoughts of killing yourself?"];
   const sv = _internals.deriveState(dana, clean);
   const si = _internals.computeCoverage(dana, sv).find((c) => c.id === 'c_si');

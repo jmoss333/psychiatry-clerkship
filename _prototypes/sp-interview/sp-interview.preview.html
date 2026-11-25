@@ -563,11 +563,14 @@ ProxyProvider.prototype._applyState=function(s,j,text,signal){
     st.rapport>=this.rapportMin&&st.rapport<=this.rapportMax&&stringArray(st.unlocked)&&ticketValid);
   if(!valid){var invalid=new Error('The live patient returned an invalid response.');invalid.code='invalid_response';invalid.status=200;invalid.retryDisposition='offline-only';throw invalid;}
   var intents=st.intents.slice(),flags=st.flags.slice(),unlocked=st.unlocked.slice(),rapport=st.rapport;
-  var nextTurns=s.turns.slice(),nextCovered=Object.assign({},s.covered),nextUnlocked=Object.assign({},s.unlocked);
+  var nextTurns=s.turns.slice(),nextCovered=Object.assign({},s.covered),nextUnlocked=Object.assign({},s.unlocked),nextFlaggedOnly=Object.assign({},s.flaggedOnly);
   if(text!==null)nextTurns.push({me:text,pt:j.reply,flags:flags,intents:intents,rapport:rapport});
+  // Red-team IR-1: the same asked-not-answered tracking as MockProvider.respond and sp.mjs, so a live
+  // learner's flag-consumed safety question is never credited as a screen in the debrief.
+  intents.forEach(function(i){ if(flags.length){ if(!s.covered[i]) nextFlaggedOnly[i]=true; } else { delete nextFlaggedOnly[i]; } });
   intents.forEach(function(i){nextCovered[i]=true;});
   unlocked.forEach(function(u){nextUnlocked[u]=true;});
-  s.turns=nextTurns;s.covered=nextCovered;s.rapport=rapport;s.unlocked=nextUnlocked;
+  s.turns=nextTurns;s.covered=nextCovered;s.rapport=rapport;s.unlocked=nextUnlocked;s.flaggedOnly=nextFlaggedOnly;
   // Match the existing offline/server reflection counter after an accepted turn. Live sessions
   // previously left this stale (F5 follow-up, approved 2026-09-04): a rating repair, not a new
   // grading rule — computeRubric already reads s.reflections, unchanged, for every mode.
