@@ -52,4 +52,4 @@
 
 **PITFALLS** ✗ giving advice before they feel heard ✗ blaming a person instead of naming the pattern ✗ opening more emotion than time can hold ✗ skipping the IPV screen ✗ carrying messages (triangulation) ✗ doing Layer-3 work on a Layer-1 brain.
 
-**STOP / DON'T MEET** active or severe IPV · ongoing family abuse · autonomous refusal · not yet stable.
+**STOP / DON'T MEET** suspected partner violence · ongoing family abuse · autonomous refusal · not yet stable.
