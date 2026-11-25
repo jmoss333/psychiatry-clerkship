@@ -69,6 +69,48 @@ This is the **ADA/APA consensus monitoring** standard (American Diabetes Associa
 - **Metabolic syndrome prevention** in people on psychotropics is a population-health responsibility, not just a clinic task — screening programs, shared-care with primary care, and access to dietitians.
 - **Food insecurity** is common in serious mental illness and worsens outcomes — screen and connect to resources (a systems-based-practice objective).
 
+<section class="bedside-case" id="dinner-map" aria-labelledby="dm-title">
+<p class="case-kicker">Food access · Fictional discharge case</p>
+<h3 id="dm-title">What will dinner look like tonight?</h3>
+<blockquote class="dm-patient"><span class="dm-speaker">A patient getting ready to leave the unit</span><p>“Everyone keeps telling me what to eat. I’m trying to figure out dinner tonight.”</p></blockquote>
+<section class="dm-map" aria-labelledby="dm-map-title">
+<div class="dm-street-map"><img class="dm-scene" width="800" height="533" loading="lazy" src="illustrations/evening-route.avif" alt="Evening light falls across the unit entrance, a neighborhood shop and an apartment building along the route home."><div aria-hidden="true"><span hidden class="dm-pin dm-unit" id="dm-pin-meal" data-requested="Meal requested" data-pending="Awaiting reply" data-ready="Ready for pickup">Meal requested</span><span hidden class="dm-pin dm-pantry" id="dm-pin-pantry">Pantry closes 5</span><span hidden class="dm-pin dm-home" id="dm-pin-home">Home around 6</span><span hidden class="dm-pin dm-kitchen" id="dm-pin-kitchen">Microwave</span></div></div>
+<div class="dm-map-head"><h4 id="dm-map-title">Map the evening</h4><span id="dm-count" data-format="{n} of 3 heard" class="dm-counter">0 of 3 heard</span></div>
+<p class="dm-tip">Ask in any order. Each answer fills one stop on the map.</p>
+<ol class="dm-stops">
+<li class="dm-station"><button type="button" id="dm-stop-route" aria-expanded="false" aria-controls="dm-quote-route"><span class="dm-loc">Trip home</span><span class="dm-question">“When will you get home?”</span><span class="dm-fact" id="dm-map-route" data-fact="Home around 6 p.m. · Pantry closes at 5 p.m."></span></button><p class="case-reply" id="dm-quote-route" hidden>“Six, maybe. The pantry by my place closes at five.”</p></li>
+<li class="dm-station"><button type="button" id="dm-stop-kitchen" aria-expanded="false" aria-controls="dm-quote-kitchen"><span class="dm-loc">At home</span><span class="dm-question">“What can you use to make dinner?”</span><span class="dm-fact" id="dm-map-kitchen" data-fact="Shared microwave · Food at home uncertain"></span></button><p class="case-reply" id="dm-quote-kitchen" hidden>“There’s a microwave downstairs. I can use that. I’m not sure there’s any food left in my room.”</p></li>
+<li class="dm-station"><button type="button" id="dm-stop-dinner" aria-expanded="false" aria-controls="dm-quote-dinner"><span class="dm-loc">Dinner tonight</span><span class="dm-question">“What would help before you go?”</span><span class="dm-fact" id="dm-map-dinner" data-fact="Would like a meal to take home"></span></button><p class="case-reply" id="dm-quote-dinner" hidden>“Could we ask if there’s something I can take with me for tonight?”</p></li>
+</ol></section>
+<section class="dm-handoff" id="dm-handoff" aria-labelledby="dm-handoff-title" hidden>
+<p class="case-kicker">Resident handoff</p>
+<h4 id="dm-handoff-title">What can you tell the team?</h4>
+<section id="dm-callback" class="dm-callback" aria-labelledby="dm-cb-title" hidden><h5 id="dm-cb-title">What did the nurse hear?</h5><p class="dm-instruction">Try either callback, then revise your handoff.</p>
+<div class="dm-cb-options"><button type="button" id="dm-reply-pending" class="dm-alternate" aria-pressed="false">Still checking</button><button type="button" id="dm-reply-ready" class="dm-alternate" aria-pressed="false">Ready for pickup</button></div>
+<blockquote id="dm-nurse-report" hidden><span class="dm-speaker">Unit nurse, by phone</span><p id="dm-nurse-quote"></p></blockquote>
+</section>
+<p class="dm-instruction" id="dm-evidence">Use what the patient has told you so far.</p>
+<div class="case-choices"><button type="button" class="dm-answer" id="dm-claim-requested" aria-pressed="false">The patient asked for a take-home meal. Availability is still unconfirmed.</button><button type="button" class="dm-answer" id="dm-claim-confirmed" aria-pressed="false">A take-home meal is ready for pickup on the unit.</button></div>
+<div aria-live="polite" aria-atomic="true"><p class="dm-feedback" id="dm-claim-feedback" hidden></p><div class="dm-note" id="dm-team-note" hidden><h5>Team update</h5><p id="dm-note-text"></p></div></div>
+<button type="button" class="dm-action" id="dm-call-unit" aria-expanded="false" aria-controls="dm-callback" hidden>Check with the unit nurse</button>
+</section>
+<div class="dm-foot"><button class="case-link" id="dm-reset" type="button" hidden>Start again</button></div>
+<p id="dm-announce" class="fd-visually-hidden" role="status" aria-live="polite"></p>
+<template id="dm-copy">
+<span data-copy="account">The patient expects to get home after the pantry closes. They can use a shared microwave and are unsure whether there is food at home.</span>
+<span data-copy="requested">They asked for a meal to take home. I’ll ask the unit nurse what’s available and update the patient before they leave.</span>
+<span data-copy="feedback-requested">Who has confirmed a meal is ready? The patient asked for one. Try the update their words support.</span>
+<span data-copy="feedback-pending">The nurse left a message. Who has confirmed a meal is ready? Try the update the callback supports.</span>
+<span data-copy="feedback-ready">That described the plan before the callback. What did the nurse just confirm at the desk?</span>
+<span data-copy="after-call">Use the patient’s account and this nurse’s callback.</span>
+<span data-copy="await-call">Choose a callback to hear what the unit nurse knows.</span>
+<span data-copy="ready-quote">“I’ve got their supper bag here at the unit desk. It’s ready for pickup. I’ll give it to them before their ride leaves.”</span>
+<span data-copy="ready-summary">The patient asked for a take-home meal. The unit nurse confirms that a supper bag is ready for pickup at the desk and will give it to the patient before their ride leaves.</span>
+<span data-copy="pending-quote">“I left a message with dietary. I haven’t heard back yet. I’ll check again and tell them before their ride leaves.”</span>
+<span data-copy="pending-summary">The patient asked for a take-home meal. The nurse has contacted dietary and will update the patient before their ride leaves. A meal is still unconfirmed.</span>
+</template>
+</section>
+
 ## On the unit
 Protect regular meals; treat the dietitian as a team member; flag the patient who isn't eating or who is over-eating in response to medication. A one-line plan ("started olanzapine — baseline metabolic labs sent, dietitian consult, weight tracking") shows you're thinking metabolically.
 

@@ -202,7 +202,10 @@ fi
 if [ "$credential_ok" -eq 0 ]; then
   skip "B5" "forged client state" "not run: the credential failed at D0, so the forged POST would be refused for auth before the server ever evaluated the fabricated unlock"
 else
-forged='{"caseId":"sp_depression_gated_si_001","encounterId":"00000000-0000-4000-8000-000000000000","mode":"actor","turnId":1,"turns":[],"message":"Do you have a plan?","state":{"unlocked":{"si_active":true,"si_plan_detail":true}}}'
+# Dana's first two gates, read from the pack by position (gate ids are neutral and may be
+# renamed; F12-GATE-IDS-SHIPPED, 2026-11-16), so the fabricated unlock names real gates.
+forged_gates=$(node -e 'const p=require(process.argv[1]);const c=p.cases.find(x=>x.id==="sp_depression_gated_si_001");process.stdout.write(c.gated.slice(0,2).map(g=>JSON.stringify(g.id)+":true").join(","))' "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/_prototypes/sp-interview/sp-interview.pack.json")
+forged='{"caseId":"sp_depression_gated_si_001","encounterId":"00000000-0000-4000-8000-000000000000","mode":"actor","turnId":1,"turns":[],"message":"Do you have a plan?","state":{"unlocked":{'"$forged_gates"'}}}'
 code=$(auth_curl -s -o "$_b5_file" -w '%{http_code}' -X POST -H "Origin: $ORIGIN" -H 'Content-Type: application/json' -d "$forged" "$ENDPOINT")
 if [ "$code" = "400" ]; then
   ok "B5" "POST carrying a fabricated state.unlocked is rejected (400, exact-key validation)"

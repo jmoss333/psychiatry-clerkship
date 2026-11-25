@@ -67,7 +67,7 @@ test('every data-fd attribute emitted after Task 3 has one controller meaning', 
     // 2026-10-04 with the Library's filter field (one-thread redesign, Phase 2).
     'data-fd-home', 'data-fd-kit-section', 'data-fd-kit-tool', 'data-fd-library-details', 'data-fd-library-filter', 'data-fd-library-filter-clear',
     'data-fd-library-task', 'data-fd-library-view', 'data-fd-local-toggle', 'data-fd-offline-close', 'data-fd-offline-open', 'data-fd-offline-refresh', 'data-fd-open',
-    'data-fd-progress', 'data-fd-reading-place-remove', 'data-fd-reading-places-clear', 'data-fd-reading-reset', 'data-fd-reading-size', 'data-fd-reading-spacing', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-expand', 'data-fd-search-query', 'data-fd-search-return', 'data-fd-settings',
+    'data-fd-pharmacy-back', 'data-fd-pharmacy-card', 'data-fd-progress', 'data-fd-reading-place-remove', 'data-fd-reading-places-clear', 'data-fd-reading-reset', 'data-fd-reading-size', 'data-fd-reading-spacing', 'data-fd-reading-top', 'data-fd-role', 'data-fd-safety', 'data-fd-search', 'data-fd-search-expand', 'data-fd-search-query', 'data-fd-search-return', 'data-fd-settings',
     'data-fd-setweek', 'data-fd-step', 'data-fd-tab', 'data-fd-theme', 'data-fd-toggle', 'data-fd-tool-pin', 'data-fd-tool-pins-clear',
     'data-fd-tree-answer', 'data-fd-tree-back', 'data-fd-tree-restart',
     'data-fd-view-week', 'data-fd-week',

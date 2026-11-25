@@ -1097,8 +1097,8 @@
      "key": "A"
     },
     {
-     "t": "Huggett et al. · 2022 · Clin Psychol Psychother",
-     "sourceId": "huggett-2022",
+     "t": "Linehan et al. · 2006 · Arch Gen Psychiatry",
+     "sourceId": "linehan-2006-dbt-vs-experts",
      "key": "B"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Bridge et al. · 2007 · JAMA",
-     "sourceId": "bridge-2007-pediatric-antidepressant-risk-benefit",
+     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
+     "sourceId": "brodsky-2025",
      "key": "A"
     },
     {
-     "t": "Chung et al. · 2017 · JAMA Psychiatry",
-     "sourceId": "chung-2017-postdischarge-suicide",
+     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
+     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
      "key": "B"
     },
     {

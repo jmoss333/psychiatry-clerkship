@@ -1,5 +1,6 @@
 /* The clinical text lives with its reading. Each mounted exercise keeps its choices in the DOM. */
 function fdMountBedsideCases(body) {
+  fdMountHomeDoseHistory(body);
   fdMountMorganExposure(body);
   fdMountFeverExams(body);
   fdMountJoCall(body);
@@ -7,17 +8,94 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountAlexTiming(body);
+  fdMountEveningCalls(body);
+  fdMountDinnerMap(body);
+  fdMountTherapyChain(body);
   fdMountEctMemory(body);
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
+  fdMountLangCulture(body);
+  fdMountCatieStop(body);
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
+  fdMountOvernightPlan(body);
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountOvernightPlan(body) {
+  const card = body.querySelector('#lucia-rehearsal');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = key => card.querySelector('#lucia-' + key);
+  const questions = card.querySelectorAll('button[aria-controls^="lucia-reply-"]');
+  const choices = card.querySelectorAll('input[name="lucia-revision"]');
+
+  function clearResult() {
+    find('result').hidden = find('feedback').hidden = true;
+    find('new-line').textContent = '';
+  }
+
+  function clearChoice() {
+    clearResult();
+    for (const choice of choices) choice.checked = false;
+    find('apply').disabled = true;
+  }
+
+  function showNight(isNight) {
+    find('day').hidden = isNight;
+    find('night').hidden = find('work').hidden = !isNight;
+    find(isNight ? 'barrier' : 'title').focus();
+  }
+
+  find('try-night').addEventListener('click', () => showNight(true));
+  for (const question of questions) {
+    const reply = card.querySelector('#' + question.getAttribute('aria-controls'));
+    const choice = find('pick-' + question.id.slice('lucia-ask-'.length));
+    question.addEventListener('click', () => {
+      const opening = reply.hidden;
+      reply.hidden = !opening;
+      question.setAttribute('aria-expanded', String(opening));
+      if (opening) choice.disabled = false;
+    });
+  }
+  for (const choice of choices) {
+    choice.addEventListener('change', () => {
+      clearResult();
+      find('apply').disabled = false;
+    });
+  }
+  find('apply').addEventListener('click', () => {
+    const selected = card.querySelector('input:checked:enabled');
+    if (!selected) return;
+    clearResult();
+    if (selected.value === 'sister') {
+      find('feedback').hidden = false;
+      find('feedback').focus();
+      return;
+    }
+    find('new-line').textContent = find('line-' + selected.value).content.textContent;
+    find('result').hidden = false;
+    find('result-title').focus();
+  });
+  find('edit').addEventListener('click', () => {
+    clearChoice();
+    find('questions').focus();
+  });
+  find('reset').addEventListener('click', () => {
+    clearChoice();
+    for (const question of questions) {
+      question.setAttribute('aria-expanded', 'false');
+      card.querySelector('#' + question.getAttribute('aria-controls')).hidden = true;
+    }
+    find('pick-roommate').disabled = find('pick-text').disabled = true;
+    showNight(false);
+  });
 }
 
 function fdMountNicoInterview(body) {
@@ -405,6 +483,526 @@ function fdBedsideFocus(control) {
   control.scrollIntoView({block: 'center'});
 }
 
+function fdMountHomeDoseHistory(body) {
+  const card = body.querySelector('#home-dose-history');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const get = id => card.querySelector('#mh-' + id);
+  const copy = Object.fromEntries(Array.from(get('copy').content.children,
+    row => [row.dataset.copy, row.textContent]));
+  const sources = {rx: 'order-line', fill: 'fill-line'};
+  const claims = card.querySelectorAll('[data-claim]');
+  const nights = get('nights');
+  const recordInputs = nights.querySelectorAll('input');
+  const opened = new Set();
+  const pending = get('dose-line').textContent;
+  const unopened = get('order-line').textContent;
+  const openLabel = get('rx').querySelector('.mh-state').textContent;
+  let history = 'unopened';
+
+  function clearHandoff() {
+    get('handoff').textContent = '';
+    get('final').hidden = true;
+    get('practice').open = false;
+    get('dose-line').textContent = pending;
+    get('dose-row').classList.remove('mh-complete');
+    get('revision-feedback').hidden = true;
+  }
+
+  function clearInterview() {
+    clearHandoff();
+    for (const input of recordInputs) input.checked = false;
+    get('quote').textContent = '';
+    get('reply').hidden = get('revise').hidden = true;
+    get('hear').hidden = false;
+    get('hear').setAttribute('aria-expanded', 'false');
+  }
+
+  function hear(nextHistory) {
+    clearInterview();
+    history = nextHistory;
+    get('quote').textContent = copy[history + '-quote'];
+    get('hear').hidden = true;
+    get('hear').setAttribute('aria-expanded', 'true');
+    get('reply').hidden = get('revise').hidden = false;
+    get('quote').focus();
+  }
+
+  for (const [key, line] of Object.entries(sources)) get(key).addEventListener('click', () => {
+    opened.add(key);
+    for (const id of opened) {
+      get(id).setAttribute('aria-pressed', String(id === key));
+      get(id).querySelector('.mh-state').textContent = id === key ? 'Reading' : 'Reviewed';
+    }
+    get('record-label').textContent = copy[key + '-label'];
+    get('record-copy').textContent = copy[key + '-full'];
+    get('record').hidden = false;
+    get(line).textContent = copy[key + '-line'];
+    get('interim').hidden = opened.size < 2;
+    get('reset').hidden = false;
+    if (opened.size === 2) get('status').textContent = 'Both records reviewed. Choose a handoff below.';
+  });
+
+  for (const choice of claims) choice.addEventListener('click', () => {
+    const key = choice.dataset.claim;
+    for (const option of claims) option.setAttribute('aria-pressed', String(option === choice));
+    clearInterview();
+    get('ask').hidden = key !== 'open';
+    get('claim-feedback').hidden = key === 'open';
+    get('claim-feedback').textContent = key === 'open' ? '' : copy[key];
+    if (key === 'open') get('ask-title').focus();
+  });
+
+  get('hear').addEventListener('click', () => hear('unopened'));
+  get('other').addEventListener('click', () => hear(history === 'unopened' ? 'friday' : 'unopened'));
+  nights.addEventListener('change', clearHandoff);
+  get('check').addEventListener('click', () => {
+    const friday = nights.querySelector('[name="mh-fri"]:checked');
+    const saturday = nights.querySelector('[name="mh-sat"]:checked');
+    if (!friday || !saturday || friday.value !== (history === 'friday' ? 'taken' : 'none') || saturday.value !== 'none') {
+      clearHandoff();
+      get('revision-feedback').textContent = !friday || !saturday ? copy.partial : copy[history + '-coach'];
+      get('revision-feedback').hidden = false;
+      return;
+    }
+    const dose = copy[history + '-dose'];
+    get('revision-feedback').hidden = true;
+    get('dose-line').textContent = dose;
+    get('dose-row').classList.add('mh-complete');
+    get('handoff').textContent = '“' + copy.handoff + ' ' + dose + '”';
+    get('final').hidden = false;
+    get('final-title').focus();
+  });
+
+  get('reset').addEventListener('click', () => {
+    opened.clear();
+    clearInterview();
+    for (const choice of claims) choice.setAttribute('aria-pressed', 'false');
+    for (const [key, line] of Object.entries(sources)) {
+      get(key).setAttribute('aria-pressed', 'false');
+      get(key).querySelector('.mh-state').textContent = openLabel;
+      get(line).textContent = unopened;
+    }
+    get('record-label').textContent = get('record-copy').textContent = '';
+    get('claim-feedback').hidden = get('interim').hidden = get('ask').hidden = get('record').hidden = true;
+    get('reset').hidden = true;
+    get('rx').focus();
+    get('status').textContent = 'Case restarted.';
+  });
+}
+
+function fdMountAlexTiming(body) {
+  const card = body.querySelector('#alex-timing');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const get = id => card.querySelector('#at-' + id);
+  const copy = Object.fromEntries(Array.from(get('copy').content.children,
+    item => [item.dataset.copy, item.textContent]));
+  const dates = ['before', 'after'];
+  const reasons = ['before', 'after', 'certain'];
+  const questions = ['prior', 'course'];
+  const initialLabel = get('call-label').textContent;
+  const initialHint = get('map-hint').textContent;
+  let version = null;
+
+  function select(group, keys, active) {
+    for (const key of keys) get(group + '-' + key).setAttribute('aria-pressed', String(key === active));
+  }
+
+  function clearNote() {
+    select('check', questions, null);
+    get('note').textContent = '';
+    get('sample').hidden = true;
+    get('evidence').open = false;
+  }
+
+  function clearReasoning() {
+    clearNote();
+    select('reason', reasons, null);
+    get('reason-feedback').hidden = get('next-step').hidden = true;
+  }
+
+  function drawPlacement(side) {
+    get('map').dataset.placement = side || 'unknown';
+    select('place', dates, side);
+    for (const key of dates) {
+      const pin = get('place-' + key);
+      pin.disabled = !version;
+      pin.querySelector('b').textContent = key === side ? '✓' : '+';
+    }
+    get('call-label').textContent = side ? copy[side + '-day'] + ' · First unusual call at 3 a.m.' : initialLabel;
+  }
+
+  function loadStory(next) {
+    version = next;
+    clearReasoning();
+    drawPlacement(null);
+    get('reasoning').hidden = get('placement-feedback').hidden = true;
+    get('callback').hidden = get('switch').hidden = get('restart').hidden = !next;
+    get('hear').hidden = Boolean(next);
+    get('hear').setAttribute('aria-expanded', String(Boolean(next)));
+    get('map-hint').textContent = next ? 'Tap the day of the first unusual call.' : initialHint;
+    get('caller').textContent = next ? copy[next + '-label'] : '';
+    get('quote').textContent = next ? copy[next + '-quote'] : '';
+    get(next ? 'caller' : 'hear').focus();
+    get('status').textContent = next ? 'New callback. Place the first unusual call on the timeline.' : 'Started again.';
+  }
+
+  get('hear').addEventListener('click', () => loadStory('before'));
+  get('switch').addEventListener('click', () => loadStory(version === 'before' ? 'after' : 'before'));
+  get('restart').addEventListener('click', () => loadStory(null));
+  for (const side of dates) get('place-' + side).addEventListener('click', () => {
+    clearReasoning();
+    const correct = side === version;
+    drawPlacement(correct ? side : null);
+    get('reasoning').hidden = !correct;
+    get('placement-feedback').hidden = correct;
+    get('placement-feedback').textContent = correct ? '' : copy[version + '-coached'];
+    if (correct) {
+      get('status').textContent = copy[side + '-day'] + ' placed. Choose how that changes your differential.';
+      get('rh').focus();
+    }
+  });
+  for (const reason of reasons) get('reason-' + reason).addEventListener('click', () => {
+    clearNote();
+    select('reason', reasons, reason);
+    const fits = version === reason;
+    get('reason-feedback').hidden = fits;
+    get('next-step').hidden = !fits;
+    get('reason-feedback').textContent = fits ? '' : copy[reason === 'certain' ? 'overclaim' : version + '-mismatch'];
+    if (fits) get('nh').focus();
+  });
+  for (const question of questions) get('check-' + question).addEventListener('click', () => {
+    select('check', questions, question);
+    get('note').textContent = '“' + [copy.intro, copy[version + '-interpretation'], copy[question]].join(' ') + '”';
+    get('sample').hidden = false;
+    get('sh').focus();
+  });
+}
+
+function fdMountEveningCalls(body) {
+  const card = body.querySelector('#evening-calls');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#ec-' + id);
+  const copy = Object.fromEntries(Array.from(find('copy').content.children,
+    item => [item.dataset.copy, item.textContent]));
+  const calls = ['before', 'week'];
+  const heard = new Set();
+  const initialLabel = find('annotation-before').textContent;
+  let current = null;
+
+  function drawCalls() {
+    for (const call of calls) {
+      const open = call === current;
+      const button = find('call-' + call);
+      button.setAttribute('aria-expanded', String(open));
+      button.dataset.heard = String(heard.has(call));
+      button.querySelector('.symbol').textContent = open ? '−' : '+';
+      find('quote-' + call).hidden = !open;
+      find('annotation-' + call).textContent = heard.has(call) ? copy[call] : initialLabel;
+    }
+    find('count').textContent = heard.size + ' of 2 heard';
+    find('meaning-panel').hidden = heard.size !== calls.length;
+    find('reset').hidden = heard.size === 0;
+  }
+
+  function press(group, key) {
+    for (const button of group.querySelectorAll('button[aria-pressed]')) {
+      button.setAttribute('aria-pressed', String(button.id === 'ec-' + key));
+    }
+  }
+  function clearRounds() {
+    press(find('rounds-panel'), null);
+    find('feedback').hidden = find('sample').hidden = true;
+    find('feedback').textContent = '';
+  }
+
+  for (const call of calls) find('call-' + call).addEventListener('click', () => {
+    heard.add(call);
+    current = current === call ? null : call;
+    drawCalls();
+    const transcript = current ? find('quote-' + current).innerText + ' ' : '';
+    find('status').textContent = transcript + find('count').textContent +
+      (heard.size === calls.length ? '. Choose a follow-up question below.' : '.');
+  });
+
+  for (const ask of ['ask-fewer', 'ask-miss']) find(ask).addEventListener('click', () => {
+    clearRounds();
+    press(find('meaning-panel'), ask);
+    find('meaning-words').textContent = copy[ask];
+    find('meaning-reply').hidden = false;
+    const heardMeaning = ask === 'ask-miss';
+    find('retry').hidden = heardMeaning;
+    find('rounds-panel').hidden = !heardMeaning;
+    find('status').textContent = copy[ask] + ' ' +
+      (heardMeaning ? 'The rounds choices are available below.' : find('retry').textContent);
+  });
+
+  for (const line of ['line-fewer', 'line-role', 'line-conflict']) find(line).addEventListener('click', () => {
+    press(find('rounds-panel'), line);
+    const grounded = line === 'line-role';
+    find('sample').hidden = !grounded;
+    find('feedback').hidden = grounded;
+    find('feedback').textContent = grounded ? '' : copy[line];
+  });
+
+  find('reset').addEventListener('click', () => {
+    current = null;
+    heard.clear();
+    drawCalls();
+    clearRounds();
+    press(find('meaning-panel'), null);
+    find('meaning-words').textContent = '';
+    find('meaning-reply').hidden = find('retry').hidden = find('rounds-panel').hidden = true;
+    find('status').textContent = 'Started again. Choose either evening call.';
+    find('call-before').focus();
+  });
+}
+
+function fdMountDinnerMap(body) {
+  const card = body.querySelector('#dinner-map');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#dm-' + id);
+  const copy = Object.fromEntries(Array.from(find('copy').content.querySelectorAll('[data-copy]'),
+    piece => [piece.dataset.copy, piece.textContent]));
+  const stops = ['route', 'kitchen', 'dinner'];
+  const claims = ['requested', 'confirmed'];
+  const replies = ['pending', 'ready'];
+  const initialPrompt = find('evidence').textContent;
+  const heard = new Set();
+  let report = null;
+
+  function drawMap() {
+    find('pin-pantry').hidden = find('pin-home').hidden = !heard.has('route');
+    find('pin-kitchen').hidden = !heard.has('kitchen');
+    const meal = find('pin-meal');
+    meal.hidden = !heard.has('dinner');
+    meal.textContent = meal.dataset[report || 'requested'];
+    meal.classList.toggle('dm-verified', report === 'ready');
+    find('count').textContent = find('count').dataset.format.replace('{n}', heard.size);
+    find('reset').hidden = heard.size === 0;
+    find('handoff').hidden = heard.size !== stops.length;
+  }
+
+  function clearClaim() {
+    claims.forEach(key => find('claim-' + key).setAttribute('aria-pressed', 'false'));
+    for (const id of ['claim-feedback', 'team-note']) find(id).hidden = true;
+    find('claim-feedback').textContent = find('note-text').textContent = '';
+  }
+
+  function enableClaims(enabled) {
+    claims.forEach(key => { find('claim-' + key).disabled = !enabled; });
+  }
+
+  function ask(key) {
+    const open = find('quote-' + key).hidden;
+    heard.add(key);
+    for (const stop of stops) {
+      const active = open && stop === key;
+      find('stop-' + stop).setAttribute('aria-expanded', String(active));
+      find('quote-' + stop).hidden = !active;
+    }
+    find('map-' + key).textContent = find('map-' + key).dataset.fact;
+    find('stop-' + key).closest('li').classList.add('dm-heard');
+    drawMap();
+    find('announce').textContent = find('count').textContent +
+      (heard.size === stops.length ? '. The handoff is available below.' : '.');
+  }
+
+  function chooseClaim(key) {
+    clearClaim();
+    find('claim-' + key).setAttribute('aria-pressed', 'true');
+    if ((key === 'confirmed') !== (report === 'ready')) {
+      find('claim-feedback').textContent = copy['feedback-' + (report || 'requested')];
+      find('claim-feedback').hidden = false;
+      return;
+    }
+    find('note-text').textContent = copy.account + ' ' + copy[report ? report + '-summary' : 'requested'];
+    find('team-note').hidden = false;
+    find('call-unit').hidden = !find('callback').hidden;
+  }
+
+  function hearCallback(key) {
+    clearClaim();
+    report = key;
+    drawMap();
+    enableClaims(true);
+    replies.forEach(reply => find('reply-' + reply).setAttribute('aria-pressed', String(reply === key)));
+    find('nurse-quote').textContent = copy[key + '-quote'];
+    find('nurse-report').hidden = false;
+    find('evidence').textContent = copy['after-call'];
+    find('announce').textContent = copy[key + '-quote'] + ' Revise the handoff below.';
+  }
+
+  stops.forEach(key => find('stop-' + key).addEventListener('click', () => ask(key)));
+  claims.forEach(key => find('claim-' + key).addEventListener('click', () => chooseClaim(key)));
+  replies.forEach(key => find('reply-' + key).addEventListener('click', () => hearCallback(key)));
+  find('call-unit').addEventListener('click', () => {
+    clearClaim();
+    enableClaims(false);
+    find('evidence').textContent = copy['await-call'];
+    find('callback').hidden = false;
+    find('call-unit').hidden = true;
+    find('call-unit').setAttribute('aria-expanded', 'true');
+    find('reply-pending').focus();
+  });
+  find('reset').addEventListener('click', () => {
+    heard.clear();
+    report = null;
+    drawMap();
+    clearClaim();
+    enableClaims(true);
+    for (const key of stops) {
+      find('map-' + key).textContent = '';
+      find('stop-' + key).closest('li').classList.remove('dm-heard');
+      find('stop-' + key).setAttribute('aria-expanded', 'false');
+      find('quote-' + key).hidden = true;
+    }
+    for (const id of ['call-unit', 'callback', 'nurse-report']) find(id).hidden = true;
+    replies.forEach(key => find('reply-' + key).setAttribute('aria-pressed', 'false'));
+    find('call-unit').setAttribute('aria-expanded', 'false');
+    find('evidence').textContent = initialPrompt;
+    find('nurse-quote').textContent = '';
+    find('announce').textContent = 'Started again. The evening map is empty.';
+    find('stop-route').focus();
+  });
+}
+
+function fdMountTherapyChain(body) {
+  const card = body.querySelector('#therapy-chain');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = id => card.querySelector('#tc-' + id);
+  const slots = Array.from(card.querySelectorAll('[data-slot]'));
+  const moments = card.querySelectorAll('[data-moment]');
+  const prompts = slots.map(slot => slot.querySelector('[data-link-text]').textContent);
+  const completed = new Set();
+  let activeSlot;
+  let chosenMoment;
+
+  function getTemplate(kind, key) {
+    return find(kind + '-' + key).content;
+  }
+  function press(buttons, selected) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === selected));
+  }
+  function showOptions(group, template) {
+    const buttons = template.querySelector('[data-' + group + ']').children;
+    find(group).replaceChildren(...Array.from(buttons, button => button.cloneNode(true)));
+  }
+  function drawMap() {
+    slots.forEach((slot, index) => {
+      const key = slot.dataset.slot;
+      const complete = completed.has(key);
+      const record = getTemplate('link', key);
+      slot.setAttribute('aria-expanded', String(slot === activeSlot));
+      slot.dataset.filled = String(complete);
+      slot.querySelector('.tc-symbol').textContent = complete ? '✓' : '＋';
+      slot.querySelector('.case-kicker').textContent =
+        (complete ? 'Patient · ' : 'Missing link · ') + record.querySelector('[data-name]').textContent;
+      slot.querySelector('[data-link-text]').textContent = complete ? record.querySelector('[data-saved]').textContent : prompts[index];
+    });
+    find('count').textContent = find('count').dataset.format.replace('{n}', completed.size);
+  }
+  function clearAnswer() {
+    for (const id of ['reply', 'add-link', 'fill-feedback']) find(id).hidden = true;
+    find('answer').textContent = find('fill-feedback').textContent = '';
+    find('fills').replaceChildren();
+  }
+  function clearOffer() {
+    chosenMoment = null;
+    press(moments, null);
+    for (const id of ['offer-script', 'offer-reply', 'debrief', 'try-moment']) find(id).hidden = true;
+    for (const id of ['offer-line', 'their-preference', 'plan-summary']) find(id).textContent = '';
+    find('make-offer').hidden = false;
+  }
+  function closeInterview() {
+    activeSlot = null;
+    find('interview').hidden = true;
+    clearAnswer();
+    drawMap();
+    find('offer').hidden = completed.size !== slots.length;
+  }
+  function hear(question) {
+    const record = getTemplate('link', activeSlot.dataset.slot);
+    const invited = question.dataset.question === 'invite';
+    press(find('questions').children, question);
+    find('answer').textContent = record.querySelector(invited ? '[data-reply]' : '[data-correction]').textContent;
+    find('reply').hidden = false;
+    find('fill-feedback').hidden = true;
+    find('add-link').hidden = !invited;
+    if (invited) showOptions('fills', record);
+  }
+  for (const slot of slots) slot.addEventListener('click', () => {
+    activeSlot = slot;
+    const record = getTemplate('link', slot.dataset.slot);
+    clearOffer();
+    clearAnswer();
+    drawMap();
+    find('offer').hidden = true;
+    find('interview').hidden = find('reset').hidden = false;
+    find('interview-title').textContent = record.querySelector('[data-title]').textContent;
+    showOptions('questions', record);
+    if (completed.has(slot.dataset.slot)) hear(find('questions').querySelector('[data-question="invite"]'));
+    fdBedsideFocus(find('interview-title'));
+  });
+  find('questions').addEventListener('click', event => {
+    const button = event.target.closest('[data-question]');
+    if (button && activeSlot) hear(button);
+  });
+  find('fills').addEventListener('click', event => {
+    const button = event.target.closest('[data-fill]');
+    if (!button || !activeSlot) return;
+    const key = activeSlot.dataset.slot;
+    const record = getTemplate('link', key);
+    press(find('fills').children, button);
+    if (button.dataset.fill === 'inferred') {
+      find('fill-feedback').hidden = false;
+      find('fill-feedback').textContent = record.querySelector('[data-feedback]').textContent;
+      return;
+    }
+    completed.add(key);
+    closeInterview();
+    find('announce').textContent = record.querySelector('[data-saved]').textContent + ' ' + find('count').textContent;
+    fdBedsideFocus(slots.find(slot => !completed.has(slot.dataset.slot)) || find('offer-title'));
+  });
+  find('back').addEventListener('click', () => {
+    const previous = activeSlot;
+    closeInterview();
+    fdBedsideFocus(previous);
+  });
+  for (const moment of moments) moment.addEventListener('click', () => {
+    clearOffer();
+    chosenMoment = getTemplate('moment', moment.dataset.moment);
+    press(moments, moment);
+    find('offer-line').textContent = chosenMoment.querySelector('[data-line]').textContent;
+    find('offer-script').hidden = false;
+  });
+  find('make-offer').addEventListener('click', () => {
+    if (!chosenMoment || completed.size !== slots.length) return;
+    find('their-preference').textContent = chosenMoment.querySelector('[data-reply]').textContent;
+    find('plan-summary').textContent = chosenMoment.querySelector('[data-plan]').textContent;
+    for (const id of ['offer-reply', 'debrief', 'try-moment']) find(id).hidden = false;
+    find('make-offer').hidden = true;
+    fdBedsideFocus(find('offer-reply'));
+  });
+  find('try-moment').addEventListener('click', () => {
+    clearOffer();
+    fdBedsideFocus(moments[0]);
+  });
+  find('reset').addEventListener('click', () => {
+    completed.clear();
+    clearOffer();
+    closeInterview();
+    find('reset').hidden = true;
+    find('announce').textContent = find('count').textContent;
+    fdBedsideFocus(slots[0]);
+  });
+}
+
 function fdMountElenaVisit(body) {
   const card = body.querySelector('#elena-visit');
   if (!card || card.dataset.mounted) return;
@@ -674,6 +1272,164 @@ function fdMountTreatmentRationale(body) {
   }
   find('[data-qt-other]').addEventListener('click', () => restart(1 - historyIndex));
   find('[data-qt-reset]').addEventListener('click', () => restart(0));
+}
+
+function fdMountLangCulture(body) {
+  const card = body.querySelector('[data-lang-culture]');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = name => card.querySelector('#lang-' + name);
+  const visits = Array.from(card.querySelectorAll('button[data-visit]'));
+  const questions = Array.from(field('questions').querySelectorAll('button[data-ask]'));
+  const options = field('options');
+  const feedback = field('feedback');
+  const comparison = field('compare');
+  const histories = new Map();
+  let account;
+  let history;
+
+  function update() {
+    const matched = Array.from(histories.values()).filter(item => item.matched).length;
+    field('progress').textContent = matched + ' of ' + visits.length + ' handoffs matched';
+    comparison.hidden = matched !== visits.length;
+    if (comparison.hidden) comparison.open = false;
+    if (!history) return;
+
+    for (const question of questions) {
+      const key = question.dataset.ask;
+      const answer = account.querySelector('[data-reply="' + key + '"]');
+      question.setAttribute('aria-pressed', String(history.last === key));
+      question.querySelector('.lang-tag').textContent = history.heard.has(key) ? answer.dataset.label : 'Ask';
+    }
+    field('reply').hidden = !history.last;
+    field('words').textContent = history.last ? account.querySelector('[data-reply="' + history.last + '"]').textContent : '';
+    field('handoffs').hidden = history.heard.size !== questions.length;
+    for (const button of options.children) {
+      button.setAttribute('aria-pressed', String(button.dataset.choice === history.choice));
+    }
+    feedback.hidden = history.choice === null;
+    feedback.textContent = feedback.hidden ? '' : account.querySelector('[data-coaching="' + history.choice + '"]').textContent;
+    feedback.dataset.fit = String(history.matched);
+    field('other').hidden = feedback.hidden || !comparison.hidden;
+  }
+
+  function enter(visit) {
+    const key = visit.dataset.visit;
+    if (!histories.has(key)) histories.set(key, { heard: new Set(), last: null, choice: null, matched: false });
+    account = card.querySelector('template[data-account="' + key + '"]').content;
+    history = histories.get(key);
+    for (const tab of visits) tab.setAttribute('aria-pressed', String(tab === visit));
+    field('interview-title').textContent = visit.textContent + ' · At the bedside';
+    const otherVisit = visits.find(tab => tab !== visit);
+    field('other').textContent = 'Open interview ' + otherVisit.dataset.visit.toUpperCase();
+    options.replaceChildren(...account.querySelector('[data-handoffs]').cloneNode(true).children);
+    field('interview').hidden = false;
+    update();
+    field('interview-title').focus();
+  }
+
+  for (const visit of visits) visit.addEventListener('click', () => enter(visit));
+  for (const question of questions) question.addEventListener('click', () => {
+    history.last = question.dataset.ask;
+    history.heard.add(history.last);
+    update();
+  });
+  options.addEventListener('click', event => {
+    const choice = event.target.closest('button[data-choice]');
+    if (!choice || field('handoffs').hidden) return;
+    history.choice = choice.dataset.choice;
+    history.matched = choice.hasAttribute('data-matched');
+    update();
+  });
+  field('other').addEventListener('click', () => enter(visits.find(tab => tab.getAttribute('aria-pressed') === 'false')));
+  card.querySelector('[data-reset]').addEventListener('click', () => {
+    histories.clear();
+    history = account = null;
+    for (const tab of visits) tab.setAttribute('aria-pressed', 'false');
+    field('interview').hidden = field('reply').hidden = field('handoffs').hidden = feedback.hidden = true;
+    options.replaceChildren();
+    field('words').textContent = feedback.textContent = '';
+    update();
+    visits[0].focus();
+  });
+}
+
+function fdMountCatieStop(body) {
+  const card = body.querySelector('#catie-stop');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = id => card.querySelector('#catie-' + id);
+  const patients = Array.from(card.querySelectorAll('button[data-patient]'));
+  const handoffs = field('handoffs');
+  const feedback = field('feedback');
+  const compare = field('compare');
+  const answers = new Map();
+  const visited = new Set();
+  let active = null;
+  let account = null;
+
+  function updateResults() {
+    const matched = Array.from(answers.values()).filter(answer => answer.matched).length;
+    field('progress').textContent = matched + ' of ' + patients.length + ' handoffs matched';
+    compare.hidden = matched !== patients.length;
+    if (compare.hidden) compare.open = false;
+    const answer = answers.get(active);
+    for (const button of handoffs.children) {
+      button.setAttribute('aria-pressed', String(button.dataset.choice === answer?.choice));
+    }
+    feedback.hidden = !answer;
+    feedback.dataset.supported = String(Boolean(answer?.matched));
+    feedback.textContent = answer ? account.querySelector('[data-explanation="' + answer.choice + '"]').textContent : '';
+    field('other').hidden = !answer || !compare.hidden;
+  }
+
+  function renderPatientButtons() {
+    for (const button of patients) {
+      const key = button.dataset.patient;
+      const isActive = key === active;
+      button.setAttribute('aria-pressed', String(isActive));
+      const state = button.querySelector('.ct-open-state');
+      state.textContent = isActive ? 'Open now' : visited.has(key) ? 'Revisit' : 'Open interview';
+    }
+  }
+
+  function openInterview(key) {
+    active = key;
+    visited.add(key);
+    account = card.querySelector('template[data-interview="' + key + '"]').content;
+    renderPatientButtons();
+    field('overnight').textContent = account.querySelector('[data-note]').textContent;
+    field('quote').textContent = account.querySelector('[data-account]').textContent;
+    field('interview-title').textContent = 'Patient ' + key.toUpperCase() + '’s account';
+    field('other').textContent = 'Open Patient ' + (key === 'a' ? 'B' : 'A') + '’s interview';
+    handoffs.replaceChildren(...account.querySelector('[data-options]').cloneNode(true).children);
+    field('interview').hidden = false;
+    updateResults();
+    field('interview-title').focus();
+  }
+
+  for (const patient of patients) patient.addEventListener('click', () => openInterview(patient.dataset.patient));
+  handoffs.addEventListener('click', event => {
+    const button = event.target.closest('button[data-choice]');
+    if (!button || !active) return;
+    answers.set(active, {choice: button.dataset.choice, matched: button.hasAttribute('data-matched')});
+    updateResults();
+  });
+  field('other').addEventListener('click', () => openInterview(active === 'a' ? 'b' : 'a'));
+  card.querySelector('[data-reset]').addEventListener('click', () => {
+    active = null;
+    account = null;
+    answers.clear();
+    visited.clear();
+    field('interview').hidden = true;
+    field('overnight').textContent = field('quote').textContent = '';
+    handoffs.replaceChildren();
+    renderPatientButtons();
+    updateResults();
+    patients[0].focus();
+  });
 }
 
 function fdMountFollowupStudy(body) {

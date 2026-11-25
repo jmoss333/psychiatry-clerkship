@@ -381,6 +381,8 @@ step "qbank length cue (WP-7)"              python3 bin/check_qbank_length_cue.p
 step "unit — how-we-know editions"          python3 bin/build_how_we_know.py --self-test
 step "unit — essentials visuals"            python3 bin/check_essentials_visuals.py --self-test
 step "essentials visuals (ratchet)"         python3 bin/check_essentials_visuals.py
+step "unit — bedside activities"            python3 bin/check_bedside_activities.py --self-test
+step "bedside activities (ratchet)"         python3 bin/check_bedside_activities.py
 # DECISION: qbank-drafts-phone-attestable (2026-09-29). Every live draft must pass the console's
 # own qbank-rules.mjs (gate = ready): the phone never offers Attest for a flagged question, and on
 # 2026-09-28 all five drafts had reached main flagged. `--fix` repairs the two mechanical warnings

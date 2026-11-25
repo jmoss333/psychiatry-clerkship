@@ -278,6 +278,21 @@ export function createRealtimeLedger({
     return sha256(operationId);
   }
 
+  function checkNextStart(record, now, maximumMicros) {
+    const today = dayStart(now);
+    let startsToday = 1;
+    let startsInWindow = 1;
+    for (const session of Object.values(record.sessions)) {
+      if (session.reservedAt >= today) startsToday += 1;
+      if (session.reservedAt > now - WINDOW_MS) startsInWindow += 1;
+    }
+    if (startsToday > startLimit) throw dailyStartsExhausted();
+    if (startsInWindow > windowLimit) throw windowExhausted();
+    if (committedMicros(record) + maximumMicros > capMicros) throw capReached();
+    if (Object.keys(record.sessions).length >= MAX_SESSIONS) throw capReached();
+    return { startsToday, startsInWindow };
+  }
+
   async function reserveSession(input) {
     if (
       !exactKeys(input, ['bindingHash', 'deadline', 'maximumMicros', 'operationId'])
@@ -296,17 +311,7 @@ export function createRealtimeLedger({
         if (existing.bindingHash !== bindingHash || existing.maximumMicros !== maximumMicros) throw mismatch();
         throw duplicate();
       }
-      const today = dayStart(now);
-      let startsToday = 1;
-      let startsInWindow = 1;
-      for (const session of Object.values(record.sessions)) {
-        if (session.reservedAt >= today) startsToday += 1;
-        if (session.reservedAt > now - WINDOW_MS) startsInWindow += 1;
-      }
-      if (startsToday > startLimit) throw dailyStartsExhausted();
-      if (startsInWindow > windowLimit) throw windowExhausted();
-      if (committedMicros(record) + maximumMicros > capMicros) throw capReached();
-      if (Object.keys(record.sessions).length >= MAX_SESSIONS) throw capReached();
+      const { startsToday, startsInWindow } = checkNextStart(record, now, maximumMicros);
       record.sessions[hash] = {
         bindingHash,
         callId: null,
@@ -324,7 +329,7 @@ export function createRealtimeLedger({
         startsToday,
         startsInWindow,
         remainingStarts: Math.max(0, startLimit - startsToday),
-        resetsAt: today + DAY_MS,
+        resetsAt: dayStart(now) + DAY_MS,
       };
     });
   }
@@ -396,8 +401,16 @@ export function createRealtimeLedger({
     });
   }
 
-  async function getBand() {
-    const { record } = await snapshotRecord();
+  async function getBand(nextReservationMicros) {
+    const { record, now } = await snapshotRecord();
+    if (nextReservationMicros !== undefined) {
+      try {
+        checkNextStart(record, now, nextReservationMicros);
+      } catch (error) {
+        if (error.status === 429) return 'capped';
+        throw error;
+      }
+    }
     return band(record);
   }
 

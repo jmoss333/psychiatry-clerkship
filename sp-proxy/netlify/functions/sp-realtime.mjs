@@ -59,6 +59,7 @@ const SDP_OFFER_LIMIT_BYTES = 64 * 1024;
 const TEXT_LIMIT = 1_200;
 const MAX_CASE_ID = 64;
 const OPPORTUNISTIC_REAP_LIMIT = 5;
+const DANA_ADMISSION_CASE = 'sp_depression_gated_si_001';
 const DEFAULT_DEADLINE_MINUTES = 15;
 const DEFAULT_CAP_USD = 20;
 const DEFAULT_START_LIMIT = 40;
@@ -403,7 +404,7 @@ function resolveReviewedCase(governance, pack, caseId, now) {
   return caseDef;
 }
 
-function reviewedCases(governance, pack, now) {
+function reviewedCases(governance, pack, now, onlyCaseId) {
   if (typeof governance?.reviewedCaseSummaries !== 'function') throw invalidConfiguration();
   let summaries;
   try {
@@ -417,6 +418,7 @@ function reviewedCases(governance, pack, now) {
     if (!exactKeys(summary, ['id', 'title']) || !validCaseId(summary.id) || !boundedText(summary.title)) {
       throw invalidConfiguration();
     }
+    if (onlyCaseId && summary.id !== onlyCaseId) continue;
     const caseDef = pack.cases.find((candidate) => candidate?.id === summary.id);
     let voice;
     try {
@@ -701,7 +703,8 @@ async function startSession({ request, origin, body, snapshot, governance, ledge
 
   const sid = sessionId(config);
   const operationId = operationIdFor({ rotationId: config.rotationId, encounterId: input.encounterId, sid });
-  const deadline = startedAt + config.deadlineMinutes * 60_000;
+  const deadline = Math.min(startedAt + config.deadlineMinutes * 60_000, config.pilotEndsAt ?? Infinity);
+  if (deadline <= startedAt) throw realtimeDisabled();
 
   const ledgerInstance = await resolveDependency(ledger, { snapshot, config }, 'reserveSession');
   for (const method of ['attachCall', 'releaseSession', 'endSession', 'expiredSessions', 'markReapedByHash']) {
@@ -786,6 +789,7 @@ async function startSession({ request, origin, body, snapshot, governance, ledge
     deadline,
   };
   try {
+    if (clockMilliseconds(config) >= deadline) throw realtimeDisabled();
     const state = deriveState(caseDef, []);
     const result = {
       sdp: answer.sdp,
@@ -959,7 +963,9 @@ export function createRealtimeHandler({
       const endRoute = request.method === 'POST' && operation === 'end';
       if (!healthRoute && !startRoute && !turnRoute && !endRoute) throw methodNotAllowed();
 
-      if (!config.enabled) {
+      const pilot = config.pilotEndsAt !== undefined;
+      const pilotClosed = pilot && (healthRoute || startRoute) && clockMilliseconds(config) >= config.pilotEndsAt;
+      if (!config.enabled || pilotClosed) {
         if (healthRoute) return http.json(disabledHealth(), { origin });
         throw realtimeDisabled();
       }
@@ -972,11 +978,23 @@ export function createRealtimeHandler({
         if (!POST_PACK_STATUSES.has(snapshot.pack.status)) {
           return http.json(disabledHealth(), { origin });
         }
-        const cases = reviewedCases(governance, snapshot.pack, config.now);
+        const cases = reviewedCases(governance, snapshot.pack, config.now, pilot ? DANA_ADMISSION_CASE : null);
+        let nextReservationMicros;
+        if (pilot) {
+          if (!cases.length) return http.json(disabledHealth(), { origin });
+          // A model without matching price rows cannot reserve even one session.
+          nextReservationMicros = sessionCeilingMicros({
+            rateCard: REALTIME_RATE_CARD,
+            model: config.model,
+            transcriptionModel: config.transcriptionModel,
+            deadlineMinutes: config.deadlineMinutes,
+            maxTurns: maximumTurns(snapshot.pack),
+          });
+        }
         const ledgerInstance = await resolveDependency(ledger, { snapshot, config }, 'getBand');
         let band;
         try {
-          band = requireBand(await ledgerInstance.getBand());
+          band = requireBand(await ledgerInstance.getBand(nextReservationMicros));
         } catch (error) {
           throw sanitizeLedgerError(error);
         }
@@ -994,6 +1012,7 @@ export function createRealtimeHandler({
       }
 
       const body = await readRequestJson(request);
+      if (pilot && body?.caseId !== DANA_ADMISSION_CASE) throw unknownCase();
       const snapshot = await loadFrozenSnapshot(packLoader);
       requireApprovedPack(snapshot);
       const context = { request, origin, body, snapshot, governance, ledger, provider, receiptCodec, config, logger };
@@ -1039,9 +1058,13 @@ function usdToMicros(value, { fallback }) {
  */
 export function runtimeRealtimeConfig(read = readEnv) {
   const production = read('CONTEXT') === 'production';
+  const mode = read('SP_REALTIME_ENABLED');
+  const danaPilot = production && mode === 'dana-pilot';
   return Object.freeze({
     production,
-    enabled: production && read('SP_REALTIME_ENABLED') === 'true',
+    danaPilot,
+    // A staged supervisor code prevents the broad switch opening the other rooms.
+    enabled: production && (danaPilot || (mode === 'true' && !read('SP_REALTIME_PILOT_PASSCODE'))),
     model: optionalString(read('SP_REALTIME_MODEL')),
     transcriptionModel: optionalString(read('SP_REALTIME_TRANSCRIPTION_MODEL')),
     deadlineMinutes: boundedInteger(read('SP_REALTIME_MAX_SESSION_MINUTES'), { fallback: DEFAULT_DEADLINE_MINUTES, minimum: 3, maximum: 60 }),
@@ -1060,13 +1083,31 @@ export function validLedgerPolicy(runtime) {
     && Number.isInteger(runtime.windowLimit) && runtime.windowLimit >= 1;
 }
 
-export function createProductionRealtimeHandler() {
-  const runtime = runtimeRealtimeConfig(readEnv);
+export function createProductionRealtimeHandler(read = readEnv) {
+  const runtime = runtimeRealtimeConfig(read);
   const now = Date.now;
+  const learnerKey = read('SP_STUDENT_PASSCODE');
+  const voiceKey = runtime.danaPilot ? read('SP_REALTIME_PILOT_PASSCODE') : learnerKey;
+  const receiptSecret = read('SP_SPEECH_TICKET_SECRET');
+  const hasReceiptSecret = typeof receiptSecret === 'string' && Buffer.byteLength(receiptSecret) >= 32;
+  let pilotEndsAt;
+  if (runtime.danaPilot) {
+    const end = read('SP_REALTIME_PILOT_ENDS_AT');
+    pilotEndsAt = Date.parse(end);
+    const explicitLimits = ['SP_REALTIME_MAX_SESSION_MINUTES', 'SP_REALTIME_ROTATION_CAP_USD',
+      'SP_REALTIME_STARTS_PER_DAY', 'SP_REALTIME_STARTS_PER_HALF_HOUR'];
+    if (!nonempty(learnerKey) || !nonempty(voiceKey) || voiceKey.length < 16
+      || voiceKey !== voiceKey.trim() || voiceKey === learnerKey
+      || !Number.isFinite(pilotEndsAt) || new Date(pilotEndsAt).toISOString() !== end
+      || !explicitLimits.every((name) => nonempty(read(name))) || !validLedgerPolicy(runtime)
+      || !nonempty(read('OPENAI_API_KEY')) || !hasReceiptSecret) {
+      throw invalidConfiguration();
+    }
+  }
   const http = createHttp({
-    studentKey: readEnv('SP_STUDENT_PASSCODE'),
-    operationsKey: readEnv('SP_OPERATIONS_KEY'),
-    allowedOrigins: readEnv('SP_ALLOWED_ORIGINS'),
+    studentKey: voiceKey,
+    operationsKey: read('SP_OPERATIONS_KEY'),
+    allowedOrigins: read('SP_ALLOWED_ORIGINS'),
     production: runtime.production,
   });
   const configValue = Object.freeze({
@@ -1075,7 +1116,8 @@ export function createProductionRealtimeHandler() {
     transcriptionModel: runtime.transcriptionModel,
     deadlineMinutes: runtime.deadlineMinutes,
     rotationId: runtime.rotationId,
-    credentialHash: credentialHash(readEnv('SP_STUDENT_PASSCODE')),
+    credentialHash: runtime.enabled && hasReceiptSecret ? credentialHash(voiceKey, receiptSecret) : null,
+    pilotEndsAt,
     now,
   });
 
@@ -1084,8 +1126,8 @@ export function createProductionRealtimeHandler() {
     load() {
       if (packLoader === null) {
         packLoader = createPackLoader({
-          url: readEnv('SP_PACK_URL'),
-          token: readEnv('SP_PACK_TOKEN'),
+          url: read('SP_PACK_URL'),
+          token: read('SP_PACK_TOKEN'),
           fetchImpl: globalThis.fetch,
           now,
         });
@@ -1102,7 +1144,7 @@ export function createProductionRealtimeHandler() {
     const byTurns = codecs.get(clock);
     if (!byTurns.has(maxTurns)) {
       byTurns.set(maxTurns, createReceiptCodec({
-        secret: readEnv('SP_SPEECH_TICKET_SECRET'),
+        secret: receiptSecret,
         clock,
         maxTurns,
       }));
@@ -1129,7 +1171,7 @@ export function createProductionRealtimeHandler() {
 
   const provider = createRealtimeProvider({
     fetchImpl: globalThis.fetch,
-    readApiKey: () => readEnv('OPENAI_API_KEY'),
+    readApiKey: () => read('OPENAI_API_KEY'),
     timeoutMs: PROVIDER_TIMEOUT_MS,
   });
 

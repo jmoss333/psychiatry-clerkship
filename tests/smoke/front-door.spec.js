@@ -78,6 +78,178 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test.describe('reviewed Pharmacy card lookup', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  const agent = { id: 'study-med', generic: 'Study medication', brands: ['Studybrand'],
+    monitoring: { sourcePage: 'med_monitoring.md' }, qbankIds: ['study-question'],
+    review: { reviewer: 'Fixture reviewer', lastReviewed: '2026-11-01' } };
+  const publicFeedUrl = /\/pharmacy_public\.json(?:\?lookup=1)?$/;
+  const feed = agents => ({
+    schemaVersion: 1, agents, pendingCount: 0,
+    cards: agents.map(a => ({ id: 'RX#' + a.id + '#study', drug: a.id, prompt: 'Study prompt',
+      reveal: [{ label: 'Study answer', lines: ['Example'] }] })),
+  });
+
+  for (const name of ['Study medication', 'Studybrand']) {
+    test(`opens by ${name} and resumes the same paragraph`, async ({ page }, testInfo) => {
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed([agent]) }));
+      await seedApp(page, testInfo);
+      await controlledReading(page);
+      await page.goto('/?page=t_mood.md');
+      await readingReady(page);
+      await scrollReadingTo(page, 1);
+      const paragraph = page.locator('.fd-article__body h3').nth(1);
+      const original = await paragraph.elementHandle();
+      const position = await paragraph.evaluate(el => el.getBoundingClientRect().top);
+      const initialRoute = page.url();
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources' });
+      await input.fill(name);
+      const row = search.locator('.fd-result').first();
+      await expect(row).toHaveAttribute('data-fd-pharmacy-card', agent.id);
+      await row.tap();
+      const lookup = page.getByRole('dialog', { name: 'Study medication · Pharmacy card' });
+      const frame = lookup.frameLocator('iframe');
+      await expect(frame.getByRole('heading', { name: agent.generic, exact: true })).toBeInViewport();
+      await expect(frame.locator('.stamp')).toContainText('Fixture reviewer');
+      await expect(frame.getByRole('searchbox')).toHaveCount(0);
+      if (name === 'Studybrand') {
+        await frame.getByRole('button', { name: /^Quiz me on/ }).tap();
+        await frame.getByRole('button', { name: 'Show answer' }).tap();
+        await frame.getByRole('button', { name: 'Good', exact: true }).tap();
+        await expect(frame.getByRole('link', { name: /Open Daily Review/ })).toHaveAttribute('target', '_blank');
+        await frame.getByRole('button', { name: 'Close', exact: true }).tap();
+        await expect(frame.locator('button.drug')).toHaveCount(0);
+        await expect(frame.locator('#status')).toBeEmpty();
+        await expect(frame.getByRole('link', { name: /practice question/ })).toHaveAttribute('target', '_blank');
+        const opened = page.waitForEvent('popup');
+        await frame.getByRole('link', { name: /Monitoring & Labs/ }).tap();
+        const related = await opened;
+        await expect(related).toHaveURL(/\?page=med_monitoring\.md/);
+        await related.close();
+        await expect(frame.locator('#dname')).toHaveText(agent.generic);
+        expect(page.url()).toBe(initialRoute);
+      }
+      await frame.locator('#depth-toggle').focus();
+      await page.keyboard.press('Escape');
+      await expect(input).toHaveValue(name);
+      await expect(row).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      const back = lookup.getByRole('button', { name: 'Return to reading' });
+      await back.hover();
+      await page.mouse.wheel(0, 520);
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await back.tap();
+      await expect(lookup).toHaveCount(0);
+      await expect(search).toHaveCount(0);
+      expect(page.url()).toBe(initialRoute);
+      expect(await original.evaluate(el => el.isConnected)).toBe(true);
+      await expect.poll(async () => Math.abs(await paragraph.evaluate(el => el.getBoundingClientRect().top) - position)).toBeLessThanOrEqual(2);
+      await expectHealthy(page);
+    });
+  }
+
+  async function findStudybrand(page, testInfo) {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await openHeaderSearch(page);
+    await page.getByRole('textbox', { name: 'Search resources' }).fill('Studybrand');
+    const row = page.locator('[data-fd-pharmacy-card="study-med"]');
+    await expect(row).toBeVisible();
+    return row;
+  }
+
+  const renamed = { ...agent, brands: ['Newbrand'] };
+  const other = { ...agent, id: 'other-med', generic: 'Other medication' };
+  for (const [change, freshAgents] of [
+    ['a card withdrawn', []],
+    ['a brand removed from a reviewed card', [renamed]],
+    ['a brand reassigned to another reviewed card', [renamed, other]],
+    ['a brand shared by two reviewed cards', [agent, other]],
+  ]) {
+    test(`${change} between search and opening is unavailable in the lookup`, async ({ page }, testInfo) => {
+      let agents = [agent];
+      await page.route(publicFeedUrl, route => route.fulfill({ json: feed(agents) }));
+      const row = await findStudybrand(page, testInfo);
+      agents = freshAgents;
+      await row.tap();
+      const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+      await expect(frame.locator('#status')).toHaveText('This medication card is unavailable.');
+      await expect(frame.locator('#detail')).toBeEmpty();
+      await expect(frame.locator('button.drug')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Close lookup' }).tap();
+      await expect(page.locator('.fd-library')).toBeVisible();
+      await expectHealthy(page);
+    });
+  }
+
+  test('each tap reads the current card and the first read overlaps the frame load', async ({ page }, testInfo) => {
+    let freshReviewer = '';
+    let feedStarted = false, frameStarted = false;
+    let releaseFeed, releaseFrame;
+    const heldFeed = new Promise(resolve => { releaseFeed = resolve; });
+    const heldFrame = new Promise(resolve => { releaseFrame = resolve; });
+    await page.route(publicFeedUrl, async route => {
+      if (!freshReviewer) return route.fulfill({ json: feed([agent]) });
+      feedStarted = true;
+      await heldFeed;
+      const reviewed = { ...agent, review: { ...agent.review, reviewer: freshReviewer } };
+      await route.fulfill({ json: feed([reviewed]) });
+    });
+    await page.route('**/tools/pharmacy.html?*', async route => {
+      frameStarted = true;
+      await heldFrame;
+      await route.continue();
+    });
+    const row = await findStudybrand(page, testInfo);
+    freshReviewer = 'First tap reviewer';
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    try {
+      await row.tap();
+      // Neither route can finish until both have started, independently of network timing.
+      await expect.poll(() => ({ feedStarted, frameStarted })).toEqual({ feedStarted: true, frameStarted: true });
+      releaseFrame();
+      await expect(frame.locator('#detail')).toBeEmpty();
+      releaseFeed();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await page.getByRole('button', { name: 'Back to search results' }).tap();
+      freshReviewer = 'Second tap reviewer';
+      await row.tap();
+      await expect(frame.locator('#dname')).toHaveText(agent.generic);
+      await expect(frame.locator('.stamp')).toContainText(freshReviewer);
+      await expectHealthy(page);
+    } finally {
+      releaseFrame();
+      releaseFeed();
+    }
+  });
+
+  test('a failed fresh request leaves the card empty and reopening retries', async ({ page }, testInfo) => {
+    let unavailable = true;
+    const updated = { ...agent, review: { ...agent.review, reviewer: 'Reviewer after recovery' } };
+    await page.route(publicFeedUrl, route => {
+      const fresh = new URL(route.request().url()).searchParams.get('lookup') === '1';
+      if (fresh && unavailable) return route.fulfill({ status: 503, body: 'Temporarily unavailable' });
+      return route.fulfill({ json: feed([fresh ? updated : agent]) });
+    });
+    const row = await findStudybrand(page, testInfo);
+    const frame = page.frameLocator('[data-pharmacy-lookup] iframe');
+    await row.tap();
+    await expect(frame.locator('#status')).toHaveText(/unavailable|could not be loaded/i);
+    await expect(frame.locator('#detail')).toBeEmpty();
+    await page.getByRole('button', { name: 'Back to search results' }).tap();
+    unavailable = false;
+    await row.tap();
+    await expect(frame.locator('#dname')).toHaveText(agent.generic);
+    await expect(frame.locator('.stamp')).toContainText(updated.review.reviewer);
+  });
+});
+
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
 
@@ -2985,6 +3157,107 @@ test.describe('Interactive readings', () => {
     return activity;
   }
 
+  for (const order of [['meaning', 'body'], ['body', 'meaning']]) {
+    test('therapy chain starts with ' + order[0] + ' and matches each offer to the patient’s preference', async ({ page }) => {
+      const card = await openActivity(page, GUIDE_REF, 'therapy-chain', 'Matching the intervention to the presentation');
+      await expect(card.getByRole('heading', { name: 'Where could we have helped sooner?' })).toBeVisible();
+      const section = card.locator('xpath=ancestor::section[contains(@class,"sec-c") or contains(@class,"fd-guide-section")][1]');
+      await expect(section.locator('table')).toContainText('Distress-tolerance skill + behavior chain review');
+      expect(await card.evaluate(node => {
+        const table = node.closest('.fd-guide-section, .sec-c').querySelector('table');
+        return Boolean(table.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING);
+      })).toBe(true);
+      await expect(section.locator('xpath=following-sibling::section[1]').locator(':scope > :is(h2, .fd-guide-lead, .sec-h)'))
+        .toContainText('BPD without a DBT unit');
+
+      const id = name => card.locator('#tc-' + name);
+      const button = (attribute, value) => card.locator('button[data-' + attribute + '="' + value + '"]');
+      const linkText = key => button('slot', key).locator('[data-link-text]');
+      const links = {
+        meaning: {
+          blank: 'What did the call mean to them?',
+          correction: '“I don’t know why she didn’t pick up. Mad isn’t quite it.”',
+          answer: '“I thought my sister was done with me. I know it was just voicemail, but that’s where my mind went.”',
+          feedback: 'The patient told you what they feared. Their sister’s reason for missing the call is still unknown.',
+          saved: '“I thought my sister was done with me.”',
+        },
+        body: {
+          blank: 'What happened just before they left?',
+          correction: '“Nobody in group did anything. I just got quiet.”',
+          answer: '“I got really quiet. My face got hot. I wanted to get out before anyone saw me cry.”',
+          feedback: 'They described wanting privacy. Whether they want someone to follow is something you can ask.',
+          saved: '“My face got hot. I wanted to get out before anyone saw me cry.”',
+        },
+      };
+      await expect(id('offer')).toBeHidden();
+      for (const [index, key] of order.entries()) {
+        const link = links[key];
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('slot', key).click();
+        await button('question', 'guess').click();
+        await expect(id('answer')).toBeVisible();
+        await expect(id('answer')).toHaveText(link.correction);
+        await expect(button('fill', 'grounded')).toBeHidden();
+        await expect(linkText(key)).toHaveText(link.blank);
+        await button('question', 'invite').click();
+        await expect(id('answer')).toHaveText(link.answer);
+        await button('fill', 'inferred').click();
+        await expect(id('fill-feedback')).toBeVisible();
+        await expect(id('fill-feedback')).toHaveText(link.feedback);
+        await expect(linkText(key)).toHaveText(link.blank);
+        await expect(id('count')).toHaveText(index + ' of 2 links filled');
+        await expect(id('offer')).toBeHidden();
+        await button('fill', 'grounded').click();
+        await expect(linkText(key)).toHaveText(link.saved);
+        if (index === 0) await expect(id('offer')).toBeHidden();
+      }
+      await expect(linkText(order[0])).toHaveText(links[order[0]].saved);
+      await expect(id('count')).toHaveText('2 of 2 links filled');
+      await expect(id('offer')).toBeVisible();
+
+      const moments = [
+        { key: 'phone', line: '“If it goes to voicemail again, would you like me to stay with you while you decide what to do?”',
+          reply: '“Right then? Give me a minute to myself. You can check back after.”',
+          plan: 'Give them a minute alone after the call, then check back.' },
+        { key: 'quiet', line: '“If I notice you going quiet in group, would it help if I asked you to step into the hall with me?”',
+          reply: '“When I get quiet like that, ask if I want to step into the hall with you. Just ask me quietly.”',
+          plan: 'If they go quiet, discreetly offer to step into the hall together.' },
+        { key: 'hall', line: '“If you head into the hall, would it be okay if I came out and sat with you?”',
+          reply: '“Yeah. Sit with me for a minute? I might not be ready to go back in.”',
+          plan: 'Offer to sit with them in the hall and let them choose when to return.' },
+      ];
+      for (const moment of moments) {
+        await button('moment', moment.key).click();
+        await expect(id('offer-line')).toHaveText(moment.line);
+        await expect(id('offer-reply')).toBeHidden();
+        await expect(id('debrief')).toBeHidden();
+        await expect(id('plan-summary')).toBeEmpty();
+        await id('make-offer').click();
+        await expect(id('their-preference')).toBeVisible();
+        await expect(id('their-preference')).toHaveText(moment.reply);
+        await expect(id('plan-summary')).toBeVisible();
+        await expect(id('plan-summary')).toHaveText(moment.plan);
+        if (moment.key === 'quiet') {
+          await id('try-moment').click();
+          await expect(id('offer-reply')).toBeHidden();
+          await expect(id('debrief')).toBeHidden();
+          await expect(id('plan-summary')).toBeEmpty();
+        }
+      }
+      await expect(id('debrief').locator('dt')).toHaveText([
+        'What the nurse observed', 'What the patient described', 'What the patient wants next time',
+      ]);
+      await expect(id('account-summary')).toContainText('They thought their sister was done with them.');
+      await id('reset').click();
+      await expect(id('count')).toHaveText('0 of 2 links filled');
+      for (const key of order) await expect(linkText(key)).toHaveText(links[key].blank);
+      await expect(id('offer')).toBeHidden();
+      await expect(id('reply')).toBeHidden();
+      await expect(id('debrief')).toBeHidden();
+      await expect(id('plan-summary')).toBeEmpty();
+    });
+  }
+
   test('Sam’s night sign-out changes the receiving resident’s reply with each handoff detail', async ({ page }) => {
     await page.goto('/?page=doc_oral.md&guideSection=handoff-template');
     const section = page.locator('.fd-article__body section').filter({
@@ -3174,6 +3447,73 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('[data-coach-line][aria-pressed=true]')).toHaveCount(0);
   });
 
+  test('home-dose history requires both records and a handoff supported by the current patient reply', async ({ page }) => {
+    const sectionId = 'guide-start-here-five-questions-before-choosing-a-drug';
+    await page.goto('/?page=psychopharm_primer.md&guideSection=start-here-five-questions-before-choosing-a-drug');
+    const opening = page.locator('.fd-article__body :is(.sec-c,.fd-guide-section)').filter({
+      has: page.locator(':scope > #' + sectionId),
+    });
+    const items = opening.locator('ol').first().locator(':scope > li');
+    await expect(items).toHaveCount(5);
+    const questions = ['What are we treating?', 'What has already happened?',
+      'What could change the choice?', 'What will we measure?', 'What happens after discharge?'];
+    for (const [index, question] of questions.entries()) {
+      await expect(items.nth(index).locator('strong').first()).toHaveText(question);
+    }
+    const card = items.nth(1).locator('section#home-dose-history');
+    await expect(card).toBeVisible();
+    const field = name => card.locator('#mh-' + name);
+    const claim = name => card.locator('[data-claim="' + name + '"]');
+    const mark = (day, value) => card.locator('input[name="mh-' + day + '"][value="' + value + '"]').check();
+
+    for (const [first, second] of [['rx', 'fill'], ['fill', 'rx']]) {
+      await expect(field('interim')).toBeHidden();
+      await field(first).click();
+      await expect(field(first === 'rx' ? 'fill-line' : 'order-line')).toHaveText('Record unopened');
+      await expect(field('interim')).toBeHidden();
+      await field(second).click();
+      await expect(field('interim')).toBeVisible();
+      if (first === 'rx') await field('reset').click();
+    }
+    for (const unsupported of ['daily', 'never']) {
+      await claim(unsupported).click();
+      await expect(field('claim-feedback')).toBeVisible();
+      await expect(field('ask')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+    }
+    await claim('open').click();
+    await expect(field('revise')).toBeHidden();
+    await field('hear').press('Enter');
+
+    const replies = [
+      { quote: /haven’t started/, friday: 'none', dose: 'Patient reports no doses from the Friday fill.' },
+      { quote: /Friday’s the only time/, friday: 'taken', dose: 'Patient reports one dose from this fill, Friday night, and none since.' },
+    ];
+    for (const reply of replies) {
+      await expect(field('quote')).toContainText(reply.quote);
+      await expect(card.locator('input:checked')).toHaveCount(0);
+      await expect(field('final')).toBeHidden();
+      await expect(field('handoff')).toBeEmpty();
+      await expect(field('dose-line')).toHaveText('History pending');
+      await mark('fri', reply.friday);
+      await field('check').click();
+      await expect(field('revision-feedback')).toContainText('each night');
+      await expect(field('final')).toBeHidden();
+      await mark('sat', 'taken');
+      await field('check').click();
+      await expect(field('revision-feedback')).toBeVisible();
+      await expect(field('handoff')).toBeEmpty();
+      await mark('sat', 'none');
+      await field('check').click();
+      await expect(field('final')).toBeVisible();
+      await expect(field('dose-line')).toHaveText(reply.dose);
+      await expect(field('handoff')).toHaveText('“The outpatient prescription lists quetiapine nightly, and the pharmacy confirms Friday pickup. ' + reply.dose + '”');
+      await field('other').click();
+    }
+    await expect(field('handoff')).toBeEmpty();
+    await expect(card.locator('input:checked')).toHaveCount(0);
+  });
+
   test('Morgan builds a clozapine differential before revealing the studies and handoff', async ({ page }) => {
     const activity = await openActivity(page, 'psychopharm_primer.md', 'morgan-exposure', 'Antipsychotics');
     const select = (id, value) => activity.locator('#mg-' + id).selectOption(value);
@@ -3201,6 +3541,85 @@ test.describe('Interactive readings', () => {
     for (const pmid of ['11763003', '21599724', '26032842']) {
       await expect(activity.locator('[data-sources] a[href$="/' + pmid + '/"]')).toBeVisible();
     }
+  });
+
+  test('Ms. Lang’s culture stays paired with each interview and both handoffs unlock the comparison', async ({ page }) => {
+    await page.goto('/?page=medical_workup.md&guideSection=baseline-workup-of-the-new-admission&guideFind=The+urine+culture+is+positive');
+    const card = page.locator('.fd-reader:visible [data-lang-culture]');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('urinalysis, with culture');
+    const image = card.locator('#lang-case-photo');
+    await expect(image).toBeVisible();
+    expect(await image.evaluate(async img => {
+      await img.decode();
+      const box = img.getBoundingClientRect();
+      return Math.abs(box.height - box.width * img.naturalHeight / img.naturalWidth);
+    })).toBeLessThan(1);
+    const compare = card.locator('#lang-compare');
+    const feedback = card.locator('#lang-feedback');
+    for (const [key, reply, order, expected] of [
+      ['a', 'twice last night', [0, 2, 1], ['cause of her inattention open', 'twice at home', 'insufficient reason']],
+      ['b', 'had to rush', [0, 1, 2], ['new burning and urgency', 'other contributors', 'remaining uncertainty']],
+    ]) {
+      await card.locator('[data-visit="' + key + '"]').click();
+      await card.locator('[data-ask="change"]').click();
+      await expect(card.locator('#lang-words')).toContainText(reply);
+      await expect(card.locator('#lang-handoffs')).toBeHidden();
+      await card.locator('[data-ask="pain"]').click();
+      for (const [index, choice] of order.entries()) {
+        await expect(compare).toBeHidden();
+        await card.locator('[data-choice="' + choice + '"]').click();
+        await expect(feedback).toContainText(expected[index]);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toBeVisible();
+    await card.locator('[data-visit="a"]').click();
+    await expect(card.locator('[data-choice="1"]')).toHaveAttribute('aria-pressed', 'true');
+    await card.locator('[data-choice="2"]').click();
+    await expect(compare).toBeHidden();
+    await card.locator('[data-reset]').click();
+    await expect(card.locator('#lang-progress')).toHaveText('0 of 2 handoffs matched');
+  });
+
+  test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
+    await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
+    const card = page.locator('.fd-reader:visible #catie-stop');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toHaveText('5. What did the CATIE trial show?');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toContainText('Answer:');
+    const interview = key => card.locator('[data-patient="' + key + '"]');
+    const choice = key => card.locator('[data-choice="' + key + '"]');
+    const feedback = card.locator('#catie-feedback');
+    const compare = card.locator('#catie-compare');
+    const patients = [
+      {key:'a', quote:'we missed the bus', options:[
+        ['symptoms','explains the ED visit'], ['uncertain','different reason for stopping'], ['burden','get up in the morning'],
+      ]},
+      {key:'b', quote:'one every night', options:[
+        ['burden','what kept them awake'], ['uncertain','home dose is unclear'], ['symptoms','dose actually taken'],
+      ]},
+    ];
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    for (const patient of patients) {
+      await interview(patient.key).press('Enter');
+      await expect(card.locator('#catie-quote')).toContainText(patient.quote);
+      await expect(feedback).toBeHidden();
+      for (const [value, explanation] of patient.options) {
+        await expect(compare).toBeHidden();
+        await choice(value).click();
+        await expect(feedback).toContainText(explanation);
+      }
+    }
+    await compare.locator('summary').click();
+    await expect(compare.getByRole('link')).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/16172203/');
+    await interview('a').click();
+    await expect(choice('burden')).toHaveAttribute('aria-pressed', 'true');
+    await choice('uncertain').click();
+    await expect(compare).toBeHidden();
+    await interview('b').click();
+    await expect(choice('symptoms')).toHaveAttribute('aria-pressed', 'true');
+    await card.getByRole('button', {name:'Start again'}).click();
+    await expect(card.locator('#catie-interview')).toBeHidden();
+    await expect(card.locator('#catie-progress')).toHaveText('0 of 2 handoffs matched');
   });
 
   test('fever comparison gates patient-specific interpretations and primary studies', async ({ page }) => {
@@ -3567,6 +3986,244 @@ test.describe('Interactive readings', () => {
       await expect(handoff.locator('p')).toBeVisible();
       await expect(handoff.locator('p')).toContainText(sample);
     }
+  });
+
+  for (const callback of ['pending', 'ready']) {
+    test(`dinner map supports all six question orders with the ${callback} callback`, async ({ page }) => {
+      const card = await openActivity(page, 'nutrition_metabolic.md', 'dinner-map', 'Population / systems lens');
+      await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Food insecurity');
+      const at = id => card.locator('#dm-' + id);
+      const facts = {
+        route: 'Home around 6 p.m. · Pantry closes at 5 p.m.',
+        kitchen: 'Shared microwave · Food at home uncertain',
+        dinner: 'Would like a meal to take home',
+      };
+      const orders = [
+        ['route', 'kitchen', 'dinner'], ['route', 'dinner', 'kitchen'],
+        ['kitchen', 'route', 'dinner'], ['kitchen', 'dinner', 'route'],
+        ['dinner', 'route', 'kitchen'], ['dinner', 'kitchen', 'route'],
+      ];
+      const patientAccount = 'The patient expects to get home after the pantry closes. They can use a shared microwave and are unsure whether there is food at home. ';
+      const requested = 'They asked for a meal to take home. I’ll ask the unit nurse what’s available and update the patient before they leave.';
+      const pending = 'The patient asked for a take-home meal. The nurse has contacted dietary and will update the patient before their ride leaves. A meal is still unconfirmed.';
+      const ready = 'The patient asked for a take-home meal. The unit nurse confirms that a supper bag is ready for pickup at the desk and will give it to the patient before their ride leaves.';
+      const note = at('note-text');
+      const mapFacts = card.locator('[id^="dm-stop-"] [id^="dm-map-"]');
+      for (const order of orders) {
+        await test.step(order.join(' → '), async () => {
+          await expect(at('count')).toHaveText('0 of 3 heard');
+          await expect(at('handoff')).toBeHidden();
+          await expect(mapFacts).toHaveText(['', '', '']);
+          for (const [index, stop] of order.entries()) {
+            await at('stop-' + stop).click();
+            await expect(at('quote-' + stop)).toBeVisible();
+            const heard = order.slice(0, index + 1);
+            await expect(mapFacts).toHaveText(Object.entries(facts).map(([key, text]) => heard.includes(key) ? text : ''));
+            await expect(at('count')).toHaveText(heard.length + ' of 3 heard');
+            if (heard.length < 3) await expect(at('handoff')).toBeHidden();
+          }
+
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('Who has confirmed a meal is ready?');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + requested);
+          await at('call-unit').click();
+          await expect(at('claim-confirmed')).toBeDisabled();
+          await at('reply-' + callback).click();
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          if (callback === 'ready') {
+            await expect(at('nurse-quote')).toContainText('It’s ready for pickup.');
+            await expect(at('pin-meal')).toHaveText('Ready for pickup');
+            await at('claim-confirmed').click();
+            await expect(note).toBeVisible();
+            await expect(note).toHaveText(patientAccount + ready);
+            await at('reply-pending').click();
+            await expect(at('team-note')).toBeHidden();
+            await expect(note).toBeEmpty();
+          }
+          await expect(at('nurse-quote')).toContainText('I haven’t heard back yet.');
+          await expect(at('pin-meal')).toHaveText('Awaiting reply');
+          await at('claim-confirmed').click();
+          await expect(at('claim-feedback')).toContainText('The nurse left a message.');
+          await expect(at('team-note')).toBeHidden();
+          await expect(note).toBeEmpty();
+          await at('claim-requested').click();
+          await expect(note).toBeVisible();
+          await expect(note).toHaveText(patientAccount + pending);
+          await at('reset').click();
+          await expect(at('callback')).toBeHidden();
+          await expect(note).toBeEmpty();
+        });
+      }
+    });
+  }
+
+  test('evening calls unlock the bedside question in either order and clear the rounds sample on revision', async ({ page }) => {
+    const card = await openActivity(page, 'psychotherapy.md', 'evening-calls', 'The map — what each is, who it fits');
+    const map = card.locator('xpath=ancestor::section[contains(@class,"fd-guide-section")][1]');
+    const modalities = card.locator('xpath=preceding-sibling::ul[1]').getByRole('listitem');
+    await expect(modalities).toHaveCount(7);
+    await expect(modalities.last()).toContainText('Family and group modalities');
+    await expect(map.locator('xpath=following-sibling::section[1]').locator(':scope > .fd-guide-lead'))
+      .toContainText('What the student does');
+
+    const at = id => card.locator('#ec-' + id);
+    const button = name => card.getByRole('button', { name });
+    const calls = {
+      before: { name: /Before admission/i, alt: /kitchen window/i, quote: 'can I run something by you', annotation: 'Daughter asks for advice about work' },
+      week: { name: /This week/i, alt: /on the unit/i, quote: 'Did you eat?', annotation: 'Daughter asks about meds and meals' },
+    };
+    for (const call of Object.values(calls)) {
+      const image = button(call.name).getByRole('img', { name: call.alt });
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
+    }
+
+    for (const order of [['before', 'week'], ['week', 'before']]) {
+      await test.step(order.join(' → '), async () => {
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        for (const [index, key] of order.entries()) {
+          const call = calls[key];
+          await button(call.name).click();
+          await expect(button(call.name)).toHaveAttribute('aria-expanded', 'true');
+          await expect(at('quote-' + key)).toBeVisible();
+          await expect(at('quote-' + key)).toContainText(call.quote);
+          await expect(at('annotation-' + key)).toHaveText(call.annotation);
+          await expect(at('count')).toHaveText((index + 1) + ' of 2 heard');
+          if (index === 0) {
+            await button(call.name).click();
+            await expect(at('quote-' + key)).toBeHidden();
+            await expect(at('count')).toHaveText('1 of 2 heard');
+            await expect(at('meaning-panel')).toBeHidden();
+          }
+        }
+        const fewer = button(/Would it help if she called less often/);
+        const miss = button(/What do you miss about the way you two used to talk/);
+        await fewer.click();
+        await expect(at('meaning-words')).toContainText('I look forward to her calls');
+        await expect(at('retry')).toBeVisible();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('meaning-words')).toContainText('I miss being the person she comes to');
+        await expect(at('retry')).toBeHidden();
+        for (const [choice, feedback] of [
+          [/They’d like fewer calls/, 'Did they ask for less contact?'],
+          [/They describe an argument/, 'They described a quiet pause'],
+        ]) {
+          await button(choice).click();
+          await expect(at('feedback')).toBeVisible();
+          await expect(at('feedback')).toContainText(feedback);
+          await expect(at('sample')).toBeHidden();
+        }
+        await button(/They value the calls and miss/).click();
+        await expect(at('feedback')).toBeHidden();
+        await expect(at('sample')).toBeVisible();
+        await expect(at('sample')).toContainText('what they’d like tonight’s call to sound like');
+        await expect(at('sample')).toContainText('Why interpersonal psychotherapy fits');
+        await fewer.click();
+        await expect(at('rounds-panel')).toBeHidden();
+        await miss.click();
+        await expect(at('rounds-panel')).toBeVisible();
+        await expect(at('sample')).toBeHidden();
+        await expect(at('rounds-panel').locator('[aria-pressed="true"]')).toHaveCount(0);
+        await button(/Start again/).click();
+        await expect(at('count')).toHaveText('0 of 2 heard');
+        await expect(at('meaning-panel')).toBeHidden();
+        await expect(card.locator('[aria-pressed="true"], [aria-expanded="true"]')).toHaveCount(0);
+        await expect(card.locator('[id^="ec-annotation-"]')).toHaveText(['Ask about the call', 'Ask about the call']);
+        await expect(button(calls.before.name)).toBeFocused();
+      });
+    }
+  });
+
+  test('Which came first? ties the timeline, interpretation and rounds note to Alex’s selected history', async ({ page }) => {
+    await page.goto('/?page=ddx.md&guideSection=4-manic-elevated-irritable');
+    const heading = page.locator('.fd-article__body #guide-4-manic-elevated-irritable');
+    await expect(heading).toContainText('4. Manic / elevated / irritable');
+    const card = heading.locator('xpath=parent::section').locator('#alex-timing');
+    await expect(card).toBeVisible();
+    const at = id => card.locator('#at-' + id);
+    const portrait = card.getByRole('img', { name: /Alex talks with a clinician over breakfast/i });
+    await portrait.scrollIntoViewIfNeeded();
+    await expect(portrait).toBeVisible();
+    await expect.poll(() => portrait.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+
+    const histories = [
+      { timing: 'before', day: 'Sunday', other: 'after', otherDay: 'Wednesday',
+        mismatch: 'a call that had already happened', interpretation: 'underlying mood episode' },
+      { timing: 'after', day: 'Wednesday', other: 'before', otherDay: 'Sunday',
+        mismatch: 'his sleep before the first dose', interpretation: 'possibility of a medication effect' },
+    ];
+    const followups = [
+      { key: 'prior', words: 'earlier stretches of short sleep', otherWords: 'after those calls' },
+      { key: 'course', words: 'how much he slept after those calls', otherWords: 'earlier stretches' },
+    ];
+    const evidence = at('evidence');
+    const source = evidence.locator('a');
+    await expect(at('place-before')).toBeDisabled();
+    await expect(at('place-after')).toBeDisabled();
+    await at('hear').click();
+    for (const history of histories) {
+      await test.step(history.day + ' callback', async () => {
+        await expect(at('quote')).toContainText(history.day);
+        await expect(at('map')).toHaveAttribute('data-placement', 'unknown');
+        await expect(at('reasoning')).toBeHidden();
+        await expect(at('next-step')).toBeHidden();
+        await expect(at('note')).toBeEmpty();
+        await expect(evidence).toBeHidden();
+        await expect(evidence).toHaveJSProperty('open', false);
+        await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
+
+        await at('place-' + history.other).click();
+        await expect(at('placement-feedback')).toBeVisible();
+        await expect(at('placement-feedback')).toContainText(history.day);
+        await expect(at('reasoning')).toBeHidden();
+        await at('place-' + history.timing).click();
+        await expect(at('call-label')).toContainText(history.day);
+        await expect(at('placement-feedback')).toBeHidden();
+        await expect(at('map')).toHaveAttribute('data-placement', history.timing);
+        for (const [choice, feedback] of [[history.other, history.mismatch], ['certain', 'when Alex called']]) {
+          await at('reason-' + choice).click();
+          await expect(at('reason-feedback')).toBeVisible();
+          await expect(at('reason-feedback')).toContainText(feedback);
+          await expect(at('next-step')).toBeHidden();
+        }
+        await at('reason-' + history.timing).click();
+        await expect(at('reason-feedback')).toBeHidden();
+        await expect(at('next-step')).toBeVisible();
+        await expect(evidence).toBeHidden();
+        for (const question of followups) {
+          await at('check-' + question.key).click();
+          await expect(at('note')).toBeVisible();
+          await expect(at('note')).toContainText(history.day + ', ' + history.timing + ' Monday');
+          await expect(at('note')).toContainText(history.interpretation);
+          await expect(at('note')).toContainText(question.words);
+          await expect(at('note')).not.toContainText(history.otherDay);
+          await expect(at('note')).not.toContainText(question.otherWords);
+        }
+        await evidence.locator('summary').click();
+        await expect(source).toBeVisible();
+        await expect(source).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/11799343/');
+      });
+      if (history.timing === 'before') await at('switch').click();
+    }
+    await at('restart').click();
+    await expect(at('hear')).toBeFocused();
+    await expect(at('callback')).toBeHidden();
+    await expect(at('place-before')).toBeDisabled();
+    await expect(at('place-after')).toBeDisabled();
+    await expect(at('map')).toHaveAttribute('data-placement', 'unknown');
+    await expect(at('reasoning')).toBeHidden();
+    await expect(at('next-step')).toBeHidden();
+    await expect(at('note')).toBeEmpty();
+    await expect(evidence).toHaveJSProperty('open', false);
+    await expect(card.locator('[aria-pressed="true"]')).toHaveCount(0);
   });
 
   test('follow-up study changes the denominator and separates cohort findings from individual decisions', async ({ page }) => {
