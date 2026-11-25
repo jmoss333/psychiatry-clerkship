@@ -135,7 +135,7 @@ function fdSheetHead(title, hasBack){
   /* Bare data-fd-safety: "open the kit", the same payload-free form fd_shell.js's header button
      carries. Rendered only for a protocol reached FROM the kit -- the label names a specific place
      to return to, so a protocol opened from a kit card or a search hit shows nothing here. */
-  if(hasBack) out+='<button type="button" class="fd-sheet__back" data-fd-safety>‹ kit</button>';
+  if(hasBack) out+='<button type="button" class="fd-sheet__back" data-fd-safety aria-label="Back to safety kit"><span aria-hidden="true">‹</span> kit</button>';
   out+='<span class="fd-sheet__title">'+fdEsc(title)+'</span>';
   out+='<button type="button" class="fd-sheet__close" data-fd-close-sheet '+
     'aria-label="Close side sheet" title="Close — you’ll land exactly where you were">✕</button>';

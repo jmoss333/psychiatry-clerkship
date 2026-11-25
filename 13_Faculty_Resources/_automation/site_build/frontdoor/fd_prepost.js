@@ -64,7 +64,7 @@
     var form=ppFormFor(d,ppPhase), items=(PP_FORMS&&PP_FORMS[form])||[];
     if(!items.length){ root.innerHTML='<h1>Check unavailable</h1><p class="sub">The questions didn’t load. Try again later.</p>'; return; }
     var h='<h1>'+(ppPhase==='pre'?'Start':'End')+'-of-rotation check</h1><p class="sub">Pick the best answer. No feedback is shown, so the check stays fair for the end-of-rotation sitting. Unsubmitted answers are not saved.</p>';
-    items.forEach(function(it,qi){ h+='<div class="pt-q"><div class="pt-stem">'+(qi+1)+' of '+items.length+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" data-pp-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; });
+    items.forEach(function(it,qi){ h+='<div class="pt-q"><div class="pt-stem">'+(qi+1)+' of '+items.length+'. '+esc(it.stem)+'</div>'; (it.options||[]).forEach(function(o){ h+='<button class="pt-opt" aria-pressed="false" data-pp-qi="'+qi+'" data-key="'+esc(o.key)+'"><b>'+esc(o.key)+'.</b> '+esc(o.t)+'</button>'; }); h+='</div>'; });
     h+='<div style="margin-top:6px"><button class="hm-btn" data-prepost="submit">Submit</button> <span id="ppCount" class="hm-empty" role="status" aria-live="polite" aria-atomic="true"></span></div>';
     root.innerHTML=h; ppUpdateCount();
   }
@@ -85,7 +85,7 @@
   }
   function fdPrepostHandleClick(target,event){
     var el=target.closest&&target.closest('[data-pp-qi]');
-    if(el){ event.preventDefault(); var qi=el.getAttribute('data-pp-qi'); ppAnswers[qi]=el.getAttribute('data-key'); var sib=contentEl.querySelectorAll('[data-pp-qi="'+qi+'"]'); for(var i=0;i<sib.length;i++)sib[i].classList.remove('sel'); el.classList.add('sel'); ppUpdateCount(); return true; }
+    if(el){ event.preventDefault(); var qi=el.getAttribute('data-pp-qi'); ppAnswers[qi]=el.getAttribute('data-key'); var sib=contentEl.querySelectorAll('[data-pp-qi="'+qi+'"]'); for(var i=0;i<sib.length;i++){sib[i].classList.remove('sel');sib[i].setAttribute('aria-pressed','false');} el.classList.add('sel'); el.setAttribute('aria-pressed','true'); ppUpdateCount(); return true; }
     el=target.closest&&target.closest('[data-prepost]'); if(!el)return false;
     event.preventDefault(); if(typeof facultyPreviewRequest!=='undefined'&&facultyPreviewRequest)return true;
     var act=el.getAttribute('data-prepost'), d=ppLoad();
