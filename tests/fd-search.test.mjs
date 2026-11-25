@@ -1114,3 +1114,20 @@ for (const site of ['ms3', 'resident']) {
     }
   });
 }
+
+test('only the standalone collateral query offers two distinct, reachable task destinations', () => {
+  const refs = ['collateral_workflow.md', 'communication-practice.html'];
+  const rows = F.fdSearchResults(REAL_INDEX, '  Collateral  ', SYN, { searchExpanded: true });
+  assert.deepEqual(rows.slice(0, 2).map(r => [r.kind, r.item.ref]), refs.map(ref => ['task', ref]));
+  for (const ref of refs) assert.equal(rows.filter(r => r.item.ref === ref).length, 1);
+  for (const query of ['I need to call family', 'collateral call', 'call family about suicidal thoughts', 'open collateral']) {
+    assert.ok(!F.fdSearchResults(REAL_INDEX, query, SYN, {}).some(r => r.kind === 'task'), query);
+  }
+  assert.equal(F.fdSearchResults(REAL_INDEX, 'I need to call family', SYN, {})[0].item.ref, refs[0]);
+  assert.equal(F.fdSearchResults(REAL_INDEX, 'call family about suicidal thoughts', SYN, {})[0].item.ref, 'pg_suicide.md');
+  const byRef = { ...REAL_INDEX.byRef };
+  delete byRef[refs[1]];
+  assert.ok(!F.fdSearchResults({ ...REAL_INDEX, byRef }, 'collateral', SYN, {}).some(r => r.kind === 'task'));
+  byRef[refs[1]] = { ...REAL_INDEX.byRef[refs[1]], readerOnly: true };
+  assert.ok(!F.fdSearchResults({ ...REAL_INDEX, byRef }, 'collateral', SYN, {}).some(r => r.kind === 'task'));
+});
