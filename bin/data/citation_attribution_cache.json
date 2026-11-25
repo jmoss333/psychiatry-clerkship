@@ -1,6 +1,6 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-11-02",
+  "refreshedAt": "2026-11-23",
   "dois": {
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
@@ -99,6 +99,22 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "28697253"
+    },
+    "10.1001/jama.2022.22744": {
+      "title": "Anxiety Disorders",
+      "container": "JAMA",
+      "containerAlt": [
+        "JAMA"
+      ],
+      "year": 2022,
+      "authors": [
+        "Szuhany",
+        "Simon"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "36573969"
     },
     "10.1001/jama.2022.9805": {
       "title": "Effect of Pharmacogenomic Testing for Drug-Gene Interactions on Medication Selection and Remission of Symptoms in Major Depressive Disorder",
@@ -327,6 +343,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39331392"
+    },
+    "10.1001/jamanetworkopen.2024.58608": {
+      "title": "Lithium for Bipolar Disorder and Risk of Thyroid Dysfunction and Chronic Kidney Disease",
+      "container": "JAMA Netw Open",
+      "containerAlt": [
+        "JAMA Netw Open",
+        "JAMA Network Open",
+        "JAMA network open"
+      ],
+      "year": 2025,
+      "authors": [
+        "Chan",
+        "Solmi",
+        "Correll",
+        "Man Wong",
+        "Lo",
+        "Lai",
+        "Chang"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10",
+      "pmid": "39932712"
     },
     "10.1001/jamapsychiatry.2014.3039": {
       "title": "Dialectical Behavior Therapy for High Suicide Risk in Individuals With Borderline Personality Disorder",
@@ -1003,6 +1042,25 @@
       "status": "resolved",
       "resolvedAt": "2026-10-26",
       "pmid": "42634386"
+    },
+    "10.1007/s00210-024-03210-8": {
+      "title": "Lithium, the gold standard drug for bipolar disorder: analysis of current clinical studies",
+      "container": "Naunyn-Schmiedeberg's Arch Pharmacol",
+      "containerAlt": [
+        "Naunyn Schmiedebergs Arch Pharmacol",
+        "Naunyn-Schmiedeberg's Arch Pharmacol",
+        "Naunyn-Schmiedeberg's Archives of Pharmacology",
+        "Naunyn-Schmiedeberg's archives of pharmacology"
+      ],
+      "year": 2024,
+      "authors": [
+        "Airainer",
+        "Seifert"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10",
+      "pmid": "38916833"
     },
     "10.1007/s00406-023-01716-5": {
       "title": "Clinical predictors of suicidal ideation, suicide attempts and suicide death in depressive disorder: a systematic review and meta-analysis",
@@ -2220,6 +2278,26 @@
       "resolvedAt": "2026-10-11",
       "pmid": "31303314"
     },
+    "10.1016/s0140-6736(21)00359-7": {
+      "title": "Anxiety disorders",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2021,
+      "authors": [
+        "Penninx",
+        "Pine",
+        "Holmes",
+        "Reif"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "33581801"
+    },
     "10.1016/s0140-6736(21)00476-1": {
       "title": "Borderline personality disorder",
       "container": "The Lancet",
@@ -2391,6 +2469,36 @@
       "resolvedAt": "2026-09-27",
       "pmid": "33568244"
     },
+    "10.1017/s0033291722003683": {
+      "title": "CBT treatment delivery formats for panic disorder: a systematic review and network meta-analysis of randomised controlled trials",
+      "container": "Psychol. Med.",
+      "containerAlt": [
+        "Psychol Med",
+        "Psychol. Med.",
+        "Psychological Medicine",
+        "Psychological medicine"
+      ],
+      "year": 2022,
+      "authors": [
+        "Papola",
+        "Ostuzzi",
+        "Tedeschi",
+        "Gastaldon",
+        "Purgato",
+        "Del Giovane",
+        "Pompoli",
+        "Pauley",
+        "Karyotaki",
+        "Sijbrandij",
+        "Furukawa",
+        "Cuijpers",
+        "Barbui"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "37132646"
+    },
     "10.1017/s0033291724003441": {
       "title": "Panic disorder and suicide",
       "container": "Psychol. Med.",
@@ -2479,6 +2587,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "42275028"
+    },
+    "10.1038/nrdp.2017.24": {
+      "title": "Anxiety disorders",
+      "container": "Nat Rev Dis Primers",
+      "containerAlt": [
+        "Nat Rev Dis Primers",
+        "Nature Reviews Disease Primers",
+        "Nature reviews. Disease primers"
+      ],
+      "year": 2017,
+      "authors": [
+        "Craske",
+        "Stein",
+        "Eley",
+        "Milad",
+        "Holmes",
+        "Rapee",
+        "Wittchen"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "28470168"
     },
     "10.1038/s41380-020-00946-6": {
       "title": "Mood stabilizers and/or antipsychotics for bipolar disorder in the maintenance phase: a systematic review and network meta-analysis of randomized controlled trials",
@@ -2939,6 +3070,27 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "33913799"
+    },
+    "10.1080/14737175.2023.2254938": {
+      "title": "Pharmacological approaches to the management of panic disorder in older patients: a systematic review",
+      "container": "Expert Review of Neurotherapeutics",
+      "containerAlt": [
+        "Expert Rev Neurother",
+        "Expert Review of Neurotherapeutics",
+        "Expert review of neurotherapeutics"
+      ],
+      "year": 2023,
+      "authors": [
+        "Caldirola",
+        "De Donatis",
+        "Alciati",
+        "Daccò",
+        "Perna"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "37676054"
     },
     "10.1080/15504263.2024.2434218": {
       "title": "Outcomes and Challenges of Motivational Interviewing in Dual Diagnosis Treatment—A Systematic Review",
@@ -3991,6 +4143,30 @@
       "resolvedAt": "2026-10-05",
       "pmid": "17074942"
     },
+    "10.1176/appi.ajp.2009.09010039": {
+      "title": "A Randomized Trial of Dialectical Behavior Therapy Versus General Psychiatric Management for Borderline Personality Disorder",
+      "container": "AJP",
+      "containerAlt": [
+        "AJP",
+        "Am J Psychiatry",
+        "American Journal of Psychiatry",
+        "The American journal of psychiatry"
+      ],
+      "year": 2009,
+      "authors": [
+        "McMain",
+        "Links",
+        "Gnam",
+        "Guimond",
+        "Cardish",
+        "Korman",
+        "Streiner"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-23",
+      "pmid": "19755574"
+    },
     "10.1176/appi.ajp.2011.10111704": {
       "title": "The Columbia–Suicide Severity Rating Scale: Initial Validity and Internal Consistency Findings From Three Multisite Studies With Adolescents and Adults",
       "container": "AJP",
@@ -4441,6 +4617,27 @@
       "resolvedAt": "2026-10-05",
       "pmid": "38711351"
     },
+    "10.1177/0885066616651582": {
+      "title": "Lithium Poisoning",
+      "container": "J Intensive Care Med",
+      "containerAlt": [
+        "J Intensive Care Med",
+        "Journal of Intensive Care Medicine",
+        "Journal of intensive care medicine"
+      ],
+      "year": 2016,
+      "authors": [
+        "Baird-Gunning",
+        "Lea-Henry",
+        "Hoegberg",
+        "Gosselin",
+        "Roberts"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10",
+      "pmid": "27516079"
+    },
     "10.1177/08850666221114303": {
       "title": "Malignant Catatonia: A Review for the Intensivist",
       "container": "J Intensive Care Med",
@@ -4877,6 +5074,30 @@
       "resolvedAt": "2026-09-27",
       "pmid": "41217072"
     },
+    "10.3389/fpsyt.2020.595584": {
+      "title": "Pharmacotherapy of Anxiety Disorders: Current and Emerging Treatment Options",
+      "container": "Front. Psychiatry",
+      "containerAlt": [
+        "Front Psychiatry",
+        "Front. Psychiatry",
+        "Frontiers in Psychiatry",
+        "Frontiers in psychiatry"
+      ],
+      "year": 2020,
+      "authors": [
+        "Garakani",
+        "Murrough",
+        "Freire",
+        "Thom",
+        "Larkin",
+        "Buono",
+        "Iosifescu"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-16",
+      "pmid": "33424664"
+    },
     "10.4088/jcp.19m13191": {
       "title": "Esketamine Nasal Spray for Rapid Reduction of Major Depressive Disorder Symptoms in Patients Who Have Active Suicidal Ideation With Intent",
       "container": "J. Clin. Psychiatry",
@@ -4903,6 +5124,34 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "32412700"
+    },
+    "10.4088/jcp.v69n0404": {
+      "title": "Prevalence, Correlates, Disability, and Comorbidity of DSM-IV Borderline Personality Disorder",
+      "container": "J. Clin. Psychiatry",
+      "containerAlt": [
+        "J Clin Psychiatry",
+        "J. Clin. Psychiatry",
+        "The Journal of Clinical Psychiatry",
+        "The Journal of clinical psychiatry"
+      ],
+      "year": 2008,
+      "authors": [
+        "Grant",
+        "Chou",
+        "Goldstein",
+        "Huang",
+        "Stinson",
+        "Saha",
+        "Smith",
+        "Dawson",
+        "Pulay",
+        "Pickering",
+        "Ruan"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-23",
+      "pmid": "18426259"
     },
     "10.4088/pcc.17r02185": {
       "title": "Neuroleptic Malignant Syndrome",
@@ -5143,6 +5392,28 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37236789"
+    },
+    "10.1111/acer.14843": {
+      "title": "What is the optimum thiamine dose to treat or prevent Wernicke's encephalopathy or Wernicke–Korsakoff syndrome? Results of a randomized controlled trial",
+      "container": "Alcoholism Clin &amp; Exp Res",
+      "containerAlt": [
+        "Alcohol Clin Exp Res",
+        "Alcoholism Clin &amp; Exp Res",
+        "Alcoholism, clinical and experimental research",
+        "Alcoholism: Clinical and Experimental Research"
+      ],
+      "year": 2022,
+      "authors": [
+        "Dingwall",
+        "Delima",
+        "Binks",
+        "Batey",
+        "Bowden"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-15",
+      "pmid": "35428992"
     }
   },
   "pmids": {
@@ -5161,6 +5432,22 @@
       "source": "pubmed",
       "status": "resolved",
       "resolvedAt": "2026-09-27"
+    },
+    "33587568": {
+      "title": "Bipolar Disorders: Evaluation and Treatment",
+      "container": "Am Fam Physician",
+      "containerAlt": [
+        "Am Fam Physician",
+        "American family physician"
+      ],
+      "year": 2021,
+      "authors": [
+        "Marzani",
+        "Price Neff"
+      ],
+      "source": "pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-10"
     }
   }
 }

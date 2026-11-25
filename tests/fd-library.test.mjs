@@ -661,7 +661,9 @@ print(json.dumps(out))
 // pages, now curriculum.siteLibrary.resident.exclusions -- still reachable by link, not listed.
 // +2 full and +2 shipped on both sites (2026-10-27): maine_law.md and maine-law-navigator.html;
 // +1 full and +1 shipped on both sites (2026-10-27): family-meeting-sim.html.
-const SITES = { ms3: { kit: 31, full: 91, shipped: 116 }, res: { kit: 35, full: 95, shipped: 124 } };
+// +1 shipped per site (2026-11-09): the lithium CotW week (search-only, so full is unchanged).
+// +1 full and +1 shipped on MS3 only (2026-11-19): ms3_book_catalog.md, the MS3-only OUR Place catalog.
+const SITES = { ms3: { kit: 31, full: 91, shipped: 117 }, res: { kit: 35, full: 95, shipped: 125 } };
 
 for (const site of ['ms3', 'res']) {
   const payload = projected[site];

@@ -2250,6 +2250,8 @@
      that script hands the renderer across through this one global (set right after the Reader is
      injected). Null until then, and the preview simply shows no block. */
   var fdMediaPreviewHtml=null;
+  /*__FD_MORGAN_EXPOSURE__*/
+  /*__FD_FEVER_EXAMS__*/
   /*__FD_BEDSIDE_CASES__*/
   /*__FD_CASE_ROUNDS__*/
   function fdFacultyPreviewMedia(ref){
@@ -2920,9 +2922,13 @@
     rxDueState={status:'checking',releasedIds:null};
     return fetch('pharmacy_public.json').then(function(r){if(!r.ok)throw Error('pharmacy feed unavailable');return r.json();})
       .then(rxVerifiedPublic).then(function(data){
-        rxDueState={status:'ready',releasedIds:new Set(rxRecallCards(data).map(function(c){return c.id;}))};
+        rxDueState={status:'ready',releasedIds:new Set(rxRecallCards(data).map(function(c){return c.id;})),
+          pharmacyNames:fdSearchPharmacyNames(data.agents)};
       }).catch(function(){rxDueState={status:'unavailable',releasedIds:null};})
-      .then(function(){if(typeof specialRefresh==='function')specialRefresh();});
+      .then(function(){
+        if(typeof specialRefresh==='function')specialRefresh();
+        if(fdController)fdRefreshSearchResults(fdController.getState());
+      });
   }
   function srsState(){ try{ return JSON.parse(localStorage.getItem('cw_srs_v1')||'null'); }catch(_){ return null; } }
   /* Daily Review's landmark-deck cards are `<deck id>#<question index>` and every deck id in
@@ -3790,11 +3796,15 @@
     }
   }
 
+  function fdSearchLiveState(live){
+    live.pharmacyNames=rxDueState.pharmacyNames;
+    live.bodyIndex=fdBodyIndex;
+    live.facultyPreview=!!facultyPreviewRequest;
+    return live;
+  }
   function fdSearchMarkup(live){
     return fdSurface('search',function(){
-      live.bodyIndex=fdBodyIndex;
-      live.facultyPreview=!!facultyPreviewRequest;
-      return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},live);
+      return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},fdSearchLiveState(live));
     });
   }
 
@@ -3831,6 +3841,30 @@
     }
   }
 
+  /* Start the tap-time read while the Pharmacy document is loading. The request belongs
+     to this frame and this selection. A reload of the same frame needs another fresh read. */
+  function fdPreparePharmacyLookup(frame,card){
+    function request(){
+      return fetch('pharmacy_public.json?lookup=1',{cache:'no-cache'}).then(function(response){
+        /* An older installed worker ignores query strings on cache hits. Its unmarked
+           precache response cannot confirm which drug this name identifies now. */
+        return new URL(response.url).searchParams.get('lookup')==='1'?response:null;
+      }).catch(function(){return null;});
+    }
+    var pending=request();
+    frame.fdPharmacyLookup={
+      read:function(){
+        var response=pending||request();
+        pending=null;
+        return response;
+      },
+      matches:function(agents,id){
+        var match=fdSearchPharmacyNames(agents).get(card.matchedName);
+        return !!match&&match.id===id&&id===card.id;
+      }
+    };
+  }
+
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
     if(state.searchOpen)overlays+=fdSearchMarkup(live);
@@ -3838,7 +3872,23 @@
     if(state.careShareId)overlays+=fdSurface('care-share',function(){
       return fdCareShare(FD_INDEX,state.careShareId||'',state.carePackIds||[]);
     });
-    if(fdOverlayMount)fdOverlayMount.innerHTML=overlays;
+    if(fdOverlayMount){
+      var mounted=fdOverlayMount.querySelector('[data-pharmacy-lookup]');
+      if(!(state.searchOpen&&state.pharmacyLookup&&mounted&&mounted.getAttribute('data-pharmacy-lookup')===state.pharmacyLookup.id)){
+        fdOverlayMount.innerHTML=overlays;
+        var frame=fdOverlayMount.querySelector('[data-pharmacy-lookup] iframe');
+        if(frame&&state.pharmacyLookup.matchedName)fdPreparePharmacyLookup(frame,state.pharmacyLookup);
+        if(frame)frame.addEventListener('load',function(){
+          // Keyboard events inside the same-origin Pharmacy tool do not bubble into Search.
+          if(frame.contentDocument)frame.contentDocument.addEventListener('keydown',function(event){
+            if(event.key==='Escape'&&!event.defaultPrevented){
+              event.preventDefault();
+              fdController.dispatch({'data-fd-pharmacy-back':''});
+            }
+          });
+        });
+      }
+    }
     if(fdNudgeMount){
       var nudge=state.nudge&&(FD_INDEX.byRef||{})[state.nudge];
       fdNudgeMount.innerHTML=nudge?fdNudge(nudge):'';
@@ -4767,6 +4817,10 @@
     fdController=fdWire(fdApp,fdInitial,{
       window:window,document:document,index:FD_INDEX,roles:FD_ROLES,rotationStart:fdRotation,
       render:fdRender,renderTransient:fdRenderTransient,resourceHost:function(){return contentEl;},
+      searchMatches:function(state){
+        var live=fdSearchLiveState(fdLiveState(state));
+        return fdSearchMatches(FD_INDEX,state.query,FD_CURRICULUM.synonyms||{},live);
+      },
       openResource:fdOpenResourceLive,openProgress:fdOpenProgress,
       readingPlaceSession:function(){return fdReadingPlaceSession;},
       disposeReadingPlace:fdDisposeReadingPlace,

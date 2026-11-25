@@ -107,6 +107,11 @@ def collect(args):
     if args.responses:
         cmd += ['--responses', str(args.responses), '--fixture']
     result = subprocess.run(cmd, capture_output=True, text=True)
+    # The pilot's own failure lines name a class and a line, never a message; forward only
+    # those, so the run log says what broke without echoing anything a source returned.
+    for line in (result.stderr or '').splitlines():
+        if line.startswith('Firecrawl pilot'):
+            print(line, file=sys.stderr)
     path = args.out_dir / 'collection/report.json'
     if not path.exists():
         raise ValueError('Collector did not produce an examination report')
@@ -171,8 +176,19 @@ def main():
     args = parser.parse_args()
     try:
         return collect(args)
-    except (OSError, ValueError, KeyError, TypeError):
-        print('Evidence collection incomplete; existing state must not be treated as current.', file=sys.stderr)
+    except Exception as exc:
+        # From Oct 19 to Nov 23, 2026 this branch failed the weekly job six times in a row
+        # with no trace of why. Name the class and the line (never the message) in the log
+        # and in the run receipt, which the workflow uploads as review evidence.
+        where = L.failure_location(exc)
+        print('Evidence collection incomplete (' + where + '); existing state must not be treated as current.',
+              file=sys.stderr)
+        try:
+            if args.out_dir.is_dir() and not (args.out_dir / 'receipt.json').exists():
+                atomic_json(args.out_dir / 'receipt.json', {'status': 'incomplete', 'failure': where,
+                                                            'requested': list(R.DEFAULT_IDS)})
+        except Exception:
+            pass
         return 2
 
 

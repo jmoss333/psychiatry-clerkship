@@ -1594,6 +1594,26 @@
     "contentHash": "bd8d043c553919f317b3bda1a7476f124d0a72bd",
     "clinicalHash": "f03d84017eb1624c1b9aefd5bc6b5c462fd53a04"
   },
+  "cotw_20261109_lithium_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, MS3) added 2026-11-09; awaiting faculty attestation.",
+    "at": "2026-11-09",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261109_lithium_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, resident) added 2026-11-09; awaiting faculty attestation.",
+    "at": "2026-11-09",
+    "by": "Pending faculty review"
+  },
   "ms3_book_catalog.md": {
     "status": "pending",
     "risk": {
