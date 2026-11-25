@@ -10,7 +10,7 @@ import {
 
 const SECRET = '0123456789abcdef0123456789abcdef';
 const NOW = Date.parse('2026-09-26T12:00:00.000Z');
-const CREDENTIAL = credentialHash('student-secret');
+const CREDENTIAL = credentialHash('student-secret', SECRET);
 function binding(overrides = {}) {
   return receiptBinding({
     caseId: 'sp_depression_gated_si_001',
@@ -41,6 +41,12 @@ function codec(overrides = {}) {
   return createReceiptCodec({ secret: SECRET, clock: () => NOW, ...overrides });
 }
 
+test('receipt credential binding is stable across instances and changes with the server secret', () => {
+  assert.equal(credentialHash('student-secret', SECRET), CREDENTIAL);
+  assert.notEqual(credentialHash('student-secret', SECRET.repeat(2)), CREDENTIAL);
+  assert.throws(() => credentialHash('student-secret', 'short'), { code: 'invalid_configuration' });
+});
+
 test('a sealed receipt opens under its own binding and nowhere else', () => {
   const c = codec();
   const token = c.seal(payload(), { binding: BINDING });
@@ -52,7 +58,7 @@ test('a sealed receipt opens under its own binding and nowhere else', () => {
     binding({ origin: 'https://evil.example.test' }),
     binding({ rotationId: 'rotation-2026-10' }),
     // An emergency passcode replacement fails every outstanding receipt closed.
-    binding({ credentialHash: credentialHash('replaced-passcode') }),
+    binding({ credentialHash: credentialHash('replaced-passcode', SECRET) }),
   ]) {
     assert.throws(() => c.open(token, { binding: other }), { status: 400, code: 'invalid_realtime_receipt' });
   }
@@ -126,7 +132,7 @@ test('configuration fails closed', () => {
   assert.throws(() => binding({ packHash: '' }), { code: 'invalid_configuration' });
   assert.throws(() => binding({ caseId: 'x\n' }), { code: 'invalid_configuration' });
   assert.throws(() => binding({ credentialHash: 'not-a-digest' }), { code: 'invalid_configuration' });
-  assert.throws(() => credentialHash(''), { code: 'invalid_configuration' });
+  assert.throws(() => credentialHash('', SECRET), { code: 'invalid_configuration' });
 });
 
 test('two seals of the same payload differ (fresh IV) and both open', () => {

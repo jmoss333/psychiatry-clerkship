@@ -479,7 +479,7 @@
     },
     {
       "id": "qb_anx_002",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -9885,7 +9885,7 @@
     },
     {
       "id": "qb_saf_013",
-      "status": "draft",
+      "status": "attested",
       "type": "sba",
       "category": "safety",
       "competency": [

@@ -607,6 +607,9 @@ function fdReader(index, state, bodyHtml){
   out+='>';
   var back='<button type="button" class="fd-reader__back" data-fd-back>‹ '+
     fdEsc(backLabel)+'</button>';
+  if(st.searchReturn){
+    back='<button type="button" class="fd-reader__back" data-fd-search-return aria-label="Back to search results">‹ Back to search results</button>';
+  }
   if(isTool){
     out+='<div class="fd-reader__toolbar">'+back+fdReaderToolToggle(expanded)+'</div>';
   } else out+=back;

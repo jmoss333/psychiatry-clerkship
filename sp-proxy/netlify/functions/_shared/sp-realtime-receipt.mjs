@@ -14,8 +14,8 @@
 import {
   createCipheriv,
   createDecipheriv,
-  createHash,
   hkdfSync,
+  pbkdf2Sync,
   randomBytes as nodeRandomBytes,
 } from 'node:crypto';
 
@@ -190,14 +190,19 @@ export function receiptBinding({ caseId, packHash, origin, rotationId, credentia
     throw invalidConfiguration('The realtime receipt binding inputs are invalid.');
   }
   if (!/^[a-f0-9]{64}$/.test(credentialHash)) {
-    throw invalidConfiguration('The realtime receipt credential hash must be a SHA-256 hex digest.');
+    throw invalidConfiguration('The realtime receipt credential hash must be a 32-byte hex value.');
   }
   return `sp-realtime-v${VERSION}:${caseId}:${packHash}:${origin}:${rotationId}:${credentialHash}`;
 }
 
-export function credentialHash(secret) {
+export function credentialHash(secret, receiptSecret) {
   if (typeof secret !== 'string' || secret.length === 0) {
     throw invalidConfiguration('The learner credential is missing.');
   }
-  return createHash('sha256').update(secret, 'utf8').digest('hex');
+  if (typeof receiptSecret !== 'string' || Buffer.byteLength(receiptSecret) < 32) {
+    throw invalidConfiguration('The realtime receipt secret must contain at least 32 bytes.');
+  }
+  // Stable across function instances, private to this deployment, and separate from the AES key.
+  const salt = Buffer.from('sp-realtime-credential-v1\0' + receiptSecret, 'utf8');
+  return pbkdf2Sync(secret, salt, 600_000, 32, 'sha256').toString('hex');
 }
