@@ -13,6 +13,7 @@ function fdMountBedsideCases(body) {
   fdMountDinnerMap(body);
   fdMountTherapyChain(body);
   fdMountEctMemory(body);
+  fdMountDuartePosture(body);
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
@@ -1085,6 +1086,80 @@ function fdMountElenaVisit(body) {
     speaker.textContent = line.textContent = status.textContent = '';
     fdBedsideFocus(openings[0]);
   });
+}
+
+function fdMountDuartePosture(body) {
+  const card = body.querySelector('#duarte-posture');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const find = name => card.querySelector('#dp-' + name);
+  const postures = card.querySelectorAll('[data-posture]');
+  const questions = card.querySelectorAll('[data-question]');
+  const sets = card.querySelectorAll('[data-set]');
+  const handoffs = card.querySelectorAll('[data-handoff]');
+  const feedback = find('feedback');
+  const debrief = find('debrief');
+  const visited = new Set();
+
+  function select(buttons, chosen) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === chosen));
+  }
+  function showPosture(button) {
+    const key = button.dataset.posture;
+    visited.add(key);
+    select(postures, button);
+    const panel = card.querySelector('template[data-moment="' + key + '"]');
+    find('moment').replaceChildren(panel.content.cloneNode(true));
+    find('progress').textContent = visited.size + ' of ' + postures.length + ' viewed';
+    find('instruction').hidden = visited.size === postures.length;
+    find('follow').hidden = visited.size !== postures.length;
+  }
+  function clearHandoff() {
+    select(handoffs, null);
+    feedback.hidden = true;
+    feedback.textContent = '';
+    debrief.open = false;
+    debrief.hidden = true;
+  }
+  function chooseQuestion(button) {
+    clearHandoff();
+    select(questions, button);
+    const key = button.dataset.question;
+    const reply = card.querySelector('template[data-reply="' + key + '"]');
+    find('answer').replaceChildren(reply.content.cloneNode(true));
+    find('answer').hidden = false;
+    for (const set of sets) set.hidden = set.dataset.set !== key;
+    find('handoffs').hidden = false;
+    find('med-ref').hidden = key !== 'medication';
+  }
+  function chooseHandoff(button) {
+    select(handoffs, button);
+    const key = button.dataset.handoff;
+    const set = button.closest('[data-set]');
+    feedback.textContent = set.querySelector('template[data-feedback="' + key + '"]').content.textContent;
+    feedback.hidden = false;
+    debrief.open = false;
+    debrief.hidden = key !== 'supported';
+    feedback.focus();
+  }
+  function reset() {
+    visited.clear();
+    select(questions, null);
+    clearHandoff();
+    find('answer').replaceChildren();
+    find('answer').hidden = true;
+    find('handoffs').hidden = true;
+    for (const set of sets) set.hidden = true;
+    showPosture(postures[0]);
+  }
+  for (const button of postures) button.addEventListener('click', () => showPosture(button));
+  for (const button of questions) button.addEventListener('click', () => chooseQuestion(button));
+  for (const button of handoffs) button.addEventListener('click', () => chooseHandoff(button));
+  card.querySelector('[data-reset]').addEventListener('click', () => {
+    reset();
+    postures[0].focus();
+  });
+  reset();
 }
 
 function fdMountRaeReturnVisit(body) {

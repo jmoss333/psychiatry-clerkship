@@ -5646,6 +5646,93 @@ test.describe('Clinical field guide', () => {
     await expect(sample).toBeEmpty();
   });
 
+  test('bedside reading · Mr. Duarte’s handoff uses the postural readings and the chosen account', async ({ page }, info) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, info);
+    await page.goto('/?page=t_geri.md&guideSection=acute-inpatient-management');
+    const body = page.locator('.fd-reader:visible .fd-article[data-ref="t_geri.md"] .fd-article__body');
+    const card = body.locator('#duarte-posture');
+    await expect(card).toHaveCount(1);
+    await expect(card).toBeVisible();
+    const heading = card.locator('xpath=preceding::*[self::h2 or self::h3 or self::p[*[1][self::strong]]][1]');
+    await expect(heading).toContainText(/^Acute inpatient management/i);
+    await expect(card.locator('textarea, input:not([type]), input[type="text"], [contenteditable="true"], [data-compare]')).toHaveCount(0);
+
+    const moment = card.locator('#dp-moment');
+    const follow = card.locator('#dp-follow');
+    const handoffs = card.locator('#dp-handoffs');
+    const feedback = card.locator('#dp-feedback');
+    const debrief = card.locator('details#dp-debrief');
+    for (const id of ['dp-moment', 'dp-follow', 'dp-answer', 'dp-handoffs', 'dp-feedback', 'dp-debrief']) {
+      await expect(body.locator('#' + id)).toHaveCount(1);
+    }
+    await expect(moment).toContainText('138/74');
+    await expect(follow).toBeHidden();
+    await card.locator('[data-posture="standing"]').click();
+    await expect(moment).toContainText('108/62');
+    await expect(moment).toContainText(/3.minute standing reading was not taken/i);
+    await card.locator('[data-posture="standing"]').click();
+    await expect(follow).toBeHidden();
+    await card.locator('[data-posture="sitting"]').click();
+    await expect(moment).not.toContainText(/\b\d{2,3}\s*\/\s*\d{2,3}\b/);
+    await expect(follow).toBeVisible();
+    await expect(handoffs).toBeHidden();
+
+    const facts = { symptom: /vision went gray/i, witness: /caught his elbow/i, medication: /quetiapine/i };
+    const answers = { symptom: /went gray/i, witness: /caught his elbow/i, medication: /quetiapine/i };
+    const positions = new Set();
+    for (const [key, fact] of Object.entries(facts)) {
+      await follow.locator(`[data-question="${key}"]`).click();
+      await expect(card.locator('#dp-answer')).toBeVisible();
+      await expect(card.locator('#dp-answer')).toContainText(answers[key]);
+      const options = handoffs.locator(`[data-set="${key}"] button[data-handoff]`);
+      await expect(handoffs.locator('button[data-handoff]:visible')).toHaveCount(3);
+      await expect(options).toHaveCount(3);
+      await expect(options.first()).toBeVisible();
+      await expect(handoffs.locator('[aria-checked="true"], [aria-pressed="true"]')).toHaveCount(0);
+      await expect(feedback).toBeHidden();
+      await expect(debrief).toBeHidden();
+      const explanations = new Set();
+      for (const error of ['attribution', 'inference']) {
+        const choice = options.and(card.locator(`[data-handoff="${error}"]`));
+        await choice.click();
+        await expect(choice).toHaveAttribute('aria-pressed', 'true');
+        await expect(feedback).toBeVisible();
+        await expect(feedback).toContainText(/\S/);
+        explanations.add(await feedback.innerText());
+        await expect(debrief).toBeHidden();
+      }
+      const supported = options.and(card.locator('[data-handoff="supported"]'));
+      const order = await options.evaluateAll(buttons => buttons.map(button => button.dataset.handoff));
+      positions.add(order.indexOf('supported'));
+      await expect(supported).toContainText('138/74');
+      await expect(supported).toContainText('108/62');
+      await expect(supported).toContainText(fact);
+      for (const [other, otherFact] of Object.entries(facts)) {
+        if (other !== key) await expect(supported).not.toContainText(otherFact);
+      }
+      await supported.press('Enter');
+      await expect(supported).toHaveAttribute('aria-pressed', 'true');
+      await expect(feedback).toBeVisible();
+      explanations.add(await feedback.innerText());
+      expect(explanations.size).toBe(3);
+      await expect(debrief).toBeVisible();
+      await debrief.locator('summary').click();
+      await expect(debrief.getByText(/symptomatic orthostatic hypotension/i).first()).toBeVisible();
+      await expect(debrief.locator('a[href*="cdc.gov"]')).toBeVisible();
+      await expect(debrief.locator('a[href*="dailymed.nlm.nih.gov"]')).toBeVisible({ visible: key === 'medication' });
+    }
+    expect(positions.size).toBeGreaterThan(1);
+    await card.locator('[data-reset]').click();
+    await expect(moment).toContainText('138/74');
+    await expect(follow).toBeHidden();
+    await expect(feedback).toBeHidden();
+    await expect(debrief).toBeHidden();
+    await card.locator('[data-posture="sitting"]').click();
+    await expect(follow).toBeHidden();
+    await expectHealthy(page);
+  });
+
   test('bedside reading · Rae’s return visit and handoff follow the morning question and afternoon update', async ({ page }, info) => {
     const ref = 't_somatic.md';
     await page.setViewportSize(PHONE);

@@ -983,6 +983,7 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `#alex-timing` | Alex’s weekly timeline compares two possible callbacks about the first unusual call. Each rounds update uses the current callback and follow-up question. |
 | `#evening-calls` | Comparing two illustrated calls opens a bedside question and a rounds exercise about the change in the patient’s role. |
 | `#dinner-map` | Three patient answers add stops to the evening map. The nurse’s callback updates the unit pin and determines whether the handoff can confirm a meal is ready for pickup. |
+| `#duarte-posture` | Three illustrated postures separate a supervised blood pressure check from the earlier near-fall. Each follow-up account opens three selectable handoffs with source-specific feedback. |
 | `#therapy-chain` | Two illustrated ward observations bracket the patient’s account. Eliciting and recording both links opens three offers. The team update reflects the selected offer and the patient’s reply. |
 | `#coach-line` | Select a transcript and a student line, invite self-assessment, then rehearse feedback and a next attempt. The transcript and coaching panel stack on narrow screens. |
 | `.visual-practice` | In-reading room choices, paired observation frames, evidence cards, parent accounts and selectable trend charts. Named disclosures keep each answer with its source. The two catatonia frames open independently so learners can compare both observations. |

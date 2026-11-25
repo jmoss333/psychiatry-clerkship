@@ -3514,6 +3514,28 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
   #home-dose-history .mh-scene img{min-height:0;object-fit:contain;background:var(--fd-surface-warm)}
 }
 
+/* The recheck changes posture in place, while the earlier near-fall is elicited separately. */
+#duarte-posture .dp-bedside{margin-block:var(--fd-space-6);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
+#duarte-posture .dp-top,#duarte-posture .dp-vitals,#duarte-posture footer{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:var(--fd-space-3)}
+#duarte-posture .dp-top{padding:var(--fd-space-5) var(--fd-space-5) var(--fd-space-3)}
+#duarte-posture :is(#dp-progress,#dp-instruction,.dp-observation p){font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));color:var(--fd-text-mid)}
+#duarte-posture .dp-rail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--fd-space-2);margin:0 var(--fd-space-4) var(--fd-space-4)}
+#duarte-posture .dp-rail button{min-width:0;padding-inline:var(--fd-space-1);text-align:center}
+#duarte-posture .dp-rail button[aria-pressed=true]{background:var(--fd-teal-deep);color:var(--fd-on-accent);box-shadow:none}
+#duarte-posture #dp-moment img{display:block;width:100%;height:auto;aspect-ratio:1024/508;border-radius:0}
+#duarte-posture #dp-moment figcaption{margin:0;padding:0;color:inherit;text-align:start;font:inherit}
+#duarte-posture .dp-vitals{padding:var(--fd-space-4) var(--fd-space-5);background:var(--fd-teal-wash);color:var(--fd-teal-deep)}
+#duarte-posture .dp-vitals b,#duarte-posture .dp-source{font-size:calc(var(--fd-font-sm)*var(--fd-reading-scale,1));font-weight:700}
+#duarte-posture .dp-vitals strong{font-size:calc(var(--fd-font-section)*var(--fd-reading-scale,1));font-variant-numeric:tabular-nums}
+#duarte-posture .dp-vitals span span{margin-inline-start:var(--fd-space-2);padding-inline-start:var(--fd-space-3);border-inline-start:1px solid var(--fd-line-strong)}
+#duarte-posture .dp-observation{display:grid;gap:var(--fd-space-2);padding:var(--fd-space-5)}
+#duarte-posture .dp-source{display:block;color:var(--fd-teal-deep)}
+#duarte-posture .dp-choices{display:grid;gap:var(--fd-space-3);margin-block:var(--fd-space-4)}
+#duarte-posture .dp-choices button{width:100%;font-weight:500;color:var(--fd-text)}
+#duarte-posture #dp-handoffs{margin-top:var(--fd-space-6)}
+#duarte-posture #dp-debrief p{margin-block-start:var(--fd-space-4)}
+#duarte-posture footer{align-items:center}
+
 /* Alex's callback places one event on the same seven-day strip in either history. */
 #alex-timing .at-case{display:grid;grid-template-columns:minmax(0,34%) minmax(0,1fr);margin-block:var(--fd-space-5);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-sm);background:var(--fd-surface)}
 #alex-timing .at-portrait{position:relative;min-height:8em}
