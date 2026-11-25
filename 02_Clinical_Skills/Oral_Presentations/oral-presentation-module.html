@@ -385,7 +385,7 @@ function ShortUpdates(props){
     e('div',{className:'op-modes',role:'group','aria-label':'Amount of guidance'},['quick','guided'].map(function(view){return button(view==='quick'?'Quick cue':'Guided',function(){move({type:'view',value:view});},{key:view,className:'op-mode','data-oral-view':view,'aria-pressed':item.view===view});})),
     button('Pause & leave',pause,{className:'op-text'}));
   var quick=e('div',{className:'op-cues'},micro.steps.map(function(s,i){return e('div',{className:'op-cue',key:i},
-    button(item.done.indexOf(i)>=0?'✓':String(i+1),function(){move({type:'done',value:i});},{className:'op-cue-number','aria-label':'Mark '+s.t+' practiced','aria-pressed':item.done.indexOf(i)>=0}),
+    button(item.done.indexOf(i)>=0?'✓':String(i+1),function(){move({type:'done',value:i});},{className:'op-cue-number','aria-label':(i+1)+'. Mark '+s.t+' practiced','aria-pressed':item.done.indexOf(i)>=0}),
     e('div',null,e('h3',null,s.t),e('p',null,s.d)),e('span',{className:'op-seconds'},s.sec+' sec'));}));
   var guided=e('section',{className:'op-guided','aria-label':'Guided practice'},
     e('div',{className:'op-steps','aria-label':'Practice cues'},micro.steps.map(function(s,i){return button(String(i+1),function(){pickStep(i);},{key:i,className:'op-step','aria-current':i===item.step?'step':null,'aria-label':'Cue '+(i+1)+': '+s.t});})),

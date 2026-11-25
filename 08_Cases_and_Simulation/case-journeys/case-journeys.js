@@ -87,7 +87,7 @@
   function routeMarkup(data, selected) {
     return '<ol class="opf-route" role="tablist" aria-label="' + escape(data.patient.displayName) + ' chapters">' + data.weeks.map(function (w, i) {
       var number = i + 1, active = number === selected;
-      return '<li class="opf-route__item"><button type="button" id="chapter-tab-' + number + '" class="opf-route__tab" role="tab" aria-controls="chapter-panel" aria-selected="' + (active ? 'true' : 'false') + '" tabindex="' + (active ? '0' : '-1') + '" data-chapter="' + number + '">' +
+      return '<li class="opf-route__item" role="presentation"><button type="button" id="chapter-tab-' + number + '" class="opf-route__tab" role="tab" aria-controls="chapter-panel" aria-selected="' + (active ? 'true' : 'false') + '" tabindex="' + (active ? '0' : '-1') + '" data-chapter="' + number + '">' +
         '<span class="opf-route__node" aria-hidden="true">' + number + '</span><span class="opf-route__copy"><span class="opf-route__week">' + escape(w.label) + '</span><span class="opf-route__title">' + escape(w.title) + '</span></span></button></li>';
     }).join('') + '</ol>';
   }

@@ -88,6 +88,10 @@
   .tlpill{display:inline-block;margin-top:8px;padding:3px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--accent);color:var(--accent-dark);font-size:.74rem;font-weight:600;text-decoration:none}
   @media(prefers-reduced-motion:reduce){.needle,.mini i,.dbar i{transition:none}}
   @media(max-width:720px){.scaleWrap{grid-template-columns:1fr}.readout{position:static}.item{grid-template-columns:1fr auto 66px 42px}}
+  /* Phone (2026-11-25 accessibility pass): at 375px the four-column row was 169px wider than the
+     screen, so the page scrolled sideways. Name on its own line; score picker and value below. The
+     mini bar is aria-hidden decoration and the gauge carries the same information. */
+  @media(max-width:480px){.item{grid-template-columns:minmax(0,1fr) 46px}.item .itemName{grid-column:1/-1}.item select{min-width:0;width:100%;min-height:44px;font-size:16px}.item .mini{display:none}}
   /* C1/C2/C8 (2026-10-21) — objective-sign readout, practice series, note line. Tokens only. */
   .objective{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp3);box-shadow:var(--shadow-sm)}
   .objcount{font-family:var(--font-head);font-size:1.6rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
@@ -338,7 +342,7 @@ function Scale(props){
             e('span',null, i.d || i.ask || '')),
           e('select',{value:v[i.k]||0,'aria-label':i.b,onChange:function(ev){set(i.k,ev.target.value)}},opts),
           e('div',{className:'mini','aria-hidden':'true'},e('i',{style:{width:(r*100)+'%',background:rc(r)}})),
-          e('div',{className:'mval',style:{color:(val===0?'#c9bdae':'var(--text)')}}, val+' / '+i.max));
+          e('div',{className:'mval',style:{color:(val===0?'var(--text-light)':'var(--text)')}}, val+' / '+i.max));
       }),
       e('button',{className:'btn',onClick:function(){setV({})}},'Reset')
     ),
