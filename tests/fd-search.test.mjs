@@ -211,6 +211,25 @@ test('results are capped at 8 however many match', () => {
   assert.ok(F.fdSearchResults(REAL_INDEX, 'a', SYN, {}).length <= 8);
 });
 
+test('a lookup discards an old worker’s unmarked cached feed and revalidates again on frame reload', async () => {
+  const shell = read('spa_index.html');
+  const helper = shell.slice(shell.indexOf('function fdPreparePharmacyLookup('), shell.indexOf('function fdRenderOverlays('));
+  const calls = [];
+  const fresh = { url: 'https://library.example/pharmacy_public.json?lookup=1' };
+  const prepare = new Function('fetch', 'fdSearchPharmacyNames', helper + '\nreturn fdPreparePharmacyLookup;')(
+    async (url, options) => {
+      calls.push([url, options.cache]);
+      return calls.length === 1 ? { url: 'https://library.example/pharmacy_public.json' } : fresh;
+    }, F.fdSearchPharmacyNames);
+  const frame = {};
+  prepare(frame, { id: 'lithium', matchedName: 'lithobid' });
+  assert.equal(calls.length, 1);
+  assert.equal(await frame.fdPharmacyLookup.read(), null);
+  assert.equal(calls.length, 1);
+  assert.equal(await frame.fdPharmacyLookup.read(), fresh);
+  assert.deepEqual(calls, Array(2).fill(['pharmacy_public.json?lookup=1', 'no-cache']));
+});
+
 test('a query matching nothing returns an empty list rather than throwing', () => {
   assert.deepEqual(F.fdSearchResults(REAL_INDEX, 'zzzzqqq', SYN, {}), []);
 });

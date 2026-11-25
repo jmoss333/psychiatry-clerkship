@@ -710,12 +710,15 @@ function rxLabelHref(a){
       $('grid').hidden=true;
     }
     $('q').addEventListener('input',function(e){state.query=e.target.value;if(state.scenario){state.scenario='';renderScenarios();}renderList();});
-    fetch('../pharmacy_public.json').then(function(r){if(!r.ok)throw Error('missing');return r.json();})
+    var searchLookup=lookup&&window.frameElement&&window.frameElement.fdPharmacyLookup;
+    var response=searchLookup?searchLookup.read():fetch('../pharmacy_public.json');
+    response.then(function(r){if(!r||!r.ok)throw Error('missing');return r.json();})
       .then(rxVerifiedPublic).then(function(data){
         state.data=data;
         var want=(location.hash||'').slice(1);
         if(lookup){
-          var current=rxFilterAgents(data,'','').some(function(agent){return agent.id===want;});
+          var current=searchLookup?searchLookup.matches(data.agents,want):
+            rxFilterAgents(data,'','').some(function(agent){return agent.id===want;});
           $('status').textContent=current?'':'This medication card is unavailable.';
           if(current){state.open=want;renderDetail();}
           return;

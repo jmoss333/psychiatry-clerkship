@@ -3852,6 +3852,30 @@
     }
   }
 
+  /* Start the tap-time read while the Pharmacy document is loading. The request belongs
+     to this frame and this selection. A reload of the same frame needs another fresh read. */
+  function fdPreparePharmacyLookup(frame,card){
+    function request(){
+      return fetch('pharmacy_public.json?lookup=1',{cache:'no-cache'}).then(function(response){
+        /* An older installed worker ignores query strings on cache hits. Its unmarked
+           precache response cannot confirm which drug this name identifies now. */
+        return new URL(response.url).searchParams.get('lookup')==='1'?response:null;
+      }).catch(function(){return null;});
+    }
+    var pending=request();
+    frame.fdPharmacyLookup={
+      read:function(){
+        var response=pending||request();
+        pending=null;
+        return response;
+      },
+      matches:function(agents,id){
+        var match=fdSearchPharmacyNames(agents).get(card.matchedName);
+        return !!match&&match.id===id&&id===card.id;
+      }
+    };
+  }
+
   function fdRenderOverlays(state){
     var live=fdLiveState(state), overlays='';
     if(state.searchOpen)overlays+=fdSearchMarkup(live);
@@ -3864,6 +3888,7 @@
       if(!(state.searchOpen&&state.pharmacyLookup&&mounted&&mounted.getAttribute('data-pharmacy-lookup')===state.pharmacyLookup.id)){
         fdOverlayMount.innerHTML=overlays;
         var frame=fdOverlayMount.querySelector('[data-pharmacy-lookup] iframe');
+        if(frame&&state.pharmacyLookup.matchedName)fdPreparePharmacyLookup(frame,state.pharmacyLookup);
         if(frame)frame.addEventListener('load',function(){
           // Keyboard events inside the same-origin Pharmacy tool do not bubble into Search.
           if(frame.contentDocument)frame.contentDocument.addEventListener('keydown',function(event){
