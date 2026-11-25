@@ -74,7 +74,15 @@ const auditDestinations = {
   ECT: 'ect_neuromodulation.md', TMS: 'ect_neuromodulation.md',
   'lithium monitoring': 'med_monitoring.md', 'clozapine constipation': 'med_monitoring.md',
 };
+// Exact-match cards available in both learner editions; keep this independent of the search engine.
+const pharmacyDestinations = new Map([
+  ['sertraline', 'sertraline'], ['Zoloft', 'sertraline'],
+  ['lithium', 'lithium'], ['olanzapine', 'olanzapine'], ['Zyprexa', 'olanzapine'],
+  ['clozapine', 'clozapine'], ['Clozaril', 'clozapine'], ['haloperidol', 'haloperidol'],
+]);
 const medicationCases = medicationAudit.queries.map(query => ({
+  ...(pharmacyDestinations.has(query)
+    ? { first: { ref: pharmacyDestinations.get(query), kind: 'pharmacy' } } : {}),
   category: 'name audit', query,
   ...(medicationAudit.deliberateMisspellings.includes(query)
     ? { empty: true }
@@ -141,16 +149,24 @@ for (const [device, viewport] of [
         await input.fill(expected.query);
         // The input event synchronously renders these rows. Read the displayed
         // results, not fdSearchResults or an unprojected source catalogue.
-        const rows = await dialog.locator('.fd-result').evaluateAll(elements => elements.map(el => ({
-          ref: el.getAttribute('data-fd-safety') || el.getAttribute('data-fd-open'),
-          kind: el.hasAttribute('data-fd-safety') ? 'protocol' : 'item',
-        })));
-        const refs = rows.map(row => row.ref);
+        const rows = await dialog.locator('.fd-result').evaluateAll(elements => elements.map(el => {
+          const targets = [
+            ['protocol', el.getAttribute('data-fd-safety')],
+            ['item', el.getAttribute('data-fd-open')],
+            ['pharmacy', el.getAttribute('data-fd-pharmacy-card')],
+          ].filter(([, ref]) => ref !== null);
+          if (targets.length !== 1) return { ref: null, kind: 'unknown' };
+          const [kind, ref] = targets[0];
+          return { ref, kind };
+        }));
+        const refs = rows.map(row => row.kind === 'pharmacy' ? null : row.ref);
+        const keys = rows.map(row => row.kind === 'pharmacy' ? 'pharmacy:' + row.ref : row.ref);
         const rank = refs.indexOf(expected.topThree);
         const before = refs.indexOf(expected.before);
         const matches = (actual, wanted) => !wanted || (actual?.ref === wanted.ref && actual?.kind === wanted.kind);
-        const passed = rows.length <= 8 && new Set(refs).size === rows.length
-          && rows.every(row => Boolean(row.ref))
+        const passed = rows.length <= 8 && new Set(keys).size === rows.length
+          && rows.every(row => Boolean(row.ref?.trim())
+            && (row.kind !== 'pharmacy' || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.ref)))
           && (expected.empty ? rows.length === 0 : rows.length > 0)
           && (!expected.topThree || (rank >= 0 && rank < 3))
           && (!expected.before || before < 0 || rank < before)
@@ -166,7 +182,30 @@ for (const [device, viewport] of [
       await expect(page.locator('.fd-fallback[role="alert"]')).toHaveCount(0);
       await expectReleaseRevision(page);
       await openSearch();
+      // Reviewed card data is fetched asynchronously; wait for the real UI, not a timeout.
+      await input.fill('Zyprexa');
+      await expect(dialog.locator('.fd-result').first()).toHaveAttribute('data-fd-pharmacy-card', 'olanzapine');
       for (const query of medicationCases) await checkQuery(query);
+
+      await test.step('reviewed Pharmacy card opens and returns to the same search', async () => {
+        await input.fill('Zyprexa');
+        const row = dialog.locator('.fd-result').first();
+        await expect(row).toHaveAttribute('data-fd-pharmacy-card', 'olanzapine');
+        if (device === 'phone') {
+          await input.press('Enter');
+          await expect(row).toBeFocused();
+          await row.press('Enter');
+        } else {
+          await row.click();
+        }
+        const lookup = page.getByRole('dialog', { name: 'olanzapine · Pharmacy card', exact: true });
+        const frame = lookup.frameLocator('iframe');
+        await expect(frame.getByRole('heading', { name: 'olanzapine', exact: true })).toBeVisible();
+        await expect(frame.locator('.stamp')).toContainText('Faculty-reviewed');
+        await lookup.getByRole('button', { name: 'Back to search results', exact: true }).click();
+        await expect(input).toHaveValue('Zyprexa');
+        await expect(row).toBeFocused();
+      });
 
       await test.step('search results open the reading and the safety protocol', async () => {
         await input.fill('lithium/monitoring');
