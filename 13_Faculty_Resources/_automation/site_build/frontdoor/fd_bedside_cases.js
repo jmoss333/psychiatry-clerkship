@@ -16,6 +16,8 @@ function fdMountBedsideCases(body) {
   fdMountRaeReturnVisit(body);
   fdMountTreatmentRationale(body);
   fdMountFollowupStudy(body);
+  fdMountFernTrial(body);
+  fdMountResidentDischargeMap(body);
   fdMountLangCulture(body);
   fdMountCatieStop(body);
   fdMountDayroomChoices(body);
@@ -1272,6 +1274,199 @@ function fdMountTreatmentRationale(body) {
   }
   find('[data-qt-other]').addEventListener('click', () => restart(1 - historyIndex));
   find('[data-qt-reset]').addEventListener('click', () => restart(0));
+}
+
+function fdMountFernTrial(body) {
+  const card = body.querySelector('#fern-trial');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const part = id => card.querySelector('#ft-' + id);
+  const courseTemplates = [...card.querySelectorAll('template[data-course]')];
+  const courses = Object.fromEntries(courseTemplates.map(t => [t.dataset.course, t]));
+  const key = card.querySelector('template[data-feedback-key]').content;
+  const medButtons = [...card.querySelectorAll('button[data-med]')];
+  const endButtons = [...card.querySelectorAll('button[data-end]')];
+  const lines = [...card.querySelectorAll('button[data-line]')];
+  const sources = [['note', 'read'], ['words', 'ask']];
+  let active, visits, handoff;
+
+  function selected(buttons, field, choice) {
+    for (const btn of buttons) btn.setAttribute('aria-pressed', String(btn.dataset[field] === choice));
+  }
+  function matched(med) {
+    return visits[med].mark === courses[med].dataset.target;
+  }
+  function otherMed() {
+    return active === 's' ? 'e' : 's';
+  }
+  function render() {
+    const visit = visits[active];
+    const content = courses[active].content;
+    const mark = visit.mark;
+    const total = Object.keys(courses).filter(matched).length;
+    selected(medButtons, 'med', active);
+    part('med-title').textContent = content.querySelector('[data-title]').textContent;
+    for (const [source, button] of sources) {
+      part(source).textContent = content.querySelector('[data-' + source + ']').textContent;
+      part(source).hidden = !visit.open.has(source);
+      part(button).setAttribute('aria-expanded', String(visit.open.has(source)));
+    }
+    for (const [i, bar] of [...part('actual').children].entries()) {
+      bar.classList.toggle('full', mark === 'eight' || (i === 0 && (mark === 'first' || mark === 'partial')));
+      bar.classList.toggle('partial', mark === 'partial' && i === 1);
+    }
+    part('track-state').textContent = mark
+      ? 'Your timeline · ' + key.querySelector('[data-span="' + mark + '"]').textContent
+      : 'Awaiting your reconstruction.';
+    part('rebuild').hidden = visit.seen.size !== sources.length;
+    selected(endButtons, 'end', mark);
+    part('coach').hidden = !mark;
+    part('coach').textContent = mark ? content.querySelector('[data-feedback="' + mark + '"]').textContent : '';
+    part('coach').dataset.fit = String(matched(active));
+    part('progress').textContent = total + ' of 2 timelines matched';
+    part('next').hidden = !matched(active) || total === 2;
+    part('next').textContent = 'Open ' + courses[otherMed()].content.querySelector('[data-title]').textContent.toLowerCase() + ' →';
+    part('handoff').hidden = total !== 2;
+    if (total !== 2) handoff = null;
+    selected(lines, 'line', handoff);
+    part('line-feedback').hidden = !handoff;
+    part('line-feedback').textContent = handoff ? key.querySelector('[data-handoff="' + handoff + '"]').textContent : '';
+    part('line-feedback').dataset.fit = String(handoff === 'one');
+    part('debrief').hidden = handoff !== 'one';
+    if (part('debrief').hidden) part('debrief').open = false;
+  }
+  function visit(med) {
+    active = med;
+    render();
+    part('med-title').focus();
+  }
+  function reset() {
+    active = 's';
+    visits = Object.fromEntries(Object.keys(courses).map(med => [med, { seen: new Set(), open: new Set(), mark: null }]));
+    handoff = null;
+    render();
+  }
+  for (const button of medButtons) button.addEventListener('click', () => visit(button.dataset.med));
+  for (const [source, button] of sources) part(button).addEventListener('click', () => {
+    const {open, seen} = visits[active];
+    if (open.has(source)) open.delete(source);
+    else open.add(source);
+    seen.add(source);
+    render();
+  });
+  for (const button of endButtons) button.addEventListener('click', () => {
+    visits[active].mark = button.dataset.end;
+    render();
+  });
+  part('next').addEventListener('click', () => visit(otherMed()));
+  for (const button of lines) button.addEventListener('click', () => {
+    handoff = button.dataset.line;
+    render();
+  });
+  part('reset').addEventListener('click', () => {
+    reset();
+    medButtons[0].focus();
+  });
+  reset();
+}
+
+function fdMountResidentDischargeMap(body) {
+  const card = body.querySelector('#overnight-discharge-map');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = name => card.querySelector('#dm-' + name);
+  const tabs = Array.from(card.querySelectorAll('button[data-plan]'));
+  const sources = Array.from(card.querySelectorAll('button[data-node]'));
+  const options = field('lines');
+  const feedback = field('feedback');
+  const compare = field('compare');
+  const night = field('night');
+  const badge = field('night-status');
+  const initialNight = night.textContent;
+  const initialStatus = badge.textContent;
+  const visits = new Map();
+  let account;
+  let visit;
+
+  function render() {
+    const status = account.querySelector('[data-status]');
+    night.textContent = visit.heard.has('callback') ? account.querySelector('[data-result]').textContent
+      : visit.heard.has('patient') ? account.querySelector('[data-proposed]').textContent : initialNight;
+    badge.textContent = visit.heard.has('callback') ? status.textContent
+      : visit.heard.has('patient') ? badge.dataset.expectation : initialStatus;
+    badge.dataset.status = visit.heard.has('callback') ? status.dataset.status : 'pending';
+    for (const button of sources) {
+      const key = button.dataset.node;
+      const answer = account.querySelector('[data-reply="' + key + '"]');
+      const quote = field(key + '-quote');
+      button.textContent = answer.dataset.button;
+      button.setAttribute('aria-expanded', String(visit.open.has(key)));
+      button.disabled = key === 'callback' && !visit.heard.has('patient');
+      quote.hidden = !visit.open.has(key);
+      quote.querySelector('.stamp').textContent = answer.dataset.speaker;
+      quote.querySelector('blockquote').textContent = quote.hidden ? '' : answer.textContent;
+    }
+    field('question').hidden = !visit.heard.has('callback');
+    for (const option of options.children) {
+      option.setAttribute('aria-pressed', String(option.dataset.choice === visit.choice));
+    }
+    feedback.hidden = visit.choice === null;
+    feedback.textContent = feedback.hidden ? '' : account.querySelector('[data-coaching="' + visit.choice + '"]').textContent;
+    feedback.dataset.fit = String(visit.matched);
+    const count = Array.from(visits.values()).filter(item => item.matched).length;
+    field('progress').textContent = count + ' of ' + tabs.length + ' handoffs matched';
+    compare.hidden = count !== tabs.length;
+    if (compare.hidden) compare.open = false;
+  }
+
+  function enter(tab) {
+    const key = tab.dataset.plan;
+    if (!visits.has(key)) visits.set(key, { heard: new Set(), open: new Set(), choice: null, matched: false });
+    visit = visits.get(key);
+    account = card.querySelector('template[data-account="' + key + '"]').content;
+    field('map-title').textContent = account.querySelector('[data-title]').textContent;
+    for (const button of tabs) button.setAttribute('aria-pressed', String(button === tab));
+    options.replaceChildren(...account.querySelector('[data-handoffs]').cloneNode(true).children);
+    render();
+  }
+
+  function showIntake(open) {
+    field('day-source').setAttribute('aria-expanded', String(open));
+    field('day-quote').hidden = !open;
+  }
+
+  function reset() {
+    visits.clear();
+    showIntake(false);
+    enter(tabs[0]);
+  }
+
+  for (const tab of tabs) tab.addEventListener('click', () => {
+    enter(tab);
+    field('map-title').focus();
+  });
+  for (const button of sources) button.addEventListener('click', () => {
+    const key = button.dataset.node;
+    visit.heard.add(key);
+    if (visit.open.has(key)) visit.open.delete(key);
+    else visit.open.add(key);
+    render();
+  });
+  field('day-source').addEventListener('click', () => showIntake(field('day-quote').hidden));
+  options.addEventListener('click', event => {
+    const button = event.target.closest('button[data-choice]');
+    if (!button || !visit.heard.has('callback')) return;
+    visit.choice = button.dataset.choice;
+    visit.matched = button.hasAttribute('data-matched');
+    render();
+  });
+  field('reset').addEventListener('click', () => {
+    reset();
+    tabs[0].focus();
+  });
+  reset();
 }
 
 function fdMountLangCulture(body) {

@@ -3543,6 +3543,50 @@ test.describe('Interactive readings', () => {
     }
   });
 
+  test('Fern’s handoff follows actual antidepressant exposure in both histories', async ({ page }, testInfo) => {
+    test.skip(!isResidentProject(testInfo.project.name), 'Advanced Psychopharmacology is a resident reading');
+    await page.goto('/?page=adv_psychopharm.md&guideFind=Did+both+antidepressants+get+a+fair+trial');
+    const card = page.locator('.fd-reader:visible #fern-trial');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Treatment-resistant depression');
+    for (const [med, end] of [['e', 'eight'], ['s', 'partial']]) {
+      await card.locator('[data-med="' + med + '"]').click();
+      await card.locator('#ft-ask').click();
+      await expect(card.locator('#ft-rebuild')).toBeHidden();
+      await card.locator('#ft-read').click();
+      await card.locator('[data-end="' + end + '"]').click();
+      await expect(card.locator('#ft-coach')).toHaveAttribute('data-fit', 'true');
+    }
+    await card.locator('[data-line="both"]').click();
+    await expect(card.locator('#ft-line-feedback')).toContainText('before the planned dose increase');
+    await card.locator('[data-line="one"]').click();
+    await expect(card.locator('#ft-debrief')).toBeVisible();
+    await card.locator('[data-end="unknown"]').click();
+    await expect(card.locator('#ft-handoff')).toBeHidden();
+    await card.locator('[data-end="partial"]').click();
+    await expect(card.locator('#ft-line-feedback')).toBeHidden();
+  });
+
+  test('Overnight discharge handoffs follow each callback independently of the day program', async ({ page }, testInfo) => {
+    test.skip(!isResidentProject(testInfo.project.name), 'Systems-Based Practice is a resident reading');
+    await page.goto('/?page=systems_medlegal.md&guideFind=Where+will+they+sleep');
+    const card = page.locator('.fd-reader:visible #overnight-discharge-map');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Disposition and systems-based practice');
+    for (const [patient, choice, quote] of [['b', '2', 'haven’t assigned him a bed'], ['a', '0', 'tonight works']]) {
+      await card.locator('[data-plan="' + patient + '"]').click();
+      await expect(card.locator('[data-node="callback"]')).toBeDisabled();
+      await card.locator('[data-node="patient"]').click();
+      await card.locator('[data-node="callback"]').click();
+      await expect(card.locator('#dm-callback-quote')).toContainText(quote);
+      await card.locator('[data-choice="' + choice + '"]').click();
+      await expect(card.locator('#dm-feedback')).toHaveAttribute('data-fit', 'true');
+    }
+    await expect(card.locator('#dm-compare')).toBeVisible();
+    await card.locator('[data-choice="1"]').click();
+    await expect(card.locator('#dm-compare')).toBeHidden();
+    await card.locator('#dm-reset').click();
+    await expect(card.locator('#dm-progress')).toHaveText('0 of 2 handoffs matched');
+  });
+
   test('Ms. Lang’s culture stays paired with each interview and both handoffs unlock the comparison', async ({ page }) => {
     await page.goto('/?page=medical_workup.md&guideSection=baseline-workup-of-the-new-admission&guideFind=The+urine+culture+is+positive');
     const card = page.locator('.fd-reader:visible [data-lang-culture]');

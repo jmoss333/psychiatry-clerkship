@@ -85,6 +85,10 @@ RES_EXTRA=[
 # Fail closed (2026-08-01 audit): the copytree base means a missing resident-only
 # source would silently ship the inherited MS3 file under the resident nav title.
 common.copy_required_sources(RES_EXTRA, LIB, OUT+"/content", label="resident content")
+common.copy_required_sources(
+    [("14_Tracks/Resident/illustrations/fern-calendar.webp", "fern-calendar.webp")],
+    LIB, OUT+"/illustrations", label="resident illustrations",
+)
 
 # ---- CRISIS-CONTACT BLOCK on resident-only markdown ----------------------------------
 # The pages inherited via the MS3 copytree already carry the RENDERED block, because

@@ -15,6 +15,88 @@
 
 **Disposition and systems-based practice** — Discharge planning starts at admission. Match the patient to the least restrictive level of care that is safe — and note you are choosing along two axes, not one. **Treatment intensity** descends inpatient → residential → partial hospitalization (PHP) → intensive outpatient (IOP) → routine outpatient; residential is a 24-hour supervised setting and is therefore *more* restrictive than PHP or IOP, which the patient goes home from at night, so it is not a step down from them. **Wraparound supports** attach to any of those rather than sitting between them: assertive community treatment (ACT) or community case management, supportive housing or a group home, peer support. Reconcile medications, schedule a concrete first appointment (not just a phone number — scheduling itself raises follow-up rates), and do a warm handoff to the receiving team; aim for follow-up within 7 days given the elevated post-discharge suicide risk. Expect utilization-review and payer pressure on length of stay, and know the hard dispositions that consume inpatient days: homelessness, the need for guardianship, patients leaving against medical advice (AMA), and psychiatric boarding while awaiting placement. Working these systemic barriers — not just the symptoms — is core to the role.
 
+<section class="bedside-case" id="overnight-discharge-map" aria-labelledby="dm-title">
+<h3 id="dm-title">Same day program. Where will they sleep?</h3>
+<p class="dm-lead">Monday, 1:30 p.m. discharge huddle. Two patients have an intake at the same partial hospitalization program tomorrow at 9 a.m. The attending asks, “And what’s the plan between leaving here and getting there?”</p>
+<div class="dm-switch" role="group" aria-label="Choose a fictional patient">
+  <button type="button" data-plan="a" aria-pressed="true">Tamsin</button>
+  <button type="button" data-plan="b" aria-pressed="false">Wes</button>
+</div>
+<figure class="dm-map" aria-labelledby="dm-map-title">
+  <figcaption class="dm-map-head"><h4 id="dm-map-title" tabindex="-1">Tamsin’s discharge map</h4><span>Fictional case</span></figcaption>
+  <div class="dm-stops">
+    <div class="dm-stop">
+      <div class="dm-sky dm-nightsky" aria-hidden="true"><i class="dm-moon"></i><i class="dm-star"></i><div class="dm-blocks"><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="dm-caption"><span class="dm-dateline">Monday night</span><h4>Overnight stay</h4>
+        <p id="dm-night" aria-live="polite">Ask the patient where they plan to stay.</p>
+        <span id="dm-night-status" class="dm-status" data-status="pending" data-expectation="Patient’s expectation">To be checked</span>
+      </div>
+    </div>
+    <div class="dm-stop" id="dm-day">
+      <div class="dm-sky dm-daysky" aria-hidden="true"><i class="dm-sun"></i><div class="dm-blocks"><i></i><i></i><i></i><i></i></div></div>
+      <div class="dm-caption"><span class="dm-dateline">Tomorrow · 9 a.m.</span><h4>Day treatment</h4>
+        <p>Partial hospitalization intake.</p>
+        <button type="button" id="dm-day-source" class="dm-status" data-status="confirmed" aria-expanded="false" aria-controls="dm-day-quote" aria-label="Confirmed by PHP. Read the intake confirmation">Confirmed by PHP</button>
+      </div>
+    </div>
+  </div>
+  <p class="dm-intake-note" id="dm-day-quote" hidden><strong>Program coordinator · Monday, noon</strong>“We have both intake visits booked for Tuesday at nine. We close in the afternoon. Each person needs somewhere to stay overnight.”</p>
+</figure>
+<section class="dm-sources" aria-labelledby="dm-sources-title">
+  <h4 id="dm-sources-title">Check tonight’s plan</h4><p>Start with the patient, then open the callback they agreed to.</p>
+  <div class="dm-buttons">
+    <button type="button" data-node="patient" aria-controls="dm-patient-quote" aria-expanded="false">Ask Tamsin about tonight</button>
+    <div class="case-reply" id="dm-patient-quote" hidden><span class="stamp"></span><blockquote></blockquote></div>
+    <button type="button" data-node="callback" aria-controls="dm-callback-quote" aria-expanded="false" disabled>Read her sister’s callback</button>
+    <div class="case-reply" id="dm-callback-quote" hidden><span class="stamp"></span><blockquote></blockquote></div>
+  </div>
+</section>
+<section class="dm-handoff" id="dm-question" aria-labelledby="dm-handoff-title" hidden>
+  <h4 id="dm-handoff-title">What goes in the team update?</h4><p>Choose the line you would give on rounds.</p>
+  <div id="dm-lines" class="dm-buttons" role="group" aria-labelledby="dm-handoff-title"></div>
+  <p id="dm-feedback" class="case-reply" role="status" hidden></p>
+</section>
+<details id="dm-compare" hidden><summary>Compare the two plans</summary>
+  <p><strong>Tamsin</strong> has a confirmed place to stay with her sister tonight. She and the team still need to plan beyond that first night.</p>
+  <p><strong>Wes</strong> has agreed to a shelter referral. The desk has received it and has yet to assign a bed. Social work, Wes and the team have an open decision for today.</p>
+  <p>The program confirmed the same appointment for both patients. Discharge readiness also depends on the person’s current clinical needs and on a workable plan outside program hours.</p>
+  <a href="https://www.medicare.gov/coverage/mental-health-care-outpatient-partial-hospitalization">What partial hospitalization provides · Medicare</a>
+</details>
+<footer class="dm-foot"><span id="dm-progress" role="status">0 of 2 handoffs matched</span><button id="dm-reset" class="case-link" type="button">Start again</button></footer>
+<template data-account="a">
+  <span data-title>Tamsin’s discharge map</span>
+  <span data-proposed>Tamsin hopes to stay with her sister.</span>
+  <span data-result>Her sister confirmed a place tonight only.</span>
+  <span data-status="confirmed">Confirmed for tonight</span>
+  <span data-reply="patient" data-button="Ask Tamsin about tonight" data-speaker="Tamsin">“My sister said I could come over. I think she meant tonight, but we didn’t talk about tomorrow. Can we call her together?”</span>
+  <span data-reply="callback" data-button="Read her sister’s callback" data-speaker="Her sister">“Yes, tonight works. I can meet her at my apartment after work. Tomorrow I leave for an overnight shift, so let’s figure that part out separately.”</span>
+  <div data-handoffs>
+    <button type="button" data-choice="0" data-matched aria-pressed="false" aria-controls="dm-feedback">“Tamsin and her sister confirmed tonight at the apartment. PHP intake is tomorrow at nine. We still need to ask Tamsin about tomorrow night.”</button>
+    <button type="button" data-choice="1" aria-pressed="false" aria-controls="dm-feedback">“Tamsin can stay with her sister while she attends PHP. Both parts of the plan are settled.”</button>
+    <button type="button" data-choice="2" aria-pressed="false" aria-controls="dm-feedback">“Housing is still unconfirmed. Let’s hold off on reporting her sister’s apartment until we have a longer-term plan.”</button>
+  </div>
+  <span data-coaching="0">You named who confirmed the stay and how long the offer lasts. The appointment and the overnight plan each have their own source.</span>
+  <span data-coaching="1">Her sister offered one night. This update turns a specific offer into an open-ended arrangement.</span>
+  <span data-coaching="2">Tonight was confirmed with both people. You can report that while naming the question about tomorrow night.</span>
+</template>
+<template data-account="b">
+  <span data-title>Wes’s discharge map</span>
+  <span data-proposed>Wes expects to stay at the shelter.</span>
+  <span data-result>Shelter referral received. No bed assigned for tonight.</span>
+  <span data-status="pending">Bed still unconfirmed</span>
+  <span data-reply="patient" data-button="Ask Wes about tonight" data-speaker="Wes">“The social worker sent my name over. Last time they had a bed for me, so I figured I’d go there after I leave. Can we check before I pack my stuff?”</span>
+  <span data-reply="callback" data-button="Read the housing desk’s callback" data-speaker="Housing desk">“We have his referral. We haven’t assigned him a bed for tonight. Call our desk again at three, when we know about openings.”</span>
+  <div data-handoffs>
+    <button type="button" data-choice="0" aria-pressed="false" aria-controls="dm-feedback">“The shelter received his referral, so Wes has a bed for tonight. Tomorrow’s PHP intake is confirmed.”</button>
+    <button type="button" data-choice="1" aria-pressed="false" aria-controls="dm-feedback">“Since Wes has no confirmed bed, the PHP referral should be cancelled and changed to residential treatment.”</button>
+    <button type="button" data-choice="2" data-matched aria-pressed="false" aria-controls="dm-feedback">“Tomorrow’s PHP intake is confirmed. The shelter hasn’t assigned Wes a bed for tonight. I’ll ask social work to call the desk with Wes at three and bring a backup plan back to huddle.”</button>
+  </div>
+  <span data-coaching="0">The housing desk confirmed receipt of a referral. It also said it has not assigned a bed.</span>
+  <span data-coaching="1">The callback identifies an overnight housing gap. The team still needs to review his clinical needs and explore options with him before changing the treatment plan.</span>
+  <span data-coaching="2">You preserved the confirmed appointment, named the unresolved bed, and proposed an owner and a time for follow-up with Wes.</span>
+</template>
+</section>
+
 **What the resident does**
 - Writes the admission H&P and problem-oriented daily notes; documents explicit risk reasoning, not just scores.
 - Completes and charts four-abilities capacity assessments tied to the specific decision at hand.
@@ -36,3 +118,5 @@
 **Pair with** — [Decisional Capacity (tool)](?page=exp_consult.md), [Family & Discharge](?page=exp_family.md), [Evidence-Based Inpatient Psychiatry](?page=evidence_inpatient.md)
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+<!-- crisis-block -->
