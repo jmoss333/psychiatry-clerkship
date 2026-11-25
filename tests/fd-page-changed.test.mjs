@@ -52,11 +52,16 @@ test('an unmarked edit never shows the notice: the typo-fix case', () => {
   assert.equal(seen.changed, false, 'a marker removed is not an update');
 });
 
-test('a marker dated before the learner\'s last open stays silent (back-dated, already read)', () => {
-  const seen = F.fdPageSeenStep({ 'cotw.md': { v: '', at: '2026-11-25' } }, 'cotw.md', '2026-11-24', true, DAY3);
-  assert.equal(seen.changed, false);
-  const sameDay = F.fdPageSeenStep({ 'cotw.md': { v: '', at: '2026-11-24' } }, 'cotw.md', '2026-11-24', true, DAY3);
-  assert.equal(sameDay.changed, true, 'opened on the day of the update, possibly before it shipped: say so');
+test('the marker decides, not its date: a correction that ships after its marked day still notifies', () => {
+  // Marked 2026-11-24, reached learners 11-26 (release train or a delayed merge); this learner read
+  // the OLD page on 11-25. The author's date is not the serving date, so it must not suppress.
+  const late = F.fdPageSeenStep({ 'cotw.md': { v: '', at: '2026-11-25' } }, 'cotw.md', '2026-11-24', true, DAY3);
+  assert.equal(late.changed, true);
+  assert.equal(late.lastSeen, '2026-11-25');
+  const lateNext = F.fdPageSeenStep({ 'cotw.md': { v: '2026-11-01', at: '2026-11-25' } }, 'cotw.md', '2026-11-24', true, DAY3);
+  assert.equal(lateNext.changed, true, 'the same for a page that already had a marker');
+  // The accepted cost: a back-dated marker on a change this learner already read prompts one skim.
+  assert.equal(F.fdPageSeenStep(late.next, 'cotw.md', '2026-11-24', true, DAY3).changed, false, 'and only once');
 });
 
 test('rows from the first version (whole-text fingerprint) migrate as "no marker seen"', () => {
@@ -65,9 +70,9 @@ test('rows from the first version (whole-text fingerprint) migrate as "no marker
   assert.equal(unmarked.changed, false, 'a page with no marker never notifies, whatever its old hash');
   assert.deepEqual(unmarked.next['other.md'], { v: '', at: '2026-11-21' });
   assert.equal(F.fdPageSeenStep(legacy, 'cotw.md', '2026-11-24', true, DAY2).changed, true,
-    'read on 11-20, marked updated 11-24: notify');
-  assert.equal(F.fdPageSeenStep(legacy, 'cotw.md', '2026-11-19', true, DAY2).changed, false,
-    'read on 11-20, marked updated 11-19: already read the update');
+    'read under the first version, now marked updated: notify');
+  assert.equal(F.fdPageSeenStep(legacy, 'cotw.md', '2026-11-19', true, DAY2).changed, true,
+    'a marker dated before the last open still notifies: the date is not when it shipped');
 });
 
 test('a page not marked read records the marker but never shows the notice', () => {
@@ -103,6 +108,9 @@ test('the notice is plain status text with no link, no button and no clinical wo
     '<p class="fd-page-changed" role="status">This page was updated on 2026-11-24, after you last opened it on 2026-11-20. You marked it read, so skim it again for what changed.</p>');
   assert.equal(F.fdPageChangedHtml('', '2026-11-24'),
     '<p class="fd-page-changed" role="status">This page was updated on 2026-11-24, after you last opened it. You marked it read, so skim it again for what changed.</p>');
+  assert.equal(F.fdPageChangedHtml('2026-11-25', '2026-11-24'),
+    '<p class="fd-page-changed" role="status">This page was updated after you last opened it on 2026-11-25. You marked it read, so skim it again for what changed.</p>',
+    'a correction that shipped after its marked day never reads as updated before the visit');
   assert.doesNotMatch(F.fdPageChangedHtml('<script>', '<img onerror=x>'), /script|img/);
 });
 

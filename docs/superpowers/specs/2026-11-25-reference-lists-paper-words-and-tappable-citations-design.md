@@ -89,14 +89,16 @@ answer on the wards.
 
 `frontdoor/fd_page_changed.js` stores, per reading, the marker it last saw and the day it was last
 opened (`cw_page_seen_v1`, ref → `{v, at}`, capped at 400 pages, oldest dropped). When a page the
-learner marked read (`cw_progress_v1`, read only) opens with a marker that differs from the stored
-one and is not older than the learner's last open, one status line goes under its title: "This page
-was updated on {marked day}, after you last opened it on {last open}. You marked it read, so skim it
-again for what changed." It shows once; the next open is silent. "Not older than the last open"
-keeps a marker added after the fact, for a change the learner already read, from notifying. Rows the
-first version wrote (`{h, at}`) are read as "no marker seen", so a page that gains its first marker
-notifies exactly the learners who last opened it on or before the marked day, and an unmarked page
-never notifies. It never writes canonical progress, never sends anything, and never runs in the
+learner marked read (`cw_progress_v1`, read only) opens with a marker that differs from the one the
+device last saw on it, one status line goes under its title: "This page was updated on {marked day},
+after you last opened it on {last open}. You marked it read, so skim it again for what changed." It
+shows once; the next open is silent. Only the marker decides, never its date against the open date:
+the author's date is not the day the change reached learners (the release train or a delayed merge
+can ship an 11-24 correction on 11-26), so a learner who read the old page in between is still told
+(Codex review on #1312). The accepted cost: a marker added after the fact, for a change the learner
+already read, prompts one needless skim. Rows the first version wrote (`{h, at}`) are read as "no
+marker seen", so a page that gains its first marker notifies every learner who marked it read
+before, and an unmarked page never notifies. It never writes canonical progress, never sends anything, and never runs in the
 faculty preview. "Erase everything" clears it with every other `cw_` key. Storage that throws or
 holds junk yields no notice, never an error, and a row that cannot be saved shows no notice (it
 would otherwise repeat forever).
@@ -109,7 +111,7 @@ threshold. A misspelt marker or an impossible date is caught at PR time.
 **Acceptance.** `tests/fd-page-changed.test.mjs`: the parser reads only the marker (a typo or an
 unmarked edit is no change, a calendar-invalid date is none); first visit is a silent baseline;
 notice once, then silence, then again for the next marked update; never for a page not marked read;
-a back-dated marker is silent; first-version rows migrate; junk and blocked storage never throw or
+a correction shipped after its marked day still notifies; first-version rows migrate; junk and blocked storage never throw or
 notify; the store caps at 400; wired into the learner reader for readings only.
 `tests/content-updated-marker.test.mjs`: on every shipped reading source, anything that looks like
 the marker is the marker, real-dated, at most one, and the reader's parser reads the same date.

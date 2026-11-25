@@ -22,11 +22,14 @@
 
    The device keeps, per reading, the marker it last saw and the day it was last opened
    (cw_page_seen_v1, ref -> {v, at}). When a page the learner marked read is opened with a marker
-   that differs from the stored one AND is not older than their last open, the reader says so
-   once, above the page, with both dates. "Not older" stops a marker added after the fact, for a
-   change the learner already read, from notifying. Rows written by the first version
-   ({h, at}, no marker) are read as "no marker seen", so a page that gains its first marker
-   notifies exactly the learners who last opened it on or before the marked day.
+   that differs from the one this device last saw on it, the reader says so once, above the page,
+   with both dates. Only the marker decides, never its date against the open date: the author's
+   date is not the day the change reached learners (the release train, or a review that delays a
+   merge, can ship a 11-24 correction on 11-26), so a learner who read the old page on 11-25 must
+   still be told. The cost runs the safe way: a marker added after the fact for a change the
+   learner already read prompts one needless skim. Rows written by the first version ({h, at},
+   no marker) are read as "no marker seen", so a page that gains its first marker notifies every
+   learner who marked it read before.
 
    What it never does: tell the learner WHAT changed, send anything anywhere, or touch the
    canonical progress store (cw_progress_v1). The store is its own cw_ key, so "Erase everything"
@@ -66,7 +69,7 @@ function fdPageSeenStep(seen, ref, version, isDone, nowMs){
     else if(typeof row.h==='string'&&/^[0-9a-f]{8}$/.test(row.h)) map[k]={v:'', at:at};
   }
   var prev=Object.prototype.hasOwnProperty.call(map,ref)?map[ref]:null;
-  var changed=!!(isDone&&prev&&ver&&ver!==prev.v&&ver>=prev.at);
+  var changed=!!(isDone&&prev&&ver&&ver!==prev.v);
   delete map[ref];
   map[ref]={v:ver, at:fdPageSeenDay(nowMs)};
   /* Oldest-first insertion order: past the cap, drop from the front. */
@@ -75,11 +78,13 @@ function fdPageSeenStep(seen, ref, version, isDone, nowMs){
   return {changed:changed, lastSeen:prev?prev.at:'', updated:ver, next:map};
 }
 
+/* The marked day is named only when it is not before the last open: a correction marked 11-24 that
+   shipped on 11-26 would otherwise read "updated on 11-24, after you last opened it on 11-25". */
 function fdPageChangedHtml(lastSeen, updated){
-  var on=FD_DAY_RE.test(updated||'')?' on '+updated:'';
   var when=FD_DAY_RE.test(lastSeen||'')?' on '+lastSeen:'';
+  var on=FD_DAY_RE.test(updated||'')&&!(when&&updated<lastSeen)?' on '+updated+',':'';
   return '<p class="fd-page-changed" role="status">This page was updated'+on+
-    ', after you last opened it'+when+'. You marked it read, so skim it again for what changed.</p>';
+    ' after you last opened it'+when+'. You marked it read, so skim it again for what changed.</p>';
 }
 
 function fdPageSeenLoad(store){

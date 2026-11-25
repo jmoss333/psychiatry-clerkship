@@ -1537,8 +1537,8 @@ middle of the screen and focuses it. One selector:
 
 `fd_page_changed.js` keeps the page's author-set `<!-- content-updated: YYYY-MM-DD -->` marker and the
 day it was opened on the device (`cw_page_seen_v1`, ref → `{v, at}`, capped at 400 pages) each time
-the reader opens it. When a page the learner marked read is opened with a new marker dated on or
-after their last open, one status line goes directly after the page's `h1`, once; the next open is
+the reader opens it. When a page the learner marked read is opened with a marker other than the one
+the device last saw, one status line goes directly after the page's `h1`, once; the next open is
 silent. An unmarked edit (a typo fix) never shows it. Learner reader only, never the faculty preview.
 
 | Class | Element | Notes |
