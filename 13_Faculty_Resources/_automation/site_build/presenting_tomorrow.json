@@ -5,7 +5,7 @@
   "prompt": "Presenting a specific patient? Pick the syndrome.",
   "phasePrompt": "Which hospital day?",
   "minItems": 3,
-  "exclude": [],
+  "exclude": ["psychopharm_primer.md", "ethics_legal.md"],
   "labels": {
     "ask": "What to ask",
     "mse": "What to examine",

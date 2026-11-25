@@ -67,7 +67,9 @@ Minimum 5 everywhere; the gate is 3. (`python3 site_build/presenting_tomorrow.py
 - Visual baselines: the chooser is open by default but shows the picker only after *Before rounds* is chosen, so `front-door-today-*` are unchanged.
 - One Thing First is untouched: the card lives inside the purpose chooser, below the Now card and *Also today*.
 
-## 6. Open questions for Josh
+## 6. Josh's decisions (2026-11-25; were open questions)
+
+Decided in chat on 2026-11-25: keep the three phase names; `exclude` drops *Psychopharmacology* (`psychopharm_primer.md`) and *Ethics, law & capacity* (`ethics_legal.md`), so 12 syndromes per site; keep the pick session-only. The questions as they were asked:
 
 1. Three phases, these names? (*Admission* · *Day 2–3 · presenting* · *Pre-discharge* — one JSON edit each.)
 2. Should the picker also offer the two hubs that are not bedside syndromes (*Psychopharmacology*, *Ethics, law & capacity*) — included now — or should `exclude` drop them?

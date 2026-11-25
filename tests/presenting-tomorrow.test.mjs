@@ -3,7 +3,7 @@
 // Two halves, one contract. presenting_tomorrow.py decides which syndromes qualify on a site and
 // counts the items each (syndrome, phase) card renders -- and fails the build below the minimum.
 // fd_today.js fdPrepItems draws that list in the shell from the same inputs. These tests pin:
-//   1. the real registries: 13 syndromes per site today, every cell >= minItems, every link
+//   1. the real registries: 12 syndromes per site today, every cell >= minItems, every link
 //      target ships on its site, every label and lead audience-neutral;
 //   2. parity: for every real cell on both sites, the JS renderer's item list equals Python's;
 //   3. the render: pills in registry order, one pressed syndrome and phase, the card's lines in
