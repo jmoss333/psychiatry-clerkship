@@ -1,4 +1,4 @@
-# Reference lists: the paper's own words, and citations you can tap
+# Reference lists: the paper's own words, citations you can tap, and a changed-page notice
 
 2026-11-25 · status: built, awaiting owner review (draft PR) · audience: both learner sites
 
@@ -13,7 +13,7 @@ neither adds teaching text that needs faculty sign-off.
 |---|---|---|
 | 1 | Verified source excerpt under each reference ("In the paper's own words") | **Built** |
 | 2 | Tappable `[n]` citations plus a reference-integrity test | **Built** |
-| 3 | "Changed since you read it" notice for pages corrected mid-rotation | Next: needs per-page fingerprints in the index and a progress-store change |
+| 3 | "Updated since you last opened it" notice for pages corrected mid-rotation | **Built** (device-only fingerprints; no progress-store change) |
 | 4 | `<abbr>` expansions for abbreviations | Deferred: only 52 in-text definitions; the frequent ones (CBC, PE, ED) are undefined or ambiguous, so it needs a faculty-reviewed registry |
 | 5 | Sign-off triage ranker (risk × exposure × changed words) | The console's change-history view covers most of it |
 | 6 | Citation-cache refresh date that stops conflicting on every PR | Developer ergonomics, not learner-facing |
@@ -66,6 +66,30 @@ and focuses it.
 - Entries the text never cites are frozen in a shrink-only allowlist (4 pages on 2026-11-25).
 - In the reader, ≥90 % of source citations become buttons on every cited page, entry ids follow
   the author's numbers, and the library carries ≥500 tappable citations.
+
+## Feature 3 — "Updated since you last opened it"
+
+**Problem.** Pages change mid-rotation, and some changes are corrections (2026-11-24: a Case of the
+Week question taught the wrong dialysis threshold for lithium and was rewritten after learners had
+read it). A learner who marked the page read never returns to find out.
+
+**Design.** `frontdoor/fd_page_changed.js` stores an 8-hex FNV-1a fingerprint of each reading's
+text (whitespace-collapsed) on the device each time the learner reader opens it
+(`cw_page_seen_v1`, ref → `{h, at}`, capped at 400 pages, oldest dropped). When a page the learner
+marked read (`cw_progress_v1`, read only) opens with a different fingerprint, one status line goes
+under its title: "This page was updated after you last opened it on {date}. You marked it read, so
+skim it again for what changed." It shows once; the next open is silent. It never writes canonical
+progress, never sends anything, and never runs in the faculty preview. "Erase everything" clears it
+with every other `cw_` key. Storage that throws or holds junk yields no notice, never an error, and
+a fingerprint that cannot be saved shows no notice (it would otherwise repeat forever).
+
+**Limit.** The device holds a hash, not the old text, so the notice says *that* the page changed,
+not *what* changed. Any edit counts, including copy edits.
+
+**Acceptance (`tests/fd-page-changed.test.mjs`).** Fingerprint stable under re-wrapping and
+sensitive to a one-number correction; first visit is a silent baseline; notice once, then silence;
+never for a page not marked read; junk and blocked storage never throw or notify; the store caps
+at 400; wired into the learner reader for readings only.
 
 ## Human review gates
 

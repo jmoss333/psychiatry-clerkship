@@ -2254,6 +2254,7 @@
   /*__FD_FEVER_EXAMS__*/
   /*__FD_BEDSIDE_CASES__*/
   /*__FD_REF_EVIDENCE__*/
+  /*__FD_PAGE_CHANGED__*/
   /*__FD_CASE_ROUNDS__*/
   function fdFacultyPreviewMedia(ref){
     if(!facultyPreviewRequest||typeof fdMediaPreviewHtml!=='function')return;
@@ -4220,6 +4221,7 @@
       return facultyPreviewRequest?state:fdLiveState(state);
     };
     var launchSearch=facultyPreviewRequest?options.search:fdPracticeLaunchSearch(ref,options.search===undefined?location.search:options.search,readState(),FD_INDEX);
+    var renderedMarkdown=null;
     return fdOpenResource(ref,{
       index:FD_INDEX,state:readState(),
       search:launchSearch,fromHistory:options.fromHistory,host:options.host||contentEl,
@@ -4227,6 +4229,7 @@
       isCurrent:options.isCurrent,governanceNotice:renderGovernanceNotice,
       signal:options.signal,
       parseMarkdown:function(markdown){
+        renderedMarkdown=markdown;
         if(ref==='osce.md'&&!facultyPreviewRequest){
           var station=fdOsceStation(markdown,launchSearch,marked.parse);
           if(station)return station;
@@ -4259,6 +4262,7 @@
           fdMountDeliriumShift(body);
           fdMountSleepNight(body);
           fdMountRefEvidence(body);
+          if(!facultyPreviewRequest&&item.kind==='read'){ var _seenProg=progLoad(); fdMountPageChanged(body,ref,renderedMarkdown,!!(_seenProg[ref]&&_seenProg[ref].done)); }
           makeCollapsible(body); enhanceTables(body);
           if(item.kind==='read'&&!body.querySelector('.pgfb')){
             var fb=document.createElement('div'); fb.className='pgfb';

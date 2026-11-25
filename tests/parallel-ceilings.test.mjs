@@ -25,7 +25,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // +1 (2026-11-18): paired bedside teaching cases (fd_bedside_cases.js).
 // +2 (2026-11-20): Morgan’s clozapine interview and the paired fever exam.
 // +1 (2026-11-25): verified source excerpts under reference lists (fd_ref_evidence.js).
-const EXPECTED_MARKER_COUNT = 54; // +1 2026-10-09: /*__FD_ICONS__*/ (C1 icon helper); +1 2026-10-16: /*__OUTCOME_TALLY__*/ (draft outcome counters, nested in calib_log.js); +1 2026-10-17: /*__FD_TOOL_PINS__*/ (local learner tool refs); +1: live care profile approval // +1 2026-10-10: /*__FD_TREE__*/ (safety decision trees); +1 2026-10-12: /*__FD_CARE_SEARCH__*/; +1 2026-10-12: /*__FD_CARE_PACKET__*/; +1 2026-10-12: /*__FD_CARE_PACKET_SHEET__*/ (the packet's payload is a verified needle, not a marker)
+// +1 (2026-11-25): "updated since you last opened it" notice on read pages (fd_page_changed.js).
+const EXPECTED_MARKER_COUNT = 55; // +1 2026-10-09: /*__FD_ICONS__*/ (C1 icon helper); +1 2026-10-16: /*__OUTCOME_TALLY__*/ (draft outcome counters, nested in calib_log.js); +1 2026-10-17: /*__FD_TOOL_PINS__*/ (local learner tool refs); +1: live care profile approval // +1 2026-10-10: /*__FD_TREE__*/ (safety decision trees); +1 2026-10-12: /*__FD_CARE_SEARCH__*/; +1 2026-10-12: /*__FD_CARE_PACKET__*/; +1 2026-10-12: /*__FD_CARE_PACKET_SHEET__*/ (the packet's payload is a verified needle, not a marker)
 
 test('SNIPPET_MARKERS entry count matches the pinned constant', () => {
   const src = fs.readFileSync(

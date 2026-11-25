@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(865 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(866 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1522,4 +1522,15 @@ middle of the screen and focuses it. One selector:
 | Class | Element | Notes |
 |---|---|---|
 | `.fd-cite` | `button` | Inline, inherits the sentence's font; underlined teal like a link. Never inside a link, code, a heading or another button. |
+
+### "Updated since you last opened it" (2026-11-25)
+
+`fd_page_changed.js` keeps a fingerprint of each reading's text on the device (`cw_page_seen_v1`,
+ref → `{h, at}`, capped at 400 pages) each time the reader opens it. When a page the learner marked
+read is opened and its fingerprint changed, one status line goes directly after the page's `h1`,
+once; the next open is silent. Learner reader only, never the faculty preview.
+
+| Class | Element | Notes |
+|---|---|---|
+| `.fd-page-changed` | `p[role=status]` | Olive wash and rule (information, not danger). Scales with `--fd-reading-scale`. |
 

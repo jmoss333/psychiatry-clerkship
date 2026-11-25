@@ -4414,3 +4414,7 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
    exception applies; the focus ring does not. */
 .fd-cite{display:inline;margin:0;padding:0 .08em;border:0;background:none;color:var(--fd-teal-deep);font:inherit;text-decoration:underline;text-underline-offset:.15em;cursor:pointer}
 .fd-cite:focus-visible{outline:3px solid var(--fd-focus);outline-offset:2px}
+/* "Updated since you last opened it" (fd_page_changed.js): a one-time status line under the title
+   of a reading the learner marked read whose text has since changed. Information, not a warning:
+   olive, never danger. */
+.fd-page-changed{margin:var(--fd-space-3) 0 var(--fd-space-5);padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));line-height:var(--fd-leading-normal)}
