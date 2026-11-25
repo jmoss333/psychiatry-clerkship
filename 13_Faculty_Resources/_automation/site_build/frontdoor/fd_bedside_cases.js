@@ -8,6 +8,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountMarOverlap(body);
   fdMountAlexTiming(body);
   fdMountEveningCalls(body);
   fdMountDinnerMap(body);
@@ -1767,6 +1768,86 @@ function fdMountNightSignout(body) {
   });
   find('#ns-edit').addEventListener('click', () => edit(false));
   find('#ns-reset').addEventListener('click', () => edit(true));
+}
+
+function fdMountMarOverlap(body) {
+  const card = body.querySelector('[data-mar-case]');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const charts = Array.from(card.querySelectorAll('[data-chart]'));
+  const rows = Array.from(card.querySelectorAll('[data-source]'));
+  const opened = new Set();
+  const part = name => card.querySelector('[data-mar-' + name + ']');
+  const record = part('record');
+  const handoff = part('handoff');
+  const options = part('options');
+  const feedback = part('feedback');
+  const debrief = part('debrief');
+  const progress = part('progress');
+  let activeChart;
+  let chartText;
+
+  function setChart(key) {
+    activeChart = key;
+    chartText = card.querySelector('template[data-mar-chart="' + key + '"]').content;
+    opened.clear();
+    for (const button of charts) button.setAttribute('aria-pressed', String(button.dataset.chart === key));
+    for (const row of rows) {
+      for (const cell of row.querySelectorAll('[data-mar-cell]')) cell.remove();
+      row.querySelector('.mar-fold').hidden = false;
+      row.removeAttribute('aria-label');
+      row.setAttribute('aria-pressed', 'false');
+    }
+    record.replaceChildren();
+    feedback.textContent = '';
+    part('lesson').textContent = '';
+    handoff.hidden = record.hidden = feedback.hidden = debrief.hidden = true;
+    debrief.open = false;
+    progress.textContent = '0 of 3 reviewed';
+    options.replaceChildren(...chartText.querySelector('[data-mar-buttons]').cloneNode(true).children);
+  }
+
+  function openSource(row) {
+    const key = row.dataset.source;
+    const documentKey = key === 'plan' ? 'plan-' + activeChart : key;
+    const entry = card.querySelector('template[data-mar-document="' + documentKey + '"]').content;
+    if (!opened.has(key)) {
+      opened.add(key);
+      row.querySelector('.mar-fold').hidden = true;
+      const cells = Array.from(entry.querySelectorAll('[data-mar-cell]'), cell => cell.cloneNode(true));
+      row.append(...cells);
+      const datedEntries = cells.map(cell => cell.getAttribute('aria-label')).join('. ');
+      row.setAttribute('aria-label', row.querySelector('strong').textContent + '. ' + datedEntries);
+    }
+    for (const other of rows) other.setAttribute('aria-pressed', String(other === row));
+    record.replaceChildren(...entry.querySelector('[data-mar-excerpt]').cloneNode(true).children);
+    record.hidden = false;
+    progress.textContent = opened.size + ' of ' + rows.length + ' reviewed';
+    handoff.hidden = opened.size !== rows.length;
+  }
+
+  for (const row of rows) row.addEventListener('click', () => openSource(row));
+  for (const button of charts) button.addEventListener('click', () => setChart(button.dataset.chart));
+  options.addEventListener('click', event => {
+    const button = event.target.closest('button[data-choice]');
+    if (!button || handoff.hidden) return;
+    const key = button.dataset.choice;
+    for (const other of options.children) other.setAttribute('aria-pressed', String(other === button));
+    feedback.textContent = chartText.querySelector('[data-mar-comment="' + key + '"]').textContent;
+    feedback.hidden = false;
+    feedback.dataset.fit = String(key === 'fit');
+    debrief.open = false;
+    debrief.hidden = key !== 'fit';
+    part('lesson').textContent = debrief.hidden ? '' : chartText.querySelector('[data-mar-interpretation]').textContent;
+  });
+  function restart(key) {
+    setChart(key);
+    charts.find(button => button.dataset.chart === key).focus();
+  }
+  card.querySelector('[data-reset]').addEventListener('click', () => restart(activeChart));
+  part('swap').addEventListener('click', () => restart(activeChart === 'a' ? 'b' : 'a'));
+  setChart('a');
 }
 
 function fdMountCoachLine(body) {
