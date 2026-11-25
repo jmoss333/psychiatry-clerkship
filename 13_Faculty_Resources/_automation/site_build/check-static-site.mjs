@@ -761,9 +761,10 @@ const SHELL_REF_ALLOWLIST = new Set([
         }
         totalBytes += statSync(target).size;
       }
-      const SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024;
+      // Same number as SW_PRECACHE_BUDGET_BYTES in common.py (test_common.py pins the two).
+      const SW_PRECACHE_BUDGET_BYTES = 11 * 1024 * 1024;
       if (totalBytes > SW_PRECACHE_BUDGET_BYTES) {
-        H(`sw: precache budget exceeded — ${totalBytes} bytes precached > ${SW_PRECACHE_BUDGET_BYTES} byte (10 MB) budget`);
+        H(`sw: precache budget exceeded — ${totalBytes} bytes precached > ${SW_PRECACHE_BUDGET_BYTES} byte (11 MiB) budget`);
       }
     }
 

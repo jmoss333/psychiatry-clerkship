@@ -110,6 +110,18 @@ function resolveProbeCase(who) {
   return named[0] || null;
 }
 
+// Probes name a gate by its case and its position in that case's `gated` list, never by id.
+// Gate ids are visible to the actor model, so they must be neutral and may be renamed
+// (F12-GATE-IDS-SHIPPED, 2026-11-16); a position survives a rename unchanged, and no id
+// table lives in this file. A position the pack does not have resolves to a label naming
+// the case and slot, so a stale declaration is still reported by gateDeclarationErrors.
+function gateAt(who, index) {
+  let c = null;
+  try { c = resolveProbeCase(who); } catch { c = null; }
+  return (c && c.gated && c.gated[index] && c.gated[index].id) || `${who}#gated[${index}]`;
+}
+const DG = (i) => gateAt(DANA, i), MG = (i) => gateAt('Marcus', i), RG = (i) => gateAt('Ray', i);
+
 function probe(who, msgs) {
   const c = resolveProbeCase(who);
   if (!c) {
@@ -169,40 +181,40 @@ const PROBES = [
     // message, it discloses and scores -- the encounter must not teach that asking early is
     // punished. Until 2026-09-17 this probe pinned the opposite (a rapport-1 gate).
     id: 'B1', name: 'SI as the FIRST message — discloses (D17)',
-    gates: ['si_active'],
+    gates: [DG(0)],
     run: () => probe(DANA, ['Have you had thoughts of killing yourself?']),
     expect: (r) => [
-      r.unlocked.includes('si_active') || 'si_active stayed shut to a cold direct question — D17 violation',
+      r.unlocked.includes(DG(0)) || `${DG(0)} stayed shut to a cold direct question — D17 violation`,
       r.covered.includes('si_direct') || 'si_direct not counted as asked',
       r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
     ],
   },
   {
     id: 'B2', name: 'rapport, then the plain screen — disclosure fires',
-    gates: ['si_active'],
+    gates: [DG(0)],
     run: () => probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?']),
     expect: (r) => [
-      r.unlocked.includes('si_active') || 'si_active did NOT unlock after rapport — the disclosure is unreachable',
+      r.unlocked.includes(DG(0)) || `${DG(0)} did NOT unlock after rapport — the disclosure is unreachable`,
       r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
     ],
   },
   {
     id: 'B3', name: 'plan question with no screen — locked gate leaks nothing',
-    gates: ['si_plan_detail', 'si_active'],
+    gates: [DG(1), DG(0)],
     run: () => probe(DANA, [...RAPPORT, 'Do you have a plan?']),
     expect: (r) => [
-      !r.unlocked.includes('si_plan_detail') || 'si_plan_detail unlocked without a suicide screen — method detail leaks',
-      !r.unlocked.includes('si_active') || 'si_active unlocked by a plan question alone',
+      !r.unlocked.includes(DG(1)) || `${DG(1)} unlocked without a suicide screen — method detail leaks`,
+      !r.unlocked.includes(DG(0)) || `${DG(0)} unlocked by a plan question alone`,
       r.row('c_si') === 'missed' || `c_si = ${r.row('c_si')} (want missed — nothing was screened)`,
     ],
   },
   {
     id: 'B3d', name: 'past-attempt question with no screen — locked gate leaks nothing',
-    gates: ['si_behavior_detail', 'si_active'],
+    gates: [DG(4), DG(0)],
     run: () => probe(DANA, [...RAPPORT, 'Have you ever tried to hurt yourself before?']),
     expect: (r) => [
-      !r.unlocked.includes('si_behavior_detail') || 'si_behavior_detail unlocked without a suicide screen — attempt history leaks',
-      !r.unlocked.includes('si_active') || 'si_active unlocked by a past-attempt question alone',
+      !r.unlocked.includes(DG(4)) || `${DG(4)} unlocked without a suicide screen — attempt history leaks`,
+      !r.unlocked.includes(DG(0)) || `${DG(0)} unlocked by a past-attempt question alone`,
       // "tried to hurt yourself" is Dana's euphemism vocabulary, so partial is the
       // correct score here, not missed. What must never happen is `observed`: a
       // euphemistic past-attempt question is not a plain suicide screen.
@@ -211,10 +223,10 @@ const PROBES = [
   },
   {
     id: 'B3b', name: 'D14: a DISCHARGE plan question is not a plan question',
-    gates: ['si_plan_detail'],
+    gates: [DG(1)],
     run: () => probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'What is your plan for after discharge?']),
     expect: (r) => [
-      !r.unlocked.includes('si_plan_detail') || 'si_plan_detail fired on a discharge-planning question (D14 regression)',
+      !r.unlocked.includes(DG(1)) || `${DG(1)} fired on a discharge-planning question (D14 regression)`,
       !r.covered.includes('si_plan') || 'si_plan credited for a discharge-planning question (D14 regression)',
     ],
   },
@@ -222,7 +234,7 @@ const PROBES = [
     // The other half of B3: a gate that fails closed forever is as broken as one that
     // leaks. After a real screen, the follow-up detail gates MUST become reachable.
     id: 'B3c', name: 'after disclosure, the real follow-up gates do open',
-    gates: ['si_plan_detail', 'si_means_detail', 'si_protective_detail', 'si_behavior_detail'],
+    gates: [DG(1), DG(2), DG(3), DG(4)],
     run: () => ({
       plan: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have a plan?']),
       means: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Do you have access to the pills?']),
@@ -230,13 +242,13 @@ const PROBES = [
       behavior: probe(DANA, [...RAPPORT, 'Have you had thoughts of killing yourself?', 'Have you ever tried to hurt yourself before?']),
     }),
     expect: (r) => [
-      r.plan.unlocked.includes('si_plan_detail') || 'si_plan_detail did not open after a real screen — D14 over-narrowed',
-      r.means.unlocked.includes('si_means_detail') || 'si_means_detail did not open after a real screen — D14 over-narrowed',
-      r.prot.unlocked.includes('si_protective_detail') || 'si_protective_detail did not open after a real screen — D15 over-narrowed',
+      r.plan.unlocked.includes(DG(1)) || `${DG(1)} did not open after a real screen — D14 over-narrowed`,
+      r.means.unlocked.includes(DG(2)) || `${DG(2)} did not open after a real screen — D14 over-narrowed`,
+      r.prot.unlocked.includes(DG(3)) || `${DG(3)} did not open after a real screen — D15 over-narrowed`,
       // WP-5m's own teaching note calls past attempts the element students most often
-      // drop and the one carrying the most weight. It was the only one of si_active's
+      // drop and the one carrying the most weight. It was the only one of Dana's gated[0]'s
       // four unlocks with no probe on either side.
-      r.behavior.unlocked.includes('si_behavior_detail') || 'si_behavior_detail did not open after a real screen — past attempts unreachable',
+      r.behavior.unlocked.includes(DG(4)) || `${DG(4)} did not open after a real screen — past attempts unreachable`,
     ],
   },
   {
@@ -245,7 +257,7 @@ const PROBES = [
     // friction belongs to the judgment, never to the question. Until 2026-09-17 this probe pinned
     // the opposite -- and its sibling B4b pinned a two-turn "recovery" window that no longer exists.
     id: 'B4', name: 'judgmental turn, then the screen — the judgment is flagged, the question still discloses (D17)',
-    gates: ['si_active'],
+    gates: [DG(0)],
     // NB: the phrasing must actually trip Dana's `judgmental` intent. "Calm down"
     // is Marcus's flag vocabulary, not hers — hers keys on "you should", "at least",
     // "snap out", "look on the bright side". A probe that does not flag proves nothing.
@@ -256,34 +268,34 @@ const PROBES = [
     }),
     expect: (r) => [
       r.flagged.covered.includes('judgmental') || 'the judgmental phrasing did not trip the flag — the probe proves nothing',
-      !r.flagged.unlocked.includes('si_active') || 'a judgment alone opened si_active',
-      r.screened.unlocked.includes('si_active') || 'si_active stayed shut on the turn after a judgmental flag — D17 violation',
-      r.cold.unlocked.includes('si_active') || 'a judgment at rapport 0 shut the safety question — D17 violation',
+      !r.flagged.unlocked.includes(DG(0)) || `a judgment alone opened ${DG(0)}`,
+      r.screened.unlocked.includes(DG(0)) || `${DG(0)} stayed shut on the turn after a judgmental flag — D17 violation`,
+      r.cold.unlocked.includes(DG(0)) || 'a judgment at rapport 0 shut the safety question — D17 violation',
     ],
   },
   {
-    // The old B4b pinned a flagHistory.slice(-2) recovery window for si_active. D17 removed the
+    // The old B4b pinned a flagHistory.slice(-2) recovery window for Dana's gated[0]. D17 removed the
     // window from the safety question; what must still hold is that repair turns are not what
     // opens the gate -- the question is, on whichever turn it is asked.
     id: 'B4b', name: 'repair turns are not what opens the safety question — asking is (D17)',
-    gates: ['si_active'],
+    gates: [DG(0)],
     run: () => ({
       repairedOnly: probe(DANA, [...RAPPORT, JUDGMENTAL, ...REPAIR]),
       askedAfterOne: probe(DANA, [...RAPPORT, JUDGMENTAL, REPAIR[0], SCREEN]),
       askedAfterTwo: probe(DANA, [...RAPPORT, JUDGMENTAL, ...REPAIR, SCREEN]),
     }),
     expect: (r) => [
-      !r.repairedOnly.unlocked.includes('si_active') || 'repair turns alone opened si_active',
-      r.askedAfterOne.unlocked.includes('si_active') || 'the question after one repair turn did not disclose',
-      r.askedAfterTwo.unlocked.includes('si_active') || 'the question after two repair turns did not disclose',
+      !r.repairedOnly.unlocked.includes(DG(0)) || `repair turns alone opened ${DG(0)}`,
+      r.askedAfterOne.unlocked.includes(DG(0)) || 'the question after one repair turn did not disclose',
+      r.askedAfterTwo.unlocked.includes(DG(0)) || 'the question after two repair turns did not disclose',
     ],
   },
   {
     id: 'B6', name: 'D12: a euphemism on Marcus stays locked and scores partial',
-    gates: ['g_si_mixed'],
+    gates: [MG(3)],
     run: () => probe('Marcus', [...RAPPORT, 'Have you thought about hurting yourself?']),
     expect: (r) => [
-      !r.unlocked.includes('g_si_mixed') || 'g_si_mixed unlocked on a euphemism — D12 violation',
+      !r.unlocked.includes(MG(3)) || `${MG(3)} unlocked on a euphemism — D12 violation`,
       r.covered.includes('si_euphemism') || 'si_euphemism not counted as asked',
       !r.covered.includes('si_direct') || 'si_direct credited for a euphemism — D12 violation',
       r.row('c_si') === 'partial' || `c_si = ${r.row('c_si')} (want partial)`,
@@ -291,19 +303,19 @@ const PROBES = [
   },
   {
     id: 'B6b', name: 'D12: the plain screen still works after a euphemism',
-    gates: ['g_si_mixed'],
+    gates: [MG(3)],
     run: () => probe('Marcus', [...RAPPORT, 'Have you thought about hurting yourself?', 'Have you had thoughts of killing yourself?']),
     expect: (r) => [
-      r.unlocked.includes('g_si_mixed') || 'g_si_mixed did not unlock after a plain screen',
+      r.unlocked.includes(MG(3)) || `${MG(3)} did not unlock after a plain screen`,
       r.row('c_si') === 'observed' || `c_si = ${r.row('c_si')} (want observed)`,
     ],
   },
   {
     id: 'B7', name: 'D12/D13: a self-harm euphemism on Ray is not a violence screen',
-    gates: ['g_target'],
+    gates: [RG(2)],
     run: () => probe('Ray', [...RAPPORT, 'Is it okay if we stop whenever you want?', 'Do the voices ever tell you to do anything?', 'Have you thought about hurting yourself?']),
     expect: (r) => [
-      !r.unlocked.includes('g_target') || 'g_target fired on a SELF-harm question — the learner never asked about others',
+      !r.unlocked.includes(RG(2)) || `${RG(2)} fired on a SELF-harm question — the learner never asked about others`,
       r.row('c_violence') !== 'observed' || 'c_violence credited for a self-harm question — a violence screen is certified that never happened',
       r.row('c_si') === 'partial' || `c_si = ${r.row('c_si')} (want partial)`,
     ],
@@ -318,36 +330,36 @@ const PROBES = [
     ],
   },
   {
-    // WP-5m added si_behavior / si_behavior_detail and nothing here exercised them: the whole
+    // WP-5m added si_behavior / Dana's gated[4] and nothing here exercised them: the whole
     // B-section passed 12/12 while blind to the change it was gating. B8* close that, and B8b/B8d
     // are the regression pins for the cascade-precedence defect the 2026-09-06 red-team found.
     id: 'B8', name: 'a past-attempts question before any screen leaks nothing',
-    gates: ['si_behavior_detail'],
+    gates: [DG(4)],
     run: () => probe(DANA, [...RAPPORT, 'Have you had any past attempts?']),
     expect: (r) => [
-      !r.unlocked.includes('si_behavior_detail')
-        || 'si_behavior_detail unlocked without a disclosure — the attempt history is reachable unearned',
+      !r.unlocked.includes(DG(4))
+        || `${DG(4)} unlocked without a disclosure — the attempt history is reachable unearned`,
     ],
   },
   {
     // THE regression pin for the cascade-precedence defect. "Have you ever tried to kill
-    // yourself?" matches si_behavior AND si_direct. Before the fix, gated[0] (si_active, already
+    // yourself?" matches si_behavior AND si_direct. Before the fix, gated[0] (Dana's gated[0], already
     // unlocked) re-consumed the turn with its repeatAsk and gated[4] was never reached, so Dana
     // answered a past-attempts question with a repeat of the disclosure — or, in Live mode, with
     // "Tried what? I'm not sure what you're asking me."
     id: 'B8b', name: 'a past-attempts question that also names the act opens the attempt gate',
-    gates: ['si_behavior_detail'],
+    gates: [DG(4)],
     run: () => ({
       names: probe(DANA, [...RAPPORT, SCREEN, 'Have you ever tried to kill yourself?']),
       alt: probe(DANA, [...RAPPORT, SCREEN, 'Have you ever attempted suicide?']),
       soft: probe(DANA, [...RAPPORT, SCREEN, 'Have you had any past attempts?']),
     }),
     expect: (r) => [
-      r.names.unlocked.includes('si_behavior_detail')
-        || 'si_behavior_detail did NOT open — si_active re-consumed the turn with its repeat line',
-      r.alt.unlocked.includes('si_behavior_detail')
+      r.names.unlocked.includes(DG(4))
+        || `${DG(4)} did NOT open — ${DG(0)} re-consumed the turn with its repeat line`,
+      r.alt.unlocked.includes(DG(4))
         || '"attempted suicide" did not open the attempt gate',
-      r.soft.unlocked.includes('si_behavior_detail')
+      r.soft.unlocked.includes(DG(4))
         || 'the plain phrasing did not open the attempt gate either',
     ],
   },
@@ -355,24 +367,24 @@ const PROBES = [
     // D17 (#565): a judgmental turn no longer shuts the safety question -- the direct question
     // discloses at any rapport and after any flag, and the judgment gets its own pushback line.
     // What the flag still cannot do is open a DEPTH gate: attempt history needs the disclosure
-    // turn first, exactly as before. Until 2026-09-17 this probe expected si_active to stay shut.
+    // turn first, exactly as before. Until 2026-09-17 this probe expected Dana's gated[0] to stay shut.
     id: 'B8c', name: 'a judgmental turn cannot shut the safety question, and cannot open the attempt-history gate on its own',
-    gates: ['si_active', 'si_behavior_detail'],
+    gates: [DG(0), DG(4)],
     run: () => ({
       after: probe(DANA, [...RAPPORT, JUDGMENTAL, SCREEN, 'Have you ever tried to end your life?']),
       sameTurn: probe(DANA, [...RAPPORT, JUDGMENTAL, 'Have you ever tried to end your life?']),
       noScreen: probe(DANA, [...RAPPORT, JUDGMENTAL, 'Have you had any past attempts?']),
     }),
     expect: (r) => [
-      r.after.unlocked.includes('si_active') || 'the direct question after a judgment did not disclose',
-      r.after.unlocked.includes('si_behavior_detail')
+      r.after.unlocked.includes(DG(0)) || 'the direct question after a judgment did not disclose',
+      r.after.unlocked.includes(DG(4))
         || 'the attempt question after a disclosure did not open the attempt-history gate',
-      r.sameTurn.unlocked.includes('si_active')
-        || 'a turn naming the act after a judgment did not open si_active',
-      !r.sameTurn.unlocked.includes('si_behavior_detail')
+      r.sameTurn.unlocked.includes(DG(0))
+        || `a turn naming the act after a judgment did not open ${DG(0)}`,
+      !r.sameTurn.unlocked.includes(DG(4))
         || 'the attempt-history gate opened on the same turn as the disclosure (one gate per turn)',
-      !r.noScreen.unlocked.includes('si_active') || 'a plain attempt question opened si_active without naming the act',
-      !r.noScreen.unlocked.includes('si_behavior_detail')
+      !r.noScreen.unlocked.includes(DG(0)) || `a plain attempt question opened ${DG(0)} without naming the act`,
+      !r.noScreen.unlocked.includes(DG(4))
         || 'the attempt-history gate opened with no disclosure -- a judgment must not unlock depth',
     ],
   },
@@ -383,15 +395,15 @@ const PROBES = [
     // matches si_direct and family_social but never si_means, so no gate's requirement is hit and
     // the cascade cannot help. That is an intent-pattern gap, tracked separately.
     id: 'B8d', name: 'an explicit plan question opens the same gate as the soft form',
-    gates: ['si_plan_detail'],
+    gates: [DG(1)],
     run: () => ({
       explicit: probe(DANA, [...RAPPORT, SCREEN, 'Have you thought about how you would kill yourself?']),
       soft: probe(DANA, [...RAPPORT, SCREEN, 'Do you have a plan?']),
     }),
     expect: (r) => [
-      r.explicit.unlocked.includes('si_plan_detail')
-        || 'si_plan_detail did NOT open for an explicit plan question — the vaguer phrasing is rewarded',
-      r.soft.unlocked.includes('si_plan_detail') || 'si_plan_detail did not open for the soft form either',
+      r.explicit.unlocked.includes(DG(1))
+        || `${DG(1)} did NOT open for an explicit plan question — the vaguer phrasing is rewarded`,
+      r.soft.unlocked.includes(DG(1)) || `${DG(1)} did not open for the soft form either`,
       r.explicit.covered.includes('si_plan') || 'si_plan not credited for an explicit plan question',
     ],
   },
@@ -400,9 +412,9 @@ const PROBES = [
     // Both runs below ask all four follow-ups; only the wording of plan and past-behaviour moves.
     id: 'B8e', name: 'explicit and soft phrasings grade the same',
     // Compares the SET of `_detail` gates each phrasing reaches (see `gates()` in expect
-    // below) rather than asserting a fixed id, but si_plan_detail/si_means_detail/
-    // si_behavior_detail/si_protective_detail are exactly the gates that comparison spans.
-    gates: ['si_plan_detail', 'si_means_detail', 'si_behavior_detail', 'si_protective_detail'],
+    // below) rather than asserting a fixed id, but Dana's gated[1]/Dana's gated[2]/
+    // Dana's gated[4]/Dana's gated[3] are exactly the gates that comparison spans.
+    gates: [DG(1), DG(2), DG(4), DG(3)],
     run: () => ({
       explicit: probe(DANA, [...RAPPORT, SCREEN,
         'Have you thought about how you would kill yourself?',
@@ -440,74 +452,74 @@ const PROBES = [
   },
   {
     // B9 series: the five disclosure gates the 2026-09-09 coverage audit found with NO
-    // probe on either side — Marcus's g_fear_passenger/g_spending/g_sexual and Ray's
-    // g_command/g_not_eating. Each follows B2/B6/B7's shape: build the rapport the pack's
+    // probe on either side — Marcus's Marcus's gated[0]/Marcus's gated[1]/Marcus's gated[2] and Ray's
+    // Ray's gated[0]/Ray's gated[1]. Each follows B2/B6/B7's shape: build the rapport the pack's
     // own rapportRules require, ask the exact intent the gate's `requiresIntents` names,
     // and assert on state.unlocked — never on `covered`, which is credited as asked even
     // when the gate never opens (see the B8e comment above; that is exactly how the
     // 2026-09-06 cascade defect stayed invisible for a release).
     id: 'B9', name: 'Marcus: the racing-thoughts fear-of-losing-control gate needs real rapport',
-    gates: ['g_fear_passenger'],
+    gates: [MG(0)],
     // requiresIntents: ['racing_thoughts'] (pattern "\bracing"), requiresRapport: 2.
     run: () => ({
       warm: probe('Marcus', [...RAPPORT, "Let's stay with one thing at a time.", 'Are your thoughts racing?']),
       cold: probe('Marcus', ['Are your thoughts racing?']),
     }),
     expect: (r) => [
-      r.warm.unlocked.includes('g_fear_passenger') || 'g_fear_passenger did NOT unlock after real rapport — the fear-of-losing-control disclosure is unreachable',
-      !r.cold.unlocked.includes('g_fear_passenger') || 'g_fear_passenger unlocked at rapport 0 — the disclosure gate is open to a cold question',
+      r.warm.unlocked.includes(MG(0)) || `${MG(0)} did NOT unlock after real rapport — the fear-of-losing-control disclosure is unreachable`,
+      !r.cold.unlocked.includes(MG(0)) || `${MG(0)} unlocked at rapport 0 — the disclosure gate is open to a cold question`,
     ],
   },
   {
     id: 'B9b', name: 'Marcus: the spending gate needs at least a little rapport',
-    gates: ['g_spending'],
+    gates: [MG(1)],
     // requiresIntents: ['spending'] (pattern "\bmoney\b" / "spen[dt]"), requiresRapport: 1.
     run: () => ({
       warm: probe('Marcus', [...RAPPORT, 'Have you been spending a lot of money?']),
       cold: probe('Marcus', ['Have you been spending a lot of money?']),
     }),
     expect: (r) => [
-      r.warm.unlocked.includes('g_spending') || 'g_spending did NOT unlock after rapport — the spending disclosure is unreachable',
-      !r.cold.unlocked.includes('g_spending') || 'g_spending unlocked at rapport 0 — the disclosure gate is open to a cold question',
+      r.warm.unlocked.includes(MG(1)) || `${MG(1)} did NOT unlock after rapport — the spending disclosure is unreachable`,
+      !r.cold.unlocked.includes(MG(1)) || `${MG(1)} unlocked at rapport 0 — the disclosure gate is open to a cold question`,
     ],
   },
   {
     id: 'B9c', name: 'Marcus: the sexual-risk gate needs real rapport',
-    gates: ['g_sexual'],
+    gates: [MG(2)],
     // requiresIntents: ['sexual_risk'] (pattern "\bsex\b|\bsexual"), requiresRapport: 2.
     run: () => ({
       warm: probe('Marcus', [...RAPPORT, "Let's stay with one thing at a time.", 'Have you been sexually active lately?']),
       cold: probe('Marcus', ['Have you been sexually active lately?']),
     }),
     expect: (r) => [
-      r.warm.unlocked.includes('g_sexual') || 'g_sexual did NOT unlock after real rapport — the sexual-risk disclosure is unreachable',
-      !r.cold.unlocked.includes('g_sexual') || 'g_sexual unlocked at rapport 0 — the disclosure gate is open to a cold question',
+      r.warm.unlocked.includes(MG(2)) || `${MG(2)} did NOT unlock after real rapport — the sexual-risk disclosure is unreachable`,
+      !r.cold.unlocked.includes(MG(2)) || `${MG(2)} unlocked at rapport 0 — the disclosure gate is open to a cold question`,
     ],
   },
   {
     id: 'B9d', name: 'Ray: the command-hallucination gate needs real rapport',
-    gates: ['g_command'],
+    gates: [RG(0)],
     // requiresIntents: ['command_content'] (pattern "voices? (ever )?(tell|telling|...)"), requiresRapport: 2.
     run: () => ({
       warm: probe('Ray', [...RAPPORT, 'Do the voices ever tell you to do anything?']),
       cold: probe('Ray', ['Do the voices ever tell you to do anything?']),
     }),
     expect: (r) => [
-      r.warm.unlocked.includes('g_command') || 'g_command did NOT unlock after real rapport — the command-hallucination disclosure is unreachable',
-      !r.cold.unlocked.includes('g_command') || 'g_command unlocked at rapport 0 — the disclosure gate is open to a cold question',
+      r.warm.unlocked.includes(RG(0)) || `${RG(0)} did NOT unlock after real rapport — the command-hallucination disclosure is unreachable`,
+      !r.cold.unlocked.includes(RG(0)) || `${RG(0)} unlocked at rapport 0 — the disclosure gate is open to a cold question`,
     ],
   },
   {
     id: 'B9e', name: 'Ray: the not-eating gate needs at least a little rapport',
-    gates: ['g_not_eating'],
+    gates: [RG(1)],
     // requiresIntents: ['eating_selfcare'] (pattern "\beat(ing|en)?\b"), requiresRapport: 1.
     run: () => ({
       warm: probe('Ray', ['My name is Alex — is that okay?', 'Have you been eating okay?']),
       cold: probe('Ray', ['Have you been eating okay?']),
     }),
     expect: (r) => [
-      r.warm.unlocked.includes('g_not_eating') || 'g_not_eating did NOT unlock after rapport — the not-eating disclosure is unreachable',
-      !r.cold.unlocked.includes('g_not_eating') || 'g_not_eating unlocked at rapport 0 — the disclosure gate is open to a cold question',
+      r.warm.unlocked.includes(RG(1)) || `${RG(1)} did NOT unlock after rapport — the not-eating disclosure is unreachable`,
+      !r.cold.unlocked.includes(RG(1)) || `${RG(1)} unlocked at rapport 0 — the disclosure gate is open to a cold question`,
     ],
   },
   // M series (2026-09-26): Morgan, the motivational-interviewing case. He has NO gated
@@ -654,7 +666,7 @@ function undrivenCases() {
 // A probe's `gates` field names gates OF THE CASE IT DROVE. Two ways for that to be false, both
 // failures of the probe itself: a declared id that no case it drove has (a stale or misplaced
 // declaration, which would otherwise be inert — never credited, never noticed; pinned by the
-// g_target-removed fixture test), and a declared id that more than one case it drove has
+// Ray's gated[2]-removed fixture test), and a declared id that more than one case it drove has
 // (attribution would be ambiguous). Every probe drives exactly one case today, so the second
 // branch cannot fire and no pack fixture can reach it; it is here so a future two-case probe
 // cannot be credited for an id two of its cases share, or for an id none of them has. Whether

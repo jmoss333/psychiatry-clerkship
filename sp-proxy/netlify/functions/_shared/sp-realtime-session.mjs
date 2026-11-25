@@ -262,14 +262,11 @@ export function realtimeSessionConfig({ caseDef, model, transcriptionModel, eage
 }
 
 // ---------------------------------------------------------------------------
-// Cost ceiling. PLANNING values: the provider's documentation hosts were not
-// reachable from the build sandbox on 2026-09-26, so these rows come from
-// secondary sources and must be refreshed from the live pricing page before
-// SP_REALTIME_ENABLED is set. The ledger charges whatever this card computes;
-// a pinned model without rows here fails closed.
+// Session reservations use planning assumptions. The two 2.1 model rows were
+// checked against OpenAI pricing on 2026-11-22. A model without rows fails closed.
 export const REALTIME_RATE_CARD = Object.freeze({
-  version: '2026-09-26-planning-v1',
-  effectiveDate: '2026-09-26',
+  version: '2026-11-22-planning-v2',
+  effectiveDate: '2026-11-22',
   currency: 'USD',
   assumptions: Object.freeze({
     learnerAudioTokensPerMinute: 600,
@@ -285,6 +282,10 @@ export const REALTIME_RATE_CARD = Object.freeze({
     { model: 'gpt-realtime-2.1', meter: 'cached_audio_input_tokens', unit: 'million_tokens', price: 0.4, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
     { model: 'gpt-realtime-2.1', meter: 'audio_output_tokens', unit: 'million_tokens', price: 64, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
     { model: 'gpt-realtime-2.1', meter: 'text_input_tokens', unit: 'million_tokens', price: 4, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
+    { model: 'gpt-realtime-2.1-mini', meter: 'audio_input_tokens', unit: 'million_tokens', price: 10, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
+    { model: 'gpt-realtime-2.1-mini', meter: 'cached_audio_input_tokens', unit: 'million_tokens', price: 0.3, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
+    { model: 'gpt-realtime-2.1-mini', meter: 'audio_output_tokens', unit: 'million_tokens', price: 20, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
+    { model: 'gpt-realtime-2.1-mini', meter: 'text_input_tokens', unit: 'million_tokens', price: 0.6, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
     { model: 'gpt-realtime-mini-2025-12-15', meter: 'audio_input_tokens', unit: 'million_tokens', price: 10, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
     { model: 'gpt-realtime-mini-2025-12-15', meter: 'cached_audio_input_tokens', unit: 'million_tokens', price: 0.3, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },
     { model: 'gpt-realtime-mini-2025-12-15', meter: 'audio_output_tokens', unit: 'million_tokens', price: 20, sourceUrl: 'https://developers.openai.com/api/docs/pricing' },

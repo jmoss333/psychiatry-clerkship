@@ -58,7 +58,7 @@ function fdGuideMount(body,options){
     if(!leads.length)return null;
   }
   var doc=body.ownerDocument, win=doc.defaultView, ref=o.ref;
-  var disposed=false, frame=0, printOpened=[], tableModes=[], invokers=[];
+  var disposed=false, frame=0, printOpened=[], printGroups=[], tableModes=[], invokers=[];
   function el(tag,cls,text){
     var node=doc.createElement(tag);
     if(cls)node.className=cls;
@@ -167,10 +167,14 @@ function fdGuideMount(body,options){
   }
   var columns=reader.querySelector('.fd-reader__cols'), article=reader.querySelector('.fd-article');
   var guideHeader=el('header','fd-guide-header');
+  var bedsideCase=body.querySelector(':scope > .fd-bedside-case');
   each([].slice.call(article.children),function(node){
-    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead'))guideHeader.appendChild(node);
+    if(node.matches('.fd-article__head,.fd-article__h1,.fd-article__lead')||
+        (bedsideCase&&node.classList.contains('governance-notice')))guideHeader.appendChild(node);
+    if(bedsideCase&&node.classList.contains('fd-article__h1'))guideHeader.appendChild(bedsideCase);
   });
   columns.insertBefore(guideHeader,article);columns.insertBefore(margin,article);
+  if(bedsideCase)fdMountCaseRounds(reader,function(source){return printOpened.indexOf(source)!==-1;});
 
   /* A second view is offered only for simple rectangular tables. Both views come from the same
      original cells. Complex tables keep their original accessible, scrollable representation. */
@@ -281,9 +285,17 @@ function fdGuideMount(body,options){
     updateCurrent();
   }
   function beforePrint(){
-    printOpened=[];each(body.querySelectorAll('details:not([open])'),function(d){printOpened.push(d);d.open=true;});
+    if(printOpened.length||printGroups.length)return;
+    /* An exclusive disclosure would otherwise close its sibling during printing. */
+    each(reader.querySelectorAll('.visual-practice details[name]'),function(d){
+      printGroups.push([d,d.getAttribute('name')]);d.removeAttribute('name');
+    });
+    each(reader.querySelectorAll('.fd-article__body details:not([open]),.fd-bedside-case details:not([open])'),function(d){printOpened.push(d);d.open=true;});
   }
-  function afterPrint(){printOpened.forEach(function(d){d.open=false;});printOpened=[];}
+  function afterPrint(){
+    printOpened.forEach(function(d){d.open=false;});printOpened=[];
+    printGroups.forEach(function(pair){pair[0].setAttribute('name',pair[1]);});printGroups=[];
+  }
   win.addEventListener('scroll',onScroll,{passive:true});win.addEventListener('resize',onResize);
   win.addEventListener('beforeprint',beforePrint);win.addEventListener('afterprint',afterPrint);
   /* Index only stable resource controls, after table generation. No durable learner state. */
@@ -341,4 +353,106 @@ function fdGuideMount(body,options){
       reader.removeEventListener('click',capturePractice,true);
     }
   };
+}
+
+/* Match only the exact generic/brand index shared with Search. Keep ambiguous names in the
+   expression: a longer ambiguous name must also suppress a shorter unambiguous prefix. */
+function fdReadingNamePattern(names){
+  var keys=Array.from(names.keys()).sort(function(a,b){return b.length-a.length;});
+  if(!keys.length)return null;
+  return new RegExp(keys.map(function(name){
+    return name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/ /g,'\\s+');
+  }).join('|'),'giu');
+}
+var FD_READING_NAME_JOIN='[\\p{L}\\p{M}\\p{N}_/+\\u00ad\\u2010-\\u2013-]';
+var FD_READING_JOIN_LEFT=new RegExp(FD_READING_NAME_JOIN+'$','u');
+var FD_READING_JOIN_RIGHT=new RegExp('^'+FD_READING_NAME_JOIN,'u');
+function fdReadingNameMatches(text,names,pattern){
+  var found=[], match;
+  pattern.lastIndex=0;
+  while((match=pattern.exec(text))){
+    var start=match.index, end=pattern.lastIndex, card=names.get(fdPharmacyName(match[0]));
+    if(card&&!FD_READING_JOIN_LEFT.test(text.slice(Math.max(0,start-2),start))&&
+        !FD_READING_JOIN_RIGHT.test(text.slice(end,end+2))){
+      found.push({start:start,end:end,id:card.id});
+    }
+  }
+  return found;
+}
+
+function fdLinkReadingMedications(body,names){
+  if(!body||!names||!names.size)return;
+  var pattern=fdReadingNamePattern(names), doc=body.ownerDocument;
+  var blocks='p,li,td,dd', headings='h1,h2,h3,h4,h5,h6,.fd-guide-lead';
+  var structure='ul,ol,blockquote,dl,table,tbody,tr,.fd-guide-section,.sec-c,.sec-b,'+
+    '.table-scroll,.table-scroll-viewport,.fd-guide-table-rows';
+  var protectedContent='[contenteditable],[inert],[onclick],[aria-hidden="true"],'+
+    '[role]:not([role="region"]),.fd-guide-references,.footnotes,.footnote,.citation,.references';
+
+  function annotate(block){
+    var pieces=[], text='', seen=new Set();
+    var leadLabel=block.classList.contains('fd-guide-lead')?block.firstElementChild:null;
+    function collect(node){
+      if(node.nodeType===3){
+        pieces.push({node:node,start:text.length,end:text.length+node.length});
+        text+=node.data;
+      }else if(node.nodeType===1){
+        /* Only plain inline typography can become part of a button. Keep the surrounding
+           characters of a link/control in the boundary check even when markup splits a word. */
+        if(node!==leadLabel&&node.matches('strong,em,b,i,span,u,s,mark,small')&&!node.attributes.length){
+          [].forEach.call(node.childNodes,collect);
+        }else{
+          var existing=node.getAttribute('data-fd-reading-pharmacy');
+          if(existing)seen.add(existing);
+          text+=node.matches('br,ul,ol,p,table')?'\n':(node.textContent||'\ufffc');
+        }
+      }
+    }
+    [].forEach.call(block.childNodes,collect);
+    var selections=[], index=0;
+    fdReadingNameMatches(text,names,pattern).forEach(function(match){
+      if(seen.has(match.id))return;
+      while(index<pieces.length&&pieces[index].end<=match.start)index++;
+      var first=pieces[index], last=first, next=index;
+      if(!first||first.start>match.start)return;
+      while(last.end<match.end&&pieces[next+1]&&pieces[next+1].start===last.end)last=pieces[++next];
+      if(last.end<match.end)return;
+      seen.add(match.id);
+      var range=doc.createRange();
+      range.setStart(first.node,match.start-first.start);
+      range.setEnd(last.node,match.end-last.start);
+      selections.push({range:range,id:match.id,label:text.slice(match.start,match.end)});
+    });
+    /* Work backward so each range keeps its original text boundaries. Moving the selected
+       contents preserves emphasis, spelling, punctuation, and the page's accessible text. */
+    selections.reverse().forEach(function(selection){
+      var button=doc.createElement('button');
+      button.type='button';
+      button.setAttribute('data-fd-reading-pharmacy',selection.id);
+      button.setAttribute('aria-label',selection.label+' — open Pharmacy card');
+      button.appendChild(selection.range.extractContents());
+      selection.range.insertNode(button);
+    });
+  }
+
+  /* Visit only the markdown structure and the wrappers our reader installs around it. An
+     embedded exercise, disclosure, frame or other widget owns its entire subtree. A reference
+     heading governs its sibling blocks until a heading of equal or higher rank starts. */
+  function visit(parent){
+    var referenceLevel=0;
+    [].forEach.call(parent.children,function(child){
+      var heading=child.matches(headings), label=child.matches('p')?fdGuideLeadLabel(child):'';
+      if(heading||label){
+        var level=/^H[1-6]$/.test(child.tagName)?Number(child.tagName.slice(1)):2;
+        var reference=/\b(references|bibliography|sources|citations|further reading)\b/i.test(label||child.textContent);
+        if(!referenceLevel||level<=referenceLevel)referenceLevel=reference?level:0;
+        if((heading&&child.tagName!=='P')||reference)return;
+      }
+      if(referenceLevel||child.matches(protectedContent))return;
+      if(child.hidden&&!child.matches('.fd-guide-table-rows,.table-scroll-viewport'))return;
+      if(child.matches(blocks)){annotate(child);visit(child);}
+      else if(child.matches(structure))visit(child);
+    });
+  }
+  visit(body);
 }

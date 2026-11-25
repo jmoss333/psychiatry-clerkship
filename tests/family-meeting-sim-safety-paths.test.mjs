@@ -1,5 +1,17 @@
 // Family Conversation Simulator (F1): all-paths SAFETY GATE.
 //
+// Real property (F1 gate rule G-1): on no complete path of any scenario does the debrief show a
+// learner who never performed a modelled safety-critical action (asking about suicide, handing
+// it to the attending, routing a firearm or other quick-harm means to the team) a passing safety
+// signal, and the simulator's own safety record never disagrees with that reading in either
+// direction. Inputs: the shipped simulator file (scenario JSON, engine, render), SAFETY_MODEL,
+// BEST_ENDING. Required: yes — runs in `node --test tests/*.test.mjs` inside the
+// `build-test-validate` job, a required context in the committed ruleset fixture.
+// Known-miss fixtures (G-2): tests/fixtures/family-meeting-sim/ holds the two real past-miss files
+// verbatim (v1 main 61530b10: 10 defect classes incl. the 3 never-ask S8 paths at 86 % "often";
+// #1149 head 91958ce8: 5 O1 over-penalty classes). The gate must report exactly those, or it is
+// broken whatever else is green.
+//
 // Walks every complete path of every scenario and fails if any path on which a safety-critical
 // action never happened (the suicide statement never asked about, the disclosure never handed to
 // the attending, a volunteered firearm or stored medicines never routed to the team) is shown to
@@ -29,12 +41,14 @@
 //   O1 gate-misses-done      (v2) the simulator's gate item reports missed — it tells the learner
 //                            they skipped a safety step they took (over-penalty; disagreement).
 //
-// KNOWN_DEFECTS is keyed by the sha256 of the simulator file. It records the defects of one exact
-// file (main as of 2026-11-05) so this gate can land without turning main red; the found set must
-// equal it exactly (a new violation fails, and so does a fixed one still listed). ANY change to
-// the file changes its sha, the entry stops applying, and the new file must pass with ZERO
-// violations — or carry a new, reviewed entry. The model is clinical reading (Josh's decision);
-// see O6_F1_GATE_LEDGER_2026-11-05.md. Code and tests only: no learner-visible text is changed.
+// KNOWN_DEFECTS is keyed by the sha256 of the simulator file. It may record the defects of one
+// exact file so this gate can land without turning main red; the found set must equal it exactly
+// (a new violation fails, and so does a fixed one still listed). ANY change to the file changes
+// its sha, the entry stops applying, and the new file must pass with ZERO violations — or carry a
+// new, reviewed entry. It is empty today: v2 (#1149) passes with zero, and the v1 entry became the
+// known-miss expectation for its fixture (KNOWN_MISSES), which carries no bypass. The model is
+// clinical reading (Josh's decision); see O6_F1_GATE_LEDGER_2026-11-05.md. Code and tests only: no
+// learner-visible text is changed.
 //
 // FMS_SIM_FILE=<path> checks another copy of the simulator (e.g. a PR head) without editing this
 // file. Reads committed files only; no network.
@@ -45,16 +59,24 @@ import test from 'node:test';
 
 const FILE = process.env.FMS_SIM_FILE
   || new URL('../08_Cases_and_Simulation/family-meeting-sim/family-meeting-sim.html', import.meta.url);
-const html = readFileSync(FILE, 'utf8');
 const sha = (s) => createHash('sha256').update(s).digest('hex');
-const FILE_SHA = sha(html);
 
-const block = (re) => { const m = html.match(re); return m ? m[1] : null; };
-const DATA = JSON.parse(block(/<script type="application\/json" id="fms-scenarios">([\s\S]*?)<\/script>/));
-const ENGINE_SRC = block(/<script id="fms-engine">([\s\S]*?)<\/script>/);
-const RENDER_SRC = block(/<script id="fms-render">([\s\S]*?)<\/script>/);
-const E = new Function(`${ENGINE_SRC}\nreturn FMSEngine;`)();
-const R = RENDER_SRC ? new Function(`${ENGINE_SRC}\n${RENDER_SRC}\nreturn FMSRender;`)() : null;
+/** Parse one copy of the simulator: its data, and its own engine and render code. */
+function loadSim(src) {
+  const block = (re) => { const m = src.match(re); return m ? m[1] : null; };
+  const engine = block(/<script id="fms-engine">([\s\S]*?)<\/script>/);
+  const render = block(/<script id="fms-render">([\s\S]*?)<\/script>/);
+  return {
+    sha: sha(src),
+    DATA: JSON.parse(block(/<script type="application\/json" id="fms-scenarios">([\s\S]*?)<\/script>/)),
+    E: new Function(`${engine}\nreturn FMSEngine;`)(),
+    R: render ? new Function(`${engine}\n${render}\nreturn FMSRender;`)() : null,
+  };
+}
+
+const SIM = loadSim(readFileSync(FILE, 'utf8'));
+const { DATA, E } = SIM;
+const FILE_SHA = SIM.sha;
 
 /*
  * The test's reading. `at`: nodes where the risk is live (the item counts as missed only on
@@ -170,22 +192,46 @@ const MODEL_PINS = {
   },
 };
 
-/* Defects of one exact file, as `scenario|rule|item` -> number of paths. See header. */
-const KNOWN_DEFECTS = {
+/* Defects of one exact file, as `scenario|rule|item` -> number of paths. See header. Empty: no
+   shipped file carries a known defect. */
+const KNOWN_DEFECTS = {};
+
+/* Known-miss fixtures (G-2): real past-miss files, verbatim from git history, and the exact found
+   set the gate must report on each. No sha bypass applies to them. If the gate stops seeing any
+   of these, it fails here. */
+const KNOWN_MISSES = {
   // origin/main 61530b10 (2026-10-29; unchanged through 2026-11-05), family-meeting-sim.html as
-  // merged in #1147. 19,980 paths. All of these are fixed structurally by draft #1149 (v2), whose
-  // head 91958ce8 instead shows five O1 over-penalty findings (close#0 not credited; FY3 §3.2).
-  '98b52ef80fcfef8687485da05c1a3c685cf9ec8c0ae432b6ad182a5708409d9c': {
-    'coparents-discharge-adolescent|U1 safety-shown-as-pass|means-both-homes': 15,
-    'coparents-discharge-adolescent|U2 best-ending-silent|means-both-homes': 450,
-    'parent-own-untreated-illness|U1 safety-shown-as-pass|ask-directly': 3,
-    'parent-own-untreated-illness|U1 safety-shown-as-pass|handover': 36,
-    'parent-own-untreated-illness|U1 safety-shown-as-pass|means-asked': 3,
-    'parent-own-untreated-illness|U2 best-ending-silent|ask-directly': 405,
-    'parent-own-untreated-illness|U2 best-ending-silent|handover': 675,
-    'parent-own-untreated-illness|U2 best-ending-silent|means-asked': 450,
-    'silent-teen-guardian-present|U1 safety-shown-as-pass|means-and-roles': 5,
-    'silent-teen-guardian-present|U2 best-ending-silent|means-and-roles': 450,
+  // merged in #1147, data v1, 19,980 paths. Formerly this file's KNOWN_DEFECTS entry. Fixed on
+  // main by #1149 (v2). FB1 PC-08 / P0-2 is the S8 ask-directly U1 row (3 paths, 86 % "often").
+  'v1-61530b10.html': {
+    sha: '98b52ef80fcfef8687485da05c1a3c685cf9ec8c0ae432b6ad182a5708409d9c',
+    paths: 19980,
+    found: {
+      'coparents-discharge-adolescent|U1 safety-shown-as-pass|means-both-homes': 15,
+      'coparents-discharge-adolescent|U2 best-ending-silent|means-both-homes': 450,
+      'parent-own-untreated-illness|U1 safety-shown-as-pass|ask-directly': 3,
+      'parent-own-untreated-illness|U1 safety-shown-as-pass|handover': 36,
+      'parent-own-untreated-illness|U1 safety-shown-as-pass|means-asked': 3,
+      'parent-own-untreated-illness|U2 best-ending-silent|ask-directly': 405,
+      'parent-own-untreated-illness|U2 best-ending-silent|handover': 675,
+      'parent-own-untreated-illness|U2 best-ending-silent|means-asked': 450,
+      'silent-teen-guardian-present|U1 safety-shown-as-pass|means-and-roles': 5,
+      'silent-teen-guardian-present|U2 best-ending-silent|means-and-roles': 450,
+    },
+  },
+  // #1149 head 91958ce8 (2026-11-05), data v2, 30,510 paths, before FY3 §3.2: close#0 names and
+  // routes the means item but the simulator's gate offered it only at the means node, so the
+  // debrief told learners they skipped a step they took. Fixed in #1149 before merge (O6-3).
+  'v2pre-91958ce8.html': {
+    sha: '256462b3f2010ab07142cfadd598b2a0e41b041d61b0a020b059c2f62fe9873c',
+    paths: 30510,
+    found: {
+      'ambivalent-spouse-discharge|O1 gate-misses-done|means-routed': 450,
+      'angry-parent-admission|O1 gate-misses-done|rifle-routed': 630,
+      'hold-disagreement-admission|O1 gate-misses-done|means-routed': 1050,
+      'shared-decision-household|O1 gate-misses-done|means-and-roles': 1050,
+      'siblings-late-onset-psychosis|O1 gate-misses-done|handgun-routed': 750,
+    },
   },
 };
 
@@ -218,7 +264,8 @@ function allPaths(sc) {
 }
 
 const SAFETY_OFTEN_TEXT = 'You made this move often on this run.';
-function shown(data, sc, path) {
+function shown(sim, sc, path) {
+  const { DATA: data, E, R } = sim;
   const t = E.tally(sc, path.steps);
   if (!R) {
     return { safetyOften: E.band(t.safety.pct) === 'often', banner: false, gate: null };
@@ -234,7 +281,8 @@ function shown(data, sc, path) {
   return { safetyOften, banner: out.includes('class="gate-banner"'), gate: Object.fromEntries(g.items.map((it) => [it.id, it.status])) };
 }
 
-function evaluate(data) {
+function evaluate(sim) {
+  const { DATA: data, E } = sim;
   const model = SAFETY_MODEL[data.version];
   const found = {};
   const examples = {};
@@ -248,7 +296,7 @@ function evaluate(data) {
     for (const path of paths) {
       const refs = new Set(path.steps.map(ref));
       const visited = new Set(path.steps.map((s) => s.node));
-      const view = shown(data, sc, path);
+      const view = shown(sim, sc, path);
       for (const it of items) {
         if (!it.at.some((n) => visited.has(n))) continue; // risk never live on this path
         const done = it.done.some((r) => refs.has(r));
@@ -314,7 +362,7 @@ test('engine sanity: a safety-flagged or keyed choice is where the model says (n
 });
 
 test('all paths: no path that misses a safety-critical action is shown as a pass, and the record agrees', () => {
-  const { found, examples, total } = evaluate(DATA);
+  const { found, examples, total } = evaluate(SIM);
   if (process.env.PRINT_SAFETY_PINS) {
     writeFileSync(`${process.env.PRINT_SAFETY_PINS}/found.json`, JSON.stringify({ file: FILE_SHA, total, found, examples }, null, 2));
   }
@@ -337,10 +385,33 @@ test('the gate is not vacuous: re-introducing the P0-2 defect is caught', () => 
   delete s8.nodes.worry.choices[nonAsk].flag;
   const g = (s8.gate?.required || []).find((x) => x.id === 's8-ask-directly');
   if (g) g.satisfiedBy.push(`worry#${nonAsk}`);
-  const before = evaluate(DATA).found;
-  const after = evaluate(d).found;
+  const before = evaluate(SIM).found;
+  const after = evaluate({ ...SIM, DATA: d }).found;
   const key = (rule) => `${s8.id}|${rule}|ask-directly`;
   const grew = ['U1 safety-shown-as-pass', 'U2 best-ending-silent', 'U3 gate-credits-miss']
     .filter((r) => (after[key(r)] || 0) > (before[key(r)] || 0));
   assert.ok(grew.length > 0, `the mutation must raise at least one violation; before ${JSON.stringify(before)} after ${JSON.stringify(after)}`);
+});
+
+test('known-miss: the gate reports exactly the recorded defects of the real past-miss files', () => {
+  // G-2. Each fixture is a simulator file that actually shipped or was proposed, verbatim from
+  // git history. The gate runs its own model, rules and path walk on it with no sha bypass, and
+  // must find every recorded class at its exact path count. A gate that finds fewer is blind to a
+  // miss it exists to stop; one that finds more has changed what it measures.
+  const dir = new URL('./fixtures/family-meeting-sim/', import.meta.url);
+  for (const [name, want] of Object.entries(KNOWN_MISSES)) {
+    const sim = loadSim(readFileSync(new URL(name, dir), 'utf8'));
+    assert.equal(sim.sha, want.sha, `${name}: fixture is the exact recorded file`);
+    assert.equal(KNOWN_DEFECTS[sim.sha], undefined, `${name}: no KNOWN_DEFECTS entry may excuse a fixture`);
+    for (const sc of sim.DATA.scenarios) {
+      assert.equal(modelPin(sc, SAFETY_MODEL[sim.DATA.version][sc.id]), MODEL_PINS[sim.DATA.version][sc.id],
+        `${name} ${sc.id}: the model's reading applies to this file's text`);
+    }
+    const { found, examples, total } = evaluate(sim);
+    assert.equal(total, want.paths, `${name}: every path walked`);
+    const detail = Object.keys({ ...found, ...want.found }).sort()
+      .filter((k) => found[k] !== want.found[k])
+      .map((k) => `${k}: found ${found[k] || 0}, expected ${want.found[k] || 0}${examples[k] ? ` — e.g. ${examples[k]}` : ''}`);
+    assert.deepEqual(detail, [], `${name}: the gate no longer sees a recorded miss:\n  ${detail.join('\n  ')}`);
+  }
 });

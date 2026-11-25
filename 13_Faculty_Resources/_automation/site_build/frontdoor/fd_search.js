@@ -56,6 +56,10 @@
    MS3/clerkship/student/shelf/resident/UNE/MMC/Sanford. */
 
 var FD_SEARCH_PINNED = ['mse.html', 'withdrawal.html', 'pg_interview.md'];
+var FD_SEARCH_SPELLING_CORRECTIONS = new Map([
+  ['delerium', 'delirium'],
+  ['akathesia', 'akathisia']
+]);
 
 /* Discovery aliases never expand the safety haystack. Short ambiguous abbreviations must
    be the entire query. Normalize punctuation so PHQ-9 / PHQ 9 and trailing ? work alike. */
@@ -84,6 +88,33 @@ function fdSearchMedicationMatch(item, query){
     if(term&&(' '+q+' ').indexOf(' '+term+' ')!==-1) match=1;
   }
   return match;
+}
+
+/* Index names once, after the shell verifies the public Pharmacy feed. Keep punctuation
+   literal so distinct formulations cannot become equal by losing part of their names. */
+function fdPharmacyName(name){
+  return typeof name==='string'?name.trim().toLowerCase().replace(/\s+/g,' '):'';
+}
+
+function fdSearchPharmacyNames(agents){
+  var names=new Map();
+  agents.forEach(function(agent){
+    var generic=fdPharmacyName(agent.generic);
+    if(!generic||typeof agent.id!=='string'||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(agent.id)) return;
+    var item={id:agent.id,title:agent.generic};
+    var terms=[generic].concat(Array.isArray(agent.brands)?agent.brands:[]);
+    /* A published ID can also be the short generic, e.g. lithium / lithium carbonate.
+       Accept it only when its words actually begin the published generic name. */
+    var idWords=agent.id.replace(/-/g,' ');
+    if((generic+' ').indexOf(idWords+' ')===0) terms.push(agent.id);
+    terms.forEach(function(term){
+      var name=fdPharmacyName(term);
+      if(!name) return;
+      if(!names.has(name)) names.set(name,item);
+      else if(names.get(name)!==item) names.set(name,null); // More than one agent owns this name.
+    });
+  });
+  return names;
 }
 
 /* Words that carry no topic signal. Unguarded, "on" matched 70 of 83 items and "the" 59 --
@@ -367,7 +398,8 @@ function fdSearchTriggerHit(triggers, paddedQuery){
 
 /* Care vocabulary is deliberately separate from synonyms and safety triggers. A match only
    selects a static, canonical URL; the typed phrase never becomes a query parameter or fragment. */
-function fdSearchCareHit(resource, normalizedQuery){
+function fdSearchCareHit(resource, normalizedQuery, readingQuery){
+  if(readingQuery&&fdSearchNormalize(resource.title)===readingQuery) return true;
   var padded=' '+normalizedQuery+' ', terms=resource.searchTerms||[];
   for(var i=0;i<terms.length;i++){
     var term=fdSearchNormalize(terms[i]);
@@ -401,9 +433,25 @@ function fdSearchNextUnread(index, state){
 }
 
 function fdSearchMatches(index, query, synonyms, state){
+  var pharmacy=index&&index.byRef&&index.byRef['pharmacy.html']&&state&&!state.facultyPreview&&
+    state.pharmacyNames&&state.pharmacyNames.get(fdPharmacyName(query));
+  /* Return to the list the learner opened, even if page text finished loading
+     while they were reading. Editing or opening a new search uses the live index. */
+  var saved=state&&state.searchReturn;
+  if(state&&state.searchRestored&&saved&&saved.query===String(query||'')&&Array.isArray(saved.matches)){
+    return saved.matches.filter(function(r){
+      return r.kind!=='pharmacy'||(pharmacy&&r.item.id===pharmacy.id);
+    });
+  }
   var idx=index||{byRef:{}, weeks:[], columns:[], kit:[]};
   var kit=idx.kit||[];
-  var rawQuery=String(query||'').trim().toLowerCase();
+  var typedQuery=String(query||'').trim().toLowerCase();
+  /* Route the dotted spelling through the same SI vocabulary, without picking
+     the letters out of a longer initialism or a resource filename. */
+  var rawQuery=typedQuery.replace(/(^|[^a-z0-9_.])s\.i\.?(?=$|[^a-z0-9_.])/g,'$1si');
+  /* Rank a request to open or use a resource by the words that name it. Keeping
+     this at the start of the query preserves those same words inside a title. */
+  rawQuery=rawQuery.replace(/^(?:show\s+me|where\s+can\s+i\s+find|how\s+do\s+i\s+(?:use|do(?:\s+an?)?)|open)\s+(?=\S)/,'');
   var seenRefs={};
 
   if(!rawQuery){
@@ -496,6 +544,7 @@ function fdSearchMatches(index, query, synonyms, state){
   for(var kk=0;kk<kit.length;kk++){
     var kitItem=kit[kk].item;
     var triggered=fdSearchTriggerHit(kit[kk].triggers, paddedQuery)||
+       (typedQuery!==rawQuery&&fdSearchTriggerHit(kit[kk].triggers, ' '+typedQuery+' '))||
        fdSearchTriggerHit(kit[kk].triggers, ' '+normalizedQuery+' ')||
        fdSearchTriggerHit(kit[kk].triggers, ' '+readingQuery+' ')||
        fdSearchHits(fdSearchHaystack(kitItem), '', safetyWords, true);
@@ -513,7 +562,7 @@ function fdSearchMatches(index, query, synonyms, state){
 
   var careResults=[], care=idx.careResources||[];
   for(var ci=0;ci<care.length;ci++){
-    if(fdSearchCareHit(care[ci],normalizedQuery)){
+    if(fdSearchCareHit(care[ci],normalizedQuery,readingQuery)){
       careResults.push({item:care[ci],kind:'care',meta:'External care resource'});
     }
   }
@@ -539,13 +588,16 @@ function fdSearchMatches(index, query, synonyms, state){
     altWords.push(fdSearchContentWords(fdExpandQuery(alternatives[aw], synonyms).split(/\s+/)));
   }
   var body=literalFile?{}:fdSearchBodyScores(state&&state.bodyIndex, readingQuery, alternatives);
+  /* Only a standalone family-call request means the existing "collateral call" alias.
+     A longer query such as "call family about delirium" needs its own clinical ranking. */
+  var aliasQuery=(readingQuery==='call family'||readingQuery==='i need to call family')?'collateral call':rawQuery;
   var kitRefs={};
   for(var kr=0;kr<kit.length;kr++){ if(kit[kr].item) kitRefs[kit[kr].item.ref]=true; }
   var itemResults=[], bodyOnly=[];
   for(var r=0;r<refs.length;r++){
     if(seenRefs[refs[r]]) continue;
     var it=idx.byRef[refs[r]];
-    var aliasHit=fdSearchAliasHit(it, rawQuery);
+    var aliasHit=fdSearchAliasHit(it, aliasQuery);
     var medicationMatch=fdSearchMedicationMatch(it, rawQuery);
     var searchHay=fdSearchHaystack(it)+' '+String(it.searchTitle||'').toLowerCase();
     var literal=aliasHit||medicationMatch||fdSearchHits(searchHay, rawQuery, contentWords)||
@@ -627,8 +679,9 @@ function fdSearchMatches(index, query, synonyms, state){
   });
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
-  if(exactOnly.length) return protoResults.concat(careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest);
-  return protoResults.concat(careResults, exactAlias, aliasItems, hayProtocols, rest);
+  var pharmacyResults=pharmacy?[{item:pharmacy,kind:'pharmacy',meta:'Pharmacy card'}]:[];
+  if(exactOnly.length) return protoResults.concat(pharmacyResults, careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest);
+  return protoResults.concat(pharmacyResults, careResults, exactAlias, aliasItems, hayProtocols, rest);
 }
 
 /* Keep one matching/ranking pass for both the honest total and the visible rows. The keyboard
@@ -649,7 +702,7 @@ function fdSearchResults(index, query, synonyms, state){
    other surfaces) gets the result's own `meta` string exactly as before. */
 function fdSearchRowMeta(r, ctx){
   var it=r.item, idx=ctx&&ctx.index;
-  if(!idx||r.kind==='care') return r.meta||'';
+  if(!idx||r.kind==='care'||r.kind==='pharmacy') return r.meta||'';
   if(r.kind==='protocol'){
     var kit=idx.kit||[];
     for(var k=0;k<kit.length;k++){ if(kit[k].item&&kit[k].item.ref===it.ref&&kit[k].sub) return String(kit[k].sub); }
@@ -689,13 +742,13 @@ function fdSearchResultRow(r, ctx){
   var dotCls='fd-result__dot';
   if(isProto) dotCls+=' is-safety';
   else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
-  var openAttrs=isProto
-    ?(' data-fd-safety="'+fdEsc(it.ref)+'"')
-    :(' data-fd-open="'+fdEsc(it.ref)+'"');
+  var openAttrs=' data-fd-open="'+fdEsc(it.ref)+'"';
+  if(isProto) openAttrs=' data-fd-safety="'+fdEsc(it.ref)+'"';
+  if(r.kind==='pharmacy') openAttrs=' data-fd-pharmacy-card="'+fdEsc(it.id)+'"';
   return '<button type="button" class="fd-result'+(c.first?' is-first':'')+'"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
     '<span class="fd-result__title">'+fdEsc(it.searchTitle||it.title)+'</span>'+
-    governanceBadge(it.governance)+
+    (r.kind==='pharmacy'?'':governanceBadge(it.governance))+
     '<span class="fd-result__meta">'+fdEsc(meta)+'</span>'+
   '</button>';
 }
@@ -708,12 +761,13 @@ function fdSearchResultRow(r, ctx){
    wears the danger-wash `is-first` background. */
 var FD_SEARCH_GROUPS={
   protocol:{cls:'is-safety',label:'Safety protocols'},
+  pharmacy:{cls:'',label:'Pharmacy'},
   page:{cls:'',label:'Pages'},
   tool:{cls:'',label:'Tools'},
   care:{cls:'is-care',label:'Patient care resources'}
 };
 function fdSearchGroupOf(r){
-  if(r.kind==='protocol'||r.kind==='care') return r.kind;
+  if(r.kind==='protocol'||r.kind==='care'||r.kind==='pharmacy') return r.kind;
   return (r.item&&r.item.kind==='tool')?'tool':'page';
 }
 function fdSearchGroupedRows(results, index){
@@ -735,7 +789,20 @@ function fdSearchGroupedRows(results, index){
   return out;
 }
 
+/* Keep the originating page mounted under Search while the canonical tool displays its card. */
+function fdSearchPharmacyLookup(card, state){
+  var title=fdEsc(card.title+' · Pharmacy card');
+  var resume=/\.md$/.test(state.openId||'')?'Return to reading':'Close lookup';
+  return '<div class="fd-search" role="dialog" aria-modal="true" aria-label="'+title+'">'+
+    '<div class="fd-searchpanel" data-pharmacy-lookup="'+fdEsc(card.id)+'"'+(card.fromReading?' role="document" tabindex="0"':'')+'>'+
+    (card.fromReading?'':'<div class="fd-searchpanel__browse"><button type="button" class="fd-btn" data-fd-pharmacy-back>Back to search results</button></div>')+
+    '<iframe title="'+title+'" src="tools/pharmacy.html?view=card#'+encodeURIComponent(card.id)+'"></iframe>'+
+    '<div class="fd-searchpanel__browse"><button type="button" class="fd-btn" data-fd-close-search>'+resume+'</button></div>'+
+    '</div></div>';
+}
+
 function fdSearchOverlay(index, query, synonyms, state){
+  if(state&&state.pharmacyLookup) return fdSearchPharmacyLookup(state.pharmacyLookup,state);
   var q=String(query||'');
   var trimmed=q.trim();
   var matches=fdSearchMatches(index, q, synonyms, state);
@@ -779,10 +846,17 @@ function fdSearchOverlay(index, query, synonyms, state){
      nothing -- an empty query always has defaults (see fdSearchResults), so there is nothing to
      apologise for on first open. Matches the prototype's own noResults = q.length>0 && !results. */
   if(trimmed&&!results.length){
+    var correction=FD_SEARCH_SPELLING_CORRECTIONS.get(trimmed.toLowerCase());
+    var canSuggest=correction&&fdSearchMatches(index,correction,synonyms,state).length>0;
     out+='<div class="fd-searchpanel__empty">Nothing for “'+fdEsc(trimmed)+'” '+
       '— try a symptom, scale, or drug class.</div>';
-    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">'+
-      '<button type="button" class="fd-btn fd-btn--primary" data-fd-search="">Edit search</button>';
+    out+='<div class="fd-searchpanel__recovery" role="group" aria-label="Search recovery">';
+    if(canSuggest){
+      out+='<button type="button" class="fd-btn fd-btn--primary" data-fd-search="" data-fd-search-query="'+
+        fdEsc(correction)+'">Did you mean '+fdEsc(correction)+'?</button>';
+    }
+    out+='<button type="button" class="fd-btn '+(canSuggest?'fd-btn--ghost':'fd-btn--primary')+
+      '" data-fd-search="">Edit search</button>';
     if(!(state&&state.appMode===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-fd-tab="library">Browse the Library</button>';
     if(!(state&&state.facultyPreview===true))out+='<button type="button" class="fd-btn fd-btn--ghost" data-capture-open="" aria-haspopup="dialog" aria-expanded="false">Save a question for supervision</button>';
     out+='</div>';

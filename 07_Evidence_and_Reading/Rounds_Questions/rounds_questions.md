@@ -46,6 +46,67 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **5. What did the CATIE trial show?**
 
+<section class="bedside-case" id="catie-stop" aria-labelledby="catie-title">
+<h3 id="catie-title">Why did they stop taking it?</h3>
+<p class="ct-intro">It’s morning huddle on the adult unit. An admission came up overnight. The ED sign-out says, “Hearing voices again. Off risperidone.” The resident asks, “What happened with it after discharge?”</p>
+<p class="ct-signout">Open either version of the admission and talk with the patient before rounds.</p>
+<div class="ct-chart" aria-labelledby="catie-chart-title">
+  <div class="ct-chart-head"><h4 id="catie-chart-title">Risperidone history</h4><span>Fictional cases</span></div>
+  <button class="ct-course" type="button" data-patient="a" aria-label="Open Patient A’s interview" aria-pressed="false" aria-controls="catie-interview">
+    <span class="ct-portrait"><img src="illustrations/catie-patient-a.webp" alt=""></span>
+    <span class="ct-course-body"><span class="ct-name"><strong>Patient A</strong><span class="ct-open-state">Open interview</span></span><span class="ct-dates"><span>Sep 3</span><span>Oct 15</span></span><span class="ct-rail" aria-hidden="true"></span><span class="ct-dates ct-endpoints"><span>Discharge Rx</span><span>Reported last dose</span></span></span>
+  </button>
+  <button class="ct-course" type="button" data-patient="b" aria-label="Open Patient B’s interview" aria-pressed="false" aria-controls="catie-interview">
+    <span class="ct-portrait"><img src="illustrations/catie-patient-b.webp" alt=""></span>
+    <span class="ct-course-body"><span class="ct-name"><strong>Patient B</strong><span class="ct-open-state">Open interview</span></span><span class="ct-dates"><span>Sep 3</span><span>Oct 15</span></span><span class="ct-rail" aria-hidden="true"></span><span class="ct-dates ct-endpoints"><span>Discharge Rx</span><span>Reported last dose</span></span></span>
+  </button>
+</div>
+<div class="ct-interview" id="catie-interview" aria-labelledby="catie-interview-title" hidden>
+  <header><h4 id="catie-interview-title" tabindex="-1"></h4></header>
+  <p class="ct-overnight"><strong>Overnight note</strong> · <span id="catie-overnight"></span></p>
+  <p class="ct-bedside-question">You ask, “What was it like taking the risperidone at home?”</p>
+  <blockquote id="catie-quote"></blockquote>
+  <h4 id="catie-handoff-title">What will you say on rounds?</h4>
+  <div id="catie-handoffs" class="ct-handoffs" role="group" aria-labelledby="catie-handoff-title"></div>
+  <p class="case-reply" id="catie-feedback" role="status" hidden></p>
+  <button class="case-link" type="button" id="catie-other" hidden></button>
+</div>
+<details id="catie-compare" hidden>
+  <summary>Compare the two stop dates</summary>
+  <div class="ct-comparison">
+    <div><b>Patient A</b><small>Stopped Oct 15</small><p>The voices eased. Morning grogginess made it hard to get their child ready for school. Ask what mornings were like before and after the medication.</p></div>
+    <div><b>Patient B</b><small>Stopped Oct 15</small><p>The voices still kept them awake. They saw little benefit. Check what dose was prescribed and what they recall taking at home.</p></div>
+  </div>
+  <p>CATIE measured how long people stayed on their assigned antipsychotic before stopping it for any reason. Both patients gave October 15 as their last dose. The discharge prescription and stop date alone can’t tell the day team how well the medication worked or what made it hard to take.</p>
+  <a href="https://pubmed.ncbi.nlm.nih.gov/16172203/">Read the original CATIE trial (Lieberman et al., 2005)</a>
+</details>
+<footer><span id="catie-progress" role="status">0 of 2 handoffs matched</span><button class="case-link" type="button" data-reset>Start again</button></footer>
+<template data-interview="a">
+  <span data-note>Sister brought patient to the ED after the voices got louder at home. ED medication history lists Oct 15 as the last dose, per patient.</span>
+  <span data-account>“It did quiet things down. I could actually watch TV again. But my alarm would go off three times. My kid was making his own breakfast. One morning he came in with his coat on and said, ‘Mom, we missed the bus.’ That’s why I stopped.”</span>
+  <div data-options>
+    <button type="button" data-choice="symptoms" aria-pressed="false" aria-controls="catie-feedback">Their sister brought them in because the voices got worse. I’d tell the attending the risperidone wasn’t helping at home.</button>
+    <button type="button" data-choice="burden" data-matched aria-pressed="false" aria-controls="catie-feedback">They say risperidone quieted the voices, but they were too groggy to get their kid ready for school. That’s what made them stop.</button>
+    <button type="button" data-choice="uncertain" aria-pressed="false" aria-controls="catie-feedback">They felt better on risperidone and stopped once the voices settled down. I’d ask what they understood about the discharge plan.</button>
+  </div>
+  <span data-explanation="symptoms">That explains the ED visit. When you asked about the weeks on risperidone, the patient remembered quieter voices and trouble waking up.</span>
+  <span data-explanation="burden">That gives the team something to ask about before discussing medication today. What would help with the voices and still let this parent get up in the morning?</span>
+  <span data-explanation="uncertain">Feeling better and stopping both happened. The patient gave a different reason for stopping when they described their mornings.</span>
+</template>
+<template data-interview="b">
+  <span data-note>Patient came to the ED after another night awake with voices. Last dose Oct 15, per patient. Current home dose unclear.</span>
+  <span data-account>“I took one every night. I’d turn the TV off, try to sleep, and I could still hear those guys talking about me. Finally I thought, what am I taking this for? I don’t remember how many milligrams. Just one pill.”</span>
+  <div data-options>
+    <button type="button" data-choice="burden" aria-pressed="false" aria-controls="catie-feedback">They were up most nights on risperidone. I’d tell the team it interfered with sleep and that’s why they stopped.</button>
+    <button type="button" data-choice="uncertain" aria-pressed="false" aria-controls="catie-feedback">They were prescribed it at discharge six weeks earlier and say they took it nightly. I’d count this as a full trial that didn’t work.</button>
+    <button type="button" data-choice="symptoms" data-matched aria-pressed="false" aria-controls="catie-feedback">They say they took it nightly, but the voices still kept them awake and they didn’t feel it helped. I’d check what dose they were taking at home.</button>
+  </div>
+  <span data-explanation="burden">Ask what kept them awake. They described hearing voices after turning off the TV. They didn’t describe the tablet keeping them up.</span>
+  <span data-explanation="uncertain">The dates are documented, but the home dose is unclear. Check the outpatient prescription and ask how they took it before calling the trial adequate.</span>
+  <span data-explanation="symptoms">That preserves the patient’s account and gives the day team a concrete question. The discharge list shows what was prescribed, while the dose actually taken still needs clarification.</span>
+</template>
+</section>
+
 - **Answer:** In 1,460 patients with chronic schizophrenia, olanzapine had the longest time to all-cause discontinuation but the worst metabolic profile. Perphenazine (an FGA) performed comparably to SGAs. Only 26% completed 18 months on assigned medication.
 
 - **Evidence:** Phase 2 showed clozapine was superior for patients who failed initial treatment for efficacy reasons.
