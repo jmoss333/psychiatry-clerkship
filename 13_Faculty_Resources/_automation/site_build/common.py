@@ -25,6 +25,7 @@ the build script's source to assert the learner CSP, so it must remain a single
 statically-inspectable literal in that file.
 """
 
+from dataclasses import dataclass
 import errno
 import glob
 import hashlib
@@ -295,6 +296,14 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 
 
+@dataclass
+class _PassageElement:
+    tag: str
+    hidden: bool
+    closed_details: bool = False
+    seen_summary: bool = False
+
+
 class _SearchPassageHTML(HTMLParser):
     """Keep readable source text, never embedded code or unrevealed exercises."""
 
@@ -312,7 +321,19 @@ class _SearchPassageHTML(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         attributes = dict(attrs)
-        blocked = bool(self.stack and self.stack[-1][1])
+        parent = self.stack[-1] if self.stack else None
+        blocked = bool(parent and parent.hidden)
+        if parent and parent.closed_details:
+            # Only the first direct summary is displayed while the disclosure is closed.
+            blocked = blocked or tag != "summary" or parent.seen_summary
+            if tag == "summary":
+                parent.seen_summary = True
+        classes = (attributes.get("class") or "").split()
+        if "fd-bedside-case__closed" in classes or "fd-bedside-case__open" in classes:
+            details = next((node for node in reversed(self.stack) if node.tag == "details"), None)
+            if details:
+                inactive = "fd-bedside-case__open" if details.closed_details else "fd-bedside-case__closed"
+                blocked = blocked or inactive in classes
         omitted = (tag in self._omit or "hidden" in attributes
                    or attributes.get("aria-hidden", "").lower() == "true"
                    or re.search(r"(?:display\s*:\s*none|visibility\s*:\s*hidden)\b",
@@ -322,7 +343,8 @@ class _SearchPassageHTML(HTMLParser):
         elif not blocked and (tag in self._blocks or omitted or tag in {"br", "hr"}):
             self.parts.append("\n\n")
         if tag not in self._void:
-            self.stack.append((tag, blocked or bool(omitted)))
+            self.stack.append(_PassageElement(tag, blocked or bool(omitted),
+                                              closed_details=tag == "details" and "open" not in attributes))
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs)
@@ -331,17 +353,19 @@ class _SearchPassageHTML(HTMLParser):
 
     def handle_endtag(self, tag):
         for i in range(len(self.stack) - 1, -1, -1):
-            if self.stack[i][0] == tag:
+            if self.stack[i].tag == tag:
                 del self.stack[i:]
                 break
-        if not (self.stack and self.stack[-1][1]) and (tag in self._blocks or tag in self._omit - {"code"}):
+        if not (self.stack and self.stack[-1].hidden) and (tag in self._blocks or tag in self._omit - {"code"}):
             self.parts.append("\n\n")
 
     def handle_data(self, data):
-        if not (self.stack and self.stack[-1][1]):
-            if self.stack:
-                data = re.sub(r"(?m)^[ \t]{2,}", " ", data)
-            self.parts.append(data)
+        if self.stack:
+            parent = self.stack[-1]
+            if parent.hidden or parent.closed_details:
+                return
+            data = re.sub(r"(?m)^[ \t]{2,}", " ", data)
+        self.parts.append(data)
 
 
 def _search_passages(raw):

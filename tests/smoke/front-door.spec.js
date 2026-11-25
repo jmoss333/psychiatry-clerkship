@@ -149,6 +149,65 @@ test.describe('matching search excerpts on a touch phone', () => {
     });
   }
 
+  test('landscape keeps the focused review warning beside the passage until both leave view', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await seedApp(page, testInfo);
+    await pinGovernance(page, READING_REF, {
+      status: 'pending', riskLevel: 'high', riskKind: 'clinical',
+      warning: 'This teaching page is awaiting faculty review. Verify clinical decisions with your supervising clinician.',
+      reason: 'The teaching content has changed since the previous review and requires a new faculty attestation.',
+    });
+    await page.goto('/?tab=library');
+    await openHeaderSearch(page);
+    await page.getByRole('textbox', { name: 'Search resources' }).fill('grief vs depression');
+    const mood = page.locator('.fd-result[data-fd-open="t_mood.md"]');
+    await expect(mood.locator('.fd-result__excerpt')).toContainText('Grief vs depression anchor');
+    await mood.tap();
+
+    const warning = page.locator('.fd-guide-passage-review .governance-notice.pending-high');
+    const passage = page.locator('.fd-article[data-ref="t_mood.md"] p.fd-guide-match');
+    await expect(passage).toContainText('Grief vs depression anchor');
+    await passage.evaluate(async () => {
+      await document.fonts.ready;
+      await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+    });
+    await expect(warning).toBeFocused();
+    await expect(warning).toBeInViewport();
+    expect(await warning.locator('.governance-title').evaluate(title => {
+      const box = title.getBoundingClientRect();
+      return title.contains(document.elementFromPoint(box.left + 3, box.top + box.height / 2));
+    })).toBe(true);
+
+    await passage.evaluate(node => node.scrollIntoView({ block: 'start', behavior: 'instant' }));
+    await expect(passage).toBeInViewport();
+    await expect(warning).toHaveCount(1);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(warning).toHaveCount(0);
+    await expect(page.locator('.fd-reader .governance-notice.pending-high')).toBeInViewport();
+  });
+
+  test('search excerpts keep the hidden Anxiety case clue behind its reveal control', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(() => window.cwSearchIndexPromise);
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    await search.getByRole('textbox', { name: 'Search resources' }).fill('antipsychotic dose increased yesterday');
+    const more = search.getByRole('button', { name: 'Show all matches' });
+    if (await more.count()) await more.tap();
+    const anxiety = search.locator('.fd-result[data-fd-open="t_anxiety.md"]');
+    const clue = 'The antipsychotic dose was increased yesterday.';
+    await expect(search.locator('.fd-result__excerpt').first()).toBeVisible();
+    await expect(anxiety).toBeVisible();
+    await expect(anxiety).not.toContainText(clue);
+    await anxiety.tap();
+    const details = page.locator('.fd-bedside-case details').filter({ hasText: clue });
+    await expect(details.getByText(clue, { exact: true })).toBeHidden();
+    await details.locator('summary').tap();
+    await expect(details.getByText(clue, { exact: true })).toBeVisible();
+  });
+
   for (const status of ['reviewed', 'pending']) {
     test('late ' + status + ' review status preserves the search passage landing', async ({ page }, testInfo) => {
       const ledger = await (await requestGetWithRetry(page.request, '/governance.json')).json();

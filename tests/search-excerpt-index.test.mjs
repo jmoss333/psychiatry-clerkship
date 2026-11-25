@@ -38,6 +38,10 @@ const markdown = [
   '| secrettableheading | another |', '| --- | --- |', '| secrettablecell | another |', '',
   'secrettablewithoutborder | another', '--- | ---', 'secretcellwithoutborder | another', '',
   '<section>', '    <p>Visible embedded HTML retains <strong>negation: do not</strong> shorten this sentence.</p>', '</section>', '',
+  '<details>concealed bare text<summary>Visible <em>disclosure prompt</em></summary>',
+  '<summary>concealed second summary</summary><details open><p>concealed nested answer</p></details></details>',
+  '<details open><summary>Open example</summary><p>Visible open example body.</p>',
+  '<details><summary>Visible nested prompt</summary>concealed nested text</details></details>',
   lateParagraph, '',
   'The repeated passage appears only once.', '',
   'The repeated passage appears only once.',
@@ -96,6 +100,23 @@ test('excerpt passages exclude hidden material, code, headings, tables and sourc
   const text = doc.passages.join('\n');
   assert.doesNotMatch(text, /secret|https?:|Standalone heading|Setext heading|sentence containing|affirmative instruction|ReConnect/);
   assert.ok(doc.passages.includes('Before the hidden material is ordinary visible prose.'));
+});
+
+test('excerpts keep disclosure prompts and open prose while concealing the Anxiety case clues', () => {
+  const anxietyPassages = JSON.parse(execFileSync('python3', ['-B', '-c', `
+import json, sys
+from pathlib import Path
+sys.path.insert(0, '13_Faculty_Resources/_automation/site_build')
+from common import _search_passages
+case = Path('03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md').read_text(encoding='utf-8')
+print(json.dumps(_search_passages(case)))
+`], { cwd: new URL('../', import.meta.url), encoding: 'utf8' }));
+  assert.ok(anxietyPassages.includes('Reveal the two clues'));
+  assert.doesNotMatch(anxietyPassages.join('\n'), /The antipsychotic dose was increased yesterday|I feel like I have to keep moving|Hide the two clues/i);
+  for (const text of ['Visible disclosure prompt', 'Visible open example body.', 'Visible nested prompt']) {
+    assert.ok(doc.passages.includes(text), text);
+  }
+  assert.doesNotMatch(doc.passages.join('\n'), /concealed/i);
 });
 
 test('HTML tool keyword blobs are never exposed as source passages', () => {

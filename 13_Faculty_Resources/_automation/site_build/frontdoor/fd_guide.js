@@ -285,12 +285,17 @@ function fdGuideMount(body,options){
       go(target,true);
     }
     if(win.IntersectionObserver){
+      /* A short viewport can show just the warning on arrival. Observer callbacks
+         report only changed elements, so retain both states between deliveries. */
+      var visible=new Set([slot,target]);
       observer=new win.IntersectionObserver(function(entries){
-        if(restoreSearchNotice&&entries.some(function(entry){
-          return entry.target===home?entry.isIntersecting:!entry.isIntersecting;
-        }))restoreSearchNotice();
+        entries.forEach(function(entry){
+          if(entry.isIntersecting)visible.add(entry.target);
+          else visible.delete(entry.target);
+        });
+        if(!visible.size&&restoreSearchNotice)restoreSearchNotice();
       });
-      observer.observe(home);
+      observer.observe(slot);
       observer.observe(target);
     }
   }
