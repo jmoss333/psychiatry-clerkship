@@ -21,12 +21,146 @@ function fdMountBedsideCases(body) {
   fdMountDayroomChoices(body);
   fdMountCatatoniaFrames(body);
   fdMountConsultCallback(body);
+  fdMountGriefConsult(body);
   fdMountOvernightPlan(body);
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountGriefConsult(body) {
+  const card = body.querySelector('#grief-consult');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = key => card.querySelector('#gc-' + key);
+  const buttons = key => Array.from(card.querySelectorAll('button[data-' + key + ']'));
+  const versions = buttons('version');
+  const openings = buttons('opening');
+  const questions = buttons('ask');
+  const choices = buttons('line');
+  const views = buttons('view');
+  const common = card.querySelector('template[data-grief-common]').content;
+  const nursePage = field('scene-quote').textContent;
+  const nurseLabel = field('scene-speaker').textContent;
+  const heard = new Set();
+  let script, opening, patientWords;
+
+  function line(source, key) {
+    const alternatives = source.querySelectorAll('[data-text="' + key + '"]');
+    const selected = Array.from(alternatives).find(el => el.dataset.after && heard.has(el.dataset.after));
+    return (selected || alternatives[0]).textContent;
+  }
+  function select(buttons, fieldName, value) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset[fieldName] === value));
+  }
+  function showSource(source) {
+    select(views, 'view', source);
+    field('scene-quote').textContent = source === 'page' ? nursePage : patientWords;
+    field('scene-speaker').textContent = source === 'page' ? nurseLabel : line(common, 'patient-label');
+  }
+  function hear(id, words) {
+    field(id).textContent = words;
+    patientWords = words;
+    views.find(button => button.dataset.view === 'words').disabled = false;
+    showSource('words');
+  }
+  function clearHandoff() {
+    select(choices, 'line', null);
+    for (const id of ['feedback', 'update', 'debrief']) field(id).hidden = true;
+    field('debrief').open = false;
+  }
+  function clearFollowup() {
+    heard.clear();
+    select(questions, 'ask', null);
+    for (const id of ['clue-panel', 'questions', 'answer-panel', 'immediate', 'handoffs']) field(id).hidden = true;
+    clearHandoff();
+  }
+  function enter(version) {
+    script = card.querySelector('template[data-grief-version="' + version + '"]');
+    opening = null;
+    patientWords = '';
+    views.find(button => button.dataset.view === 'words').disabled = true;
+    showSource('page');
+    clearFollowup();
+    select(versions, 'version', version);
+    select(openings, 'opening', null);
+    for (const id of ['reaction-panel', 'repair', 'meaning']) field(id).hidden = true;
+    for (const button of questions) button.textContent = line(script.content, 'question-' + button.dataset.ask);
+  }
+  function refreshChoices() {
+    for (const button of choices) {
+      if (button.dataset.line !== 'diagnosis') button.textContent = line(script.content, 'label-' + button.dataset.line);
+    }
+  }
+  for (const button of views) button.addEventListener('click', () => showSource(button.dataset.view));
+  for (const button of versions) button.addEventListener('click', () => {
+    if (button.dataset.version !== script.dataset.griefVersion) enter(button.dataset.version);
+  });
+  for (const button of openings) button.addEventListener('click', () => {
+    opening = button.dataset.opening;
+    clearFollowup();
+    select(openings, 'opening', opening);
+    hear('reaction', line(common, 'opening-' + opening));
+    field('reaction-panel').hidden = false;
+    const needsRepair = opening !== 'presence';
+    field('repair').hidden = !needsRepair;
+    if (needsRepair) field('repair').textContent = line(common, 'repair-' + opening);
+    field('meaning').hidden = needsRepair;
+  });
+  field('repair').addEventListener('click', () => {
+    hear('reaction', line(common, 'repaired-' + opening));
+    field('repair').hidden = true;
+    field('meaning').hidden = false;
+    field('meaning').focus();
+  });
+  field('meaning').addEventListener('click', () => {
+    hear('clue', line(script.content, 'clue'));
+    field('meaning').hidden = true;
+    for (const id of ['clue-panel', 'questions', 'handoffs']) field(id).hidden = false;
+    refreshChoices();
+    field('clue').focus();
+  });
+  for (const button of questions) button.addEventListener('click', () => {
+    const key = button.dataset.ask;
+    if (!heard.has(key)) clearHandoff();
+    heard.add(key);
+    select(questions, 'ask', key);
+    hear('answer', line(script.content, 'answer-' + key));
+    field('answer-panel').hidden = false;
+    field('immediate').hidden = !(script.dataset.urgent && heard.has('safety'));
+    refreshChoices();
+  });
+  for (const button of choices) button.addEventListener('click', () => {
+    const choice = button.dataset.line;
+    select(choices, 'line', choice);
+    field('feedback').textContent = line(script.content, 'feedback-' + choice);
+    field('feedback').hidden = false;
+    const supported = choice === script.dataset.match && heard.has(script.dataset.requires);
+    field('update').hidden = !supported;
+    field('debrief').hidden = !supported;
+    if (supported) {
+      field('update').querySelector('p').textContent = line(script.content, 'update');
+      field('teaching').textContent = line(script.content, 'teaching');
+    } else {
+      field('debrief').open = false;
+    }
+  });
+  field('contacts').addEventListener('click', event => {
+    const contacts = body.querySelector('.crisis-block-hook')?.closest('blockquote');
+    if (!contacts) return;
+    event.preventDefault();
+    contacts.tabIndex = -1;
+    contacts.focus();
+    contacts.scrollIntoView({block: 'center'});
+  });
+  field('reset').addEventListener('click', () => {
+    enter('a');
+    openings[0].focus();
+  });
+  enter('a');
 }
 
 function fdMountConsultCallback(body) {

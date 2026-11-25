@@ -4584,3 +4584,108 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
    of a reading the learner marked read whose text has since changed. Information, not a warning:
    olive, never danger. */
 .fd-page-changed{margin:var(--fd-space-3) 0 var(--fd-space-5);padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));line-height:var(--fd-leading-normal)}
+
+/* The bedside illustration and the speaker's words stay together as the reading column narrows. */
+#grief-consult {
+  --gc-scene:color-mix(in srgb,var(--fd-teal-deep) 58%,var(--fd-text));
+  --gc-scene-ink:var(--fd-surface-warm);
+  --gc-underline:var(--fd-olive-wash);
+}
+[data-theme="dark"] #grief-consult {
+  --gc-scene:var(--fd-teal-wash);
+  --gc-scene-ink:var(--fd-text);
+  --gc-underline:var(--fd-olive-deep);
+}
+#grief-consult :is(h3,h4,p,blockquote,figure,details) {margin:0}
+#grief-consult :is(h3,h4) {
+  font-family:Georgia,serif;font-weight:500;
+  line-height:var(--fd-reading-leading,var(--fd-leading-tight));
+}
+#grief-consult h3 {
+  max-width:22ch;margin-block:var(--fd-space-3) var(--fd-space-6);
+  font-size:calc(clamp(var(--fd-font-2xl),6cqi,var(--fd-font-4xl)) * var(--fd-reading-scale,1));
+  letter-spacing:-.035em;
+}
+#grief-consult h4 {
+  font-size:calc(var(--fd-font-xl) * var(--fd-reading-scale,1));letter-spacing:-.02em;
+}
+#grief-consult .scene {
+  display:grid;grid-template-columns:minmax(0,1.17fr) minmax(0,1fr);align-items:center;
+  overflow:hidden;background:var(--gc-scene);color:var(--gc-scene-ink);
+  border:1px solid var(--gc-scene);border-radius:var(--fd-radius-md);
+}
+#grief-consult .scene img {display:block;width:100%;height:auto;object-fit:contain;margin:0}
+#grief-consult .scene figcaption {min-width:0;padding:var(--fd-space-7);text-align:start}
+#grief-consult .scene-tabs {display:flex;flex-wrap:wrap;column-gap:var(--fd-space-5)}
+#grief-consult .scene-tabs button {
+  padding:var(--fd-space-1);border:0;border-bottom:2px solid transparent;border-radius:0;
+  background:transparent;color:var(--gc-scene-ink);box-shadow:none;
+  font-weight:650;font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));
+}
+#grief-consult .scene-tabs button[aria-pressed=true] {border-bottom-color:var(--gc-underline)}
+#grief-consult .scene-tabs button:enabled:hover {text-decoration:underline;text-underline-offset:.15em}
+#grief-consult .scene-tabs button:disabled {color:color-mix(in srgb,var(--gc-scene-ink) 70%,var(--gc-scene));cursor:default}
+#grief-consult .scene blockquote {
+  margin-block:var(--fd-space-3);color:var(--gc-scene-ink);
+  font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1));line-height:var(--fd-reading-leading,var(--fd-leading-snug));
+}
+#grief-consult .scene figcaption p {color:var(--gc-scene-ink);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+#grief-consult .setup {max-width:57ch;margin-block:var(--fd-space-6) var(--fd-space-7)}
+#grief-consult .versions {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--fd-space-2) var(--fd-space-6)}
+#grief-consult .versions>span {color:var(--fd-text-mid);font-weight:650;font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+#grief-consult .versions>div {display:flex;flex-wrap:wrap;gap:var(--fd-space-2)}
+#grief-consult .versions button {font-size:calc(var(--fd-font-md) * var(--fd-reading-scale,1))}
+#grief-consult :is(.versions button[aria-pressed=true],.next) {
+  background:var(--fd-teal-deep);color:var(--fd-on-accent);border-color:var(--fd-teal-deep);box-shadow:none;
+}
+#grief-consult .visit {
+  margin-top:var(--fd-space-6);padding:clamp(var(--fd-space-5),3.8%,var(--fd-space-8));
+  border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-surface);
+}
+#grief-consult .visit:first-of-type {border-top:3px solid var(--fd-teal)}
+#grief-consult .options {display:grid;grid-template-columns:minmax(0,1fr);gap:var(--fd-space-4);margin-top:var(--fd-space-6)}
+#grief-consult :is(.options button,.next) {
+  text-align:start;padding:var(--fd-space-5) var(--fd-space-6);
+  font-size:inherit;font-weight:500;line-height:var(--fd-reading-leading,var(--fd-leading-snug));
+}
+#grief-consult .options button {color:var(--fd-text)}
+#grief-consult .options button:is([aria-pressed=true],:hover) {border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+#grief-consult .options button[aria-pressed=true] {box-shadow:inset 3px 0 var(--fd-teal-deep)}
+#grief-consult .next {display:block;width:100%;margin-top:var(--fd-space-5)}
+#grief-consult .next:hover {text-decoration:underline;text-underline-offset:.15em}
+#grief-consult .voice {
+  margin:var(--fd-space-5) 0 0 var(--fd-space-3);padding:var(--fd-space-4) var(--fd-space-6);
+  background:var(--fd-teal-wash);border-inline-start:3px solid var(--fd-teal);border-radius:0 var(--fd-radius-2xs) var(--fd-radius-2xs) 0;
+}
+#grief-consult .voice span {
+  display:block;color:var(--fd-teal-deep);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));font-weight:700;
+}
+#grief-consult .voice blockquote {margin-top:var(--fd-space-1);font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1))}
+#grief-consult #gc-questions {padding-top:var(--fd-space-7)}
+#grief-consult :is(.bedside-action,.feedback) {
+  margin-top:var(--fd-space-5);padding:var(--fd-space-5) var(--fd-space-6);
+  border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);
+}
+#grief-consult .bedside-action strong {
+  display:block;color:var(--fd-olive-deep);font-size:calc(var(--fd-font-md) * var(--fd-reading-scale,1));
+}
+#grief-consult .update {margin-top:var(--fd-space-6);padding:var(--fd-space-6);background:var(--fd-teal-wash);border-top:2px solid var(--fd-teal)}
+#grief-consult .update h4 {font-size:calc(var(--fd-font-section) * var(--fd-reading-scale,1))}
+#grief-consult .update p {margin-top:var(--fd-space-3)}
+#grief-consult details {margin-top:var(--fd-space-5);padding:0;border:0;border-top:1px solid var(--fd-line-strong);background:transparent}
+#grief-consult summary {padding-block:var(--fd-space-4);font-weight:650}
+#grief-consult .readings {display:grid;justify-items:start;gap:var(--fd-space-1);margin-top:var(--fd-space-5);font-size:calc(var(--fd-font-md) * var(--fd-reading-scale,1))}
+#grief-consult .readings a {display:inline-flex;align-items:center;min-height:var(--fd-target-touch);color:var(--fd-teal-deep);text-underline-offset:.15em}
+#grief-consult footer {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--fd-space-4);margin-top:var(--fd-space-4);padding:0;border:0}
+#grief-consult #gc-reset {
+  padding:var(--fd-space-4) var(--fd-space-1);border:0;background:transparent;color:var(--fd-text-mid);
+  font-size:calc(var(--fd-font-md) * var(--fd-reading-scale,1));text-decoration:underline;text-underline-offset:.15em;
+}
+#grief-consult :is(button,summary,a,[tabindex="-1"]):focus-visible {outline:3px solid var(--fd-focus);outline-offset:2px}
+#grief-consult .scene-tabs button:focus-visible {outline-color:var(--gc-underline)}
+@container bedside (max-width:34rem) {
+  #grief-consult .scene {grid-template-columns:minmax(0,1fr)}
+  #grief-consult .scene figcaption {padding:var(--fd-space-4) var(--fd-space-6) var(--fd-space-5)}
+  #grief-consult .scene blockquote {margin-block:var(--fd-space-2)}
+}
+#grief-consult footer a {display:inline-flex;align-items:center;min-height:var(--fd-target-touch);color:var(--fd-teal-deep)}
