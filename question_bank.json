@@ -3544,7 +3544,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Lithium has the strongest anti-suicidal evidence in its class and a narrow therapeutic window requiring renal and thyroid monitoring.",
+          "t": "Lithium has a meaningful, if uncertain, anti-suicidal signal and a narrow therapeutic window requiring renal and thyroid monitoring.",
           "c": true
         },
         {
@@ -3552,7 +3552,7 @@
           "t": "Lithium's anti-suicidal effect is secondary to mood stabilization — any effective mood stabilizer achieves equivalent reduction in suicide deaths.",
           "trap": {
             "name": "Anti-suicidal = just mood stabilization",
-            "note": "The page notes lithium's anti-suicidal evidence as distinct from other mood stabilizers — worth remembering when the team weighs risk, implying it is not simply a mood-stabilization effect."
+            "note": "The page cites a randomized-trial anti-suicidal signal for lithium itself (fewer suicides than placebo, based on few events) and no such evidence for other mood stabilizers — so equivalence is not established."
           }
         },
         {
@@ -3572,8 +3572,8 @@
           }
         }
       ],
-      "why": "Anti-suicidal = just mood stabilization, Narrow = second-line, and Monitoring = optional all undermine the case for lithium in the highest-risk patient. Lithium's anti-suicidal evidence is cited on the page as worth remembering specifically when the team is weighing risk. For a patient with two prior suicide attempts, this is the discriminating consideration.",
-      "pearl": "Lithium: strongest anti-suicidal evidence in the mood stabilizer class + narrow window demanding renal/thyroid monitoring — both sides of the profile matter.",
+      "why": "Anti-suicidal = just mood stabilization, Narrow = second-line, and Monitoring = optional all undermine the case for lithium in the highest-risk patient. The page teaches a meaningful but uncertain anti-suicidal signal (newer randomized evidence is mixed) alongside the monitoring a narrow window demands. For a patient with two prior suicide attempts, both sides belong in the decision — without promising suicide prevention.",
+      "pearl": "Lithium: a meaningful but uncertain anti-suicidal signal (Cipriani 2013; later trials mixed) + narrow window demanding renal/thyroid monitoring — both sides of the profile matter.",
       "evidence": "psychopharm_primer.md — Lithium: Narrow therapeutic window. Check kidney/thyroid function, calcium, pregnancy considerations and timed levels. Meta-analysis of randomized trials supports an anti-suicidal effect: fewer suicides with lithium than placebo, based on few events. More recent randomized evidence is mixed.",
       "tier2": {
         "q": "Why does lithium's narrow therapeutic window require renal monitoring specifically?",
@@ -4439,7 +4439,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Lithium has both the strongest anti-suicidal evidence and the strongest maintenance evidence in the mood stabilizer class — in a patient with prior attempts, both properties directly apply.",
+          "t": "Lithium has the strongest maintenance evidence in the mood stabilizer class and a meaningful, if uncertain, anti-suicidal signal — in a patient with prior attempts, both properties directly apply.",
           "c": true
         },
         {
@@ -4447,7 +4447,7 @@
           "t": "Lamotrigine has equivalent anti-suicidal evidence to lithium — the choice should be based on tolerability alone.",
           "trap": {
             "name": "Anti-suicidal = interchangeable",
-            "note": "The page specifically cites lithium's anti-suicidal effect as distinct from other mood stabilizers and worth emphasizing in risk calculations — it is not interchangeable with lamotrigine."
+            "note": "The page cites a randomized-trial anti-suicidal signal for lithium (Cipriani 2013) and none for lamotrigine — uncertain as lithium's signal is, the two are not interchangeable."
           }
         },
         {

@@ -105,3 +105,10 @@ test('A2 the antipsychotic boxed mortality warning is never stated without its s
 test('B1 lithium\'s anti-suicidal evidence is not described as covering acute prevention', () => {
   none(/anti-suicidal evidence encompasses both acute and long-term prevention/i, 'the signal is from long-term trials; Katz 2022 (recent suicide-related event) was stopped for futility');
 });
+test('B2 no question bank item teaches lithium as having the "strongest anti-suicidal evidence"', () => {
+  // The pages teach "a meaningful but uncertain anti-suicidal signal" (Cipriani 2013 vs placebo on few
+  // events; Katz 2022 stopped for futility; Wang 2025 nonsignificant). Scoped to question_bank.json: the
+  // resident reasoning case keeps this wording deliberately, as a distractor rated "partial".
+  const bad = QB.filter(i => /strongest anti-suicidal evidence/i.test(JSON.stringify(i))).map(i => i.id);
+  assert.deepEqual(bad, [], 'say "a meaningful, if uncertain, anti-suicidal signal", matching t_mood.md and the primer');
+});
