@@ -7912,8 +7912,8 @@ test.describe('Essentials Phase 2', () => {
     await page.reload();
     await expect(filterField(page)).toHaveValue('');
     await expect(libraryStatus(page)).toHaveText(`Showing all ${audience(info).libraryCount} pages.`);
-    // Opening the reading above recorded cw_last (an existing store) and the page's text
-    // fingerprint in cw_page_seen_v1 (fd_page_changed.js, keyed by ref); nothing else changed,
+    // Opening the reading above recorded cw_last (an existing store) and the page's content-updated
+    // marker and open day in cw_page_seen_v1 (fd_page_changed.js, keyed by ref); nothing else changed,
     // and no stored value ever carried the query.
     const after = await page.evaluate(shellMemory);
     // (The ref itself may contain the query's word, e.g. t_mood.md; the store holds only refs.)

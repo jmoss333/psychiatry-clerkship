@@ -13,7 +13,7 @@ neither adds teaching text that needs faculty sign-off.
 |---|---|---|
 | 1 | Verified source excerpt under each reference ("In the paper's own words") | **Built** |
 | 2 | Tappable `[n]` citations plus a reference-integrity test | **Built** |
-| 3 | "Updated since you last opened it" notice for pages corrected mid-rotation | **Built** (device-only fingerprints; no progress-store change) |
+| 3 | "Updated since you last opened it" notice for pages corrected mid-rotation | **Built** (author-set `content-updated` marker, revised 2026-11-25; device-only; no progress-store change) |
 | 4 | `<abbr>` expansions for abbreviations | Deferred: only 52 in-text definitions; the frequent ones (CBC, PE, ED) are undefined or ambiguous, so it needs a faculty-reviewed registry |
 | 5 | Sign-off triage ranker (risk × exposure × changed words) | The console's change-history view covers most of it |
 | 6 | Citation-cache refresh date that stops conflicting on every PR | Developer ergonomics, not learner-facing |
@@ -73,23 +73,46 @@ and focuses it.
 Week question taught the wrong dialysis threshold for lithium and was rewritten after learners had
 read it). A learner who marked the page read never returns to find out.
 
-**Design.** `frontdoor/fd_page_changed.js` stores an 8-hex FNV-1a fingerprint of each reading's
-text (whitespace-collapsed) on the device each time the learner reader opens it
-(`cw_page_seen_v1`, ref → `{h, at}`, capped at 400 pages, oldest dropped). When a page the learner
-marked read (`cw_progress_v1`, read only) opens with a different fingerprint, one status line goes
-under its title: "This page was updated after you last opened it on {date}. You marked it read, so
-skim it again for what changed." It shows once; the next open is silent. It never writes canonical
-progress, never sends anything, and never runs in the faculty preview. "Erase everything" clears it
-with every other `cw_` key. Storage that throws or holds junk yields no notice, never an error, and
-a fingerprint that cannot be saved shows no notice (it would otherwise repeat forever).
+**Design (revised 2026-11-25, after release).** The first version fingerprinted each reading's whole
+text, so every typo fix re-prompted every learner who had marked the page read. A notice that fires
+on copy edits teaches learners to ignore the one that matters, and only the author knows which edit
+matters. So the author marks it:
 
-**Limit.** The device holds a hash, not the old text, so the notice says *that* the page changed,
-not *what* changed. Any edit counts, including copy edits.
+    <!-- content-updated: 2026-11-24 -->
 
-**Acceptance (`tests/fd-page-changed.test.mjs`).** Fingerprint stable under re-wrapping and
-sensitive to a one-number correction; first visit is a silent baseline; notice once, then silence;
-never for a page not marked read; junk and blocked storage never throw or notify; the store caps
-at 400; wired into the learner reader for readings only.
+An HTML comment anywhere in the page source (invisible in the reader), at most one per page, set to
+the day of the change. **Set it** for a change a learner who already read the page should come back
+for: a corrected number, threshold or dose; a changed recommendation or answer; a new or removed
+safety step. **Leave it** for a typo, a re-wrap, a link repair, a citation renumber or a new
+reference. When unsure, set it: a needless notice costs a skim, a missed correction costs a wrong
+answer on the wards.
+
+`frontdoor/fd_page_changed.js` stores, per reading, the marker it last saw and the day it was last
+opened (`cw_page_seen_v1`, ref → `{v, at}`, capped at 400 pages, oldest dropped). When a page the
+learner marked read (`cw_progress_v1`, read only) opens with a marker that differs from the stored
+one and is not older than the learner's last open, one status line goes under its title: "This page
+was updated on {marked day}, after you last opened it on {last open}. You marked it read, so skim it
+again for what changed." It shows once; the next open is silent. "Not older than the last open"
+keeps a marker added after the fact, for a change the learner already read, from notifying. Rows the
+first version wrote (`{h, at}`) are read as "no marker seen", so a page that gains its first marker
+notifies exactly the learners who last opened it on or before the marked day, and an unmarked page
+never notifies. It never writes canonical progress, never sends anything, and never runs in the
+faculty preview. "Erase everything" clears it with every other `cw_` key. Storage that throws or
+holds junk yields no notice, never an error, and a row that cannot be saved shows no notice (it
+would otherwise repeat forever).
+
+**Limits.** The notice says *that* the page changed, not *what* changed. An author who forgets the
+marker leaves a correction silent; the marker is the author's (and the reviewing faculty's) call,
+and nothing can infer it from the diff, because a one-character edit can be a typo or a dialysis
+threshold. A misspelt marker or an impossible date is caught at PR time.
+
+**Acceptance.** `tests/fd-page-changed.test.mjs`: the parser reads only the marker (a typo or an
+unmarked edit is no change, a calendar-invalid date is none); first visit is a silent baseline;
+notice once, then silence, then again for the next marked update; never for a page not marked read;
+a back-dated marker is silent; first-version rows migrate; junk and blocked storage never throw or
+notify; the store caps at 400; wired into the learner reader for readings only.
+`tests/content-updated-marker.test.mjs`: on every shipped reading source, anything that looks like
+the marker is the marker, real-dated, at most one, and the reader's parser reads the same date.
 
 ## Human review gates
 

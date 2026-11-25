@@ -2,28 +2,48 @@
 
    Pages change mid-rotation, and some changes are corrections (2026-11-24: a Case of the Week
    question taught the wrong dialysis threshold for lithium and was rewritten after learners had
-   read it). A learner who marked the page read never comes back to find out. This module keeps a
-   fingerprint of each reading's text on the device each time it is opened; when a page the
-   learner marked read is opened again and its text no longer matches, the reader says so once,
-   above the page, with the date they last opened it.
+   read it). A learner who marked the page read never comes back to find out.
 
-   What it never does: tell the learner WHAT changed (the device holds a hash, not the old text),
-   send anything anywhere, or touch the canonical progress store (cw_progress_v1). The store is
-   its own cw_ key, so "Erase everything" clears it with the rest. Storage that throws or holds
-   junk degrades to no notice, never to an error. */
+   WHAT COUNTS AS AN UPDATE is the author's call, not a hash's. A page opts in with one marker,
+   an HTML comment whose text is
+
+       content-updated: 2026-11-24
+
+   written as an ordinary HTML comment in the Markdown, so it is invisible in the reader. (This
+   file does not type the comment delimiters because it is inlined into a script element.) At most
+   one per page, a real calendar date: tests/content-updated-marker.test.mjs.
+
+   An author who makes a change a learner who already read the page should come back for -- a
+   corrected threshold, a changed recommendation, a new safety step -- sets the marker to that day.
+   A typo fix, a re-wrapped line, a citation renumbering or a link repair leaves it alone and
+   shows nothing. The first version of this module (#1304) fingerprinted the whole text, so
+   every copy edit re-prompted every learner who had read the page; a notice that fires on typos
+   teaches learners to ignore the one that matters.
+
+   The device keeps, per reading, the marker it last saw and the day it was last opened
+   (cw_page_seen_v1, ref -> {v, at}). When a page the learner marked read is opened with a marker
+   that differs from the stored one AND is not older than their last open, the reader says so
+   once, above the page, with both dates. "Not older" stops a marker added after the fact, for a
+   change the learner already read, from notifying. Rows written by the first version
+   ({h, at}, no marker) are read as "no marker seen", so a page that gains its first marker
+   notifies exactly the learners who last opened it on or before the marked day.
+
+   What it never does: tell the learner WHAT changed, send anything anywhere, or touch the
+   canonical progress store (cw_progress_v1). The store is its own cw_ key, so "Erase everything"
+   clears it with the rest. Storage that throws or holds junk degrades to no notice, never to an
+   error. */
 
 var FD_PAGE_SEEN_KEY='cw_page_seen_v1';
 var FD_PAGE_SEEN_MAX=400;
+var FD_DAY_RE=/^\d{4}-\d{2}-\d{2}$/;
 
-/* FNV-1a over the page text with whitespace runs collapsed, so a re-wrapped line or a trailing
-   newline is not a change. 8 hex digits: a fingerprint for "different or not", not security. */
-function fdPageFingerprint(text){
-  var s=String(text==null?'':text).replace(/\s+/g,' ').trim(), h=0x811c9dc5;
-  for(var i=0;i<s.length;i++){
-    h^=s.charCodeAt(i);
-    h=(h+((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24)))>>>0;
-  }
-  return ('0000000'+h.toString(16)).slice(-8);
+/* The page's content-updated marker as YYYY-MM-DD, or '' when it has none or the date is not a
+   real calendar day. The first marker wins; the repository test keeps it to one per page. */
+function fdPageContentVersion(text){
+  var m=/<!-{2}\s*content-updated:\s*(\d{4}-\d{2}-\d{2})\s*-{2}>/i.exec(String(text==null?'':text));
+  if(!m) return '';
+  var d=new Date(m[1]+'T00:00:00Z');
+  return !isNaN(d.getTime())&&d.toISOString().slice(0,10)===m[1]?m[1]:'';
 }
 
 function fdPageSeenDay(ms){
@@ -31,29 +51,35 @@ function fdPageSeenDay(ms){
   return isNaN(d.getTime())?'':d.toISOString().slice(0,10);
 }
 
-/* Pure: given the stored map, this page's ref and fingerprint, whether it is marked read, and the
-   time, return whether to show the notice, the day it was last opened, and the map to save. */
-function fdPageSeenStep(seen, ref, fingerprint, isDone, nowMs){
+/* Pure: given the stored map, this page's ref and content version, whether it is marked read, and
+   the time, return whether to show the notice, the day it was last opened, and the map to save. */
+function fdPageSeenStep(seen, ref, version, isDone, nowMs){
   var map={}, src=seen&&typeof seen==='object'&&!Array.isArray(seen)?seen:{};
+  var ver=FD_DAY_RE.test(version||'')?version:'';
   for(var k in src){
     if(!Object.prototype.hasOwnProperty.call(src,k)) continue;
     var row=src[k];
-    if(row&&typeof row.h==='string'&&/^[0-9a-f]{8}$/.test(row.h)) map[k]={h:row.h, at:typeof row.at==='string'?row.at:''};
+    if(!row||typeof row!=='object') continue;
+    var at=typeof row.at==='string'&&FD_DAY_RE.test(row.at)?row.at:'';
+    if(typeof row.v==='string'&&(row.v===''||FD_DAY_RE.test(row.v))) map[k]={v:row.v, at:at};
+    /* A first-version row: the page was opened, no marker was recorded. */
+    else if(typeof row.h==='string'&&/^[0-9a-f]{8}$/.test(row.h)) map[k]={v:'', at:at};
   }
   var prev=Object.prototype.hasOwnProperty.call(map,ref)?map[ref]:null;
-  var changed=!!(isDone&&prev&&prev.h!==fingerprint);
+  var changed=!!(isDone&&prev&&ver&&ver!==prev.v&&ver>=prev.at);
   delete map[ref];
-  map[ref]={h:fingerprint, at:fdPageSeenDay(nowMs)};
+  map[ref]={v:ver, at:fdPageSeenDay(nowMs)};
   /* Oldest-first insertion order: past the cap, drop from the front. */
   var keys=Object.keys(map);
   while(keys.length>FD_PAGE_SEEN_MAX){ delete map[keys.shift()]; }
-  return {changed:changed, lastSeen:prev?prev.at:'', next:map};
+  return {changed:changed, lastSeen:prev?prev.at:'', updated:ver, next:map};
 }
 
-function fdPageChangedHtml(lastSeen){
-  var when=/^\d{4}-\d{2}-\d{2}$/.test(lastSeen||'')?' on '+lastSeen:'';
-  return '<p class="fd-page-changed" role="status">This page was updated after you last opened it'+
-    when+'. You marked it read, so skim it again for what changed.</p>';
+function fdPageChangedHtml(lastSeen, updated){
+  var on=FD_DAY_RE.test(updated||'')?' on '+updated:'';
+  var when=FD_DAY_RE.test(lastSeen||'')?' on '+lastSeen:'';
+  return '<p class="fd-page-changed" role="status">This page was updated'+on+
+    ', after you last opened it'+when+'. You marked it read, so skim it again for what changed.</p>';
 }
 
 function fdPageSeenLoad(store){
@@ -77,14 +103,14 @@ function fdMountPageChanged(body, ref, text, isDone, opts){
   try{
     var o=opts||{}, store=o.store||fdPageSeenStore();
     if(!body||!ref||typeof text!=='string'||!store) return false;
-    var step=fdPageSeenStep(fdPageSeenLoad(store), ref, fdPageFingerprint(text), !!isDone,
+    var step=fdPageSeenStep(fdPageSeenLoad(store), ref, fdPageContentVersion(text), !!isDone,
       typeof o.now==='number'?o.now:Date.now());
     try{ store.setItem(FD_PAGE_SEEN_KEY, JSON.stringify(step.next)); }catch(_){ return false; }
     if(!step.changed||typeof body.querySelector!=='function') return false;
     if(body.querySelector('.fd-page-changed')) return false;
     var h1=body.querySelector('h1');
-    if(h1&&typeof h1.insertAdjacentHTML==='function') h1.insertAdjacentHTML('afterend', fdPageChangedHtml(step.lastSeen));
-    else if(typeof body.insertAdjacentHTML==='function') body.insertAdjacentHTML('afterbegin', fdPageChangedHtml(step.lastSeen));
+    if(h1&&typeof h1.insertAdjacentHTML==='function') h1.insertAdjacentHTML('afterend', fdPageChangedHtml(step.lastSeen, step.updated));
+    else if(typeof body.insertAdjacentHTML==='function') body.insertAdjacentHTML('afterbegin', fdPageChangedHtml(step.lastSeen, step.updated));
     else return false;
     return true;
   }catch(_){ return false; }
