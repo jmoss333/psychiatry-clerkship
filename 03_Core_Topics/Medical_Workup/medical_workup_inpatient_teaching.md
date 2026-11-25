@@ -44,6 +44,51 @@
 
 **Baseline workup of the new admission.** A reasonable core screen for most new admissions: vital signs; CBC; a complete metabolic panel (glucose, electrolytes, calcium, renal and hepatic function); TSH; B12 and folate; urinalysis, with culture when there are urinary symptoms, fever or systemic signs (asymptomatic bacteriuria is common in older adults and should not end the delirium search); urine toxicology and blood alcohol; a pregnancy test (β-hCG) in anyone of childbearing potential *before* starting medication; and a baseline EKG (QTc) before QT-prolonging agents. Add targeted tests by the clinical picture: RPR and HIV; ammonia (hepatic encephalopathy); ceruloplasmin/copper in a young patient with neuropsychiatric signs (Wilson disease); ANA (lupus); neuroimaging (CT/MRI) for first-episode psychosis that is late-onset or atypical, or any focal neurologic sign; lumbar puncture when delirium is accompanied by fever or meningismus; EEG when a seizure or nonconvulsive status is possible; and autoimmune/paraneoplastic panels (anti-NMDA-receptor) when psychosis is accompanied by movement disorder, seizures, or autonomic instability.
 
+<section class="bedside-case" id="lang-culture" data-lang-culture aria-labelledby="lang-title">
+<h3 id="lang-title">The urine culture is positive. What do you tell the team?</h3>
+<figure class="lang-scene"><figcaption><p class="case-kicker">Fictional case · 07:15</p><blockquote>“Her culture just came back. Do you think that’s why she’s more confused?”</blockquote></figcaption><div class="lang-art"><img id="lang-case-photo" src="illustrations/lang-morning-interview.webp" width="1080" height="720" alt="A clinician sits at eye level with an older patient on the unit."></div></figure>
+<p class="lang-setup">Ms. Lang, 74, has mild cognitive impairment. Yesterday she followed a group discussion on the unit without help. This morning she keeps losing track of your question. You join the nurse and supervising resident at her bedside.</p>
+<div class="lang-packet"><section class="lang-lab" id="lang-lab" aria-label="Urine culture result"><div class="lang-lab-top"><strong>Urine culture · preliminary</strong><span>Posted 07:12</span></div><div class="lang-result"><em>E. coli</em><b>≥100,000 CFU/mL</b></div><p>Collected in the ED yesterday · susceptibilities pending</p></section>
+<p class="lang-vitals"><strong>At bedside</strong><span>T 36.8 °C</span><span>HR 80</span><span>BP 128/72</span></p></div>
+<section class="lang-versions" aria-labelledby="lang-version-title"><h4 id="lang-version-title">What does Ms. Lang tell you?</h4><p>Try either version of the conversation. Both start with this result and these vital signs.</p>
+<div class="lang-tabs" role="group" aria-label="Choose a bedside interview"><button type="button" data-visit="a" aria-pressed="false" aria-controls="lang-interview">Interview A</button><button type="button" data-visit="b" aria-pressed="false" aria-controls="lang-interview">Interview B</button></div></section>
+<section class="lang-interview" id="lang-interview" aria-labelledby="lang-interview-title" hidden><h4 id="lang-interview-title" tabindex="-1"></h4>
+<div id="lang-questions" class="lang-questions" role="group" aria-label="Questions to ask Ms. Lang">
+<button type="button" data-ask="pain" aria-pressed="false" aria-controls="lang-reply"><span>“Does it hurt or burn when you pee?”</span><span class="lang-tag">Ask</span></button>
+<button type="button" data-ask="change" aria-pressed="false" aria-controls="lang-reply"><span>“What’s different from your usual bathroom routine?”</span><span class="lang-tag">Ask</span></button></div>
+<div id="lang-reply" class="case-reply" aria-live="polite" hidden><p class="case-kicker">Ms. Lang</p><blockquote id="lang-words"></blockquote></div>
+<section class="lang-handoffs" id="lang-handoffs" aria-labelledby="lang-handoff-title" hidden><h4 id="lang-handoff-title">What will you tell the resident?</h4><div class="lang-options" id="lang-options" role="group" aria-label="Choose a handoff"></div>
+<p class="case-reply" id="lang-feedback" role="status" hidden></p><button class="case-link" id="lang-other" type="button" hidden></button></section></section>
+<details class="lang-debrief" id="lang-compare" hidden><summary>Compare the two handoffs</summary><dl><dt>Interview A</dt><dd>Usual nocturia and no burning. Report the bacteriuria and keep assessing the change in attention.</dd><dt>Interview B</dt><dd>New burning and urgency. Raise concern for symptomatic UTI and continue the delirium assessment.</dd></dl>
+<p>In an older adult with cognitive impairment and delirium, bacteriuria alone doesn’t establish a UTI as the cause. When urinary symptoms, fever, and other systemic signs of infection are absent, IDSA recommends looking for other causes and observing carefully. New urinary symptoms change what you report. Fever or instability would change the urgency of the medical assessment.</p>
+<a href="https://www.idsociety.org/practice-guideline/asymptomatic-bacteriuria/">IDSA guideline · Recommendations for older adults, section V</a></details>
+<footer class="lang-foot"><span role="status" id="lang-progress">0 of 2 handoffs matched</span><button type="button" data-reset class="case-link">Start again</button></footer>
+<template data-account="a">
+  <span data-reply="pain" data-label="No burning">“No, it doesn’t hurt. The nurse asked me that last night, too.”</span>
+  <span data-reply="change" data-label="Usual pattern">“I was up twice last night. That’s about right for me. Same as at home. I just wish the bathroom here were closer.”</span>
+  <div data-handoffs>
+    <button type="button" data-choice="0" aria-pressed="false" aria-controls="lang-feedback">“She’s newly inattentive and the culture grew E. coli. I think we’ve found the cause of her confusion.”</button>
+    <button type="button" data-choice="1" data-matched aria-pressed="false" aria-controls="lang-feedback">“She has E. coli in the urine but no burning or change from baseline. Her vitals are stable. I’d keep assessing the inattention with you and monitor her.”</button>
+    <button type="button" data-choice="2" aria-pressed="false" aria-controls="lang-feedback">“She was up twice to urinate last night. With this culture, I’d report new urinary frequency.”</button>
+  </div>
+  <span data-coaching="0">The culture shows bacteria in the urine. Ms. Lang describes her usual bathroom pattern. Keep the cause of her inattention open.</span>
+  <span data-coaching="1">You reported what the result shows and what Ms. Lang said. With this history and these vitals, the culture alone is insufficient reason to start antibiotics.</span>
+  <span data-coaching="2">She gets up twice at home too. Counting bathroom trips only helps here if you compare them with her baseline.</span>
+</template>
+<template data-account="b">
+  <span data-reply="pain" data-label="New burning">“It stings right at the end. It started last night. I almost didn’t say anything because there was a line for breakfast.”</span>
+  <span data-reply="change" data-label="New urgency">“I got back to my room and had to turn right around. Usually I can wait. Since last night I’ve had to rush just to get there in time.”</span>
+  <div data-handoffs>
+    <button type="button" data-choice="0" aria-pressed="false" aria-controls="lang-feedback">“She’s afebrile and her blood pressure is steady. I’d report incidental bacteriuria and keep watching.”</button>
+    <button type="button" data-choice="1" aria-pressed="false" aria-controls="lang-feedback">“The burning and positive culture explain the confusion. I’d put UTI down as the cause and close the delirium workup.”</button>
+    <button type="button" data-choice="2" data-matched aria-pressed="false" aria-controls="lang-feedback">“She describes new burning and urgency since last night. With E. coli in the urine, I’m concerned about a symptomatic UTI. Can we assess that alongside her change in attention?”</button>
+  </div>
+  <span data-coaching="0">Stable vitals are worth reporting. So are the new burning and urgency. Leaving those out changes the meaning of the handoff.</span>
+  <span data-coaching="1">The urinary history raises concern for symptomatic infection. It still doesn’t establish why her attention changed or exclude other contributors.</span>
+  <span data-coaching="2">This gives the resident the onset, localizing symptoms, result, and remaining uncertainty. The team can assess the suspected infection while continuing the delirium evaluation.</span>
+</template>
+</section>
+
 **Medical mimics by presentation.**
 
 | Looks like | Consider |

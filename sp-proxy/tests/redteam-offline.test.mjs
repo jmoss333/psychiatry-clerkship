@@ -413,7 +413,9 @@ test('a stale `gates` declaration fails its probe: removing Ray\'s g_target make
   });
   const r = run([file]);
   assert.equal(r.status, 1, r.out);
-  assert.match(r.out, /^FAIL  B7  [^\n]*\n\s+· declares gate g_target, which no case this probe drove has \[sp_psychosis_paranoid_001\]/m);
+  // Probes name gates by position (bin/redteam-offline.mjs gateAt); a removed slot resolves to a
+  // case#slot label, so the stale declaration is still named and still fails B7.
+  assert.match(r.out, /^FAIL  B7  [^\n]*\n\s+· declares gate Ray#gated\[2\], which no case this probe drove has \[sp_psychosis_paranoid_001\]/m);
   assert.doesNotMatch(r.out, /^FAIL  (?!B7  )[BCM]\d/m, 'only the declaration check fired');
   // The follow-up visit (reviewed, no hand-written probe) is always in the coverage note now; what
   // must not appear is a note about Ray, whose declared gate is simply gone.
