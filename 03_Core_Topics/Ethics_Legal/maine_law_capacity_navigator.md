@@ -1,5 +1,7 @@
 # Maine Law & Capacity: A Statute Navigator for the Inpatient Unit
 
+> **Review status:** Pending faculty review (legal content, added 2026-10-27). Educational; no PHI.
+
 > **Educational summary — not legal advice — hospital policy and counsel govern.** Verify the current statute and consult counsel or institutional policy before acting. Statute text below was read on the Maine Revisor of Statutes site on 2026-10-26 (the Revisor's "data extracted" date on each page is 2026-10-05).
 
 **In one line** — On a Maine inpatient unit, four questions recur: *which admission pathway is this patient in*, *what is the clock*, *who may decide when the patient cannot*, and *when may or must I disclose* — and each has a specific section of Maine statute behind it that you should be able to name before you act.
