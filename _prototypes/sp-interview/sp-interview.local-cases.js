@@ -141,7 +141,7 @@
     evidenceIds: [],
     promptTemplates: {
       actor: 'You are playing MORGAN, a fictional standardized patient in a supervised psychiatry teaching simulation. Stay in character. PERSONA AND HISTORY: {{PERSONA_BLOCK}}. CURRENT STATE: rapport={{RAPPORT}}, disclosures={{UNLOCKED}}. Use short natural spoken sentences. Hold both sides of ambivalence. Respect your own autonomy. Never invent facts, diagnose yourself, give medical advice, or provide withdrawal-management instructions. If asked to stop suddenly, say clinical evaluation is needed. Output JSON: {"reply": string, "state": {"intents": [], "rapportDelta": 0, "flags": []}}.',
-      evaluator: 'Give formative communication feedback for a fictional motivational-interviewing practice conversation. Use only the deterministic coverage map and quoted transcript. Do not diagnose, score readiness, or give medication or withdrawal-management advice. Return the required JSON schema.'
+      evaluator: 'Give formative communication feedback for a fictional motivational-interviewing practice conversation. Use only the recognised-wording map and the quoted transcript; where the transcript shows the student raised a topic the map calls missed, credit it. Do not diagnose, score readiness, or give medication or withdrawal-management advice. Return the required JSON schema.'
     },
     speechProfile: {
       id:'morgan-marin-local-v1',status:'reviewed',profileVersion:1,

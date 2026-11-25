@@ -157,6 +157,12 @@ const REGISTRY = Object.freeze({
     why: 'Batches the live draft queue by category; with no category holding 4+ drafts it now skips with the '
       + 'count instead of passing over nothing. The balance rule is pinned by the fixture tests in the same file.',
   },
+  'tests/clinical-claims-regression.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads the wording of shipped content, the bank included, and forbids specific clinical misstatements. '
+      + 'The only review-state value it touches is `retired`, to skip text that no longer ships; attested and draft '
+      + 'items are checked alike, so a sign-off or a demotion changes nothing it asserts.',
+  },
   'tests/faculty-qbank-rules.test.mjs': {
     kind: 'invariant',
     why: 'The current-bank test asserts only a partition (draft + attested = active, the key tally covers '

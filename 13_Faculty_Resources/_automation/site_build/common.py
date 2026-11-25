@@ -28,6 +28,7 @@ statically-inspectable literal in that file.
 import errno
 import glob
 import hashlib
+from html.parser import HTMLParser
 import json
 import os
 import re
@@ -217,7 +218,7 @@ _TOOLKW_MS3 = {
     "communication-practice.html": "what do you say next communication practice branching dialogue rapid spoken drill say it out loud rehearsal timer 20 second suicide psychosis validation rupture repair medication ambivalence family meeting collateral motivational interviewing relational skills",
     "diagnostic-reasoning.html": "diagnostic reasoning workbench differential diagnosis problem representation illness script bayesian updating diagnostic humility anchoring premature closure syndrome formulation inpatient psychiatry case practice delirium catatonia mania psychosis substance trauma personality",
     "family-systems.html": "family systems practice collateral call family meeting discharge barrier map expressed emotion psychoeducation confidentiality boundaries means safety caregiver support inpatient psychiatry",
-    "family-meeting-sim.html": "family meeting simulator simulation rehearsal angry parent ambivalent spouse silent teen adolescent guardian discharge meeting validation agenda safety planning means safety non-blaming repair",
+    "family-meeting-sim.html": "family meeting simulator simulation rehearsal angry parent ambivalent spouse silent teen adolescent guardian discharge meeting involuntary hold interpreter household co-parents two homes older adult psychosis siblings struggling parent validation agenda safety planning means safety firearm non-blaming repair",
     "one-patient-six-weeks.html": "one patient six weeks longitudinal case arc six week rotation timeline alliance interview mental status exam differential diagnosis medical rule out medication ambivalence family collateral safety suicide discharge handoff reflection",
     # #429 — intent mapping for medication refusal, SUBMITTED FOR FACULTY REVIEW.
     # This string is both the tool's only indexed body AND its search snippet (`snip`,
@@ -228,14 +229,16 @@ _TOOLKW_MS3 = {
     # treatment), because common.tok() does not stem: "refuses" cannot reach "refusal".
     # Audience-neutral and free of patient-specific legal or clinical direction by
     # design — it says what capacity IS assessed by, never what to do about a refusal.
-    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient may refuse or decline a medication, or decline treatment outright, and still have capacity. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
+    "capacity.html": "Patient refuses medication: refusal is not by itself evidence of incapacity. Decisional capacity is judged one decision at a time, by four abilities, understand, appreciate, reason, and communicate a choice, the same four that make informed consent meaningful. A patient who refuses medication may still have capacity to refuse a dose or decline treatment outright. Reach for this when a patient refuses or declines medications, when a patient is refusing medications or declining meds or treatment, and you need to tell a considered refusal from an impaired one. A patient refusing medications may be weighing side effects rather than failing to understand them. Refusal is a reason to assess, never a finding: a patient who refuses a medication may simply disagree, and a patient who accepts one may still lack capacity.",
     "oral.html": "treatment team rounding prep rounds presentation oral one liner assessment plan handoff gather present practice timer collateral update 30 second sixty 60 second micro update",
     "violence.html": "violence risk aggression frst agitation safety prediction de-escalation",
     "cssrs.html": "columbia suicide severity rating scale cssrs suicidal ideation screening safety planning",
     "withdrawal.html": "withdrawal alcohol ciwa opioid cows detox benzodiazepine taper thiamine",
     "reflection.html": "reflection professional identity formation reflective writing pif",
     "screeners.html": "phq-9 phq9 gad-7 gad7 depression anxiety screener screening score severity validated instrument cutoff",
+    "scale-chooser.html": "which scale chooser rating scale screening instrument choose select phq-9 gad-7 cows ciwa 4at cam moca c-ssrs bfcrs aims audit-c rass what the score licenses",
     "shelf-mode.html": "shelf mode comat shelf exam simulation timed vignette question bank board review mixed blueprint mock test practice questions",
+    "how-we-know.html": "how we know evidence provenance verbatim span citation critical appraisal source claim ledger journal club what the paper says",
     "review.html": "daily review spaced repetition srs flashcards sm-2 retention schedule due cards study streak memory test enhanced learning forgetting curve anki",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
     "decision-aids.html": "algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
@@ -257,9 +260,11 @@ _TOOLKW_RES = {
     "withdrawal.html": "withdrawal alcohol ciwa opioid cows benzodiazepine thiamine",
     "reflection.html": "reflection professional identity formation",
     "screeners.html": "phq-9 gad-7 depression anxiety screener cutoff",
+    "scale-chooser.html": "which scale chooser rating scale screening instrument choose select phq-9 gad-7 cows ciwa 4at cam moca c-ssrs bfcrs aims audit-c rass what the score licenses",
     "shelf-mode.html": "board style question bank exam simulation vignette mixed blueprint mock test",
     "decision-aids.html": "algorithms decision aids trees escalation ladder nms serotonin withdrawal timeline ciwa catatonia",
     "bfcrs.html": "bush francis catatonia rating scale immobility mutism posturing waxy flexibility lorazepam challenge",
+    "how-we-know.html": "how we know evidence provenance verbatim span citation critical appraisal source claim ledger journal club what the paper says",
     "review.html": "daily review spaced repetition srs flashcards retention due cards streak board review test enhanced learning forgetting curve",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful comment suggestion box",
     "rp-agitation.html": "agitation ladder prn trainer restraint de-escalation seclusion intramuscular haloperidol lorazepam olanzapine decision escalation",
@@ -288,6 +293,34 @@ TOOL_KEYWORDS = _merge_keywords(_TOOLKW_MS3, _TOOLKW_RES)
 # ---------------------------------------------------------------------------
 # Search index (was duplicated verbatim)
 # ---------------------------------------------------------------------------
+
+
+class _SearchProse(HTMLParser):
+    """Keep the words learners can read or hear in embedded activity markup."""
+
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.links = []
+        self.skip = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ("script", "style"):
+            self.skip = True
+        elif not self.skip:
+            self.parts.extend(value for key, value in attrs
+                              if key in ("alt", "aria-label", "placeholder", "title") and value)
+            if tag == "a":
+                self.links.extend(value for key, value in attrs
+                                  if key == "href" and value and value.startswith(("https://", "http://")))
+
+    def handle_endtag(self, tag):
+        if tag in ("script", "style"):
+            self.skip = False
+
+    def handle_data(self, text):
+        if not self.skip:
+            self.parts.append(text)
 
 
 def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_refs=None):
@@ -345,7 +378,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
             if it.get("hidden") and it["f"] not in reachable:
                 continue
             f, k, title, section = it["f"], it["k"], it["t"], sec["section"]
-            heads = body = ""
+            heads = body = link_targets = ""
             if k == "md":
                 p = os.path.join(out_dir, "content", f)
                 raw = open(p, encoding="utf-8").read() if os.path.exists(p) else ""
@@ -356,7 +389,14 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
                         heads += " " + s.lstrip("#").strip()
                     else:
                         btxt.append(s)
-                body = " ".join(btxt)
+                # Button IDs and layout classes would otherwise dilute the clinical
+                # terms on illustrated pages under the index's length normalization.
+                prose = _SearchProse()
+                prose.feed("\n".join(btxt))
+                prose.close()
+                body = " ".join(prose.parts)
+                # Keep linked sources searchable by identifier without putting URLs in the snippet.
+                link_targets = " ".join(prose.links)
             else:
                 body = keywords.get(f, "")
             docid = len(docs)
@@ -376,7 +416,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
             # Raw token count, NOT the weighted sum: document length is a property of
             # the page, and weighting it would make a long title count as four pages.
             doc["L"] = (addtok(docid, title, 4) + addtok(docid, section, 2)
-                        + addtok(docid, heads, 2) + addtok(docid, body, 1))
+                        + addtok(docid, heads, 2) + addtok(docid, body, 1) + addtok(docid, link_targets, 1))
             lengths.append(doc["L"])
 
     post, df = {}, {}
@@ -392,7 +432,7 @@ def build_search_index(nav, out_dir, tool_keywords=None, label="", reachable_ref
     idx = {"version": 1, "n": len(docs), "avgLen": avg_len,
            "synonyms": syn, "docs": docs, "postings": post, "df": df}
     with open(os.path.join(out_dir, "search-index.json"), "w", encoding="utf-8") as fh:
-        fh.write(json.dumps(idx, ensure_ascii=False))
+        fh.write(json.dumps(idx, ensure_ascii=False, separators=(",", ":")))
     print(
         "search-index%s: docs %d | tokens %d | synonym-keys %d"
         % (" (" + label + ")" if label else "", len(docs), len(post), len(syn))
@@ -921,6 +961,11 @@ SNIPPET_MARKERS = {
     "/*__FD_CARE_SEARCH__*/": "frontdoor/fd_care_search.js",
     "/*__FD_CARE__*/": "frontdoor/fd_care.js",
     "/*__FD_READER__*/": "frontdoor/fd_reader.js",
+    "/*__FD_OSCE_STATION__*/": "frontdoor/fd_osce_station.js",
+    "/*__FD_MORGAN_EXPOSURE__*/": "frontdoor/fd_morgan_exposure.js",
+    "/*__FD_FEVER_EXAMS__*/": "frontdoor/fd_fever_exams.js",
+    "/*__FD_BEDSIDE_CASES__*/": "frontdoor/fd_bedside_cases.js",
+    "/*__FD_CASE_ROUNDS__*/": "frontdoor/fd_case_rounds.js",
     "/*__FD_GUIDE__*/": "frontdoor/fd_guide.js",
     "/*__FD_SEARCH__*/": "frontdoor/fd_search.js",
     "/*__FD_TREE__*/": "frontdoor/fd_tree.js",
@@ -1226,7 +1271,12 @@ SW_EXCLUDE_NAMES = {"sw.js", "robots.txt", "404.html", "tool-governance.json"}
 # are excluded for the same reason (Netlify does not reliably serve hidden files).
 # check-static-site.mjs (section 7c) HARD-fails if any of these reappear in sw.js.
 SW_NETLIFY_RESERVED_ROOT_NAMES = {"_headers", "_redirects", "netlify.toml"}
-SW_PRECACHE_BUDGET_BYTES = 10 * 1024 * 1024
+# The budget is a tripwire against media creeping into a precached directory, not a size the
+# sites aim for. Raised 10 -> 11 MiB on 2026-11-22 (owner's decision, D-2026-11-22-02): a
+# content PR (#1281) put the resident precache at 10,491,905 bytes, 6,145 over, and every
+# precached byte was pages, JSON, CSS or scripts. check-static-site.mjs (section 7c) enforces
+# the same number; test_common.py pins the two together.
+SW_PRECACHE_BUDGET_BYTES = 11 * 1024 * 1024
 SW_TEMPLATE_NAME = "sw_template.js"
 _SW_VERSION_ANCHOR = "VERSION='__VERSION__';"
 _SW_KILL_ANCHOR = "KILL=__KILL__;"
@@ -1364,7 +1414,7 @@ def emit_service_worker(out_dir, kill=None):
     - VERSION = sha256(one `path:sha256(bytes)` line per precached file, sorted,
       newline-joined)[:12] — deterministic and media-independent, so unrelated
       media re-encodes never bump the cache version (see module docstring).
-    - Budget: sum of precached byte sizes must stay <= 10 MB, else the build
+    - Budget: sum of precached byte sizes must stay <= 11 MiB, else the build
       aborts via `sys.exit` with the offending size — a runaway precache list
       would make first-load worse for the offline win it's meant to buy.
     - `kill` (or env `SW_KILL=="1"`) emits `var KILL=true;`, which makes the

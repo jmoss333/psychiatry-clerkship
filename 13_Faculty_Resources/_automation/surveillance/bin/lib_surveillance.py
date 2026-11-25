@@ -205,6 +205,25 @@ def sanitize_crawled_url(url):
     url = str(url or "").strip()
     return url if _SAFE_URL_RE.match(url) else ""
 
+def failure_location(exc):
+    """Name an exception by its class and the code that raised it, never its message.
+
+    A message can carry a credential, a response body or crawled text, so it is never
+    written. The class plus the innermost frames in this directory are enough to find
+    the failing line from a run log. Example: 'KeyError at review_packets.py:88 in merge'.
+    """
+    here = Path(__file__).resolve().parent
+    frames = []
+    tb = getattr(exc, "__traceback__", None)
+    while tb is not None:
+        code = tb.tb_frame.f_code
+        path = Path(code.co_filename)
+        if path.resolve().parent == here:
+            frames.append(f"{path.name}:{tb.tb_lineno} in {code.co_name}")
+        tb = tb.tb_next
+    where = " <- ".join(reversed(frames[-3:])) or "outside the surveillance scripts"
+    return f"{type(exc).__name__} at {where}"
+
 # ---------------------------------------------------------------- apify auth
 APIFY_CRAWLER_URL = ("https://api.apify.com/v2/acts/apify~website-content-crawler/"
                      "run-sync-get-dataset-items")

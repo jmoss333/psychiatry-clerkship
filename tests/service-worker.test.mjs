@@ -56,6 +56,20 @@ function worker(options = {}) {
   return { send, handlers, opened, matched, precache, self };
 }
 
+test('a tap-time Pharmacy request bypasses the offline copy while normal Pharmacy reads can use it', async () => {
+  const ordinary = { url: 'https://library.example/pharmacy_public.json', mode: 'cors' };
+  const fresh = { ...ordinary, url: ordinary.url + '?lookup=1', cache: 'no-cache' };
+  const w = worker({ hits: [ordinary] });
+  w.handlers.fetch({ request: fresh, respondWith() {
+    assert.fail('a medication name check must reach the network');
+  } });
+  assert.equal(w.opened.length, 0);
+  let response;
+  w.handlers.fetch({ request: ordinary, respondWith(promise) { response = promise; } });
+  assert.ok((await response).ok);
+  assert.equal(w.matched[0][0], ordinary);
+});
+
 test('active worker partitions deduped safe URLs using its current versioned cache', async () => {
   const w = worker({ hits: ['/', '/search-index.json', '/tools/practice.html'] });
   const result = await w.send(['/', '/search-index.json', '/content/lesson.md',

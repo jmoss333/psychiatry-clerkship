@@ -365,6 +365,10 @@ ALL_SOURCE_IDS = ALL_SOURCE_IDS | PEER_REVIEW_WP9_2026_09_IDS
 INTERVIEW_ROOM_FOLLOWUP_2026_09_IDS = {"kroenke-2001-phq9"}
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | INTERVIEW_ROOM_FOLLOWUP_2026_09_IDS
 
+# Original full guidelines added for the F01–F03 PTSD faculty-review draft.
+PTSD_ORIGINAL_GUIDELINE_2026_10_IDS = {"vadod-2017-ptsd-cpg", "vadod-2023-ptsd-cpg"}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | PTSD_ORIGINAL_GUIDELINE_2026_10_IDS
+
 
 # Approved primer expansion (2026-10-11). Reuse bap-catatonia-2023; no duplicate DOI.
 PSYCHOPHARM_PRIMER_2026_10_IDS = {
@@ -398,6 +402,16 @@ SCREENERS_MBC_2026_10_IDS = {
     "lowe-2004-phq9-monitoring", "kroenke-2010-phq-gad-review",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | SCREENERS_MBC_2026_10_IDS
+# Primary studies used in the Morgan and paired fever case debriefs.
+ALL_SOURCE_IDS |= {
+    "meyer-2001-clozapine-smoking-cessation",
+    "hukkanen-2011-nicotine-cyp1a2",
+    "hefner-2016-crp-clozapine",
+    "gurrera-2017-nms-criteria-validation",
+    "white-1991-catatonia-preceding-nms",
+}
+# Primary study cited in Alex's prednisone timeline debrief.
+ALL_SOURCE_IDS.add("brown-2002-prednisone-mood")
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
@@ -677,7 +691,8 @@ def test_published_schema_governance_is_required_for_every_canonical_source():
     registry = load_evidence_registry(REGISTRY_PATH)
     assert len(registry["sources"]) == len(ALL_SOURCE_IDS)
     for position, source in enumerate(registry["sources"]):
-        assert source["governance"]["supersededBy"] == [], position
+        expected_supersession = ["vadod-2023-ptsd-cpg"] if source["id"] == "vadod-2017-ptsd-cpg" else []
+        assert source["governance"]["supersededBy"] == expected_supersession, position
         expected_status = (
             "corrected"
             if source["id"] in CORRECTED_IDS | PEER_REVIEW_WP9_2026_09_CORRECTED_IDS | PSYCHOPHARM_PRIMER_CORRECTED_IDS

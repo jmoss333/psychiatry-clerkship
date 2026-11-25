@@ -5915,7 +5915,7 @@
           "inpatientUses": [
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "PTSD care prioritizes trauma-focused psychotherapy such as CPT or prolonged exposure, with sertraline, paroxetine, or venlafaxine as medication options when medication is chosen; routine benzodiazepines are generally avoided, and prazosin may help trauma-related nightmares."
+              "quote": "PTSD care prioritizes individual trauma-focused psychotherapy with CPT, PE, or EMDR; sertraline, paroxetine, or venlafaxine are recommended when medication is chosen. The guideline recommends against benzodiazepines for PTSD and suggests prazosin specifically for PTSD-related nightmares, not for PTSD overall."
             }
           ],
           "monitoring": [
@@ -8217,7 +8217,7 @@
       },
       "pearls": {
         "t1": [
-          "SSRIs are first-line (SNRIs also for anxiety disorders, venlafaxine for PTSD, not OCD); benzodiazepines are a liability on the unit, not a maintenance plan."
+          "SSRIs are first-line medication options for anxiety disorders and OCD; SNRIs are also options for anxiety disorders, not OCD. For PTSD, choose sertraline, paroxetine, or venlafaxine when medication is selected; benzodiazepines are not recommended for PTSD."
         ],
         "t2": [
           "Akathisia management hierarchy: reduce dose or switch the antipsychotic \u2192 propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) \u2192 benztropine if co-existing parkinsonism \u2192 benzodiazepine adjunct."
@@ -8331,7 +8331,7 @@
           "pearls": [
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "- SSRIs are first-line (SNRIs also for anxiety disorders, venlafaxine for PTSD, not OCD); benzodiazepines are a liability on the unit, not a maintenance plan."
+              "quote": "- SSRIs are first-line medication options for anxiety disorders and OCD; SNRIs are also options for anxiety disorders, not OCD. For PTSD, choose sertraline, paroxetine, or venlafaxine when medication is selected; benzodiazepines are not recommended for PTSD."
             },
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
@@ -11370,7 +11370,7 @@
           "use": "Trauma-related nightmares",
           "offLabel": true,
           "evidenceIds": [
-            "williams-2022-cochrane-ptsd-pharmacotherapy"
+            "vadod-2023-ptsd-cpg"
           ]
         }
       ],
@@ -11438,7 +11438,7 @@
         "text": "Prazosin is a blood pressure drug. It is sometimes used for nightmares after trauma. It can cause dizziness or fainting when standing, mostly at first. Take it at bedtime and get up slowly."
       },
       "evidenceIds": [
-        "williams-2022-cochrane-ptsd-pharmacotherapy"
+        "vadod-2023-ptsd-cpg"
       ],
       "qbankIds": [],
       "safetyLevel": "high",
@@ -11504,7 +11504,7 @@
           "inpatientUses": [
             {
               "page": "03_Core_Topics/Anxiety/anxiety_trauma_ocd_inpatient_teaching.md",
-              "quote": "PTSD care prioritizes trauma-focused psychotherapy such as CPT or prolonged exposure, with sertraline, paroxetine, or venlafaxine as medication options when medication is chosen; routine benzodiazepines are generally avoided, and prazosin may help trauma-related nightmares."
+              "quote": "PTSD care prioritizes individual trauma-focused psychotherapy with CPT, PE, or EMDR; sertraline, paroxetine, or venlafaxine are recommended when medication is chosen. The guideline recommends against benzodiazepines for PTSD and suggests prazosin specifically for PTSD-related nightmares, not for PTSD overall."
             }
           ],
           "adverseEffects.common": [

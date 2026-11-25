@@ -592,6 +592,9 @@ function fdSheet(index, topicMeta, state){
      carries the click-to-close. Only the search overlay merges scrim and layout into one element
      (CLASS-INVENTORY's ⚠ trap -- do not mirror one pattern onto the other). */
   var safety=fdSheetIsSafety(idx, sheet);
+  if(safety&&st.searchReturn){
+    body='<button type="button" class="fd-btn fd-btn--ghost" data-fd-search-return>Back to search results</button>'+body;
+  }
   return '<div class="fd-sheetbackdrop" data-fd-close-sheet></div>'+
     '<aside class="fd-sheet'+(safety?' fd-sheet--safety':'')+(resourcePreview?' fd-sheet--resource':'')+'" role="dialog" aria-modal="true" aria-label="'+fdEsc(title)+'">'+
       fdSheetHead(title, hasBack)+

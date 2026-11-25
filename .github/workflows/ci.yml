@@ -61,13 +61,25 @@ jobs:
           fi
           echo "path lint OK"
 
+      # The PR's range is measured from the merge-base of the base branch and this checkout (the
+      # PR merge commit), never from the event's base.sha alone: GitHub refreshes that pointer only
+      # when the merge-base moves, so on a PR held open while main advances it is stale and the
+      # range carries other PRs' commits. On 2026-11-10 #1119's build went red on L1 over 26
+      # commits of main it never touched. The pointer stays as the fallback for a checkout with
+      # no base ref to measure against. Same computation in the two steps below and in
+      # pr-signoff-impact.yml; the bodies are pinned by validate_scheduled_workflows.py and the
+      # meaning by tests/maintenance/test_governance_guard_pins.py.
       - name: Guard — governance/content separation
         if: github.event_name == 'pull_request'
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_BRANCH: ${{ github.head_ref }}
         run: |
+          BASE_SHA="$EVENT_BASE_SHA"
+          if MERGE_BASE="$(git merge-base "origin/$BASE_REF" HEAD 2>/dev/null)"; then BASE_SHA="$MERGE_BASE"; fi
           if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then echo "::error::no base sha"; exit 2; fi
+          echo "PR base $BASE_SHA = merge-base(origin/$BASE_REF, HEAD); event base.sha $EVENT_BASE_SHA"
           python3 bin/check_governance_separation.py --base "$BASE_SHA" --head HEAD --head-branch "$HEAD_BRANCH"
           python3 bin/check_deck_card_stability.py --base "$BASE_SHA"
           if [ "$HEAD_BRANCH" = "attest/pending" ]; then
@@ -77,8 +89,11 @@ jobs:
       - name: Guard — policy/content separation
         if: github.event_name == 'pull_request'
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
+          BASE_SHA="$EVENT_BASE_SHA"
+          if MERGE_BASE="$(git merge-base "origin/$BASE_REF" HEAD 2>/dev/null)"; then BASE_SHA="$MERGE_BASE"; fi
           if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then echo "::error::no base sha"; exit 2; fi
           python3 bin/check_policy_content_separation.py --self-test
           python3 bin/check_policy_content_separation.py --base "$BASE_SHA"
@@ -162,8 +177,13 @@ jobs:
 
       - name: Validate — immutable rotation edition catalog
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            if MERGE_BASE="$(git merge-base "origin/$BASE_REF" HEAD 2>/dev/null)"; then BASE_SHA="$MERGE_BASE"; fi
+          fi
           if [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ && "$BASE_SHA" != "0000000000000000000000000000000000000000" ]]; then
             python3 13_Faculty_Resources/_automation/validate_rotation_edition_catalog.py --compare-ref "$BASE_SHA"
           else

@@ -465,7 +465,7 @@ EXPECTED_WORKFLOW_CONTRACT_DIGESTS = {
     ESCALATION_FILE: (
         "c6db98eac6546a8002dfc81e0285ec07f7e430c17555fecb0adac5354c136996"
     ),
-    "ci.yml": "946cf64d8c9708702c9420081849ab0daf8650b1615c966d0a462524ff8c4012",
+    "ci.yml": "4534f5e42ce94afcebb11f2d2e159532617cf55957f4dafac63921ee27447f69",
     "maintenance-governance-digest.yml": (
         "fa69401d6a2ddbbf4d1b1fba20760ead231e953acf5d9e60d7ae1269e8dc853b"
     ),
@@ -645,16 +645,24 @@ CRITICAL_STEPS = {
                 None,
                 "required CI gate",
             ),
-            # PR-only by design: `github.event.pull_request.base.sha` is the one base a
-            # push event does not carry, and the rule is about a PR's range. The `if` is
-            # therefore pinned as part of the contract — widening it to every event would
-            # make the step exit 2 on every push, and exit 2 is a failure, not a skip.
-            # The second command is load-bearing too: on attest/pending the console's own
-            # promotions still have to bind to the text they attest.
+            # PR-only by design: the base is the merge-base of `origin/<github.base_ref>` and
+            # the checkout, a range only a PR has, and the rule is about a PR's range. The `if`
+            # is therefore pinned as part of the contract — widening it to every event would
+            # make the step exit 2 on every push, and exit 2 is a failure, not a skip. The
+            # event's `base.sha` is the fallback only: GitHub refreshes it just when the
+            # merge-base moves, so on a PR held open while main advances it is stale and the
+            # range carries other PRs' commits (#1119, 2026-11-10). The deck and attestation
+            # commands are load-bearing too: on attest/pending the console's own promotions
+            # still have to bind to the text they attest.
             (
                 "Guard — governance/content separation",
+                'BASE_SHA="$EVENT_BASE_SHA"\n'
+                'if MERGE_BASE="$(git merge-base "origin/$BASE_REF" HEAD 2>/dev/null)"; '
+                'then BASE_SHA="$MERGE_BASE"; fi\n'
                 'if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then '
                 'echo "::error::no base sha"; exit 2; fi\n'
+                'echo "PR base $BASE_SHA = merge-base(origin/$BASE_REF, HEAD); '
+                'event base.sha $EVENT_BASE_SHA"\n'
                 "python3 bin/check_governance_separation.py "
                 '--base "$BASE_SHA" --head HEAD --head-branch "$HEAD_BRANCH"\n'
                 'python3 bin/check_deck_card_stability.py --base "$BASE_SHA"\n'
@@ -666,13 +674,16 @@ CRITICAL_STEPS = {
                 "required CI gate",
             ),
             # PR-only, for the same reason as the step above: the rule is about a PR's commit
-            # range and `github.event.pull_request.base.sha` is the one base a push event does
-            # not carry. The self-test is inside the same `run:` deliberately — a falsification
-            # that does not run beside the gate it falsifies is what check_vacuity.py exists to
-            # catch, and pinning both commands here is what stops a later agent from clearing a
-            # red by deleting one of them and recomputing the digest.
+            # range, measured from the same merge-base with the same fallback. The self-test is
+            # inside the same `run:` deliberately — a falsification that does not run beside the
+            # gate it falsifies is what check_vacuity.py exists to catch, and pinning both
+            # commands here is what stops a later agent from clearing a red by deleting one of
+            # them and recomputing the digest.
             (
                 "Guard — policy/content separation",
+                'BASE_SHA="$EVENT_BASE_SHA"\n'
+                'if MERGE_BASE="$(git merge-base "origin/$BASE_REF" HEAD 2>/dev/null)"; '
+                'then BASE_SHA="$MERGE_BASE"; fi\n'
                 'if [[ ! "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then '
                 'echo "::error::no base sha"; exit 2; fi\n'
                 "python3 bin/check_policy_content_separation.py --self-test\n"

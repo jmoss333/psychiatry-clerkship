@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 
 const UNAUTHORIZED = Object.freeze({
   status: 401,
@@ -29,12 +29,14 @@ function configurationError(message) {
   return operationalError(500, 'invalid_configuration', message);
 }
 
-function digest(value) {
-  return createHash('sha256').update(String(value ?? ''), 'utf8').digest();
-}
-
 function secureEqual(left, right) {
-  return timingSafeEqual(digest(left), digest(right));
+  // Compare every byte even when the supplied and configured credentials differ in length.
+  const size = Math.max(Buffer.byteLength(left), Buffer.byteLength(right));
+  const leftBytes = Buffer.alloc(size);
+  const rightBytes = Buffer.alloc(size);
+  const leftLength = leftBytes.write(left);
+  const rightLength = rightBytes.write(right);
+  return timingSafeEqual(leftBytes, rightBytes) && leftLength === rightLength;
 }
 
 function normalizeOrigins(allowedOrigins) {

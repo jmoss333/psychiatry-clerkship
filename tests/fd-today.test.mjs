@@ -1115,7 +1115,8 @@ test('the thread has one node per projected week, marks done by real completion,
   assert.doesNotMatch(html, /data-fd-setweek|data-fd-week=|data-fd-open/, 'a node previews a week; it never sets one or opens an item');
   const done = F.fdThread(PATH_IDX, s({ week: 2, done: { 'a.md': true, 't.html': true } }));
   assert.match(done, /<li class="fd-thread__step is-done"><button[^>]*data-fd-view-week="1" aria-label="Week 1: Foundations \(done\)"><span class="fd-thread__mark" aria-hidden="true">✓<\/span>/);
-  assert.match(html, /<span class="fd-thread__mark" aria-hidden="true">1<\/span><span class="fd-thread__label" aria-hidden="true">Foundations<\/span>/);
+  assert.match(html, /<span class="fd-thread__mark" aria-hidden="true">1<\/span> <span class="fd-thread__label" aria-hidden="true">Foundations<\/span>/,
+    'the space keeps mark and label two words, so the name "Week 1: Foundations" contains the visible "1 Foundations" (WCAG 2.5.3; axe label-content-name-mismatch)');
 });
 
 test('the thread renders without a current week while browsing, and not at all without a valid path', () => {

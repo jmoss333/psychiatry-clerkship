@@ -5,10 +5,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-11",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "68edb284e985676649e58503640d25afd982748a",
-    "clinicalHash": "9b8a9a262a6c97fe32ac3e771bd40bf5353fdd1d"
+    "contentHash": "712f66c54db58799abe4cfe717bb1be7e0be236d",
+    "clinicalHash": "02a8486e23230440a6d472c15f6b3ed25b8a3dc4"
   },
   "cotw_20261005_mddaug_res.md": {
     "status": "reviewed",
@@ -16,10 +16,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-11",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "7a63dfe7d0a3532465c7e18f2756ebcb89bac238",
-    "clinicalHash": "9d44319545feed5e5ca245246b7a06e66aac7371"
+    "contentHash": "03559b9c868c39c6281afeeff431337e7544f56c",
+    "clinicalHash": "56e9e3d4401857b55695467583b88e3a86380bfa"
   },
   "cotw_20260928_mania_ms3.md": {
     "status": "reviewed",
@@ -27,10 +27,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-28",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "13598181c5471e4580b6eb1d9aa3f2a0f484f5f5",
-    "clinicalHash": "7637e6599e8e12b3bd4452772eec704c4807083b"
+    "contentHash": "4a614d233a359d1f511f486e9bd4b7d89871a9a3",
+    "clinicalHash": "c0353a1f99f758f4fb9aa500c3a2f29636dfb8b3"
   },
   "cotw_20260928_mania_res.md": {
     "status": "reviewed",
@@ -38,10 +38,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-28",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "de3ba600f9f4c944a0cb3109c6b3a51f1febd1cd",
-    "clinicalHash": "c98161c28eb84ae5c69df7139f8fa4cd2bf51d39"
+    "contentHash": "2c8c197b4b6f72b57edba21781fc9bffa812c94e",
+    "clinicalHash": "f111ee9763e2db959b0f2acd584ee5b9a15bf268"
   },
   "cotw_20260923_agitation_ms3.md": {
     "status": "reviewed",
@@ -49,10 +49,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "70c8f7dab55316a284a30505613686f6e36d98d0",
-    "clinicalHash": "5c02dbd12b195354ec26d41af58911d6c276df43"
+    "contentHash": "2ccf94c155d097a5ab1b6473ee6ef154ee6937d1",
+    "clinicalHash": "2705e6dcbe013e29f1285baca2676dfd401afc07"
   },
   "cotw_20260923_agitation_res.md": {
     "status": "reviewed",
@@ -60,10 +60,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "fd8f4e783b7088592751960be81fbe88116b99c8",
-    "clinicalHash": "ab9bafb4e02163be277432496d4a873a887e5703"
+    "contentHash": "06203f85847e9d097d2343daad87c259333feb16",
+    "clinicalHash": "d37b66532c9555f71b3ce2dc0a438be02fb0f5e2"
   },
   "cotw_20260914_ssnms_ms3.md": {
     "status": "reviewed",
@@ -71,10 +71,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "4fda8db90bfb304ddd382d48757ad7991b7bf971",
-    "clinicalHash": "e76c4f8181b5f4dcf2764285ea7423578ca550ed"
+    "contentHash": "8cc5533d9ebfa1b3e8adba15aa5e5f101da6589d",
+    "clinicalHash": "30dd9b5729161dde8c32f5252cd8ebb31ac06641"
   },
   "cotw_20260914_ssnms_res.md": {
     "status": "reviewed",
@@ -82,10 +82,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "4210f83eae3914dac2935f2d2249241513a06247",
-    "clinicalHash": "5afb4133bbd322db967f7e72e538c8b3e23241b5"
+    "contentHash": "99853043fed68f470b75fe7039d2f8f937ffc8fd",
+    "clinicalHash": "54f9de0a9d834e388d054fd8e4121d393441733f"
   },
   "cotw_20260907_fep_ms3.md": {
     "status": "reviewed",
@@ -93,10 +93,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "0b8b5c36d096c76154f93a9fa2e7b98ad876d7c3",
-    "clinicalHash": "3e8bd4db86afb9057aa2d99d789a2def89763e5d"
+    "contentHash": "ed28ec99ebbb8af944f3156fcc82ead4975f066f",
+    "clinicalHash": "446a88327f2f74f0704378559119ba6416818be5"
   },
   "cotw_20260907_fep_res.md": {
     "status": "reviewed",
@@ -104,10 +104,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "af34ad908fbd1895bfb7f193a3ac5651eb00beb3",
-    "clinicalHash": "262c5272089f3115296e05b8716b709a984c4acf"
+    "contentHash": "bb2d3044c45154409e5b5c8ec6e3c5b0f029d745",
+    "clinicalHash": "54a6fd3ec50f429b78b87cc7b766ac12a8cd955f"
   },
   "cotw_20260831_catatonia_ms3.md": {
     "status": "reviewed",
@@ -115,10 +115,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "3ffc2878fbec5609c150618382ad500b0b7993ea",
-    "clinicalHash": "b13f486bb2ca57b87d0ee1133238b3609ea2a6c5"
+    "contentHash": "4787d08c6e3a6f3164f6e03050cbf9ad0fe267dc",
+    "clinicalHash": "d29fa0dedc7fb0118b5ae97d44ae21453c84a306"
   },
   "cotw_20260831_catatonia_res.md": {
     "status": "reviewed",
@@ -126,10 +126,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "c1ff8ea5b0deac590e3557836d0a3e948ed1f3b9",
-    "clinicalHash": "c57c6799d0fceb831c1b376e17ab47d6570ed961"
+    "contentHash": "805d58243ccd6a352fa1bd462e4685e799917e10",
+    "clinicalHash": "5896ad58eca332a5b0afed5e14f03c928c3342b4"
   },
   "cotw_20260827_bpd_ms3.md": {
     "status": "reviewed",
@@ -137,10 +137,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-08",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "979c0e9d05ae46d509033f866a3f47ccfb7c70b8",
-    "clinicalHash": "a28aeffbbf142c3b1be4dc62248e9bf160f7ffca"
+    "contentHash": "9742221b74b72a0e669c88e1d83382da38f1cf49",
+    "clinicalHash": "91859b053f16ce77f9b763d30607a5beade27e3c"
   },
   "cotw_20260827_bpd_res.md": {
     "status": "reviewed",
@@ -148,10 +148,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-11",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "0e88286f4c7980761f059c6a4671bbceb15c0091",
-    "clinicalHash": "a9e9da6d358168d141574d9b8abe49a45334e91b"
+    "contentHash": "d4e10c72a9063e56656d2cc049c9f4f651cdd465",
+    "clinicalHash": "ea01ab97d7ea355e0c5b0d3cce2d70ed1f706a47"
   },
   "interaction-cards.html": {
     "status": "reviewed",
@@ -170,10 +170,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "7af2f167b1df3364e169e928350182afdeec700d",
-    "clinicalHash": "55d94e9084d08c06a5ba41e2dc32a23558c6993d"
+    "contentHash": "0247d91d356b1418b9006b8ba942006b3a591848",
+    "clinicalHash": "314393d3a56cc221a89153e014211bc72afca078"
   },
   "cotw_20260803_lithium_res.md": {
     "status": "reviewed",
@@ -181,10 +181,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "b0411819c154cb75a347e115ccba908f31b98b4e",
-    "clinicalHash": "b3e6c5aebaee2691294c21673459d7df7e44d8ce"
+    "contentHash": "3b313d2a561a07564698426181e85e23e98a1d86",
+    "clinicalHash": "e2d11d93bc9b265df17d206e844776384c07b2b5"
   },
   "cotw_20260727_oud_ms3.md": {
     "status": "reviewed",
@@ -192,10 +192,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-18",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "ea6f3610fe9fc09da290f03e8361bb5076a0e700",
-    "clinicalHash": "9e59374f3e82c69cad0729e3e35b1fce6b4b185b"
+    "contentHash": "257ff7ead5b641ce5e809cff204bded81c2319b5",
+    "clinicalHash": "ca51d54adacde51492720105253d23bdd73ae22f"
   },
   "cotw_20260727_oud_res.md": {
     "status": "reviewed",
@@ -203,10 +203,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "9b5617a95bf30499bf565176c989a94aa9545466",
-    "clinicalHash": "c2037a817a77ada914b2019879717b3c23f7b8b4"
+    "contentHash": "d86965c6d7c8267f7494c994a650bbb5e5739658",
+    "clinicalHash": "86ccbbcee656d97b232032d23e02a3f5e0eb518f"
   },
   "cotw_20260726_etohwd_ms3.md": {
     "status": "reviewed",
@@ -214,10 +214,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "22bcbdf9edcb28b125c45cb76606471b2ccb2b24",
-    "clinicalHash": "61d86c20473925593928c4cac007b4dd3c9b837a"
+    "contentHash": "3555a99666ee41322ff3b7d8d7f71cb9f2fbddee",
+    "clinicalHash": "2baeec4751cb9d51c67d24dc8d640944271350c3"
   },
   "cotw_20260726_etohwd_res.md": {
     "status": "reviewed",
@@ -225,10 +225,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "43c202dd6c42bc154cac827578c471b6d6282a29",
-    "clinicalHash": "8a1c8189ba7e284aaa02d3fa09bf5b2eb62d0943"
+    "contentHash": "0b9a8574b98c6a73cae090834eca2a2aa367a90e",
+    "clinicalHash": "36866081fb33edc68d3cf900fd617624c151009e"
   },
   "cotw_20260723_suiciderisk_ms3.md": {
     "status": "reviewed",
@@ -236,10 +236,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "317b9394db332eabf6424d4374b26e166d3db0f8",
-    "clinicalHash": "7dae1d42e6db2dc1900c0a4eb6d91f60a9463d13"
+    "contentHash": "143e6051d7084def938e50cdf07636feda050b3e",
+    "clinicalHash": "4bb8333984a5366bbbd4615da909f1ef603ea3fe"
   },
   "cotw_20260723_suiciderisk_res.md": {
     "status": "reviewed",
@@ -247,10 +247,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "0c772542d6f0b72b37b4f164c04924759e7bf940",
-    "clinicalHash": "911b80ae12c3cd3fb8f3d4966314a7e722b89de3"
+    "contentHash": "5086b154b6f6d80c714a6754dcc33669750b7034",
+    "clinicalHash": "21c1fbd0ed308474ff4273f6c8b59e0c10e8433b"
   },
   "cotw_index.md": {
     "status": "reviewed",
@@ -258,10 +258,10 @@
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "212a7ec027b31a12fe1534204490c16af16ea1a2",
-    "clinicalHash": "75546f1d4768f7d81e75fd5fea388ad25ca14320"
+    "contentHash": "6fe3d4ae7c4b4cbdaa4c8267099b2bb0149f2c4e",
+    "clinicalHash": "887e719dfc63efbda4fe14d71e35a22d826dad81"
   },
   "cotw_20260709_ssnms_ms3.md": {
     "status": "reviewed",
@@ -269,10 +269,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "11df6d76468c2f97dac8ce2a7609a24d9f381770",
-    "clinicalHash": "350abdbc310d28fb9e6a50bef3e0fa83dd4a90af"
+    "contentHash": "d951e37563d1aa7aca42ae2d4316ecece209bbd2",
+    "clinicalHash": "d6794fb753f46a9d53c43c843b262d0a1e3af4e0"
   },
   "cotw_20260713_agitation_ms3.md": {
     "status": "reviewed",
@@ -280,10 +280,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "610bbd7f0fdf4dbdd620e4b4487e51152b8b9383",
-    "clinicalHash": "70f644e0cd1de020c3f4fdfe1f457add85107698"
+    "contentHash": "56ffc383b929e28ae26e180dadf61cc685a3b93f",
+    "clinicalHash": "fc9b697c8afc9c1c02b4d34326c5625472094ea2"
   },
   "cotw_20260720_bipolar_ms3.md": {
     "status": "reviewed",
@@ -291,10 +291,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "4e621ca29bd8faec2ef86a348993bfd95b41e8f8",
-    "clinicalHash": "98837d3559f1650f02aba6157054221154dc94cb"
+    "contentHash": "e3d72734672a4d9ecaf85199564fc60f04f66268",
+    "clinicalHash": "531e834cc14d5ae8f70882407c1982d706c8872d"
   },
   "cotw_20260720_mdd_ms3.md": {
     "status": "reviewed",
@@ -302,10 +302,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "282c38c00963b78f4fa90c3219fa573b4f719cb8",
-    "clinicalHash": "b742acd63054ddd48403892711230f71fb52f650"
+    "contentHash": "ecaa85b73966e6833e6e581035d5ec58b0829fe0",
+    "clinicalHash": "e502ba9a32551b15375ffdb906c1b52e9cbc6b5c"
   },
   "cotw_20260709_ssnms_res.md": {
     "status": "reviewed",
@@ -313,10 +313,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "29e6c6867a963203f6a2e2cb5e46b809ae9d9971",
-    "clinicalHash": "51ba154e3660d60be8e7431365aff86e79514ee3"
+    "contentHash": "87b434767c57ecaee51c4a075d3eb7d6dc3e85fb",
+    "clinicalHash": "d670a2ed47cdc5b9eb2970a3c5fab306683a97d0"
   },
   "cotw_20260713_agitation_res.md": {
     "status": "reviewed",
@@ -324,10 +324,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "d2299a0cdf6b88020692aa57d574f0e98949036d",
-    "clinicalHash": "bb4694c447af0d76acae9ff8027eaec1eeb2c0ac"
+    "contentHash": "3de3df836b81fedec6608ae3b296a1dbd34ecfd4",
+    "clinicalHash": "4a37395a015fb0f9c8a095e0616fcb4e44481854"
   },
   "cotw_20260720_bipolar_res.md": {
     "status": "reviewed",
@@ -335,10 +335,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "4e86cf57a04ee0d2531099b36a33aa01f6559761",
-    "clinicalHash": "290243c7538ae25b41422b60ca091e233be586b6"
+    "contentHash": "5b12508121549aa8492830a445d4727ea2b17d6d",
+    "clinicalHash": "5348041e3313a7531e5490f11920a62dd33537ca"
   },
   "cotw_20260720_mdd_res.md": {
     "status": "reviewed",
@@ -346,10 +346,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "9c64270699c95b154a10d87229a4a37940b45704",
-    "clinicalHash": "34c2b4e6224c60a2836992bffe6caba9b7227422"
+    "contentHash": "db02868e2502d566243f5dae147f3b13bb9377f5",
+    "clinicalHash": "6cc4ce43b6e2ac796d3b5b1a89d849cded9bf705"
   },
   "sp-interview.html": {
     "status": "reviewed",
@@ -357,11 +357,11 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-30",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
     "note": "Re-attested 2026-09-17 (recorded on the owner's approval of #565, issue comment 2026-09-17): Dana's direct suicide question discloses at any rapport and an earlier flag never blocks it; the local draft overlay that carried that policy is retired into the reviewed pack; debrief states that asking early was right. Dana's pack facultyReview.lastReviewed advanced to 2026-09-17 in the same change. Prior: 2026-09-09 (WP-5m chain, F1-F5 / D16(2)).",
-    "contentHash": "c27df93ea5e2619672a6a60ed2813d9934541303",
-    "clinicalHash": "fa87477c7a7e75455974e6ddffa7f15cb9fb39ff"
+    "contentHash": "3723b50e3e2799cccfbc31fac2a89ee907338b82",
+    "clinicalHash": "09bd505be1fb2204b0c40ba952d215ed447a964b"
   },
   "welcome.md": {
     "status": "reviewed",
@@ -457,10 +457,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-02",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "18d7b8123585e8cb77d80864be8f35c11f088359",
-    "clinicalHash": "d81d60133dedef1f06ddf9f8ba23dea1302671fa"
+    "contentHash": "82de757bdb886a1a6501606fdb335584475d8f4c",
+    "clinicalHash": "7d501dac673d1e765abc8503cba8dc167e9883cd"
   },
   "withdrawal.html": {
     "status": "reviewed",
@@ -468,11 +468,11 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
     "note": "Re-attested 2026-09-10 after decision `cows-anchors-retired`. What changed: the 45 published COWS anchor strings were replaced with abbreviated descriptors written in-house; item names, legal score values, the tally, gauge and severity bands are unchanged; the page's own text now says the descriptors are ours and neither instrument is reproduced. Reviewed and authorized by Dr. Moss in session on 2026-09-10 against the full 11-item descriptor table; recorded by agent on his explicit instruction. Prior attestation 2026-06-30 covered the version that carried the published anchors.",
-    "contentHash": "664e61b3c32848351318e16dab05d430de464e62",
-    "clinicalHash": "9e243a9879e3a4092f24e644d939b9f7ab69112a"
+    "contentHash": "82530db52862d202e74eda0d2ebe32a277e0f22c",
+    "clinicalHash": "c2bd36c9ef89f52eefd284ee7d50facf67efc325"
   },
   "decision-aids.html": {
     "status": "reviewed",
@@ -480,10 +480,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "d8f19946dd9f6b45194a436f6e9c6963b690ab4f",
-    "clinicalHash": "031bdc0d0c06e3de01e26f4e04d26098dee5a53d"
+    "contentHash": "02d8892fc310d020a46d4b8aeb3749e44b9a2917",
+    "clinicalHash": "2180a73d443792e9ff7e56d192646e0bd3ecf986"
   },
   "bfcrs.html": {
     "status": "reviewed",
@@ -524,10 +524,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "814a91902cc5c503d5e9c89ae41bd9a852bbd24d",
-    "clinicalHash": "2c62b36e972995213316586d537c0e917da7bd03"
+    "contentHash": "70d86e3ddd29cded48a3a1f2dfcdbcb756486cfd",
+    "clinicalHash": "bd450b2882d3533766ac4af471db1f120d8250ea"
   },
   "t_psychosis.md": {
     "status": "reviewed",
@@ -535,10 +535,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "bcf52f1755b03172f981dbf85da4ec498850ee6a",
-    "clinicalHash": "c5a578787f1f102321ede35ed61d07a6dafada01"
+    "contentHash": "0d4e339596a81502fc3d796a965a959d1f954cb7",
+    "clinicalHash": "8072a8d27a7e402e776ad157fb2a19692e946880"
   },
   "t_anxiety.md": {
     "status": "reviewed",
@@ -546,10 +546,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "23273f1f41e862ab156319d9e2cbc55d7f3cb454",
-    "clinicalHash": "6c349b6227a9d9b66d67cccdca7b493668840189"
+    "contentHash": "b3c290c6758c5a5b5cff66f22a93435ed9099b29",
+    "clinicalHash": "6c9f37bc1594b579fce4f748c9adcf0dde83fa1d"
   },
   "t_sud.md": {
     "status": "reviewed",
@@ -557,11 +557,11 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
     "note": "Volkow 2016 stigma clause reworded to the paper's hedge (may help to moderate some of the moral judgment); reviewed and attested by Joshua Moss, MD in session 2026-09-18 (#695). Prior attestation 2026-07-01.",
-    "contentHash": "c781e2aa1382bba297257fb71507d039174e824c",
-    "clinicalHash": "ee13425ae5fa25abe319a6fd6d99f314adf2378e"
+    "contentHash": "0948409278051a11eda816980504e4d883c006bf",
+    "clinicalHash": "5cb5ed6f30b92ede57fd7d492d23aec66165b9df"
   },
   "t_personality.md": {
     "status": "reviewed",
@@ -613,10 +613,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-10-16",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "489c581ebc87a2be8ed4745ff58a4c9f2b090dae",
-    "clinicalHash": "e9337f4da03121356a40f4fc04f3685ee7487f4c"
+    "contentHash": "f1dbe18ec0ddd5d2f852d30c31a342491e526b99",
+    "clinicalHash": "3609d39531f0bb692b3c30a435d7593ff1a667c8"
   },
   "agitation.md": {
     "status": "reviewed",
@@ -635,10 +635,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "c6f2ff84b7279a4a33bcfd632fdfd867be18b1bc",
-    "clinicalHash": "ce17baa316826eedb4f6002334b7fb7c168354db"
+    "contentHash": "4cca2d179af0d124bb90313e7fddd814b89de584",
+    "clinicalHash": "7656bbe2a0a0a2336e34d5c3f53839f88c82994c"
   },
   "t_neurodev.md": {
     "status": "reviewed",
@@ -756,10 +756,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "83b677827ee0b8f66b9f1bd94f5063a43434ac67",
-    "clinicalHash": "fc4fc787ed678a6135798f007c59ceef0b6fc0a4"
+    "contentHash": "89255226d85ee05de0313920a1af1ff419fd52bb",
+    "clinicalHash": "24b7e3cd844e96557acc96f9b5a1464f6c3f826e"
   },
   "motivational_interviewing.md": {
     "status": "reviewed",
@@ -778,10 +778,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "af1394194955019b7c0bb4e923cd56b5515beb6e",
-    "clinicalHash": "766dba03df8fcd0f4d7fc86674b056cb5f79e9dd"
+    "contentHash": "dee65c32602d1bf2a01ddb7fdd9b3107d3a8fcae",
+    "clinicalHash": "0053f45af410c68c8f65b1f831fca3f71ed7efff"
   },
   "suicide.md": {
     "status": "reviewed",
@@ -789,10 +789,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "63f13173bb76233b378e2eb736e460797254d603",
-    "clinicalHash": "c8b58d12852bd88cffd30a838cc25830c0f895db"
+    "contentHash": "58508fa7bf9bd48625e85c6c2557b199b02e9759",
+    "clinicalHash": "245d2066c10c2a6d339400ab0726c08d0b70c277"
   },
   "violence.md": {
     "status": "reviewed",
@@ -833,10 +833,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "8ae4d8c503637bcd3784c721b0de00bcc8324309",
-    "clinicalHash": "ea580299aac3042ef96a514f599b7a2469a039fe"
+    "contentHash": "fe469f304bfbf367463386cf0488e67df8333e25",
+    "clinicalHash": "2b8631b720bcf053d24e1279ac629201fc44f66d"
   },
   "pg_interview.md": {
     "status": "reviewed",
@@ -1026,15 +1026,14 @@
     "clinicalHash": "0b5934ec662d5c944d2f705f18863258de537de3"
   },
   "osce.md": {
-    "status": "reviewed",
+    "status": "pending",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "at": "2026-09-26",
-    "by": "Joshua Moss, MD",
-    "contentHash": "98451ed53843d7aeafaa8870063992b103d78f52",
-    "clinicalHash": "147e28db1f7a372d01ff68a5cbb4fd4a2d871394"
+    "reason": "OSCE station set changed in #1234 after the 2026-11-17 signature; awaiting faculty re-attestation.",
+    "at": "2026-11-19",
+    "by": "Pending faculty review"
   },
   "cases.md": {
     "status": "reviewed",
@@ -1059,24 +1058,26 @@
     "clinicalHash": "c2550163218601d9e43ee1811bdbf0ec75e51af5"
   },
   "book_library.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "reason": "Content changed since faculty review on 2026-09-26; awaiting re-attestation.",
-    "at": "2026-09-26",
-    "by": "Pending faculty review"
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "f70959a009a62ba108597c02b0c175120a847e81",
+    "clinicalHash": "69973c31cb1a46cb4851ef782ee32f59c9533083"
   },
   "podcast_library.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "general",
       "level": "low"
     },
-    "reason": "Content changed since faculty review on 2026-10-05; awaiting re-attestation.",
-    "at": "2026-10-05",
-    "by": "Pending faculty review"
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "ba8479727ce8d3fc7b1cc322d442877291e32ccb",
+    "clinicalHash": "4e764048e2abcc9353e2f9010a0d49021238e3a7"
   },
   "landmark_trials.md": {
     "status": "reviewed",
@@ -1095,10 +1096,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "0d610e4e9d4a10276346dd4a17abc701ff443295",
-    "clinicalHash": "de8330a56a98710c464016405a592dad215adf56"
+    "contentHash": "8e9a206d4e6319f58b620ccb5a04e9f4e1c27f92",
+    "clinicalHash": "d83a8d16222d7aa7a140cc9da2eec5cf676f3fcc"
   },
   "omm_resources.md": {
     "status": "reviewed",
@@ -1128,10 +1129,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "dbbf122d2aeacd074d3dab26dc32b8aa87e7ad3d",
-    "clinicalHash": "9d7b4cce7c13c6e50f8caa490a772324214a34c3"
+    "contentHash": "b6108d58fdced49b272d635beb58c3263645598a",
+    "clinicalHash": "b361b8f68ad0350a729b5272e1eb04841e9e3e6a"
   },
   "cl_reference.md": {
     "status": "reviewed",
@@ -1194,10 +1195,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-28",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "cd6520e6a044270645cd7aa65216efcd54a0cfdd",
-    "clinicalHash": "3015b188b57c34eefd0463f6d652eeee317753cf"
+    "contentHash": "f145682cf0482dffaea1384df82b5817fab1ddd8",
+    "clinicalHash": "2bebea6e72f2e3e4f459881b4083546de2a57031"
   },
   "review.html": {
     "status": "reviewed",
@@ -1205,10 +1206,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-10-05",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "f828d3b6425b54703170422b8d1d583d8b29ccb0",
-    "clinicalHash": "dd39e09cc5fa9828129f7e5081f35d6048a9a695"
+    "contentHash": "d2ed22ac5520a4c190e9e1cd7aa9be473fe79b2e",
+    "clinicalHash": "556470edf394a0a3a92e79e02d6e80da8e993878"
   },
   "feedback.html": {
     "status": "reviewed",
@@ -1227,10 +1228,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-09-28",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "dcd4ee550ff45165049da9150d72db9754ac8122",
-    "clinicalHash": "0d1f9d88893c4a452ab894108e0ec12943e4dfd4"
+    "contentHash": "f8ac07621ce305593029ee2dab067202777742c7",
+    "clinicalHash": "0e532de42002f0ddf323dcd4c10b5c23c74b0b66"
   },
   "qbank-attest.html": {
     "status": "reviewed",
@@ -1298,7 +1299,7 @@
       "kind": "clinical",
       "level": "high"
     },
-    "reason": "New Family Conversation Simulator (three draft fictional scenarios, safety-planning rehearsal) added 2026-10-27; awaiting faculty attestation.",
+    "reason": "Family Conversation Simulator — eight draft fictional scenarios (three added 2026-10-27 in #1138, five in #1147; v2 safety-gate redesign pending); safety-planning and means-safety rehearsal; awaiting faculty attestation.",
     "at": "2026-10-27",
     "by": "Pending faculty review"
   },
@@ -1308,10 +1309,10 @@
       "kind": "general",
       "level": "moderate"
     },
-    "at": "2026-10-05",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "68b6bbaeda10240ab054de9faeb955707065504a",
-    "clinicalHash": "370dfd3ab095511fc0dcee4c495f7e18dc07ab6e"
+    "contentHash": "4912cc4794617cb3d9a35e5b48898d2ab3cf0a35",
+    "clinicalHash": "3f3a3798fe101cb7e2413887a2bd5b990684aab5"
   },
   "rp-agitation.html": {
     "status": "reviewed",
@@ -1365,10 +1366,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "83761aa2b66b0c2f2091e3c1582125ee72bc91d7",
-    "clinicalHash": "5fb9e04ac67658504a0a879ddf38a282576ef7d3"
+    "contentHash": "cff440c28c69ea2c01839ba193a078ec402777e1",
+    "clinicalHash": "0aadb0656deb9cc83edc296b17b5dd8262fa00d4"
   },
   "medical_workup.md": {
     "status": "reviewed",
@@ -1387,10 +1388,10 @@
       "kind": "clinical",
       "level": "high"
     },
-    "at": "2026-09-25",
+    "at": "2026-11-14",
     "by": "Joshua Moss, MD",
-    "contentHash": "0c083f0e08cdc89b75dd4ab76e03ac36a3fae63e",
-    "clinicalHash": "ee6906bd7220a64a9017930871ed6a5a575765d5"
+    "contentHash": "b882303b5459a7e590a60ccfc1c346499b2e3a28",
+    "clinicalHash": "ca925dd6b6b42fcd5843cfbeaabe0a5d5c6efe25"
   },
   "med_monitoring.md": {
     "status": "reviewed",
@@ -1415,15 +1416,16 @@
     "clinicalHash": "dc835816041c17932b0915d62f28ef9e6965acee"
   },
   "one-patient-six-weeks.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "moderate"
     },
-    "reason": "Content changed since faculty review on 2026-10-06; awaiting re-attestation.",
-    "at": "2026-10-06",
-    "by": "Pending faculty review",
-    "note": "Fictional composite longitudinal simulation."
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "note": "Fictional composite longitudinal simulation.",
+    "contentHash": "8bb7891ae0dc55cf69701f884943b47be5a0400f",
+    "clinicalHash": "385c4248dd4d10ddbc779b8d4206fdb843b68a34"
   },
   "anki.md": {
     "status": "reviewed",
@@ -1443,10 +1445,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-21",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "54bcbeca75689165db4f778097d71b476ba12273",
-    "clinicalHash": "c06c12b44cba03545714b415e7b83e1328230f4b"
+    "contentHash": "49064c8bec1959e8709edf1e128077a33077588a",
+    "clinicalHash": "0a362c2b2ec1bcb4ed8da146afbd1a034d987a77"
   },
   "cotw_20260810_panic_res.md": {
     "status": "reviewed",
@@ -1454,10 +1456,10 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-09-26",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "99646a99c40069f5e14154a33772fa4c3a8b3eae",
-    "clinicalHash": "e3bae5d95fbec23efdd766b36d3ac3ee1e214120"
+    "contentHash": "0d3c9b763c8ada02ce2351f0dd9baf6d388e7714",
+    "clinicalHash": "bb807a9db61ec7409e2f75a44fea55912d664427"
   },
   "rotation-curator.html": {
     "status": "reviewed",
@@ -1522,30 +1524,32 @@
       "kind": "clinical",
       "level": "moderate"
     },
-    "at": "2026-10-04",
+    "at": "2026-11-17",
     "by": "Joshua Moss, MD",
-    "contentHash": "7b4e50643cb836b354ba1e9ae95caa6819d98c8b",
-    "clinicalHash": "e7b686488027d06c3278bb1ebf181fe54357edc0"
+    "contentHash": "42d35eb5be57e9c945256102bf25cf1664e2edaa",
+    "clinicalHash": "c0b2602e83094a898bfc0779a469858554443521"
   },
   "cotw_20261012_safety_ms3.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "high"
     },
-    "reason": "New Case of the Week (Suicide risk assessment & safety planning, MS3) added 2026-10-12; awaiting faculty attestation.",
-    "at": "2026-10-12",
-    "by": "Pending faculty review"
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "9dadaf63c06b3e761a612113c271d89a610a527b",
+    "clinicalHash": "2b5336bf48950e015b422860dda714c66dc31c3b"
   },
   "cotw_20261012_safety_res.md": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "clinical",
       "level": "high"
     },
-    "reason": "New Case of the Week (Suicide risk assessment & safety planning, resident) added 2026-10-12; awaiting faculty attestation.",
-    "at": "2026-10-12",
-    "by": "Pending faculty review"
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "0e07924fd4321428e651a1967c0a43a8bcfcfc1a",
+    "clinicalHash": "251658da7e0033c251557b925e9c61b6a87cd705"
   },
   "maine_law.md": {
     "status": "pending",
@@ -1558,13 +1562,56 @@
     "by": "Pending faculty review"
   },
   "maine-law-navigator.html": {
-    "status": "pending",
+    "status": "reviewed",
     "risk": {
       "kind": "legal",
       "level": "high"
     },
-    "reason": "New Maine law & capacity navigator tool added 2026-10-27; awaiting faculty attestation (counsel/risk-management read recommended).",
-    "at": "2026-10-27",
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "e7036bb3dcd1732f77577752f057fc55fa5d9d1d",
+    "clinicalHash": "53f0b1ab683c6b12e9827ced6fe200da5a594898"
+  },
+  "scale-chooser.html": {
+    "status": "reviewed",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "c4d315d0c37c1d3e33f3315ce917c4fc5fc1e343",
+    "clinicalHash": "a20241c9acf3ee5a55dcadbd191a20fc8013dcae"
+  },
+  "how-we-know.html": {
+    "status": "reviewed",
+    "risk": {
+      "kind": "general",
+      "level": "moderate"
+    },
+    "at": "2026-11-17",
+    "by": "Joshua Moss, MD",
+    "contentHash": "bd8d043c553919f317b3bda1a7476f124d0a72bd",
+    "clinicalHash": "f03d84017eb1624c1b9aefd5bc6b5c462fd53a04"
+  },
+  "cotw_20261109_lithium_ms3.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, MS3) added 2026-11-09; awaiting faculty attestation.",
+    "at": "2026-11-09",
+    "by": "Pending faculty review"
+  },
+  "cotw_20261109_lithium_res.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, resident) added 2026-11-09; awaiting faculty attestation.",
+    "at": "2026-11-09",
     "by": "Pending faculty review"
   }
 }

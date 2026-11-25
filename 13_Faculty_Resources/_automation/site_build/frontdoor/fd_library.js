@@ -330,8 +330,11 @@ function fdLibraryPreview(item, ctx){
   var g=item.governance;
   if(g&&g.status==='pending') out+='<p class="fd-kit__preview-status">'+governanceBadge(g)+'</p>';
   else if((g&&g.status==='reviewed')||(!g&&item.attested===true)) out+='<p class="fd-kit__preview-status fd-kit__preview-attested">✓ faculty-attested</p>';
-  out+='<button type="button" class="fd-btn fd-btn--primary fd-kit__preview-open" data-fd-open="'+fdEsc(item.ref)+'" aria-label="Open '+fdEsc(item.title)+'">'+
-    (item.kind==='tool'&&!item.rights?'Open tool':'Open reading')+'</button>';
+  /* Label in Name (WCAG 2.5.3): the name starts with the visible "Open tool" / "Open reading" and
+     then says which one, so a voice-control user can say what they see. */
+  var openText=item.kind==='tool'&&!item.rights?'Open tool':'Open reading';
+  out+='<button type="button" class="fd-btn fd-btn--primary fd-kit__preview-open" data-fd-open="'+fdEsc(item.ref)+'" aria-label="'+fdEsc(openText+': '+item.title)+'">'+
+    openText+'</button>';
   out+='<p class="fd-kit__preview-note">Preview is not saved. Reload returns to the list.</p>';
   return out+'</aside>';
 }

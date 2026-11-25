@@ -34,7 +34,7 @@ body{margin:0;background:var(--fd-bg);color:var(--fd-text);
 header.hero{background:var(--fd-surface-warm);border:1px solid var(--fd-line);
   border-radius:14px;padding:28px 26px;box-shadow:var(--fd-shadow-card)}
 .kicker{font-size:12px;letter-spacing:.10em;text-transform:uppercase;
-  color:var(--fd-terracotta);font-weight:700;margin:0 0 8px}
+  color:var(--fd-terracotta-dark);font-weight:700;margin:0 0 8px}
 h1{margin:0 0 10px;font-size:30px;line-height:1.2;letter-spacing:-.01em}
 h2{font-size:21px;margin:44px 0 12px;letter-spacing:-.01em}
 h3{font-size:16px;margin:0 0 6px}
@@ -64,7 +64,7 @@ p{margin:0 0 14px;color:var(--fd-text-mid)}
 .span q{quotes:none;font-style:italic}
 .span .src{display:block;margin-top:9px;font-size:12px;color:var(--fd-text-dim);font-style:normal}
 button.reveal{appearance:none;border:1px solid var(--fd-line-strong);background:var(--fd-surface-warm);
-  color:var(--fd-terracotta);font:inherit;font-size:14px;font-weight:600;padding:9px 15px;
+  color:var(--fd-terracotta-dark);font:inherit;font-size:14px;font-weight:600;padding:9px 15px;
   border-radius:9px;cursor:pointer;margin:4px 0 2px}
 button.reveal:hover{border-color:var(--fd-line-hover)}
 button.reveal:focus-visible{outline:2px solid var(--fd-focus);outline-offset:2px}
@@ -92,7 +92,9 @@ code{background:var(--fd-chip);padding:1px 6px;border-radius:5px;font-size:13px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<!-- <main>, not <div>: the build's page contract gives the skip link its #root target by
+     adding id="root" to the first <main> (common.apply_page_chrome). -->
+<main class="wrap">
 
 <header class="hero">
   <p class="kicker">Evidence &amp; Reading · Critical Appraisal</p>
@@ -110,19 +112,19 @@ paper itself wrote — and the claim our teaching pages make from it. A validato
 a claim has no span, or if a positively-worded claim is licensed by a null or negative one.</p>
 
 <div class="stats">
-  <div class="stat"><b>46</b><span>sources with a stored verbatim span</span></div>
-  <div class="stat"><b>46</b><span>claims licensed by those spans</span></div>
+  <div class="stat"><b>116</b><span>sources with a stored verbatim span</span></div>
+  <div class="stat"><b>142</b><span>claims licensed by those spans</span></div>
   <div class="stat"><b>730</b><span>days before a span must be re-verified</span></div>
-  <div class="stat"><b>16</b><span>legacy sources still awaiting verification</span></div>
+  <div class="stat"><b>13</b><span>legacy sources still awaiting verification</span></div>
 </div>
 
 <h3 style="margin-top:26px">What the evidence actually looks like</h3>
 <p>Each claim is tagged by the <em>direction</em> of what the paper found. Notice how small the
 cleanly positive slice is — this is the honest shape of a clinical literature, and it is the single
 best argument against reading only abstracts and conclusions.</p>
-<div class="bar" role="img" aria-label="Distribution of claim directions"><i style="width:36.96%;background:var(--fd-olive)"></i><i style="width:30.43%;background:var(--fd-teal)"></i><i style="width:19.57%;background:var(--fd-line-hover)"></i><i style="width:13.04%;background:var(--fd-danger)"></i></div>
-<div class="legend"><span><i class="dot" style="background:var(--fd-olive)"></i> Mixed — 17</span><span><i class="dot" style="background:var(--fd-teal)"></i> Positive — 14</span><span><i class="dot" style="background:var(--fd-line-hover)"></i> Descriptive — 9</span><span><i class="dot" style="background:var(--fd-danger)"></i> Negative — 6</span></div>
-<p style="font-size:14px">Only <strong>14 of 46</strong> claims report a clean
+<div class="bar" role="img" aria-label="Distribution of claim directions"><i style="width:26.76%;background:var(--fd-olive)"></i><i style="width:40.14%;background:var(--fd-teal)"></i><i style="width:24.65%;background:var(--fd-line-hover)"></i><i style="width:8.45%;background:var(--fd-danger)"></i></div>
+<div class="legend"><span><i class="dot" style="background:var(--fd-olive)"></i> Mixed — 38</span><span><i class="dot" style="background:var(--fd-teal)"></i> Positive — 57</span><span><i class="dot" style="background:var(--fd-line-hover)"></i> Descriptive — 35</span><span><i class="dot" style="background:var(--fd-danger)"></i> Negative — 12</span></div>
+<p style="font-size:14px">Only <strong>57 of 142</strong> claims report a clean
 positive finding. The largest group is <strong>mixed</strong> — the paper found something, and also
 found a reason to doubt it. Copy that drops the second half is where most citation errors are born.</p>
 
@@ -165,10 +167,28 @@ found a reason to doubt it. Copy that drops the second half is where most citati
 <h2>Every correction on the record</h2>
 <p>Derived from the commit history of the evidence files. A claim whose wording changes, or a
 correction commit that re-sources a claim, lands here automatically — this table is not maintained
-by hand. No stored claim has yet needed rewording — every correction so far moved a claim to a paper that actually supports it, which is the other way this goes wrong.</p>
+by hand.</p>
 <div class="card" style="padding-top:8px">
 <table class="ledger"><thead><tr><th>Claim or source</th><th>Kind</th><th>Corrected</th><th>Commit</th></tr></thead>
 <tbody>
+<tr><td><code>primer-neuromodulation-selection</code></td><td>reworded</td><td>2026-10-16</td><td><code>e1c143d</code></td></tr>
+<tr><td><code>doupnik-2020-acute-care-suicide-prevention, ferguson-2021-safety-planning-review, franklin-2017-suicide-risk-meta-analysis, houtsma-2018-firearm-suicide-review, nuij-2021-safety-planning-meta-analysis, posner-2011-cssrs, powsner-2023-emergency-suicide-assessment, siry-2021-lethal-means-clinician-views, stanley-brown-2018</code></td><td>re-sourced</td><td>2026-10-12</td><td><code>439d5fa</code></td></tr>
+<tr><td><code>repair-associated-training-not-significant</code></td><td>reworded</td><td>2026-09-28</td><td><code>dcb9953</code></td></tr>
+<tr><td><code>mbt-not-superior-active-control</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>spi-suicidal-behaviour</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>family-intervention-relapse</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>activity-scheduling-vs-cognitive-therapy</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>means-restriction-population-wins</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>dbt-vs-ssri-suicide-events</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>caring-contacts-pilot</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>risk-assessment-woven-into-conversation</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>catatonia-benzodiazepine-response-rate</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>lethal-means-assessment-180-day-risk</code></td><td>reworded</td><td>2026-09-25</td><td><code>78a67ef</code></td></tr>
+<tr><td><code>alliance-effect-size</code></td><td>reworded</td><td>2026-09-03</td><td><code>1a26852</code></td></tr>
+<tr><td><code>ba-acceptable-not-superior</code></td><td>reworded</td><td>2026-09-02</td><td><code>cf3fde1</code></td></tr>
+<tr><td><code>ba-effect-and-equivalence</code></td><td>reworded</td><td>2026-09-02</td><td><code>cf3fde1</code></td></tr>
+<tr><td><code>dbt-vs-ssri-suicide-events</code></td><td>reworded</td><td>2026-09-02</td><td><code>cf3fde1</code></td></tr>
+<tr><td><code>inpatient-psychotherapy-specific-contribution</code></td><td>reworded</td><td>2026-09-02</td><td><code>55515d5</code></td></tr>
 <tr><td><code>chung-2017-postdischarge-suicide, chung-2019-first-week-month</code></td><td>re-sourced</td><td>2026-08-24</td><td><code>aa8672b</code></td></tr>
 </tbody></table>
 </div>
@@ -199,13 +219,14 @@ by hand. No stored claim has yet needed rewording — every correction so far mo
 <footer>
   <p style="margin-bottom:6px"><strong>Provenance.</strong> Figures, spans and the correction ledger
   on this page are generated from <code>evidence_annotations.json</code> (faculty owner:
-  Joshua Moss, MD; ledger last updated 2026-08-24) by <code>bin/build_how_we_know.py</code>.
+  Joshua Moss, MD; ledger last updated 2026-10-18) by <code>bin/build_how_we_know.py</code>.
+
   Corrections are derived from the repository's own commit history.</p>
   <p style="margin-bottom:0">Educational metadata only; faculty review remains required for clinical
   recommendations. All clinical content in this library is synthetic or de-identified.</p>
 </footer>
 
-</div>
+</main>
 <script>
 document.querySelectorAll('button.reveal').forEach(function(btn){
   btn.addEventListener('click', function(){

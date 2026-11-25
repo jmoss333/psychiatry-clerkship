@@ -211,7 +211,7 @@ if _evidence_tools not in sys.path:
 from registry import build_public_projection, load_evidence_registry
 _canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
 with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
-    json.dump(build_public_projection(_canonical_evidence),_fh,indent=2,sort_keys=True)
+    json.dump(build_public_projection(_canonical_evidence),_fh,separators=(",", ":"),sort_keys=True)
     _fh.write("\n")
 for _jn, _fallback in [
     ("tool_registry.json", '{"tools":[]}'),
@@ -242,7 +242,8 @@ if _pp_problems:
 _qb_public=qbank_public.project_question_bank(
     json.load(open(LIB+"/question_bank.json",encoding="utf-8")))
 with open(OUT+"/question_bank.json","w",encoding="utf-8") as _fh:
-    json.dump(_qb_public,_fh,ensure_ascii=False,indent=2)
+    # The released bank is precached on phones. Whitespace counts towards the offline budget.
+    json.dump(_qb_public,_fh,ensure_ascii=False,separators=(",",":"))
     _fh.write("\n")
 # Placement is another publication of question text, so it takes the same released
 # bytes as practice and Anki. Missing categories are reported by static QA.
@@ -500,7 +501,7 @@ if _week_title_drift:
     raise SystemExit(1)
 nav=[
  {"section":"Orientation","pinned":True,"items":[_md("Welcome to the Rotation","welcome.md"),_md("Orientation Packet","orientation.md"),_md("Core Reading List","core_readings.md")]+_week_items},
- {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7")]},
+ {"section":"Start the Encounter","items":[_md("Interview & MSE","pg_interview.md"),_tool("mse.html","Mental Status Exam"),_tool("interview-circle.html","The Interview Circle"),_tool("sp-interview.html","The Interview Room — AI Standardized Patient"),_tool("screeners.html","Screeners: PHQ-9 & GAD-7"),_tool("scale-chooser.html","Which Scale?")]},
  {"section":"Understand the Problem","items":[_md("Differential Dx Scaffolds","ddx.md"),_tool("diagnostic-reasoning.html","Diagnostic Reasoning Workbench"),_md("Formulation & DDx","pg_formulation.md"),_md("Case Formulation","case_formulation.md"),_md("Medical Workup & Mimics","medical_workup.md"),_md("Mood","t_mood.md"),_md("Psychosis","t_psychosis.md"),_md("Anxiety/Trauma/OCD","t_anxiety.md"),_md("Personality","t_personality.md"),_md("Substance Use","t_sud.md"),_md("Geriatric","t_geri.md"),_md("Perinatal","t_perinatal.md"),_md("Neurodevelopmental Disorders","t_neurodev.md"),_md("Eating Disorders","t_eating.md"),_md("Neurocognitive (Dementia)","t_neurocog.md"),_md("Somatic Symptom & Related","t_somatic.md"),_md("Sleep-Wake Disorders","t_sleep.md"),_md("Dissociative Disorders","t_dissociative.md"),_md("Sexual, Paraphilic & Gender","t_sexual.md"),_md("Impulse-Control & Conduct","t_impulse.md"),_md("Adjustment Disorders","t_adjustment.md"),_md("Culture, Disparities & Formulation","cultural_psychiatry.md")]},
  {"section":"Assess Safety and Acuity","pinned":True,"items":[_md("Suicide Risk & Safety","pg_suicide.md"),_md("Suicide Risk & Safety Planning","suicide.md"),_tool("cssrs.html","Columbia C-SSRS — Official Form & Training"),_md("Violence Risk","violence.md"),_tool("violence.html","Violence Risk (FRST)"),_md("Agitation & Restraint","agitation.md"),_md("Catatonia","catatonia.md"),_tool("bfcrs.html","Bush-Francis Catatonia Scale (BFCRS) — Official Form & Training"),_md("Hyperthermia & Toxidromes","toxidromes.md"),_md("Delirium","delirium.md"),_tool("withdrawal.html","Withdrawal: COWS Tool · CIWA-Ar Official Form & Training"),_tool("capacity.html","Decisional Capacity"),_md("Consult Questions: Capacity, Delirium, Catatonia, Withdrawal","exp_consult.md"),_md("Ethics & the Law: Confidentiality, Tarasoff, Reporting","ethics_legal.md"),_md("Maine Law & Capacity: Statute Navigator","maine_law.md"),_tool("maine-law-navigator.html","Maine Law Navigator")]},
  {"section":"Make a Plan","items":[_md("Psychopharmacology Primer","psychopharm_primer.md"),_md("Medication Monitoring & Labs","med_monitoring.md"),_md("Protocol Library","protocol_library.md"),_md("ECT & Neuromodulation","ect_neuromodulation.md"),_md("Treatment Basics","exp_tx.md"),_tool("decision-aids.html","Algorithms & Decision Aids"),_tool("interaction-cards.html","Interaction Cards — One Action"),_tool("pharmacy.html","Psychiatric Pharmacy"),_md("Nutrition & Metabolic Health","nutrition_metabolic.md"),_md("Osteopathic (OMM) Resources","omm_resources.md")]},
@@ -509,7 +510,7 @@ nav=[
  {"section":"Present and Work with the Team","items":[_md("Documentation & Oral Presentation","doc_oral.md"),_tool("oral.html","Treatment Team Rounding Prep"),_md("High-Yield Rounds Questions","rounds_questions.md")]},
  {"section":"Practice and Exam Prep","items":[_tool("question-bank-practice.html","Practice Questions — Question Bank"),_tool("one-patient-six-weeks.html","Case Journeys"),_tool("prepare-for-tomorrow.html","Prepare for tomorrow"),_tool("review.html","Daily Review (Spaced Repetition)"),_tool("shelf-mode.html","Shelf Mode — Exam Simulation"),_md("COMAT & Shelf Review","shelf.md"),_md("Rapid Review — Buzzwords","rapid_review.md"),_md("OSCE Stations","osce.md"),_md("Practice Cases","cases.md"),_md("Landmark Trials — Listen & Test","landmark_trials.md"),_md("Anki Flashcard Decks","anki.md")]},
  {"section":"Case of the Week","items":[_md("Index — All Cases","cotw_index.md")]+[_md(w["label"],_cotw_slug(w,"ms3")) for w in _cotw_weeks]},
- {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("The Therapy Reading Room","therapy_reading_room.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
+ {"section":"Evidence and Reference","items":[_md("Weekly Reading Map","reading_map.md"),_tool("how-we-know.html","How We Know"),_md("Evidence-Based Inpatient Psychiatry","evidence_inpatient.md"),_md("The Therapy Reading Room","therapy_reading_room.md"),_md("MS3 Book Library","book_library.md"),_md("Podcast Library (Psychiatry & Psychotherapy)","podcast_library.md")]},
  {"section":"Feedback","items":[_tool("feedback.html","Improve this library — send feedback"),_tool("rotation-curator.html","Faculty: Curate a rotation edition",True)]},
 ]
 _navorder=["Orientation","Start the Encounter","Understand the Problem","Assess Safety and Acuity","Make a Plan","Communicate with Patients","Work with Family and Systems","Present and Work with the Team","Practice and Exam Prep","Case of the Week","Evidence and Reference","Feedback"]
@@ -580,11 +581,60 @@ _ANALYTICS_MS3 = common.analytics_enabled_for("ms3")
 if _ANALYTICS_MS3:
     _copy_required(ANALYTICS_JS, OUT+"/analytics.js", _missing_req)   # usage analytics emitter (tag injected per page)
 _copy_required(FRONTDOOR_CSS, OUT+"/frontdoor.css", _missing_req)
+# Reading illustrations ship at the same relative URL in both editions.
+illustrations = os.path.join(LIB, "02_Clinical_Skills", "Case_Formulation", "illustrations")
+os.makedirs(os.path.join(OUT, "illustrations"), exist_ok=True)
+for scene in ("formulation-insurance.webp", "formulation-pharmacy.webp", "formulation-admission.webp"):
+    _copy_required(os.path.join(illustrations, scene), os.path.join(OUT, "illustrations", scene), _missing_req)
+for scene in ("catie-patient-a.webp", "catie-patient-b.webp"):
+    _copy_required(os.path.join(LIB, "07_Evidence_and_Reading", "Rounds_Questions", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Medical_Workup", "illustrations", "lang-morning-interview.webp"),
+               os.path.join(OUT, "illustrations", "lang-morning-interview.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
+               os.path.join(OUT, "illustrations", "mara-kitchen.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "05_Psychopharmacology", "Monitoring_and_Labs", "illustrations", "lithium-night-shift.webp"),
+               os.path.join(OUT, "illustrations", "lithium-night-shift.webp"), _missing_req)
+for topic, scene in (("Anxiety", "pacing-hallway.webp"), ("Mood", "mood-breakfast.webp")):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", topic, "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Psychosis", "illustrations", "ari-between-admissions.webp"),
+               os.path.join(OUT, "illustrations", "ari-between-admissions.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Neurodevelopmental", "illustrations", "alex-lunch.webp"),
+               os.path.join(OUT, "illustrations", "alex-lunch.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
+               os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation", "illustrations", "robin-memory.webp"),
+               os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
+               os.path.join(OUT, "illustrations", "noor-dayroom.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Nutrition", "illustrations", "evening-route.avif"),
+               os.path.join(OUT, "illustrations", "evening-route.avif"), _missing_req)
+for scene in ("therapy-chain-phone.avif", "therapy-chain-hall.avif",
+              "evening-call-home.avif", "evening-call-unit.avif"):
+    _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Psychotherapy", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 # The Front Door's self-hosted display face and its licence (frontdoor.css @font-face). The
 # resident build derives from this tree, so this one copy serves both sites.
 os.makedirs(OUT+"/fonts", exist_ok=True)
 for _font in ("source-serif-4-latin-opsz-wght600-700.woff2", "source-serif-4-OFL.txt"):
     _copy_required(os.path.join(HERE,"fonts",_font), OUT+"/fonts/"+_font, _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Eating_Disorders", "illustrations", "referral-call.webp"),
+               os.path.join(OUT, "illustrations", "referral-call.webp"), _missing_req)
+_copy_required(os.path.join(LIB, "03_Core_Topics", "Personality", "illustrations", "personality-conversation.webp"),
+               os.path.join(OUT, "illustrations", "personality-conversation.webp"), _missing_req)
+for scene in ("cultural-chart.webp", "elena-interpreter.avif"):
+    _copy_required(os.path.join(LIB, "03_Core_Topics", "Cultural_Psychiatry", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
+_copy_required(os.path.join(LIB, "04_Acute_and_Safety", "Delirium", "illustrations", "delirium-shift.webp"),
+               os.path.join(OUT, "illustrations", "delirium-shift.webp"), _missing_req)
+for _topic, _plate in (("Agitation_and_Restraint", "dayroom-first-change.webp"),
+                      ("Catatonia", "kit-breakfast.webp"), ("Catatonia", "kit-later.webp"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-on-unit.avif"),
+                      ("Suicide_Risk_and_Safety_Planning", "lucia-at-night.avif"),
+                      ("Toxidromes", "paired-fever-exams.webp")):
+    _copy_required(os.path.join(LIB, "04_Acute_and_Safety", _topic, "illustrations", _plate),
+                   os.path.join(OUT, "illustrations", _plate), _missing_req)
 _abort_missing(_missing_req)
 print("usage analytics:", "enabled (ms3)" if _ANALYTICS_MS3 else "disabled for ms3 (CLERKSHIP_ANALYTICS=%s)" % common.analytics_mode())
 # Outcome counters (DRAFT, L8 outcomes design) -- CLERKSHIP_OUTCOMES, default off. Arms

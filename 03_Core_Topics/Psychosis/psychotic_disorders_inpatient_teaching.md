@@ -10,6 +10,72 @@
 
 **Duration and mood anchors** — For primary psychotic disorders, timing matters. Brief psychotic disorder lasts at least 1 day but less than 1 month, with return to baseline. Schizophreniform disorder lasts at least 1 month but less than 6 months. Schizophrenia requires at least 6 months of continuous signs of illness, including at least 1 month of active-phase symptoms (less if successfully treated). Delusional disorder centers on delusions lasting at least 1 month, without prominent hallucinations, disorganization, negative symptoms, or major functional collapse. Schizoaffective disorder requires at least 2 weeks of hallucinations or delusions in the absence of a major mood episode, plus major mood episodes present for the majority of the total duration of the illness (active and residual phases); if psychosis occurs only during mood episodes, diagnose a mood disorder with psychotic features instead.
 
+<section class="aw-case" id="ari-weeks" aria-labelledby="ari-title">
+  <header>
+    <p class="aw-kicker">Fictional teaching case</p>
+    <h3 id="ari-title">The three weeks between admissions</h3>
+    <p class="aw-opener">“The bakery? I was back on the early shift. It felt good to have somewhere to be.”</p>
+    <img class="aw-portrait" src="illustrations/ari-between-admissions.webp" width="1400" height="467" alt="Ari and a clinician sit together with a folded work schedule on the table.">
+    <p>On the unit, Ari describes hearing a voice during two admissions for depression. Outpatient assessments cover the three weeks back at work. They document mood, but leave one question open.</p>
+  </header>
+  <section aria-labelledby="aw-timeline">
+    <div class="aw-labelrow"><h4 id="aw-timeline">Reconstruct Ari’s eight weeks</h4><span class="aw-role">MS3</span></div>
+    <div class="aw-figure" role="group" aria-label="Eight-week timeline of mood episodes and hearing a voice" aria-describedby="aw-description">
+      <p class="aw-sr" id="aw-description">Weeks 1–3 and 7–8: major depression and a voice. Weeks 4–6: no major mood episode. Voice history: not yet established.</p>
+      <div class="aw-ruler" aria-hidden="true"><span>Week</span><div><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b><b>7</b><b>8</b></div></div>
+      <div class="aw-track"><h5>Major mood episode <small>Clinician assessments</small></h5>
+        <div class="aw-bands">
+          <span class="aw-bar aw-mood" aria-label="Weeks 1 to 3, major depression">Present</span>
+          <span class="aw-bar aw-off" aria-label="Weeks 4 to 6, no manic or major depressive episode">No episode</span>
+          <span class="aw-bar aw-mood" aria-label="Weeks 7 and 8, major depression">Present</span>
+        </div>
+      </div>
+      <div class="aw-track"><h5>Hearing the voice <small>Ari’s account</small></h5>
+        <div class="aw-bands">
+          <span class="aw-bar aw-heard" aria-label="Weeks 1 to 3, Ari heard a voice">Heard</span>
+          <button type="button" class="aw-gap cursor-interaction" data-gap aria-expanded="false" data-mark="pending" aria-label="Ask Ari about hearing the voice in weeks 4 to 6" aria-controls="aw-interview">Ask Ari <span aria-hidden="true">↗</span></button>
+          <span class="aw-bar aw-heard" aria-label="Weeks 7 and 8, Ari heard a voice">Heard</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="aw-interview" hidden aria-labelledby="aw-ask">
+    <p class="aw-kicker">At the bedside <span>/</span> Weeks 4–6</p>
+    <h4 id="aw-ask">“When you were back at the bakery, what do you remember about the voice?”</h4>
+    <blockquote><span>Ari</span><p data-reply></p></blockquote>
+    <fieldset><legend>How would you mark those three weeks?</legend>
+      <div class="aw-choices">
+        <button class="cursor-interaction" type="button" data-mark-choice="heard" aria-pressed="false">Heard it daily</button>
+        <button class="cursor-interaction" type="button" data-mark-choice="quiet" aria-pressed="false">Didn’t hear it</button>
+        <button class="cursor-interaction" type="button" data-mark-choice="uncertain" aria-pressed="false">Timing unclear</button>
+      </div>
+    </fieldset>
+    <p data-feedback class="aw-feedback" role="status" hidden></p>
+  </section>
+  <button type="button" class="aw-link" data-continue hidden>Continue to the resident handoff ↓</button>
+  <template data-history="heard">
+    <p data-label>Heard daily</p>
+    <p data-words>“Every day, all three weeks. I’d be wide awake weighing flour and hear the same voice. I heard it at home on my days off, too.”</p>
+    <p data-teach>Ari reports three weeks of daily voices while assessments found no major mood episode. That interval supports a timing feature used in assessing schizoaffective disorder. To assess that diagnosis, establish the other psychotic symptoms and whether major mood episodes occupied most of the full active and residual illness.</p>
+    <p data-retry>Ari remembers hearing the voice every day, including days away from the bakery. Use that detail to mark the middle interval.</p>
+    <p data-rounds>Ari reports hearing the voice daily for three weeks while clinicians found no major mood episode. That gives us a period of hallucinations outside a major mood episode.</p>
+  </template>
+  <template data-history="quiet">
+    <p data-label>No voice</p>
+    <p data-words>“It was quiet the whole time I was back at work. I remember because the first morning I heard it again was the Monday I called out sick. That was the week I came back here.”</p>
+    <p data-teach>Across these eight weeks, Ari recalls the voice only during periods of major depression. Earlier episodes and other psychotic symptoms still matter.</p>
+    <p data-retry>Ari places the return of the voice after the three weeks at work. Record what Ari remembers about the voice during those weeks.</p>
+    <p data-rounds>In these eight weeks, Ari recalls hearing the voice only during periods of major depression. I’d ask whether voices or delusions ever occurred outside a mood episode earlier in the illness.</p>
+  </template>
+  <template data-history="uncertain">
+    <p data-label>Unclear</p>
+    <p data-words>“I can picture myself standing by the ovens, hearing it. We switched to mornings around then. I honestly couldn’t tell you if that was before or after I went back.”</p>
+    <p data-teach>Ari remembers the experience but cannot place it in these three weeks. The timing stays open. A dated note or an event Ari remembers clearly may help anchor it.</p>
+    <p data-retry>A memory of the ovens doesn’t date the voice. Ari is unsure which side of the return to work it happened on.</p>
+    <p data-rounds>Ari remembers hearing the voice at the bakery but can’t date that memory. Whether it continued outside a major mood episode remains open.</p>
+  </template>
+</section>
+
 | Diagnosis | Time anchor | What else it takes |
 |---|---|---|
 | Brief psychotic disorder | At least 1 day, less than 1 month | Return to baseline |
@@ -42,6 +108,32 @@
 and [responding to guardedness without escalating it](?tool=communication-practice.html&case=guardedness_privacy_001).
 
 **What the student does** — (1) Gather collateral and build a clean symptom and substance timeline. (2) Perform and document serial mental status exams to track trajectory. (3) Track the metabolic baseline and monitoring (weight, glucose, lipids) for any patient on an antipsychotic. (4) Practice a LEAP-style engagement conversation and observe a family meeting. (5) Help reconcile medications and confirm the discharge follow-up is actually booked.
+
+<section class="aw-case" id="aw-handoff" aria-labelledby="aw-rounds-title">
+  <p class="aw-kicker">Resident follow-up · Ari’s timeline</p>
+  <h3 id="aw-rounds-title">What would you bring to rounds?</h3>
+  <button type="button" class="aw-link" data-back>Return to Ari’s timeline ↑</button>
+  <p data-locked>Mark weeks 4–6 using Ari’s reply to open the handoff.</p>
+  <div data-ready hidden>
+    <p>Say what Ari’s history supports. Choose one record to help decide what you still need to ask.</p>
+    <div class="aw-sources" role="group" aria-label="Choose a record">
+      <button class="cursor-interaction" type="button" data-source="course" aria-pressed="false">Earlier discharge summary</button>
+      <button class="cursor-interaction" type="button" data-source="exposures" aria-pressed="false">Admission substance history</button>
+    </div>
+    <p class="aw-chartnote" data-record role="status" hidden></p>
+    <details data-worked hidden><summary class="cursor-interaction">Compare a rounds sentence</summary><p data-sentence></p></details>
+    <button type="button" data-another class="aw-link">Try a different answer from Ari <span aria-hidden="true">↺</span></button>
+  </div>
+  <footer><a href="https://pubmed.ncbi.nlm.nih.gov/23707642/" target="_blank" rel="noopener noreferrer">Clinical reference on diagnostic timing</a></footer>
+  <template data-evidence="course">
+    <p data-text>Discharge summary, 18 months earlier. “Admitted with psychosis.” The summary gives no dates for mood symptoms.</p>
+    <p data-next>I’d review the earlier notes with Ari to map other psychotic symptoms and how much of the full illness was spent in major mood episodes.</p>
+  </template>
+  <template data-evidence="exposures">
+    <p data-text>Admission history. Ari reported using cannabis some evenings. The intake note does not say when Ari last used it or when the voice began.</p>
+    <p data-next>I’d ask when Ari used cannabis relative to the voice and review medications and possible medical causes with the team.</p>
+  </template>
+</section>
 
 **Disposition & discharge essentials** — Confirm symptom stabilization, adequate insight or supervision for adherence, and a concrete safety plan. Arrange timely outpatient follow-up (coordinated specialty care for first-episode), engage family with consent, reconcile medications with clear monitoring instructions, and address housing, substance use, and any medical comorbidity before the patient leaves.
 

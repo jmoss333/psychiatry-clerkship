@@ -146,8 +146,12 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   L4 reddens the one branch that is allowed to promote — with a diff that looks untouched. The
   plain "Update branch" (a merge) leaves the replayed commits' identities alone, and L4 skips
   the merge commit itself. The CI step ("Guard — governance/content separation",
-  `build-test-validate`) is **pull-request-only** — `github.event.pull_request.base.sha` is the
-  one base a push event does not carry — and on an `attest/pending` PR it also runs
+  `build-test-validate`) is **pull-request-only** — its base is the merge-base of
+  `origin/<base branch>` and the checkout, a range only a PR has; the event's `base.sha` is the
+  fallback only, because GitHub refreshes it just when the merge-base moves, so on a PR held open
+  while `main` advances it is stale and the range carries other PRs' commits (#1119's build went
+  red on L1 over 26 commits of `main` it never touched, 2026-11-10) — and on an `attest/pending`
+  PR it also runs
   `bin/check_attestation_hashes.py --strict --base`, so the one branch that may promote is the
   one branch whose promotions must bind to the text they attest. Its body and its branch literal
   are pinned by `validate_scheduled_workflows.py`'s `CRITICAL_STEPS` and
@@ -161,8 +165,9 @@ Every rule below is tagged with what enforces it: `[gate: …]` names the check 
   happen on a branch an agent or the owner wrote — the L2 block appends `hint: every promotion
   here was committed by the faculty console — if these rows are already on main, your base is
   stale`. The fix is a fetch, not an edit: `git fetch origin main`, or push with
-  `CLERKSHIP_PR_BASE=origin/<parent>`. A local `origin/main` behind a merged console PR and a
-  re-run CI event carrying an older `base.sha` both produce it. **The limits, which
+  `CLERKSHIP_PR_BASE=origin/<parent>`. A local `origin/main` behind a merged console PR produces
+  it; a re-run CI event carrying an older `base.sha` did too until 2026-11-10, when CI's base
+  became the merge-base computed at run time. **The limits, which
   are the honest part.** L4 covers `reviewed.json` only, so a `topic_meta`-only promotion on
   `attest/pending` passes — the console does not write `topic_meta`, so no console-identity rule
   could be defined for it. On a **fork** PR both `github.head_ref` and the commit emails are
