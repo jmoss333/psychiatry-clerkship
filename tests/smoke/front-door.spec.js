@@ -3569,7 +3569,7 @@ test.describe('Interactive readings', () => {
   test('Overnight discharge handoffs follow each callback independently of the day program', async ({ page }, testInfo) => {
     test.skip(!isResidentProject(testInfo.project.name), 'Systems-Based Practice is a resident reading');
     await page.goto('/?page=systems_medlegal.md&guideFind=Where+will+they+sleep');
-    const card = page.locator('.fd-reader:visible #resident-discharge-map');
+    const card = page.locator('.fd-reader:visible #overnight-discharge-map');
     await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Disposition and systems-based practice');
     for (const [patient, choice, quote] of [['b', '2', 'haven’t assigned him a bed'], ['a', '0', 'tonight works']]) {
       await card.locator('[data-plan="' + patient + '"]').click();

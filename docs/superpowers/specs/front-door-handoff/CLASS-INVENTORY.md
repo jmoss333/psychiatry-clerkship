@@ -967,7 +967,7 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `.fp-case` / `.mg-case` | Paired bedside fever exams and the clozapine interview timeline. Both keep histories with their source and require a differential and next finding or check before the debrief. |
 | `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
 | `#fern-trial` | Two eight-week prescription tracks can be reconstructed independently. The selected handoff follows the matched timelines. |
-| `#resident-discharge-map` | Two patients share one day-program intake. Overnight support and handoff feedback follow the selected patient and callback. |
+| `#overnight-discharge-map` | Two patients share one day-program intake. Overnight support and handoff feedback follow the selected patient and callback. |
 | `#lang-culture` | In Medical Workup, the full portrait stacks above the quote on phones. Each interview remembers which questions and handoff the learner selected. The comparison opens after both handoffs fit. |
 | `#catie-stop` | Under the CATIE rounds question, each illustrated timeline opens a separate medication history and three handoffs. Selecting a supported handoff for each patient opens the comparison. Revising either answer updates it. |
 | `#quieter-on-unit` | The two-row chart compares the same observation across shifts. The handoff uses the patient’s call and any additional observations the learner opened. |

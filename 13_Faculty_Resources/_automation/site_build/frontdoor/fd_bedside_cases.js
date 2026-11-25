@@ -1372,7 +1372,7 @@ function fdMountFernTrial(body) {
 }
 
 function fdMountResidentDischargeMap(body) {
-  const card = body.querySelector('#resident-discharge-map');
+  const card = body.querySelector('#overnight-discharge-map');
   if (!card || card.dataset.mounted) return;
   card.dataset.mounted = 'true';
 
