@@ -64,18 +64,28 @@ function fdPageSeenLoad(store){
   }catch(_){ return {}; }
 }
 
-/* Mount on a learner's rendered reading. Returns true when the notice was shown. */
+/* The device store, or null. Reading the localStorage property itself throws (SecurityError)
+   when the browser blocks site storage, so it is only ever touched inside a try. */
+function fdPageSeenStore(){
+  try{ return typeof localStorage!=='undefined'&&localStorage?localStorage:null; }catch(_){ return null; }
+}
+
+/* Mount on a learner's rendered reading. Returns true when the notice was shown. It never throws:
+   the reader calls it before its remaining enhancements (collapsible sections, tables, the
+   reading place), and an exception here would skip them all. */
 function fdMountPageChanged(body, ref, text, isDone, opts){
-  var o=opts||{}, store=o.store||(typeof localStorage!=='undefined'?localStorage:null);
-  if(!body||!ref||typeof text!=='string'||!store) return false;
-  var step=fdPageSeenStep(fdPageSeenLoad(store), ref, fdPageFingerprint(text), !!isDone,
-    typeof o.now==='number'?o.now:Date.now());
-  try{ store.setItem(FD_PAGE_SEEN_KEY, JSON.stringify(step.next)); }catch(_){ return false; }
-  if(!step.changed||typeof body.querySelector!=='function') return false;
-  if(body.querySelector('.fd-page-changed')) return false;
-  var h1=body.querySelector('h1');
-  if(h1&&typeof h1.insertAdjacentHTML==='function') h1.insertAdjacentHTML('afterend', fdPageChangedHtml(step.lastSeen));
-  else if(typeof body.insertAdjacentHTML==='function') body.insertAdjacentHTML('afterbegin', fdPageChangedHtml(step.lastSeen));
-  else return false;
-  return true;
+  try{
+    var o=opts||{}, store=o.store||fdPageSeenStore();
+    if(!body||!ref||typeof text!=='string'||!store) return false;
+    var step=fdPageSeenStep(fdPageSeenLoad(store), ref, fdPageFingerprint(text), !!isDone,
+      typeof o.now==='number'?o.now:Date.now());
+    try{ store.setItem(FD_PAGE_SEEN_KEY, JSON.stringify(step.next)); }catch(_){ return false; }
+    if(!step.changed||typeof body.querySelector!=='function') return false;
+    if(body.querySelector('.fd-page-changed')) return false;
+    var h1=body.querySelector('h1');
+    if(h1&&typeof h1.insertAdjacentHTML==='function') h1.insertAdjacentHTML('afterend', fdPageChangedHtml(step.lastSeen));
+    else if(typeof body.insertAdjacentHTML==='function') body.insertAdjacentHTML('afterbegin', fdPageChangedHtml(step.lastSeen));
+    else return false;
+    return true;
+  }catch(_){ return false; }
 }

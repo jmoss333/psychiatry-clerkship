@@ -108,3 +108,24 @@ test('the learner reader mounts it on readings only, never in the faculty previe
   assert.match(source, /'cw_page_seen_v1'/, 'a cw_ key, so Erase everything clears it');
   assert.doesNotMatch(source, /cw_progress_v1'\s*,|setItem\('cw_progress/, 'never writes canonical progress');
 });
+
+test('blocked site storage: reading the localStorage property itself throws, and the mount still returns false', () => {
+  // Chrome and Firefox throw a SecurityError from the localStorage GETTER (typeof included) when
+  // the user blocks site data; the earlier test only covered methods that throw on a store in hand.
+  const had = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true,
+    get() { throw Object.assign(new Error('The operation is insecure.'), { name: 'SecurityError' }); } });
+  try {
+    assert.doesNotThrow(() => F.fdMountPageChanged(fakeBody(), 'a.md', 'text', true, { now: DAY1 }));
+    assert.equal(F.fdMountPageChanged(fakeBody(), 'a.md', 'text', true, { now: DAY1 }), false);
+  } finally {
+    if (had) Object.defineProperty(globalThis, 'localStorage', had);
+    else delete globalThis.localStorage;
+  }
+});
+
+test('a body that throws mid-mount never escapes into the reader', () => {
+  const store = memoryStore({ [F.FD_PAGE_SEEN_KEY]: JSON.stringify({ 'a.md': { h: '00000000', at: '2026-11-01' } }) });
+  const hostile = { querySelector() { throw new Error('detached'); } };
+  assert.equal(F.fdMountPageChanged(hostile, 'a.md', 'changed', true, { store, now: DAY1 }), false);
+});
