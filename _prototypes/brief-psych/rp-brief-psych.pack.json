@@ -26,6 +26,21 @@
     { "type": "LOCAL_POLICY", "id": "bp.local_groups", "label": "Group programming available on this unit (skills group, psychoed group, activity)", "placeholder": "Confirm local groups/activities", "value": "Confirm today's BHU group/activity schedule with unit staff; this tool does not assume availability.", "verifiedBy": "Not locally attested; verify at point of care", "verifiedAt": "2026-07-09" },
     { "type": "LOCAL_POLICY", "id": "bp.outpatient_referral", "label": "Outpatient therapy referral / warm-handoff pathway", "placeholder": "Confirm local referral pathway", "value": "Use the current discharge-planning/social-work referral workflow and warm-handoff process.", "verifiedBy": "Not locally attested; verify at point of care", "verifiedAt": "2026-07-09" }
   ],
+  "incidentSafety": {
+    "cueId": "cue-selfharm",
+    "title": "Medical and safety check first, chain analysis later",
+    "body": "Right after self-harm or a near-miss, the first job is the body and the team, not the formulation. Do these now, with your resident or nurse:",
+    "steps": [
+      "Assess the injury or possible ingestion: look at the wound, get vital signs, and ask directly what was taken, how much and when. Some overdoses look well at first.",
+      "Tell your resident or attending and the patient's nurse now, before anything else.",
+      "With the team, reassess suicide risk and the observation level, and remove what was used."
+    ],
+    "routes": [
+      { "label": "Suicide Risk & Safety pocket guide", "href": "?page=pg_suicide.md" }
+    ],
+    "continueLabel": "Medically safe and the team knows — go to chain analysis",
+    "note": "Chain analysis is for once the patient is medically safe and the team has a plan. Doing it first can miss a silent overdose or an injury that needs care."
+  },
   "safety": {
     "cueId": "cue-suicidal",
     "title": "This is a risk state, not a five-minute technique",
@@ -47,7 +62,7 @@
     "cues": [
       { "id": "cue-shutdown", "label": "Withdrawn, inactive, anhedonic — “nothing matters”", "mechanism": "Behavioral shutdown", "techId": "ba" },
       { "id": "cue-flooded", "label": "Flooded, escalating, about to act", "mechanism": "Acute emotional dysregulation", "techId": "tipp" },
-      { "id": "cue-selfharm", "label": "Just self-harmed or nearly did", "mechanism": "Behavior serving a function", "techId": "chain" },
+      { "id": "cue-selfharm", "label": "Just self-harmed or nearly did", "mechanism": "Behavior serving a function", "techId": "chain", "safetyFirst": true },
       { "id": "cue-overwhelmed", "label": "Keeps returning in crisis, overwhelmed by problems", "mechanism": "Problem-solving deficit", "techId": "pst" },
       { "id": "cue-ambivalent", "label": "Ambivalent about meds, treatment, or substance use", "mechanism": "Motivational conflict", "techId": "mi" },
       { "id": "cue-frightened", "label": "Confused or frightened by the illness itself", "mechanism": "Knowledge / coping gap", "techId": "psychoed" },

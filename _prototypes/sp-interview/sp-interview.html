@@ -425,7 +425,7 @@ MockProvider.prototype.start=function(caseDef,opts){
   var flagIds=caseDef.intents.filter(function(it){return it.category==='flag';}).map(function(it){return it.id;});
   var prio={data:0,safety:0,organization:1,technique:2,alliance:3};
   var catPrio={}; caseDef.intents.forEach(function(it){catPrio[it.id]=(prio[it.category]!==undefined)?prio[it.category]:9;});
-  return {caseDef:caseDef, opts:opts, rx:rx, flagIds:flagIds, catPrio:catPrio, rapport:0, unlocked:{}, covered:{}, flags:[], closedRun:0,
+  return {caseDef:caseDef, opts:opts, rx:rx, flagIds:flagIds, catPrio:catPrio, rapport:0, unlocked:{}, covered:{}, flaggedOnly:{}, flags:[], closedRun:0,
           varIdx:{}, turns:[], reflections:0, hintUses:0, stepOuts:0, openInviteUsed:false, greetUsed:false};
 };
 MockProvider.prototype._match=function(s,text){
@@ -467,6 +467,9 @@ MockProvider.prototype.respond=function(s,text){
   if(isQ&&!isOpenish){s.closedRun++;}else{s.closedRun=0;}
   var runRule=rr.lowers.filter(function(r){return r.closedRun;})[0];
   if(runRule&&s.closedRun===runRule.closedRun){s.rapport=Math.max(-3,s.rapport+runRule.delta);}
+  // Red-team IR-1 (2026-11-25): mirrors sp.mjs deriveState. A flagged turn never reaches a gate, so a
+  // safety question asked in it is never answered; remember intents heard only on flagged turns.
+  hits.forEach(function(h){ if(flags.length){ if(!s.covered[h]) s.flaggedOnly[h]=true; } else { delete s.flaggedOnly[h]; } });
   hits.forEach(function(h){s.covered[h]=true;});
   var reply=null, critical=null;
   if(flags.length){ reply=this._pick(s,flags[0],'any'); }
@@ -589,17 +592,24 @@ ProxyProvider.prototype.evaluate=function(s,sa,context){
 };
 
 /* ============================ Deterministic debrief ============================ */
+/* Red-team IR-1: an intent heard only on flagged turns, that would open a gate still locked. The
+   learner asked; the patient never answered. Mirrors sp.mjs askedNotAnswered. */
+function askedNotAnswered(s,intent){
+  return !!(s.flaggedOnly&&s.flaggedOnly[intent]) && (s.caseDef.gated||[]).some(function(gd){return !s.unlocked[gd.id]&&(gd.requiresIntents||[]).indexOf(intent)>=0;});
+}
 function computeCoverage(s){
   var out=[]; var cd=s.caseDef;
   cd.checklist.forEach(function(c){
     var status;
     if(c.dependsOnGate && !s.unlocked[c.dependsOnGate]){ status='na'; }
     else{
-      var got=c.intents.filter(function(i){return s.covered[i];}).length;
+      var unanswered=c.intents.filter(function(i){return askedNotAnswered(s,i);});
+      var got=c.intents.filter(function(i){return s.covered[i]&&unanswered.indexOf(i)<0;}).length;
       if(got===c.intents.length)status='observed';
-      else if(got>0)status='partial';
+      else if(got>0||unanswered.length)status='partial';
       else if(c.partialIfOnly && c.partialIfOnly.some(function(i){return s.covered[i];}))status='partial';
       else status='missed';
+      if(unanswered.length){ out.push({id:c.id,label:c.label,status:status,critical:!!c.critical,askedNotAnswered:true}); return; }
     }
     out.push({id:c.id,label:c.label,status:status,critical:!!c.critical});
   });
@@ -648,7 +658,8 @@ function buildNarrative(s,cov,rub){
   if(recognizedReflections>=2)strength('The simulator recognized more than one reflection or validation. Review '+who+'’s replies to see how the conversation developed.',['reflection']);
   /* Coaching text must work for every persona (Dana/Marcus/Ray) — displayName + they/them,
      never a hardcoded she/her: Marcus and Ray got wrong-pronoun debriefs. */
-  if(s.covered['si_direct'])strength('Screening language recognized. Review the patient’s response to see what was shared.',['si_direct']);
+  if(s.covered['si_direct']&&askedNotAnswered(s,'si_direct'))growth.push({t:'You asked a suicide-screening question, but it came in the same turn as a phrase '+who+' reacted to, and '+who+' never answered it. Do not record this as screened or as a denial. Ask it again on its own, plainly.',link:'pg_suicide.md',intents:['si_direct']});
+  else if(s.covered['si_direct'])strength('Screening language recognized. Review the patient’s response to see what was shared.',['si_direct']);
   if(s.covered['work_stressor'])strength('The simulator recognized language about the work stressor. Review what the patient shared about it.',['work_stressor']);
   if(s.covered['greeting_agenda'])strength('The simulator recognized opening language. Review how you introduced the conversation and how '+who+' responded.',['greeting_agenda']);
   if(s.covered['summary_close'])strength('Summary language recognized. Review whether your summary reflects the patient’s own words.',['summary_close']);
@@ -740,6 +751,7 @@ function coverageDisplay(c){
   if(c.status==='self-reported')return {label:label,word:STATUS_WORD['self-reported']};
   var family=c.id==='c_si_followup'?'Follow-up':(c.id==='c_si'||c.id==='c_command'?'Screening':null);
   var words=family?{observed:family+' language recognized',partial:'Some '+family.toLowerCase()+' language recognized',missed:family+' language not recognized',na:family==='Follow-up'?'Follow-up not available under current rules':'Not applicable under current rules'}:STATUS_WORD;
+  if(c.askedNotAnswered)return {label:label,word:'Asked, not answered'};
   return {label:label,word:words[c.status]||'Unclear from this exchange'};
 }
 function criticalFeedback(c){
@@ -750,6 +762,9 @@ function criticalFeedback(c){
   // generalizes the same claim to its own label and never names suicide.
   var opener=(c.id==='c_si')?'The simulator did not recognize a suicide screen in your words.'
     :'The simulator did not recognize '+display.label.toLowerCase()+' in your words.';
+  if(c.askedNotAnswered)return {heading:display.label+' — '+display.word.toLowerCase(),
+    opener:'You asked, but the patient never answered.',
+    body:'Your question came in the same turn as a phrase the patient reacted to, so the patient answered that phrase instead. Do not record this as screened or as a denial. Ask again on its own, plainly, and review the exchange with your supervisor.'};
   return {heading:display.label+' — '+display.word.toLowerCase(),opener:opener,
     body:'It does not establish whether a question was directed to the patient or whether the patient answered. Review the actual exchange with your supervisor; practice wording is below.'};
 }

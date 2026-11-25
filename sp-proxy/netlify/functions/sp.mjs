@@ -319,7 +319,7 @@ function deriveState(caseDef, studentMsgs) {
   const compiled = compileIntents(caseDef);
   const rr = caseDef.rapportRules;
   const flagIds = caseDef.intents.filter(it => it.category === 'flag').map(it => it.id);
-  const s = { rapport: 0, covered: {}, unlocked: {}, closedRun: 0, reflections: 0,
+  const s = { rapport: 0, covered: {}, flaggedOnly: {}, unlocked: {}, closedRun: 0, reflections: 0,
               greetUsed: false, openInviteUsed: false, flagHistory: [], lastIntents: [], lastFlags: [] };
   for (const text of studentMsgs) {
     const hits = matchIntents(compiled, text);
@@ -337,6 +337,11 @@ function deriveState(caseDef, studentMsgs) {
     if (isQ && !isOpenish) s.closedRun++; else s.closedRun = 0;
     const runRule = rr.lowers.find(r => r.closedRun);
     if (runRule && s.closedRun === runRule.closedRun) s.rapport = Math.max(-3, s.rapport + runRule.delta);
+    // Red-team IR-1 (2026-11-25): a flagged turn is answered by the flag line and never reaches a
+    // gate, so a safety question asked in it is never answered. Remember which intents were heard
+    // ONLY on flagged turns; computeCoverage reports those as asked-not-answered while their gate
+    // is locked. A later clean turn with the same intent clears the mark. Mirrored in the client.
+    hits.forEach(h => { if (flags.length) { if (!s.covered[h]) s.flaggedOnly[h] = true; } else delete s.flaggedOnly[h]; });
     hits.forEach(h => { s.covered[h] = true; });
     // gates — fully pack-driven, and an EXACT mirror of the client MockProvider cascade:
     // a flagged turn is answered by the flag line and never touches a gate; gates are
@@ -397,16 +402,24 @@ function deriveState(caseDef, studentMsgs) {
   }
   return s;
 }
+// An intent heard only on flagged turns, that would open a gate which is still locked: the learner
+// asked, and the patient never answered (IR-1). Never coverage credit for that gate's item.
+function askedNotAnswered(caseDef, s, intent) {
+  return !!(s.flaggedOnly && s.flaggedOnly[intent])
+    && (caseDef.gated || []).some(gd => !s.unlocked[gd.id] && (gd.requiresIntents || []).includes(intent));
+}
 function computeCoverage(caseDef, s) {
   return caseDef.checklist.map(c => {
     let status;
     if (c.dependsOnGate && !s.unlocked[c.dependsOnGate]) status = 'na';
     else {
-      const got = c.intents.filter(i => s.covered[i]).length;
+      const unanswered = c.intents.filter(i => askedNotAnswered(caseDef, s, i));
+      const got = c.intents.filter(i => s.covered[i] && !unanswered.includes(i)).length;
       if (got === c.intents.length) status = 'observed';
-      else if (got > 0) status = 'partial';
+      else if (got > 0 || unanswered.length) status = 'partial';
       else if ((c.partialIfOnly || []).some(i => s.covered[i])) status = 'partial';
       else status = 'missed';
+      if (unanswered.length) return { id: c.id, label: c.label, status, critical: !!c.critical, askedNotAnswered: true };
     }
     return { id: c.id, label: c.label, status, critical: !!c.critical };
   });

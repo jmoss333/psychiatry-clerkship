@@ -92,13 +92,26 @@ test('a deliberately wrong expectation produces a discrepancy, never a silent pa
 // direct suicide-screening question the engine recognized produces a strength
 // crediting it, in one of the two known phrasings.
 test('built-in feedback credits a recognized direct screening question', async () => {
-  for (const id of ['cold-screen-narrative', 'reassurance-and-screen', 'learner-assertion', 'plain-screen']) {
+  for (const id of ['cold-screen-narrative', 'learner-assertion', 'plain-screen']) {
     const scenario = runtime.corpus.scenarios.find(s => s.id === id);
     for (const name of scenario.cases) {
       const result = await replay(runtime, scenario, name);
       const strengths = result.frames.at(-1).narrative.strengths;
       assert.ok(strengths.some(s => s.includes('Screening language recognized.') || s.includes('You asked about suicide in plain language')), result.id);
     }
+  }
+});
+
+// Red-team IR-1 (2026-11-25): a screen asked in the same turn as a flagged phrase is answered by the
+// flag line and never reaches the gate. The debrief must say it was asked and not answered, never
+// credit it as a screen.
+test('a screen asked in a flag-consumed turn reads as asked, not answered', async () => {
+  const scenario = runtime.corpus.scenarios.find(s => s.id === 'reassurance-and-screen');
+  for (const name of scenario.cases) {
+    const result = await replay(runtime, scenario, name);
+    const { strengths, growth } = result.frames.at(-1).narrative;
+    assert.ok(!strengths.some(s => s.includes('Screening language recognized.')), result.id);
+    assert.ok(growth.some(g => (g.t || g).includes('never answered it')), result.id);
   }
 });
 
