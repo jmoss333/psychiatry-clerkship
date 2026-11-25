@@ -213,6 +213,11 @@ _canonical_evidence=load_evidence_registry(Path(LIB)/"evidence_registry.json")
 with open(os.path.join(OUT,"evidence_registry.json"),"w",encoding="utf-8") as _fh:
     json.dump(build_public_projection(_canonical_evidence),_fh,separators=(",", ":"),sort_keys=True)
     _fh.write("\n")
+# "In the paper's own words": the verbatim spans from evidence_annotations.json, projected into
+# the read-only index frontdoor/fd_ref_evidence.js loads under a reading's reference list. Spans
+# only -- never the library's claimText (see evidence_excerpts.py). The resident build copies it.
+import evidence_excerpts as _evidence_excerpts
+_evidence_excerpts.write(OUT, Path(LIB)/"evidence_annotations.json")
 for _jn, _fallback in [
     ("tool_registry.json", '{"tools":[]}'),
     ("communication_cases.json", '{"cases":[]}'),
