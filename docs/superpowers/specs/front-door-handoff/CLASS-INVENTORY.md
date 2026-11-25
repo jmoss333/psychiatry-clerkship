@@ -965,6 +965,7 @@ Resources opened from the ordinary navigation retain their tab return control.
 | `.fd-reader__toolbar` | Tool-only row containing Back and the stable `Expand tool` toggle. The toggle is hidden below 1000px while its saved preference remains intact. |
 | `.fd-article__body` | Base long-form markdown typography: `--fd-font-lg` (17px), 1.72 line-height, 62ch measure. Enhanced field guides use the scoped type treatment in §6a. |
 | `.fp-case` / `.mg-case` | Paired bedside fever exams and the clozapine interview timeline. Both keep histories with their source and require a differential and next finding or check before the debrief. |
+| `#celia-family-call` | Celia’s privacy choice changes the phone replies and rounds handoffs. After a suitable reply, two labeled rows show the sister’s observation and the information shared with her. |
 | `#night-signout` | Sam’s sign-out slip shows the details selected by the learner. The receiving resident asks about one missing detail or reads back the complete plan. |
 | `#lang-culture` | In Medical Workup, the full portrait stacks above the quote on phones. Each interview remembers which questions and handoff the learner selected. The comparison opens after both handoffs fit. |
 | `#catie-stop` | Under the CATIE rounds question, each illustrated timeline opens a separate medication history and three handoffs. Selecting a supported handoff for each patient opens the comparison. Revising either answer updates it. |

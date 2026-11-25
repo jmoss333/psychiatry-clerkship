@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountNicoCall(body);
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
+  fdMountCeliaCall(body);
   fdMountCoachLine(body);
   fdMountAlexTiming(body);
   fdMountEveningCalls(body);
@@ -1767,6 +1768,90 @@ function fdMountNightSignout(body) {
   });
   find('#ns-edit').addEventListener('click', () => edit(false));
   find('#ns-reset').addEventListener('click', () => edit(true));
+}
+
+function fdMountCeliaCall(body) {
+  const card = body.querySelector('#celia-family-call');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+  const part = name => card.querySelector('#cf-' + name);
+  const preferences = card.querySelector('.cf-preferences');
+  const phoneOptions = part('phone-choices');
+  const roundsOptions = part('rounds-options');
+  const debrief = part('debrief');
+  let account;
+
+  function select(group, chosen) {
+    for (const button of group.querySelectorAll('button')) {
+      button.setAttribute('aria-pressed', String(button === chosen));
+    }
+  }
+  function populate(group, kind) {
+    const options = account.querySelector('[data-options="' + kind + '"]').cloneNode(true);
+    group.replaceChildren(...options.children);
+  }
+  function showFeedback(kind, key, correct) {
+    const feedback = part(kind + '-feedback');
+    feedback.textContent = account.querySelector('[data-comment="' + kind + '-' + key + '"]').textContent;
+    feedback.classList.toggle('cf-supported', correct);
+    feedback.hidden = false;
+  }
+  function clearFeedback(kind) {
+    const feedback = part(kind + '-feedback');
+    feedback.hidden = true;
+    feedback.textContent = '';
+  }
+  function clearCall() {
+    clearFeedback('phone');
+    clearFeedback('handoff');
+    debrief.open = false;
+    debrief.hidden = true;
+    for (const id of ['sister-detail', 'ledger', 'handoffs']) part(id).hidden = true;
+    roundsOptions.replaceChildren();
+    part('outgoing').textContent = '';
+    part('lesson').textContent = '';
+  }
+  preferences.addEventListener('click', event => {
+    const button = event.target.closest('button[data-case]');
+    if (!button) return;
+    select(preferences, button);
+    account = card.querySelector('template[data-account="' + button.dataset.case + '"]').content;
+    clearCall();
+    part('wish-words').textContent = account.querySelector('[data-copy="wish"]').textContent;
+    part('wish').hidden = part('phone').hidden = false;
+    populate(phoneOptions, 'phone');
+  });
+  phoneOptions.addEventListener('click', event => {
+    const button = event.target.closest('button[data-phone]');
+    if (!button) return;
+    clearCall();
+    select(phoneOptions, button);
+    const key = button.dataset.phone;
+    showFeedback('phone', key, key === 'scope');
+    if (key !== 'scope') return;
+    part('outgoing').textContent = account.querySelector('[data-copy="outgoing"]').textContent;
+    part('lesson').textContent = account.querySelector('[data-copy="lesson"]').textContent;
+    populate(roundsOptions, 'handoff');
+    for (const id of ['sister-detail', 'ledger', 'handoffs']) part(id).hidden = false;
+  });
+  roundsOptions.addEventListener('click', event => {
+    const button = event.target.closest('button[data-handoff]');
+    if (!button) return;
+    select(roundsOptions, button);
+    const key = button.dataset.handoff;
+    showFeedback('handoff', key, key === 'supported');
+    debrief.open = false;
+    debrief.hidden = key !== 'supported';
+  });
+  card.querySelector('[data-reset]').addEventListener('click', () => {
+    clearCall();
+    account = null;
+    select(preferences, null);
+    phoneOptions.replaceChildren();
+    part('wish-words').textContent = '';
+    part('wish').hidden = part('phone').hidden = true;
+    preferences.querySelector('button').focus();
+  });
 }
 
 function fdMountCoachLine(body) {
