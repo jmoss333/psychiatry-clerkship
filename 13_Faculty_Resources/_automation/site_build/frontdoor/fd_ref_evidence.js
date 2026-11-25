@@ -148,12 +148,11 @@ function fdMountRefEvidence(body, load){
 
    Pure string transform over marked() output: only text between tags is touched, never text
    inside a link, code, a button, a heading or a script, and never anything after the heading. */
-var FD_REF_HEADING=/^\s*(?:references|sources|key references)\b/i;
+/* A heading's inner markup is matched as-is, allowing leading inline tags (<em>, <strong>) but
+   never stripping or decoding it: the match only decides where the list starts. */
+var FD_REF_HEADING=/^\s*(?:<[a-z][a-z0-9]*\b[^>]*>\s*)*(?:references|sources|key references)\b/i;
 var FD_REF_SKIP={a:1,code:1,pre:1,button:1,script:1,style:1,h1:1,h2:1,h3:1,h4:1,h5:1,h6:1,textarea:1,select:1};
 
-function fdRefCiteStrip(html){
-  return String(html||'').replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&nbsp;/g,' ');
-}
 
 /* The reference list a page ends with: the LAST heading named References/Sources and every ordered
    list after it up to the next heading (a page may split "cited" and "further reading" into two
@@ -161,7 +160,7 @@ function fdRefCiteStrip(html){
    Null when the page has no such list. */
 function fdRefCiteList(html){
   var src=String(html||''), re=/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/gi, m, heading=null;
-  while((m=re.exec(src))) if(FD_REF_HEADING.test(fdRefCiteStrip(m[2]))) heading={start:m.index,end:re.lastIndex};
+  while((m=re.exec(src))) if(FD_REF_HEADING.test(m[2])) heading={start:m.index,end:re.lastIndex};
   if(!heading) return null;
   var rest=src.slice(heading.end), nextH=rest.search(/<h[1-6]\b/i);
   if(nextH>=0) rest=rest.slice(0,nextH);
