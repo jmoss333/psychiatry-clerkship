@@ -130,7 +130,9 @@ search (1280 × 900), and phone medication search (320 × 844). The search journ
 126 cases apiece: generic/brand names and treatments, punctuation-sensitive context,
 safety-protocol priority, the capacity-tool exception, and literal/unknown filenames.
 Every positive name-audit query requires its expected reading in the top three;
-an unrelated nonempty result list fails.
+an unrelated nonempty result list fails. When an exact-match Pharmacy card is expected,
+the card must be the first visible result and the reading must rank in the top three
+ordinary readings. Context and safety checks still use the raw visible order.
 They open the monitoring reading and the withdrawal protocol, then repeat a contextual
 query and a safety query after reload. Across both sites this is 504 matrix checks plus
 8 reload checks. Deliberate misspellings remain expected misses; fuzzy drug-name correction

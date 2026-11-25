@@ -86,7 +86,9 @@ const medicationCases = medicationAudit.queries.map(query => ({
   category: 'name audit', query,
   ...(medicationAudit.deliberateMisspellings.includes(query)
     ? { empty: true }
-    : { topThree: auditDestinations[query] || 'psychopharm_primer.md' }),
+    : pharmacyDestinations.has(query)
+      ? { topThreeReadings: auditDestinations[query] || 'psychopharm_primer.md' }
+      : { topThree: auditDestinations[query] || 'psychopharm_primer.md' }),
 }));
 for (const query of ['Wellbutrin XL', 'LAMICTAL?', 'Suboxone', 'Ativan', 'lurasidone', 'Latuda', 'naltrexone']) {
   medicationCases.push({ category: 'medication destination', query, topThree: 'psychopharm_primer.md' });
@@ -162,6 +164,10 @@ for (const [device, viewport] of [
         const refs = rows.map(row => row.kind === 'pharmacy' ? null : row.ref);
         const keys = rows.map(row => row.kind === 'pharmacy' ? 'pharmacy:' + row.ref : row.ref);
         const rank = refs.indexOf(expected.topThree);
+        // The exact card has its own raw first-position contract. The approved
+        // vocabulary contract ranks the reading among ordinary readings.
+        const readingRank = rows.filter(row => row.kind === 'item' && row.ref?.endsWith('.md'))
+          .findIndex(row => row.ref === expected.topThreeReadings);
         const before = refs.indexOf(expected.before);
         const matches = (actual, wanted) => !wanted || (actual?.ref === wanted.ref && actual?.kind === wanted.kind);
         const passed = rows.length <= 8 && new Set(keys).size === rows.length
@@ -169,6 +175,7 @@ for (const [device, viewport] of [
             && (row.kind !== 'pharmacy' || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(row.ref)))
           && (expected.empty ? rows.length === 0 : rows.length > 0)
           && (!expected.topThree || (rank >= 0 && rank < 3))
+          && (!expected.topThreeReadings || (readingRank >= 0 && readingRank < 3))
           && (!expected.before || before < 0 || rank < before)
           && matches(rows[0], expected.first) && matches(rows[1], expected.second)
           && (!expected.exact || (rows.length === 1 && refs[0] === expected.exact));

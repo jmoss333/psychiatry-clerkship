@@ -50,6 +50,20 @@ def _key(case):
             case["phase"], case["expected"]["category"], case["expected"]["query"])
 
 
+def _valid_target(target):
+    if not isinstance(target, dict) or set(target) != {"kind", "ref"}:
+        return False
+    ref, kind = target["ref"], target["kind"]
+    return (isinstance(ref, str) and bool(ref.strip()) and kind in ("item", "protocol", "pharmacy")
+            and (kind != "pharmacy" or re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", ref) is not None))
+
+
+def _result_key(row):
+    # A reading and protocol sharing a ref still denote the same destination;
+    # a Pharmacy slug is a different action and lives in its own namespace.
+    return (row["kind"] == "pharmacy", row["ref"])
+
+
 def extract_snapshot(receipt, report):
     """Read the four final-attempt query attachments, including failed assertions."""
     try:
@@ -95,23 +109,24 @@ def extract_snapshot(receipt, report):
                     expected, rows = observation["expected"], observation["rows"]
                     _require(isinstance(expected, dict) and all(isinstance(expected.get(k), str) and expected[k] for k in ("query", "category")),
                              "query identity is missing")
-                    _require(set(expected) <= {"query", "category", "empty", "topThree", "before", "exact", "first", "second"},
+                    _require(set(expected) <= {"query", "category", "empty", "topThree", "topThreeReadings", "before", "exact", "first", "second"},
                              "unsupported query expectation format")
                     for key in ("first", "second"):
                         if key in expected:
-                            target = expected[key]
-                            _require(isinstance(target, dict) and set(target) == {"ref", "kind"} and
-                                     isinstance(target["ref"], str) and target["ref"] and target["kind"] in {"protocol", "item"},
-                                     "invalid priority expectation")
+                            _require(_valid_target(expected[key]), "invalid priority expectation")
                     for key in ("topThree", "before", "exact"):
                         _require(key not in expected or isinstance(expected[key], str) and expected[key], "invalid destination expectation")
+                    if "topThreeReadings" in expected:
+                        _require(isinstance(expected["topThreeReadings"], str) and expected["topThreeReadings"].endswith(".md")
+                                 and expected.get("first", {}).get("kind") == "pharmacy"
+                                 and "topThree" not in expected and "before" not in expected,
+                                 "invalid reading-only expectation")
                     _require("empty" not in expected or type(expected["empty"]) is bool, "invalid empty-query expectation")
                     _require(observation["phase"] in {"matrix", "after reload"} and type(observation["passed"]) is bool,
                              "invalid query observation")
-                    _require(isinstance(rows, list) and len(rows) <= 8 and all(
-                        isinstance(r, dict) and isinstance(r.get("ref"), str) and r["ref"] and r.get("kind") in {"item", "protocol"}
-                        for r in rows), "invalid ranked results")
-                    _require(len({r["ref"] for r in rows}) == len(rows), "duplicate ranked destination")
+                    _require(isinstance(rows, list) and len(rows) <= 8 and all(map(_valid_target, rows)),
+                             "invalid ranked results")
+                    _require(len({_result_key(r) for r in rows}) == len(rows), "duplicate ranked destination")
                     cases.append({"project": project, "device": device, "viewport": viewport,
                                   "phase": observation["phase"], "expected": expected, "rows": rows, "passed": observation["passed"]})
         _require(groups == {(p, d) for p in PROJECTS for d in DEVICES}, "both sites and both devices must have medication evidence")
@@ -133,9 +148,10 @@ def _change(before, after):
     old, new = (before or {}).get("rows", []), (after or {}).get("rows", [])
     movements, notes = [], []
     regression, expectation_failure = False, False
-    for ref in dict.fromkeys([r["ref"] for r in old + new]):
-        old_rank = next((i + 1 for i, r in enumerate(old) if r["ref"] == ref), None)
-        new_rank = next((i + 1 for i, r in enumerate(new) if r["ref"] == ref), None)
+    for key in dict.fromkeys(map(_result_key, old + new)):
+        _, ref = key
+        old_rank = next((i + 1 for i, r in enumerate(old) if _result_key(r) == key), None)
+        new_rank = next((i + 1 for i, r in enumerate(new) if _result_key(r) == key), None)
         old_kind = old[old_rank - 1]["kind"] if old_rank else None
         new_kind = new[new_rank - 1]["kind"] if new_rank else None
         if (old_rank, old_kind) != (new_rank, new_kind):
