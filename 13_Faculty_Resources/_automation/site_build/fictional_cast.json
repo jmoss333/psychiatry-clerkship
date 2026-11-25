@@ -361,6 +361,33 @@
       "pages": [
         "04_Acute_and_Safety/Suicide_Risk_and_Safety_Planning/suicide_risk_safety_planning_inpatient_teaching.md"
       ]
+    },
+    {
+      "id": "fern-trial",
+      "name": "Fern",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/Resident/adv_psychopharmacology.md"
+      ]
+    },
+    {
+      "id": "tamsin-disposition",
+      "name": "Tamsin",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/Resident/systems_medlegal.md"
+      ]
+    },
+    {
+      "id": "wes-disposition",
+      "name": "Wes",
+      "pronouns": "he",
+      "role": "patient",
+      "pages": [
+        "14_Tracks/Resident/systems_medlegal.md"
+      ]
     }
   ],
   "ignore": []
