@@ -44,6 +44,11 @@ const SKILLED=[
  "What have you been spending money on lately?",
  "Any new partners, or times you weren't as careful as usual?",
  "With everything moving this fast — have you had thoughts of killing yourself, even for a second?",
+ // Red-team IR-5 (2026-11-26): a skilled interview follows the disclosure — plan, means, intent, past attempts.
+ "Have you made any plan to end your life?",
+ "Do you have access to any guns, or anything at home you could use?",
+ "What keeps you going?",
+ "Have you ever tried to hurt yourself before?",
  "Do you ever hear voices, or get messages meant just for you?",
  "Any stimulants at all — Adderall, cocaine — and how much are you drinking?",
  "Did the campus clinic prescribe you anything recently — what happened with those little white pills?",
