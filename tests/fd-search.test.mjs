@@ -1147,3 +1147,26 @@ test('only the standalone collateral query offers two distinct, reachable task d
   byRef[refs[1]] = { ...REAL_INDEX.byRef[refs[1]], readerOnly: true };
   assert.ok(!F.fdSearchResults({ ...REAL_INDEX, byRef }, 'collateral', SYN, {}).some(r => r.kind === 'task'));
 });
+
+test('60-second update ranks the timed rehearsal first, once, in the available trainer', () => {
+  for (const query of ['60-second update', ' 60‑SECOND UPDATE ', '60 second rounds update']) {
+    const rows = F.fdSearchResults(REAL_INDEX, query, SYN, { searchExpanded: true });
+    assert.equal(rows[0].item.ref, 'oral.html', query);
+    const markup = F.fdSearchResultRow(rows[0]);
+    assert.match(markup, /data-fd-search-task="rounds"/);
+    assert.match(markup, /Rehearse a 60-second rounds update/);
+    assert.equal(rows.filter(row => row.item.ref === 'oral.html').length, 1);
+  }
+  for (const query of ['oral.html', '30-second update', '60-second update about suicidal thoughts']) {
+    const rows = F.fdSearchResults(REAL_INDEX, query, SYN, {});
+    assert.ok(rows.every(row => !F.fdSearchResultRow(row).includes('data-fd-search-task="rounds"')));
+    if (query.includes('suicidal')) assert.equal(rows[0].item.ref, 'pg_suicide.md');
+  }
+  for (const trainer of [null, { ...REAL_INDEX.byRef['oral.html'], readerOnly: true }]) {
+    const byRef = { ...REAL_INDEX.byRef };
+    if (trainer) byRef['oral.html'] = trainer;
+    else delete byRef['oral.html'];
+    assert.ok(F.fdSearchResults({ ...REAL_INDEX, byRef }, '60-second update', SYN, {})
+      .every(row => row.item.ref !== 'oral.html'));
+  }
+});

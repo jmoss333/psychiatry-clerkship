@@ -106,7 +106,7 @@
   .op-side-note{font-size:.75rem;color:var(--text-mid,#64574b);margin-top:22px}
   .op-main{padding:26px;min-width:0}
   .op-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px}
-  .op-title-row h2{font-size:2rem;font-weight:500;letter-spacing:-.025em;margin:0 0 9px;color:var(--text,#3b332c);line-height:1.15}
+  .op-title-row :is(h1,h2){font-size:2rem;font-weight:500;letter-spacing:-.025em;margin:0 0 9px;color:var(--text,#3b332c);line-height:1.15}
   .op-subtitle{color:var(--text-mid,#64574b);font-size:.83rem;margin:0}
   .op-clock{font-family:var(--font-head);font-size:1.9rem;line-height:1.15;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--accent-dark);text-align:right}
   .op-time-label{display:block;font-family:var(--font-body);font-size:.7rem;margin-top:6px;color:var(--text-mid,#64574b)}
@@ -157,8 +157,11 @@
   .op-case li p{font-size:.9rem;margin:5px 0 0;line-height:1.5}
   .op-case-note{font-size:.78rem;color:var(--text-mid,#64574b);margin:12px 0}
   .op-case a{display:inline-block}
+  .op-rehearsal{grid-template-columns:minmax(0,1fr) 210px}
+  .op-rehearsal .op-sidebar{border:0;border-inline-start:1px solid var(--border)}
+  @media(max-width:740px){.op-rehearsal .op-sidebar{border:0;border-top:1px solid var(--border)}}
   @media(max-width:740px){.op-workspace{grid-template-columns:1fr}.op-sidebar{padding:20px;border-right:0;border-bottom:1px solid var(--border)}.op-sidebar h2{margin-bottom:14px}.op-intents{display:grid;grid-template-columns:1fr 1fr;gap:9px}.op-intent{margin:0}.op-side-note{display:none}.op-main{padding:20px}}
-  @media(max-width:420px){.shell{padding:16px 10px}.op-sidebar,.op-main{padding:16px}.op-title-row h2{font-size:1.7rem}.op-title-row{gap:10px}.op-clock{font-size:1.6rem}.op-guided{padding:16px}.op-cues{padding:0 12px}.op-cue{grid-template-columns:28px minmax(0,1fr) auto;gap:7px}.op-controls{gap:5px}.op-intent{padding:12px 10px}.oral-nav-button{padding:7px 9px}.op-button{padding:10px 12px}}
+  @media(max-width:420px){.shell{padding:16px 10px}.op-sidebar,.op-main{padding:16px}.op-title-row :is(h1,h2){font-size:1.7rem}.op-title-row{gap:10px}.op-clock{font-size:1.6rem}.op-guided{padding:16px}.op-cues{padding:0 12px}.op-cue{grid-template-columns:28px minmax(0,1fr) auto;gap:7px}.op-controls{gap:5px}.op-intent{padding:12px 10px}.oral-nav-button{padding:7px 9px}.op-button{padding:10px 12px}}
 </style>
 </head>
 <body>
@@ -277,6 +280,10 @@ function oralEntry(search){
   }catch(ignore){}
   return result;
 }
+function oralRoundsRehearsal(params){
+  return params.getAll('rehearsal').length===1&&params.get('rehearsal')==='rounds'&&
+    !['format','view','msecase','msepicks'].some(function(key){return params.has(key);});
+}
 function oralTransition(previous,action){
   var state=oralSession(previous), a=action||{}, item=state.items[state.format];
   if(a.type==='format'&&(a.value==='rounds'||a.value==='collateral')){state.format=a.value;state.paused=false;}
@@ -296,8 +303,10 @@ function oralTransition(previous,action){
 }
 function oralRestore(raw,search){
   var value=oralSession(raw), entry=oralEntry(search);
-  /* Apply a new entry link once; reloading the same link keeps the learner's place. */
-  if(entry.format!==value.entry.format||entry.view!==value.entry.view){
+  /* The rehearsal shortcut always opens rounds. Ordinary links apply once and then resume. */
+  if(oralRoundsRehearsal(new URLSearchParams(search))){
+    value=oralTransition(value,{type:'format',value:'rounds'});
+  }else if(entry.format!==value.entry.format||entry.view!==value.entry.view){
     if(entry.format)value=oralTransition(value,{type:'format',value:entry.format});
     if(entry.view)value=oralTransition(value,{type:'view',value:entry.view});
     if(entry.format||entry.view)value.paused=false;
@@ -352,7 +361,7 @@ function ShortUpdates(props){
     clock.current={id:null,running:true,base:item.seconds,start:Date.now()};
     clock.current.id=setInterval(tick,250);setRunning(true);setMessage('Practice timer started.');
   }
-  function changeFormat(key){halt(true);move({type:'format',value:key});setMessage((key==='rounds'?'60-second rounds update':'30-second collateral update')+' opened.');}
+  function changeFormat(key){halt(true);if(props.rehearsal)focusNext.current='[data-oral-title]';move({type:'format',value:key});setMessage((key==='rounds'?'60-second rounds update':'30-second collateral update')+' opened.');}
   function pause(){halt(true);focusNext.current='[data-oral-resume]';move({type:'pause'});setMessage('Practice paused. Your place is held.');}
   function resume(){focusNext.current='[data-oral-view="'+latest.current.items[latest.current.format].view+'"]';move({type:'resume'});setMessage('Practice resumed. Start the timer when you are ready.');}
   function pickStep(n){move({type:'step',value:n});setMessage('Cue '+(n+1)+' of 5.');}
@@ -406,22 +415,25 @@ function ShortUpdates(props){
     e('p',{className:'op-case-note'},'These are excerpts, not a complete assessment. Leave information that is not supplied unknown. This draft rehearsal is not added to practice history.'),
     e('a',{className:'op-text',href:shared.link('mse.html',bridge.ids,window.self!==window.top),target:window.self!==window.top?'_top':'_self'},'Edit selected details')):
     bridge.present?e('section',{className:'op-case',role:'status'},e('h3',null,'Case details unavailable'),e('p',null,'The case link could not be read. Open the comparison and select the details again.'),e('a',{href:window.self!==window.top?'../?tool=mse.html':'mse.html',target:window.self!==window.top?'_top':'_self'},'Open the MSE comparison')):null;
-  return e('section',{className:'op-workspace',ref:region,'aria-label':'Short update practice',hidden:!props.active},
-    e('aside',{className:'op-sidebar','aria-label':'Choose an activity'},e('p',{className:'op-eyebrow'},'Right now'),e('h2',null,'What do you need to do?'),
+  var chooser=e('aside',{className:'op-sidebar','aria-label':'Choose an activity'},e('p',{className:'op-eyebrow'},'Right now'),e('h2',null,'What do you need to do?'),
       e('div',{className:'op-intents'},(bridge.present?(caseKey?['rounds']:[]):['rounds','collateral']).map(function(key){return button(e(React.Fragment,null,e('span',{className:'op-intent-title'},key==='rounds'?'Prepare a rounds update':'Summarize a collateral call'),e('span',{className:'op-intent-meta'},(key==='rounds'?'60':'30')+' seconds · 5 cues')),function(){changeFormat(key);},{key:key,className:'op-intent','aria-pressed':session.format===key});})),
       bridge.present?e('a',{className:'op-text',href:window.self!==window.top?'../?tool=oral.html':'oral.html',target:window.self!==window.top?'_top':'_self'},'Open other practice'):null,
-      e('p',{className:'op-side-note'},'Open the activity you need. Everything else can wait.')),
+      e('p',{className:'op-side-note'},'Open the activity you need. Everything else can wait.'));
+  var timer=e('div',{className:'op-actions'},button(running?'Pause timer':item.seconds>=micro.target?'Practice again':item.seconds?'Continue timer':'Start '+micro.target+'-sec practice',toggleTimer,{className:'op-button op-primary','data-oral-timer':true}),
+    e('span',null,'Practice aloud · no recording'));
+  return e('section',{className:'op-workspace'+(props.rehearsal?' op-rehearsal':''),ref:region,'aria-label':'Short update practice',hidden:!props.active},
+    props.rehearsal?null:chooser,
     e('div',{className:'op-main'},
-      e('div',{className:'op-title-row'},e('div',null,e('p',{className:'op-eyebrow'},'Treatment team rounding prep'),e('h2',null,title),e('p',{className:'op-subtitle'},micro.sub)),
+      e('div',{className:'op-title-row'},e('div',null,e('p',{className:'op-eyebrow'},'Treatment team rounding prep'),props.rehearsal?e('h1',{'data-oral-title':true,tabIndex:-1},title):e('h2',null,title),e('p',{className:'op-subtitle'},micro.sub)),
         bridge.present&&!caseKey?null:e('div',{className:'op-clock'},e('span',{'data-oral-clock':true},fmt(Math.max(0,micro.target-item.seconds))),e('span',{className:'op-time-label'},item.seconds>=micro.target?'practice finished':'practice timer'))),
       handoff,
-      bridge.present&&!caseKey?null:session.paused?held:e(React.Fragment,null,controls,item.view==='quick'?quick:guided,
+      bridge.present&&!caseKey?null:session.paused?held:e(React.Fragment,null,props.rehearsal?timer:null,controls,item.view==='quick'?quick:guided,
         e('div',{className:'op-safety'},'Keep safety concerns and unresolved questions explicit in your team update.'),
-        e('div',{className:'op-actions'},button(running?'Pause timer':item.seconds>=micro.target?'Practice again':item.seconds?'Continue timer':'Start '+micro.target+'-sec practice',toggleTimer,{className:'op-button op-primary','data-oral-timer':true}),
-          e('span',null,'Practice aloud · no recording')),
+        props.rehearsal?null:timer,
         item.seconds>0?button('Start fresh',function(){halt(false);move({type:'reset'});setMessage('Started a fresh practice. Previous practice history is unchanged.');},{className:'op-text'}):null),
       bridge.present&&!caseKey?null:e('p',{className:'op-storage',role:storageOK?null:'status'},storageOK?'Your place stays in this browser tab, including after a reload.':'Tab storage is unavailable. Your place is held only while this page stays open.'),
-      e('div',{className:'op-sr',role:'status','aria-live':'polite','aria-atomic':'true'},message)));
+      e('div',{className:'op-sr',role:'status','aria-live':'polite','aria-atomic':'true'},message)),
+    props.rehearsal?chooser:null);
 }
 
 function App(){
@@ -645,9 +657,12 @@ function App(){
     lastFivePanel()
   );
 
+  var rehearsal=oralRoundsRehearsal(new URLSearchParams(location.search));
+  var rehearsalFirst=rehearsal&&tab==='micro';
   return e('div',{className:'shell'},
-    header, tabs,
-    e(ShortUpdates,{key:'short-updates',active:tab==='micro',onRecord:recordShortRep}),
+    rehearsalFirst?null:header, rehearsalFirst?null:tabs,
+    e(ShortUpdates,{key:'short-updates',rehearsal:rehearsal,active:tab==='micro',onRecord:recordShortRep}),
+    rehearsalFirst?tabs:null,
     tab==='gather'?gather:(tab==='present'?present:(tab==='practice'?practice:e('div',{className:'oral-history'},rubricPanel(['collateral','rounds']),lastFivePanel()))),
     e('div',{className:'disclaimer'},'Optional educational aid for clinical trainees. Examples are fictional composites — no protected health information. The format is a scaffold; follow your team and institution conventions.'),
     e('footer',null,'Treatment Team Rounding Prep · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist')

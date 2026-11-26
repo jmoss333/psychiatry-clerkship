@@ -65,7 +65,7 @@ var FD_ACTION_SEMANTICS={
      seeds the dialog with the Library filter's query (zero results, filtered footer). */
   'data-fd-library-filter':'filter Library titles and hints',
   'data-fd-library-filter-clear':'clear the Library filter',
-  'data-fd-search-task':'open the selected collateral task',
+  'data-fd-search-task':'open the activity named by a search result',
   'data-fd-search-query':'seed the search dialog with the Library filter query',
   'data-fd-care-intent':'choose a transient Care navigator task',
   'data-fd-care-clear':'clear the transient Care navigator task',
@@ -346,10 +346,13 @@ function fdPrepareFrameParams(search){
   return 'prepareTask='+task[0]+'&prepareMinutes='+minutes[0];
 }
 
-function fdParamsWithoutRoute(search){
+function fdParamsWithoutRoute(search,frameRef){
   var params;
   try{ params=new URLSearchParams(String(search||'').replace(/^\?/,'')); }
   catch(_){ return new URLSearchParams(); }
+  /* A rehearsal entry belongs only to the oral trainer iframe opened by this route. */
+  if(frameRef!=='oral.html'||params.get('tool')!==frameRef||
+      params.getAll('rehearsal').length!==1||params.get('rehearsal')!=='rounds')params.delete('rehearsal');
   params.delete('page');
   params.delete('tool');
   params.delete('tab');
@@ -725,13 +728,17 @@ function fdDispatch(attrs, context, state){
       };
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
-    var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s,c.reviewNavigation);
-    var collateralTask=s.searchOpen&&a['data-fd-search-task']==='collateral';
-    if(collateralTask&&ref==='communication-practice.html'){
+    var task=s.searchOpen&&a['data-fd-search-task'];
+    var roundsRehearsal=task==='rounds'&&ref==='oral.html';
+    /* A standalone rehearsal uses the current tab, without the originating tool's case or format. */
+    var resourceRoute=fdRouteForRef(ref,roundsRehearsal?'':c.search,c.blockNavigation,s,c.reviewNavigation);
+    if(roundsRehearsal){
+      resourceRoute+='&rehearsal=rounds';
+    }else if(task==='collateral'&&ref==='communication-practice.html'){
       var practiceRoute=new URLSearchParams(resourceRoute);
       practiceRoute.set('case','collateral_questions_001');
       resourceRoute='?'+practiceRoute.toString();
-    }else if(!collateralTask&&s.searchOpen&&s.query&&!fdIsTool(ref)){
+    }else if(task!=='collateral'&&s.searchOpen&&s.query&&!fdIsTool(ref)){
       resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
     }
     return {
@@ -1163,7 +1170,7 @@ function fdClearDeviceData(store){
 
 function fdResourceRequest(ref, search){
   var r=String(ref||''), kind=/\.html$/.test(r)?'tool':'read';
-  var params=ref==='prepare-for-tomorrow.html'?new URLSearchParams(fdPrepareFrameParams(search)):fdParamsWithoutRoute(search);
+  var params=ref==='prepare-for-tomorrow.html'?new URLSearchParams(fdPrepareFrameParams(search)):fdParamsWithoutRoute(search,ref);
   var toolExtra='';
   if(kind==='tool'){
     if(typeof toolExtraFromParams==='function') toolExtra=toolExtraFromParams(params);

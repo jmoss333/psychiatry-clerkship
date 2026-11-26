@@ -5712,3 +5712,25 @@ test('collateral task choices open the workflow or the scoped communication case
   const normal = F.fdDispatch({ 'data-fd-open': 'communication-practice.html' }, {}, search);
   assert.equal(new URLSearchParams(normal.route).has('case'), false);
 });
+
+test('the rounds search shortcut launches a generic rehearsal and scopes it to this opening', () => {
+  const routes = new Function(wire + ';return {resource:fdResourceRequest,tab:fdRouteForTab};')();
+  const state = { ...roleContext, tab: 'library', libraryView: 'full', searchOpen: true, query: '60-second update' };
+  const origin = { search: '?tool=mse.html&msecase=old&msepicks=1&format=collateral&view=guided' };
+  const open = (attrs, context) => F.fdDispatch(attrs, context, state).route;
+  const shortcut = open({ 'data-fd-open': 'oral.html', 'data-fd-search-task': 'rounds' }, origin);
+  const route = new URLSearchParams(shortcut);
+  assert.equal(route.get('tool'), 'oral.html');
+  assert.equal(route.get('library'), 'full');
+  assert.deepEqual(route.getAll('rehearsal'), ['rounds']);
+  for (const key of ['msecase', 'msepicks', 'format', 'view']) assert.equal(route.has(key), false, key);
+  const frame = (ref, url) => new URLSearchParams(routes.resource(ref, url).frameSuffix);
+  assert.equal(frame('oral.html', shortcut).get('rehearsal'), 'rounds');
+  assert.equal(frame('mse.html', shortcut).has('rehearsal'), false);
+  for (const url of [shortcut + '&rehearsal=rounds', '?tool=oral.html&rehearsal=other']) {
+    assert.equal(frame('oral.html', url).has('rehearsal'), false);
+  }
+  assert.equal(new URLSearchParams(routes.tab('library', shortcut)).has('rehearsal'), false);
+  const ordinary = open({ 'data-fd-open': 'oral.html' }, { search: shortcut });
+  assert.equal(new URLSearchParams(ordinary).has('rehearsal'), false);
+});
