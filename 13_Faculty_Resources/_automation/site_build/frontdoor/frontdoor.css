@@ -3460,7 +3460,7 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
 #impulse-breakfast .bf-rail-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--fd-space-4)}
 #impulse-breakfast [data-bf=progress],#impulse-breakfast [data-bf=question]{font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
 #impulse-breakfast .bf-rail{list-style:none;margin:0;padding:0}
-#impulse-breakfast .bf-rail li{position:relative;margin:0 0 0 .4em;padding:0 0 var(--fd-space-4) var(--fd-space-7);border-left:2px solid var(--fd-line-strong)}
+#impulse-breakfast .bf-rail li{position:relative;margin:0 0 0 var(--fd-space-3);padding:0 0 var(--fd-space-4) var(--fd-space-7);border-left:2px solid var(--fd-line-strong)}
 #impulse-breakfast .bf-rail li:last-child{padding-bottom:0}
 #impulse-breakfast .bf-rail li::before{content:"";position:absolute;left:-.38em;top:1em;width:.65em;height:.65em;border:2px solid var(--fd-teal);border-radius:50%;background:var(--fd-surface);box-sizing:border-box}
 #impulse-breakfast .bf-rail [data-opened=true]::before{background:var(--fd-teal)}
