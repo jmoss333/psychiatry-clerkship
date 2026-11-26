@@ -4585,6 +4585,54 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
    olive, never danger. */
 .fd-page-changed{margin:var(--fd-space-3) 0 var(--fd-space-5);padding:var(--fd-space-3) var(--fd-space-4);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));line-height:var(--fd-leading-normal)}
 
+/* The three seats are also the replay controls. Keep each face aligned with its label. */
+#leah-family {--lf-voice:var(--fd-teal-deep);--lf-ink:var(--fd-on-accent)}
+[data-theme="dark"] #leah-family {--lf-voice:var(--fd-teal-wash);--lf-ink:var(--fd-text)}
+#leah-family .intro {margin-block:var(--fd-space-4);max-width:62ch}
+#leah-family :is(.version-bar,.map-guide,footer) {display:flex;align-items:center;justify-content:space-between;gap:var(--fd-space-4)}
+#leah-family .version-bar {margin-block:var(--fd-space-5);color:var(--fd-text-mid)}
+#leah-family :is(.version-bar,.map-guide,.speaker,.row-title,footer) {font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+#leah-family .switch {display:flex;flex-shrink:0;gap:var(--fd-space-1)}
+#leah-family .switch button {min-width:var(--fd-target-touch);padding:var(--fd-space-2);text-align:center}
+#leah-family .switch [aria-pressed=true] {background:var(--lf-voice);color:var(--lf-ink)}
+#leah-family .map-card {overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-surface)}
+#leah-family .map-guide {padding:var(--fd-space-4) var(--fd-space-5)}
+#leah-family #lf-heard-count {color:var(--fd-text-mid);white-space:nowrap}
+#leah-family #lf-family-map {position:relative;isolation:isolate}
+#leah-family #lf-family-map img {display:block;width:100%;height:auto;max-height:none;object-fit:contain;margin:0;border:0;border-radius:0}
+#leah-family .seats {position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+#leah-family .seats button {display:flex;align-items:flex-end;justify-content:center;min-width:0;padding:0 0 var(--fd-space-4);border:0;border-radius:0;background:transparent;box-shadow:none}
+#leah-family .seats button:focus-visible {outline-offset:-4px}
+#leah-family .tag {display:inline-flex;align-items:center;gap:var(--fd-space-2);padding:var(--fd-space-2) var(--fd-space-4);border:1px solid var(--fd-line);border-radius:var(--fd-radius-pill);background:var(--fd-surface-warm);color:var(--fd-text);font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1))}
+#leah-family .tag i {font-style:normal}
+#leah-family .tag i::before {content:'•'}
+#leah-family [data-heard] .tag i::before {content:'✓'}
+#leah-family .seats [aria-pressed=true] .tag {background:var(--lf-voice);color:var(--lf-ink);border-color:var(--fd-surface-warm);box-shadow:0 0 0 2px var(--lf-voice)}
+#leah-family #lf-voice {background:var(--lf-voice);color:var(--lf-ink);padding:var(--fd-space-5) var(--fd-space-6)}
+#leah-family #lf-speaker-name {color:inherit;font-size:calc(var(--fd-font-sm) * var(--fd-reading-scale,1));font-weight:700}
+#leah-family #lf-speaker-quote {margin-top:var(--fd-space-2);color:inherit;font-family:Georgia,serif;font-size:calc(var(--fd-font-lg) * var(--fd-reading-scale,1))}
+#leah-family .route {padding:var(--fd-space-5) var(--fd-space-6)}
+#leah-family .route-row {display:grid;grid-template-columns:minmax(4.1em,20%) minmax(0,1fr);gap:var(--fd-space-3);align-items:baseline;margin-top:var(--fd-space-3)}
+#leah-family .row-title {font-weight:600;color:var(--fd-text-mid)}
+#leah-family .node {font-weight:650}
+#leah-family .arrow {padding-inline:var(--fd-space-2);color:var(--fd-teal-deep)}
+#leah-family :is(.invitation,#lf-handoffs) {margin-top:var(--fd-space-6);padding:var(--fd-space-6);border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-surface)}
+#leah-family #lf-invite-help {margin-block:var(--fd-space-3);color:var(--fd-text-mid)}
+#leah-family :is(.invitation button,.choices button) {display:block;width:100%;padding:var(--fd-space-4) var(--fd-space-5);margin-top:var(--fd-space-3);font-weight:500;text-align:start;line-height:var(--fd-reading-leading,var(--fd-leading-snug))}
+#leah-family button:disabled {color:var(--fd-text-mid);background:var(--fd-surface-warm);cursor:default}
+#leah-family .invitation [aria-expanded=true] {border-color:var(--fd-teal);background:var(--fd-teal-wash)}
+#leah-family :is(.clarification,#lf-preference,#lf-feedback,#lf-team-update) {padding:var(--fd-space-4) var(--fd-space-5);margin-top:var(--fd-space-5);border-inline-start:3px solid var(--fd-teal);background:var(--fd-teal-wash)}
+#leah-family :is(.clarification,#lf-feedback) {border-color:var(--fd-olive);background:var(--fd-olive-wash)}
+#leah-family .speaker {display:block;font-family:system-ui,sans-serif;font-weight:700;margin-bottom:var(--fd-space-2)}
+#leah-family #lf-preference blockquote+blockquote {padding-top:var(--fd-space-4);margin-top:var(--fd-space-4);border-top:1px solid var(--fd-line)}
+#leah-family .choices {margin-top:var(--fd-space-4)}
+#leah-family #lf-team-update h4 {margin-bottom:var(--fd-space-2)}
+#leah-family details {margin-top:var(--fd-space-4);padding:0;border:0;border-top:1px solid var(--fd-line);background:transparent}
+#leah-family details summary {padding-block:var(--fd-space-3)}
+#leah-family footer {border:0;margin-top:var(--fd-space-4);padding:0;color:var(--fd-text-mid)}
+#leah-family #lf-reset {padding:var(--fd-space-3);border:0;background:transparent;text-decoration:underline}
+#leah-family [tabindex="-1"]:focus-visible {outline:3px solid var(--fd-focus);outline-offset:2px}
+
 /* The bedside illustration and the speaker's words stay together as the reading column narrows. */
 #grief-consult {
   --gc-scene:color-mix(in srgb,var(--fd-teal-deep) 58%,var(--fd-text));

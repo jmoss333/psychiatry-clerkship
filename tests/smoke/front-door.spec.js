@@ -3656,6 +3656,39 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('#cc-count')).toHaveText('0 of 3 heard');
   });
 
+  test('Leah’s account determines the handoff in the Family Therapy toolbox', async ({ page }) => {
+    await page.goto('/?page=family_modalities.md&guideSection=the-toolbox-match-the-tool-to-the-family&guideFind=Who+gets+put+in+the+middle');
+    const card = page.locator('.fd-reader:visible #leah-family');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Family-Focused Therapy');
+    const field = id => card.locator('#lf-' + id);
+    for (const [version, choice, quote, outcome] of [
+      ['a', 'direct', 'One night’s fine', 'Mom said yes to one night'],
+      ['b', 'supported', 'I don’t know yet where I want to sleep', 'first night is still open'],
+    ]) {
+      await card.locator('[data-version="' + version + '"]').press('Enter');
+      await expect(field('invite')).toBeDisabled();
+      await expect(field('brother-clarification')).toBeHidden();
+      await expect(field('preference')).toBeHidden();
+      for (const person of ['brother', 'patient', 'mother']) {
+        await card.locator('[data-person="' + person + '"]').press('Enter');
+      }
+      await field('ask-brother').press('Enter');
+      await expect(field('brother-clarification')).toContainText('pullout was my idea');
+      await expect(field('handoffs')).toBeHidden();
+      await expect(field('team-update')).toBeHidden();
+      await field('invite').press('Enter');
+      await expect(field('preference')).toContainText(quote);
+      await card.locator('[data-handoff="' + choice + '"]').press('Enter');
+      await expect(field('team-update')).toContainText(outcome);
+      await card.locator('[data-handoff="assumed"]').press('Enter');
+      await expect(field('feedback')).toBeVisible();
+      await expect(field('team-update')).toBeHidden();
+    }
+    await field('reset').press('Enter');
+    await expect(field('heard-count')).toHaveText('0 of 3 heard');
+    await expect(field('handoffs')).toBeHidden();
+  });
+
   test('The grief pager handoff reflects only the patient’s answers in that conversation', async ({ page }) => {
     await page.goto('/?page=exp_consult.md&guideSection=consult-psychiatry-the-student-frame&guideFind=He+just+lost+his+wife');
     const card = page.locator('.fd-reader:visible #grief-consult');
