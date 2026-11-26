@@ -3452,6 +3452,27 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
 #elena-visit summary{text-decoration:underline;text-underline-offset:.15em}
 #elena-visit footer{align-items:center;margin:0}
 @container bedside (max-width:660px){#elena-visit .ei-spread{grid-template-columns:minmax(0,1fr)}}
+/* Opened accounts stay on the timeline while the learner compares handoffs. */
+#impulse-breakfast .bf-scene{margin-top:var(--fd-space-6);overflow:hidden;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-md);background:var(--fd-surface)}
+#impulse-breakfast .bf-scene img{display:block;width:100%;height:auto}
+#impulse-breakfast figcaption{display:grid;gap:var(--fd-space-3);padding:var(--fd-space-5)}
+#impulse-breakfast .bf-versions button{flex:1;text-align:center}
+#impulse-breakfast .bf-rail-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--fd-space-4)}
+#impulse-breakfast [data-bf=progress],#impulse-breakfast [data-bf=question]{font-size:var(--fd-font-sm);color:var(--fd-text-mid)}
+#impulse-breakfast .bf-rail{list-style:none;margin:0;padding:0}
+#impulse-breakfast .bf-rail li{position:relative;margin:0 0 0 .4em;padding:0 0 var(--fd-space-4) var(--fd-space-7);border-left:2px solid var(--fd-line-strong)}
+#impulse-breakfast .bf-rail li:last-child{padding-bottom:0}
+#impulse-breakfast .bf-rail li::before{content:"";position:absolute;left:-.38em;top:1em;width:.65em;height:.65em;border:2px solid var(--fd-teal);border-radius:50%;background:var(--fd-surface);box-sizing:border-box}
+#impulse-breakfast .bf-rail [data-opened=true]::before{background:var(--fd-teal)}
+#impulse-breakfast [data-source]{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--fd-space-4)}
+#impulse-breakfast [data-source] .case-kicker,#impulse-breakfast [data-source] strong{grid-column:1}
+#impulse-breakfast [data-bf-sign]{grid-column:2;grid-row:1/3;align-self:center}
+#impulse-breakfast [data-bf-detail]{grid-column:1/-1;color:var(--fd-text-mid);font-weight:400}
+#impulse-breakfast [aria-expanded=true][data-source]{background:var(--fd-teal-wash);border-color:var(--fd-teal)}
+#impulse-breakfast .bf-transcript{margin:0}
+#impulse-breakfast .bf-handoffs{display:grid}
+@container bedside (min-width:37em){#impulse-breakfast .bf-scene{display:grid;grid-template-columns:1.35fr 1fr;align-items:center}}
+
 .bedside-case{
   container:bedside / inline-size;margin-block:var(--fd-space-8);padding:clamp(var(--fd-space-5),4%,var(--fd-space-10));
   border:1px solid var(--fd-line-strong);border-top:4px solid var(--fd-teal);border-radius:var(--fd-radius-lg);
