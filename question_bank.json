@@ -1950,7 +1950,7 @@
     },
     {
       "id": "qb_cog_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1976,7 +1976,7 @@
           "t": "Initiate a clozapine trial — persistent psychiatric symptoms after stopping the antipsychotic indicate a need for a clozapine evaluation.",
           "trap": {
             "name": "Clozapine for catatonia",
-            "note": "Clozapine is not the next step after a positive catatonia screen — first-line treatment is benzodiazepines (lorazepam challenge); ECT is reserved for benzodiazepine-refractory or malignant catatonia."
+            "note": "Clozapine is not the next step after a positive catatonia screen — first-line treatment is a benzodiazepine (starting with the lorazepam challenge) or ECT; ECT is the treatment of choice when catatonia is malignant, benzodiazepine-refractory or needs a rapid response."
           }
         },
         {
@@ -1996,7 +1996,7 @@
           }
         }
       ],
-      "why": "Clozapine for catatonia, Restart antipsychotic, and Restraint before treatment all defer or undermine first-line treatment. The catatonia source states: 'A test dose of lorazepam is both a diagnostic maneuver and the start of treatment — a meaningful, often rapid improvement supports the diagnosis and predicts response.' Benzodiazepines are first-line; ECT is for benzodiazepine-refractory or malignant catatonia.",
+      "why": "Clozapine for catatonia, Restart antipsychotic, and Restraint before treatment all defer or undermine first-line treatment. The catatonia source states: 'A test dose of lorazepam is both a diagnostic maneuver and the start of treatment — a meaningful, often rapid improvement supports the diagnosis and predicts response.' Benzodiazepines and ECT are both first-line; a benzodiazepine is usually tried first, and ECT is the treatment of choice when catatonia is malignant, benzodiazepine-refractory or needs a rapid response.",
       "pearl": "After positive catatonia screen + holding the antipsychotic → lorazepam challenge next: both diagnostic and therapeutic.",
       "evidence": "catatonia.md 'The lorazepam challenge' — A test dose of lorazepam (IV or IM) is both a diagnostic maneuver and the start of treatment; meaningful improvement after the challenge supports the diagnosis and predicts benzodiazepine response. Benzodiazepines are first-line; ECT is for benzodiazepine-refractory or malignant catatonia."
     },
@@ -4984,7 +4984,7 @@
           "t": "Offer ketamine instead, to avoid anaesthesia in pregnancy",
           "trap": {
             "name": "Newer = better",
-            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established — requires REMS monitoring, and is not established as equivalent to ECT for this clinical severity; ECT has the longer safety record in pregnancy."
+            "note": "IV ketamine is off-label for depression (the REMS covers intranasal esketamine), it can lower suicidal-ideation scores short-term but has no shown effect on suicidal behaviour, and it is not established as equivalent to ECT at this severity; ECT has the longer safety record in pregnancy."
           }
         }
       ],

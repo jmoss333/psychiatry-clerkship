@@ -71,7 +71,7 @@ What is true in every case is that **abrupt cessation** of a short-half-life SSR
 
 **Management ladder:**
 1. **Start** an SSRI at an adequate dose; set expectations (4–8 weeks for full effect). Offer psychotherapy.
-2. **Reassess at 4–6 weeks** with a repeat PHQ-9 — to check the dose and adherence, *not* to declare the trial failed; that judgement waits for 6–8 weeks at an adequate dose.
+2. **Reassess at 2–4 weeks and again at 4–6 weeks** with a repeat PHQ-9 — to check early improvement, the dose and adherence. No early improvement (less than a 20% fall) by about 4 weeks predicts non-response, so optimize the dose then rather than waiting; the judgement that the trial has *failed* waits for 6–8 weeks at an adequate dose.
    - No response or **minimal** response (PHQ-9 change below ~5 points) → **optimize the dose** and complete the trial before calling it; then **switch** if there is still no meaningful movement.
    - **Partial** response (meaningful improvement, not remission) at an adequate dose and duration → **optimize dose** or **augment**.
    - When switching, pick the strategy for the **specific drug pair** — direct, cross-taper, or taper-and-washout [5].

@@ -1498,7 +1498,7 @@
       "id": "t_sud-pearl4",
       "source": "03_Core_Topics/SUD_Withdrawal/substance_use_inpatient_teaching.md",
       "kind": "pearl",
-      "excerpt": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.",
+      "excerpt": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal still happens in a minority of standard starts, so plan the start with your team; if it happens, the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.",
       "targets": [
         {
           "id": "t_sud-pearl4:1",
@@ -1860,7 +1860,7 @@
       "id": "ect_neuromodulation-pearl5",
       "source": "05_Psychopharmacology/ECT_Neuromodulation/ect_neuromodulation_inpatient_teaching.md",
       "kind": "pearl",
-      "excerpt": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
+      "excerpt": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning. Esketamine has no established effect on suicidality and needs REMS monitoring; IV ketamine (off-label) can lower suicidal-ideation scores short-term, but nothing shows it prevents suicidal behaviour.",
       "targets": [
         {
           "id": "ect_neuromodulation-pearl5:1",
