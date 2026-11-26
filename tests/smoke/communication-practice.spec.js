@@ -1212,12 +1212,13 @@ test('second pass is interrupted honestly by the timer, a case change, a filter 
   await expectPhase(page, 'orient', 1);
   await expect(page.locator('[data-second-pass]')).toHaveCount(0);
 
-  // Only the ordinary first passes wrote history (b overwrote a, then c overwrote b), and the
-  // three second passes (c, then d twice) left no record of their own: one case record, one
-  // COMM# card, exactly as before the pilot existed.
+  // Only the ordinary first passes wrote history, and the three second passes (c, then d
+  // twice) left no record of their own: one case record, one COMM# card. Under the rewind
+  // rule (red-team CP-2, ruled 2026-11-25) the first line, a, is kept; the later best line, c,
+  // adds recoveredAt instead of overwriting it.
   const after = await storageSnapshot(page);
   expect(stored[0]).not.toBeNull();
-  expect(JSON.parse(after[0])).toEqual({ [PILOT]: { choiceId: 'c', quality: 'best', at: expect.any(String) } });
+  expect(JSON.parse(after[0])).toEqual({ [PILOT]: { choiceId: 'a', quality: 'missed', at: expect.any(String), recoveredAt: '2026-08-01' } });
   const cards = Object.keys(JSON.parse(after[1]).cards).filter((id) => id.startsWith('COMM#'));
   expect(cards).toEqual([`COMM#${PILOT}`]);
   expect(errors).toEqual([]);

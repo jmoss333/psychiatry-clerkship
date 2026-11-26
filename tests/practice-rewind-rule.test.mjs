@@ -17,6 +17,7 @@ import test from 'node:test';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const COMM = read('02_Clinical_Skills/Communication_Practice/communication-practice.html');
+const M_COMM = '/* Function declarations, not var';
 const REASON = read('02_Clinical_Skills/Clinical_Reasoning/diagnostic-reasoning.html');
 
 function slice(src, from, to) {
@@ -32,7 +33,7 @@ function memStorage() {
 // ---- CP-2 ----------------------------------------------------------------------------------
 function commApi() {
   const ls = memStorage(), graded = [];
-  const body = slice(COMM, 'var DATE_RE=', 'function tagsFor(');
+  const body = slice(COMM, '/* Function declarations, not var', 'function tagsFor(');
   const labels = slice(COMM, 'function doneLabel(', 'function defaultRapidDrill(');
   // eslint-disable-next-line no-new-func
   const api = new Function('localStorage', 'graded', `
@@ -100,7 +101,7 @@ test('CP-2: the case list and domain counts read practice through practicedWell'
 // ---- DR-1/2/3 ------------------------------------------------------------------------------
 function reasonApi() {
   const ls = memStorage(), graded = [];
-  const body = slice(REASON, 'var DATE_RE=', 'function setCurrentById(');
+  const body = slice(REASON, '/* Function declarations, not var', 'function setCurrentById(');
   // eslint-disable-next-line no-new-func
   const api = new Function('localStorage', 'graded', `
     var state={cases:[],attempts:{}};
@@ -186,4 +187,30 @@ test('DR: the click handler records every choice through saveAttempt and Restart
   assert.match(REASON, /if\(state\.choice\)saveAttempt\(c\.id,st\.id,state\.choice\)/);
   assert.match(REASON, /data-act'\)==='restart'\)\{newAttempt\(c\);/);
   assert.match(REASON, /function lockNoteHtml\(/);
+});
+
+// Load order (CI smoke, 2026-11-26): both tools build `state` with attempts:loadAttempts() near
+// the top of the script, before the helper lines run. A helper constant declared with `var`
+// below that point is still undefined when history loads, the load throws inside its try, and
+// every stored attempt reads as "Not practiced". Evaluate the helpers the way the page does,
+// with the load first, and require real history back.
+test('stored history loads even though state is built before the helper lines', () => {
+  for (const [src, from, to, key, seed, pre] of [
+    [COMM, M_COMM, 'function tagsFor(', 'cw_comm_v1',
+      { psychosis_validation_001: { choiceId: 'b', quality: 'best', at: '2026-07-31' },
+        rupture_limit_setting_001: { choiceId: 'a', quality: 'harmful', at: '2026-07-30', recoveredAt: '2026-07-31' } },
+      "var QUALITY={best:true,partial:true,missed:true,harmful:true};"],
+    [REASON, M_COMM, 'function setCurrentById(', 'cw_reason_v1',
+      { c1: { steps: { s1: { choiceId: 'b', quality: 'best', at: '2026-07-31' } } } },
+      "function esc(s){return String(s);}"],
+  ]) {
+    const ls = memStorage();
+    ls.setItem(key, JSON.stringify(seed));
+    // eslint-disable-next-line no-new-func
+    const attempts = new Function('localStorage', `${pre}
+      var state={cases:[],attempts:loadAttempts()};
+      ${slice(src, from, to)}
+      return state.attempts;`)(ls);
+    assert.deepEqual(Object.keys(attempts).sort(), Object.keys(seed).sort(), key);
+  }
 });

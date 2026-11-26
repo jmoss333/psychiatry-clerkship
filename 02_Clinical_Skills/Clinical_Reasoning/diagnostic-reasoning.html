@@ -138,9 +138,10 @@ function requestedCaseId(){try{return new URLSearchParams(location.search).get('
    "Restart case", offered once every step is answered, opens a new attempt; the finished
    attempt is kept as lastCompleted so the case list still shows how it went.
    Older records (steps of {choiceId,quality,at}, no attempt) read as attempt 1. */
-var DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
-var QUALITIES={best:1,partial:1,missed:1,harmful:1};
-function cleanStep(x){if(!x||typeof x!=='object'||Array.isArray(x)||typeof x.choiceId!=='string'||!x.choiceId||QUALITIES[x.quality]!==1)return null;var o={choiceId:x.choiceId,quality:x.quality,at:typeof x.at==='string'?x.at:''};if(x.quality!=='best'&&typeof x.afterMiss==='string'&&DATE_RE.test(x.afterMiss))o.afterMiss=x.afterMiss;return o;}
+/* Function declarations, not var: state.attempts is loaded above, before this line runs. */
+function isDay(s){return typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s);}
+function isQuality(q){return q==='best'||q==='partial'||q==='missed'||q==='harmful';}
+function cleanStep(x){if(!x||typeof x!=='object'||Array.isArray(x)||typeof x.choiceId!=='string'||!x.choiceId||!isQuality(x.quality))return null;var o={choiceId:x.choiceId,quality:x.quality,at:typeof x.at==='string'?x.at:''};if(x.quality!=='best'&&isDay(x.afterMiss))o.afterMiss=x.afterMiss;return o;}
 function cleanRecord(r){if(!r||typeof r!=='object'||Array.isArray(r))return null;var out={steps:{}},src=r.steps&&typeof r.steps==='object'&&!Array.isArray(r.steps)?r.steps:{};Object.keys(src).forEach(function(k){var st=cleanStep(src[k]);if(st)out.steps[k]=st;});if(typeof r.updatedAt==='string')out.updatedAt=r.updatedAt;out.attempt=(typeof r.attempt==='number'&&r.attempt>=1)?Math.floor(r.attempt):1;var lc=r.lastCompleted;if(lc&&typeof lc==='object'&&typeof lc.total==='number'&&typeof lc.strong==='number')out.lastCompleted={strong:lc.strong,total:lc.total,harmful:lc.harmful|0,afterMiss:lc.afterMiss|0,at:typeof lc.at==='string'?lc.at:''};return out;}
 function loadAttempts(){try{var raw=JSON.parse(localStorage.getItem('cw_reason_v1')||'{}');if(!raw||typeof raw!=='object'||Array.isArray(raw))return {};var out={};Object.keys(raw).forEach(function(id){var r=cleanRecord(raw[id]);if(r)out[id]=r;});return out;}catch(_){return {};}}
 function today(){return new Date().toISOString().slice(0,10);}
