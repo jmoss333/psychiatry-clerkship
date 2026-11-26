@@ -540,12 +540,13 @@ test('the canonical curriculum places 89 pages across five columns and Everythin
   // 87 = 86 + family-meeting-sim.html (2026-10-27).
   // 88 = 87 + scale-chooser.html (2026-11-05).
   // 89 = 88 + how-we-know.html (2026-11-10).
-  assert.equal(expected, 89, 'curriculum.json is expected to place 89 pages across the five columns');
+  // 90 = 89 + t_gad.md (2026-11-26, Core topics).
+  assert.equal(expected, 90, 'curriculum.json is expected to place 90 pages across the five columns');
   const html = F.fdLibrary(REAL_IDX);
   const refs = everythingRefs(html);
   assert.equal(refs.length, expected);
-  assert.equal(new Set(refs).size, 89);
-  assert.equal(status(html), 'Showing all 89 pages.');
+  assert.equal(new Set(refs).size, 90);
+  assert.equal(status(html), 'Showing all 90 pages.');
   // The canonical file keys essentials by audience ({ms3, resident}); only a projected payload
   // resolves them, so the canonical render has no Essentials and withholds the segmented control.
   assert.doesNotMatch(html, /data-fd-library-view=/);
@@ -662,7 +663,8 @@ print(json.dumps(out))
 // +2 full and +2 shipped on both sites (2026-10-27): maine_law.md and maine-law-navigator.html;
 // +1 full and +1 shipped on both sites (2026-10-27): family-meeting-sim.html.
 // +1 shipped per site (2026-11-09): the lithium CotW week (search-only, so full is unchanged).
-const SITES = { ms3: { kit: 31, full: 90, shipped: 116 }, res: { kit: 35, full: 95, shipped: 125 } };
+// +1 full and +1 shipped on both sites (2026-11-26): t_gad.md.
+const SITES = { ms3: { kit: 31, full: 91, shipped: 117 }, res: { kit: 35, full: 96, shipped: 126 } };
 
 for (const site of ['ms3', 'res']) {
   const payload = projected[site];

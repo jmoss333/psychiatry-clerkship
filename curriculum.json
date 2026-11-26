@@ -234,14 +234,14 @@
       "name": "Core topics",
       "accent": "topic",
       "refs": [
-        "ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md",
+        "ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md", "t_gad.md",
         "t_personality.md", "t_sud.md", "t_geri.md", "t_perinatal.md",
         "t_neurodev.md", "t_eating.md", "t_neurocog.md", "t_somatic.md",
         "t_sleep.md", "t_dissociative.md", "t_sexual.md", "t_impulse.md",
         "t_adjustment.md"
       ],
       "groups": [
-        { "name": "Core conditions", "refs": ["ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md", "t_personality.md", "t_sud.md"] },
+        { "name": "Core conditions", "refs": ["ddx.md", "t_mood.md", "t_psychosis.md", "t_anxiety.md", "t_gad.md", "t_personality.md", "t_sud.md"] },
         { "name": "Lifespan & special topics", "refs": ["t_geri.md", "t_perinatal.md", "t_neurodev.md", "t_eating.md", "t_neurocog.md", "t_somatic.md", "t_sleep.md", "t_dissociative.md", "t_sexual.md", "t_impulse.md", "t_adjustment.md"] }
       ]
     },
@@ -940,6 +940,11 @@
     "t_anxiety.md": [
       "panic",
       "panic disorder"
+    ],
+    "t_gad.md": [
+      "generalized anxiety",
+      "social anxiety",
+      "agoraphobia"
     ],
     "t_neurodev.md": [
       "adhd",

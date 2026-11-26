@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-11-23",
+  "updated": "2026-11-26",
   "surveillance": {
     "version": 1,
     "updated": "2026-07-08",
@@ -12387,6 +12387,590 @@
             "date": "2026-11-23",
             "note": "This prospective study followed 32 outpatients with asthma during prednisone bursts. It supports the first-week change in mania-rating scores cited in Alex’s debrief. It cannot determine whether prednisone caused an individual patient’s symptoms.",
             "reason": "Document the evidence supporting the reviewed exercise."
+          }
+        ]
+      }
+    },
+    {
+      "id": "kessler-2005-ncsr-lifetime-prevalence",
+      "type": "primary-study",
+      "citation": {
+        "title": "Lifetime prevalence and age-of-onset distributions of DSM-IV disorders in the National Comorbidity Survey Replication",
+        "authors": [
+          {
+            "family": "Kessler",
+            "given": "RC"
+          },
+          {
+            "family": "Berglund",
+            "given": "P"
+          },
+          {
+            "family": "Demler",
+            "given": "O"
+          },
+          {
+            "family": "Jin",
+            "given": "R"
+          },
+          {
+            "family": "Merikangas",
+            "given": "KR"
+          },
+          {
+            "family": "Walters",
+            "given": "EE"
+          }
+        ],
+        "organization": "",
+        "year": 2005,
+        "journal": "Arch Gen Psychiatry",
+        "volume": "62",
+        "pages": "593-602",
+        "doi": "10.1001/archpsyc.62.6.593",
+        "pmid": "15939837",
+        "url": "https://doi.org/10.1001/archpsyc.62.6.593"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 15939837): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Nationally representative household survey (n=9282)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "epidemiology"
+        ],
+        "clerkshipRelevance": "Anxiety disorders are the most common class of lifetime disorder and start early, which is why most are met in clinics.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "uspstf-2023-anxiety-screening-adults",
+      "type": "guideline",
+      "citation": {
+        "title": "Screening for Anxiety Disorders in Adults: US Preventive Services Task Force Recommendation Statement",
+        "authors": [
+          {
+            "family": "Barry",
+            "given": "MJ"
+          },
+          {
+            "family": "Nicholson",
+            "given": "WK"
+          },
+          {
+            "family": "Silverstein",
+            "given": "M"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "US Preventive Services Task Force",
+        "year": 2023,
+        "journal": "JAMA",
+        "volume": "329",
+        "pages": "2163-2170",
+        "doi": "10.1001/jama.2023.9301",
+        "pmid": "37338866",
+        "url": "https://doi.org/10.1001/jama.2023.9301"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 37338866): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "USPSTF recommendation statement (B; I for 65 and older)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "screening",
+          "primary-care"
+        ],
+        "clerkshipRelevance": "Current US screening recommendation for adult anxiety disorders in primary care.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "spitzer-2006-gad7",
+      "type": "instrument",
+      "citation": {
+        "title": "A brief measure for assessing generalized anxiety disorder: the GAD-7",
+        "authors": [
+          {
+            "family": "Spitzer",
+            "given": "RL"
+          },
+          {
+            "family": "Kroenke",
+            "given": "K"
+          },
+          {
+            "family": "Williams",
+            "given": "JB"
+          },
+          {
+            "family": "Löwe",
+            "given": "B"
+          }
+        ],
+        "organization": "",
+        "year": 2006,
+        "journal": "Arch Intern Med",
+        "volume": "166",
+        "pages": "1092-1097",
+        "doi": "10.1001/archinte.166.10.1092",
+        "pmid": "16717171",
+        "url": "https://doi.org/10.1001/archinte.166.10.1092"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 16717171): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Criterion-standard validation study (15 primary care clinics)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "screening",
+          "instrument"
+        ],
+        "clerkshipRelevance": "The GAD-7 validation: its operating characteristics and its separation from depressive symptoms.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "slee-2019-gad-pharmacotherapy-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Pharmacological treatments for generalised anxiety disorder: a systematic review and network meta-analysis",
+        "authors": [
+          {
+            "family": "Slee",
+            "given": "A"
+          },
+          {
+            "family": "Nazareth",
+            "given": "I"
+          },
+          {
+            "family": "Bondaronek",
+            "given": "P"
+          },
+          {
+            "family": "Liu",
+            "given": "Y"
+          },
+          {
+            "family": "Cheng",
+            "given": "Z"
+          },
+          {
+            "family": "Freemantle",
+            "given": "N"
+          }
+        ],
+        "organization": "",
+        "year": 2019,
+        "journal": "Lancet",
+        "volume": "393",
+        "pages": "768-777",
+        "doi": "10.1016/S0140-6736(18)31793-8",
+        "pmid": "30712879",
+        "url": "https://doi.org/10.1016/S0140-6736(18)31793-8"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 30712879): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Network meta-analysis (89 RCTs, 25 441 patients)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "gad",
+          "pharmacotherapy",
+          "benzodiazepines"
+        ],
+        "clerkshipRelevance": "Comparative efficacy and acceptability of GAD medications; already cited on rounds_questions.md Q36.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "carl-2020-gad-psychotherapy-medication",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Psychological and pharmacological treatments for generalized anxiety disorder (GAD): a meta-analysis of randomized controlled trials",
+        "authors": [
+          {
+            "family": "Carl",
+            "given": "E"
+          },
+          {
+            "family": "Witcraft",
+            "given": "SM"
+          },
+          {
+            "family": "Kauffman",
+            "given": "BY"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "Cogn Behav Ther",
+        "volume": "49",
+        "pages": "1-21",
+        "doi": "10.1080/16506073.2018.1560358",
+        "pmid": "30760112",
+        "url": "https://doi.org/10.1080/16506073.2018.1560358"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 30760112): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Meta-analysis (79 RCTs, 11 002 participants)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "gad",
+          "psychotherapy",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "Pooled effect sizes for psychotherapy and medication in GAD, with the authors' caution against comparing them directly.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "stone-2009-antidepressant-suicidality-age",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk of suicidality in clinical trials of antidepressants in adults: analysis of proprietary data submitted to US Food and Drug Administration",
+        "authors": [
+          {
+            "family": "Stone",
+            "given": "M"
+          },
+          {
+            "family": "Laughren",
+            "given": "T"
+          },
+          {
+            "family": "Jones",
+            "given": "ML"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2009,
+        "journal": "BMJ",
+        "volume": "339",
+        "pages": "b2880",
+        "doi": "10.1136/bmj.b2880",
+        "pmid": "19671933",
+        "url": "https://doi.org/10.1136/bmj.b2880"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 19671933): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Meta-analysis of 372 placebo-controlled trials (FDA data)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "antidepressants",
+          "suicide",
+          "safety"
+        ],
+        "clerkshipRelevance": "The age gradient behind antidepressant suicidality monitoring in young adults; WP-9 §7-G proposed this id.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "batelaan-2017-antidepressant-discontinuation-anxiety",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Risk of relapse after antidepressant discontinuation in anxiety disorders, obsessive-compulsive disorder, and post-traumatic stress disorder: systematic review and meta-analysis of relapse prevention trials",
+        "authors": [
+          {
+            "family": "Batelaan",
+            "given": "NM"
+          },
+          {
+            "family": "Bosman",
+            "given": "RC"
+          },
+          {
+            "family": "Muntingh",
+            "given": "A"
+          },
+          {
+            "family": "Scholten",
+            "given": "WD"
+          },
+          {
+            "family": "Huijbregts",
+            "given": "KM"
+          },
+          {
+            "family": "van Balkom",
+            "given": "AJLM"
+          }
+        ],
+        "organization": "",
+        "year": 2017,
+        "journal": "BMJ",
+        "volume": "358",
+        "pages": "j3927",
+        "doi": "10.1136/bmj.j3927",
+        "pmid": "28903922",
+        "url": "https://doi.org/10.1136/bmj.j3927"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 28903922): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Meta-analysis of 28 relapse-prevention RCTs (n=5233)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "antidepressants",
+          "relapse"
+        ],
+        "clerkshipRelevance": "How long to continue an antidepressant that worked for an anxiety disorder.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "mayo-wilson-2014-social-anxiety-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Psychological and pharmacological interventions for social anxiety disorder in adults: a systematic review and network meta-analysis",
+        "authors": [
+          {
+            "family": "Mayo-Wilson",
+            "given": "E"
+          },
+          {
+            "family": "Dias",
+            "given": "S"
+          },
+          {
+            "family": "Mavranezouli",
+            "given": "I"
+          },
+          {
+            "family": "et al.",
+            "given": ""
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "Lancet Psychiatry",
+        "volume": "1",
+        "pages": "368-376",
+        "doi": "10.1016/S2215-0366(14)70329-3",
+        "pmid": "26361000",
+        "url": "https://doi.org/10.1016/S2215-0366(14)70329-3"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 26361000): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Network meta-analysis (101 RCTs, 13 164 participants)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "social-anxiety",
+          "psychotherapy",
+          "pharmacotherapy"
+        ],
+        "clerkshipRelevance": "Individual CBT as the initial treatment for social anxiety disorder, SSRIs if therapy is declined. Note the decoy PMID 26361002 (a different paper in the same issue).",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
+          }
+        ]
+      }
+    },
+    {
+      "id": "wolitzky-taylor-2008-specific-phobia",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Psychological approaches in the treatment of specific phobias: a meta-analysis",
+        "authors": [
+          {
+            "family": "Wolitzky-Taylor",
+            "given": "KB"
+          },
+          {
+            "family": "Horowitz",
+            "given": "JD"
+          },
+          {
+            "family": "Powers",
+            "given": "MB"
+          },
+          {
+            "family": "Telch",
+            "given": "MJ"
+          }
+        ],
+        "organization": "",
+        "year": 2008,
+        "journal": "Clin Psychol Rev",
+        "volume": "28",
+        "pages": "1021-1037",
+        "doi": "10.1016/j.cpr.2008.02.007",
+        "pmid": "18410984",
+        "url": "https://doi.org/10.1016/j.cpr.2008.02.007"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed MCP get_article_metadata (PMID 18410984): title, authors, journal, volume, pages and DOI match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Meta-analysis (33 RCTs)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "anxiety",
+          "specific-phobia",
+          "exposure"
+        ],
+        "clerkshipRelevance": "Exposure as the treatment for specific phobia.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+            "reason": "New clinic anxiety page (t_gad.md) for the curriculum gap map's top gap."
           }
         ]
       }

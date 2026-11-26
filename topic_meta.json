@@ -1186,6 +1186,98 @@
       "lastReviewed": "2026-08-08"
     }
   },
+  "t_gad.md": {
+    "read": 5,
+    "tldr": "GAD is 6 months of hard-to-control worry about many things with at least 3 of 6 symptoms. Screen adults in clinic, clear the mimics, and offer psychotherapy, an SSRI or SNRI, or both; benzodiazepines are not first-line.",
+    "points": [
+      "A positive GAD-7 (10 or more) starts a diagnostic interview; it is not a diagnosis.",
+      "Ask what the fear is about: many things (GAD), attacks (panic), scrutiny (social anxiety), one object (specific phobia).",
+      "Responders who stop an antidepressant early relapse more often; continue what works."
+    ],
+    "cant": "Don't start a standing benzodiazepine as first-line treatment for GAD: it works quickly but is poorly tolerated and dependence-forming.",
+    "ruleOut": [
+      "Hyperthyroidism",
+      "Cardiopulmonary causes (arrhythmia, PE)",
+      "Caffeine or stimulant use",
+      "Alcohol or sedative withdrawal",
+      "Akathisia",
+      "Major depression"
+    ],
+    "firstMove": "Clear the medical and substance mimics, screen for depression, then offer CBT, an SSRI or SNRI, or both by preference and access.",
+    "quiz": {
+      "q": "A 34-year-old has 8 months of uncontrollable worry about work, money and family, with poor sleep and muscle tension. Best first-line medication?",
+      "o": [
+        {
+          "t": "A scheduled benzodiazepine"
+        },
+        {
+          "t": "An SSRI or SNRI, offered alongside CBT",
+          "c": true
+        },
+        {
+          "t": "Low-dose quetiapine"
+        },
+        {
+          "t": "A PRN beta-blocker"
+        }
+      ],
+      "why": "SSRIs and SNRIs such as escitalopram, duloxetine and venlafaxine were effective with relatively good acceptability; benzodiazepines and quetiapine were effective but poorly tolerated, and beta-blockers are for performance-only anxiety."
+    },
+    "cta": {
+      "label": "Open the Screeners (PHQ-9 / GAD-7)",
+      "href": "?tool=screeners.html"
+    },
+    "workflowStages": [
+      "diagnosis",
+      "treatment",
+      "communication",
+      "exam"
+    ],
+    "workflowModes": [
+      "5min",
+      "shelf"
+    ],
+    "relatedTools": [
+      "screeners.html"
+    ],
+    "clinicalWorkflow": {
+      "ask": "Ask what the worry is about, how long it has lasted, whether it can be controlled, and which of the six symptoms are present.",
+      "safety": "Ask about depression, suicidal thoughts, alcohol, cannabis, sedatives and benzodiazepine use.",
+      "say": "Many people with this much worry get real relief; we can start with therapy, a medicine, or both.",
+      "exam": "GAD: 6 months, hard to control, 3 of 6 symptoms; SSRI or SNRI plus CBT; social anxiety: CBT first; specific phobia: exposure.",
+      "actions": [
+        {
+          "label": "Open screeners",
+          "href": "?tool=screeners.html"
+        }
+      ]
+    },
+    "shelfBlueprint": [
+      "anxiety"
+    ],
+    "epa": [
+      "EPA1",
+      "EPA2"
+    ],
+    "safetyLevel": "moderate",
+    "evidenceIds": [
+      "kessler-2005-ncsr-lifetime-prevalence",
+      "dsm-5-tr",
+      "uspstf-2023-anxiety-screening-adults",
+      "kroenke-2010-phq-gad-review",
+      "spitzer-2006-gad7",
+      "slee-2019-gad-pharmacotherapy-nma",
+      "carl-2020-gad-psychotherapy-medication",
+      "stone-2009-antidepressant-suicidality-age",
+      "brunner-2025-benzodiazepine-taper",
+      "batelaan-2017-antidepressant-discontinuation-anxiety",
+      "mayo-wilson-2014-social-anxiety-nma",
+      "wolitzky-taylor-2008-specific-phobia"
+    ],
+    "facultyReview": {
+      "status": "pending"
+    }
+  },
   "t_sud.md": {
     "read": 4,
     "hy": true,

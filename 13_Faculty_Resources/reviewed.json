@@ -551,6 +551,16 @@
     "contentHash": "b3c290c6758c5a5b5cff66f22a93435ed9099b29",
     "clinicalHash": "6c9f37bc1594b579fce4f748c9adcf0dde83fa1d"
   },
+  "t_gad.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "clinical",
+      "level": "moderate"
+    },
+    "reason": "New clinic anxiety page (GAD, social anxiety, specific phobia, agoraphobia) added 2026-11-26 for the curriculum gap map's top gap; awaiting faculty attestation.",
+    "at": "2026-11-26",
+    "by": "Pending faculty review"
+  },
   "t_sud.md": {
     "status": "reviewed",
     "risk": {
