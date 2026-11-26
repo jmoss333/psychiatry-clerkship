@@ -579,6 +579,77 @@ test.describe('reviewed Pharmacy card lookup', () => {
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
 
+  test('collateral task choices open the exact rehearsal and the family call workflow', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources' });
+    const call = search.getByRole('button', { name: /^Make a family call/i });
+    const practice = search.getByRole('button', { name: /^Practice the conversation/i });
+    const back = page.getByRole('button', { name: 'Back to search results', exact: true });
+
+    await input.fill('collateral');
+    await expect(call).toBeInViewport();
+    await expect(practice).toBeInViewport();
+    await practice.tap();
+    const frame = page.frameLocator('iframe.toolframe');
+    await expect(frame.getByRole('heading', { name: 'Ask Better Collateral Questions', exact: true })).toBeVisible();
+    await expect(frame.getByText(/You call a patient's sister for collateral/)).toBeVisible();
+    await expect(frame.getByRole('button', { name: 'Start 20-second response' })).toBeVisible();
+    const practiceRoute = new URL(page.url()).searchParams;
+    expect(practiceRoute.get('tool')).toBe('communication-practice.html');
+    expect(practiceRoute.get('case')).toBe('collateral_questions_001');
+    await back.tap();
+    await expect(input).toHaveValue('collateral');
+    await expect(practice).toBeFocused();
+
+    await call.tap();
+    const reader = page.locator('.fd-reader .fd-article');
+    await expect(reader).toHaveAttribute('data-ref', 'collateral_workflow.md');
+    await expect(page.locator('.fd-guide-contents > summary')).toHaveText('On this page');
+    await expect(page.locator('.fd-reader .fd-article__h1')).toBeInViewport();
+    const workflowRoute = new URL(page.url()).searchParams;
+    expect(workflowRoute.get('page')).toBe('collateral_workflow.md');
+    expect(workflowRoute.has('guideFind')).toBe(false);
+    expect(workflowRoute.has('guideSection')).toBe(false);
+    expect(workflowRoute.has('case')).toBe(false);
+    await back.tap();
+    await expect(input).toHaveValue('collateral');
+    await expect(call).toBeFocused();
+    await expect(practice).toBeVisible();
+
+    await input.fill('collateral call');
+    await expect(call).toHaveCount(0);
+    await expect(practice).toHaveCount(0);
+    await expectHealthy(page);
+  });
+
+  test('collateral task choices leave the first tap and Enter on a mixed safety query with the safety card', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources' });
+    const query = 'call family about suicidal thoughts';
+    await input.fill(query);
+    const first = search.locator('.fd-result').first();
+    await expect(first).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expect(search.getByRole('button', { name: /^Make a family call/i })).toHaveCount(0);
+    await expect(search.getByRole('button', { name: /^Practice the conversation/i })).toHaveCount(0);
+    await first.tap();
+    const safety = page.getByRole('dialog', { name: 'Suicide Risk & Safety', exact: true });
+    await expect(safety).toBeVisible();
+    await safety.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(input).toHaveValue(query);
+    await expect(first).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(safety).toBeVisible();
+    await expectHealthy(page);
+  });
+
   async function expandedSearch(page, testInfo) {
     await seedApp(page, testInfo);
     await page.goto('/?tab=library');
