@@ -8,7 +8,7 @@ import test from 'node:test';
 const guide = readFileSync(new URL('../13_Faculty_Resources/_automation/site_build/frontdoor/fd_guide.js',
   import.meta.url), 'utf8');
 // eslint-disable-next-line no-new-func
-const G = new Function(`${guide}\nreturn { fdGuideLeadLabel, fdGuideLeads, FD_GUIDE_LEAD_MIN, FD_GUIDE_LEAD_MIN_WORDS };`)();
+const G = new Function(`${guide}\nreturn { fdGuideSearchTarget, fdGuideLeadLabel, fdGuideLeads, FD_GUIDE_LEAD_MIN, FD_GUIDE_LEAD_MIN_WORDS };`)();
 
 // Minimal DOM: element children, text nodes, sibling links, textContent, and matches /
 // querySelector over selector lists of bare tags and single classes (all the detector uses).
@@ -92,6 +92,21 @@ test('a page qualifies only with no H2 anywhere, enough leads, and enough words'
   const nested = el('div', el('blockquote', ...sections(5, 120)));
   assert.deepEqual(G.fdGuideLeads(nested), [], 'only direct children of the body can open a section');
   assert.deepEqual(G.fdGuideLeads(null), []);
+});
+
+test('a search landing belongs to a unique rendered excerpt or, before hydration, a unique authored label', () => {
+  const intro = p('Grief vs depression is mentioned here first.');
+  const anchor = p(b('Grief vs depression anchor'), ' — A distinct example. A later sentence.');
+  const duplicate = p('A later sentence.');
+  const hidden = p('A later sentence.');
+  for (const node of [intro, anchor, duplicate, hidden]) node.closest = () => node === hidden ? hidden : null;
+  const candidates = [intro, anchor, hidden];
+  const find = (sentence, nodes = candidates) => G.fdGuideSearchTarget(nodes, 'grief vs depression', sentence);
+  assert.equal(find('A later sentence.'), anchor);
+  assert.equal(find(''), anchor);
+  assert.equal(find('A sentence that changed.'), null);
+  assert.equal(find('A later sentence.', [...candidates, duplicate]), null);
+  assert.equal(G.fdGuideSearchTarget(candidates, 'grief vs dep', ''), null);
 });
 
 test('reading names keep the longest literal formulation and original spelling', () => {

@@ -3357,6 +3357,24 @@
      matcher requested (cwSearchIndexPromise, set where it fetches), so no second request. A failed
      or missing load leaves it null and title/summary search works exactly as before. */
   var fdBodyIndex=null;
+  var fdPassagesPromise=null;
+  /* Optional source prose loads once, only when Search needs it. Its content-addressed file
+     belongs to this exact index; a failed/offline load leaves ordinary search fully usable. */
+  function fdLoadSearchPassages(){
+    var index=fdBodyIndex, file=index&&index.passagesFile;
+    if(fdPassagesPromise||!/^search-passages-[a-f0-9]{64}\.json$/.test(file||''))return;
+    fdPassagesPromise=fetch(file).then(function(response){
+      if(!response.ok)throw new Error('Search excerpts unavailable');
+      return response.json();
+    }).then(function(data){
+      if(!data||data.version!==1||!data.docs||typeof data.docs!=='object')return;
+      for(var i=0;i<index.docs.length;i++){
+        var passages=data.docs[index.docs[i].f];
+        if(Array.isArray(passages))index.docs[i].passages=passages;
+      }
+      if(fdController)fdRefreshSearchResults(fdController.getState());
+    }).catch(function(){ /* Excerpts are optional; keep the existing results and focus. */ });
+  }
   try{
     var fdBodyPromise=window.cwSearchIndexPromise;
     if(fdBodyPromise&&typeof fdBodyPromise.then==='function'){
@@ -3827,6 +3845,7 @@
   }
   function fdSearchMarkup(live){
     return fdSurface('search',function(){
+      if(String(live.query||'').trim())fdLoadSearchPassages();
       return fdSearchOverlay(FD_INDEX,live.query||'',FD_CURRICULUM.synonyms||{},fdSearchLiveState(live));
     });
   }
@@ -3857,7 +3876,8 @@
         /* Reranking can move the selected action outside the saved viewport. Scroll only
            the results list, by the nearest edge, so the learner can see what Enter opens. */
         var row=active.getBoundingClientRect(), viewTop=body.getBoundingClientRect().top+body.clientTop;
-        var above=row.top-viewTop, below=row.bottom-(viewTop+body.clientHeight);
+        var ring=getComputedStyle(active), pad=Math.max(0,(parseFloat(ring.outlineWidth)||0)+(parseFloat(ring.outlineOffset)||0));
+        var above=row.top-(viewTop+pad), below=row.bottom-(viewTop+body.clientHeight-pad);
         if(above<0&&below<0)body.scrollTop+=Math.floor(Math.max(above,below));
         else if(above>0&&below>0)body.scrollTop+=Math.ceil(Math.min(above,below));
       }
@@ -4342,7 +4362,7 @@
               focusGovernanceNotice({fromHistory:!!options.fromHistory});
               var canFocus=fdPageFocusAllowed()&&!contentEl.querySelector('.governance-notice.pending-high');
               if(returning){guide.arrive(bookmark.search,false);guide.restore(bookmark,canFocus);}
-              else guide.arrive(arrivalSearch,canFocus);
+              else guide.arrive(arrivalSearch,canFocus,fdPageFocusAllowed()?options.searchPassage:null);
             });
           }else installReadingPlace(true);
           if(mediaArrival){
