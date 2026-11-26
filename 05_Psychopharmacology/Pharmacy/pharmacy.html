@@ -560,7 +560,7 @@ function rxLabelHref(a){
       var on=compareIndex(a.id)>=0;
       var c=button('cmp__btn',on?'Comparing':'Compare',function(){toggleCompare(a.id);});
       c.id='compare-'+a.id;
-      c.setAttribute('aria-pressed',String(on));c.setAttribute('aria-label',(on?'Remove ':'Add ')+a.generic+(on?' from':' to')+' the comparison');
+      c.setAttribute('aria-pressed',String(on));c.setAttribute('aria-label',(on?'Comparing ':'Compare ')+a.generic);
       if(!on&&state.compare.length>=4)c.disabled=true;
       var wrap=el('div','cmp');wrap.appendChild(c);li.appendChild(wrap);
       host.appendChild(li);
