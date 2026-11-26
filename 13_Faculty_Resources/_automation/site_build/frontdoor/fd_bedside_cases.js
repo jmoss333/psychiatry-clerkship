@@ -8,6 +8,7 @@ function fdMountBedsideCases(body) {
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
   fdMountCoachLine(body);
+  fdMountBreakfastHistory(body);
   fdMountAlexTiming(body);
   fdMountEveningCalls(body);
   fdMountDinnerMap(body);
@@ -826,6 +827,124 @@ function fdMountHomeDoseHistory(body) {
     get('rx').focus();
     get('status').textContent = 'Case restarted.';
   });
+}
+
+function fdMountBreakfastHistory(body) {
+  const card = body.querySelector('#impulse-breakfast');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = name => card.querySelector('[data-bf="' + name + '"]');
+  const versions = Array.from(card.querySelectorAll('button[data-version]'));
+  const sources = Array.from(card.querySelectorAll('button[data-source]'));
+  const choices = Array.from(card.querySelectorAll('button[data-handoff]'));
+  const common = card.querySelector('template[data-breakfast-common]').content;
+  const copy = (template, key) => template.querySelector('[data-copy="' + key + '"]').textContent;
+  const heard = new Set();
+  let version, history, activeSource;
+
+  function clearHandoff() {
+    for (const button of choices) button.setAttribute('aria-pressed', 'false');
+    for (const key of ['feedback', 'handoff-output', 'debrief', 'compare']) field(key).hidden = true;
+    for (const key of ['text', 'feedback', 'reasoning']) field(key).replaceChildren();
+    field('debrief').open = false;
+  }
+
+  function paintTimeline() {
+    const account = field('account');
+    account.hidden = !activeSource;
+    for (const button of sources) {
+      const key = button.dataset.source;
+      const row = button.closest('[data-row]');
+      const active = key === activeSource;
+      const opened = heard.has(key);
+      row.dataset.opened = String(opened);
+      button.setAttribute('aria-expanded', String(active));
+      button.querySelector('[data-bf-sign]').textContent = active ? '−' : opened ? '↺' : '+';
+      const detail = button.querySelector('[data-bf-detail]');
+      detail.hidden = !opened;
+      detail.textContent = opened ? copy(history, key + '-detail') : '';
+      if (active) {
+        row.append(account);
+        button.setAttribute('aria-controls', account.id);
+      } else {
+        button.removeAttribute('aria-controls');
+      }
+    }
+    field('question').textContent = activeSource ? copy(common, 'ask-' + activeSource) : '';
+    field('quote').textContent = activeSource ? '“' + copy(history, activeSource + '-quote') + '”' : '';
+    field('progress').textContent = heard.size + ' of ' + sources.length + ' heard';
+    field('handoffs').hidden = heard.size === 0;
+  }
+
+  function enter(id) {
+    history = card.querySelector('template[data-breakfast-history="' + id + '"]').content;
+    version = id;
+    activeSource = null;
+    heard.clear();
+    for (const button of versions) button.setAttribute('aria-pressed', String(button.dataset.version === id));
+    clearHandoff();
+    paintTimeline();
+  }
+
+  function feedbackFor(choice) {
+    if (choice === 'pattern') {
+      if (heard.has('sister') && version === 'b') return 'sister-change';
+      if (!heard.has('nurse')) return 'need-nurse';
+      if (!heard.has('sister')) return 'need-pattern';
+    }
+    if (choice === 'change') {
+      if (heard.has('patient') && version === 'a') return 'tired';
+      if (heard.has('sister') && version === 'a') return 'usual';
+      if (!heard.has('patient')) return 'need-patient';
+      if (!heard.has('sister')) return 'need-change';
+    }
+    return null;
+  }
+
+  for (const button of versions) button.addEventListener('click', () => {
+    if (version !== button.dataset.version) enter(button.dataset.version);
+  });
+  for (const button of sources) button.addEventListener('click', () => {
+    const key = button.dataset.source;
+    if (!heard.has(key)) {
+      heard.add(key);
+      clearHandoff();
+    }
+    activeSource = activeSource === key ? null : key;
+    paintTimeline();
+  });
+  for (const button of choices) button.addEventListener('click', () => {
+    const choice = button.dataset.handoff;
+    clearHandoff();
+    button.setAttribute('aria-pressed', 'true');
+    const reason = feedbackFor(choice);
+    if (reason) {
+      field('feedback').textContent = copy(common, reason);
+      field('feedback').hidden = false;
+      return;
+    }
+    const text = field('text');
+    text.append(copy(common, 'opening'), ' ');
+    for (const key of ['patient', 'nurse', 'sister']) {
+      if (!heard.has(key)) continue;
+      const fact = document.createElement('span');
+      fact.dataset.fact = key;
+      fact.textContent = copy(history, key + '-fact');
+      text.append(fact, ' ');
+    }
+    text.append(copy(common, 'end-' + choice));
+    field('handoff-output').hidden = false;
+    if (heard.size === sources.length) {
+      field('reasoning').textContent = copy(history, 'debrief');
+      field('debrief').hidden = field('compare').hidden = false;
+    }
+  });
+  field('compare').addEventListener('click', () => {
+    enter(version === 'a' ? 'b' : 'a');
+    versions.find(button => button.dataset.version === version).focus();
+  });
+  enter('a');
 }
 
 function fdMountAlexTiming(body) {

@@ -1083,6 +1083,7 @@ preview. Full behavior and content-preservation contract:
 | `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
 | `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
 | `#elena-visit` | Two illustrated views from Elena’s chair show whom the student addresses. Replaying an opening controls the dialogue and repair. Each resident question supplies its own answer and rounds sentence. |
+| `#impulse-breakfast` | The morning timeline expands each interview in place. The rounds handoff draws facts only from accounts opened in the selected history. |
 | `#grief-consult` | A second medicine page pairs the bedside illustration with the nurse’s page or the patient’s latest words. A handoff becomes available after the learner clarifies his request or hears his safety disclosure. |
 | `#consult-callback` | In Consult Psychiatry the pager, three interviews and callback stay together. The consult question follows the sources heard, and trying a callback can reopen a missing interview. |
 | `#night-witness` | Nico’s collateral call under Bring It Back to the Team. Three overnight dials track reports from Luz and the selected follow-up. The learner’s interpretation controls coaching. Opening the rounds sample combines only the selected accounts. |
