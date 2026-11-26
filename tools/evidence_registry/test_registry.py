@@ -402,6 +402,12 @@ SCREENERS_MBC_2026_10_IDS = {
     "lowe-2004-phq9-monitoring", "kroenke-2010-phq-gad-review",
 }
 ALL_SOURCE_IDS = ALL_SOURCE_IDS | SCREENERS_MBC_2026_10_IDS
+# C15 consistency fix (2026-11-26): the STAR*D protocol-faithful reanalysis cited on the
+# 10-05 MDD COTWs, with a stored abstract span.
+CONSISTENCY_C15_2026_11_IDS = {
+    "pigott-2023-stard-reanalysis",
+}
+ALL_SOURCE_IDS = ALL_SOURCE_IDS | CONSISTENCY_C15_2026_11_IDS
 # Primary studies used in the Morgan and paired fever case debriefs.
 ALL_SOURCE_IDS |= {
     "meyer-2001-clozapine-smoking-cessation",

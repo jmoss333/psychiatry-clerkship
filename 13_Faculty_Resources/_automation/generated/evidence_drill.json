@@ -1092,19 +1092,19 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Brown et al. · 1972 · The British Journal of Psychiatry",
-     "sourceId": "brown-1972-expressed-emotion",
+     "t": "Schneider et al. · 2005 · JAMA",
+     "sourceId": "schneider-2005-antipsychotic-dementia-mortality",
      "key": "A"
-    },
-    {
-     "t": "Linehan et al. · 2006 · Arch Gen Psychiatry",
-     "sourceId": "linehan-2006-dbt-vs-experts",
-     "key": "B"
     },
     {
      "t": "VanderKruik et al. · 2017 · BMC Psychiatry",
      "c": true,
      "sourceId": "vanderkruik-2017-postpartum-psychosis-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Varese et al. · 2025 · Health Technol Assess",
+     "sourceId": "varese-2025",
      "key": "C"
     },
     {
@@ -1132,13 +1132,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
-     "sourceId": "brodsky-2025",
+     "t": "Cuijpers et al. · 2007 · Clin Psychol Rev",
+     "sourceId": "cuijpers-2007",
      "key": "A"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "U.S. Preventive Services Task Force · 2026",
+     "sourceId": "uspstf-mental-health",
      "key": "B"
     },
     {

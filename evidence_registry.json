@@ -12390,6 +12390,72 @@
           }
         ]
       }
+    },
+    {
+      "id": "pigott-2023-stard-reanalysis",
+      "type": "primary-study",
+      "citation": {
+        "title": "What are the treatment remission, response and extent of improvement rates after up to four trials of antidepressant therapies in real-world depressed patients? A reanalysis of the STAR*D study's patient-level data with fidelity to the original research protocol",
+        "authors": [
+          {
+            "family": "Pigott",
+            "given": "HE"
+          },
+          {
+            "family": "Kim",
+            "given": "T"
+          },
+          {
+            "family": "Xu",
+            "given": "C"
+          },
+          {
+            "family": "Kirsch",
+            "given": "I"
+          },
+          {
+            "family": "Amsterdam",
+            "given": "J"
+          }
+        ],
+        "organization": "",
+        "year": 2023,
+        "journal": "BMJ Open",
+        "volume": "13",
+        "pages": "e063095",
+        "doi": "10.1136/bmjopen-2022-063095",
+        "pmid": "37491091",
+        "url": "https://doi.org/10.1136/bmjopen-2022-063095"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed esummary/abstract (PMID 37491091): title, five authors, journal, volume, article number, DOI and PMC id (PMC10373710) match",
+        "verifiedAt": "2026-11-26",
+        "note": "Added for the C15 STAR*D caveat on the 10-05 MDD COTWs. Protocol-faithful reanalysis (blinded HRSD, excluding patients already remitted at entry) put cumulative remission at 35.0% versus the reported 67%. The original investigators dispute the reanalysis, so pages present it as a contested reanalysis, not as the true figure. Annotation is AI-drafted and awaits faculty signature."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "secondary reanalysis of a randomized effectiveness trial's patient-level data",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-26",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "STAR*D",
+          "antidepressant sequencing"
+        ],
+        "clerkshipRelevance": "STAR*D's widely quoted 67% cumulative remission is contested: a protocol-faithful reanalysis found 35.0%.",
+        "noteHistory": [
+          {
+            "date": "2026-11-26",
+            "note": "Added for the C15 STAR*D caveat on the 10-05 MDD COTWs. Protocol-faithful reanalysis (blinded HRSD, excluding patients already remitted at entry) put cumulative remission at 35.0% versus the reported 67%. The original investigators dispute the reanalysis, so pages present it as a contested reanalysis, not as the true figure. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "Initial history entry: added for the C15 STAR*D caveat on the 10-05 MDD COTWs."
+          }
+        ]
+      }
     }
   ]
 }
