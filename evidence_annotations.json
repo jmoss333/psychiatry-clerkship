@@ -3720,7 +3720,7 @@
         "retrievedAt": "2026-11-26",
         "pmid": "30712879",
         "doi": "10.1016/S0140-6736(18)31793-8",
-        "sourceSpan": "This analysis is based on 89 trials, which included 25 441 patients randomly assigned to 22 different active drugs or placebo. Duloxetine (MD -3·13, 95% credible interval [CrI] -4·13 to -2·13), pregabalin (MD -2·79, 95% CrI -3·69 to -1·91), venlafaxine (MD -2·69, 95% CrI -3·50 to -1·89), and escitalopram (MD -2·45, 95% CrI -3·27 to -1·63) were more efficacious than placebo with relatively good acceptability. Mirtazapine, sertraline, fluoxetine, buspirone, and agomelatine were also found to be efficacious and well tolerated but these findings were limited by small sample sizes. Quetiapine (MD -3·60 95% CrI -4·83 to -2·39) had the largest effect on HAM-A but it was poorly tolerated (odds ratio 1·44, 95% CrI 1·16-1·80) when compared with placebo. Likewise, paroxetine and benzodiazepines were effective but also poorly tolerated when compared with placebo."
+        "sourceSpan": "This analysis is based on 89 trials, which included 25 441 patients randomly assigned to 22 different active drugs or placebo. Duloxetine (MD -3·13, 95% credible interval [CrI] -4·13 to -2·13), pregabalin (MD -2·79, 95% CrI -3·69 to -1·91), venlafaxine (MD -2·69, 95% CrI -3·50 to -1·89), and escitalopram (MD -2·45, 95% CrI -3·27 to -1·63) were more efficacious than placebo with relatively good acceptability. Mirtazapine, sertraline, fluoxetine, buspirone, and agomelatine were also found to be efficacious and well tolerated but these findings were limited by small sample sizes. Quetiapine (MD -3·60 95% CrI -4·83 to -2·39) had the largest effect on HAM-A but it was poorly tolerated (odds ratio 1·44, 95% CrI 1·16-1·80) when compared with placebo. Likewise, paroxetine and benzodiazepines were effective but also poorly tolerated when compared with placebo. Risk of reporting bias was considered low, and when possible all completed studies were included to avoid publication bias.\n\nTo our knowledge, this is the largest contemporary review of pharmacological agents for the treatment of generalised anxiety disorder by use of network analysis. There are several effective treatment choices for generalised anxiety disorder across classes of medication. The failure of initial pharmacological therapy might not be a reason to abandon a pharmacological treatment strategy."
       },
       "claims": [
         {
@@ -3762,6 +3762,17 @@
           "claimText": "Mirtazapine, sertraline, fluoxetine, buspirone and agomelatine were efficacious but on small samples.",
           "claimTerms": [
             "limited by small sample sizes"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        },
+        {
+          "claimId": "gad-first-medicine-failure-not-abandon-pharmacotherapy",
+          "claimText": "Failure of a first medicine for GAD might not be a reason to abandon a pharmacological treatment strategy.",
+          "claimTerms": [
+            "failure of initial pharmacological therapy might not be a reason to abandon a pharmacological treatment strategy"
           ],
           "direction": "descriptive",
           "usedBy": [

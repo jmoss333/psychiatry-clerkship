@@ -52,7 +52,7 @@ Ask about depression in every anxious patient: in the primary care study that bu
 
 **Medication: an SSRI or SNRI first.** The largest network meta-analysis (89 trials, 25,441 patients) found duloxetine, pregabalin, venlafaxine and escitalopram more effective than placebo with relatively good acceptability[^slee-2019-gad-pharmacotherapy-nma]. Benefit builds over weeks; early jitteriness usually settles. Monitor patients under 25 closely early on: in FDA-held adult trials, the odds of suicidal behavior on an antidepressant were raised under age 25 (odds ratio 2.30) but not at older ages[^stone-2009-antidepressant-suicidality-age].
 
-**Benzodiazepines are not first-line.** They act quickly but were poorly tolerated[^slee-2019-gad-pharmacotherapy-nma], and risk dependence, falls and sedation. Never stop one abruptly in a patient likely to be physically dependent; plan a taper[^brunner-2025-benzodiazepine-taper].
+**Benzodiazepines are not first-line.** They act quickly, but in the network meta-analysis they were poorly tolerated[^slee-2019-gad-pharmacotherapy-nma]; they also carry dependence, falls and sedation. Never stop one abruptly in a patient likely to be physically dependent; plan a taper[^brunner-2025-benzodiazepine-taper].
 
 **Continue what works.** Across anxiety disorders, OCD and PTSD, stopping an antidepressant in responders raised the odds of relapse within a year (odds ratio 3.11); the review says the lack of data beyond a year is not advice to stop at a year[^batelaan-2017-antidepressant-discontinuation-anxiety].
 
