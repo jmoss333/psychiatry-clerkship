@@ -47,6 +47,44 @@ test('a repeated entry link preserves the checkpoint while a different link open
   assert.equal(s.paused, false);
 });
 
+test('the rehearsal shortcut opens rounds on every visit and keeps both practice records', () => {
+  const { oralRestore, oralTransition: move } = helpers();
+  const rehearsal = '?rehearsal=rounds';
+  const collateral = '?format=collateral&view=guided';
+  let saved = oralRestore(null, rehearsal);
+  assert.equal(saved.format, 'rounds');
+  assert.equal(saved.items.rounds.seconds, 0);
+  saved = move(saved, { type: 'seconds', value: 32 });
+  saved = move(saved, { type: 'record', value: '2026-09-04T20:00:00.000Z' });
+  saved = move(saved, { type: 'done', value: 2 });
+  saved = oralRestore(saved, collateral);
+  saved = move(saved, { type: 'seconds', value: 8 });
+  saved = move(saved, { type: 'step', value: 2 });
+  saved = move(saved, { type: 'pause' });
+  const records = saved.items;
+
+  for (let visit = 0; visit < 2; visit++) {
+    const opened = oralRestore(saved, rehearsal);
+    assert.equal(opened.format, 'rounds');
+    assert.equal(opened.paused, false);
+    assert.deepEqual(opened.items, records);
+    assert.equal(oralRestore(opened, collateral).format, 'collateral');
+    saved = move(move(opened, { type: 'format', value: 'collateral' }), { type: 'pause' });
+    assert.equal(oralRestore(saved, '').paused, true);
+    assert.equal(oralRestore(saved, '').format, 'collateral');
+  }
+});
+
+test('ambiguous or unrelated rehearsal parameters preserve normal resume and case links', () => {
+  const { oralRestore, oralTransition: move } = helpers();
+  const saved = move(move(oralRestore(null, ''), { type: 'format', value: 'collateral' }), { type: 'pause' });
+  for (const query of ['?rehearsal=unknown', '?rehearsal=rounds&rehearsal=rounds', '?rehearsal=rounds&msecase=stale', '?rehearsal=rounds&msepicks=speech']) {
+    assert.deepEqual(oralRestore(saved, query), saved, query);
+  }
+  const guided = '?format=collateral&view=guided';
+  assert.deepEqual(oralRestore(saved, guided + '&rehearsal=rounds'), oralRestore(saved, guided));
+});
+
 test('restoration strips arbitrary text and normalizes malformed progress', () => {
   const { oralSession } = helpers();
   const s = oralSession({ v: 1, format: 'collateral', paused: true, text: 'untrusted', entry: { format: 'untrusted', view: 'untrusted', text: 'untrusted' }, items: {

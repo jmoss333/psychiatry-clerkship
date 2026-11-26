@@ -579,6 +579,39 @@ test.describe('reviewed Pharmacy card lookup', () => {
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
 
+  test('60-second update opens the timed rounds rehearsal and Back restores the selected result', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(() => {
+      sessionStorage.setItem('cw_oral_session_v1', JSON.stringify({ v: 1, format: 'collateral', paused: true }));
+    });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources' });
+    await input.fill('60-second update');
+    const first = search.locator('.fd-result').first();
+    await expect(first).toHaveAccessibleName(/^Rehearse a 60-second rounds update/i);
+    await first.tap();
+
+    const frame = page.frameLocator('iframe.toolframe');
+    const heading = frame.getByRole('heading', { name: 'Your 60-second update', exact: true });
+    const start = frame.getByRole('button', { name: 'Start 60-sec practice', exact: true });
+    await expect(heading).toBeInViewport();
+    await expect(frame.locator('[data-oral-clock]')).toHaveText('1:00');
+    await expect(start).toBeInViewport({ ratio: 1 });
+    await start.tap();
+    await expect(frame.getByRole('button', { name: 'Pause timer', exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(input).toHaveValue('60-second update');
+    const restored = search.getByRole('button', { name: /^Rehearse a 60-second rounds update/i });
+    await expect(restored).toBeFocused();
+    await expect(restored).toBeInViewport({ ratio: 1 });
+    await page.keyboard.press('Enter');
+    await expect(heading).toBeInViewport();
+    await expectHealthy(page);
+  });
+
   test('collateral task choices open the exact rehearsal and the family call workflow', async ({ page }, testInfo) => {
     await seedApp(page, testInfo);
     await page.goto('/?tab=library');

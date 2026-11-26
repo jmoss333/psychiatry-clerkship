@@ -630,17 +630,23 @@ function fdSearchMatches(index, query, synonyms, state){
     }
   }
 
-  /* These two exact-query aliases replace their ordinary rows. Keeping the real refs
+  /* Exact task shortcuts replace their ordinary rows. Keeping the real refs
      preserves keyboard activation and the selected row on return to Search. */
   var tasks=[];
   if(typedQuery==='collateral'&&idx.byRef){
     var call=idx.byRef['collateral_workflow.md'];
     var practice=idx.byRef['communication-practice.html'];
     if(call&&practice&&!call.readerOnly&&!practice.readerOnly&&!seenRefs[call.ref]&&!seenRefs[practice.ref]){
-      tasks.push({kind:'task',item:call,title:'Make a family call'},
-        {kind:'task',item:practice,title:'Practice the conversation'});
+      tasks.push({kind:'task',task:'collateral',item:call,title:'Make a family call'},
+        {kind:'task',task:'collateral',item:practice,title:'Practice the conversation'});
       seenRefs[call.ref]=true;
       seenRefs[practice.ref]=true;
+    }
+  }else if((readingQuery==='60 second update'||readingQuery==='60 second rounds update')&&idx.byRef){
+    var trainer=idx.byRef['oral.html'];
+    if(trainer&&!trainer.readerOnly&&!seenRefs[trainer.ref]){
+      tasks.push({kind:'item',task:'rounds',item:trainer,title:'Rehearse a 60-second rounds update'});
+      seenRefs[trainer.ref]=true;
     }
   }
 
@@ -781,7 +787,7 @@ function fdSearchResults(index, query, synonyms, state){
    other surfaces) gets the result's own `meta` string exactly as before. */
 function fdSearchRowMeta(r, ctx){
   var it=r.item, idx=ctx&&ctx.index;
-  if(r.kind==='task') return it.searchTitle||it.title;
+  if(r.task) return it.searchTitle||it.title;
   if(!idx||r.kind==='care'||r.kind==='pharmacy') return r.meta||'';
   if(r.kind==='protocol'){
     var kit=idx.kit||[];
@@ -823,7 +829,7 @@ function fdSearchResultRow(r, ctx){
   if(isProto) dotCls+=' is-safety';
   else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
   var openAttrs=' data-fd-open="'+fdEsc(it.ref)+'"';
-  if(r.kind==='task') openAttrs+=' data-fd-search-task="collateral"';
+  if(r.task) openAttrs+=' data-fd-search-task="'+fdEsc(r.task)+'"';
   if(isProto) openAttrs=' data-fd-safety="'+fdEsc(it.ref)+'"';
   if(r.kind==='pharmacy') openAttrs=' data-fd-pharmacy-card="'+fdEsc(it.id)+'"';
   return '<button type="button" class="fd-result'+(c.first?' is-first':'')+'"'+openAttrs+'>'+
