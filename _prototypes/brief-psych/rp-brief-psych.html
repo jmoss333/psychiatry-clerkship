@@ -47,6 +47,7 @@
   .cue.safety{border-color:var(--danger);background:var(--danger-light)}
   .cue .mech{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);margin-top:4px}
   .cue.safety .mech{color:var(--danger)}
+  [data-theme="dark"] .cue.safety .mech{color:#e8968a} /* --danger on --danger-light reads 4.28:1 in dark; this clears AA */
   .mechbadge{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-pill);padding:3px 11px;margin-bottom:8px}
   .tname{font-family:var(--font-head);font-size:1.35rem;margin:0 0 var(--sp3);color:var(--text)}
   .step{display:grid;grid-template-columns:26px 1fr;gap:11px;margin:8px 0}
