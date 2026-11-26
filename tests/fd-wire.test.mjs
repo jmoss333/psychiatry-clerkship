@@ -5700,3 +5700,15 @@ test('selecting the already painted comfort choice does not take scroll ownershi
   h.controller.dispatch({'data-fd-reading-size':'standard'});
   assert.equal(reflows,0);
 });
+
+test('collateral task choices open the workflow or the scoped communication case', () => {
+  const search = { ...roleContext, searchOpen: true, query: 'collateral' };
+  const launch = (ref, ctx = {}) => F.fdDispatch({ 'data-fd-open': ref, 'data-fd-search-task': 'collateral' }, ctx, search);
+  const practice = launch('communication-practice.html', { search: '?case=another_case' });
+  assert.deepEqual(new URLSearchParams(practice.route).getAll('case'), ['collateral_questions_001']);
+  const workflow = new URLSearchParams(launch('collateral_workflow.md', { search: practice.route }).route);
+  assert.equal(workflow.get('page'), 'collateral_workflow.md');
+  assert.ok(!workflow.has('guideFind') && !workflow.has('case'));
+  const normal = F.fdDispatch({ 'data-fd-open': 'communication-practice.html' }, {}, search);
+  assert.equal(new URLSearchParams(normal.route).has('case'), false);
+});

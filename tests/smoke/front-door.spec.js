@@ -78,6 +78,287 @@ async function openHeaderSearch(page) {
   expect(await page.evaluate(() => window.scrollY)).toBe(before);
 }
 
+test.describe('matching search excerpts on a touch phone', () => {
+  test.use({ hasTouch: true });
+
+  for (const scenario of ['reviewed', 'another matching paragraph', 'pending high', 'pending high without excerpts']) {
+    test('grief vs depression opens the authored Mood passage and returns to the same result · ' + scenario, async ({ page }, testInfo) => {
+      const query = 'grief vs depression';
+      await page.setViewportSize(PHONE);
+      await seedApp(page, testInfo);
+      const pending = scenario.startsWith('pending high');
+      await pinGovernance(page, READING_REF, pending ? { status: 'pending', riskLevel: 'high' } : { status: 'reviewed', riskLevel: 'low' });
+      if (scenario === 'another matching paragraph') {
+        // The index points at the authored sentence, even if the reader has another keyword hit first.
+        await page.route('**/content/t_mood.md', async route => {
+          const response = await routeFetchWithRetry(route);
+          const text = (await response.text()).replace('**Grief vs depression anchor**',
+            'Grief vs depression also appears in the sample discussion.\n\n**Grief vs depression anchor**');
+          await route.fulfill({ response, body: text });
+        });
+      }
+      const hasExcerpts = scenario !== 'pending high without excerpts';
+      if (!hasExcerpts) await page.route('**/search-passages-*.json', route => route.fulfill({ json: { version: 1, docs: {} } }));
+      await page.goto('/?tab=library');
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill(query);
+      const mood = search.getByRole('button', { name: /^Mood\b/i }).and(search.locator('[data-fd-open="t_mood.md"]'));
+      if (hasExcerpts) await expect(mood.locator('.fd-result__excerpt')).toContainText('Grief vs depression anchor');
+
+      const reader = page.locator('.fd-reader:visible .fd-article[data-ref="t_mood.md"]');
+      const passage = reader.locator('.fd-article__body p').filter({ hasText: /^Grief vs depression anchor\b/ });
+      const focusTarget = pending ? page.locator('.fd-reader .governance-notice.pending-high') : passage;
+      async function expectPassageArrival() {
+        await expect(focusTarget).toBeFocused();
+        await passage.evaluate(async el => {
+          await document.fonts.ready;
+          const animations = [];
+          for (let node = el; node; node = node.parentElement) animations.push(...node.getAnimations());
+          await Promise.all(animations.filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a => a.finished.catch(() => null)));
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        });
+        await expect(focusTarget).toBeFocused();
+        if (pending) await expect(focusTarget).toBeInViewport({ ratio: 1 });
+        const lead = passage.getByText('Grief vs depression anchor', { exact: true });
+        expect(await lead.evaluate(el => {
+          const firstLine = el.getClientRects()[0];
+          const x = firstLine.left + 1;
+          return [firstLine.top + 1, firstLine.bottom - 1].every(y => el.contains(document.elementFromPoint(x, y)));
+        }), 'the first line of the passage is on screen and clear of the sticky header and dock').toBe(true);
+      }
+
+      await mood.tap();
+      await expectPassageArrival();
+      await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+      await expect(input).toHaveValue(query);
+      await expect(mood).toBeFocused();
+      await expect(mood).toBeInViewport({ ratio: 1 });
+      await page.keyboard.press('Enter');
+      await expectPassageArrival();
+      if (pending) {
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        await expect(page.locator('.fd-guide-passage-review')).toHaveCount(0);
+        await expect(focusTarget).toHaveCount(1);
+        const heading = reader.locator('.fd-article__h1').or(page.locator('.fd-guide-header .fd-article__h1'));
+        expect(await focusTarget.evaluate((notice, title) =>
+          Boolean(notice.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING), await heading.elementHandle())).toBe(true);
+      }
+      await expectHealthy(page);
+    });
+  }
+
+  test('landscape keeps the focused review warning beside the passage until both leave view', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await seedApp(page, testInfo);
+    await pinGovernance(page, READING_REF, {
+      status: 'pending', riskLevel: 'high', riskKind: 'clinical',
+      warning: 'This teaching page is awaiting faculty review. Verify clinical decisions with your supervising clinician.',
+      reason: 'The teaching content has changed since the previous review and requires a new faculty attestation.',
+    });
+    await page.goto('/?tab=library');
+    await openHeaderSearch(page);
+    await page.getByRole('textbox', { name: 'Search resources' }).fill('grief vs depression');
+    const mood = page.locator('.fd-result[data-fd-open="t_mood.md"]');
+    await expect(mood.locator('.fd-result__excerpt')).toContainText('Grief vs depression anchor');
+    await mood.tap();
+
+    const warning = page.locator('.fd-guide-passage-review .governance-notice.pending-high');
+    const passage = page.locator('.fd-article[data-ref="t_mood.md"] p.fd-guide-match');
+    await expect(passage).toContainText('Grief vs depression anchor');
+    await passage.evaluate(async () => {
+      await document.fonts.ready;
+      await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
+    });
+    await expect(warning).toBeFocused();
+    await expect(warning).toBeInViewport();
+    expect(await warning.locator('.governance-title').evaluate(title => {
+      const box = title.getBoundingClientRect();
+      return title.contains(document.elementFromPoint(box.left + 3, box.top + box.height / 2));
+    })).toBe(true);
+
+    await passage.evaluate(node => node.scrollIntoView({ block: 'start', behavior: 'instant' }));
+    await expect(passage).toBeInViewport();
+    await expect(warning).toHaveCount(1);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(warning).toHaveCount(0);
+    await expect(page.locator('.fd-reader .governance-notice.pending-high')).toBeInViewport();
+  });
+
+  test('search excerpts keep the hidden Anxiety case clue behind its reveal control', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(() => window.cwSearchIndexPromise);
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    await search.getByRole('textbox', { name: 'Search resources' }).fill('antipsychotic dose increased yesterday');
+    const more = search.getByRole('button', { name: 'Show all matches' });
+    if (await more.count()) await more.tap();
+    const anxiety = search.locator('.fd-result[data-fd-open="t_anxiety.md"]');
+    const clue = 'The antipsychotic dose was increased yesterday.';
+    await expect(search.locator('.fd-result__excerpt').first()).toBeVisible();
+    await expect(anxiety).toBeVisible();
+    await expect(anxiety).not.toContainText(clue);
+    await anxiety.tap();
+    const details = page.locator('.fd-bedside-case details').filter({ hasText: clue });
+    await expect(details.getByText(clue, { exact: true })).toBeHidden();
+    await details.locator('summary').tap();
+    await expect(details.getByText(clue, { exact: true })).toBeVisible();
+  });
+
+  for (const status of ['reviewed', 'pending']) {
+    test('late ' + status + ' review status preserves the search passage landing', async ({ page }, testInfo) => {
+      const ledger = await (await requestGetWithRetry(page.request, '/governance.json')).json();
+      Object.assign(ledger.items[READING_REF], { status, riskLevel: 'high' });
+      let release;
+      const held = new Promise(resolve => { release = resolve; });
+      await page.route('**/governance.json', async route => {
+        await held;
+        await route.fulfill({ json: ledger });
+      });
+      try {
+        await page.setViewportSize(PHONE);
+        await seedApp(page, testInfo);
+        await page.goto('/?tab=library', { waitUntil: 'domcontentloaded' });
+        await openHeaderSearch(page);
+        await page.getByRole('textbox', { name: 'Search resources' }).fill('grief vs depression');
+        const row = page.locator('.fd-result[data-fd-open="t_mood.md"]');
+        await expect(row.locator('.fd-result__excerpt')).toContainText('Grief vs depression anchor');
+        await row.tap();
+        const passage = page.locator('.fd-guide-match').filter({ hasText: /^Grief vs depression anchor/ });
+        await expect(passage).toBeFocused();
+        release();
+        const receipt = page.locator('.fd-reader .governance-notice.' + (status === 'pending' ? 'pending-high' : 'reviewed-receipt'));
+        await expect(receipt).toBeVisible();
+        if (status === 'pending') await expect(receipt).toBeFocused();
+        else await expect(passage).toBeFocused();
+        await expect(passage.locator('strong').first()).toBeInViewport();
+      } finally {
+        release();
+      }
+    });
+  }
+
+  test('late excerpts keep the keyboard-selected row visible and Enter opens it', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    let release, requests = 0;
+    const held = new Promise(resolve => { release = resolve; });
+    await page.route('**/search-passages-*.json', async route => {
+      requests++;
+      await held;
+      await route.continue();
+    });
+    try {
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=library');
+      await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+      expect(requests).toBe(0);
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      await search.getByRole('textbox', { name: 'Search resources', exact: true }).fill('treatment');
+      await search.getByRole('button', { name: 'Show all matches', exact: true }).tap();
+      const selected = search.locator('.fd-result[data-fd-open$=".md"]').last();
+      const ref = await selected.getAttribute('data-fd-open');
+      await selected.scrollIntoViewIfNeeded();
+      await selected.focus();
+      await expect(search.locator('.fd-result__excerpt')).toHaveCount(0);
+      release();
+      await expect.poll(() => search.locator('.fd-result__excerpt').count()).toBeGreaterThan(0);
+      await expect(selected).toBeFocused();
+      await expect(selected).toBeInViewport({ ratio: 1 });
+      expect(requests).toBe(1);
+      await page.keyboard.press('Enter');
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+      await expectHealthy(page);
+    } finally {
+      release();
+    }
+  });
+
+  test('unavailable optional excerpts leave ordinary results usable', async ({ page }, testInfo) => {
+    await page.setViewportSize(PHONE);
+    let requests = 0;
+    await page.route('**/search-passages-*.json', route => {
+      requests++;
+      return route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+    });
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+    await input.fill('QTc');
+    await expect.poll(() => requests).toBe(1);
+    await input.fill('mood');
+    await expect(input).toBeFocused();
+    await expect(search.locator('.fd-result__excerpt')).toHaveCount(0);
+    const row = search.locator('.fd-result[data-fd-open="t_mood.md"]');
+    await row.tap();
+    await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', 't_mood.md');
+    expect(requests).toBe(1);
+    // Chromium reports the intentionally injected HTTP error; no application errors are allowed.
+    await expect.poll(() => runtimeErrors.get(page)).toEqual([
+      'console: Failed to load resource: the server responded with a status of 503 (Service Unavailable)',
+    ]);
+    runtimeErrors.get(page).splice(0);
+    await expectHealthy(page);
+  });
+
+  for (const width of [320, 390]) {
+    test(`${width}px: source excerpt survives return and another result opens with Enter`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width, height: 844 });
+      await seedApp(page, testInfo);
+      await page.goto('/?tab=library');
+      await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+      await openHeaderSearch(page);
+      const search = page.getByRole('dialog', { name: 'Search', exact: true });
+      const input = search.getByRole('textbox', { name: 'Search resources', exact: true });
+      await input.fill('QTc');
+      const expand = search.getByRole('button', { name: 'Show all matches', exact: true });
+      if (await expand.count()) await expand.tap();
+      const readings = search.locator('.fd-result[data-fd-open$=".md"]').filter({ has: page.locator('.fd-result__excerpt') });
+      await expect.poll(() => readings.count()).toBeGreaterThan(1);
+      const first = readings.first();
+      const ref = await first.getAttribute('data-fd-open');
+      const excerpt = first.locator('.fd-result__excerpt');
+      const text = await excerpt.innerText();
+      expect(text.length).toBeLessThanOrEqual(240);
+      await expect(excerpt.locator('mark').first()).toHaveText(/^QTc$/i);
+      const source = await page.evaluate(async ref => {
+        const index = await window.cwSearchIndexPromise;
+        return index.docs.find(doc => doc.f === ref).passages;
+      }, ref);
+      expect(source.some(passage => passage.includes(text)), 'the excerpt is an unchanged source sentence').toBe(true);
+      const before = await search.locator('.fd-result__excerpt').allTextContents();
+      await first.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+      await expect(first).toBeInViewport({ ratio: 1 });
+      expect(await excerpt.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      await testInfo.attach('matching-excerpt-phone', { body: await page.screenshot(), contentType: 'image/png' });
+      const body = search.locator('.fd-searchpanel__body');
+      const scrollTop = await body.evaluate(el => el.scrollTop);
+      await first.tap();
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+      await page.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+      await expect(input).toHaveValue('QTc');
+      expect(await search.locator('.fd-result__excerpt').allTextContents()).toEqual(before);
+      await expect(first).toBeFocused();
+      await expect(first).toBeInViewport({ ratio: 1 });
+      await expect.poll(async () => Math.abs(await body.evaluate(el => el.scrollTop) - scrollTop)).toBeLessThanOrEqual(2);
+      const second = readings.nth(1);
+      const secondRef = await second.getAttribute('data-fd-open');
+      expect(secondRef).not.toBe(ref);
+      await second.focus();
+      await second.press('Enter');
+      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', secondRef);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await expectHealthy(page);
+    });
+  }
+});
+
 test.describe('reviewed Pharmacy card lookup', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
@@ -297,6 +578,77 @@ test.describe('reviewed Pharmacy card lookup', () => {
 
 test.describe('Back to search results on a touch phone', () => {
   test.use({ viewport: PHONE, hasTouch: true });
+
+  test('collateral task choices open the exact rehearsal and the family call workflow', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources' });
+    const call = search.getByRole('button', { name: /^Make a family call/i });
+    const practice = search.getByRole('button', { name: /^Practice the conversation/i });
+    const back = page.getByRole('button', { name: 'Back to search results', exact: true });
+
+    await input.fill('collateral');
+    await expect(call).toBeInViewport();
+    await expect(practice).toBeInViewport();
+    await practice.tap();
+    const frame = page.frameLocator('iframe.toolframe');
+    await expect(frame.getByRole('heading', { name: 'Ask Better Collateral Questions', exact: true })).toBeVisible();
+    await expect(frame.getByText(/You call a patient's sister for collateral/)).toBeVisible();
+    await expect(frame.getByRole('button', { name: 'Start 20-second response' })).toBeVisible();
+    const practiceRoute = new URL(page.url()).searchParams;
+    expect(practiceRoute.get('tool')).toBe('communication-practice.html');
+    expect(practiceRoute.get('case')).toBe('collateral_questions_001');
+    await back.tap();
+    await expect(input).toHaveValue('collateral');
+    await expect(practice).toBeFocused();
+
+    await call.tap();
+    const reader = page.locator('.fd-reader .fd-article');
+    await expect(reader).toHaveAttribute('data-ref', 'collateral_workflow.md');
+    await expect(page.locator('.fd-guide-contents > summary')).toHaveText('On this page');
+    await expect(page.locator('.fd-reader .fd-article__h1')).toBeInViewport();
+    const workflowRoute = new URL(page.url()).searchParams;
+    expect(workflowRoute.get('page')).toBe('collateral_workflow.md');
+    expect(workflowRoute.has('guideFind')).toBe(false);
+    expect(workflowRoute.has('guideSection')).toBe(false);
+    expect(workflowRoute.has('case')).toBe(false);
+    await back.tap();
+    await expect(input).toHaveValue('collateral');
+    await expect(call).toBeFocused();
+    await expect(practice).toBeVisible();
+
+    await input.fill('collateral call');
+    await expect(call).toHaveCount(0);
+    await expect(practice).toHaveCount(0);
+    await expectHealthy(page);
+  });
+
+  test('collateral task choices leave the first tap and Enter on a mixed safety query with the safety card', async ({ page }, testInfo) => {
+    await seedApp(page, testInfo);
+    await page.goto('/?tab=library');
+    await page.evaluate(async () => { await window.cwSearchIndexPromise; });
+    await openHeaderSearch(page);
+    const search = page.getByRole('dialog', { name: 'Search', exact: true });
+    const input = search.getByRole('textbox', { name: 'Search resources' });
+    const query = 'call family about suicidal thoughts';
+    await input.fill(query);
+    const first = search.locator('.fd-result').first();
+    await expect(first).toHaveAttribute('data-fd-safety', 'pg_suicide.md');
+    await expect(search.getByRole('button', { name: /^Make a family call/i })).toHaveCount(0);
+    await expect(search.getByRole('button', { name: /^Practice the conversation/i })).toHaveCount(0);
+    await first.tap();
+    const safety = page.getByRole('dialog', { name: 'Suicide Risk & Safety', exact: true });
+    await expect(safety).toBeVisible();
+    await safety.getByRole('button', { name: 'Back to search results', exact: true }).tap();
+    await expect(input).toHaveValue(query);
+    await expect(first).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(safety).toBeVisible();
+    await expectHealthy(page);
+  });
 
   async function expandedSearch(page, testInfo) {
     await seedApp(page, testInfo);
@@ -3629,6 +3981,74 @@ test.describe('Interactive readings', () => {
     await expect(card.locator('#lang-progress')).toHaveText('0 of 2 handoffs matched');
   });
 
+  test('The consult callback follows the opened interviews and keeps the assessment decision-specific', async ({ page }) => {
+    await page.goto('/?page=exp_consult.md&guideSection=consult-psychiatry-the-student-frame&guideFind=What+decision+is+the+team+waiting+on');
+    const card = page.locator('.fd-reader:visible #consult-callback');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toContainText('Please evaluate.');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toHaveAttribute('id', 'grief-consult');
+    const focused = card.locator('[data-call="focused"]');
+    const reply = card.locator('#cc-reply');
+    const receipt = card.locator('#cc-receipt');
+    await card.locator('[data-source="patient"]').click();
+    await expect(focused).toContainText('name on the bag');
+    await expect(focused).not.toContainText('attention');
+    await focused.click();
+    await expect(receipt).toBeHidden();
+    await reply.getByRole('button', {name:'Ask the intern what decision is pending'}).click();
+    await expect(card.locator('[data-source="intern"]')).toBeFocused();
+    await expect(reply).toBeHidden();
+    await focused.click();
+    await reply.getByRole('button', {name:'Check with the bedside nurse'}).click();
+    await focused.click();
+    await expect(receipt).toContainText('change in attention');
+    await card.locator('[data-call="premature"]').click();
+    await expect(reply).toContainText('name on the bag');
+    await expect(receipt).toBeHidden();
+    await card.locator('#cc-reset').click();
+    await expect(card.locator('#cc-count')).toHaveText('0 of 3 heard');
+  });
+
+  test('The grief pager handoff reflects only the patient’s answers in that conversation', async ({ page }) => {
+    await page.goto('/?page=exp_consult.md&guideSection=consult-psychiatry-the-student-frame&guideFind=He+just+lost+his+wife');
+    const card = page.locator('.fd-reader:visible #grief-consult');
+    await expect(card.locator('xpath=preceding-sibling::*[1]')).toHaveAttribute('id', 'consult-callback');
+    await expect(card.locator('xpath=following-sibling::*[1]')).toContainText('Better consult question');
+    const update = card.locator('#gc-update');
+    const field = key => card.locator('#gc-' + key);
+    const choose = (group, value) => card.locator('[data-' + group + '="' + value + '"]').press('Enter');
+    for (const version of ['a', 'b']) {
+      await choose('version', version);
+      for (const opening of ['presence', 'practical', 'history']) {
+        await choose('opening', opening);
+        await expect(update).toBeHidden();
+        if (opening !== 'presence') {
+          await expect(field('meaning')).toBeHidden();
+          await field('repair').press('Enter');
+        }
+        await field('meaning').press('Enter');
+        const handoff = version === 'a' ? 'call' : 'urgent';
+        await choose('line', handoff);
+        await expect(update).toBeHidden();
+        if (version === 'a') {
+          await choose('ask', 'support');
+          await choose('line', handoff);
+          await expect(update).toContainText('asked me to sit with him while he calls');
+          await expect(update).not.toContainText('denied');
+        }
+        await choose('ask', 'safety');
+        await expect(update).toBeHidden();
+        await choose('line', handoff);
+        await expect(update).toContainText(version === 'a' ? 'denied current suicidal thoughts' : 'thinking about suicide now and feels unsafe alone');
+        await choose('line', 'diagnosis');
+        await expect(update).toBeHidden();
+      }
+    }
+    await field('reset').press('Enter');
+    await expect(card.locator('[data-view="words"]')).toBeDisabled();
+    await expect(field('handoffs')).toBeHidden();
+    await expect(page.locator('.fd-reader:visible #cc-count')).toHaveText('0 of 3 heard');
+  });
+
   test('CATIE rounds question keeps the two interviews and handoffs independent', async ({ page }) => {
     await page.goto('/?page=rounds_questions.md&guideSection=psychotic-disorders-questions-1-15&guideFind=Why+did+they+stop+taking+it%3F');
     const card = page.locator('.fd-reader:visible #catie-stop');
@@ -4491,30 +4911,36 @@ test.describe('Clinical field guide', () => {
     await expectHealthy(page);
   });
 
-  test('resource aliases and dated titles arrive honestly when no passage matches', async ({ page }, testInfo) => {
-    const resident = isResidentProject(testInfo.project.name);
-    const cases = [
-      ['ask family for collateral', 'collateral_workflow.md'],
-      [`First-Episode Psychosis [Sep 7] — ${resident ? 'Resident' : 'MS3'}?`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
-    ];
-    await seedApp(page, testInfo);
-    for (const [query, ref] of cases) {
-      await page.goto('/');
-      await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
-      await page.getByRole('textbox', { name: 'Search resources', exact: true }).fill(query);
-      const result = page.locator(`.fd-result[data-fd-open="${ref}"]`);
-      await expect(result).toHaveCount(1);
-      await result.press('Enter');
-      await expect(page.locator('.fd-reader--guide')).toBeVisible();
-      await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
-      expect(new URL(page.url()).searchParams.get('guideFind')).toBe(query);
-      await expect(page.locator('.fd-guide-arrival')).toContainText('No matching passage in this guide.');
-      await expect(page.locator('.fd-guide-match')).toHaveCount(0);
-      await expect(page.locator('.fd-article__h1')).toBeVisible();
-      await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeVisible();
-      await expectHealthy(page);
-    }
-  });
+  for (const viewport of [DESKTOP, PHONE]) {
+    test(`resource aliases and dated titles arrive honestly when no passage matches at ${viewport.width}px`, async ({ page }, testInfo) => {
+      const resident = isResidentProject(testInfo.project.name);
+      const cases = [
+        ['ask family for collateral', 'collateral_workflow.md'],
+        [`First-Episode Psychosis [Sep 7] — ${resident ? 'Resident' : 'MS3'}?`, `cotw_20260907_fep_${resident ? 'res' : 'ms3'}.md`],
+      ];
+      await page.setViewportSize(viewport);
+      await seedApp(page, testInfo);
+      for (const [query, ref] of cases) {
+        await page.goto('/');
+        await page.locator('.fd-searchbtn[data-fd-search]:visible').click();
+        await page.getByRole('textbox', { name: 'Search resources', exact: true }).fill(query);
+        const result = page.locator(`.fd-result[data-fd-open="${ref}"]`);
+        // A partial source excerpt may arrive after the resource is already selectable.
+        await expect(result.locator('.fd-result__excerpt')).toBeVisible();
+        await result.press('Enter');
+        await expect(page.locator('.fd-reader--guide')).toBeVisible();
+        await expect(page.locator('.fd-reader .fd-article')).toHaveAttribute('data-ref', ref);
+        expect(new URL(page.url()).searchParams.get('guideFind')).toBe(query);
+        await expect(page.locator('.fd-guide-arrival')).toContainText('No matching passage in this guide.');
+        await expect(page.getByRole('button', { name: 'Go to matching passage', exact: true })).toHaveCount(0);
+        await expect(page.locator('.fd-guide-match')).toHaveCount(0);
+        await expect(page.locator('.fd-article__h1')).toBeVisible();
+        if (viewport === PHONE) await page.locator('.fd-guide-contents > summary').click();
+        await expect(page.getByRole('navigation', { name: 'On this page', exact: true })).toBeVisible();
+        await expectHealthy(page);
+      }
+    });
+  }
 
   test('global search hands a literal phrase to the guide and clears it for a practice tool', async ({ page }, testInfo) => {
     await seedApp(page, testInfo);
