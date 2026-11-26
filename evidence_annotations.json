@@ -3658,7 +3658,7 @@
         "retrievedAt": "2026-11-26",
         "pmid": "37338866",
         "doi": "10.1001/jama.2023.9301",
-        "sourceSpan": "Asymptomatic adults 19 years or older, including pregnant and postpartum persons. Older adults are defined as those 65 years or older.\n\nEVIDENCE ASSESSMENT: The USPSTF concludes with moderate certainty that screening for anxiety disorders in adults, including pregnant and postpartum persons, has a moderate net benefit. The USPSTF concludes that the evidence is insufficient on screening for anxiety disorders in older adults.\n\nRECOMMENDATION: The USPSTF recommends screening for anxiety disorders in adults, including pregnant and postpartum persons. (B recommendation) The USPSTF concludes that the current evidence is insufficient to assess the balance of benefits and harms of screening for anxiety disorders in older adults. (I statement)."
+        "sourceSpan": "Asymptomatic adults 19 years or older, including pregnant and postpartum persons. Older adults are defined as those 65 years or older.\n\nThe USPSTF concludes with moderate certainty that screening for anxiety disorders in adults, including pregnant and postpartum persons, has a moderate net benefit. The USPSTF concludes that the evidence is insufficient on screening for anxiety disorders in older adults.\n\nThe USPSTF recommends screening for anxiety disorders in adults, including pregnant and postpartum persons. (B recommendation) The USPSTF concludes that the current evidence is insufficient to assess the balance of benefits and harms of screening for anxiety disorders in older adults. (I statement)."
       },
       "claims": [
         {
@@ -3856,7 +3856,7 @@
         "retrievedAt": "2026-11-26",
         "pmid": "26361000",
         "doi": "10.1016/S2215-0366(14)70329-3",
-        "sourceSpan": "Individual CBT compared with psychological placebo (SMD -0·56, 95% CrI -1·00 to -0·11), and SSRIs and SNRIs compared with pill placebo (-0·44, -0·67 to -0·22) were the only classes of interventions that had greater effects on outcomes than appropriate placebo. Individual CBT also had a greater effect than psychodynamic psychotherapy (SMD -0·56, 95% CrI -1·03 to -0·11) and interpersonal psychotherapy, mindfulness, and supportive therapy (-0·82, -1·41 to -0·24).\n\nINTERPRETATION: Individual CBT (which other studies have shown to have a lower risk of side-effects than pharmacotherapy) is associated with large effect sizes. Thus, it should be regarded as the best intervention for the initial treatment of social anxiety disorder. For individuals who decline psychological intervention, SSRIs show the most consistent evidence of benefit."
+        "sourceSpan": "Individual CBT compared with psychological placebo (SMD -0·56, 95% CrI -1·00 to -0·11), and SSRIs and SNRIs compared with pill placebo (-0·44, -0·67 to -0·22) were the only classes of interventions that had greater effects on outcomes than appropriate placebo. Individual CBT also had a greater effect than psychodynamic psychotherapy (SMD -0·56, 95% CrI -1·03 to -0·11) and interpersonal psychotherapy, mindfulness, and supportive therapy (-0·82, -1·41 to -0·24).\n\nIndividual CBT (which other studies have shown to have a lower risk of side-effects than pharmacotherapy) is associated with large effect sizes. Thus, it should be regarded as the best intervention for the initial treatment of social anxiety disorder. For individuals who decline psychological intervention, SSRIs show the most consistent evidence of benefit."
       },
       "claims": [
         {

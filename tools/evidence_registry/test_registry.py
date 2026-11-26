@@ -412,6 +412,15 @@ ALL_SOURCE_IDS |= {
 }
 # Primary study cited in Alex's prednisone timeline debrief.
 ALL_SOURCE_IDS.add("brown-2002-prednisone-mood")
+# Clinic anxiety page (t_gad.md, 2026-11-26): GAD, social anxiety and phobias.
+GAD_CLINIC_PAGE_2026_11_IDS = {
+    "kessler-2005-ncsr-lifetime-prevalence", "uspstf-2023-anxiety-screening-adults",
+    "spitzer-2006-gad7", "slee-2019-gad-pharmacotherapy-nma",
+    "carl-2020-gad-psychotherapy-medication", "stone-2009-antidepressant-suicidality-age",
+    "batelaan-2017-antidepressant-discontinuation-anxiety",
+    "mayo-wilson-2014-social-anxiety-nma", "wolitzky-taylor-2008-specific-phobia",
+}
+ALL_SOURCE_IDS |= GAD_CLINIC_PAGE_2026_11_IDS
 # Published corrections are described in each identity note; these sources remain
 # pending faculty review. None changes the general claim used by the primer.
 PSYCHOPHARM_PRIMER_CORRECTED_IDS = {
