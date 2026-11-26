@@ -22,12 +22,122 @@ function fdMountBedsideCases(body) {
   fdMountCatatoniaFrames(body);
   fdMountConsultCallback(body);
   fdMountGriefConsult(body);
+  fdMountLeahFamily(body);
   fdMountOvernightPlan(body);
   fdMountPerinatalComparison(body);
   fdMountEvidenceRails(body);
   fdMountReplyThread(body);
   fdMountNicoInterview(body);
   fdMountElenaVisit(body);
+}
+
+function fdMountLeahFamily(body) {
+  const card = body.querySelector('#leah-family');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const field = id => card.querySelector('#lf-' + id);
+  const people = Array.from(card.querySelectorAll('button[data-person]'));
+  const versions = Array.from(card.querySelectorAll('button[data-version]'));
+  const choices = Array.from(card.querySelectorAll('button[data-handoff]'));
+  const shared = card.querySelector('template[data-family-accounts]').content;
+  const text = (container, key) => container.querySelector('[data-text="' + key + '"]').textContent;
+  const initial = {};
+  for (const id of ['invite-help', 'speaker-name', 'speaker-quote', 'answer-route']) initial[id] = field(id).textContent;
+  const heard = new Set();
+  let script;
+
+  function select(buttons, current) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === current));
+  }
+  function renderRoute() {
+    const route = field('answer-route');
+    if (!field('preference').hidden) {
+      route.replaceChildren(...script.content.querySelector('[data-route]').cloneNode(true).childNodes);
+    } else if (!field('brother-clarification').hidden) {
+      route.textContent = text(shared, 'clarified-route');
+    } else {
+      route.textContent = heard.has('brother') ? text(shared, 'brother-route') : initial['answer-route'];
+    }
+  }
+  function begin(key) {
+    script = card.querySelector('template[data-family-version="' + key + '"]');
+    heard.clear();
+    select(versions, versions.find(button => button.dataset.version === key));
+    select(people, null);
+    select(choices, null);
+    for (const button of people) {
+      delete button.dataset.heard;
+      button.setAttribute('aria-label', 'Replay ' + text(shared, 'name-' + button.dataset.person));
+    }
+    for (const [id, value] of Object.entries(initial)) field(id).textContent = value;
+    field('heard-count').textContent = '0 of 3 heard';
+    for (const id of ['ask-brother', 'invite']) {
+      field(id).disabled = true;
+      field(id).setAttribute('aria-expanded', 'false');
+    }
+    for (const id of ['brother-clarification', 'preference', 'handoffs', 'feedback', 'team-update']) field(id).hidden = true;
+    field('preference').replaceChildren();
+    field('feedback').textContent = '';
+    field('team-update').querySelector('p').textContent = '';
+    field('teaching').textContent = '';
+    field('debrief').open = false;
+    for (const button of choices) button.textContent = text(script.content, 'option-' + button.dataset.handoff);
+  }
+  for (const button of people) button.addEventListener('click', () => {
+    const who = button.dataset.person;
+    heard.add(who);
+    select(people, button);
+    button.dataset.heard = 'true';
+    const name = text(shared, 'name-' + who);
+    button.setAttribute('aria-label', name + ', heard. Replay');
+    field('heard-count').textContent = heard.size + ' of 3 heard';
+    field('speaker-name').textContent = name;
+    field('speaker-quote').textContent = text(shared, 'words-' + who);
+    if (heard.size === people.length && field('preference').hidden) {
+      field('invite').disabled = false;
+      field('ask-brother').disabled = false;
+      if (field('brother-clarification').hidden) field('invite-help').textContent = text(shared, 'ready');
+    }
+    renderRoute();
+  });
+  field('ask-brother').addEventListener('click', () => {
+    field('ask-brother').setAttribute('aria-expanded', 'true');
+    field('brother-clarification').hidden = false;
+    field('invite-help').textContent = text(shared, 'after-brother');
+    renderRoute();
+    field('brother-clarification').focus();
+  });
+  field('invite').addEventListener('click', () => {
+    field('invite').setAttribute('aria-expanded', 'true');
+    field('ask-brother').disabled = true;
+    const reply = field('preference');
+    reply.replaceChildren(...script.content.querySelector('[data-dialogue]').cloneNode(true).childNodes);
+    reply.hidden = false;
+    field('handoffs').hidden = false;
+    field('invite-help').textContent = text(shared, 'turn-back');
+    renderRoute();
+    reply.focus();
+  });
+  for (const button of choices) button.addEventListener('click', () => {
+    const choice = button.dataset.handoff;
+    const match = choice === script.dataset.match;
+    select(choices, button);
+    field('feedback').textContent = text(script.content, 'feedback-' + choice);
+    field('feedback').hidden = false;
+    field('team-update').hidden = !match;
+    field('team-update').querySelector('p').textContent = match ? text(script.content, 'update') : '';
+    field('teaching').textContent = match ? text(script.content, 'teaching') : '';
+    if (!match) field('debrief').open = false;
+  });
+  for (const button of versions) button.addEventListener('click', () => {
+    if (button.dataset.version !== script.dataset.familyVersion) begin(button.dataset.version);
+  });
+  field('reset').addEventListener('click', () => {
+    begin('a');
+    people[0].focus();
+  });
+  begin('a');
 }
 
 function fdMountGriefConsult(body) {

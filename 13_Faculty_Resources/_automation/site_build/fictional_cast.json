@@ -370,6 +370,24 @@
       "pages": [
         "14_Tracks/MS3/Student_Ready_Pack/04_expansion_modules/consult_capacity_delirium_catatonia_withdrawal.md"
       ]
+    },
+    {
+      "id": "leah-family-modalities",
+      "name": "Leah",
+      "pronouns": "she",
+      "role": "patient",
+      "pages": [
+        "06_Family_and_Relational/family_therapy_modalities_inpatient.md"
+      ]
+    },
+    {
+      "id": "dan-family-modalities",
+      "name": "Dan",
+      "pronouns": "he",
+      "role": "brother",
+      "pages": [
+        "06_Family_and_Relational/family_therapy_modalities_inpatient.md"
+      ]
     }
   ],
   "ignore": []
