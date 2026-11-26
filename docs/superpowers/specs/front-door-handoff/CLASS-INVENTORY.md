@@ -1541,10 +1541,11 @@ middle of the screen and focuses it. One selector:
 
 ### "Updated since you last opened it" (2026-11-25)
 
-`fd_page_changed.js` keeps a fingerprint of each reading's text on the device (`cw_page_seen_v1`,
-ref → `{h, at}`, capped at 400 pages) each time the reader opens it. When a page the learner marked
-read is opened and its fingerprint changed, one status line goes directly after the page's `h1`,
-once; the next open is silent. Learner reader only, never the faculty preview.
+`fd_page_changed.js` keeps the page's author-set `<!-- content-updated: YYYY-MM-DD -->` marker and the
+day it was opened on the device (`cw_page_seen_v1`, ref → `{v, at}`, capped at 400 pages) each time
+the reader opens it. When a page the learner marked read is opened with a marker other than the one
+the device last saw, one status line goes directly after the page's `h1`, once; the next open is
+silent. An unmarked edit (a typo fix) never shows it. Learner reader only, never the faculty preview.
 
 | Class | Element | Notes |
 |---|---|---|
