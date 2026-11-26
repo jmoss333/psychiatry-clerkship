@@ -1,7 +1,49 @@
 {
   "_note": "Resolved citation metadata, written by bin/refresh_citation_attribution_cache.py and read by bin/check_citation_attribution.py, which never touches the network. Keyed by lowercased DOI and by PMID. status 'not-found' is a verdict (the service answered and there is no such paper) and FAILS the gate; an identifier absent from this file also fails, because a gate that skips what it cannot resolve rebuilds the hole PR #672 walked through. Refresh is a deliberate human act, never a CI step.",
-  "refreshedAt": "2026-11-23",
+  "refreshedAt": "2026-11-26",
   "dois": {
+    "10.1001/archinte.166.10.1092": {
+      "title": "A Brief Measure for Assessing Generalized Anxiety Disorder",
+      "container": "Arch Intern Med",
+      "containerAlt": [
+        "Arch Intern Med",
+        "Archives of Internal Medicine",
+        "Archives of internal medicine"
+      ],
+      "year": 2006,
+      "authors": [
+        "Spitzer",
+        "Kroenke",
+        "Williams",
+        "Löwe"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "16717171"
+    },
+    "10.1001/archpsyc.62.6.593": {
+      "title": "Lifetime Prevalence and Age-of-Onset Distributions of DSM-IV Disorders in the National Comorbidity Survey Replication",
+      "container": "Arch Gen Psychiatry",
+      "containerAlt": [
+        "Arch Gen Psychiatry",
+        "Archives of General Psychiatry",
+        "Archives of general psychiatry"
+      ],
+      "year": 2005,
+      "authors": [
+        "Kessler",
+        "Berglund",
+        "Demler",
+        "Jin",
+        "Merikangas",
+        "Walters"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "15939837"
+    },
     "10.1001/jama.2015.3474": {
       "title": "Emergency Department–Initiated Buprenorphine/Naloxone Treatment for Opioid Dependence",
       "container": "JAMA",
@@ -253,6 +295,38 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37934220"
+    },
+    "10.1001/jama.2023.9301": {
+      "title": "Screening for Anxiety Disorders in Adults",
+      "container": "JAMA",
+      "containerAlt": [
+        "JAMA"
+      ],
+      "year": 2023,
+      "authors": [
+        "US Preventive Services Task Force",
+        "Barry",
+        "Nicholson",
+        "Silverstein",
+        "Coker",
+        "Davidson",
+        "Davis",
+        "Donahue",
+        "Jaén",
+        "Li",
+        "Ogedegbe",
+        "Pbert",
+        "Rao",
+        "Ruiz",
+        "Stevermer",
+        "Tsevat",
+        "Underwood",
+        "Wong"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "37338866"
     },
     "10.1001/jama.2025.26348": {
       "title": "Medications for Opioid Use Disorder, Opioid Withdrawal, and Opioid Overdose",
@@ -1701,6 +1775,26 @@
       "resolvedAt": "2026-10-12",
       "pmid": "30122279"
     },
+    "10.1016/j.cpr.2008.02.007": {
+      "title": "Psychological approaches in the treatment of specific phobias: A meta-analysis",
+      "container": "Clinical Psychology Review",
+      "containerAlt": [
+        "Clin Psychol Rev",
+        "Clinical Psychology Review",
+        "Clinical psychology review"
+      ],
+      "year": 2008,
+      "authors": [
+        "Wolitzky-Taylor",
+        "Horowitz",
+        "Powers",
+        "Telch"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "18410984"
+    },
     "10.1016/j.cpr.2025.102656": {
       "title": "Associated factors of the quality of therapeutic alliance in people with severe mental illnesses: A systematic review",
       "container": "Clinical Psychology Review",
@@ -1848,6 +1942,26 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "31837914"
+    },
+    "10.1016/j.genhosppsych.2010.03.006": {
+      "title": "The Patient Health Questionnaire Somatic, Anxiety, and Depressive Symptom Scales: a systematic review",
+      "container": "General Hospital Psychiatry",
+      "containerAlt": [
+        "Gen Hosp Psychiatry",
+        "General Hospital Psychiatry",
+        "General hospital psychiatry"
+      ],
+      "year": 2010,
+      "authors": [
+        "Kroenke",
+        "Spitzer",
+        "Williams",
+        "Löwe"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "20633738"
     },
     "10.1016/j.genhosppsych.2017.06.011": {
       "title": "Alternative treatment strategies for catatonia: A systematic review",
@@ -2249,6 +2363,28 @@
       "resolvedAt": "2026-09-27",
       "pmid": "29150198"
     },
+    "10.1016/s0140-6736(18)31793-8": {
+      "title": "Pharmacological treatments for generalised anxiety disorder: a systematic review and network meta-analysis",
+      "container": "The Lancet",
+      "containerAlt": [
+        "Lancet",
+        "Lancet (London, England)",
+        "The Lancet"
+      ],
+      "year": 2019,
+      "authors": [
+        "Slee",
+        "Nazareth",
+        "Bondaronek",
+        "Liu",
+        "Cheng",
+        "Freemantle"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "30712879"
+    },
     "10.1016/s0140-6736(19)31135-3": {
       "title": "Comparative efficacy and tolerability of 32 oral antipsychotics for the acute treatment of adults with multi-episode schizophrenia: a systematic review and network meta-analysis",
       "container": "The Lancet",
@@ -2345,6 +2481,29 @@
       "status": "resolved",
       "resolvedAt": "2026-09-28",
       "pmid": "40712624"
+    },
+    "10.1016/s2215-0366(14)70329-3": {
+      "title": "Psychological and pharmacological interventions for social anxiety disorder in adults: a systematic review and network meta-analysis",
+      "container": "The Lancet Psychiatry",
+      "containerAlt": [
+        "Lancet Psychiatry",
+        "The Lancet Psychiatry",
+        "The lancet. Psychiatry"
+      ],
+      "year": 2014,
+      "authors": [
+        "Mayo-Wilson",
+        "Dias",
+        "Mavranezouli",
+        "Kew",
+        "Clark",
+        "Ades",
+        "Pilling"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "26361000"
     },
     "10.1016/s2215-0366(18)30474-7": {
       "title": "Structure and neural mechanisms of catatonia",
@@ -3240,6 +3399,31 @@
       "resolvedAt": "2026-10-05",
       "pmid": "41572784"
     },
+    "10.1080/16506073.2018.1560358": {
+      "title": "Psychological and pharmacological treatments for generalized anxiety disorder (GAD): a meta-analysis of randomized controlled trials",
+      "container": "Cognitive Behaviour Therapy",
+      "containerAlt": [
+        "Cogn Behav Ther",
+        "Cognitive Behaviour Therapy",
+        "Cognitive behaviour therapy"
+      ],
+      "year": 2019,
+      "authors": [
+        "Carl",
+        "Witcraft",
+        "Kauffman",
+        "Gillespie",
+        "Becker",
+        "Cuijpers",
+        "Van Ameringen",
+        "Smits",
+        "Powers"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "30760112"
+    },
     "10.1080/21548331.2019.1709359": {
       "title": "Delirium in hospitalized older adults",
       "container": "Hospital Practice",
@@ -3511,6 +3695,28 @@
       "status": "resolved",
       "resolvedAt": "2026-10-26",
       "pmid": "37923363"
+    },
+    "10.1111/acer.14843": {
+      "title": "What is the optimum thiamine dose to treat or prevent Wernicke's encephalopathy or Wernicke–Korsakoff syndrome? Results of a randomized controlled trial",
+      "container": "Alcoholism Clin &amp; Exp Res",
+      "containerAlt": [
+        "Alcohol Clin Exp Res",
+        "Alcoholism Clin &amp; Exp Res",
+        "Alcoholism, clinical and experimental research",
+        "Alcoholism: Clinical and Experimental Research"
+      ],
+      "year": 2022,
+      "authors": [
+        "Dingwall",
+        "Delima",
+        "Binks",
+        "Batey",
+        "Bowden"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-15",
+      "pmid": "35428992"
     },
     "10.1111/acps.12995": {
       "title": "Efficacy of inpatient psychotherapy for major depressive disorder: a meta‐analysis of controlled trials",
@@ -3983,6 +4189,51 @@
       "resolvedAt": "2026-09-27",
       "pmid": "39778965"
     },
+    "10.1136/bmj.b2880": {
+      "title": "Risk of suicidality in clinical trials of antidepressants in adults: analysis of proprietary data submitted to US Food and Drug Administration",
+      "container": "BMJ",
+      "containerAlt": [
+        "BMJ",
+        "BMJ (Clinical research ed.)"
+      ],
+      "year": 2009,
+      "authors": [
+        "Stone",
+        "Laughren",
+        "Jones",
+        "Levenson",
+        "Holland",
+        "Hughes",
+        "Hammad",
+        "Temple",
+        "Rochester"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "19671933"
+    },
+    "10.1136/bmj.j3927": {
+      "title": "Risk of relapse after antidepressant discontinuation in anxiety disorders, obsessive-compulsive disorder, and post-traumatic stress disorder: systematic review and meta-analysis of relapse prevention trials",
+      "container": "BMJ",
+      "containerAlt": [
+        "BMJ",
+        "BMJ (Clinical research ed.)"
+      ],
+      "year": 2017,
+      "authors": [
+        "Batelaan",
+        "Bosman",
+        "Muntingh",
+        "Scholten",
+        "Huijbregts",
+        "van Balkom"
+      ],
+      "source": "crossref+pubmed",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": "28903922"
+    },
     "10.1136/bmjopen-2018-023883": {
       "title": "Meta-analysis of suicide rates in the first week and the first month after psychiatric hospitalisation",
       "container": "BMJ Open",
@@ -4331,6 +4582,19 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "39876682"
+    },
+    "10.1176/appi.books.9780890425787": {
+      "title": "Diagnostic and Statistical Manual of Mental Disorders",
+      "container": null,
+      "containerAlt": [],
+      "year": 2022,
+      "authors": [
+        "American Psychiatric Association"
+      ],
+      "source": "crossref",
+      "status": "resolved",
+      "resolvedAt": "2026-11-26",
+      "pmid": null
     },
     "10.1176/appi.focus.20220072": {
       "title": "Suicide Risk Assessment, Management, and Mitigation in the Emergency Setting",
@@ -5392,28 +5656,6 @@
       "status": "resolved",
       "resolvedAt": "2026-09-27",
       "pmid": "37236789"
-    },
-    "10.1111/acer.14843": {
-      "title": "What is the optimum thiamine dose to treat or prevent Wernicke's encephalopathy or Wernicke–Korsakoff syndrome? Results of a randomized controlled trial",
-      "container": "Alcoholism Clin &amp; Exp Res",
-      "containerAlt": [
-        "Alcohol Clin Exp Res",
-        "Alcoholism Clin &amp; Exp Res",
-        "Alcoholism, clinical and experimental research",
-        "Alcoholism: Clinical and Experimental Research"
-      ],
-      "year": 2022,
-      "authors": [
-        "Dingwall",
-        "Delima",
-        "Binks",
-        "Batey",
-        "Bowden"
-      ],
-      "source": "crossref+pubmed",
-      "status": "resolved",
-      "resolvedAt": "2026-11-15",
-      "pmid": "35428992"
     }
   },
   "pmids": {
