@@ -38,16 +38,35 @@
     "routes": [
       { "label": "Suicide Risk & Safety pocket guide", "href": "?page=pg_suicide.md" }
     ],
+    "cueTag": "Medical and safety check first",
     "continueLabel": "Medically safe and the team knows — go to chain analysis",
     "note": "Chain analysis is for once the patient is medically safe and the team has a plan. Doing it first can miss a silent overdose or an injury that needs care."
+  },
+  "escalationSafety": {
+    "cueId": "cue-flooded",
+    "title": "Check risk and staff safety first, then the skill",
+    "body": "“About to act” can mean about to hurt themselves or someone else. Before you coach a skill, check the room and the risk, with the patient's nurse:",
+    "steps": [
+      "Keep everyone safe: keep a clear exit, give the patient space, and do not stay alone with someone who is escalating. If anyone is in danger now, call for help (nurse, team response or security) the way your unit does.",
+      "Ask directly what “about to act” means: thoughts of hurting themselves or someone else, a plan, and anything within reach they could use.",
+      "Tell your resident or attending and the patient's nurse now. Intent to harm self or others is a risk state for the team, not a five-minute skill."
+    ],
+    "routes": [
+      { "label": "Suicide Risk & Safety pocket guide", "href": "?page=pg_suicide.md" },
+      { "label": "Agitation & Restraint", "href": "?page=agitation.md" },
+      { "label": "Agitation Ladder trainer", "href": "?tool=rp-agitation.html" }
+    ],
+    "cueTag": "Risk and staff-safety check first",
+    "continueLabel": "No intent to harm, the room is safe and the team knows — go to TIPP",
+    "note": "TIPP helps someone ride out a wave of emotion. It does not replace a risk assessment, or calling for help when someone could get hurt."
   },
   "safety": {
     "cueId": "cue-suicidal",
     "title": "This is a risk state, not a five-minute technique",
     "body": "Active suicidality needs your team, not a coached script. Route it, then build a plan collaboratively and supervised.",
     "routes": [
-      { "label": "Open the Columbia C-SSRS screener", "href": "?tool=cssrs.html" },
-      { "label": "Suicide Risk & Safety pocket guide", "href": "?page=pg_suicide.md" }
+      { "label": "Suicide Risk & Safety pocket guide", "href": "?page=pg_suicide.md" },
+      { "label": "Columbia C-SSRS — official form and training", "href": "?tool=cssrs.html" }
     ],
     "note": "Safety planning (Stanley-Brown) is collaborative, built with the patient and supervised — never generated here, and never a no-suicide 'contract' (no evidence; false reassurance).",
     "citationIds": ["stanley2018"]
@@ -61,7 +80,7 @@
     },
     "cues": [
       { "id": "cue-shutdown", "label": "Withdrawn, inactive, anhedonic — “nothing matters”", "mechanism": "Behavioral shutdown", "techId": "ba" },
-      { "id": "cue-flooded", "label": "Flooded, escalating, about to act", "mechanism": "Acute emotional dysregulation", "techId": "tipp" },
+      { "id": "cue-flooded", "label": "Flooded, escalating, about to act", "mechanism": "Acute emotional dysregulation", "techId": "tipp", "safetyFirst": true },
       { "id": "cue-selfharm", "label": "Just self-harmed or nearly did", "mechanism": "Behavior serving a function", "techId": "chain", "safetyFirst": true },
       { "id": "cue-overwhelmed", "label": "Keeps returning in crisis, overwhelmed by problems", "mechanism": "Problem-solving deficit", "techId": "pst" },
       { "id": "cue-ambivalent", "label": "Ambivalent about meds, treatment, or substance use", "mechanism": "Motivational conflict", "techId": "mi" },

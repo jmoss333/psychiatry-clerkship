@@ -176,8 +176,12 @@
     useEffect(function(){flushFlags();},[]); // drain any rp_flags entries left unsent from a previous offline session
     useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
 
+    /* Safety-first gates (red-team BP-1, BP-2): a cue marked safetyFirst opens the gate whose
+       cueId names it (incidentSafety for self-harm, escalationSafety for "about to act"), and
+       only that gate's own continue button passes cleared=true on to the technique. */
+    function gateFor(cue){return [pack.incidentSafety,pack.escalationSafety].filter(function(g){return g&&cue&&g.cueId===cue.id;})[0]||null;}
     function openCue(cue,cleared){if(cue.safety){setShowSafety(true);setPhase('safety');announce('Safety routing.');return;}
-      if(cue.safetyFirst&&!cleared&&pack.incidentSafety){setIncidentCue(cue);setPhase('incident');announce('Medical and safety check first.');return;}
+      if(cue.safetyFirst&&!cleared&&gateFor(cue)){setIncidentCue(cue);setPhase('incident');announce((gateFor(cue).cueTag||'Safety check first')+'.');return;}
       var t=pack.content.techniques.filter(function(x){return x.id===cue.techId;})[0];setTech(t);setLabel('');
       setPredMechChoice(null);setPredTechChoice(null);
       if(mode==='practice'){
@@ -277,9 +281,10 @@
         e(FlagButton,{ctx:'safety'}));
     }
 
-    // POST-INCIDENT safety gate (red-team BP-1): self-harm goes to the body and the team before chain analysis
-    if(phase==='incident'&&pack.incidentSafety){
-      var is=pack.incidentSafety;
+    // SAFETY-FIRST gate (red-team BP-1, BP-2): self-harm goes to the body and the team before chain
+    // analysis; "about to act" goes to risk and staff safety before TIPP
+    if(phase==='incident'&&gateFor(incidentCue)){
+      var is=gateFor(incidentCue);
       return e('div',null,header,
         e('div',{className:'card',style:{borderColor:'var(--danger)'}},
           e('div',{className:'mechbadge',style:{color:'var(--danger)',borderColor:'var(--danger)',background:'var(--danger-light)'}},'Safety first'),
@@ -354,7 +359,7 @@
         e('div',{className:'lbl'},'What are you seeing?'),
         e('div',{className:'cuegrid'},
           pack.content.cues.map(function(c){var showMech=c.safety||c.safetyFirst||mode==='reference';return e('button',{key:c.id,className:'cue'+(c.safety||c.safetyFirst?' safety':''),onClick:function(){openCue(c);}},
-            c.label, showMech?e('span',{className:'mech'}, c.safety?'⚑ Route to your team':(c.safetyFirst?'⚑ Medical and safety check first':c.mechanism)):null);}))),
+            c.label, showMech?e('span',{className:'mech'}, c.safety?'⚑ Route to your team':(c.safetyFirst?'⚑ '+((gateFor(c)||{}).cueTag||'Safety check first'):c.mechanism)):null);}))),
       e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
         e('span',{className:'cite'},'Daily scaffold: '+f.scaffold.join(' · ')),
         e(FlagButton,{ctx:'cues'})));

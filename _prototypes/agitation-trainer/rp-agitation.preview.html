@@ -170,18 +170,19 @@
     "pharmApproach": [
       { "id": "sga", "label": "Second-generation antipsychotic", "tokenId": "agitation.po_options",
         "hazardIf": { "parkinson_dlb": "Not a safe default in Parkinson disease / Lewy body dementia — risperidone and olanzapine can trigger severe, sometimes fatal neuroleptic sensitivity. If an antipsychotic is unavoidable the choice is narrow (quetiapine or clozapine acutely; pimavanserin is a maintenance option for PD psychosis, not for acute agitation) and belongs to your attending.", "catatonia": "Second-generation agents can also precipitate or worsen catatonia and NMS — hold antipsychotics until catatonia is excluded or treated.", "withdrawal": "Not a substitute for withdrawal treatment. An antipsychotic alone leaves alcohol or sedative-hypnotic withdrawal untreated, lowers the seizure threshold and can mask evolving delirium tremens. Treat the withdrawal with a benzodiazepine per protocol; an antipsychotic is at most an adjunct." },
-        "cautionIf": { "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.", "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis." } },
+        "cautionIf": { "qtc_risk": "Some SGAs prolong QTc (e.g., ziprasidone highest) — check baseline QTc/interacting drugs.", "older_dementia": "All antipsychotics carry FDA black-box mortality warning in dementia-related psychosis.", "stimulant_intox": "Benzodiazepines are the first-line class for sympathomimetic agitation. An antipsychotic can lower the seizure threshold, impair heat loss in a hyperthermic patient and add QTc risk; if one is used, it is an adjunct.", "undetermined": "The driver is not yet known. Committing to an antipsychotic now risks the wrong move (in withdrawal or catatonia, for example); de-escalate, work it up and decide with your senior." } },
       { "id": "d2_typical", "label": "Typical antipsychotic (D2 blocker)", "tokenId": "agitation.im_options",
         "hazardIf": { "parkinson_dlb": "D2 blockade worsens parkinsonism — contraindicated in Parkinson disease / Lewy body dementia.", "catatonia": "May precipitate/worsen catatonia and NMS — hold antipsychotics.", "withdrawal": "Not a substitute for withdrawal treatment. An antipsychotic alone leaves alcohol or sedative-hypnotic withdrawal untreated, lowers the seizure threshold and can mask evolving delirium tremens. Treat the withdrawal with a benzodiazepine per protocol; an antipsychotic is at most an adjunct." },
-        "cautionIf": { "older_dementia": "FDA black-box mortality warning in dementia-related psychosis; high EPS risk in older adults." } },
+        "cautionIf": { "older_dementia": "FDA black-box mortality warning in dementia-related psychosis; high EPS risk in older adults.", "qtc_risk": "Typical antipsychotics, haloperidol especially when given intravenously, can prolong QTc and cause torsades — check QTc and interacting drugs and follow the local QTc action.", "stimulant_intox": "Benzodiazepines are the first-line class for sympathomimetic agitation. An antipsychotic can lower the seizure threshold, impair heat loss in a hyperthermic patient and add QTc risk; if one is used, it is an adjunct.", "undetermined": "The driver is not yet known. Committing to an antipsychotic now risks the wrong move (in withdrawal or catatonia, for example); de-escalate, work it up and decide with your senior." } },
       { "id": "benzo", "label": "Benzodiazepine", "tokenId": "agitation.im_options",
         "hazardIf": { "delirium": "Benzodiazepines worsen non-withdrawal delirium — avoid unless alcohol/sedative withdrawal or end-of-life." },
-        "cautionIf": { "older_dementia": "Falls, cognitive worsening, and delirium risk in older adults (Beers); midazolam has the highest adverse-event rate.", "respiratory": "Respiratory depression risk; caution with pulmonary disease/hepatic impairment." } },
+        "cautionIf": { "older_dementia": "Falls, cognitive worsening, and delirium risk in older adults (Beers); midazolam has the highest adverse-event rate.", "respiratory": "Respiratory depression risk; caution with pulmonary disease/hepatic impairment.", "undetermined": "The driver is not yet known, and a benzodiazepine worsens non-withdrawal delirium, which has not been ruled out; de-escalate, work it up and decide with your senior." } },
       { "id": "combo", "label": "Antipsychotic + benzodiazepine combination", "tokenId": "agitation.im_options",
         "hazardIf": { "delirium": "Benzodiazepine component worsens non-withdrawal delirium.", "catatonia": "The antipsychotic component can precipitate or worsen catatonia and NMS — give the benzodiazepine alone and hold the antipsychotic.", "parkinson_dlb": "The antipsychotic component carries the same D2 hazard in Parkinson disease/Lewy body dementia as a typical agent — do not use this combination here." },
-        "cautionIf": { "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).", "note": "Combination is often most effective for moderate/severe agitation (Siafis 2026) but stacks sedation/respiratory risk — monitor closely." } },
+        "cautionIf": { "im_olanzapine_benzo": "Do not combine IM olanzapine with a parenteral benzodiazepine (FDA label — respiratory/CV risk).", "note": "Combination is often most effective for moderate/severe agitation (Siafis 2026) but stacks sedation/respiratory risk — monitor closely.", "qtc_risk": "The antipsychotic component carries QTc risk — check QTc and interacting drugs and follow the local QTc action.", "stimulant_intox": "A benzodiazepine alone is the first-line class for sympathomimetic agitation; adding an antipsychotic adds seizure-threshold, heat-loss and QTc risk.", "undetermined": "The driver is not yet known; a combination stacks both classes' risks before you know which is safe. De-escalate, work it up and decide with your senior." } },
       { "id": "treat_cause", "label": "Treat the underlying cause first", "tokenId": null },
-      { "id": "im_if_danger", "label": "IM medication only if imminently dangerous & PO refused", "tokenId": "agitation.restraint_policy" }
+      { "id": "im_if_danger", "label": "IM medication only if imminently dangerous & PO refused", "tokenId": "agitation.restraint_policy",
+        "cautionIf": { "parkinson_dlb": "If the parenteral agent is an antipsychotic, the same D2 hazard in Parkinson disease / Lewy body dementia applies; the parenteral agent belongs to your attending.", "catatonia": "A parenteral antipsychotic can precipitate or worsen catatonia and NMS; if a parenteral agent is needed here, it is a benzodiazepine." } }
     ],
     "monitoring": [
       { "id": "pulse_ox", "label": "Continuous pulse oximetry", "tokenId": "agitation.monitoring_interval" },
@@ -205,6 +206,7 @@
         "priorResponse": "None yet.",
         "trueEtiology": "stimulant_intox",
         "populationFlags": [],
+        "threatCues": ["shouting after a disturbance", "hypervigilant and pacing", "declines to sit"],
         "discriminators": {
           "stimulant_intox": ["Dilated pupils", "Tachycardia/hypertension", "Diaphoresis", "Recent stimulant use"],
           "primary_psych": ["Would expect prior history / no sympathomimetic signs"],
@@ -381,6 +383,32 @@
       else notes=['Reasonable class-level choice for this presentation — confirm the specific agent/dose against local formulary.'];}
     return {level:level,notes:notes,hard:haz.length>0};
   }
+  /* Red-team AG-4: the non-pharmacologic row is graded, not hard-coded green. Verbal
+     de-escalation (also gated), a safe space (exit path, personal space, hazards removed) and,
+     when the scenario carries threat cues, calling for help are all expected. */
+  function nonpharmVerdict(ids,scenario){var miss=[];ids=ids||[];
+    if(ids.indexOf('deesc')<0)miss.push('Verbal de-escalation is the first rung of the ladder.');
+    if(ids.indexOf('space_safety')<0)miss.push('Make the space safe first: keep a clear exit, give personal space, and remove anything that could be used as a weapon.');
+    if((scenario.threatCues||[]).length&&ids.indexOf('activate_help')<0)miss.push('Threat cues here ('+scenario.threatCues.join('; ')+'): call for help (team response or security, per local process) before you are alone with an escalation.');
+    return {level:miss.length?'caution':'good',notes:miss.length?miss:['De-escalation first, in a space made safe'+((scenario.threatCues||[]).length?', with help called':'')+' (Project BETA).']};}
+  /* Red-team AG-3: monitoring is derived from the class chosen at step 3, not "any one item".
+     Any medication: serial vitals and sedation level, and reassess before re-dosing. A
+     benzodiazepine, a combination or a parenteral route adds airway and continuous pulse
+     oximetry. An antipsychotic with QTc risk adds an ECG. Escalating to your senior with no
+     agent chosen still needs a reassessment. */
+  var BENZO_OR_PARENTERAL=['benzo','combo','im_if_danger'], ANTIPSYCHOTIC=['sga','d2_typical','combo','im_if_danger'];
+  function requiredMonitoring(pharm,scenario){var flags=scenario.populationFlags||[];var req=['reassess'];
+    if(!pharm||pharm==='call_senior')return req;
+    req.push('serial_vitals');
+    if(BENZO_OR_PARENTERAL.indexOf(pharm)>=0)req.push('airway','pulse_ox');
+    if(ANTIPSYCHOTIC.indexOf(pharm)>=0&&flags.indexOf('qtc_risk')>=0)req.push('ecg');
+    return req;}
+  function monitoringVerdict(ids,pharm,scenario,bank){ids=ids||[];var lbl=function(id){return ((bank||[]).filter(function(o){return o.id===id;})[0]||{}).label||id;};
+    var missing=requiredMonitoring(pharm,scenario).filter(function(id){return ids.indexOf(id)<0;});
+    var notes=missing.length?['For this choice, also monitor: '+missing.map(lbl).join('; ')+'.']:['Monitoring matches the sedation and cardiac risk of the class you chose.'];
+    if(ANTIPSYCHOTIC.indexOf(pharm)>=0&&ids.indexOf('eps')<0)notes.push('With an antipsychotic, also watch for acute dystonia and akathisia.');
+    return {level:missing.length?'caution':'good',notes:notes};}
+  var RANK={hazard:0,caution:1,neutral:1,good:2};
 
   function LadderRail(props){
     var cur=props.rung||0;
@@ -405,6 +433,13 @@
     var si=useState(0),step=si[0],setStep=si[1];
     var sc=useState({}),choices=sc[0],setChoices=sc[1];
     var sn=useState(false),nudge=sn[0],setNudge=sn[1];
+    /* Red-team AG-2 (rewind rule, faculty ruling 2026-11-25): within one attempt, the answer
+       committed on each step is kept. Next (or "Lock in" on a guided feedback step) commits it;
+       Back and re-picking afterwards are recorded but never replace it, and the trace shows a
+       later better answer as "after a miss". Feedback that reveals the driver or a hazard
+       appears only once the step is committed. Restart or a new scenario is a new attempt. */
+    var slg=useState({}),log=slg[0],setLog=slg[1];
+    var spr=useState({}),prompted=spr[0],setPrompted=spr[1];
 
     useEffect(function(){
       Promise.resolve(PACK_INLINE)
@@ -418,8 +453,12 @@
 
     function setModeP(m){setMode(m);try{localStorage.setItem(LS.mode,m);}catch(e){}}
     function startPlay(){var list=pack.content.scenarios;var scn=mode==='challenge'?list[Math.floor(Math.random()*list.length)]:list[0];
-      setScenario(scn);setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]});setStep(0);setNudge(false);setPhase('play');announce('Scenario loaded. Step 1 of 4: etiology triage.');}
-    function pickScenario(scn){setScenario(scn);setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]});setStep(0);setNudge(false);setPhase('play');}
+      setScenario(scn);setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]});setLog({});setPrompted({});setStep(0);setNudge(false);setPhase('play');announce('Scenario loaded. Step 1 of 4: etiology triage.');}
+    function pickScenario(scn){setScenario(scn);setChoices({etiology:null,nonpharm:[],pharm:null,monitoring:[]});setLog({});setPrompted({});setStep(0);setNudge(false);setPhase('play');}
+    var STEP_KEYS=['etiology','nonpharm','pharm','monitoring'];
+    function snap(st){var v=choices[STEP_KEYS[st]];return Array.isArray(v)?v.slice():v;}
+    function committed(st){return Object.prototype.hasOwnProperty.call(log,st);}
+    function revealStep(st){return mode==='guided'&&(st===0||st===2);}
 
     var STEP_LABELS=['Step 1 · Etiology triage','Step 2 · Non-pharmacologic first','Step 3 · Pharmacologic reasoning','Step 4 · Monitoring & reassessment'];
     var STEP_Q=['What is most likely driving this agitation?','Before any medication route — what do you do first? (select all that apply)','If pharmacologic management is needed, what is your class-level approach?','What will you monitor and when will you reassess? (select all that apply)'];
@@ -440,7 +479,9 @@
        passed), and the monitoring step must select at least one order (previously it
        required nothing at all — PRN medication with zero monitoring sailed through). */
     function canAdvance(){if(step===0)return !!choices.etiology;if(step===1)return choices.nonpharm.indexOf('deesc')>=0;if(step===2)return !!choices.pharm;return choices.monitoring.length>0;}
-    function next(){if(!canAdvance()){setNudge(true);if(step===1)announce(choices.nonpharm.length?'Include verbal de-escalation — the ladder starts there.':'Address de-escalation before pharmacologic options.');if(step===3)announce('Select the monitoring you would order before finishing.');return;}
+    function next(){if(!canAdvance()){setNudge(true);if(!committed(step)){var pr=Object.assign({},prompted);pr[step]=true;setPrompted(pr);}if(step===1)announce(choices.nonpharm.length?'Include verbal de-escalation — the ladder starts there.':'Address de-escalation before pharmacologic options.');if(step===3)announce('Select the monitoring you would order before finishing.');return;}
+      if(!committed(step)){var lg=Object.assign({},log);lg[step]=snap(step);setLog(lg);
+        if(revealStep(step)){announce('Answer locked in. Feedback below.');return;}}
       if(step<3){setStep(step+1);announce(STEP_LABELS[step+1]);}else{setPhase('trace');announce('Decision trace ready.');}}
     function back(){if(step>0)setStep(step-1);}
 
@@ -457,17 +498,21 @@
       return e('button',{className:'senior'+(on?' on':''),onClick:pickSenior,'aria-pressed':on},
         e('span',{className:'ico'},'☎'),e('span',null,'Call your senior / attending — never the wrong move'));
     }
+    function lockedLine(){ // shown when the learner re-picks after committing
+      if(!committed(step))return null;var first=log[step],now=snap(step);
+      if(JSON.stringify(first)===JSON.stringify(now))return null;
+      return e('div',{className:'stopnote'},'Your committed answer for this step is kept in the decision trace; this change is recorded as made after it.');}
     function guidedReveal(){
-      if(mode!=='guided')return null;
+      if(mode!=='guided'||!committed(step))return null;
       if(step===0&&choices.etiology){
-        if(choices.etiology==='call_senior')return e('div',{className:'verdict good'},e('div',{className:'vh'},'✓ ','Calling for help is never wrong'),e('div',null,'Good instinct — escalate early. While help is on the way, keep gathering the driver so your senior arrives to a clear picture.'));
+        if(choices.etiology==='call_senior')return e('div',{className:'verdict good'},e('div',{className:'vh'},'✓ ','Calling for help is never wrong'),e('div',null,'Good instinct — escalate early. The trace marks this step deferred: you have not yet named a driver, and your senior will ask what you think it is.'));
         var truth=scenario.trueEtiology,disc=scenario.discriminators||{};var v=choices.etiology===truth?'good':'caution';
         var head=choices.etiology===truth?'Consistent with the discriminating features':(choices.etiology==='undetermined'?'A safe, non-penalized stance':'Worth re-weighing the discriminators');
         return e('div',{className:'verdict '+v},e('div',{className:'vh'},v==='good'?'✓ ':'△ ',head),
           e('div',null,choices.etiology==='undetermined'?'When data are insufficient, working it up and using least-harm measures is appropriate.':'Key features pointing to the likely driver: '+((disc[truth]||[]).join('; '))+'.'));
       }
       if(step===2&&choices.pharm){
-        if(choices.pharm==='call_senior')return e('div',{className:'verdict good'},e('div',{className:'vh'},'✓ ','Escalating is always appropriate'),e('div',null,'Reaching your senior/attending — especially when unsure or when danger is escalating — is always a correct move.'));
+        if(choices.pharm==='call_senior')return e('div',{className:'verdict good'},e('div',{className:'vh'},'✓ ','Escalating is always appropriate'),e('div',null,'Reaching your senior/attending — especially when unsure or when danger is escalating — is always a correct move. The trace marks this step deferred: no class-level plan was chosen.'));
         var opt=pack.choiceBanks.pharmApproach.filter(function(o){return o.id===choices.pharm;})[0];var vd=pharmVerdict(opt,scenario);
         return e('div',{className:'verdict '+vd.level},e('div',{className:'vh'},vd.level==='hazard'?'⚠ Hazard ':(vd.level==='caution'?'△ Caution ':'✓ Reasonable '),'— reasoning check'),
           e('ul',{style:{margin:'4px 0 0',paddingLeft:'1.1em'}},vd.notes.map(function(n,i){return e('li',{key:i},n);})),
@@ -512,18 +557,35 @@
         e(FlagButton,{ctx:'refmap'}));
     }
     if(phase==='trace'){
-      var rows=[];
-      (function(){var chosen=choices.etiology,truth=scenario.trueEtiology;
-        if(chosen==='call_senior'){rows.push({k:'Etiology',v:'good',choice:'☎ Called your senior',note:'Escalating when unsure is always safe.'});return;}
-        var v=chosen===truth?'good':'caution';var lbl=pack.choiceBanks.etiology.filter(function(o){return o.id===chosen;})[0];
-        rows.push({k:'Etiology',v:v,choice:lbl?lbl.label:'—',note:chosen===truth?'Matched the discriminating features.':(chosen==='undetermined'?'Safe stance when data are insufficient.':'Re-weigh: '+((scenario.discriminators[truth]||[]).join('; ')))});})();
-      (function(){var picks=choices.nonpharm.map(function(id){return pack.choiceBanks.nonpharm.filter(function(o){return o.id===id;})[0].label;});
-        rows.push({k:'Non-pharm first',v:'good',choice:picks.join(', ')||'—',note:'De-escalation-first sequencing (Project BETA).'});})();
-      (function(){if(choices.pharm==='call_senior'){rows.push({k:'Pharmacologic',v:'good',choice:'☎ Called your senior',note:'Escalation is always an acceptable move.'});return;}
-        var opt=pack.choiceBanks.pharmApproach.filter(function(o){return o.id===choices.pharm;})[0];var vd=pharmVerdict(opt,scenario);
-        rows.push({k:'Pharmacologic',v:vd.level,choice:opt.label,note:vd.notes.join(' ')});})();
-      (function(){var picks=choices.monitoring.map(function(id){return pack.choiceBanks.monitoring.filter(function(o){return o.id===id;})[0].label;});
-        rows.push({k:'Monitoring',v:choices.monitoring.length?'good':'caution',choice:picks.join(', ')||'—',note:choices.monitoring.length?'Post-sedation monitoring selected.':'Always monitor after sedating an agitated patient.'});})();
+      /* Each row grades the answer committed on that step (log), never a later re-pick. A later
+         answer that grades better is shown as "after a miss" and cannot turn the row green.
+         "Call your senior" marks a step deferred (red-team AG-6). */
+      var rows=[],deferred=0;
+      function firstOf(st){return committed(st)?log[st]:snap(st);}
+      function finish(row,firstV,finalV,finalChoice,changed){row.v=firstV.level;row.note=firstV.notes.join(' ');
+        if(changed){if(row.deferred){row.after='Then chose '+finalChoice+'.';}
+          else if(RANK[finalV.level]>RANK[firstV.level]){row.after='Completed after a miss: changed to '+finalChoice+' once the first answer was in.';}
+          else row.after='Changed afterwards to '+finalChoice+'; the first answer is the one graded.';}
+        rows.push(row);}
+      var eb=pack.choiceBanks.etiology,pb=pack.choiceBanks.pharmApproach,nb=pack.choiceBanks.nonpharm,mb=pack.choiceBanks.monitoring;
+      function lab(bank,id){return id==='call_senior'?'☎ Called your senior':(((bank.filter(function(o){return o.id===id;})[0])||{}).label||'—');}
+      (function(){var truth=scenario.trueEtiology,disc=scenario.discriminators||{};
+        function ev(id){if(id==='call_senior')return {level:'neutral',notes:['Deferred: calling your senior is always safe, but no driver was named. Key features: '+((disc[truth]||[]).join('; '))+'.']};
+          if(id===truth)return {level:'good',notes:['Matched the discriminating features.']};
+          if(id==='undetermined')return {level:'good',notes:['Safe stance when data are insufficient.']};
+          return {level:'caution',notes:['Re-weigh: '+((disc[truth]||[]).join('; '))]};}
+        var f=firstOf(0),l=choices.etiology;if(f==='call_senior')deferred++;
+        finish({k:'Etiology',choice:lab(eb,f),deferred:f==='call_senior'},ev(f),ev(l),lab(eb,l),f!==l);})();
+      (function(){var f=firstOf(1)||[],l=choices.nonpharm,labels=function(a){return a.map(function(id){return lab(nb,id);}).join(', ')||'—';};
+        var fv=nonpharmVerdict(f,scenario);if(prompted[1])fv={level:'caution',notes:['Verbal de-escalation was added only after a prompt.'].concat(fv.level==='good'?[]:fv.notes)};
+        finish({k:'Non-pharm first',choice:labels(f)},fv,nonpharmVerdict(l,scenario),labels(l),JSON.stringify(f.slice().sort())!==JSON.stringify(l.slice().sort()));})();
+      (function(){function ev(id){if(id==='call_senior')return {level:'neutral',notes:['Deferred: escalation is always acceptable, but no class-level plan was chosen.']};
+          var opt=pb.filter(function(o){return o.id===id;})[0];return opt?pharmVerdict(opt,scenario):{level:'caution',notes:['No choice recorded.']};}
+        var f=firstOf(2),l=choices.pharm;if(f==='call_senior')deferred++;
+        finish({k:'Pharmacologic',choice:lab(pb,f),deferred:f==='call_senior'},ev(f),ev(l),lab(pb,l),f!==l);})();
+      (function(){var f=firstOf(3)||[],l=choices.monitoring,labels=function(a){return a.map(function(id){return lab(mb,id);}).join(', ')||'—';};
+        // monitoring is judged against the agent class you ended on at step 3 (what would be given)
+        finish({k:'Monitoring',choice:labels(f)},monitoringVerdict(f,choices.pharm,scenario,mb),monitoringVerdict(l,choices.pharm,scenario,mb),labels(l),JSON.stringify(f.slice().sort())!==JSON.stringify(l.slice().sort()));})();
       var cites=(scenario.citationIds||[]).map(function(id){return (pack.citations.filter(function(c){return c.id===id;})[0]||{}).ref;}).filter(Boolean);
       var finalRung=currentRung();
       return e('div',null,header,
@@ -532,8 +594,9 @@
           e('div',{className:'card'},
             e('div',{className:'steplabel'},'Decision trace'),
             e('div',{className:'trace'},rows.map(function(r,i){return e('div',{className:'node',key:i},
-              e('div',{className:'marker m '+r.v},r.v==='good'?'✓':r.v==='hazard'?'!':'△'),
-              e('div',{className:'nodecard'},e('div',{className:'steplabel'},r.k),e('div',null,e('b',null,r.choice)),e('div',{className:'cite'},r.note)));})),
+              e('div',{className:'marker m '+r.v,'aria-label':r.deferred?'Deferred':r.v==='good'?'Good':r.v==='hazard'?'Hazard':'Caution'},r.deferred?'☎':r.v==='good'?'✓':r.v==='hazard'?'!':'△'),
+              e('div',{className:'nodecard'},e('div',{className:'steplabel'},r.k+(r.deferred?' · deferred':'')),e('div',null,e('b',null,r.choice)),e('div',{className:'cite'},r.note),r.after?e('div',{className:'cite'},e('b',null,r.after)):null));})),
+            deferred?e('div',{className:'pearl'},e('b',null,deferred===1?'One step deferred to your senior. ':deferred+' steps deferred to your senior. '),'Calling early is right; practise naming your own reasoning too, so your senior arrives to a clear picture.'):null,
             e('div',{className:'pearl'},'Highest rung reached: ',e('b',null,finalRung?('Rung '+finalRung+' · '+(LADDER[finalRung-1]||{}).t):'none — managed without escalating'),'. Aim for the lowest rung that keeps everyone safe.'),
             e('div',{className:'pearl'},e('b',null,'Teaching points'),e('ul',{style:{margin:'6px 0 0',paddingLeft:'1.1em'}},(scenario.teachingPoints||[]).map(function(tp,i){return e('li',{key:i},tp.text);}))),
             cites.length?e('details',{className:'cites'},e('summary',null,'Citations'),e('ul',null,cites.map(function(c,i){return e('li',{key:i,className:'cite'},c);}))):null)),
@@ -564,8 +627,9 @@
             seniorEl(),
             nudge?e('div',{className:'nudge'},step===1?(choices.nonpharm.length?'Include verbal de-escalation (Project BETA) — the least-restrictive ladder starts there.':'Address de-escalation / a non-pharmacologic step before moving to medications.'):step===3?'Choose the monitoring you would order — a PRN without monitoring is the classic miss.':'Make a selection to continue.'):null,
             guidedReveal(),
+            lockedLine(),
             e('div',{className:'btnrow'},step>0?e('button',{className:'btn',onClick:back},'Back'):null,
-              e('button',{className:'btn primary',onClick:next,disabled:!canAdvance()&&step!==1},step<3?'Next':'See decision trace'))))),
+              e('button',{className:'btn primary',onClick:next,disabled:!canAdvance()&&step!==1},(revealStep(step)&&!committed(step))?'Lock in answer':(step<3?'Next':'See decision trace')))))),
       e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'6px'}},
         e('span',{className:'cite'},'Step '+(step+1)+' of 4 · '+mode),e(FlagButton,{ctx:'play:'+scenario.id+':step'+step})));
   }

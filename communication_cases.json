@@ -839,9 +839,9 @@
         },
         {
           "id": "b",
-          "text": "It sounds like being here has gotten really hard. Before anything else, can you tell me what's making today the day? I want to understand, and I'm going to let your team know right away so they can sit down with you.",
+          "text": "It sounds like being here has gotten really hard. When you say you're done, are you having thoughts of killing yourself? And what's making today the day? I'm going to let your team know right away so they can sit down with you.",
           "quality": "best",
-          "feedback": "Best choice. It is curious, keeps the alliance, and alerts the team now, as a discharge demand after a suicide attempt requires. Retry: \"My dog's been alone since Friday.\" Reflect it, then problem-solve together."
+          "feedback": "Best choice. It treats 'I'm done' as a safety cue and asks about suicide directly, stays curious, and alerts the team now. Retry: \"My dog's been alone since Friday.\" Reflect it, then problem-solve."
         },
         {
           "id": "c",
@@ -854,6 +854,12 @@
           "text": "Okay, I'll tell the team you want to go.",
           "quality": "partial",
           "feedback": "Escalating is right, but you missed the chance to understand why. His reason may be solvable, and it matters to the team's risk assessment."
+        },
+        {
+          "id": "e",
+          "text": "It sounds like being here has gotten really hard. Before anything else, can you tell me what's making today the day? I want to understand, and I'm going to let your team know right away so they can sit down with you.",
+          "quality": "partial",
+          "feedback": "Curious, and the team hears about it now, but after a suicide attempt 'I'm done' can be a safety cue. Ask about suicidal thoughts directly; leaving it unasked is the miss."
         }
       ],
       "skillTags": [

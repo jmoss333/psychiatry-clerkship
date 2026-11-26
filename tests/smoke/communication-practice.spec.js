@@ -781,6 +781,9 @@ test('desktop navigator maps stored practice quality to one status per case', as
       psychosis_validation_001: { choiceId: 'a', quality: 'partial', at: '2026-08-02' },
       guardedness_privacy_001: { choiceId: 'a', quality: 'missed', at: '2026-08-02' },
       rupture_limit_setting_001: { choiceId: 'a', quality: 'harmful', at: '2026-08-02' },
+      // Red-team CP-2: the first line is kept; a later best adds recoveredAt and never
+      // overwrites it, so harmful-then-best reads "Recovered after a miss", not "Practiced well".
+      medication_ambivalence_001: { choiceId: 'a', quality: 'harmful', at: '2026-08-01', recoveredAt: '2026-08-02' },
     }));
   });
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -788,9 +791,10 @@ test('desktop navigator maps stored practice quality to one status per case', as
   const navigator = page.locator('[data-desktop-navigator]');
   for (const [id, status] of [
     ['suicide_direct_question_001', 'Practiced well'],
-    ['psychosis_validation_001', 'Practiced'],
+    ['psychosis_validation_001', 'Partly practiced'],
     ['guardedness_privacy_001', 'Review'],
     ['rupture_limit_setting_001', 'Retry'],
+    ['medication_ambivalence_001', 'Recovered after a miss'],
     ['bpd_rupture_repair_001', 'Not practiced'],
   ]) {
     await expect(navigator.locator(`[data-case-select="${id}"] .case-status`)).toHaveText(status);
