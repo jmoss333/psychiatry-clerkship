@@ -36,6 +36,7 @@ test('DA-1 hyperthermia + rigidity escalates first and covers every listed cause
 test('CJ-1 Jordan week 1 screens safety and medical status on day one', () => {
   const c = JSON.parse(read('longitudinal_case.json'));
   const w = c.weeks.find((x) => x.id === 'week1');
+  assert.equal(w.checklist.length, 3, "week chapters keep exactly three checklist items");
   assert.ok(w.checklist.some((i) => /safety and medical screen/.test(i.prompt)));
   assert.match(w.handoff, /safety or medical finding/);
   assert.ok(typeof w.commonMisstep === 'string' && /suicide/.test(w.commonMisstep));

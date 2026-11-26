@@ -20,8 +20,8 @@
       "learnerTask": "Practice opening the interview, mapping the timeline, and describing the mental status exam before naming a diagnosis.",
       "checklist": [
         {
-          "prompt": "I can state what changed, when it changed, and who noticed it.",
-          "example": "Jordan reports several nights of very little sleep before admission. Jordan describes feeling exhausted, while the family noticed escalating mood and communication changes."
+          "prompt": "I can state what changed, when it changed, who noticed it, and what the admission safety and medical screen found.",
+          "example": "Jordan reports several nights of very little sleep before admission. Jordan describes feeling exhausted, while the family noticed escalating mood and communication changes. I also confirmed that Jordan was asked directly about suicidal thoughts, thoughts of harming others and access to firearms or stockpiled medication, and that vitals, glucose and a urine drug screen are back; if any of these is missing, I say so first."
         },
         {
           "prompt": "I can name one alliance move that gives Jordan more control.",
@@ -30,10 +30,6 @@
         {
           "prompt": "I can separate observed MSE findings from my interpretation.",
           "example": "I observed brief answers and limited eye contact. I interpret this as guardedness, although fatigue or mistrust could also contribute."
-        },
-        {
-          "prompt": "I can say what the admission safety and medical screen found, or that it is still missing.",
-          "example": "Before rounds I confirmed with the resident that Jordan was asked directly about suicidal thoughts, thoughts of harming others and access to firearms or stockpiled medication, and that vitals, glucose and a urine drug screen are back. If any of these is missing, I say so first rather than leaving it out."
         }
       ],
       "reflectionPrompt": "What would help Jordan feel that the interview is collaborative rather than an interrogation?",
