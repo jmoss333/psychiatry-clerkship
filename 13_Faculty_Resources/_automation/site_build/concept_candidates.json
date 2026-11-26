@@ -1865,9 +1865,10 @@
         {
           "id": "ect_neuromodulation-pearl5:1",
           "text": "Ketamine/esketamine",
-          "contentRevision": 1
+          "contentRevision": 2
         }
-      ]
+      ],
+      "reviewNote": "FACULTY REVIEW REQUIRED: changed source wording or proposed target replaces the published face; no clinical approval is recorded here."
     },
     {
       "id": "ect_neuromodulation-pearl6",

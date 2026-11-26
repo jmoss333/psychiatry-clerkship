@@ -1502,8 +1502,8 @@
       "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
       "oldFront": "Do not start buprenorphine until […] is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.",
       "oldBack": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal.",
-      "newFront": "Do not start buprenorphine until […] is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.",
-      "newBack": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use."
+      "newFront": "Do not start buprenorphine until […] is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal still happens in a minority of standard starts, so plan the start with your team; if it happens, the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.",
+      "newBack": "Do not start buprenorphine until objective withdrawal is on board (COWS roughly greater than or equal to 8 to 12) or you may precipitate withdrawal. With fentanyl, precipitated withdrawal still happens in a minority of standard starts, so plan the start with your team; if it happens, the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use."
     },
     {
       "oldGuid": "vYDB:_zG?C",
@@ -1858,12 +1858,12 @@
       "oldOrdinal": 0,
       "editorialId": "ect_neuromodulation-pearl5:1",
       "noteId": "ect_neuromodulation-pearl5",
-      "identityAction": "preserve-guid",
-      "reason": "Same tested target and normalized source excerpt",
+      "identityAction": "new-note-required",
+      "reason": "Changed source wording or proposed exact recall target; FACULTY REVIEW REQUIRED",
       "oldFront": "[…] act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
       "oldBack": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
-      "newFront": "[…] act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring.",
-      "newBack": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning, and effectiveness in reducing suicidal ideation itself is not established; esketamine needs REMS monitoring."
+      "newFront": "[…] act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning. Esketamine has no established effect on suicidality and needs REMS monitoring; IV ketamine (off-label) can lower suicidal-ideation scores short-term, but nothing shows it prevents suicidal behaviour.",
+      "newBack": "Ketamine/esketamine act within hours on depressive symptoms — they do not substitute for monitoring, means restriction, or safety planning. Esketamine has no established effect on suicidality and needs REMS monitoring; IV ketamine (off-label) can lower suicidal-ideation scores short-term, but nothing shows it prevents suicidal behaviour."
     },
     {
       "oldGuid": "PonhvP,m@,",
