@@ -356,7 +356,7 @@ test('step state is session-only: nothing in the module reads or writes storage'
 
 test('the ‹ kit back affordance appears only when the protocol was reached from the kit', () => {
   const withBack = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'agitation.md', sheetFrom: 'kit' });
-  assert.match(withBack, /<button type="button" class="fd-sheet__back" data-fd-safety>‹ kit<\/button>/);
+  assert.match(withBack, /<button type="button" class="fd-sheet__back" data-fd-safety aria-label="Back to safety kit"><span aria-hidden="true">‹<\/span> kit<\/button>/);
   const noBack = F.fdSheet(REAL_INDEX, REAL_META, { sheet: 'agitation.md' });
   assert.doesNotMatch(noBack, /fd-sheet__back/,
     'a protocol opened straight from a kit card or a search hit has no kit to go back to');

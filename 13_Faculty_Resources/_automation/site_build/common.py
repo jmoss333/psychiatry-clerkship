@@ -849,7 +849,10 @@ HUB_LINK = (
     "var a=document.createElement('a');a.className='cw-hub';a.href='/?tab=library';"
     "a.textContent='\u2190 Library';a.setAttribute('aria-label','Back to the Library');"
     "var s=b.querySelector('.skip-link');"
-    "if(s&&s.parentNode===b){b.insertBefore(a,s.nextSibling);}else{b.insertBefore(a,b.firstChild);}}"
+    # Inside a <nav> landmark, so a screen reader's landmark list finds it and axe's `region`
+    # rule stops reporting it as orphan content on every directly opened tool (2026-11-25).
+    "var n=document.createElement('nav');n.setAttribute('aria-label','Site');n.appendChild(a);"
+    "if(s&&s.parentNode===b){b.insertBefore(n,s.nextSibling);}else{b.insertBefore(n,b.firstChild);}}"
     "if(document.body){add();}else{document.addEventListener('DOMContentLoaded',add);}})();</script>"
 )
 
