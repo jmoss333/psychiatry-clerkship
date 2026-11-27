@@ -241,7 +241,7 @@ _TOOLKW_MS3 = {
     "how-we-know.html": "how we know evidence provenance verbatim span citation critical appraisal source claim ledger journal club what the paper says",
     "review.html": "daily review spaced repetition srs flashcards sm-2 retention schedule due cards study streak memory test enhanced learning forgetting curve anki",
     "feedback.html": "feedback improve library suggest resource report broken link error confusing helpful rating comment survey suggestion box contact",
-    "decision-aids.html": "algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa score bands catatonia psychosis differential dark mode",
+    "decision-aids.html": "algorithms decision aids visual trees flowchart rule out first move escalation ladder agitation restraint nms serotonin syndrome hyperthermia alcohol withdrawal timeline delirium tremens ciwa catatonia psychosis differential dark mode",
     "bfcrs.html": "bush francis catatonia rating scale bfcrs bfcsi catatonia screening immobility stupor mutism posturing catalepsy waxy flexibility negativism mitgehen gegenhalten echopraxia lorazepam challenge severity score",
     "question-bank-practice.html": "practice questions question bank comat shelf exam vignette single best answer sba two-tier confidence calibration trap feedback spaced repetition category filter mood psychosis anxiety substance neurocognitive pharmacology safety personality relational ethics",
 }

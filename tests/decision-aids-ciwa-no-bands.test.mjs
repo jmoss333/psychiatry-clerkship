@@ -39,3 +39,10 @@ test('the view points to the unit form and the withdrawal card, labelled for the
   assert.match(view, /CIWA-Ar and COWS card/);
   assert.doesNotMatch(view, /recognition card \(COWS\)/, 'the alcohol link must not be labelled COWS alone');
 });
+
+test('Library search no longer offers "score bands" for Decision Aids', () => {
+  const common = readFileSync(path.join(ROOT, '13_Faculty_Resources/_automation/site_build/common.py'), 'utf8');
+  const rows = common.split('\n').filter((l) => l.includes('"decision-aids.html":'));
+  assert.ok(rows.length > 0, 'the Decision Aids search keywords are still in common.py');
+  for (const row of rows) assert.doesNotMatch(row, /score bands/i, row.trim());
+});
