@@ -91,6 +91,6 @@ test('the view stores nothing, uses no new hook, and carries no dose literal', (
 
 test('the existing trees and views are untouched (keep-guards)', () => {
   assert.match(html, /\{id:"delirium",title:"Confused \/ fluctuating",/);
-  assert.match(html, /\["ladder","Agitation ladder"\],\["nmsss","NMS vs SS"\],\["withdrawal","Withdrawal timeline"\],\["ciwa","CIWA-Ar bands"\]\];/);
+  assert.match(html, /\["ladder","Agitation ladder"\],\["nmsss","NMS vs SS"\],\["withdrawal","Withdrawal timeline"\],\["ciwa","CIWA-Ar"\]\];/);
   assert.match(html, /'Toggle light\/dark theme'|"Toggle light\/dark theme"/);
 });

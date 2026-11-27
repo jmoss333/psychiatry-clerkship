@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Decisional Capacity — Bedside Module</title>
-<meta name="description" content="Teaching and bedside tool for assessing decisional capacity using the Appelbaum four-abilities model: communicate a choice, understand, appreciate, reason. Includes sample questions and a structured capacity-note generator.">
+<meta name="description" content="Teaching and practice tool for assessing decisional capacity using the Appelbaum four-abilities model: communicate a choice, understand, appreciate, reason. Includes sample questions and an on-page practice write-up for fictional cases.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <style>
@@ -106,15 +106,18 @@ function App(){
   var ctx=useState({decision:'',risk:'moderate'}); var setCtx=ctx[1]; ctx=ctx[0];
   var rate=useState({}); var setRate=rate[1]; rate=rate[0];
   var notes=useState({}); var setNotes=notes[1]; notes=notes[0];
-  var copied=useState(false); var setCopied=copied[1]; copied=copied[0];
 
-  function setR(k,v){ var n=Object.assign({},rate); n[k]=v; setRate(n); setCopied(false); }
-  function setN(k,v){ var n=Object.assign({},notes); n[k]=v; setNotes(n); setCopied(false); }
+  function setR(k,v){ var n=Object.assign({},rate); n[k]=v; setRate(n); }
+  function setN(k,v){ var n=Object.assign({},notes); n[k]=v; setNotes(n); }
 
   function verdict(){
     /* 'na' must never launder into INTACT: a determination requires all four abilities
        ASSESSED (intact or impaired). Four "Not assessed" clicks previously satisfied the
-       every-rated check and, with no 'impaired' present, fell through to the INTACT arm. */
+       every-rated check and, with no 'impaired' present, fell through to the INTACT arm.
+       Capacity is decision-specific, so no determination is drawn until the decision is named
+       (red-team DC-1, 2026-11-25): a verdict with no decision is a global capacity verdict. */
+    var named = String((ctx && ctx.decision) || '').trim().length > 0;
+    if(!named) return {cls:'part',txt:'Name the specific decision first. Capacity is decided for one decision at a time, so there is no determination without it.'};
     var anyImp = ABIL.some(function(a){return rate[a.key]==='impaired';});
     var anyNA  = ABIL.some(function(a){return rate[a.key]==='na';});
     var allRated = ABIL.every(function(a){return rate[a.key];});
@@ -125,9 +128,9 @@ function App(){
   }
 
   function note(){
-    var d = ctx.decision || '[the specific decision]';
+    var d = String(ctx.decision || '').trim() || '[name the specific decision]';
     var lines=[];
-    lines.push('CAPACITY ASSESSMENT — '+d);
+    lines.push('PRACTICE WRITE-UP (fictional case) — capacity for: '+d);
     lines.push('Decision-specific; higher-risk/irreversible decisions warrant a higher evidentiary threshold (sliding scale). Risk level set to: '+ctx.risk+'.');
     lines.push('');
     ABIL.forEach(function(a){
@@ -145,20 +148,19 @@ function App(){
     lines.push('Clinical impression: '+concl);
     lines.push('Note: "Capacity" is a clinical determination for a specific decision at this time; "competence" is a legal status determined by a court.');
     lines.push('—');
-    lines.push('Drafted with a teaching tool — findings verified and note reviewed with the supervising clinician.');
+    lines.push('Practice write-up from a teaching tool, for a fictional case. It is not a chart note: review your reasoning with your supervisor.');
     return lines.join('\n');
   }
-  function copyNote(){ if(navigator.clipboard){navigator.clipboard.writeText(note()).then(function(){setCopied(true);});} }
-  function reset(){ setRate({}); setNotes({}); setCopied(false); }
+  function reset(){ setRate({}); setNotes({}); }
 
   var header=e('div',{key:'h'},
     e('div',{className:'kicker'},'Acute & Safety · 04'),
     e('h1',null,'Assessing Decisional Capacity'),
-    e('p',{className:'sub'},'Capacity is decision-specific, time-specific, and clinical — not a global verdict. The Appelbaum & Grisso (1988) model breaks it into four assessable abilities. Learn each, then use the bedside tab to structure your exam and draft a note.')
+    e('p',{className:'sub'},'Capacity is decision-specific, time-specific, and clinical — not a global verdict. The Appelbaum & Grisso (1988) model breaks it into four assessable abilities. Learn each, then use the practice tab to work through a fictional case and see how the write-up follows from your ratings.')
   );
   var tabs=e('div',{className:'tabs',key:'t'},
     e('button',{className:'tab'+(tab==='learn'?' on':''),onClick:function(){setTab('learn')}},'1 · The four abilities'),
-    e('button',{className:'tab'+(tab==='assess'?' on':''),onClick:function(){setTab('assess')}},'2 · Bedside assessment'),
+    e('button',{className:'tab'+(tab==='assess'?' on':''),onClick:function(){setTab('assess')}},'2 · Practice assessment'),
     e('button',{className:'tab'+(tab==='principles'?' on':''),onClick:function(){setTab('principles')}},'3 · Principles & pitfalls')
   );
 
@@ -172,12 +174,13 @@ function App(){
 
   var assess=e('div',{key:'a'},
     e('div',{className:'card'},
-      e('span',{className:'label'},'The specific decision being assessed'),
-      e('input',{type:'text',value:ctx.decision,placeholder:'e.g., refusal of a recommended medical admission or procedure',onChange:function(ev){setCtx(Object.assign({},ctx,{decision:ev.target.value}));setCopied(false);}}),
+      e('p',{className:'sub',style:{fontSize:'.9rem',margin:'0 0 10px'}},'Practice on a fictional case, such as the sample on the Principles tab. Do not enter real patient details.'),
+      e('span',{className:'label'},'The specific decision in your practice case (required)'),
+      e('input',{type:'text','aria-required':'true',value:ctx.decision,placeholder:'e.g., refusal of a recommended procedure',onChange:function(ev){setCtx(Object.assign({},ctx,{decision:ev.target.value}));}}),
       e('span',{className:'label'},'Risk / reversibility of the decision'),
       e('div',{className:'seg'},
         ['low','moderate','high'].map(function(r){
-          return e('button',{key:r,className:'na'+(ctx.risk===r?' on':''),onClick:function(){setCtx(Object.assign({},ctx,{risk:r}));setCopied(false);}}, r);
+          return e('button',{key:r,className:'na'+(ctx.risk===r?' on':''),onClick:function(){setCtx(Object.assign({},ctx,{risk:r}));}}, r);
         }))
     ),
     e('div',{className:'card'},
@@ -190,26 +193,18 @@ function App(){
             e('button',{className:'intact'+(r==='intact'?' on':''),onClick:function(){setR(a.key,'intact')}},'Intact'),
             e('button',{className:'impaired'+(r==='impaired'?' on':''),onClick:function(){setR(a.key,'impaired')}},'Impaired'),
             e('button',{className:'na'+(r==='na'?' on':''),onClick:function(){setR(a.key,'na')}},'Not assessed')),
-          e('textarea',{rows:2,placeholder:'Optional: quote the patient or note specifics…',value:notes[a.key]||'',onChange:function(ev){setN(a.key,ev.target.value)}})
+          e('textarea',{rows:2,placeholder:'Optional: what the fictional patient said or did that supports this rating…',value:notes[a.key]||'',onChange:function(ev){setN(a.key,ev.target.value)}})
         );
       })
     ),
     e('div',{className:'card'},
       function(){var v=verdict(); return e('div',{className:'verdict '+v.cls}, v.txt);}(),
+      e('span',{className:'label'},'Practice write-up (stays on this page)'),
       e('div',{className:'output'}, note()),
       e('div',{className:'row'},
-        /* Export is gated on a determination existing. note() already degrades honestly for an
-           incomplete assessment ("Not formally assessed" per ability, "Assessment incomplete."),
-           but a copied note leaves this tool and lands in a chart or a handoff, where the header
-           "CAPACITY ASSESSMENT" and the four-ability list carry more weight than the one line
-           that says it is not finished. Nothing is hidden -- the draft stays visible on screen
-           above; only the one-click export off-page waits for all four abilities. */
-        function(){var v=verdict(); var incomplete=(v.cls==='part'); return e('button',{
-          className:'btn btn-primary',
-          disabled:incomplete,
-          title:(incomplete?'Rate all four abilities before exporting a note.':''),
-          onClick:function(){ if(!incomplete) copyNote(); }
-        }, copied?'Copied ✓':'Copy note');}(),
+        /* Practice only (Josh, 2026-11-26): the write-up stays on this page. There is no copy or
+           export, so a capacity determination drafted here never lands in a chart or a handoff.
+           The draft above shows the reasoning; nothing leaves the tool. */
         e('button',{className:'btn btn-ghost',onClick:reset},'Reset')),
       e('div',{className:'pearl'}, e('b',null,'Before concluding "lacks capacity": '),'rule out and treat reversible contributors — delirium, intoxication/withdrawal, pain, acute psychosis, language/communication barriers. Capacity can return.')
     )
@@ -236,7 +231,7 @@ function App(){
   return e('div',{className:'shell'},
     header, tabs,
     tab==='learn'?learn:(tab==='assess'?assess:principles),
-    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. Generates draft documentation from your inputs using fictional composite scenarios only — no protected health information. Not a clinical or legal decision-support device; capacity determinations and any surrogate/guardianship pathway must follow supervision and institutional/legal policy.'),
+    e('div',{className:'disclaimer'},'Educational teaching tool for clinical trainees. Builds an on-page practice write-up from your ratings, for fictional composite cases only — no protected health information, and nothing to copy into a chart. Not a clinical or legal decision-support device; capacity determinations and any surrogate/guardianship pathway must follow supervision and institutional/legal policy.'),
     e('footer',null,'Decisional Capacity — Bedside Module · Psychiatry Clerkship Library · Joshua Moss, MD | Psychiatrist · Framework: Appelbaum & Grisso (1988)')
   );
 }
