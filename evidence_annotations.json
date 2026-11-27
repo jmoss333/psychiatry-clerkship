@@ -3007,10 +3007,10 @@
       "verifiedAgainst": {
         "spanType": "guideline-statement",
         "sourceEndpoint": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10101189/",
-        "retrievedAt": "2026-11-26",
+        "retrievedAt": "2026-11-27",
         "pmid": "37039129",
         "doi": "10.1177/02698811231158232",
-        "sourceSpan": "In terms of first-line treatments, there is most evidence for benzodiazepines and ECT. Pelzer et al. (2018) reported 17 studies describing benzodiazepine use in patients with catatonia. Most used lorazepam 1–4 mg per day, with some using up to 16 mg per day. An adequate trial may be considered complete when catatonia is adequately treated, titration has been stopped due to side effects or dose has reached at least 16 mg per day. In malignant catatonia, commence a trial of lorazepam at 8 mg/day (PO, IM or IV), titrating up according to response and tolerability up to a maximum of 24 mg/day."
+        "sourceSpan": "In terms of first-line treatments, there is most evidence for benzodiazepines and ECT (Pelzer et al., 2018). Pelzer et al. (2018) reported 17 studies describing benzodiazepine use in patients with catatonia. Most used lorazepam 1–4 mg per day, with some using up to 16 mg per day. An adequate trial may be considered complete when catatonia is adequately treated, titration has been stopped due to side effects or dose has reached at least 16 mg per day. In malignant catatonia, commence a trial of lorazepam at 8 mg/day (PO, IM or IV), titrating up according to response and tolerability up to a maximum of 24 mg/day."
       },
       "claims": [
         {
@@ -3029,7 +3029,7 @@
         },
         {
           "claimId": "bap-lorazepam-dose-range",
-          "claimText": "Most reported regimens used lorazepam 1–4 mg per day, some up to 16 mg per day; an adequate trial may be considered complete at a dose of at least 16 mg per day; in malignant catatonia lorazepam is titrated up to a maximum of 24 mg/day.",
+          "claimText": "Most reported regimens used lorazepam 1–4 mg per day, some up to 16 mg per day; an adequate trial may be considered complete when catatonia is adequately treated, titration has been stopped due to side effects or the dose has reached at least 16 mg per day; in malignant catatonia lorazepam is titrated up to a maximum of 24 mg/day.",
           "claimTerms": [
             "Most used lorazepam 1–4 mg per day",
             "at least 16 mg per day",
