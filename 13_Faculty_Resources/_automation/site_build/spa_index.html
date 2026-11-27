@@ -1027,11 +1027,26 @@
     const showLabel = revealLabel.textContent;
     const replyPanel = card.querySelector('#lw-reply');
     const replyText = card.querySelector('[data-reply-text]');
+    const replyAudio = card.querySelector('[data-reply-audio]');
+    const moveAudio = card.querySelector('[data-move-audio]');
     const coach = card.querySelector('[data-coach]');
     const sample = card.querySelector('[data-note]');
     const sampleText = sample.querySelector('[data-note-copy]');
     const reset = card.querySelector('[data-reset]');
     let replyIndex = 0;
+
+    function pauseRecordings(except) {
+      for (const audio of card.querySelectorAll('audio')) {
+        if (audio !== except && !audio.paused) audio.pause();
+      }
+    }
+    card.addEventListener('play', event => pauseRecordings(event.target), true);
+
+    function replaceRecording(slot, recording) {
+      if (!slot) return;
+      slot.replaceChildren();
+      if (recording) slot.append(recording.cloneNode(true));
+    }
 
     function clearSample() {
       sample.open = false;
@@ -1043,7 +1058,12 @@
       reveal.setAttribute('aria-expanded', String(visible));
       revealLabel.textContent = visible ? reveal.dataset.hideLabel : showLabel;
       reveal.querySelector('[aria-hidden]').textContent = visible ? '↑' : '↓';
-      replyText.textContent = visible ? replies[replyIndex].content.querySelector('[data-quote]').textContent : '';
+      pauseRecordings();
+      const reply = replies[replyIndex].content;
+      replyText.textContent = visible ? reply.querySelector('[data-quote]').textContent : '';
+      const recording = visible && reply.querySelector('[data-patient-recording]');
+      replaceRecording(replyAudio, recording);
+      moveAudio?.replaceChildren();
       for (const move of moves) move.setAttribute('aria-pressed', 'false');
       coach.hidden = true;
       coach.replaceChildren();
@@ -1071,6 +1091,9 @@
     for (const move of moves) {
       move.addEventListener('click', () => {
         for (const other of moves) other.setAttribute('aria-pressed', String(other === move));
+        pauseRecordings();
+        const recording = card.querySelector('template[data-recorded-move="' + move.dataset.move + '"]');
+        replaceRecording(moveAudio, recording?.content);
         const feedback = replies[replyIndex].content.querySelector('[data-feedback-for="' + move.dataset.move + '"]');
         coach.replaceChildren(feedback.cloneNode(true));
         coach.hidden = false;
