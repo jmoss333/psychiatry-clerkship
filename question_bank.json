@@ -5713,7 +5713,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Increase haloperidol, since the restlessness is agitation",
+          "t": "Increase the haloperidol dose, reading the constant pacing as worsening psychotic agitation",
           "trap": {
             "name": "Agitation = more antipsychotic",
             "note": "Akathisia worsens with more dopamine blockade. Escalating the antipsychotic is the cardinal error in akathisia management."
@@ -5726,7 +5726,7 @@
         },
         {
           "key": "C",
-          "t": "Add standing diazepam for the restlessness",
+          "t": "Add standing diazepam three times daily to settle the restlessness",
           "trap": {
             "name": "Benzodiazepine first-line",
             "note": "A benzodiazepine is an adjunct when symptoms stay severe after the first steps, not the first added drug. Standing diazepam also brings sedation, falls and dependence."
@@ -5734,7 +5734,7 @@
         },
         {
           "key": "D",
-          "t": "Switch to clozapine today",
+          "t": "Stop haloperidol and switch to clozapine today, since its akathisia risk is low",
           "trap": {
             "name": "Clozapine immediately",
             "note": "Clozapine needs ANC monitoring and carries metabolic and cardiac risks; it is not the first move for new akathisia, and the attending is keeping haloperidol for now."
