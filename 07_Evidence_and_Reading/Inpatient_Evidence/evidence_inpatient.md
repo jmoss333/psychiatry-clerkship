@@ -175,7 +175,7 @@ The evidence base consists primarily of case series and open studies — **no hi
 
 - Perform a lorazepam challenge test (2 mg IV; 1 mg in elderly)
 
-- If positive, continue scheduled lorazepam (minimum TID), titrated to response: most reported regimens use well under 16 mg/day, an adequate trial is generally taken to reach about 16 mg/day, and higher totals (up to 24 mg/day, mainly in malignant catatonia) only under close monitoring (British Association for Psychopharmacology catatonia guideline, Rogers et al., *J Psychopharmacol* 2023; doi:10.1177/02698811231158232)
+- If positive, continue scheduled lorazepam (minimum TID), titrated to response. In the studies the BAP catatonia guideline reviewed, most used lorazepam 1–4 mg per day, with some using up to 16 mg per day; it counts a trial as adequate once catatonia is adequately treated, titration has stopped because of side effects, or the dose has reached at least 16 mg per day; in malignant catatonia it recommends starting at 8 mg/day and titrating to a maximum of 24 mg/day (British Association for Psychopharmacology catatonia guideline, Rogers et al., *J Psychopharmacol* 2023; doi:10.1177/02698811231158232)
 
 - If benzodiazepines insufficient or malignant features present, initiate ECT urgently
 
