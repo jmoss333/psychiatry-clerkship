@@ -201,7 +201,7 @@ Use when handing off a psychiatric patient:
 <div><button type="button" data-pick="owner" aria-pressed="false" aria-controls="ns-source-owner">Who agreed to check in?</button><p id="ns-source-owner" hidden><strong>Maya, evening nurse</strong> · “I’m Sam’s nurse tonight. I can take the check-in.”</p></div>
 </div><button type="button" class="ns-primary" id="ns-send">Hand over to the night resident <span aria-hidden="true">→</span></button></section>
 <section id="ns-received" hidden aria-labelledby="ns-resident-label">
-<div class="ns-reader"><h4 class="case-kicker" id="ns-resident-label">Receiving resident</h4><blockquote id="ns-question" data-missing="none"></blockquote></div>
+<div class="ns-reader"><h4 class="case-kicker" id="ns-resident-label">Receiving resident</h4><blockquote id="ns-question" data-missing="none"></blockquote><div id="ns-recording"></div></div>
 <div id="ns-repair"><p class="ns-brief">Say what you’d add to the handoff. Then check the detail with the day team.</p><button type="button" class="ns-primary" id="ns-clarify">Clarify with the day team</button></div>
 <div class="case-choices"><button type="button" id="ns-edit" class="case-link">Edit handoff</button><button type="button" id="ns-reset" class="case-link">Start over</button></div></section>
 <footer>Fictional inpatient case · Evening sign-out</footer>
@@ -218,8 +218,9 @@ Use when handing off a psychiatric patient:
 <p data-heard="time-owner">“I’ve got the time, and Maya has the check-in. Does Sam want company during the call, or would they rather talk afterward?”</p>
 <p data-heard="wish">“Okay, I’ll give Sam some privacy. About what time is their sister calling?”</p>
 <p data-heard="wish-owner">“Maya’s checking in afterward. When is Sam expecting their sister to call?”</p>
-<p data-heard="wish-time">“Got it. Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?”</p>
-<p data-heard="wish-time-owner">“So, their sister’s calling around seven. Sam wants to take it alone, and Maya will check in afterward. Have I got that right?”</p>
+<p data-heard="wish-time" data-recording="audio/sam-evening-signout/SAM-07.mp3">“Got it. Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?”</p>
+<p data-heard="wish-time-owner" data-recording="audio/sam-evening-signout/SAM-08.mp3">“So, their sister’s calling around seven. Sam wants to take it alone, and Maya will check in afterward. Have I got that right?”</p>
+<div data-ns-player><p class="case-kicker">Receiving resident · Josh’s synthetic voice</p><audio controls preload="none" aria-label="Hear the receiving resident" aria-describedby="ns-question"></audio></div>
 <span data-ns-draft>Your handoff so far</span><span data-ns-sent>What you handed over</span><span data-ns-readback>Receiving resident · read-back</span>
 <span data-ns-editing>Editing your handoff.</span><span data-ns-restarted>New handoff. No details selected.</span><span data-ns-removed>Detail removed from the handoff.</span>
 </template>
