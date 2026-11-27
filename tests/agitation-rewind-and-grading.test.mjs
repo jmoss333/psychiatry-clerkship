@@ -15,7 +15,7 @@ const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 const PACK = JSON.parse(read('_prototypes/agitation-trainer/rp-agitation.pack.json'));
 
 function appScript(html) {
-  const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script[^>]*>/gi)].map((m) => m[1]);
   const s = blocks.find((b) => b.includes('function App()'));
   assert.ok(s, 'found the App script');
   return s;
