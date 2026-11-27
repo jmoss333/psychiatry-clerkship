@@ -55,9 +55,14 @@ common.apply_preview_headers(OUT, label="res")
 # ---- MS3-only tools (site_extras.MS3_EXTRA_TOOLS) ride along via the MS3 copytree above;
 # strip them so the resident site serves only its own prototypes (below). Declared once in
 # site_extras.py, so this strip cannot drift from the copy. Empty since 2026-09-25.
-from site_extras import MS3_EXTRA_TOOLS
+from site_extras import MS3_EXTRA_TOOLS, MS3_ONLY_PAGES
 for _src,_f,_t in MS3_EXTRA_TOOLS:
     _p=os.path.join(OUT,"tools",_f)
+    if os.path.exists(_p): os.remove(_p)
+
+# Manifest-registered MS3-only pages must not leak through the copytree.
+for _f in MS3_ONLY_PAGES:
+    _p=os.path.join(OUT,"content",_f)
     if os.path.exists(_p): os.remove(_p)
 
 # ---- Case of the Week: the MS3 case pages ride along via the MS3 copytree above; strip them so

@@ -6555,5 +6555,18 @@
       "capacity.html"
     ],
     "safetyLevel": "moderate"
+  },
+  "ms3_book_catalog.md": {
+    "read": 5,
+    "tldr": "Browse 66 books in ten themes, including memoirs, practical guides, poetry and reflection. Availability is not confirmed.",
+    "points": [
+      "Optional reading selected with patient or family interests in mind.",
+      "Catalog inclusion does not confirm unit holdings, borrowing access or audiobook availability.",
+      "The original curated rotation picks remain available separately."
+    ],
+    "cta": {
+      "label": "Open curated rotation picks",
+      "href": "?page=book_library.md"
+    }
   }
 }

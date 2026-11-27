@@ -688,7 +688,7 @@ class FrontdoorCatalogTest(unittest.TestCase):
         # until 2026-09-04 while the real file had 83/92 — the pin had drifted by two
         # on each site and nothing said so, because this whole suite ran in neither
         # ci.yml nor bin/verify.sh. Both now run it; that is the other half of this fix.
-        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 90)  # +pharmacy.html 2026-09-30; +2 Maine law 2026-10-27; +family-meeting-sim.html 2026-10-27; +scale-chooser.html 2026-11-05; +how-we-know.html 2026-11-10
+        self.assertEqual(sum(len(column["refs"]) for column in ms3["curriculum"]["libraryColumns"]), 91)  # +pharmacy.html 2026-09-30; +2 Maine law 2026-10-27; +family-meeting-sim.html 2026-10-27; +scale-chooser.html 2026-11-05; +how-we-know.html 2026-11-10
         # 93 as of 2026-09-04: +rp-post-event-huddle.html in the resident "Interactive tools" column.
         # 94 as of 2026-09-30: +pharmacy.html in both sites' "Interactive tools" column.
         # 90 as of 2026-10-17 (C2): orientation, osce, shelf, reading_map are MS3-track pages,

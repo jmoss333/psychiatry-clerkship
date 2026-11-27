@@ -467,7 +467,7 @@ print(json.dumps(out))
 
 // res Everything 94 -> 90 (C2, 2026-10-17): four MS3-track pages are siteLibrary.resident.exclusions.
 // +2 on both sites (2026-10-27): maine_law.md and maine-law-navigator.html; +1 family-meeting-sim.html.
-for (const [site, expectedKit, expectedFull] of [['ms3', 31, 90], ['res', 35, 95]]) {
+for (const [site, expectedKit, expectedFull] of [['ms3', 31, 91], ['res', 35, 95]]) {
   test(`${site}: real projected Essentials resolves ${expectedKit} of ${expectedFull} Library pages`, () => {
     const payload = projections[site];
     const idx = F.fdBuildIndex(payload.curriculum, META, TOOLS, payload.manifest);

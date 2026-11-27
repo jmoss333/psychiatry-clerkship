@@ -1613,5 +1613,15 @@
     "reason": "New Case of the Week (Lithium — monitoring, toxicity, and interactions, resident) added 2026-11-09; awaiting faculty attestation.",
     "at": "2026-11-09",
     "by": "Pending faculty review"
+  },
+  "ms3_book_catalog.md": {
+    "status": "pending",
+    "risk": {
+      "kind": "general",
+      "level": "low"
+    },
+    "reason": "New MS3-only OUR Place reading catalog; awaiting initial faculty review.",
+    "at": "2026-11-19",
+    "by": "Pending faculty review"
   }
 }
