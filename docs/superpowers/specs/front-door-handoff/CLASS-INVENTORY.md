@@ -5,7 +5,7 @@ The complete contract between `frontdoor.css` and the markup that tasks 3–9 em
 **Normative (2026-10-03):** this inventory and `frontdoor.css` are the source of truth for visual values; the hi-fi prototype is history (see the handoff README).
 
 **Source of truth:** `13_Faculty_Resources/_automation/site_build/frontdoor/frontdoor.css`
-(877 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
+(879 distinct `fd-*` selector names, 36 `is-*` state classes). Every class below has a rule in that file unless
 marked *(no rule)*.
 
 **One-thread redesign, Phase 3 (2026-10-05)** — focused reading: one status line, the reviewed
@@ -1083,6 +1083,7 @@ preview. Full behavior and content-preservation contract:
 | `.fd-guide-find` | Page-scoped finder form. The narrow desktop margin stacks its field and action; the wider mobile flow pairs them. The label spans all form columns; input shrinks safely and action remains visible. |
 | `.fd-guide-results` | Finder feedback/results. Result buttons fill their container and wrap text. |
 | `#elena-visit` | Two illustrated views from Elena’s chair show whom the student addresses. Replaying an opening controls the dialogue and repair. Each resident question supplies its own answer and rounds sentence. |
+| `#impulse-breakfast` | The morning timeline expands each interview in place. The rounds handoff draws facts only from accounts opened in the selected history. |
 | `#grief-consult` | A second medicine page pairs the bedside illustration with the nurse’s page or the patient’s latest words. A handoff becomes available after the learner clarifies his request or hears his safety disclosure. |
 | `#consult-callback` | In Consult Psychiatry the pager, three interviews and callback stay together. The consult question follows the sources heard, and trying a callback can reopen a missing interview. |
 | `#night-witness` | Nico’s collateral call under Bring It Back to the Team. Three overnight dials track reports from Luz and the selected follow-up. The learner’s interpretation controls coaching. Opening the rounds sample combines only the selected accounts. |
@@ -1201,6 +1202,7 @@ patient information, or an attestation, and it never turns a website action into
           .fd-result__title
           governanceBadge
           .fd-result__meta
+          .fd-result__excerpt       (optional complete source sentence; matching words in <mark>)
       .fd-searchpanel__empty          (no-results state; long pasted words wrap within the panel)
       .fd-searchpanel__related        (up to three curated equivalent-query buttons after results)
       .fd-searchpanel__recovery       (zero matches: suggested spelling when available / Edit search / Browse Library / blank Capture)
@@ -1224,10 +1226,12 @@ reference its existing "reference · not reproduced" line. On phones the panel s
 | `.fd-searchpanel__related` | Up to three alternatives from the same curated synonym groups used for matching; no suggestions for unknown terms. Appears after results, preserving safety priority. Buttons wrap at phone widths with 44px targets, update the transient query, reset expansion and focus the input; nothing is saved. |
 | `.fd-searchpanel__recovery` | Zero-match actions stack with at least 44px targets. A known misspelling offers “Did you mean …?” when the correction has results on this site. Tapping it searches for the corrected term. Edit search focuses the existing query. Browse opens the current audience's Library. Capture closes Search and opens a blank editor; Cancel/Escape restores the transient query and input focus. Only explicit Save stores the learner's question. Faculty preview omits Capture; APP omits the Library route. |
 | `.fd-searchpanel[data-pharmacy-lookup]` | A reviewed medication opens in an embedded Pharmacy card between Back to search results and the return control. The originating surface stays mounted. |
-| `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. |
+| `.fd-searchpanel__body` | `max-height:46vh` + scroll. The scroll container. Native scroll anchoring is disabled because hydration/return explicitly restore the selected row and scroll; late updates reserve room for the selected row's focus outline. |
 | `.fd-searchpanel__summary` | Wrapping count/action row inside the scroll container. A typed query reports the complete match count; >8 matches offer a stable toggle with `aria-expanded` and `aria-controls="fd-search-results"`. Expansion reveals the remaining matches without changing rank or the first result. It resets on input, search opening/closing, and history navigation; never persisted. Empty-query suggestions stay capped at 8. |
 | `.fd-searchpanel__group` | 12px/700 group label, `--fd-text-mid`; `.is-safety` in `--fd-danger-dark`; `.is-care` olive-deep. |
 | `.fd-result` | A `8px | 1fr` grid at every width (title, badge and meta stack in column 2). `.is-first`: `--fd-danger-wash` background, 700 title. |
+| `.fd-guide-passage-review` | A guide opened from a matching search result shows its current high-risk review warning immediately before the selected paragraph. The warning receives focus and returns to its normal location above the title when the learner leaves the passage or prints. |
+| `.fd-result__excerpt` | Optional source sentence in column 2, up to 240 characters, wrapping without clipping. Literal query words (or the existing five-character prefix rule) are highlighted with escaped `<mark>` text. More distinct matching words wins; ties keep source order. A content-addressed prose file loads once after a nonempty search, outside the offline precache budget. Missing/offline prose and unmatched passages omit the excerpt. Late prose preserves focus and row visibility. Excerpts never change ranking, and the return-to-search snapshot preserves them alongside rows and scroll. |
 | `.fd-result__dot` | Default: outlined 1.5px `--fd-text-dim` ring (a page); `.is-tool` teal fill; `.is-safety` danger fill; `.is-care` olive-deep fill. |
 | `.fd-result.is-care` | Static external ReConnect result rendered as an anchor. `data-care-resource` pairs the visible first result with the controller's Enter shortcut, so keyboard activation clicks that exact fixed anchor. Curated search terms are matched locally; the learner's query is never added to the URL or sent to ReConnect. Explicit safety results still sort first. |
 
@@ -1537,10 +1541,11 @@ middle of the screen and focuses it. One selector:
 
 ### "Updated since you last opened it" (2026-11-25)
 
-`fd_page_changed.js` keeps a fingerprint of each reading's text on the device (`cw_page_seen_v1`,
-ref → `{h, at}`, capped at 400 pages) each time the reader opens it. When a page the learner marked
-read is opened and its fingerprint changed, one status line goes directly after the page's `h1`,
-once; the next open is silent. Learner reader only, never the faculty preview.
+`fd_page_changed.js` keeps the page's author-set `<!-- content-updated: YYYY-MM-DD -->` marker and the
+day it was opened on the device (`cw_page_seen_v1`, ref → `{v, at}`, capped at 400 pages) each time
+the reader opens it. When a page the learner marked read is opened with a marker other than the one
+the device last saw, one status line goes directly after the page's `h1`, once; the next open is
+silent. An unmarked edit (a typo fix) never shows it. Learner reader only, never the faculty preview.
 
 | Class | Element | Notes |
 |---|---|---|

@@ -4984,13 +4984,13 @@
           "t": "Offer ketamine instead, to avoid anaesthesia in pregnancy",
           "trap": {
             "name": "Newer = better",
-            "note": "IV ketamine is off-label for depression (the REMS covers intranasal esketamine), it can lower suicidal-ideation scores short-term but has no shown effect on suicidal behaviour, and it is not established as equivalent to ECT at this severity; ECT has the longer safety record in pregnancy."
+            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established. Esketamine nasal spray is given only under its REMS, in a certified setting with at least 2 hours of monitoring; IV ketamine for depression is off-label: ketamine is not FDA-approved for any psychiatric disorder. Neither is established as equivalent to ECT for this clinical severity, and ECT has the longer safety record in pregnancy."
           }
         }
       ],
       "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications. Pregnancy is not an indication on its own: the indication here is the severity (suicidality with a plan, refusal to eat) and her prior good response. Once severity calls for ECT, pregnancy makes it a preferred option, because the therapeutic seizure avoids the systemic fetal drug exposure that pharmacotherapy requires.",
       "pearl": "ECT in pregnancy: no absolute contraindication. Pregnancy is not the indication; severity is. Once severity calls for ECT, pregnancy makes it a preferred option.",
-      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires.",
+      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires. ect_neuromodulation.md — Esketamine is delivered under a REMS in a certified healthcare setting with at least 2 hours of on-site monitoring (including pulse oximetry). FDA: Spravato label §5.5, \"Patients must be monitored by a healthcare provider for at least 2 hours after administration\" (REMS last modified Jan 23, 2026, NDA 211243/S-27); \"Ketamine is not FDA-approved for the treatment of any psychiatric disorder\" (FDA warning letter 725147, Jun 23, 2026).",
       "tier2": {
         "q": "Why is ECT preferred over pharmacotherapy once a pregnant patient's illness is severe enough to need it?",
         "options": [
@@ -5713,7 +5713,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Increase haloperidol, since the restlessness is agitation",
+          "t": "Increase the haloperidol dose, reading the constant pacing as worsening psychotic agitation",
           "trap": {
             "name": "Agitation = more antipsychotic",
             "note": "Akathisia worsens with more dopamine blockade. Escalating the antipsychotic is the cardinal error in akathisia management."
@@ -5726,7 +5726,7 @@
         },
         {
           "key": "C",
-          "t": "Add standing diazepam for the restlessness",
+          "t": "Add standing diazepam three times daily to settle the restlessness",
           "trap": {
             "name": "Benzodiazepine first-line",
             "note": "A benzodiazepine is an adjunct when symptoms stay severe after the first steps, not the first added drug. Standing diazepam also brings sedation, falls and dependence."
@@ -5734,7 +5734,7 @@
         },
         {
           "key": "D",
-          "t": "Switch to clozapine today",
+          "t": "Stop haloperidol and switch to clozapine today, since its akathisia risk is low",
           "trap": {
             "name": "Clozapine immediately",
             "note": "Clozapine needs ANC monitoring and carries metabolic and cardiac risks; it is not the first move for new akathisia, and the attending is keeping haloperidol for now."
@@ -6282,7 +6282,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison this weekend, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
         {
           "key": "A",

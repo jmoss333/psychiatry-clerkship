@@ -33,7 +33,7 @@ var FD_HANDLED_ATTRS=[
   'data-fd-try-now','data-fd-expand-tool','data-fd-library-view',
   'data-fd-kit-section','data-fd-kit-tool','data-fd-library-details','data-fd-library-task',
   'data-fd-tool-pin','data-fd-tool-pins-clear','data-fd-reading-place-remove','data-fd-reading-places-clear','data-fd-continuity-show',
-  'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query',
+  'data-fd-library-filter','data-fd-library-filter-clear','data-fd-search-query','data-fd-search-task',
   'data-fd-reading-top','data-fd-care-intent','data-fd-care-clear',
   'data-fd-care-pack','data-fd-care-pack-clear',
   'data-fd-care-pack-print','data-fd-care-share','data-fd-care-share-close',
@@ -65,6 +65,7 @@ var FD_ACTION_SEMANTICS={
      seeds the dialog with the Library filter's query (zero results, filtered footer). */
   'data-fd-library-filter':'filter Library titles and hints',
   'data-fd-library-filter-clear':'clear the Library filter',
+  'data-fd-search-task':'open the selected collateral task',
   'data-fd-search-query':'seed the search dialog with the Library filter query',
   'data-fd-care-intent':'choose a transient Care navigator task',
   'data-fd-care-clear':'clear the transient Care navigator task',
@@ -372,8 +373,10 @@ function fdExtraSearch(search){
   return q?'&'+q:'';
 }
 
-function fdSearchOutsideBlock(search){
+function fdSearchOutsideBlock(search,nextRef){
   var params=new URLSearchParams(String(search||'').replace(/^\?/,''));
+  /* The communication case belongs to its own tool, including on a shared deep link. */
+  if(params.get('tool')==='communication-practice.html'&&nextRef!=='communication-practice.html')params.delete('case');
   /* Review lane and one-card focus are route-local. Ordinary Back/tab/resource
      navigation must not carry either into a later direct Review visit. */
   params.delete('lane');
@@ -401,7 +404,7 @@ function fdStationForRoute(ref,params){
 
 function fdRouteForRef(ref, search, blockNavigation, origin, reviewNavigation){
   var key=/\.html$/.test(String(ref||''))?'tool':'page';
-  var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search));
+  var params=fdParamsWithoutRoute(blockNavigation===true?search:fdSearchOutsideBlock(search,ref));
   var previous=new URLSearchParams(String(search||'').replace(/^\?/,''));
   var station=fdStationForRoute(ref,previous);
   if(station){
@@ -723,7 +726,12 @@ function fdDispatch(attrs, context, state){
     }
     tab=fdValidTab(s.tab)?s.tab:'today';
     var resourceRoute=fdRouteForRef(ref,c.search,c.blockNavigation,s,c.reviewNavigation);
-    if(s.searchOpen&&s.query&&!fdIsTool(ref)){
+    var collateralTask=s.searchOpen&&a['data-fd-search-task']==='collateral';
+    if(collateralTask&&ref==='communication-practice.html'){
+      var practiceRoute=new URLSearchParams(resourceRoute);
+      practiceRoute.set('case','collateral_questions_001');
+      resourceRoute='?'+practiceRoute.toString();
+    }else if(!collateralTask&&s.searchOpen&&s.query&&!fdIsTool(ref)){
       resourceRoute+='&guideFind='+encodeURIComponent(String(s.query).trim().slice(0,160));
     }
     return {
@@ -2164,6 +2172,7 @@ function fdWire(root, initialState, opts){
       opener(effect.ref,{
         index:index,state:state,search:(win&&win.location&&win.location.search)||'',
         fromHistory:!!fromHistory,host:freshResourceHost(),focusOnRestore:focusOnRestore===true,
+        searchPassage:effect.searchPassage,
         getState:function(){ return state; },
         isCurrent:function(){
           return !destroyed&&generation===navGeneration&&state.openId===effect.ref;
@@ -2337,6 +2346,12 @@ function fdWire(root, initialState, opts){
       (result.effect.type==='open-resource'||result.effect.type==='open-protocol');
     if(leavingSearch){
       var searchAction=searchRow.hasAttribute('data-fd-safety')?'data-fd-safety':'data-fd-open';
+      if(searchAction==='data-fd-open'&&!fdIsTool(result.effect.ref)){
+        /* Use the excerpt actually shown on the tapped row, even if a newer index is ready.
+           This hint belongs only to this opening, never the URL or saved learner state. */
+        var excerpt=searchRow.querySelector&&searchRow.querySelector('.fd-result__excerpt');
+        result.effect.searchPassage={sentence:excerpt?excerpt.textContent:''};
+      }
       patch.searchReturn={
         query:before.query||'',expanded:before.searchExpanded===true,
         action:searchAction,ref:searchRow.getAttribute(searchAction),scrollTop:searchBody.scrollTop,

@@ -382,6 +382,69 @@ function fdSearchBodyScores(si, query, alternatives){
   return out;
 }
 
+/* Excerpts explain a match; they never participate in ranking. Keep a complete short source
+   sentence (including its qualifiers) rather than cutting a window around the matching word.
+   Old/offline indexes without passages still work. Cache sentence splitting, not user queries. */
+var FD_SEARCH_EXCERPT_MAX=240;
+function fdSearchExcerptSentences(si, prep, id){
+  if(!prep.sentences) prep.sentences={};
+  if(prep.sentences[id]) return prep.sentences[id];
+  var passages=si.docs[id].passages, out=[];
+  if(!Array.isArray(passages)) return out;
+  var segmenter=typeof Intl!=='undefined'&&Intl.Segmenter
+    ?new Intl.Segmenter('en',{granularity:'sentence'}):null;
+  for(var p=0;p<passages.length;p++){
+    if(typeof passages[p]!=='string') continue;
+    var parts=segmenter?Array.from(segmenter.segment(passages[p]),function(s){return s.segment;}):[passages[p]];
+    for(var s=0;s<parts.length;s++){
+      var text=parts[s].trim();
+      if(text.length>=20&&text.length<=FD_SEARCH_EXCERPT_MAX) out.push(text);
+    }
+  }
+  prep.sentences[id]=out;
+  return out;
+}
+function fdSearchExcerpt(si, prep, ref, tokens){
+  var id=prep.byF[ref];
+  if(id===undefined||!tokens.length) return null;
+  var sentences=fdSearchExcerptSentences(si,prep,id), best=null, bestScore=0;
+  for(var s=0;s<sentences.length;s++){
+    var text=sentences[s], words=/[a-z0-9]+/gi, match, ranges=[], found={};
+    while((match=words.exec(text))){
+      var word=match[0].toLowerCase(), hit=false;
+      for(var t=0;t<tokens.length;t++){
+        if(word===tokens[t]||(tokens[t].length>=FD_SEARCH_BODY_PREFIX&&word.indexOf(tokens[t])===0)){
+          found[tokens[t]]=true; hit=true;
+        }
+      }
+      if(hit) ranges.push([match.index,match.index+match[0].length]);
+    }
+    // Prefer a sentence covering more distinct query words, then keep source order.
+    var score=Object.keys(found).length;
+    if(score>bestScore){ bestScore=score; best={text:text,ranges:ranges}; }
+  }
+  return best;
+}
+function fdSearchWithExcerpts(rows, query, state){
+  var si=state&&state.bodyIndex, prep=fdSearchBodyPrep(si), tokens=fdSearchBodyTokens(query);
+  if(!prep||!tokens.length) return rows;
+  for(var r=0;r<rows.length;r++){
+    if(rows[r].kind==='care') continue;
+    var excerpt=fdSearchExcerpt(si,prep,rows[r].item.ref,tokens);
+    if(excerpt) rows[r].excerpt=excerpt;
+  }
+  return rows;
+}
+function fdSearchExcerptMarkup(excerpt){
+  if(!excerpt) return '';
+  var text=excerpt.text, ranges=excerpt.ranges, out='', end=0;
+  for(var i=0;i<ranges.length;i++){
+    out+=fdEsc(text.slice(end,ranges[i][0]))+'<mark>'+fdEsc(text.slice(ranges[i][0],ranges[i][1]))+'</mark>';
+    end=ranges[i][1];
+  }
+  return '<span class="fd-result__excerpt">'+out+fdEsc(text.slice(end))+'</span>';
+}
+
 /* Crisis routing for the protocol pass. Triggers are matched against the SPACE-PADDED raw query
    rather than the word list, which buys whole-word/phrase matching without a regex: " diet and
    nutrition " does not contain " die ", and a multi-word trigger can be authored the way a
@@ -567,6 +630,20 @@ function fdSearchMatches(index, query, synonyms, state){
     }
   }
 
+  /* These two exact-query aliases replace their ordinary rows. Keeping the real refs
+     preserves keyboard activation and the selected row on return to Search. */
+  var tasks=[];
+  if(typedQuery==='collateral'&&idx.byRef){
+    var call=idx.byRef['collateral_workflow.md'];
+    var practice=idx.byRef['communication-practice.html'];
+    if(call&&practice&&!call.readerOnly&&!practice.readerOnly&&!seenRefs[call.ref]&&!seenRefs[practice.ref]){
+      tasks.push({kind:'task',item:call,title:'Make a family call'},
+        {kind:'task',item:practice,title:'Practice the conversation'});
+      seenRefs[call.ref]=true;
+      seenRefs[practice.ref]=true;
+    }
+  }
+
   /* Refs are sorted first so the sort below is deterministic across engines: equal scores keep
      alphabetical order, matching fd_data.js's fdLibraryOnlyReads precedent. */
   var refs=[];
@@ -658,7 +735,7 @@ function fdSearchMatches(index, query, synonyms, state){
          (frontdoor-search-gate.mjs) -- and precedes every other alias item;
        - with no exact item the order is unchanged: alias, haystack protocols, rest. */
   var exactQuery=fdSearchNormalize(rawQuery), exactReading=fdSearchNormalize(readingQuery);
-  var exactAlias=[], exactOnly=[], aliasItems=[], rest=[];
+  var exactAlias=tasks, exactOnly=[], aliasItems=[], rest=[];
   for(var s=0;s<itemResults.length;s++){
     var exactTitle=fdSearchNormalize(itemResults[s].item.searchTitle||itemResults[s].item.title||'');
     var isExact=!!exactTitle&&(exactTitle===exactQuery||exactTitle===exactReading);
@@ -680,8 +757,10 @@ function fdSearchMatches(index, query, synonyms, state){
   for(var hq=0;hq<hayProtocols.length;hq++){ delete hayProtocols[hq]._score; }
 
   var pharmacyResults=pharmacy?[{item:pharmacy,kind:'pharmacy',meta:'Pharmacy card'}]:[];
-  if(exactOnly.length) return protoResults.concat(pharmacyResults, careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest);
-  return protoResults.concat(pharmacyResults, careResults, exactAlias, aliasItems, hayProtocols, rest);
+  var ranked=exactOnly.length
+    ?protoResults.concat(pharmacyResults, careResults, exactAlias, hayProtocols, exactOnly, aliasItems, rest)
+    :protoResults.concat(pharmacyResults, careResults, exactAlias, aliasItems, hayProtocols, rest);
+  return fdSearchWithExcerpts(ranked,rawQuery,state);
 }
 
 /* Keep one matching/ranking pass for both the honest total and the visible rows. The keyboard
@@ -702,6 +781,7 @@ function fdSearchResults(index, query, synonyms, state){
    other surfaces) gets the result's own `meta` string exactly as before. */
 function fdSearchRowMeta(r, ctx){
   var it=r.item, idx=ctx&&ctx.index;
+  if(r.kind==='task') return it.searchTitle||it.title;
   if(!idx||r.kind==='care'||r.kind==='pharmacy') return r.meta||'';
   if(r.kind==='protocol'){
     var kit=idx.kit||[];
@@ -743,13 +823,15 @@ function fdSearchResultRow(r, ctx){
   if(isProto) dotCls+=' is-safety';
   else if(it.kind==='tool'&&!it.rights) dotCls+=' is-tool';
   var openAttrs=' data-fd-open="'+fdEsc(it.ref)+'"';
+  if(r.kind==='task') openAttrs+=' data-fd-search-task="collateral"';
   if(isProto) openAttrs=' data-fd-safety="'+fdEsc(it.ref)+'"';
   if(r.kind==='pharmacy') openAttrs=' data-fd-pharmacy-card="'+fdEsc(it.id)+'"';
   return '<button type="button" class="fd-result'+(c.first?' is-first':'')+'"'+openAttrs+'>'+
     '<span class="'+dotCls+'"></span>'+
-    '<span class="fd-result__title">'+fdEsc(it.searchTitle||it.title)+'</span>'+
+    '<span class="fd-result__title">'+fdEsc(r.title||it.searchTitle||it.title)+'</span>'+
     (r.kind==='pharmacy'?'':governanceBadge(it.governance))+
     '<span class="fd-result__meta">'+fdEsc(meta)+'</span>'+
+    fdSearchExcerptMarkup(r.excerpt)+
   '</button>';
 }
 
@@ -760,6 +842,7 @@ function fdSearchResultRow(r, ctx){
    shares a word, which a fixed Safety-first order would have undone. Only a leading protocol
    wears the danger-wash `is-first` background. */
 var FD_SEARCH_GROUPS={
+  task:{cls:'',label:'What do you want to do?'},
   protocol:{cls:'is-safety',label:'Safety protocols'},
   pharmacy:{cls:'',label:'Pharmacy'},
   page:{cls:'',label:'Pages'},
@@ -767,7 +850,7 @@ var FD_SEARCH_GROUPS={
   care:{cls:'is-care',label:'Patient care resources'}
 };
 function fdSearchGroupOf(r){
-  if(r.kind==='protocol'||r.kind==='care'||r.kind==='pharmacy') return r.kind;
+  if(r.kind==='protocol'||r.kind==='care'||r.kind==='pharmacy'||r.kind==='task') return r.kind;
   return (r.item&&r.item.kind==='tool')?'tool':'page';
 }
 function fdSearchGroupedRows(results, index){

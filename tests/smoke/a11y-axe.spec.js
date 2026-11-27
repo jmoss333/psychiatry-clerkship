@@ -20,7 +20,8 @@
  *
  * SCOPE AND COST
  * --------------
- * Five surfaces x two themes x two viewports = 20 runs per site, 40 in all, inside the existing
+ * Nine surfaces x two themes x two viewports = 36 runs per site, 72 in all (five until
+ * 2026-11-25), inside the existing
  * nav-ms3 / nav-res projects (no new CI step, no workflow digest change). Kept deliberately to
  * one representative per surface class rather than a crawl: Today (the landing page), the
  * Library, a reading page through the Reader, a tool page, and the Search dialog open. Measured
@@ -44,6 +45,14 @@ const SURFACES = [
   // injected crisis block and the Clinical Warm palette; present on both sites.
   { label: 'tool page (MSE builder)', path: '/tools/mse.html', ready: 'body' },
   { label: 'Search open', path: '/?tab=today', ready: '.fd-today', open: 'search' },
+  // Added 2026-11-25 (accessibility pass): the four page types learners use most that had no
+  // automated check. Each is its own class of markup -- a case page's practice panel, the
+  // question bank, a simulator, the Interview Room -- and each measured 0 serious/critical in
+  // light at 375 px on the sweep that added them.
+  { label: 'case page (cases.md)', path: '/?page=cases.md', ready: '.fd-reader .fd-article__body' },
+  { label: 'question bank', path: '/tools/question-bank-practice.html', ready: 'body' },
+  { label: 'family meeting simulator', path: '/tools/family-meeting-sim.html', ready: 'body' },
+  { label: 'Interview Room', path: '/tools/sp-interview.html', ready: 'body' },
 ];
 
 const THEMES = ['light', 'dark'];
