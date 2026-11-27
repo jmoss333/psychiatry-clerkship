@@ -25,14 +25,15 @@ const html = readFileSync(FILE, 'utf8');
 // the alternative — asserting on the source text — would pass against a refactor that broke the
 // behaviour. Same trust model as parity.test.mjs, which eval()s the client script for the same
 // reason. Never widen this to a path or a fixture supplied from outside the repo.
-function makeVerdict(rate) {
+function makeVerdict(rate, decision = 'refusal of a recommended procedure') {
   const src = html.match(/function verdict\(\)\{[\s\S]*?\n  \}/);
   assert.ok(src, 'verdict() not found — locate it by string, not by line (handoff amendment A1)');
   const ABIL = [{ key: 'understand' }, { key: 'appreciate' }, { key: 'reason' }, { key: 'express' }];
+  const ctx = { decision, risk: 'moderate' };
   // eslint-disable-next-line no-new-func
-  return new Function('ABIL', 'rate', `${src[0]}; return verdict();`).bind(null, ABIL, rate);
+  return new Function('ABIL', 'rate', 'ctx', `${src[0]}; return verdict();`).bind(null, ABIL, rate, ctx);
 }
-const V = (rate) => makeVerdict(rate)();
+const V = (rate, decision) => makeVerdict(rate, decision)();
 const ALL = (v) => ({ understand: v, appreciate: v, reason: v, express: v });
 
 test('four "Not assessed" never yields INTACT — the original laundering bug', () => {
@@ -65,26 +66,37 @@ test('all four rated with an impairment still yields LACKS', () => {
   assert.match(v.txt, /LACKS/);
 });
 
-// The export gate. `part` is the single signal the button keys off, so any incomplete state
-// disables it — this is what stops an unfinished "CAPACITY ASSESSMENT" reaching a chart.
-test('Copy note is disabled for every incomplete state', () => {
-  assert.match(html, /disabled:incomplete/, 'the export button must bind disabled to the verdict');
-  assert.match(html, /var incomplete=\(v\.cls==='part'\)/,
-    "incompleteness must be derived from verdict(), not from a separate ad-hoc check");
-  assert.match(html, /if\(!incomplete\) copyNote\(\)/,
-    'the click handler must also guard — disabled alone is bypassable');
-  for (const rate of [ALL('na'), {}, { understand: 'intact', appreciate: 'na', reason: 'na', express: 'na' }]) {
-    assert.equal(V(rate).cls, 'part', 'each of these must disable export');
+// DC-1 (red-team 2026-11-25): capacity is decision-specific, so a verdict with no decision named
+// is a global capacity verdict. No determination is drawn until the decision is named.
+test('no decision named: no determination, whatever the ratings', () => {
+  for (const decision of ['', '   ', null]) {
+    for (const rate of [ALL('intact'), { understand: 'intact', appreciate: 'impaired', reason: 'intact', express: 'intact' }]) {
+      const v = V(rate, decision);
+      assert.equal(v.cls, 'part', 'a blank decision must not yield INTACT or LACKS');
+      assert.doesNotMatch(v.txt, /INTACT|LACKS/, v.txt);
+      assert.match(v.txt, /specific decision/i);
+    }
   }
 });
 
-test('Copy note is enabled once all four are assessed', () => {
-  for (const rate of [ALL('intact'), { understand: 'intact', appreciate: 'impaired', reason: 'intact', express: 'intact' }]) {
-    assert.notEqual(V(rate).cls, 'part', 'a complete assessment must be exportable');
-  }
+test('a named decision with all four assessed still yields a determination', () => {
+  assert.equal(V(ALL('intact'), 'refusal of dialysis').cls, 'ok');
+  assert.equal(V({ understand: 'impaired', appreciate: 'intact', reason: 'intact', express: 'intact' }, 'refusal of dialysis').cls, 'no');
 });
 
-test('a disabled export is visibly disabled', () => {
-  assert.match(html, /\.btn:disabled/, 'a control that looks pressable but is not reads as a broken tool');
-  assert.match(html, /cursor:not-allowed/);
+// DC-3 (Josh, 2026-11-26: practice only). The write-up stays on the page; nothing copies it out to
+// a chart or a handoff, and the tool does not ask the learner to quote a real patient.
+test('practice only: no copy or clipboard export of the write-up', () => {
+  assert.doesNotMatch(html, /navigator\.clipboard/, 'the write-up must not be copied off the page');
+  assert.doesNotMatch(html, /copyNote/, 'no export handler');
+  assert.doesNotMatch(html, />?Copy note/, 'no "Copy note" control');
+});
+
+test('practice only: the tab and the write-up are framed for fictional cases', () => {
+  assert.match(html, /'2 · Practice assessment'/);
+  assert.doesNotMatch(html, /'2 · Bedside assessment'/);
+  assert.match(html, /PRACTICE WRITE-UP \(fictional case\)/);
+  assert.doesNotMatch(html, /quote the patient/i, 'must not prompt for real patient quotes');
+  assert.doesNotMatch(html, /findings verified and note reviewed with the supervising clinician/,
+    'the write-up must not assert a supervisor review that has not happened');
 });
