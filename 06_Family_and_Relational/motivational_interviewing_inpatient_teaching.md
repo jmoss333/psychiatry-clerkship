@@ -34,6 +34,7 @@ People talk themselves into change. Your job is **not** to supply the arguments 
     <p class="lw-setting">On the inpatient psychiatry unit, Ren agrees to talk before morning rounds. The team will be discussing the antipsychotic Ren restarted during this admission.</p>
     <h4 class="lw-label" id="lw-ren">Ren <span>· Fictional patient</span></h4>
     <blockquote>“Yesterday the voices were quiet enough that I could actually hear my sister on the phone. Last time I took this medicine, I gained so much weight my jeans didn’t fit. I don’t want to go home on it again.”</blockquote>
+    <figure data-ren-audio><figcaption>Ren’s opening</figcaption><audio controls preload="metadata" data-ren-clip="REN-01" aria-label="Ren’s opening" src="audio/ren-before-rounds/REN-01.mp3"></audio></figure>
   </section>
   <section aria-labelledby="lw-choice">
     <div class="lw-prompt">
@@ -56,6 +57,7 @@ People talk themselves into change. Your job is **not** to supply the arguments 
   <section class="lw-reply" id="lw-reply" hidden aria-labelledby="lw-reply-title">
     <div class="lw-replyhead"><h4 id="lw-reply-title" class="lw-label">Ren <span>· One possible reply</span></h4><button class="lw-link" type="button" data-another>Try another reply <span aria-hidden="true">↻</span></button></div>
     <blockquote data-reply-text aria-live="polite"></blockquote>
+    <div data-reply-audio></div>
     <div class="lw-followup">
       <p class="lw-label">Resident follow-up</p>
       <h5>What would you say next?</h5>
@@ -64,11 +66,15 @@ People talk themselves into change. Your job is **not** to supply the arguments 
         <button type="button" data-move="repair" aria-pressed="false">“I hear you. I’ll tell the team you don’t want to go home on this medicine. Did I get that right?”</button>
         <button type="button" data-move="plan" aria-pressed="false">“What would you like to ask first when we compare options on rounds?”</button>
       </div>
+      <div data-move-audio></div>
       <div class="lw-coach" data-coach hidden aria-live="polite" aria-atomic="true"></div>
       <details data-note hidden><summary>What could you say on rounds?</summary><p data-note-copy></p></details>
     </div>
   </section>
   <footer><button class="lw-link" data-reset type="button" hidden>Start again</button><a href="https://www.ncbi.nlm.nih.gov/books/NBK571068/" target="_blank" rel="noopener noreferrer">Teaching source · SAMHSA TIP 35 <span aria-hidden="true">↗</span></a></footer>
+  <template data-recorded-move="repair">
+    <figure data-ren-audio><figcaption>Interviewer’s repair</figcaption><audio controls preload="metadata" data-ren-clip="REN-09" aria-label="Interviewer’s repair" src="audio/ren-before-rounds/REN-09.mp3"></audio></figure>
+  </template>
   <template data-reflection-for="weight">“You don’t want to go home on this medicine. With the voices quieter, you could hear your sister again, and <span class="lw-accent">you remember gaining weight until your jeans didn’t fit</span>.”</template>
   <template data-reflection-for="call">“You don’t want to go home on this medicine. You remember gaining weight until your jeans didn’t fit, and <span class="lw-accent">with the voices quieter, you could hear your sister again</span>.”</template>
   <template data-patient-reply="previous-visits">
@@ -80,8 +86,11 @@ People talk themselves into change. Your job is **not** to supply the arguments 
   </template>
   <template data-patient-reply="correction">
     <p data-quote>“Hang on. Please don’t go in there and tell them I said yes just because I said it helped.”</p>
+    <figure data-ren-audio data-patient-recording><figcaption>Ren’s correction</figcaption><audio controls preload="metadata" data-ren-clip="REN-05" aria-label="Ren’s correction" src="audio/ren-before-rounds/REN-05.mp3"></audio></figure>
     <div data-feedback-for="evoke"><h6>Answer the concern about today’s rounds</h6><p>Ren wants to know what you will say in the room. Address that directly before asking about previous visits.</p></div>
-    <div data-feedback-for="repair"><h6>Check the words you will carry into rounds</h6><p>You named Ren’s preference about this particular medicine and gave them a chance to correct your wording.</p></div>
+    <div data-feedback-for="repair"><h6>Check the words you will carry into rounds</h6><p>You named Ren’s preference about this particular medicine and gave them a chance to correct your wording.</p>
+      <figure data-ren-audio><figcaption>Faculty feedback · Josh (synthetic voice)</figcaption><audio controls preload="metadata" data-ren-clip="REN-16" aria-label="Faculty feedback · Josh (synthetic voice)" src="audio/ren-before-rounds/REN-16.mp3"></audio></figure>
+    </div>
     <div data-feedback-for="plan"><h6>Check your understanding first</h6><p>Ren is worried you will report an agreement they never made. Say what you heard and let Ren confirm it before moving to other options.</p></div>
     <p data-rounds>Ren reports quieter voices and recalls gaining weight on this medication previously. They don’t want to take the same medication after discharge. They asked me to be clear on rounds that they have not agreed to take it at home.</p>
   </template>

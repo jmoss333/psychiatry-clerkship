@@ -4337,6 +4337,9 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
 #last-words-on-rounds [hidden]{display:none!important}
 #last-words-on-rounds :is(h3,h4,h5,h6,p,blockquote){margin:0}
 #last-words-on-rounds button{font:inherit;cursor:pointer;touch-action:manipulation}
+#last-words-on-rounds [data-ren-audio]{margin:var(--fd-space-3) 0}
+#last-words-on-rounds [data-ren-audio] figcaption{color:var(--fd-text-mid);font-size:var(--fd-font-sm);margin-bottom:var(--fd-space-1)}
+#last-words-on-rounds [data-ren-audio] audio{display:block;width:100%;max-width:24rem}
 #last-words-on-rounds .lw-mast{padding:var(--fd-space-8) var(--lw-gutter) var(--fd-space-6)}
 #last-words-on-rounds .lw-breadcrumb,#last-words-on-rounds .lw-label{font-size:calc(var(--fd-font-xs) * var(--fd-reading-scale,1));letter-spacing:.012em}
 #last-words-on-rounds .lw-breadcrumb{color:var(--fd-text-mid);font-weight:550}

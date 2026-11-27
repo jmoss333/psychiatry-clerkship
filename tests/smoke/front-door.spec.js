@@ -4872,6 +4872,9 @@ test.describe('Clinical field guide', () => {
     const reply = card.locator('[data-reply-text]');
     const sample = card.locator('[data-note-copy]');
     const worked = card.locator('[data-note]');
+    const clip = cue => card.locator('audio[data-ren-clip="' + cue + '"]');
+    await expect(clip('REN-01')).toBeVisible();
+    await expect(clip('REN-16')).toHaveCount(0);
     const cases = [
       { quote: 'Nobody ever asked', coach: ['Ask the question Ren was missing', 'You heard the discharge preference', 'Check where Ren wants to go next'], handoff: 'previous visits focused on the voices' },
       { quote: 'tell them I said yes', coach: ['Answer the concern about today’s rounds', 'Check the words you will carry into rounds', 'Check your understanding first'], handoff: 'clear on rounds that they have not agreed' },
@@ -4888,12 +4891,17 @@ test.describe('Clinical field guide', () => {
       await expect(reply).toBeEmpty();
       await card.locator('[data-reveal]').press('Enter');
       for (const current of cases) {
+        const correction = current === cases[1];
         await expect(reply).toContainText(current.quote);
+        await expect(clip('REN-05')).toHaveCount(correction ? 1 : 0);
+        await expect(clip('REN-16')).toHaveCount(0);
         await expect(card.locator('[data-coach]')).toBeHidden();
         await expect(worked).toBeHidden();
         for (const [i, move] of ['evoke','repair','plan'].entries()) {
           await card.locator('[data-move="' + move + '"]').click();
           await expect(card.locator('[data-coach] h6')).toHaveText(current.coach[i]);
+          await expect(clip('REN-09')).toHaveCount(move === 'repair' ? 1 : 0);
+          await expect(clip('REN-16')).toHaveCount(correction && move === 'repair' ? 1 : 0);
           await expect(sample).toBeEmpty();
           await worked.locator('summary').press('Enter');
           await expect(sample).toBeVisible();
