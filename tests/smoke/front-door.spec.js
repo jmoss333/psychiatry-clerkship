@@ -3684,19 +3684,29 @@ test.describe('Interactive readings', () => {
       [['wish'], 'I’ll give Sam some privacy. About what time is their sister calling?'],
       [['time'], 'I’ve got the time. Does Sam want me there for the call, or would they rather I stop by afterward?'],
       [['owner'], 'Maya has the check-in. What did Sam say would help them around the call?'],
-      [['wish', 'time'], 'Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?'],
+      [['wish', 'time'], 'Around seven, and Sam would like privacy. Who’s agreed to check in with them afterward?', 'SAM-07.mp3'],
       [['wish', 'owner'], 'Maya’s checking in afterward. When is Sam expecting their sister to call?'],
       [['time', 'owner'], 'I’ve got the time, and Maya has the check-in. Does Sam want company during the call, or would they rather talk afterward?'],
-      [['wish', 'time', 'owner'], readback],
+      [['wish', 'time', 'owner'], readback, 'SAM-08.mp3'],
     ];
-    for (const [selected, reply] of cases) {
+    const audio = activity.locator('#ns-recording audio');
+    for (const [selected, reply, clip] of cases) {
       for (const key of selected) await pick(key).click();
       await expectCard(selected);
+      await expect(audio).toHaveCount(0);
       await send.click();
       await expect(question).toBeVisible();
       await expect(question).toContainText(reply);
+      if (clip) {
+        await expect(audio).toHaveAttribute('src', 'audio/sam-evening-signout/' + clip);
+        await expect(audio).toBeVisible();
+        await expect(audio).toHaveJSProperty('paused', true);
+      } else {
+        await expect(audio).toHaveCount(0);
+      }
       await expectCard(selected);
       await reset.click();
+      await expect(audio).toHaveCount(0);
       await expectCard([]);
       await expect(activity.locator('[aria-pressed=true]')).toHaveCount(0);
       await expect(question).toBeEmpty();

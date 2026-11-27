@@ -596,6 +596,12 @@ for scene in ("catie-patient-a.webp", "catie-patient-b.webp"):
                    os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "14_Tracks", "MS3", "Student_Ready_Pack", "04_expansion_modules", "illustrations", "grief-bedside.webp"),
                os.path.join(OUT, "illustrations", "grief-bedside.webp"), _missing_req)
+signout_audio = os.path.join("audio", "sam-evening-signout")
+signout_reading = os.path.join(LIB, "14_Tracks", "MS3", "Student_Ready_Pack", "05_documentation_oral_presentation")
+os.makedirs(os.path.join(OUT, signout_audio), exist_ok=True)
+for recording in ("SAM-07.mp3", "SAM-08.mp3"):
+    _copy_required(os.path.join(signout_reading, signout_audio, recording),
+                   os.path.join(OUT, signout_audio, recording), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Medical_Workup", "illustrations", "lang-morning-interview.webp"),
                os.path.join(OUT, "illustrations", "lang-morning-interview.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
