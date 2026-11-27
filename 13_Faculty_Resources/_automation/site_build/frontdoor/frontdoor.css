@@ -3969,7 +3969,7 @@ html:has([data-pharmacy-lookup]){overflow:hidden}
 #night-signout .ns-options button::after{content:"+" / "";display:grid;place-items:center;flex:0 0 1.45em;height:1.45em;border:1px solid var(--fd-line-strong);border-radius:var(--fd-radius-circle);color:var(--fd-teal-deep)}
 #night-signout .ns-options button[aria-pressed=true]::after{content:"✓" / "";background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent)}
 #night-signout .ns-options button:hover{background:var(--fd-teal-wash)}
-#night-signout .ns-reader{padding:var(--fd-space-6);border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
+#night-signout .ns-reader{padding:var(--fd-space-6);scroll-margin-top:calc(var(--fd-space-14) + var(--fd-space-8) + env(safe-area-inset-top));border-inline-start:3px solid var(--fd-olive);background:var(--fd-olive-wash)}
 #ns-recording [data-ns-player]{margin-top:var(--fd-space-5)}
 #ns-recording audio{display:block;width:100%;margin-top:var(--fd-space-2)}
 #night-signout .ns-primary{width:100%;margin-top:var(--fd-space-5);background:var(--fd-teal);border-color:var(--fd-teal);color:var(--fd-on-accent);text-align:center}
