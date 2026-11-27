@@ -130,13 +130,15 @@ test('the evidence is her actual reply, not the scripted line (a live model may 
   assert.equal(r.record, 'Taking it, but she skipped two days for nausea.');
 });
 
-test('a disclosure the replay cannot place is still established (a spoken turn can join several utterances)', () => {
+test('an open spoken gate without a matching transcript reply leaves the note for review', () => {
   const s = visit(['Hi.']);
   s.unlocked.si_active = true; // as recorded from the proxy's state for a spoken turn
   const r = row(T.gradeVisitNote(cd, s, RIGHT), 'si_since');
-  assert.equal(r.established, true);
+  assert.equal(r.established, false);
+  assert.equal(r.recognized, true);
   assert.equal(r.evidence, null);
-  assert.equal(r.result, 'match');
+  assert.equal(r.result, 'unclear');
+  assert.equal(row(T.gradeVisitNote(cd, s, { ...RIGHT, si_since: 'unknown' }), 'si_since').result, 'unclear');
 });
 
 test('the next encounter with the same patient is offered only once faculty have released it', () => {
@@ -216,6 +218,51 @@ function liveVisit(exchanges) {
   return s;
 }
 const HONEST = { intake: 'unknown', sertraline: 'unknown', trazodone: 'unknown', other: { text: '', none: true }, total: '12', band: 'moderate', item9: '0', si_since: 'unknown', trend: 'improved', plan_used: 'unknown', tom_meds: 'unknown', firearms: 'unknown', contacts: 'unknown' };
+const GATED_FIELDS = [
+  ['intake', 'appt_detail', SKILLED[6]],
+  ['si_since', 'si_active', SKILLED[12]],
+  ['tom_meds', 'means_detail', SKILLED[16]],
+];
+
+test('a live nonanswer cannot credit a guessed disclosure or penalize an unknown entry', () => {
+  const reply = 'I am not sure I want to talk about that today.';
+  const s = liveVisit(GATED_FIELDS.map(([, , question]) => [question, reply]));
+  for (const [i, [id, gate]] of GATED_FIELDS.entries()) {
+    assert.equal(s.unlocked[gate], true);
+    for (const note of [RIGHT, HONEST]) {
+      const r = row(T.gradeVisitNote(cd, s, note), id);
+      assert.equal(r.result, 'unclear', id);
+      assert.equal(r.established, false);
+      assert.equal(r.evidence.carried, false);
+      assert.equal(r.evidence.number, i + 1);
+      assert.equal(r.evidence.patient, reply);
+    }
+  }
+});
+
+test('a later disclosure supports the note even if the opening reply deferred the answer', () => {
+  const question = SKILLED[6];
+  const gate = cd.gated.find((item) => item.id === 'appt_detail');
+  const s = liveVisit([[question, 'Could we come back to that?'], ['What happened then?', gate.reveal]]);
+  const r = row(T.gradeVisitNote(cd, s, HONEST), 'intake');
+  assert.equal(r.result, 'unrecorded');
+  assert.equal(r.evidence.number, 2);
+  assert.equal(r.evidence.patient, gate.reveal);
+
+  // Her repeat line asks for help booking an appointment. It does not say what happened.
+  const repeated = liveVisit([[question, gate.repeatAsk]]);
+  assert.equal(row(T.gradeVisitNote(cd, repeated, HONEST), 'intake').result, 'unconfirmed');
+  assert.equal(row(T.gradeVisitNote(cd, repeated, RIGHT), 'intake').result, 'unsupported');
+});
+
+test('a freely worded answer to a gated question is available for transcript review', () => {
+  const reply = 'I called to cancel that appointment and I still need to reschedule.';
+  const s = liveVisit([[SKILLED[6], reply]]);
+  const r = row(T.gradeVisitNote(cd, s, HONEST), 'intake');
+  assert.equal(r.result, 'unclear');
+  assert.equal(r.evidence.patient, reply);
+});
+
 const ASKED = ['sertraline', 'trazodone', 'other', 'plan_used', 'firearms', 'contacts'];
 // Two of these are the reviewer's own reproductions; two carry the typographic apostrophe a model writes.
 const PARAPHRASED = [

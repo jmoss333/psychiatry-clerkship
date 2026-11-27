@@ -408,7 +408,7 @@ var SPOKEN_CONSENT_VERSION='2026-09-26-realtime-v1';
 /* The shared family meeting (Morgan and Maya) needs two voices in one room. A real-time session is
    pinned to one voice, so until the two-session family room exists that encounter runs in the
    faculty preview on the chained voice pipeline. One card, one door, same tab, no credentials. */
-var FAMILY_VISIT_URL='https://interview-room-faculty-preview.netlify.app/?preset=trainee';
+var FAMILY_VISIT_URL='https://interview-room-faculty-preview.netlify.app/?preset=family';
 var e=React.createElement, useState=React.useState, useEffect=React.useEffect, useRef=React.useRef;
 function announce(m){try{document.getElementById('live').textContent=m;}catch(x){}}
 
@@ -821,10 +821,13 @@ function visitNoteFields(caseDef){
   note.sections.forEach(function(sec){(sec.fields||[]).forEach(function(f){out.push({section:sec,field:f});});});
   return out;
 }
-function visitNoteEstablished(s,field){
+function visitNoteEstablished(s,field,evidence){
   var r=field.revealedBy||{};
   if(r.chart)return true;
-  if(r.gate)return !!(s.unlocked&&s.unlocked[r.gate]);
+  if(r.gate){
+    if(evidence===undefined)evidence=visitNoteEvidenceTurn(s,field);
+    return !!(evidence&&evidence.carried);
+  }
   if(r.intents)return r.intents.some(function(id){return !!(s.covered&&s.covered[id]);});
   return false;
 }
@@ -858,7 +861,7 @@ function visitNoteComplete(caseDef,entries){
    topic per turn, so an agenda line that names the medicines, the safety plan and the form is
    recognized for all three while she answers about her medicines. A reply CARRIES a field's fact
    when it contains one of the case's own lines for it — a response line of the field's intents, or
-   the gate's reveal or repeat line — or when it matches one of the field's `replyMatch` patterns:
+   the gate's reveal line — or when it matches one of the field's `replyMatch` patterns:
    a Live reply is the model's paraphrase of those lines and rarely repeats one whole. The patterns
    are written for precision: a paraphrase they miss is left for the learner to check, while a false
    hit would count an honest "not established" as a difference. */
@@ -869,7 +872,8 @@ function visitNoteFactLines(caseDef,field){
     if(bank)Object.keys(bank).forEach(function(tier){(bank[tier]||[]).forEach(function(l){lines.push(l);});});
   });
   var g=r.gate?(caseDef.gated||[]).filter(function(x){return x.id===r.gate;})[0]:null;
-  if(g){if(g.reveal)lines.push(g.reveal);if(g.repeatAsk)lines.push(g.repeatAsk);}
+  // A repeat can be only an offer to check (e.g. "I could text him").
+  if(g&&g.reveal)lines.push(g.reveal);
   return lines;
 }
 function visitNoteCarries(reply,lines,patterns){
@@ -897,40 +901,30 @@ function visitNoteGateIntents(caseDef,gateId){
 }
 function visitNoteRecognized(caseDef,s,field){
   var r=field.revealedBy||{};
-  if(visitNoteEstablished(s,field))return true;
-  var ids=r.gate?visitNoteGateIntents(caseDef,r.gate):[];
+  if(r.chart||(r.gate&&s.unlocked&&s.unlocked[r.gate]))return true;
+  var ids=r.gate?visitNoteGateIntents(caseDef,r.gate):(r.intents||[]);
   return ids.some(function(id){return !!(s.covered&&s.covered[id]);});
 }
-/* The patient turn to quote. For intents: the first recognized turn whose reply carries the fact,
-   else the first recognized turn whose reply the room did not write (the one to check), else the
-   first recognized turn (still shown, to check). For a gate: the first turn at which
-   replaying the learner's words through the same cascade the server runs opens it (parity.test.mjs
-   keeps MockProvider and sp.mjs deriveState identical on `unlocked`), else — the gate never opened —
-   the first turn that raised its topic, so a deflection is shown for what it was. `carried` says
-   whether the quoted reply is the disclosure itself; `scripted`, whether it is one of the case's
-   own lines. Null when nothing was recognized. */
+/* Quote the reply that supports the note. Once a gate opens, its authored disclosure may be
+   spoken on a later exchange, including a turn the speech recognizer grouped differently.
+   Otherwise show a reply on the recognized topic, preferring one that needs a human reading. */
 function visitNoteEvidenceTurn(s,field){
-  var r=field.revealedBy||{},turns=s.turns||[],own=visitNoteCaseLines(s.caseDef),i,first=null,unread=null;
-  function at(i,carried){return {number:i+1,learner:turns[i].me,patient:turns[i].pt,carried:carried,scripted:own.indexOf(turns[i].pt)>=0};}
-  function raised(i,ids){return (turns[i].intents||[]).some(function(id){return ids.indexOf(id)>=0;});}
-  if(r.intents){
-    var lines=visitNoteFactLines(s.caseDef,field);
-    for(i=0;i<turns.length;i++){
-      if(!raised(i,r.intents))continue;
-      if(visitNoteCarries(turns[i].pt,lines,r.replyMatch))return at(i,true);
-      if(!first)first=at(i,false);
-      if(!unread&&own.indexOf(turns[i].pt)<0)unread=at(i,false);
-    }
-    return unread||first;
+  var r=field.revealedBy||{},turns=s.turns||[],own=visitNoteCaseLines(s.caseDef);
+  var ids=r.gate?visitNoteGateIntents(s.caseDef,r.gate):(r.intents||[]);
+  var gateOpen=r.gate&&s.unlocked&&s.unlocked[r.gate];
+  var lines=visitNoteFactLines(s.caseDef,field),first=null,unread=null;
+  for(var i=0;i<turns.length;i++){
+    var turn=turns[i];
+    var mentioned=(turn.intents||[]).some(function(id){return ids.indexOf(id)>=0;});
+    var carries=gateOpen&&lines.indexOf(turn.pt)>=0;
+    if(!mentioned&&!carries)continue;
+    if(!r.gate)carries=visitNoteCarries(turn.pt,lines,r.replyMatch);
+    var evidence={number:i+1,learner:turn.me,patient:turn.pt,carried:!!carries,scripted:own.indexOf(turn.pt)>=0};
+    if(carries)return evidence;
+    if(!first)first=evidence;
+    if(!unread&&!evidence.scripted)unread=evidence;
   }
-  if(r.gate){
-    var replayer=new MockProvider(),replay=replayer.start(s.caseDef,{difficulty:'supported'});
-    for(i=0;i<turns.length;i++){replayer.respond(replay,turns[i].me);if(replay.unlocked[r.gate])return at(i,true);}
-    if(s.unlocked&&s.unlocked[r.gate])return null; // opened on a turn the replay cannot place (spoken)
-    var ids=visitNoteGateIntents(s.caseDef,r.gate);
-    for(i=0;i<turns.length;i++){if(raised(i,ids))return at(i,false);}
-  }
-  return null;
+  return unread||first;
 }
 function visitNoteEntryText(field,value){
   if(field.type==='choice'){var ch=field.choices.filter(function(c){return c[0]===value;})[0];return ch?ch[1]:'—';}
@@ -942,7 +936,7 @@ var VISIT_NOTE_WORD={
   match:'Matches the record',
   unrecorded:'The room recognized this topic in your turns — your note records it as not established; check the reply',
   unconfirmed:'The room recognized this topic in your turns, but her reply there does not state it — “not established” is an honest entry; check the exchange',
-  unclear:'The room recognized this topic in your turns but cannot tell from her words whether she stated it — check the exchange; if she did, it belongs in your note',
+  unclear:'The room recognized this topic but cannot confirm the case detail from her words. Review the exchange alongside your note.',
   differs:'Differs from the record',
   accurate:'Not established in this visit — an honest entry',
   unsupported:'Matches the record, though the room did not recognize the topic in your turns',
@@ -959,14 +953,15 @@ function gradeVisitNote(caseDef,s,entries){
   var fields=visitNoteFields(caseDef),rows=[],counts={match:0,differ:0,notEstablished:0,unclear:0};
   fields.forEach(function(item){
     var f=item.field,v=entries?entries[f.id]:undefined,r=f.revealedBy||{};
-    var established=visitNoteEstablished(s,f),recognized=visitNoteRecognized(caseDef,s,f),result,note='';
     var evidence=r.chart?null:visitNoteEvidenceTurn(s,f);
-    // Leaving a fact out is a difference only when her reply stated it; a gate's disclosure is the
-    // opening itself, including a spoken turn the replay cannot place. That her reply did NOT state
-    // it can be said only of a reply the room wrote; of any other, the learner is asked to check.
-    var heard=r.intents?!!(evidence&&evidence.carried):established;
-    var unsaid=heard?'unrecorded':(!r.intents||(evidence&&evidence.scripted))?'unconfirmed':'unclear';
-    if(f.type==='integer'){
+    var established=visitNoteEstablished(s,f,evidence),recognized=visitNoteRecognized(caseDef,s,f),result,note='';
+    var unsaid=evidence&&evidence.carried?'unrecorded':evidence&&evidence.scripted?'unconfirmed':'unclear';
+    var openWithoutEvidence=r.gate&&s.unlocked&&s.unlocked[r.gate]&&!established;
+    if(openWithoutEvidence&&(!evidence||!evidence.scripted)){
+      result='unclear';
+    }else if(openWithoutEvidence&&f.unknown!=null&&v===f.unknown){
+      result='unconfirmed';
+    }else if(f.type==='integer'){
       result=visitNoteInteger(v,f)===f.answer?'match':'differs';
     }else if(f.type==='items'){
       var it=visitNoteItems(f,v),requiredOk=!it.none&&!it.missingRequired.length;
@@ -1069,7 +1064,7 @@ function VisitNoteReview(props){
         e('p',null,e('b',null,'Your note: '),r.entry),
         e('p',null,e('b',null,'The record: '),r.record),
         r.evidence?e('p',{className:'quoted-turn'},e('b',null,'Exchange '+r.evidence.number+' · '+who+': '),r.evidence.patient)
-          :(r.fromChart?null:e('p',{className:'fine'},r.established?'The room recognized this topic; review the full exchange.':r.recognized?'The room recognized this topic in your turns, but '+who+' did not disclose it in this visit.':'Not established in this visit — '+who+' would have told you if asked.')),
+          :(r.fromChart?null:e('p',{className:'fine'},r.recognized?'The room recognized this topic. Review the full exchange.':'Not established in this visit — '+who+' would have told you if asked.')),
         r.note?e('p',{className:'fine'},r.note):null,
         e('p',null,r.teach));
     })));

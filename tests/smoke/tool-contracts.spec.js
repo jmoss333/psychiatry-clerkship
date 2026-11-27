@@ -109,7 +109,7 @@ test('the family-visit door leaves the learner shell by the top window, not insi
   // therefore dies silently — the address bar never changes and the frame shows a refused
   // connection — which the direct-open interview-room project cannot see (it opens the tool
   // top-level). Only a framed click on the real shell proves the door.
-  const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=trainee';
+  const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=family';
   await page.route(destination, (route) => route.fulfill({ contentType: 'text/html', body: '<h1>Family visit door</h1>' }));
   await page.goto('/?tool=sp-interview.html');
   const link = page.frameLocator('.toolframe').getByRole('link', { name: /Open the family visit/ });

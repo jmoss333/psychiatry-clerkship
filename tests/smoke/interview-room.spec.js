@@ -1163,7 +1163,7 @@ test('the family visit is one card that opens the faculty preview in this tab, b
   // (X-Frame-Options: DENY), so the anchor must navigate the top window. tool-contracts.spec.js
   // proves the framed click on the real shell; this proves the attribute the shell path relies on.
   await expect(link).toHaveAttribute('target', '_top');
-  const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=trainee';
+  const destination = 'https://interview-room-faculty-preview.netlify.app/?preset=family';
   let navigation;
   await page.route(destination, async (route) => {
     navigation = route.request();
