@@ -4984,13 +4984,13 @@
           "t": "Offer ketamine instead, to avoid anaesthesia in pregnancy",
           "trap": {
             "name": "Newer = better",
-            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established — requires REMS monitoring, and is not established as equivalent to ECT for this clinical severity; ECT has the longer safety record in pregnancy."
+            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established. Esketamine nasal spray is given only under its REMS, in a certified setting with at least 2 hours of monitoring; IV ketamine for depression is off-label: ketamine is not FDA-approved for any psychiatric disorder. Neither is established as equivalent to ECT for this clinical severity, and ECT has the longer safety record in pregnancy."
           }
         }
       ],
       "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications. Pregnancy is not an indication on its own: the indication here is the severity (suicidality with a plan, refusal to eat) and her prior good response. Once severity calls for ECT, pregnancy makes it a preferred option, because the therapeutic seizure avoids the systemic fetal drug exposure that pharmacotherapy requires.",
       "pearl": "ECT in pregnancy: no absolute contraindication. Pregnancy is not the indication; severity is. Once severity calls for ECT, pregnancy makes it a preferred option.",
-      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires.",
+      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires. ect_neuromodulation.md — Esketamine is delivered under a REMS in a certified healthcare setting with at least 2 hours of on-site monitoring (including pulse oximetry). FDA: Spravato label §5.5, \"Patients must be monitored by a healthcare provider for at least 2 hours after administration\" (REMS last modified Jan 23, 2026, NDA 211243/S-27); \"Ketamine is not FDA-approved for the treatment of any psychiatric disorder\" (FDA warning letter 725147, Jun 23, 2026).",
       "tier2": {
         "q": "Why is ECT preferred over pharmacotherapy once a pregnant patient's illness is severe enough to need it?",
         "options": [
