@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.1" built="2026-10-31" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and CIWA-Ar score bands. One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, faculty-reviewed; a delirium-screen-first path (who to screen, arousal and attention before any cognitive test, the unit's validated screen, what a negative screen does not license)." -->
+<!-- [CLERKSHIP-META v1] tool="Algorithms & Decision Aids" version="1.1" built="2026-10-31" category="acute-safety" audience="trainee,ms3" settings="inpatient" time="scan" summary="Visual decision-support for the can't-miss inpatient syndromes: rule-out-first decision trees, the agitation escalation ladder, NMS-vs-serotonin-syndrome matrix, alcohol-withdrawal timeline, and when the CIWA-Ar applies (cut-offs left to the unit's form). One visual grammar: red = rule out first, teal = first move. Educational; fictional composites only; no PHI; AI-drafted, faculty-reviewed; a delirium-screen-first path (who to screen, arousal and attention before any cognitive test, the unit's validated screen, what a negative screen does not license)." -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
 <title>Algorithms &amp; Decision Aids</title>
-<meta name="description" content="Visual decision aids for inpatient psychiatry: rule-out-first decision trees, the agitation escalation ladder, NMS vs serotonin syndrome, the alcohol-withdrawal timeline, CIWA-Ar score bands, and a delirium-screen-first path.">
+<meta name="description" content="Visual decision aids for inpatient psychiatry: rule-out-first decision trees, the agitation escalation ladder, NMS vs serotonin syndrome, the alcohol-withdrawal timeline, when CIWA-Ar applies (with cut-offs left to the unit's form), and a delirium-screen-first path.">
 <style>
   :root{
     --bg:#f6f3ee; --bg2:#faf6f0; --surface:#ffffff; --surface2:#faf6f0; --border:#ddd3c6; --border2:#ebe5da;
@@ -266,7 +266,7 @@ function ScreenView(){
 }
 /* DELIRIUM_SCREEN_END */
 
-var VIEWS=[["trees","Decision trees"],["screen","Delirium screen first"],["ladder","Agitation ladder"],["nmsss","NMS vs SS"],["withdrawal","Withdrawal timeline"],["ciwa","CIWA-Ar bands"]];
+var VIEWS=[["trees","Decision trees"],["screen","Delirium screen first"],["ladder","Agitation ladder"],["nmsss","NMS vs SS"],["withdrawal","Withdrawal timeline"],["ciwa","CIWA-Ar"]];
 
 function Tree(props){
   var t=props.t;
@@ -380,16 +380,12 @@ function App(){
       }))
     );
     if(view==="ciwa") return e("div",{className:"card"},
-      e("h2",null,"CIWA-Ar score bands"),
+      e("h2",null,"CIWA-Ar: score from your unit's form"),
       e("div",{className:"cap"},"Symptom-triggered dosing keyed to the total score — less total benzodiazepine than fixed schedules. Valid only when the patient can report symptoms: not in delirium, where dosing is scheduled or front-loaded."),
-      e("div",{className:"meter"},
-        e("div",{className:"seg s1"},"≤8"), e("div",{className:"seg s2"},"9–19"), e("div",{className:"seg s3"},"≥20")),
       e("div",{className:"bands"},
-        e("div",{className:"band s1"}, e("span",{className:"bk"},"≤ 8"), e("span",null,"Minimal–mild — supportive care, PRN only.")),
-        e("div",{className:"band s2"}, e("span",{className:"bk"},"9–19"), e("span",null,"Moderate — symptom-triggered benzodiazepine; reassess hourly.")),
-        e("div",{className:"band s3"}, e("span",{className:"bk"},"≥ 20"), e("span",null,"Severe — high DTs risk; aggressive treatment, consider higher level of care."))),
-      e("div",{className:"note"},"Brief teaching reference — use your unit's alcohol-withdrawal protocol. ",
-        e("a",{className:"more",href:"./withdrawal.html"},"Open the withdrawal recognition card (COWS) →"))
+        e("div",{className:"band s3"}, e("span",{className:"bk"},"Treat early"), e("span",null,"A prior withdrawal seizure or delirium tremens is a reason to treat proactively rather than wait for the score, whatever the CIWA-Ar total."))),
+      e("div",{className:"note"},"This page does not give CIWA-Ar score cut-offs. The thresholds, doses and how often to reassess come from your unit's alcohol-withdrawal protocol and its approved CIWA-Ar form. ",
+        e("a",{className:"more",href:"./withdrawal.html"},"Open the CIWA-Ar and COWS card: official form and how to administer it →"))
     );
   }
 
