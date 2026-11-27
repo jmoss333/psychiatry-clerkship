@@ -610,8 +610,9 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Psychosis", "illustrations",
                os.path.join(OUT, "illustrations", "ari-between-admissions.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurodevelopmental", "illustrations", "alex-lunch.webp"),
                os.path.join(OUT, "illustrations", "alex-lunch.webp"), _missing_req)
-_copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
-               os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
+for scene in ("ren-before-rounds.webp", "family-meeting-pause.webp"):
+    _copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", scene),
+                   os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation", "illustrations", "robin-memory.webp"),
                os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),

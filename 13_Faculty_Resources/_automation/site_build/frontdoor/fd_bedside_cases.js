@@ -7,6 +7,7 @@ function fdMountBedsideCases(body) {
   fdMountNicoCall(body);
   fdMountLeeTimeline(body);
   fdMountNightSignout(body);
+  fdMountFamilyPause(body);
   fdMountCoachLine(body);
   fdMountBreakfastHistory(body);
   fdMountAlexTiming(body);
@@ -2051,6 +2052,87 @@ function fdMountLeeTimeline(body) {
   });
 }
 
+
+function fdMountFamilyPause(body) {
+  const card = body.querySelector('#family-pause');
+  if (!card || card.dataset.mounted) return;
+  card.dataset.mounted = 'true';
+
+  const find = selector => card.querySelector(selector);
+  const voices = Array.from(card.querySelectorAll('[data-fp-ask]'));
+  const frames = card.querySelectorAll('[data-fp-frame]');
+  const captions = card.querySelectorAll('[data-fp-caption]');
+  const stage = find('.fp-stage'), art = find('.fp-art');
+  const lines = card.querySelectorAll('[data-fp-line]');
+  const heard = new Set();
+  const hint = find('#fp-hint'), openingHint = hint.textContent;
+  const responses = find('#fp-lines'), response = find('#fp-response');
+  const dialogue = find('#fp-dialogue'), resident = find('#fp-resident');
+  const notes = find('#fp-notes'), feedback = find('#fp-feedback');
+
+  function markChoice(buttons, chosen) {
+    for (const button of buttons) button.setAttribute('aria-pressed', String(button === chosen));
+  }
+
+  function showFrame(key) {
+    stage.dataset.frame = key;
+    for (const button of frames) button.setAttribute('aria-pressed', String(button.dataset.fpFrame === key));
+    for (const caption of captions) {
+      caption.hidden = caption.dataset.fpCaption !== key;
+      if (!caption.hidden) art.alt = caption.dataset.alt;
+    }
+  }
+  for (const button of frames) button.addEventListener('click', () => showFrame(button.dataset.fpFrame));
+
+  for (const button of voices) button.addEventListener('click', () => {
+    const answer = find('#' + button.getAttribute('aria-controls'));
+    answer.hidden = !answer.hidden;
+    button.setAttribute('aria-expanded', String(!answer.hidden));
+    if (!answer.hidden) {
+      heard.add(button);
+      showFrame('pause');
+    }
+    if (heard.size === voices.length && responses.hidden) {
+      responses.hidden = false;
+      hint.textContent = hint.dataset.readyText;
+    }
+  });
+
+  for (const button of lines) button.addEventListener('click', () => {
+    const branch = find('template[data-fp-branch="' + button.dataset.fpLine + '"]').content;
+    markChoice(lines, button);
+    dialogue.replaceChildren(branch.querySelector('[data-fp-reply]').cloneNode(true));
+    notes.replaceChildren(branch.querySelector('[data-fp-choices]').cloneNode(true));
+    feedback.hidden = true;
+    feedback.textContent = '';
+    response.hidden = resident.hidden = false;
+    fdBedsideFocus(response);
+  });
+
+  notes.addEventListener('click', event => {
+    const choice = event.target.closest('button');
+    if (!choice || !notes.contains(choice)) return;
+    markChoice(notes.querySelectorAll('button'), choice);
+    feedback.hidden = false;
+    feedback.textContent = choice.nextElementSibling.textContent;
+  });
+
+  find('[data-fp-reset]').addEventListener('click', () => {
+    heard.clear();
+    showFrame('first');
+    for (const button of voices) {
+      button.setAttribute('aria-expanded', 'false');
+      find('#' + button.getAttribute('aria-controls')).hidden = true;
+    }
+    markChoice(lines, null);
+    responses.hidden = response.hidden = resident.hidden = feedback.hidden = true;
+    dialogue.replaceChildren();
+    notes.replaceChildren();
+    feedback.textContent = '';
+    hint.textContent = openingHint;
+    fdBedsideFocus(voices[0]);
+  });
+}
 
 function fdMountNightSignout(body) {
   const card = body.querySelector('#night-signout');
