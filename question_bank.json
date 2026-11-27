@@ -821,7 +821,7 @@
     },
     {
       "id": "qb_saf_002",
-      "status": "attested",
+      "status": "draft",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "safety",
@@ -846,7 +846,7 @@
         },
         {
           "key": "B",
-          "t": "Return to the nursing station and request a PRN intramuscular medication order before approaching",
+          "t": "Return to the nursing station, review his medication record, and request a PRN intramuscular antipsychotic order before approaching, so that if he refuses oral medication or escalates, the dose is already drawn up and staff are not left waiting on an order while he becomes more agitated in the hallway",
           "trap": {
             "name": "Agitation = antipsychotic",
             "note": "Medication is not the default first step when verbal de-escalation has not been attempted — the framework starts with presence and listening, not a syringe."
@@ -854,7 +854,7 @@
         },
         {
           "key": "C",
-          "t": "Call for additional staff and prepare for restraint in case the patient escalates",
+          "t": "Call for additional staff and ask them to gather in the hallway with the restraint equipment ready, so that a coordinated team is already in place and can move in quickly and safely if he escalates, before anyone tries to talk with him one-on-one",
           "trap": {
             "name": "Restraint first",
             "note": "Restraint is the last resort of the least-restrictive principle — preemptive preparation for restraint before de-escalation has been tried violates that principle."
@@ -862,7 +862,7 @@
         },
         {
           "key": "D",
-          "t": "Instruct him firmly to return to his room or staff will have to intervene",
+          "t": "Tell him clearly and firmly that he needs to return to his room now and that staff will have to intervene if he does not, since a short, unambiguous limit leaves no room for negotiation and is the quickest way to bring the hallway back under control",
           "trap": {
             "name": "Commands over choices",
             "note": "Issuing a command rather than offering a choice removes the patient's sense of control — the opposite of what the de-escalation framework centers."
@@ -1897,7 +1897,7 @@
     },
     {
       "id": "qb_cog_012",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -1916,15 +1916,12 @@
       "options": [
         {
           "key": "A",
-          "t": "Diagnose late-onset schizophrenia — paranoid delusions in late life unexplained by a mood disorder represent a primary psychotic illness.",
-          "trap": {
-            "name": "Psychosis = schizophrenia",
-            "note": "First-episode psychosis in a 74-year-old has an extensive organic differential — labeling it late-onset schizophrenia without a medical workup is premature diagnostic closure."
-          }
+          "t": "Conduct a medical workup to exclude organic causes of new-onset psychosis — including delirium, medication effect, CNS lesion, metabolic derangement, and autoimmune encephalitis — before establishing a primary psychiatric diagnosis.",
+          "c": true
         },
         {
           "key": "B",
-          "t": "Start an antipsychotic immediately — the refusal to eat constitutes an acute safety emergency requiring empirical treatment.",
+          "t": "Start an antipsychotic immediately — her refusal to eat constitutes an acute safety emergency requiring empirical treatment, and the medical workup can be completed over the next few days once she is eating again.",
           "trap": {
             "name": "Treat before diagnosis",
             "note": "The safety concern is real but empirical antipsychotic treatment without an organic workup can mask a reversible medical or neurological cause."
@@ -1932,7 +1929,7 @@
         },
         {
           "key": "C",
-          "t": "Reassure the family that paranoid ideation is a normal variant of cognitive aging.",
+          "t": "Reassure the family that paranoid ideation is a normal variant of cognitive aging, and suggest they prepare her meals in front of her so she can see for herself that the food has not been tampered with.",
           "trap": {
             "name": "Face-value reassurance",
             "note": "Paranoid ideation is not a normal aging variant — in an older adult with no prior psychiatric history, it is a medical red flag requiring evaluation."
@@ -1940,8 +1937,11 @@
         },
         {
           "key": "D",
-          "t": "Conduct a medical workup to exclude organic causes of new-onset psychosis — including delirium, medication effect, CNS lesion, metabolic derangement, and autoimmune encephalitis — before establishing a primary psychiatric diagnosis.",
-          "c": true
+          "t": "Diagnose late-onset schizophrenia — fixed paranoid delusions in late life that are unexplained by a mood disorder, with a clear sensorium and intact orientation, represent a primary psychotic illness, and naming it now helps the family understand what is happening.",
+          "trap": {
+            "name": "Psychosis = schizophrenia",
+            "note": "First-episode psychosis in a 74-year-old has an extensive organic differential — labeling it late-onset schizophrenia without a medical workup is premature diagnostic closure."
+          }
         }
       ],
       "why": "Psychosis = schizophrenia, Treat before diagnosis, and Face-value reassurance all skip the foundational step. New-onset psychosis in an older adult without a prior psychiatric history is a medical emergency until proven otherwise. The differential includes delirium, CNS lesion, metabolic cause, autoimmune encephalitis, and medication-induced psychosis — all requiring workup before a primary psychotic diagnosis is made.",
@@ -2129,7 +2129,7 @@
     },
     {
       "id": "qb_cog_016",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "neurocog",
       "competency": [
@@ -2148,7 +2148,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Diagnose major neurocognitive disorder — the cognitive test scores confirm a dementia syndrome independent of mood.",
+          "t": "Diagnose major neurocognitive disorder — the impaired delayed recall on formal testing confirms a dementia syndrome independent of mood, and her history of depression does not change how the scores are interpreted.",
           "trap": {
             "name": "Scores = diagnosis",
             "note": "Cognitive test performance in the context of active major depression does not establish dementia — scores may normalize with successful mood treatment in pseudodementia."
@@ -2156,7 +2156,7 @@
         },
         {
           "key": "B",
-          "t": "Start a cholinesterase inhibitor — the episodic memory impairment indicates Alzheimer-spectrum disease requiring pharmacotherapy.",
+          "t": "Start a cholinesterase inhibitor — the episodic memory impairment indicates Alzheimer-spectrum disease requiring pharmacotherapy, and treating early gives her the best chance of slowing decline while the depression is managed separately.",
           "trap": {
             "name": "Treat the number, not the patient",
             "note": "Cholinesterase inhibitors are not indicated until reversible causes, including depression, are excluded — treating the score without treating the depression is the error."
@@ -2164,16 +2164,16 @@
         },
         {
           "key": "C",
-          "t": "Order an amyloid PET scan — direct amyloid visualization definitively distinguishes depression-associated cognitive impairment from Alzheimer disease.",
+          "t": "Prioritize treatment of the depressive episode and reassess cognitive function after remission — the pattern of 'I don't know' responses, effortful disengagement, and a PHQ-9 of 22 is consistent with pseudodementia that may resolve with antidepressant treatment.",
+          "c": true
+        },
+        {
+          "key": "D",
+          "t": "Order an amyloid PET scan — direct amyloid visualization definitively distinguishes depression-associated cognitive impairment from Alzheimer disease, so the result should decide whether her memory or her mood is treated first and spare her a long antidepressant trial.",
           "trap": {
             "name": "Jump to advanced imaging",
             "note": "Amyloid PET is a research and specialist tool, not a first-line workup step — the well-established clinical approach is to treat the depression and reassess cognition."
           }
-        },
-        {
-          "key": "D",
-          "t": "Prioritize treatment of the depressive episode and reassess cognitive function after remission — the pattern of 'I don't know' responses, effortful disengagement, and a PHQ-9 of 22 is consistent with pseudodementia that may resolve with antidepressant treatment.",
-          "c": true
         }
       ],
       "why": "Scores = diagnosis, Treat the number not the patient, and Jump to advanced imaging all bypass the pseudodementia maneuver. 'I don't know' responses with effortful disengagement and preserved alertness — rather than confabulation and unawareness — is the clinical signature of depression-associated cognitive impairment (Caine 1981). The correct next step is antidepressant treatment and follow-up cognitive assessment.",
@@ -2499,7 +2499,7 @@
     },
     {
       "id": "qb_saf_009",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "safety",
       "competency": [
@@ -2519,7 +2519,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Continue the restraints through the end of the shift to ensure safety is maintained across the nursing team handoff.",
+          "t": "Continue the restraints through the end of the shift to ensure safety is maintained across the nursing team handoff, then let the oncoming team decide on release once they have assessed him themselves.",
           "trap": {
             "name": "Restraint as stability",
             "note": "Restraints are not a shift-duration safety measure — they must be discontinued the moment the patient is safe, regardless of shift timing."
@@ -2532,7 +2532,7 @@
         },
         {
           "key": "C",
-          "t": "Ask the patient to demonstrate he can remain calm for 30 minutes, then release him and document the trial.",
+          "t": "Ask the patient to demonstrate he can remain calm for 30 minutes, then release him and document the trial — a short observed period of calm is the safest way to confirm that release will not lead to another episode.",
           "trap": {
             "name": "Restraint as stability",
             "note": "Imposing a time-contingent test before release inverts the standard — the principle is discontinue as soon as safe, not apply additional criteria."
@@ -2540,7 +2540,7 @@
         },
         {
           "key": "D",
-          "t": "Since the original physician order is still active, no action is needed until the order expires.",
+          "t": "Since the original physician order is still active, no action is needed until the order expires; the order already sets the time frame for release, and the team can reassess him when it comes up for renewal.",
           "trap": {
             "name": "Order = permission to continue",
             "note": "A restraint order requires continuous time-limited review — a patient who is calm and requesting release must be reassessed immediately, not held to order expiration."
@@ -2606,7 +2606,7 @@
     },
     {
       "id": "qb_saf_011",
-      "status": "attested",
+      "status": "draft",
       "type": "relational",
       "subtype": "what-would-you-say",
       "category": "safety",
@@ -2631,7 +2631,7 @@
         },
         {
           "key": "B",
-          "t": "Return to the nursing station and request an involuntary IM medication order before approaching, so the team is ready to intervene.",
+          "t": "Return to the nursing station and request an involuntary IM medication order before approaching, so the team is ready to intervene — with mania, talking rarely settles things, and having the medication drawn up keeps everyone safer if he escalates.",
           "trap": {
             "name": "Agitation = antipsychotic",
             "note": "Medication is not the default first step when verbal de-escalation has not been attempted and no imminent threat exists — the framework starts with presence and listening."
@@ -2639,7 +2639,7 @@
         },
         {
           "key": "C",
-          "t": "Stand in the doorway and firmly instruct him to return to his room or further action will be taken.",
+          "t": "Stand in the doorway and firmly instruct him to return to his room or further action will be taken — a clear, consistent limit is what a manic patient responds to, and setting it early keeps the hallway safe for the other patients.",
           "trap": {
             "name": "Commands over choices",
             "note": "Issuing a command removes the patient's sense of control — the de-escalation framework centers offering choices, not issuing directives."
@@ -2647,7 +2647,7 @@
         },
         {
           "key": "D",
-          "t": "Alert the restraint team and position staff at the hallway exits in case the patient escalates.",
+          "t": "Alert the restraint team and position staff at the hallway exits in case the patient escalates, then approach him once enough people are in place — a visible show of staff early on tends to discourage a manic patient from acting on his hostility toward staff or other patients.",
           "trap": {
             "name": "Restraint first",
             "note": "Preemptively positioning the restraint team before de-escalation has been attempted violates least-restrictive principle when no imminent threat has occurred."
@@ -2660,7 +2660,7 @@
     },
     {
       "id": "qb_saf_012",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "safety",
       "competency": [
@@ -2679,7 +2679,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Start an antipsychotic immediately and then search for the cause — treating the agitation reduces the risk of self-harm while the workup proceeds.",
+          "t": "Start an antipsychotic immediately and then search for the cause — treating the agitation reduces the risk that he pulls off his oxygen or harms himself, and the workup can proceed safely once he is calmer and able to cooperate with an examination and blood draws.",
           "trap": {
             "name": "Agitation = antipsychotic",
             "note": "Reaching for the antipsychotic before identifying the driver is the error — non-pharmacologic and cause-directed management comes first even in hyperactive presentations."
@@ -2687,7 +2687,7 @@
         },
         {
           "key": "B",
-          "t": "Initiate a CIWA-Ar protocol — nighttime agitation in an older admitted patient is most likely alcohol withdrawal.",
+          "t": "Initiate a CIWA-Ar protocol — nighttime agitation in an older admitted patient is most likely alcohol withdrawal, and starting symptom-triggered treatment now prevents progression to withdrawal seizures or delirium tremens.",
           "trap": {
             "name": "It's just withdrawal",
             "note": "Alcohol withdrawal is on the differential but imposing a specific protocol before the actual driver is identified may apply the wrong treatment to the wrong cause."
@@ -2695,7 +2695,7 @@
         },
         {
           "key": "C",
-          "t": "Apply soft restraints and then assess — the agitation puts both the patient and staff at immediate risk.",
+          "t": "Apply soft restraints and then assess — the agitation and the pulled tubing put both the patient and staff at immediate risk, and securing him first keeps his oxygen in place while the team works out what is going on.",
           "trap": {
             "name": "Restraint first",
             "note": "Restraints are the last resort after lesser measures have failed or are clearly inadequate — applying them before cause-finding and de-escalation bypasses the entire ladder."
@@ -3237,7 +3237,7 @@
     },
     {
       "id": "qb_sud_012",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3256,7 +3256,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Agree — a BAC of 0.22 fully accounts for the clinical picture in a patient with alcohol use disorder.",
+          "t": "Agree — a BAC of 0.22 fully accounts for the clinical picture in a patient with alcohol use disorder, and regular neurological checks while the alcohol clears are the appropriate plan.",
           "trap": {
             "name": "It's just intoxication",
             "note": "Alcohol tolerance in a chronic user makes BAC an unreliable guide to consciousness level — obtundation disproportionate to BAC in a chronic user warrants a broader workup."
@@ -3269,7 +3269,7 @@
         },
         {
           "key": "C",
-          "t": "Agree — wait for the alcohol to metabolize, but plan to obtain a CT head if not improved in 4 hours.",
+          "t": "Agree — wait for the alcohol to metabolize, but plan to obtain a CT head if he has not improved in 4 hours, since most intoxicated patients wake within that window without any intervention.",
           "trap": {
             "name": "It's just intoxication",
             "note": "Deferring the workup 4 hours is dangerous — a subdural or Wernicke cannot wait; the evaluation must be active, not deferred."
@@ -3277,7 +3277,7 @@
         },
         {
           "key": "D",
-          "t": "Disagree — the next step is naloxone administration to reverse any opioid co-ingestion before other workup is done.",
+          "t": "Disagree — the next step is naloxone administration to reverse any opioid co-ingestion before other workup is done, because a quick response to naloxone would explain the obtundation and make the rest of the workup unnecessary.",
           "trap": {
             "name": "Reflex antidote",
             "note": "Naloxone is appropriate if opioid co-ingestion is suspected clinically (miosis, respiratory depression), but empiric naloxone does not substitute for the full differential evaluation."
@@ -3290,7 +3290,7 @@
     },
     {
       "id": "qb_sud_013",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "substance",
       "competency": [
@@ -3314,7 +3314,7 @@
         },
         {
           "key": "B",
-          "t": "Benzodiazepines are contraindicated in alcohol withdrawal for patients with cirrhosis — use phenobarbital or an antipsychotic instead.",
+          "t": "Benzodiazepines are contraindicated in alcohol withdrawal for patients with cirrhosis because of the risk of tipping him into hepatic encephalopathy — use phenobarbital or an antipsychotic instead to control his withdrawal symptoms.",
           "trap": {
             "name": "Contraindication confusion",
             "note": "Benzodiazepines are not contraindicated in cirrhosis — the concern is accumulation with long-acting agents; switching to lorazepam or oxazepam addresses the risk while maintaining appropriate treatment."
@@ -3322,7 +3322,7 @@
         },
         {
           "key": "C",
-          "t": "Chlordiazepoxide is preferred in liver disease — its long half-life provides smoother coverage than short-acting agents and prevents rebound.",
+          "t": "Chlordiazepoxide is still preferred in liver disease — its long half-life and active metabolites provide smoother, self-tapering coverage than short-acting agents, prevent rebound between doses, and lower the risk of breakthrough withdrawal seizures in a patient at CIWA-Ar 14.",
           "trap": {
             "name": "Long half-life equals smooth coverage",
             "note": "The long half-life is the problem in hepatic impairment, not a benefit — impaired metabolism causes drug accumulation and over-sedation."
@@ -3330,7 +3330,7 @@
         },
         {
           "key": "D",
-          "t": "All benzodiazepines are equally affected by hepatic dysfunction — no single agent is preferred over another in cirrhosis.",
+          "t": "All benzodiazepines are equally affected by hepatic dysfunction — they share the same route of liver metabolism, so no single agent is preferred over another in cirrhosis, and whichever agent the team chooses simply needs a lower dose.",
           "trap": {
             "name": "All drugs equal",
             "note": "Benzodiazepines differ substantially in metabolic pathway — lorazepam and oxazepam undergo glucuronidation, which is preserved in cirrhosis, making them distinctly preferable."
@@ -3655,7 +3655,7 @@
     },
     {
       "id": "qb_pha_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -3674,7 +3674,7 @@
       "options": [
         {
           "key": "A",
-          "t": "A family history of bipolar disorder has no bearing on SSRI prescribing — treat the current episode.",
+          "t": "A family history of bipolar disorder has no bearing on SSRI prescribing — relatives outside the immediate family add little to his own risk, so treat the current depressive episode with sertraline as planned.",
           "trap": {
             "name": "Diagnosis by symptom alone",
             "note": "Family history of bipolar disorder is a known risk factor for bipolar illness — treating a depressive episode in someone with unrecognized bipolar disorder with an antidepressant alone can precipitate a manic switch."
@@ -3687,7 +3687,7 @@
         },
         {
           "key": "C",
-          "t": "Start sertraline and monitor for mania — treatment-emergent mania is how bipolar disorder is identified in practice.",
+          "t": "Start sertraline and monitor for mania — treatment-emergent mania is how bipolar disorder is identified in practice, and a close follow-up visit in two weeks will catch a switch early enough to act on it.",
           "trap": {
             "name": "Treat before diagnose",
             "note": "Using SSRI-induced mania as a diagnostic maneuver is not the standard — the screening question should precede treatment, not the adverse outcome."
@@ -3695,7 +3695,7 @@
         },
         {
           "key": "D",
-          "t": "Co-prescribe a mood stabilizer with the SSRI as a precaution — mood stabilizers prevent antidepressant-induced destabilization.",
+          "t": "Co-prescribe a mood stabilizer with the SSRI as a precaution — mood stabilizers prevent antidepressant-induced destabilization, and with two affected relatives the added protection outweighs the burden of a second medication.",
           "trap": {
             "name": "Precautionary polypharmacy",
             "note": "Empirically adding a mood stabilizer without a bipolar diagnosis introduces medication risk without a clear indication — the correct step is to screen first."
@@ -4156,7 +4156,7 @@
     },
     {
       "id": "qb_pha_016",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4175,7 +4175,7 @@
       "options": [
         {
           "key": "A",
-          "t": "rTMS is equivalent to ECT for all indications including psychotic depression — the delivery route is the only difference.",
+          "t": "rTMS is equivalent to ECT for all indications including psychotic depression — the delivery route is the only difference, so the choice between the two comes down to how he feels about anesthesia.",
           "trap": {
             "name": "Newer = better",
             "note": "rTMS is less potent than ECT — it is not equivalent for severe or psychotic presentations; ECT remains the most effective neuromodulation treatment."
@@ -4183,7 +4183,7 @@
         },
         {
           "key": "B",
-          "t": "ECT is the only FDA-cleared neuromodulation option for treatment-resistant depression.",
+          "t": "ECT is the only FDA-cleared neuromodulation option for treatment-resistant depression — the other approaches remain investigational, so the team should explain ECT's anesthesia requirement and work through his concerns about it.",
           "trap": {
             "name": "Ignores rTMS",
             "note": "rTMS is FDA-cleared for treatment-resistant depression and OCD — this patient who wants to avoid anesthesia is exactly the candidate for whom rTMS is an appropriate consideration."
@@ -4191,7 +4191,7 @@
         },
         {
           "key": "C",
-          "t": "Esketamine intranasal requires no monitoring and can be self-administered at home once initiated.",
+          "t": "Esketamine intranasal requires no monitoring and can be self-administered at home once initiated, which makes it the simplest anesthesia-free option for a patient who wants to avoid procedures and keep his outpatient routine.",
           "trap": {
             "name": "Misread REMS monitoring",
             "note": "Esketamine is delivered under a REMS with in-office monitoring for dissociation, sedation, and blood-pressure elevation — it cannot be self-administered at home."
@@ -4707,7 +4707,7 @@
     },
     {
       "id": "qb_mood_012",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -4726,7 +4726,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Reassure the patient — tremor is an expected mild lithium side effect that does not indicate toxicity.",
+          "t": "Reassure the patient — tremor is an expected mild lithium side effect that does not indicate toxicity, especially when his most recent level of 0.8 mEq/L was in the therapeutic range.",
           "trap": {
             "name": "Treat the number, not the patient",
             "note": "A new tremor with mental fogginess after starting an NSAID in a lithium-treated patient represents a probable drug interaction raising lithium level — check the level, do not dismiss."
@@ -4739,7 +4739,7 @@
         },
         {
           "key": "C",
-          "t": "Stop lithium immediately and restart once the pain resolves — the ibuprofen interaction makes continued lithium unsafe.",
+          "t": "Stop lithium immediately and restart once the pain resolves — the ibuprofen interaction makes continued lithium unsafe, and a short break is less risky than continuing it alongside the NSAID for his knee.",
           "trap": {
             "name": "Overreact to interaction",
             "note": "Abrupt lithium discontinuation risks rebound mania — the correct step is to check the level and substitute an NSAID-free analgesic; stopping lithium is not the first move."
@@ -4747,7 +4747,7 @@
         },
         {
           "key": "D",
-          "t": "Ibuprofen has no interaction with lithium — evaluate for a new neurological diagnosis.",
+          "t": "Ibuprofen has no interaction with lithium — over-the-counter NSAIDs are safe at usual doses, so evaluate the tremor and mental fogginess as a new neurological diagnosis.",
           "trap": {
             "name": "No drug interaction",
             "note": "NSAIDs reduce renal prostaglandin activity, decrease renal lithium excretion, and raise serum lithium levels — this is a well-documented, clinically significant interaction."
@@ -4888,7 +4888,7 @@
     },
     {
       "id": "qb_mood_015",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "mood",
       "competency": [
@@ -4911,7 +4911,7 @@
         },
         {
           "key": "B",
-          "t": "The partial PHQ-9 improvement indicates adequate response — at day 6 the acute risk has passed and discharge is appropriate.",
+          "t": "The partial PHQ-9 improvement indicates adequate response — at day 6 the acute risk has passed, and the remaining sleep problem, safety plan, and follow-up appointment can be completed by his outpatient team once he is back home with his usual routine.",
           "trap": {
             "name": "Score = discharge permission",
             "note": "A PHQ-9 drop does not constitute discharge readiness in the absence of functional criteria; sleep, safety plan completion, and follow-up are the clinical discharge gates."
@@ -4919,7 +4919,7 @@
         },
         {
           "key": "C",
-          "t": "The patient has the right to leave against medical advice — sign him out and provide a safety net number.",
+          "t": "The patient has the right to leave against medical advice — sign him out, document his request and his capacity, and give him a crisis line number, since the decision to stay is his to make rather than the team's.",
           "trap": {
             "name": "Autonomy over safety",
             "note": "AMA discharge is the patient's right when capacity is intact, but the clinical question asks the student to frame discharge readiness — not to override capacity; the correct frame is that the clinical criteria are not yet met."
@@ -4927,7 +4927,7 @@
         },
         {
           "key": "D",
-          "t": "Six days is within the standard inpatient admission length — continue treatment by the calendar.",
+          "t": "Six days is within the standard inpatient admission length for bipolar depression — continue treatment by the calendar and plan discharge for the end of a typical stay, whatever his sleep and follow-up look like by then.",
           "trap": {
             "name": "Calendar over function",
             "note": "Calendar-based discharge decisions are explicitly what the page advises against; the standard is functional and safety criteria, not length of stay."
@@ -5070,7 +5070,7 @@
     },
     {
       "id": "qb_psy_004",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "psychosis",
       "competency": [
@@ -5093,7 +5093,7 @@
         },
         {
           "key": "B",
-          "t": "Neuroimaging is not indicated in first-episode psychosis — it is expensive and does not alter the psychiatric management plan.",
+          "t": "Neuroimaging is not indicated in first-episode psychosis — it is expensive, it delays starting treatment, and it does not alter the psychiatric management plan, so the medical workup can stop once the laboratory panel returns normal.",
           "trap": {
             "name": "Imaging never changes treatment",
             "note": "Neuroimaging can detect treatable structural or autoimmune causes of psychosis — the organic yield in first-episode illness is higher than in established schizophrenia, making the workup question more important, not less."
@@ -5101,7 +5101,7 @@
         },
         {
           "key": "C",
-          "t": "CT is preferred over MRI in first-episode psychosis because it is faster and avoids the need for patient cooperation during sedation.",
+          "t": "CT is preferred over MRI in first-episode psychosis because it is faster, more widely available after hours, and avoids the need for sedation in a paranoid patient who may not tolerate lying still for a long scan.",
           "trap": {
             "name": "CT over MRI",
             "note": "MRI is preferred when neuroimaging is indicated in first-episode psychosis — it has greater sensitivity for structural and inflammatory lesions."
@@ -5109,7 +5109,7 @@
         },
         {
           "key": "D",
-          "t": "MRI should only be ordered if the psychosis does not respond to antipsychotic treatment after 4 weeks.",
+          "t": "MRI should only be ordered if the psychosis does not respond to antipsychotic treatment after 4 weeks — an adequate trial shows whether the illness behaves like a primary psychosis, and imaging is reserved for patients whose symptoms persist or who develop new features along the way.",
           "trap": {
             "name": "Treat before image",
             "note": "Waiting for treatment failure before investigating structural causes delays potentially urgent interventions — for first-episode psychosis, the workup includes neuroimaging based on clinical features, not treatment response."
@@ -5747,7 +5747,7 @@
     },
     {
       "id": "qb_anx_004",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5765,7 +5765,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Obtain a psychiatric consultation — his elevated heart rate may indicate a panic attack requiring specialist evaluation.",
+          "t": "Obtain a psychiatric consultation — his elevated heart rate may indicate a panic attack requiring specialist evaluation, and a psychiatrist should weigh in before anything else is ordered.",
           "trap": {
             "name": "Specialist before differential",
             "note": "Obtaining consultation does not replace completing the medical differential; the vital signs and diaphoresis suggest a medical or withdrawal etiology that precedes the psychiatric assessment."
@@ -5778,7 +5778,7 @@
         },
         {
           "key": "C",
-          "t": "Increase the sertraline — the anxiety disorder history provides the most parsimonious explanation.",
+          "t": "Increase the sertraline — the long-standing anxiety disorder history provides the most parsimonious explanation, and treating the known diagnosis avoids an unnecessary workup.",
           "trap": {
             "name": "Anchoring to prior diagnosis",
             "note": "A prior anxiety diagnosis does not preclude new medical or withdrawal causes; acting on a prior label without investigating new-admission vital sign abnormalities is anchoring bias."
@@ -5786,7 +5786,7 @@
         },
         {
           "key": "D",
-          "t": "Obtain an ECG and troponin immediately — the anxiety symptoms likely represent cardiac ischemia.",
+          "t": "Obtain an ECG and troponin immediately — the diaphoresis, tremor, and tachycardia in a 52-year-old man likely represent cardiac ischemia, and an acute coronary syndrome has to be addressed before any other cause is considered.",
           "trap": {
             "name": "Single diagnosis before differential",
             "note": "Cardiac workup may be part of the evaluation, but the correct move is to work the full differential, not jump to one specific etiology before establishing what the presentation represents."
@@ -5799,7 +5799,7 @@
     },
     {
       "id": "qb_anx_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5819,7 +5819,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Start lorazepam 0.5 mg twice daily and titrate to response — benzodiazepines are first-line for inpatient anxiety.",
+          "t": "Start lorazepam 0.5 mg twice daily and titrate to response — benzodiazepines are first-line for inpatient anxiety, and the unit setting allows close monitoring for any misuse.",
           "trap": {
             "name": "Benzos for anxiety disorder",
             "note": "Benzodiazepines are not first-line maintenance treatment for anxiety disorders, especially on an inpatient unit with comorbid SUD — they drive dependence, worsen delirium risk, and are specifically contraindicated in this context."
@@ -5827,7 +5827,7 @@
         },
         {
           "key": "B",
-          "t": "Give a single dose of lorazepam now and plan to stop it in 24 hours — brief PRN use avoids dependence.",
+          "t": "Give a single dose of lorazepam now and plan to stop it in 24 hours — brief PRN use avoids dependence and lets her settle enough to engage in the admission assessment and treatment planning.",
           "trap": {
             "name": "One dose is safe",
             "note": "Even single doses establish a pattern in SUD recovery, and the plan to stop in 24 hours frequently escalates; the standard is to avoid benzodiazepines as an anxiety strategy and use alternative approaches."
@@ -5840,7 +5840,7 @@
         },
         {
           "key": "D",
-          "t": "Benzodiazepines are acceptable for a few days in any patient — dependence only develops with chronic outpatient use.",
+          "t": "Benzodiazepines are acceptable for a few days in any patient — dependence only develops with chronic outpatient use, and a short supervised course on the unit is unlikely to affect her recovery from alcohol.",
           "trap": {
             "name": "Inpatient benzos are safe short-term",
             "note": "Dependence and withdrawal risk are not confined to outpatient chronic use; on the inpatient unit, standing benzodiazepines also impair cognition, raise fall risk, and — in this patient — risk activating craving and relapse behavior."
@@ -6086,7 +6086,7 @@
     },
     {
       "id": "qb_anx_010",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -6105,7 +6105,7 @@
       "options": [
         {
           "key": "A",
-          "t": "The patient is likely psychotic — the refusal to engage with an examiner is a negative symptom or paranoia.",
+          "t": "The patient is likely psychotic — abruptly refusing to engage with an examiner is a negative symptom or a sign of paranoia, and his withdrawal from the interview should prompt the team to consider starting an antipsychotic.",
           "trap": {
             "name": "Avoidance = psychosis",
             "note": "Avoidance and refusal to engage in a specific context are PTSD hyperarousal and avoidance symptoms, not negative symptoms or paranoia; psychosis would require positive symptoms (delusions, hallucinations) that are absent here."
@@ -6113,7 +6113,7 @@
         },
         {
           "key": "B",
-          "t": "The patient is non-adherent and should be counseled on the importance of clinical cooperation.",
+          "t": "The patient is non-adherent and should be counseled on the importance of clinical cooperation — completing the admission interview is part of his treatment, and setting clear expectations early prevents a pattern of refusal on the unit.",
           "trap": {
             "name": "Avoidance = non-compliance",
             "note": "Framing trauma-driven avoidance as non-compliance places responsibility on the patient and misses the clinical diagnosis; the appropriate response is accommodating the trauma context, not counseling compliance."
@@ -6121,7 +6121,7 @@
         },
         {
           "key": "C",
-          "t": "This may represent a personality disorder — emotional dysregulation and interview termination suggest borderline features.",
+          "t": "This may represent a personality disorder — emotional dysregulation and abrupt interview termination suggest borderline features, which should be explored with a structured personality assessment once he is calmer.",
           "trap": {
             "name": "Avoidance = personality disorder",
             "note": "A veteran with nightmares, hypervigilance, startle response, and context-specific interview termination fits a PTSD pattern, not a personality disorder; personality pathology requires a pervasive pattern across contexts."
@@ -6793,7 +6793,7 @@
     },
     {
       "id": "qb_cdev_001",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -6813,7 +6813,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Agree — behavioral escalation is expected in ASD and does not require further workup.",
+          "t": "Agree — aggression after a change in routine is a well-recognized feature of autism with intellectual disability, so the priority is to restore his usual schedule and observe him on the unit rather than order labs or imaging that are unlikely to change what the team does next, since the trigger is already known.",
           "trap": {
             "name": "Baseline dismissal",
             "note": "Attributing new behavioral escalation to the baseline diagnosis without investigation is the cardinal error of diagnostic overshadowing; new or worsening behaviors always earn a workup for pain, medical causes, and psychiatric comorbidity."
@@ -6826,7 +6826,7 @@
         },
         {
           "key": "C",
-          "t": "Start risperidone immediately — it is FDA-approved for autism and will treat the behavioral dyscontrol.",
+          "t": "Start risperidone now — it is FDA-approved for irritability associated with autism and will bring the behavioral dyscontrol under control quickly; once he is calm enough to examine safely, the team can look for any other contributing causes.",
           "trap": {
             "name": "Medication before assessment",
             "note": "Initiating an antipsychotic before identifying the cause of the behavioral change is poor clinical practice; if pain or a medical cause is driving the behavior, medicating without treating the cause harms the patient."
@@ -6834,7 +6834,7 @@
         },
         {
           "key": "D",
-          "t": "Contact the group home about the routine change — environmental causes are the only plausible explanation for behavioral escalation in ASD.",
+          "t": "Contact the group home about the routine change and build a structured transition plan with their staff — the timing points to the schedule disruption as the cause, so an environmental and behavioral plan should come before any medical testing.",
           "trap": {
             "name": "Environmental cause only",
             "note": "The routine change may be a precipitant, but medical workup must come first — pain, constipation, dental problems, and infection are nonverbal communication channels in ASD and frequently underlie behavioral escalation."
@@ -6899,7 +6899,7 @@
     },
     {
       "id": "qb_cdev_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "childdev",
       "competency": [
@@ -6917,7 +6917,7 @@
       "options": [
         {
           "key": "A",
-          "t": "This is undertreated ADHD — intensifying stimulant therapy will address the behavioral escalation.",
+          "t": "This is undertreated ADHD that has worsened with the demands of adolescence — intensifying stimulant therapy and adding structure at home and school will address the behavioral escalation, so a separate mood diagnosis is not needed.",
           "trap": {
             "name": "ADHD intensification for episodic change",
             "note": "Intensifying stimulants during a probable manic episode is contraindicated — stimulants are not started during acute mania or psychosis; the cross-situational childhood ADHD baseline is distinct from this episodic presentation."
@@ -6925,7 +6925,7 @@
         },
         {
           "key": "B",
-          "t": "The childhood ADHD diagnosis rules out bipolar disorder — the two cannot co-occur.",
+          "t": "The childhood ADHD diagnosis rules out bipolar disorder — the two cannot co-occur, so the decreased sleep, grandiosity, and pressured speech should be read as the hyperactive and impulsive features documented across home and school on his Vanderbilt, now intensified by adolescence and school stress.",
           "trap": {
             "name": "ADHD excludes bipolar",
             "note": "ADHD and bipolar disorder can co-occur; the ADHD diagnosis does not protect against a first manic episode. The key discriminator is that ADHD is chronic and cross-situational from childhood, while mania is episodic with mood elevation, decreased sleep, and grandiosity."
@@ -6933,7 +6933,7 @@
         },
         {
           "key": "C",
-          "t": "The decreased sleep, grandiosity, and pressured speech are likely stimulant side effects from his ADHD medications — reduce the dose and reassess before considering a mood diagnosis.",
+          "t": "The decreased sleep, grandiosity, and pressured speech are likely stimulant side effects from his ADHD medications — reduce the dose, watch his sleep and behavior on the unit for a week, and reassess before considering a mood diagnosis.",
           "trap": {
             "name": "Stimulant side effect attribution",
             "note": "Stimulants can cause insomnia or irritability, but the combination of markedly decreased sleep, grandiosity, and pressured speech over several days is a manic syndrome, not a medication side-effect profile; stimulants do not produce grandiosity or manic-quality thought acceleration."
@@ -7720,7 +7720,7 @@
     },
     {
       "id": "qb_otherdx_003",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -7740,7 +7740,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Baby blues — mild postpartum mood changes are expected in the first 2 weeks and are self-limited.",
+          "t": "Baby blues — mild postpartum mood changes such as tearfulness and alternating laughing and crying are expected in the first 2 weeks, and the fact that she seemed fine yesterday supports a self-limited course.",
           "trap": {
             "name": "Baby blues by default",
             "note": "Baby blues involves mild mood lability without functional impairment and certainly without psychotic features or confusion; the presentation here — new perceptual disturbance, delusions, and confusion — is not baby blues."
@@ -7748,7 +7748,7 @@
         },
         {
           "key": "B",
-          "t": "Postpartum depression — the mood lability and behavioral change represent a perinatal major depressive episode.",
+          "t": "Postpartum depression — the mood lability and behavioral change represent a perinatal major depressive episode, and the religious content reflects the guilt and worthlessness that commonly accompany depression after delivery.",
           "trap": {
             "name": "Postpartum depression default",
             "note": "Postpartum depression does not include psychotic features, delusions, or confusion in its non-psychotic form; the abrupt-onset psychosis with waxing-and-waning course within days of delivery is postpartum psychosis — a different and urgent entity."
@@ -7761,7 +7761,7 @@
         },
         {
           "key": "D",
-          "t": "Medical emergency — new psychosis postpartum indicates eclampsia or infection until proven otherwise.",
+          "t": "Medical emergency — new psychosis postpartum indicates eclampsia or infection until proven otherwise, so the workup and treatment belong with obstetrics, and psychiatric assessment can wait until a medical cause has been excluded.",
           "trap": {
             "name": "Medical cause only",
             "note": "Medical causes must be excluded (thyroid, infection, eclampsia) but the waxing-and-waning course with psychotic features centered on the infant in the first week postpartum is the postpartum psychosis picture — the clinical priority is both psychiatric emergency evaluation AND medical workup simultaneously."
@@ -7797,7 +7797,7 @@
     },
     {
       "id": "qb_otherdx_004",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "otherdx",
       "competency": [
@@ -7815,7 +7815,7 @@
       "options": [
         {
           "key": "A",
-          "t": "Somatic symptom disorder requires that the symptoms have no identifiable organic cause — the diagnosis is made only after medical explanation is definitively excluded.",
+          "t": "Somatic symptom disorder requires that the symptoms have no identifiable organic cause — the diagnosis is made only after medical explanation is definitively excluded, so her negative workup is what allows the diagnosis to be considered here.",
           "trap": {
             "name": "SSD = medically unexplained",
             "note": "This is the pre-DSM-5 framing — DSM-5-TR shifted the definition of SSD away from 'medically unexplained' to focus on the excessive psychological response; the symptom may or may not be medically explained."
@@ -7823,7 +7823,7 @@
         },
         {
           "key": "B",
-          "t": "Somatic symptom disorder requires at least 3 distinct somatic complaints across different organ systems.",
+          "t": "Somatic symptom disorder requires at least 3 distinct somatic complaints across different organ systems — with chest pain and fatigue alone she falls short, however much time she spends on her symptoms, until a third complaint appears.",
           "trap": {
             "name": "Multiple organ systems required",
             "note": "The DSM-5-TR criterion is ≥1 distressing somatic symptom plus excessive thoughts/feelings/behaviors — not a minimum number of symptoms or organ systems; one symptom with excessive response qualifies."
@@ -7831,7 +7831,7 @@
         },
         {
           "key": "C",
-          "t": "These complaints are best diagnosed as illness anxiety disorder because the patient's main symptom is health preoccupation rather than multiple somatic symptoms.",
+          "t": "These complaints are best diagnosed as illness anxiety disorder because the patient's main symptom is health preoccupation rather than multiple somatic symptoms — the hours she spends each day researching health threats are the core feature that defines that diagnosis rather than somatic symptom disorder.",
           "trap": {
             "name": "Preoccupation = IAD not SSD",
             "note": "Illness anxiety disorder (IAD) features preoccupation with having a disease with minimal somatic symptoms — this patient has distressing somatic symptoms (chest pain, fatigue) plus the excessive cognitive response; this fits SSD, not IAD."
@@ -7999,7 +7999,7 @@
     },
     {
       "id": "qb_otherdx_007",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -8017,15 +8017,12 @@
       "options": [
         {
           "key": "A",
-          "t": "This is a panic disorder episode — the hyperventilation and trembling meet the physiological criteria for a panic attack.",
-          "trap": {
-            "name": "Symptoms match panic",
-            "note": "While the symptoms overlap with panic, applying a Western diagnostic label before exploring cultural context risks misdiagnosis; the episodic, stress-triggered, interpersonally mediated presentation with full recovery is classic for ataque de nervios, a culturally recognized pattern."
-          }
+          "t": "This may be ataque de nervios — a Latino cultural concept of distress characterized by trembling, shouting, hyperventilation, and sometimes falling, typically precipitated by family stress; cultural inquiry is essential before applying a Western diagnostic label.",
+          "c": true
         },
         {
           "key": "B",
-          "t": "This is a functional neurological disorder — the shouting and falling indicate a non-epileptic seizure.",
+          "t": "This is a functional neurological disorder — the shouting and falling with normal vital signs and a quick recovery indicate a non-epileptic seizure, and video EEG monitoring should be arranged before anything else is explored.",
           "trap": {
             "name": "Motor symptoms = functional seizure",
             "note": "Functional neurological disorder requires positive examination signs and an individual assessment; without those, attributing a culturally patterned episode to conversion is premature and bypasses cultural context."
@@ -8033,12 +8030,15 @@
         },
         {
           "key": "C",
-          "t": "This may be ataque de nervios — a Latino cultural concept of distress characterized by trembling, shouting, hyperventilation, and sometimes falling, typically precipitated by family stress; cultural inquiry is essential before applying a Western diagnostic label.",
-          "c": true
+          "t": "This is a panic disorder episode — the hyperventilation and trembling meet the physiological criteria for a panic attack, and full recovery within 30 minutes fits that time course, so an SSRI and breathing retraining are the next steps.",
+          "trap": {
+            "name": "Symptoms match panic",
+            "note": "While the symptoms overlap with panic, applying a Western diagnostic label before exploring cultural context risks misdiagnosis; the episodic, stress-triggered, interpersonally mediated presentation with full recovery is classic for ataque de nervios, a culturally recognized pattern."
+          }
         },
         {
           "key": "D",
-          "t": "This is malingering — the rapid recovery and interpersonal context suggest the episode served a social function.",
+          "t": "This is malingering — the rapid recovery, the normal vital signs, and the way the episodes follow family arguments suggest the episode served a social function, so the team should avoid reinforcing it with extra attention, medication, or an admission, and discharge her once she is calm.",
           "trap": {
             "name": "Socially embedded = malingering",
             "note": "Cultural idioms of distress may serve interpersonal functions within their cultural context without constituting malingering — applying malingering to a culturally recognized pattern without adequate assessment is both inaccurate and harmful."
@@ -8126,7 +8126,7 @@
     },
     {
       "id": "qb_otherdx_009",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "otherdx",
       "competency": [
@@ -8145,7 +8145,7 @@
       "options": [
         {
           "key": "A",
-          "t": "The EPDS is not validated for postpartum use — use the PHQ-9 instead.",
+          "t": "The EPDS is not validated for use in the postpartum period, so a score of 14 cannot be interpreted — repeat the screen with the PHQ-9, which is the appropriate instrument for postpartum mothers, before deciding on treatment.",
           "trap": {
             "name": "EPDS not validated postpartum",
             "note": "The EPDS is specifically designed and validated for postpartum screening; this is factually incorrect."
@@ -8153,20 +8153,20 @@
         },
         {
           "key": "B",
-          "t": "A score of 14 on the EPDS requires hospitalization — outpatient sertraline is below the level of care indicated.",
+          "t": "The EPDS screens for depression and anxiety but does NOT detect psychotic or manic symptoms — explicitly ask about hallucinations, delusions, and manic symptoms before assuming postpartum depression rather than psychosis or bipolar relapse.",
+          "c": true
+        },
+        {
+          "key": "C",
+          "t": "A score of 14 on the EPDS is above the threshold that calls for inpatient care — outpatient sertraline is below the level of care indicated, so she should be admitted for monitoring and have her treatment started on the unit rather than in clinic.",
           "trap": {
             "name": "EPDS score mandates hospitalization",
             "note": "EPDS scores guide clinical decisions but do not directly mandate a specific level of care; the clinical picture (function, safety, psychotic features) determines disposition."
           }
         },
         {
-          "key": "C",
-          "t": "The EPDS screens for depression and anxiety but does NOT detect psychotic or manic symptoms — explicitly ask about hallucinations, delusions, and manic symptoms before assuming postpartum depression rather than psychosis or bipolar relapse.",
-          "c": true
-        },
-        {
           "key": "D",
-          "t": "Sertraline is contraindicated in the first 4 weeks postpartum — the student should recommend a different SSRI.",
+          "t": "Sertraline is contraindicated in the first 4 weeks postpartum — the student should recommend a different SSRI and hold off on starting it until she is past that early window, then reassess her symptoms with a repeat EPDS.",
           "trap": {
             "name": "Sertraline contraindicated postpartum",
             "note": "Sertraline and escitalopram are specifically mentioned in the page as usual first-line SSRIs for perinatal depression; there is no 4-week postpartum contraindication."
