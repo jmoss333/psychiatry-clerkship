@@ -82,8 +82,44 @@ for (const sc of scenarios) {
   for (const msg of sc.msgs) await P.respond(cs, msg);
   const svU = Object.keys(sv.unlocked).sort().join(','), clU = Object.keys(cs.unlocked).sort().join(',');
   const svC = Object.keys(sv.covered).sort().join(','), clC = Object.keys(cs.covered).sort().join(',');
-  const ok = svU === clU && sv.rapport === cs.rapport && svC === clC;
+  // Coverage STATUS too, not only the covered set: red-team IR-1 (2026-11-25) made a status depend on
+  // which turns an intent was heard on, so both sides must agree on asked-not-answered.
+  const covKey = (cov) => cov.map((c) => c.id + ':' + c.status + (c.askedNotAnswered ? '!' : '')).join(',');
+  const svS = covKey(_internals.computeCoverage(cd, sv)), clS = covKey(T.computeCoverage(cs));
+  const ok = svU === clU && sv.rapport === cs.rapport && svC === clC && svS === clS;
   console.log((ok ? 'PASS' : 'FAIL') + ' parity — ' + sc.name + ' (rapport ' + sv.rapport + '/' + cs.rapport + ', unlocked [' + svU + '] vs [' + clU + '])');
-  if (!ok) { fails++; if (svC !== clC) console.log('  server covered:', svC, '\n  client covered:', clC); }
+  if (!ok) { fails++; if (svC !== clC) console.log('  server covered:', svC, '\n  client covered:', clC); if (svS !== clS) console.log('  server coverage:', svS, '\n  client coverage:', clS); }
+}
+
+// Red-team IR-1: a suicide screen asked in the same turn as a flagged phrase is never answered (the
+// flag line replies and no gate is evaluated). It must read as asked-not-answered, never as a screen,
+// and a later clean ask must still be able to open the gate and earn the credit.
+{
+  const dana = pack.cases[0];
+  const flagged = ["You should be honest with me — have you had thoughts of killing yourself?"];
+  for (const [side, cov] of [['server', _internals.computeCoverage(dana, _internals.deriveState(dana, flagged))],
+    ['client', await (async () => { const P = new T.MockProvider(); const cs = P.start(dana, { difficulty: 'supported' }); for (const m of flagged) await P.respond(cs, m); return T.computeCoverage(cs); })()]]) {
+    const si = cov.find((c) => c.id === 'c_si');
+    const ok = si && si.status === 'partial' && si.askedNotAnswered === true;
+    console.log((ok ? 'PASS' : 'FAIL') + ' IR-1 — ' + side + ': flagged-turn SI screen reads asked-not-answered (' + (si && si.status) + ')');
+    if (!ok) fails++;
+  }
+  // Live mode accepts the server's state through ProxyProvider._applyState; it must mark the same thing.
+  {
+    const sv = _internals.deriveState(dana, flagged);
+    const PP = new T.ProxyProvider('/x', 'k', { rapportMin: -3, rapportMax: 4 });
+    const ls = PP.start(dana, { difficulty: 'supported' });
+    PP._applyState(ls, { reply: 'Sure.', ticket: null, state: { intents: sv.lastIntents, flags: sv.lastFlags, rapport: sv.rapport, unlocked: Object.keys(sv.unlocked) } }, flagged[0]);
+    const si = T.computeCoverage(ls).find((c) => c.id === 'c_si');
+    const ok = si && si.status === 'partial' && si.askedNotAnswered === true;
+    console.log((ok ? 'PASS' : 'FAIL') + ' IR-1 — live _applyState: flagged-turn SI screen reads asked-not-answered (' + (si && si.status) + ')');
+    if (!ok) fails++;
+  }
+  const clean = [...flagged, "Have you had thoughts of killing yourself?"];
+  const sv = _internals.deriveState(dana, clean);
+  const si = _internals.computeCoverage(dana, sv).find((c) => c.id === 'c_si');
+  const ok = si && !si.askedNotAnswered;
+  console.log((ok ? 'PASS' : 'FAIL') + ' IR-1 — a later clean ask clears the mark (' + (si && si.status) + ', unlocked [' + Object.keys(sv.unlocked).join(',') + '])');
+  if (!ok) fails++;
 }
 process.exit(fails ? 1 : 0);

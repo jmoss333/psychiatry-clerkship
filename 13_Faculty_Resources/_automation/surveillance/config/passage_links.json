@@ -68,12 +68,6 @@
           "field": "/evidence",
           "quote": "psychopharm_primer.md — Clozapine is the agent for treatment-resistant schizophrenia, reserved precisely because it demands ongoing ANC monitoring for agranulocytosis per its prescribing information (the FDA eliminated the clozapine REMS in 2025).",
           "reason": "The recorded question evidence explicitly mentions removal of the clozapine REMS."
-        },
-        {
-          "id": "qb_anx_003",
-          "field": "/options/2/trap/note",
-          "quote": "it requires ANC monitoring enrollment",
-          "reason": "This distractor explanation mentions monitoring enrollment; review that wording against the FDA enrollment passage. This is a possible discrepancy, not an endorsement."
         }
       ],
       "readings": [

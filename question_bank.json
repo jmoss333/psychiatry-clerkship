@@ -1245,7 +1245,7 @@
     },
     {
       "id": "qb_eth_002",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "ethics",
       "competency": [
@@ -1276,7 +1276,7 @@
           "t": "Document the threat and continue outpatient treatment with increased session frequency",
           "trap": {
             "name": "Document and continue",
-            "note": "Documentation alone does not fulfill the duty to protect — when there is a specific, credible threat to an identifiable person, protective action is required."
+            "note": "Documentation alone does not meet a duty to protect: when there is a specific, credible threat to an identifiable person, reasonable protective action is expected."
           }
         },
         {
@@ -1294,8 +1294,8 @@
         }
       ],
       "why": "Confidentiality always wins, Document and continue, and Wait for action are three forms of inaction in the face of the duty to protect. A specific, credible threat to a named, identifiable person — with described means and timeline — triggers a duty to take reasonable protective steps. The options are broad: warning the victim, notifying police, hospitalizing, or intensifying treatment. The duty does not require certainty that harm will occur.",
-      "pearl": "A specific, credible threat to a reasonably identifiable victim overrides confidentiality — the duty to protect obligates action, not only documentation.",
-      "evidence": "ethics_legal.md — When a patient makes a serious threat of violence against a reasonably identifiable victim, the clinician has a duty to take reasonable protective steps — which may include warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment.",
+      "pearl": "A specific, credible threat to a reasonably identifiable victim can override confidentiality; where a duty to protect arises, it calls for action, not only documentation.",
+      "evidence": "ethics_legal.md — When a patient makes a serious threat of violence against a reasonably identifiable victim, the clinician may have a duty to take reasonable protective steps — which may include warning the potential victim, notifying police, hospitalizing the patient, or intensifying treatment.",
       "tier2": {
         "q": "Why does this duty override therapeutic confidentiality?",
         "options": [
@@ -4103,7 +4103,7 @@
     },
     {
       "id": "qb_pha_015",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "pharm",
       "competency": [
@@ -4118,41 +4118,41 @@
         "label": "Open the ECT & Neuromodulation page",
         "href": "?page=ect_neuromodulation.md"
       },
-      "stem": "A patient with severe depression is scheduled for ECT tomorrow. Her current medications include clonazepam 1 mg BID, gabapentin 300 mg TID, and escitalopram 20 mg daily. Her ECT team asks the student to identify which medication adjustment is most critical before the procedure.",
+      "stem": "A 58-year-old woman with severe depression is scheduled for her first ECT treatment tomorrow morning. She takes escitalopram 20 mg daily, clonazepam 1 mg twice daily for the past 3 years, and gabapentin 300 mg three times daily for neuropathic pain. The ECT team asks the student to review her medications. What is the best next step?",
       "options": [
         {
           "key": "A",
-          "t": "Discontinue escitalopram — antidepressants inhibit the neuroplasticity mechanisms through which ECT works.",
+          "t": "Stop escitalopram tonight and restart it after the course",
           "trap": {
             "name": "Wrong medication stopped",
-            "note": "Antidepressants do not antagonize ECT — the agents to hold are benzodiazepines and anticonvulsants, which raise the seizure threshold and blunt the induced seizure."
+            "note": "An antidepressant does not need to be stopped for ECT. The drugs to plan around are benzodiazepines and mood-stabilising anticonvulsants, which blunt the induced seizure."
           }
         },
         {
           "key": "B",
-          "t": "Hold gabapentin only — anticonvulsants raise seizure threshold, but benzodiazepines are safe to continue through ECT.",
+          "t": "Stop clonazepam tonight and keep it off for the whole course",
           "trap": {
-            "name": "Partial hold",
-            "note": "Both the benzodiazepine (clonazepam) and the anticonvulsant (gabapentin) raise the seizure threshold — both should be held or adjusted before ECT."
+            "name": "Abrupt benzodiazepine stop",
+            "note": "Stopping a benzodiazepine taken for 3 years all at once risks withdrawal, including seizures. The ECT team minimises or times the dose instead of stopping it cold."
           }
         },
         {
           "key": "C",
-          "t": "Hold clonazepam and gabapentin — benzodiazepines and anticonvulsants raise the seizure threshold and blunt the induced seizure that is the mechanism of ECT's therapeutic effect.",
+          "t": "Flag the clonazepam to the ECT team so its dose can be minimised or timed before treatment",
           "c": true
         },
         {
           "key": "D",
-          "t": "Discontinue all medications for 72 hours before ECT — polypharmacy during ECT increases anesthesia risk.",
+          "t": "Stop all three medications tonight until the course is finished",
           "trap": {
             "name": "All medications stopped",
-            "note": "There is no blanket requirement to discontinue all medications before ECT; the specific concern is benzodiazepines and anticonvulsants that raise seizure threshold."
+            "note": "There is no blanket stop before ECT. Stopping everything at once risks benzodiazepine withdrawal and drops an antidepressant that can continue."
           }
         }
       ],
-      "why": "Wrong medication stopped, Partial hold, and All medications stopped all fail to identify the pharmacologically correct adjustment. The ECT page is explicit: benzodiazepines and anticonvulsants raise the seizure threshold and reduce ECT efficacy — they are the agents to hold. Escitalopram is not contraindicated.",
-      "pearl": "Before ECT: hold benzodiazepines and anticonvulsants — they raise the seizure threshold and reduce ECT efficacy.",
-      "evidence": "ect_neuromodulation.md — Pre-ECT medication review: hold/adjust benzodiazepines and anticonvulsants, which raise seizure threshold."
+      "why": "Wrong medication stopped, Abrupt benzodiazepine stop, and All medications stopped each get the pre-ECT review wrong. Benzodiazepines raise the seizure threshold and blunt the ECT seizure, so the ECT team plans to minimise or time the dose (for example a held evening and morning dose, a taper, or reversal at the session) rather than stop a long-term benzodiazepine abruptly. The antidepressant can continue. Gabapentin, here for neuropathic pain, has a small and uncertain effect on the ECT seizure and is not the priority. Mood-stabilising anticonvulsants such as valproate or lamotrigine are minimised or timed, but antiepileptics given for epilepsy are continued.",
+      "pearl": "Before ECT: minimise or time benzodiazepines and mood-stabilising anticonvulsants; never stop a long-term benzodiazepine cold, and continue antiepileptics given for epilepsy.",
+      "evidence": "ect_neuromodulation.md — Minimise or time benzodiazepines and mood-stabilising anticonvulsants before ECT (they blunt the seizure) — but continue antiepileptics given for epilepsy."
     },
     {
       "id": "qb_pha_016",
@@ -4940,7 +4940,7 @@
     },
     {
       "id": "qb_mood_016",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "mood",
       "competency": [
@@ -4956,41 +4956,41 @@
         "label": "Open the Mood Disorders page",
         "href": "?page=t_mood.md"
       },
-      "stem": "A 24-year-old woman in her 14th week of pregnancy presents with severe MDD: active suicidal ideation with a plan, refusal to eat, psychomotor retardation, and a prior excellent response to ECT 4 years ago. The team debates continuing the current antidepressant versus offering ECT. Which statement best reflects the clinical standard?",
+      "stem": "A 24-year-old woman at 14 weeks' gestation has severe depression with suicidal ideation and a plan, refusal to eat and psychomotor slowing. Four years ago she responded well to ECT. What is the best next step?",
       "options": [
         {
           "key": "A",
-          "t": "ECT is contraindicated in pregnancy due to the risk of uterine contractions during the induced seizure.",
+          "t": "Avoid ECT, since the induced seizure is contraindicated in pregnancy",
           "trap": {
             "name": "Absolute contraindication invented",
-            "note": "ECT has no absolute contraindications; pregnancy is not a contraindication — it is explicitly listed as an indication when medications are undesirable."
+            "note": "ECT has no absolute contraindications, and pregnancy is not one. With obstetric input it is a preferred option when illness is this severe."
           }
         },
         {
           "key": "B",
-          "t": "Continue the antidepressant through pregnancy — the benefits of pharmacotherapy always outweigh teratogenic risks in severe depression.",
+          "t": "Continue her antidepressant and reassess at the next visit",
           "trap": {
             "name": "Pharmacotherapy always first",
-            "note": "The clinical picture (active suicidality with a plan, refusal to eat, prior ECT response) is an ECT indication even without pregnancy; pregnancy specifically makes medications less desirable and ECT more appropriate."
+            "note": "Suicidality with a plan and refusal to eat call for rapid, definitive treatment; continuing and waiting is not enough, and she has a prior good response to ECT."
           }
         },
         {
           "key": "C",
-          "t": "ECT is a preferred treatment option in this presentation — pregnancy is an explicit ECT indication when medications are undesirable, and this patient also has active suicidality, refusal of oral intake, and a prior good ECT response.",
+          "t": "Offer ECT, given her severity and past response to it",
           "c": true
         },
         {
           "key": "D",
-          "t": "Ketamine infusion should be chosen over ECT — it avoids anesthesia and is equally effective for suicidal ideation in pregnancy.",
+          "t": "Offer ketamine instead, to avoid anaesthesia in pregnancy",
           "trap": {
             "name": "Newer = better",
-            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established — requires REMS monitoring, and is not established as equivalent to ECT for this clinical severity; ECT has the longer safety record in pregnancy."
+            "note": "Ketamine/esketamine acts rapidly on depressive symptoms — an effect on suicidality itself is not established. Esketamine nasal spray is given only under its REMS, in a certified setting with at least 2 hours of monitoring; IV ketamine for depression is off-label: ketamine is not FDA-approved for any psychiatric disorder. Neither is established as equivalent to ECT for this clinical severity, and ECT has the longer safety record in pregnancy."
           }
         }
       ],
-      "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications, and pregnancy is where it becomes preferred once the illness is severe enough to need rapid, definitive treatment — it is not an indication on its own. This patient has four concurrent reasons: active suicidality, refusal of oral intake, pregnancy where medications are less desirable, and prior good ECT response.",
-      "pearl": "ECT in pregnancy: no absolute contraindication, explicitly indicated when medications are undesirable — especially when there is active suicidality, refusal to eat, or prior ECT response.",
-      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires.",
+      "why": "Absolute contraindication invented, Pharmacotherapy always first, and Newer = better all distort the evidence. ECT has no absolute contraindications. Pregnancy is not an indication on its own: the indication here is the severity (suicidality with a plan, refusal to eat) and her prior good response. Once severity calls for ECT, pregnancy makes it a preferred option, because the therapeutic seizure avoids the systemic fetal drug exposure that pharmacotherapy requires.",
+      "pearl": "ECT in pregnancy: no absolute contraindication. Pregnancy is not the indication; severity is. Once severity calls for ECT, pregnancy makes it a preferred option.",
+      "evidence": "t_mood.md — Reserve ECT for severe, psychotic, catatonic, or treatment-resistant depression, for life-threatening states (refusal of food/fluids, acute high suicide risk), and — when illness of that severity occurs in pregnancy — as a preferred option, since the therapeutic seizure works without the systemic fetal drug exposure pharmacotherapy requires. ect_neuromodulation.md — Esketamine is delivered under a REMS in a certified healthcare setting with at least 2 hours of on-site monitoring (including pulse oximetry). FDA: Spravato label §5.5, \"Patients must be monitored by a healthcare provider for at least 2 hours after administration\" (REMS last modified Jan 23, 2026, NDA 211243/S-27); \"Ketamine is not FDA-approved for the treatment of any psychiatric disorder\" (FDA warning letter 725147, Jun 23, 2026).",
       "tier2": {
         "q": "Why is ECT preferred over pharmacotherapy once a pregnant patient's illness is severe enough to need it?",
         "options": [
@@ -5005,14 +5005,14 @@
           },
           {
             "key": "C",
-            "t": "ECT is FDA-approved for use in pregnancy, whereas all antidepressants are FDA category D or X."
+            "t": "Antidepressants are contraindicated throughout pregnancy, so ECT is the only option."
           },
           {
             "key": "D",
             "t": "ECT is faster than pharmacotherapy — rapid treatment is the only advantage, not the avoidance of drug exposure."
           }
         ],
-        "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this entirely. The long safety record of ECT in pregnancy is one reason it appears on the indications list alongside the more familiar severity-based indications."
+        "why": "The clinical advantage of ECT in pregnancy is that the therapeutic mechanism (induced seizure) does not require systemic pharmacological exposure that crosses the placenta. Many psychotropics have established or potential teratogenic risks, particularly during organogenesis, and all agents have some potential for fetal or neonatal effects. ECT with appropriate obstetric monitoring avoids this. Antidepressants are not contraindicated throughout pregnancy; the choice weighs risks on both sides, and once illness is severe enough to need ECT, its long safety record in pregnancy makes it preferred."
       }
     },
     {
@@ -5227,7 +5227,7 @@
     },
     {
       "id": "qb_psy_007",
-      "status": "attested",
+      "status": "draft",
       "type": "two-tier",
       "category": "psychosis",
       "competency": [
@@ -5242,11 +5242,11 @@
         "label": "Open the Psychotic Disorders page",
         "href": "?page=t_psychosis.md"
       },
-      "stem": "A 37-year-old man with schizophrenia has had an inadequate response to olanzapine (adequate dose and duration) and then risperidone (adequate dose and duration). Residual negative symptoms (flat affect, avolition, alogia) have persisted on both trials. The team is now choosing a next step. Which is the evidence-based recommendation?",
+      "stem": "A 37-year-old man with schizophrenia still hears voices daily and believes his neighbours are poisoning him. He has had adequate trials of olanzapine and then risperidone, each at an adequate dose and duration, with adherence confirmed by blood levels. What is the best next step?",
       "options": [
         {
           "key": "A",
-          "t": "Try a third antipsychotic from a different chemical class — a third-line non-clozapine agent should be exhausted before clozapine.",
+          "t": "Try a third non-clozapine antipsychotic from a different class before clozapine",
           "trap": {
             "name": "Skip the ladder",
             "note": "Two adequate antipsychotic trial failures define treatment-resistant schizophrenia; adding a third non-clozapine trial delays an evidence-based treatment without a supporting rationale."
@@ -5254,15 +5254,15 @@
         },
         {
           "key": "B",
-          "t": "Add an antidepressant — the residual negative symptoms are likely a secondary depression co-occurring with schizophrenia.",
+          "t": "Add an antidepressant for his persistent symptoms",
           "trap": {
-            "name": "Negative symptoms = depression",
-            "note": "Augmenting with an antidepressant before addressing treatment resistance with clozapine is not the evidence-based sequence; negative symptoms in treatment-resistant illness require clozapine consideration first."
+            "name": "Wrong target",
+            "note": "His persisting symptoms are hallucinations and delusions. An antidepressant does not treat treatment-resistant positive symptoms; clozapine is the evidence-based next step."
           }
         },
         {
           "key": "C",
-          "t": "Increase the risperidone dose further — super-therapeutic doses overcome treatment resistance.",
+          "t": "Raise risperidone above the usual dose range",
           "trap": {
             "name": "More = better",
             "note": "Supratherapeutic antipsychotic dosing increases side effects without established benefit in treatment resistance; clozapine is the evidence-based next step."
@@ -5270,12 +5270,12 @@
         },
         {
           "key": "D",
-          "t": "Initiate clozapine with baseline ANC and recommended hematologic monitoring per the prescribing information — two failed adequate antipsychotic trials define treatment-resistant schizophrenia.",
+          "t": "Start clozapine with baseline ANC and monitoring per the prescribing information",
           "c": true
         }
       ],
-      "why": "Skip the ladder, Negative symptoms = depression, and More = better all defer the evidence-based intervention. The page states: 'two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information.' This threshold is defined and evidence-based.",
-      "pearl": "Two adequate antipsychotic trial failures = treatment-resistant schizophrenia = clozapine with ANC monitoring; a third non-clozapine trial has no supporting evidence.",
+      "why": "Skip the ladder, Wrong target, and More = better all defer the evidence-based intervention. Treatment resistance is judged on positive symptoms that persist after two adequate trials with adherence confirmed, which is this patient. The page states: two failed adequate antipsychotic trials means consider clozapine, with recommended ANC monitoring per the prescribing information. Clozapine's advantage is for persistent positive symptoms; it is not the answer to residual negative symptoms alone.",
+      "pearl": "Two adequate antipsychotic trials, adherence confirmed, with persistent positive symptoms = treatment-resistant schizophrenia: offer clozapine with ANC monitoring rather than a third non-clozapine trial.",
       "evidence": "t_psychosis.md — Two failed adequate antipsychotic trials means consider clozapine, with recommended ANC (hematologic) monitoring per the prescribing information.",
       "tier2": {
         "q": "Beyond agranulocytosis, which additional serious adverse effects of clozapine require active monitoring?",
@@ -5693,7 +5693,7 @@
     },
     {
       "id": "qb_anx_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "anxiety",
       "competency": [
@@ -5709,41 +5709,41 @@
         "label": "Open the Anxiety, OCD & Trauma page",
         "href": "?page=t_anxiety.md"
       },
-      "stem": "A 29-year-old man with first-episode psychosis was started on haloperidol 3 days ago. He has been pacing the unit continuously, reports an inner urge to move, and the team has correctly identified this as akathisia. The attending decides that haloperidol should be continued for now at the same dose. Which pharmacological intervention has the strongest evidence as first-line treatment for akathisia in this setting?",
+      "stem": "A 29-year-old man with first-episode psychosis started haloperidol 3 days ago. He paces the unit constantly and describes an inner urge to move; the team has identified akathisia. The attending wants to keep haloperidol at the same dose for now. Which added treatment is the usual first-line choice?",
       "options": [
         {
           "key": "A",
-          "t": "Benztropine — anticholinergic agents are first-line for all antipsychotic-induced movement disorders, including akathisia.",
+          "t": "Increase the haloperidol dose, reading the constant pacing as worsening psychotic agitation",
           "trap": {
-            "name": "Anticholinergic first-line for akathisia",
-            "note": "Benztropine and other anticholinergic agents are first-line for antipsychotic-induced parkinsonism and acute dystonia, but they have weaker evidence for pure akathisia compared to propranolol. Anticholinergics are the correct add-on when parkinsonism co-exists with akathisia, not as the default first-line for akathisia alone."
+            "name": "Agitation = more antipsychotic",
+            "note": "Akathisia worsens with more dopamine blockade. Escalating the antipsychotic is the cardinal error in akathisia management."
           }
         },
         {
           "key": "B",
-          "t": "Propranolol 20–40 mg BID — a non-selective beta-blocker with the strongest evidence base for akathisia from multiple small RCTs and Cochrane review.",
+          "t": "Add propranolol 20–40 mg twice daily if blood pressure and heart rate allow",
           "c": true
         },
         {
           "key": "C",
-          "t": "Immediate switch to clozapine — clozapine's low D2 affinity eliminates akathisia risk and is the definitive treatment when any antipsychotic causes akathisia.",
+          "t": "Add standing diazepam three times daily to settle the restlessness",
           "trap": {
-            "name": "Clozapine as immediate first-line",
-            "note": "Clozapine's low D2 affinity does make it a preferred option in patients with severe EPS, but it is not the first intervention for new akathisia — it requires ANC monitoring enrollment, carries significant metabolic and cardiac risks, and is reserved for treatment-resistant or EPS-prone patients. The first pharmacological trial for akathisia is propranolol, not clozapine."
+            "name": "Benzodiazepine first-line",
+            "note": "A benzodiazepine is an adjunct when symptoms stay severe after the first steps, not the first added drug. Standing diazepam also brings sedation, falls and dependence."
           }
         },
         {
           "key": "D",
-          "t": "Standing diazepam — benzodiazepines are the first-line pharmacological agent for dopamine-blocker-induced restlessness.",
+          "t": "Stop haloperidol and switch to clozapine today, since its akathisia risk is low",
           "trap": {
-            "name": "Benzodiazepine first-line for akathisia",
-            "note": "Benzodiazepines (typically clonazepam) provide adjunctive relief and are useful when propranolol is insufficient or contraindicated, but they are third-line specifically for akathisia. Starting with standing diazepam also introduces dependence risk, falls, and sedation; propranolol is both more specific and better-evidenced (Lima et al., Cochrane 2004)."
+            "name": "Clozapine immediately",
+            "note": "Clozapine needs ANC monitoring and carries metabolic and cardiac risks; it is not the first move for new akathisia, and the attending is keeping haloperidol for now."
           }
         }
       ],
-      "why": "Anticholinergic first-line, Clozapine immediately, and Benzodiazepine first-line all misorient the management hierarchy. Propranolol (B) remains the standard first-line pharmacotherapy for akathisia when dose reduction or switching is not immediately available, and among the options offered it is the best-supported choice — but characterize the evidence honestly: the 2004 Cochrane review (Lima et al., CD001946) found only three small placebo-controlled RCTs (total n=51, ≤72 hours), could draw no firm conclusions, and judged the data insufficient to recommend beta-blockers for akathisia. The recommendation rests on early small trials and accumulated clinical practice rather than on positive systematic-review evidence. The management sequence is: (1) reduce antipsychotic dose or switch if possible — the mechanism fix; (2) propranolol when dose reduction isn't immediately available; (3) benztropine if parkinsonism co-exists; (4) benzodiazepine adjunct if symptoms remain severe. Avoid escalating the antipsychotic — the cardinal error.",
-      "pearl": "Akathisia pharmacotherapy: propranolol 20–40 mg BID is first-line (strongest evidence); add benztropine if parkinsonism co-exists; benzodiazepine is third-line adjunct.",
-      "evidence": "t_anxiety.md 'When akathisia is identified' — Propranolol 20–40 mg BID is the pharmacological first-line for akathisia with the strongest evidence from multiple small RCTs and Cochrane review (Lima et al., Cochrane Database Syst Rev 2004). Management hierarchy: reduce dose or switch → propranolol → benztropine if parkinsonism co-exists → benzodiazepine adjunct."
+      "why": "Agitation = more antipsychotic, Benzodiazepine first-line, and Clozapine immediately all misread the management hierarchy. The first step is to reduce the antipsychotic dose or switch; with that off the table for now, propranolol is the usual first-line added drug, after checking blood pressure, heart rate and for asthma. Characterize the evidence honestly: propranolol is first-line by consensus and practice, not because it has the strongest trial evidence. The 2004 Cochrane review (Lima et al., CD001946) found only three small placebo-controlled RCTs (total n=51) and judged the data insufficient to recommend beta-blockers. Benztropine is added if parkinsonism co-exists; a benzodiazepine is an adjunct if symptoms stay severe.",
+      "pearl": "Akathisia: reduce or switch the antipsychotic first; if that isn't possible yet, propranolol is first-line by consensus (thin trial evidence); benztropine if parkinsonism co-exists; benzodiazepine as an adjunct.",
+      "evidence": "t_anxiety.md — Akathisia management hierarchy: reduce dose or switch the antipsychotic → propranolol (first-line by consensus; thin trial evidence, Lima et al. Cochrane 2004) → benztropine if co-existing parkinsonism → benzodiazepine adjunct."
     },
     {
       "id": "qb_anx_004",
@@ -6266,7 +6266,7 @@
     },
     {
       "id": "qb_eth_007",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6282,7 +6282,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison this weekend, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
         {
           "key": "A",
@@ -6302,7 +6302,7 @@
           "t": "Document the threat and reassess at the next session — the duty to warn only applies to imminent threats.",
           "trap": {
             "name": "Imminence required for Tarasoff",
-            "note": "The Tarasoff duty does not require the threat to be imminent — a serious, credible threat to an identifiable victim (here, named with a specific plan) is sufficient to trigger the duty; waiting is not appropriate."
+            "note": "Whether imminence is required depends on the state; Maine's 34-B M.R.S. §1207(6-A) speaks of a \"serious and imminent threat\". Here the threat is specific, armed, named and dated, so documenting and waiting is not safe: act now and involve your attending and risk management."
           }
         },
         {
@@ -6314,9 +6314,9 @@
           }
         }
       ],
-      "why": "Family exception, Imminence required, and Legal clearance first all create barriers to a clinically required action. The page states: 'A specific threat to a specific person overrides confidentiality.' The duty to protect may be fulfilled by warning the victim, notifying police, hospitalizing the patient, or intensifying treatment — and specifics vary by state, but the tested principle is clear.",
-      "pearl": "Tarasoff: a specific threat to an identifiable victim overrides confidentiality — warn, notify police, or hospitalize; inaction in a credible threat is not a safe option.",
-      "evidence": "ethics_legal.md — A serious threat to an identifiable victim triggers a duty to protect (Tarasoff) — confidentiality yields."
+      "why": "Family exception, Imminence required, and Legal clearance first all create barriers to a clinically required action. A serious threat to an identifiable victim can trigger a duty to protect, and the duty is mandatory, permissive or absent depending on the state. Whatever the state's wording on imminence, this threat is specific, armed, named and dated, so it calls for protective action: warning the victim, notifying police, hospitalizing the patient or intensifying treatment, with your attending and risk management involved.",
+      "pearl": "A specific threat to an identifiable victim can trigger a duty to protect, which varies by state; when it applies, act (warn, notify police or hospitalize) with your attending rather than document and wait.",
+      "evidence": "ethics_legal.md — A serious threat to an identifiable victim can trigger a duty to protect (Tarasoff) — mandatory, permissive or absent depending on the state; where it applies, confidentiality yields."
     },
     {
       "id": "qb_eth_008",
@@ -6374,7 +6374,7 @@
     },
     {
       "id": "qb_eth_003",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6408,7 +6408,7 @@
         },
         {
           "key": "C",
-          "t": "Involuntary hospitalization does NOT authorize involuntary medication; overriding the refusal requires either a true emergency (imminent danger) or a separate legal or adjudicated process independent of the commitment.",
+          "t": "Involuntary hospitalization does NOT authorize involuntary medication; overriding the refusal requires either a true emergency (in Maine, danger plus a lack of decisional capacity) or a separate legal process such as a court or review-panel order.",
           "c": true
         },
         {
@@ -6420,9 +6420,9 @@
           }
         }
       ],
-      "why": "Commitment = consent to medicate, Route reduces ethical constraint, and Diagnosis = impaired capacity are all versions of the same error. The page is clear: 'Involuntary hospitalization does NOT by itself authorize involuntary medication.' Overriding refusal requires an imminent-danger emergency or a separate legal/adjudicated process. Commitment status and medication consent are independent legal states.",
+      "why": "Commitment = consent to medicate, Route reduces ethical constraint, and Diagnosis = impaired capacity are all versions of the same error. The page is clear: commitment doesn't equal consent to medicate. Overriding a refusal requires a true emergency or a separate legal process. In Maine the emergency test (34-B M.R.S. §3861(4)) is not danger alone: it also requires that the person lack decisional capacity and that no authorized consenter be reasonably available; the routine routes are a court order (§3864(7-A)) or a clinical review panel (§3861(3)), each starting from a finding that the patient lacks capacity.",
       "pearl": "Commitment ≠ consent to medicate — involuntary hospitalization does not override medication refusal; a separate emergency or legal process is required.",
-      "evidence": "ethics_legal.md — Involuntary hospitalization does NOT by itself authorize involuntary medication. Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent."
+      "evidence": "ethics_legal.md — Separate the four legal states: voluntary vs committed, and has-capacity vs court-determined-incompetent — commitment doesn't equal consent to medicate."
     },
     {
       "id": "qb_eth_004",
@@ -6478,7 +6478,7 @@
     },
     {
       "id": "qb_eth_005",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "ethics",
       "competency": [
@@ -6492,40 +6492,40 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "A 62-year-old man is informed of the risks, benefits, and alternatives of a recommended ECT course; his cognition is grossly intact on interview, though no formal capacity assessment has been documented. He is under no coercion and says, 'I understand what you've told me, and I want to have ECT.' Which component of informed consent has NOT yet been addressed?",
+      "stem": "A 62-year-old man with severe depression is offered ECT. The resident has explained its risks, benefits and alternatives. When asked to say what he understood, he says ECT \"will reset my brain for good\" and cannot name any possible effect on memory, though he says he wants it. No one is pressuring him. What is the best next step?",
       "options": [
         {
           "key": "A",
-          "t": "He has expressed a choice — the consent is now complete because all required elements are present.",
+          "t": "Have him sign now, since he has heard the disclosure and chosen ECT",
           "trap": {
             "name": "Choice = consent",
-            "note": "Expressing a choice alone does not complete informed consent — three components are required: capacity, disclosure, and voluntariness. The question asks which has NOT been addressed; verifying all three requires checking capacity systematically."
+            "note": "Expressing a choice is not consent. Valid consent needs capacity, disclosure and voluntariness, and he cannot yet explain the main risks back."
           }
         },
         {
           "key": "B",
-          "t": "The emergency exception permits ECT without formal consent in this case — ECT is a medical urgency.",
-          "trap": {
-            "name": "Emergency exception for ECT",
-            "note": "There is no emergency exception without an actual emergency — a cognitively intact patient recommending an elective ECT course requires standard informed consent; the emergency exception is for situations where consent cannot be obtained and delay causes harm."
-          }
+          "t": "Go over the disclosure again and check he can explain the main risks back",
+          "c": true
         },
         {
           "key": "C",
-          "t": "Voluntariness has not been assessed — the stem confirms disclosure and that the patient made a choice, but does not confirm he is free from undue influence, coercion, or therapeutic misconception.",
+          "t": "Ask his wife to co-sign so the consent is secure",
           "trap": {
-            "name": "Voluntariness fully assessed",
-            "note": "The stem says the patient 'is under no coercion' — voluntariness IS addressed; the missing component is different."
+            "name": "Family as surrogate",
+            "note": "An adult is presumed to have capacity, and a competent adult needs no co-signer. A family member decides only when the patient lacks capacity and the law names them."
           }
         },
         {
           "key": "D",
-          "t": "A formal clinical capacity assessment has not been explicitly performed — consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness; disclosure and voluntariness are confirmed in the stem, but capacity is asserted by the word 'intact cognition' without a documented four-ability assessment.",
-          "c": true
+          "t": "Proceed under the emergency exception because he is severely ill",
+          "trap": {
+            "name": "Emergency exception for ECT",
+            "note": "Severity alone is not an emergency. The emergency exception applies only when consent cannot be obtained and delay would cause harm."
+          }
         }
       ],
-      "why": "Choice = consent and Emergency exception for ECT overlook the structure of valid consent. Valid consent requires ALL three: capacity + disclosure + voluntariness. Disclosure is confirmed (risks/benefits/alternatives given), voluntariness is confirmed ('under no coercion'), but formal capacity documentation — the four abilities: communicate a choice, understand, appreciate, reason — is described as 'intact cognition' without a documented assessment. This is the gap.",
-      "pearl": "Informed consent = capacity + disclosure + voluntariness — all three must be documented; 'intact cognition' is not the same as a documented capacity assessment.",
+      "why": "Choice = consent, Family as surrogate, and Emergency exception for ECT all skip the actual gap. Valid consent requires capacity, disclosure and voluntariness. Adult capacity is presumed, and a formal four-ability assessment is not a required step for every consent; it is triggered when something raises doubt. Here something does: he cannot explain the main risks back, so understanding is not yet shown. Re-disclose in plain words and check understanding again; if he still cannot understand or appreciate the risks, assess capacity formally.",
+      "pearl": "Informed consent = capacity + disclosure + voluntariness. Capacity is presumed until something raises doubt; a patient who cannot explain the main risks back has not yet shown understanding, so re-disclose and check before he signs.",
       "evidence": "ethics_legal.md — Valid consent requires capacity, disclosure (risks/benefits/alternatives), and voluntariness. The four abilities: communicate a choice, understand, appreciate, and reason."
     },
     {

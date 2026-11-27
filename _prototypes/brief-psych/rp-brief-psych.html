@@ -47,6 +47,7 @@
   .cue.safety{border-color:var(--danger);background:var(--danger-light)}
   .cue .mech{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-light);margin-top:4px}
   .cue.safety .mech{color:var(--danger)}
+  [data-theme="dark"] .cue.safety .mech{color:#e8968a} /* --danger on --danger-light reads 4.28:1 in dark; this clears AA */
   .mechbadge{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dark);background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-pill);padding:3px 11px;margin-bottom:8px}
   .tname{font-family:var(--font-head);font-size:1.35rem;margin:0 0 var(--sp3);color:var(--text)}
   .step{display:grid;grid-template-columns:26px 1fr;gap:11px;margin:8px 0}
@@ -168,13 +169,15 @@
     var spt=useState(null),predTechChoice=spt[0],setPredTechChoice=spt[1];
     var smo=useState([]),mechOptions=smo[0],setMechOptions=smo[1];
     var sto=useState([]),techOptions=sto[0],setTechOptions=sto[1];
+    var sic=useState(null),incidentCue=sic[0],setIncidentCue=sic[1];
 
     useEffect(function(){fetch('./rp-brief-psych.pack.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json();})
       .then(function(d){setPack(d);setPhase('cues');}).catch(function(){setPhase('error');});},[]);
     useEffect(function(){flushFlags();},[]); // drain any rp_flags entries left unsent from a previous offline session
     useEffect(function(){document.getElementById('themebtn').onclick=function(){var c=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',c);try{localStorage.setItem('cw_theme',c);}catch(e){}};},[]);
 
-    function openCue(cue){if(cue.safety){setShowSafety(true);setPhase('safety');announce('Safety routing.');return;}
+    function openCue(cue,cleared){if(cue.safety){setShowSafety(true);setPhase('safety');announce('Safety routing.');return;}
+      if(cue.safetyFirst&&!cleared&&pack.incidentSafety){setIncidentCue(cue);setPhase('incident');announce('Medical and safety check first.');return;}
       var t=pack.content.techniques.filter(function(x){return x.id===cue.techId;})[0];setTech(t);setLabel('');
       setPredMechChoice(null);setPredTechChoice(null);
       if(mode==='practice'){
@@ -274,6 +277,23 @@
         e(FlagButton,{ctx:'safety'}));
     }
 
+    // POST-INCIDENT safety gate (red-team BP-1): self-harm goes to the body and the team before chain analysis
+    if(phase==='incident'&&pack.incidentSafety){
+      var is=pack.incidentSafety;
+      return e('div',null,header,
+        e('div',{className:'card',style:{borderColor:'var(--danger)'}},
+          e('div',{className:'mechbadge',style:{color:'var(--danger)',borderColor:'var(--danger)',background:'var(--danger-light)'}},'Safety first'),
+          e('div',{className:'tname'},is.title),
+          e('p',null,is.body),
+          e('ol',null,is.steps.map(function(t,i){return e('li',{key:i},t);})),
+          (is.routes||[]).map(function(r,i){return e('a',{className:'route',key:i,href:r.href,target:'_top'},'→ ',r.label);}),
+          e('div',{className:'kv ca'},is.note),
+          e('div',{className:'btnrow'},
+            e('button',{className:'btn',onClick:function(){setPhase('cues');}},'← Back to cues'),
+            e('button',{className:'btn primary',onClick:function(){var c=incidentCue;setIncidentCue(null);if(c)openCue(c,true);}},is.continueLabel))),
+        e(FlagButton,{ctx:'incident-safety'}));
+    }
+
     // PREDICT step 1 — mechanism
     if(phase==='predict-mech'){
       return e('div',null,header,
@@ -333,8 +353,8 @@
       e('div',{className:'card'},
         e('div',{className:'lbl'},'What are you seeing?'),
         e('div',{className:'cuegrid'},
-          pack.content.cues.map(function(c){var showMech=c.safety||mode==='reference';return e('button',{key:c.id,className:'cue'+(c.safety?' safety':''),onClick:function(){openCue(c);}},
-            c.label, showMech?e('span',{className:'mech'}, c.safety?'⚑ Route to your team':c.mechanism):null);}))),
+          pack.content.cues.map(function(c){var showMech=c.safety||c.safetyFirst||mode==='reference';return e('button',{key:c.id,className:'cue'+(c.safety||c.safetyFirst?' safety':''),onClick:function(){openCue(c);}},
+            c.label, showMech?e('span',{className:'mech'}, c.safety?'⚑ Route to your team':(c.safetyFirst?'⚑ Medical and safety check first':c.mechanism)):null);}))),
       e('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
         e('span',{className:'cite'},'Daily scaffold: '+f.scaffold.join(' · ')),
         e(FlagButton,{ctx:'cues'})));
