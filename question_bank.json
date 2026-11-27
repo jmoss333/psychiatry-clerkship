@@ -6282,7 +6282,7 @@
         "label": "Open the Ethics & Law page",
         "href": "?page=ethics_legal.md"
       },
-      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison next month, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
+      "stem": "During an outpatient psychiatry session, a 34-year-old man with schizophrenia (prominent persecutory delusions) states, 'I have a gun at home. When John Smith gets out of prison this weekend, I'm going to kill him.' John Smith is his estranged brother. Which action is most appropriate?",
       "options": [
         {
           "key": "A",
