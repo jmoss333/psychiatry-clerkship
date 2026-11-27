@@ -79,7 +79,7 @@
 ## Family intervention and expressed emotion
 
 - ★ **Family intervention for schizophrenia** — Pharoah et al., *Cochrane* 2010. PMID 21154340 · Open (PMC)
-  The canonical review (53 RCTs in all): family intervention "may decrease the frequency of relapse" (32 RCTs; RR 0.55, NNT 7) and "may also reduce hospital admission" (8 RCTs; RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects "may be overestimated due to the poor methodological quality" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation.
+  The 2010 review (53 RCTs in all): family intervention "may decrease the frequency of relapse" (32 RCTs; RR 0.55, NNT 7) and "may also reduce hospital admission" (8 RCTs; RR 0.78, CI 0.6–1.0, NNT 8), with better medication adherence too. The authors' own hedge — effects "may be overestimated due to the poor methodological quality" — is part of the finding: the same rigor lesson Tarrier & Wykes teach, arriving in the domain's foundational citation. Its 2024 Cochrane update (Chien et al., PMID 39364773; 26 RCTs) rates the relapse evidence low-certainty (RR 0.66 up to one month after the intervention; 4 RCTs, 229 participants) and finds that it may make little to no difference to hospital admission up to one month after the intervention (RR 0.81; 2 RCTs, 153 participants; low certainty).
 - **Expressed emotion and relapse: meta-analysis** — Ma et al., *Psychol Med* 2021. PMID 33568244 · Library
   The empirical floor under family work: high expressed emotion predicts early relapse (OR 4.87 within 12 months), criticism predicts relapse (OR 2.22), and warmth protects (OR 0.35). A measured, modifiable relapse predictor.
 - **Family intervention in first-episode psychosis to 24 months** — Camacho-Gomez & Castellví, *Schizophr Bull* 2020. PMID 31050757 · Open (PMC)
@@ -142,3 +142,5 @@
 ---
 
 *What this page deliberately does not do: host PDFs, reproduce abstracts, or substitute for supervision. Every paper here was verified for identity and retraction status before listing; link types are checked so the open ones really open. Annotations are drafted from the papers' abstracts with AI assistance and carry faculty signature as of 2026-08-23.*
+
+**Pending re-attestation:** 2024 Cochrane update added beside the 2010 family-intervention review 2026-11-22 (Chien 2024)

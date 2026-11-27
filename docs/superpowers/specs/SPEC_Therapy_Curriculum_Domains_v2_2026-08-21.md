@@ -214,7 +214,7 @@ Also: **PMID 40392926** reports the intervention *"markedly superior to Treatmen
 
 **Practical parameters worth memorising.**
 - **≤2 sessions is ineffective.** Successful programmes run 2–6 months, 60–90 minute sessions; effects are marked when the intervention continues **>3 months**.
-- Purely inpatient-confined interventions (≤5 sessions, no post-discharge continuation) have **not** shown readmission reduction. The Munich PIP study — the strongest inpatient-initiated evidence, with 54% vs 88% rehospitalisation at 7 years — *bridged into outpatient continuation.*
+- Purely inpatient-confined interventions (≤5 sessions, no post-discharge continuation) have **not** shown readmission reduction. The Munich PIP study — the strongest inpatient-initiated evidence (2-year readmission 41% vs 58% in completers, not significant by intention to treat; a 7-year follow-up by Bäuml et al. reported 54% vs 88%) — *bridged into outpatient continuation.*
 - **Format:** McFarlane 1995 — multi-family groups 50% vs single-family 78% relapse at 4 years, and MFG *without* psychoeducation (57%) approximated MFG *with* it, implying an independent group-format effect. But Kopelowicz 2012: culturally adapted MFG reduced rehospitalisation while **standard MFG did not differ from TAU** — content and cultural tailoring may matter as much as format.
 - **Even unstructured family contact helps the handoff.** Family involvement with inpatient staff was associated with outpatient attendance at 7 days (OR 2.79) and 30 days (OR 3.07).
 - **Implementation is the binding constraint:** 8% (UK, any recommended therapy post-discharge), 4% (Norway, family psychoeducation). Barriers: confidentiality concerns, medical-model dominance on acute wards, no protected staff time, short stays.

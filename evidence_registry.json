@@ -1524,6 +1524,690 @@
       }
     },
     {
+      "id": "chien-2024-family-cochrane",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family-based interventions versus standard care for people with schizophrenia",
+        "authors": [
+          {
+            "family": "Chien",
+            "given": "WT"
+          },
+          {
+            "family": "Ma",
+            "given": "DCF"
+          },
+          {
+            "family": "Bressington",
+            "given": "D"
+          },
+          {
+            "family": "Mou",
+            "given": "H"
+          }
+        ],
+        "organization": "",
+        "year": 2024,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "10",
+        "pages": "CD013541",
+        "doi": "10.1002/14651858.CD013541.pub2",
+        "pmid": "39364773",
+        "url": "https://doi.org/10.1002/14651858.CD013541.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Cochrane review CD013541.pub2 (4 Oct 2024). Its abstract calls it an update of a Cochrane review last updated in 2011 that has been split into three reviews (this one: family-based interventions versus standard care). The Cochrane Library record for CD000088 (pharoah-2010-family-intervention) lists versions only to .pub3 (8 Dec 2010) and does not link to CD013541; Crossref carries no version link between them. Recorded as a related newer review, not as a supersession: pharoah-2010-family-intervention keeps an empty supersededBy pending a faculty decision."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Cochrane systematic review (26 RCTs; GRADE moderate to very low)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "relapse-prevention"
+        ],
+        "clerkshipRelevance": "The 2024 Cochrane update of the family-intervention review: relapse benefit up to one month after the intervention is low-certainty (RR 0.66; 4 RCTs, 229 participants) and family interventions may make little to no difference to hospital admission up to one month after the intervention (RR 0.81, 95% CI 0.51-1.29; 2 RCTs, 153 participants; low certainty); low-certainty shift of family members from high to low expressed emotion.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Cochrane review CD013541.pub2 (4 Oct 2024). Its abstract calls it an update of a Cochrane review last updated in 2011 that has been split into three reviews (this one: family-based interventions versus standard care). The Cochrane Library record for CD000088 (pharoah-2010-family-intervention) lists versions only to .pub3 (8 Dec 2010) and does not link to CD013541; Crossref carries no version link between them. Recorded as a related newer review, not as a supersession: pharoah-2010-family-intervention keeps an empty supersededBy pending a faculty decision.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "rodolico-2022-family-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family interventions for relapse prevention in schizophrenia: a systematic review and network meta-analysis",
+        "authors": [
+          {
+            "family": "Rodolico",
+            "given": "A"
+          },
+          {
+            "family": "Bighelli",
+            "given": "I"
+          },
+          {
+            "family": "Avanzato",
+            "given": "C"
+          }
+        ],
+        "organization": "",
+        "year": 2022,
+        "journal": "Lancet Psychiatry",
+        "volume": "9",
+        "pages": "211-221",
+        "doi": "10.1016/S2215-0366(21)00437-5",
+        "pmid": "35093198",
+        "url": "https://doi.org/10.1016/S2215-0366(21)00437-5"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full; full text read 2026-11-22.",
+        "verifiedAt": "2026-11-22",
+        "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm; no included study was at low risk of bias (49 moderate, 33 high). Family Therapy Modalities carries them labelled as a model estimate (Batch 2, J9). The family-psychoeducation trials delivered a median of 12 sessions. Studies in which all patients were acutely ill were excluded."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "systematic review and network meta-analysis (confidence moderate to very low across comparisons)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "relapse-prevention"
+        ],
+        "clerkshipRelevance": "Family psychoeducation alone: relapse OR 0.18 (95% CI 0.12-0.27) versus treatment as usual at 12 months; two sessions or fewer did not significantly reduce relapse; confidence moderate to very low across comparisons; acutely ill samples excluded.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text is not open access and was not read: the \"37% to 10%\" relapse figures the library used to carry could not be confirmed and were removed. Studies in which all patients were acutely ill were excluded.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          },
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm. The pages do not carry them pending a faculty decision (Batch 2, J9). Studies in which all patients were acutely ill were excluded.",
+            "reason": "Full text obtained after registration; the earlier note said the 37%/10% figures could not be confirmed. Corrects the note only. Not faculty review."
+          },
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis, 90 RCTs, 10 340 participants, 11 family-intervention models. Full text read 2026-11-22: the 37% (treatment as usual) and 10% (family psychoeducation alone) 12-month relapse figures are event rates the authors calculated by applying the odds ratio to a 37% usual-care relapse risk (appendix p 8), not rates observed in a trial arm; no included study was at low risk of bias (49 moderate, 33 high). Family Therapy Modalities carries them labelled as a model estimate (Batch 2, J9). The family-psychoeducation trials delivered a median of 12 sessions. Studies in which all patients were acutely ill were excluded.",
+            "reason": "Faculty decision D-2026-11-22-01 (Batch 2 J9, J10, J8.3): the labelled event-rate estimate, the ranking among family models and the median session count now ship, each with a full-text span. Not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "okpokoro-2014-brief-family-cochrane",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family intervention (brief) for schizophrenia",
+        "authors": [
+          {
+            "family": "Okpokoro",
+            "given": "U"
+          },
+          {
+            "family": "Adams",
+            "given": "CE"
+          },
+          {
+            "family": "Sampson",
+            "given": "S"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "3",
+        "pages": "CD009802",
+        "doi": "10.1002/14651858.CD009802.pub2",
+        "pmid": "24595545",
+        "url": "https://doi.org/10.1002/14651858.CD009802.pub2"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Cochrane review of brief family interventions (four studies, 163 people). Results for hospital admission and relapse are equivocal and every outcome in the Summary of findings table is low or very low quality; no meta-analysis was possible."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "Cochrane systematic review (4 RCTs; GRADE low to very low)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "relapse-prevention"
+        ],
+        "clerkshipRelevance": "Brief family intervention has little trial evidence: four studies, 163 people, equivocal results for admission and relapse, all outcomes rated low or very low quality.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Cochrane review of brief family interventions (four studies, 163 people). Results for hospital admission and relapse are equivocal and every outcome in the Summary of findings table is low or very low quality; no meta-analysis was possible.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "glick-1990-inpatient-family-intervention",
+      "type": "primary-study",
+      "citation": {
+        "title": "A randomized clinical trial of inpatient family intervention. IV. Followup results for subjects with schizophrenia",
+        "authors": [
+          {
+            "family": "Glick",
+            "given": "ID"
+          },
+          {
+            "family": "Spencer",
+            "given": "JH"
+          },
+          {
+            "family": "Clarkin",
+            "given": "JF"
+          },
+          {
+            "family": "Haas",
+            "given": "GL"
+          },
+          {
+            "family": "Lewis",
+            "given": "AB"
+          },
+          {
+            "family": "Peyser",
+            "given": "J"
+          },
+          {
+            "family": "DeMane",
+            "given": "N"
+          },
+          {
+            "family": "Good-Ellis",
+            "given": "M"
+          }
+        ],
+        "organization": "",
+        "year": 1990,
+        "journal": "Schizophr Res",
+        "volume": "3",
+        "pages": "187-200",
+        "doi": "10.1016/0920-9964(90)90036-7",
+        "pmid": "2278982",
+        "url": "https://doi.org/10.1016/0920-9964(90)90036-7"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored)).",
+        "verifiedAt": "2026-11-22",
+        "note": "Payne Whitney trial of a psychoeducational family intervention limited to the inpatient phase (mean 8.6 sessions; mean stay 51 days); 92 patients with schizophrenia completed the inpatient phase. Full text read 2026-11-22: very little effect at discharge; by 18 months better global and role functioning in women, most marked in poorly functioning women; men unaffected or a little worse. Outcomes are functioning, symptom and family measures; relapse and readmission are not reported, and findings at P<0.10 are reported as significant. The mixed-diagnosis sample (169 inpatients) is Spencer et al., Am J Psychiatry 1988."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "randomised controlled trial (inpatient phase only; post-hospital care not controlled)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "The one randomized trial found of family intervention confined to the admission: little effect at discharge; a delayed (18-month) benefit in women, most clearly with poor prehospital functioning; men unaffected or slightly worse; relapse not reported.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Payne Whitney trial of a psychoeducational family intervention limited to the inpatient phase (mean 8.6 sessions; mean stay 51 days); 92 patients with schizophrenia completed the inpatient phase. Full text read 2026-11-22: very little effect at discharge; by 18 months better global and role functioning in women, most marked in poorly functioning women; men unaffected or a little worse. Outcomes are functioning, symptom and family measures; relapse and readmission are not reported, and findings at P<0.10 are reported as significant. The mixed-diagnosis sample (169 inpatients) is Spencer et al., Am J Psychiatry 1988.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "eassom-2014-family-involvement-implementation",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Implementing family involvement in the treatment of patients with psychosis: a systematic review of facilitating and hindering factors",
+        "authors": [
+          {
+            "family": "Eassom",
+            "given": "E"
+          },
+          {
+            "family": "Giacco",
+            "given": "D"
+          },
+          {
+            "family": "Dirik",
+            "given": "A"
+          },
+          {
+            "family": "Priebe",
+            "given": "S"
+          }
+        ],
+        "organization": "",
+        "year": 2014,
+        "journal": "BMJ Open",
+        "volume": "4",
+        "pages": "e006108",
+        "doi": "10.1136/bmjopen-2014-006108",
+        "pmid": "25280809",
+        "url": "https://doi.org/10.1136/bmjopen-2014-006108"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Systematic review, 43 studies, almost all qualitative and most of staff perspectives. Describes organisational cultures that can limit family involvement and staff reservations about it (power relations, fear of negative outcomes, an exclusive patient-professional relationship). It does not rank barriers."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review (qualitative synthesis)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "psychosis",
+          "family",
+          "implementation"
+        ],
+        "clerkshipRelevance": "Barriers to family involvement in psychosis care, mostly from staff perspectives: organisational culture and reservations about power relations, negative outcomes and an exclusive patient-professional relationship.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Systematic review, 43 studies, almost all qualitative and most of staff perspectives. Describes organisational cultures that can limit family involvement and staff reservations about it (power relations, fear of negative outcomes, an exclusive patient-professional relationship). It does not rank barriers.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "norheim-2025-ifip-cluster-rct",
+      "type": "primary-study",
+      "citation": {
+        "title": "Effectiveness of implementing family involvement on patient outcomes in individuals with psychotic disorders: a pragmatic cluster randomised controlled trial",
+        "authors": [
+          {
+            "family": "Norheim",
+            "given": "I"
+          },
+          {
+            "family": "Pedersen",
+            "given": "R"
+          },
+          {
+            "family": "Selle",
+            "given": "ML"
+          }
+        ],
+        "organization": "",
+        "year": 2025,
+        "journal": "BMC Psychiatry",
+        "volume": "25",
+        "pages": "1142",
+        "doi": "10.1186/s12888-025-07501-z",
+        "pmid": "41345598",
+        "url": "https://doi.org/10.1186/s12888-025-07501-z"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "IFIP sub-study: cluster randomised trial in 15 Norwegian community mental health centre units, 231 patients with psychotic disorders. No significant difference in the primary outcome (interpersonal difficulties at 12 months); less perceived criticism from relatives and better overall functioning in the intervention arm. Most follow-up fell during COVID-19."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "cluster randomised controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "psychosis",
+          "family",
+          "implementation"
+        ],
+        "clerkshipRelevance": "Implementing family interventions did not change patients' interpersonal difficulties at 12 months, though patients in intervention units perceived less criticism from relatives.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "IFIP sub-study: cluster randomised trial in 15 Norwegian community mental health centre units, 231 patients with psychotic disorders. No significant difference in the primary outcome (interpersonal difficulties at 12 months); less perceived criticism from relatives and better overall functioning in the intervention arm. Most follow-up fell during COVID-19.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "bighelli-2021-psychosocial-relapse-nma",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Psychosocial and psychological interventions for relapse prevention in schizophrenia: a systematic review and network meta-analysis",
+        "authors": [
+          {
+            "family": "Bighelli",
+            "given": "I"
+          },
+          {
+            "family": "Rodolico",
+            "given": "A"
+          },
+          {
+            "family": "García-Mieres",
+            "given": "H"
+          }
+        ],
+        "organization": "",
+        "year": 2021,
+        "journal": "Lancet Psychiatry",
+        "volume": "8",
+        "pages": "969-980",
+        "doi": "10.1016/S2215-0366(21)00243-1",
+        "pmid": "34653393",
+        "url": "https://doi.org/10.1016/S2215-0366(21)00243-1"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Network meta-analysis of 72 RCTs (10 364 participants) comparing 20 psychosocial and psychological interventions with treatment as usual. Family interventions (OR 0·35), relapse prevention programmes (0·33) and CBT (0·45) had lower point estimates than family psychoeducation (0·56). Registered as the comparator that scoped the family_modalities summary to family-intervention models (Batch 2 J10, replacing \"single strongest psychosocial intervention\"); no learner sentence quotes its figures."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review and network meta-analysis (confidence moderate to very low)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "relapse-prevention",
+          "therapy"
+        ],
+        "clerkshipRelevance": "Across 20 psychosocial interventions for schizophrenia relapse prevention, family interventions, relapse prevention programmes, CBT and family psychoeducation all reduced relapse versus treatment as usual at 1 year; family psychoeducation was not the lowest point estimate.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Network meta-analysis of 72 RCTs (10 364 participants) comparing 20 psychosocial and psychological interventions with treatment as usual. Family interventions (OR 0·35), relapse prevention programmes (0·33) and CBT (0·45) had lower point estimates than family psychoeducation (0·56). Registered as the comparator that scoped the family_modalities summary to family-intervention models (Batch 2 J10, replacing \"single strongest psychosocial intervention\"); no learner sentence quotes its figures.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "henken-2007-family-therapy-depression-cochrane",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Family therapy for depression",
+        "authors": [
+          {
+            "family": "Henken",
+            "given": "HT"
+          },
+          {
+            "family": "Huibers",
+            "given": "MJ"
+          },
+          {
+            "family": "Churchill",
+            "given": "R"
+          },
+          {
+            "family": "Restifo",
+            "given": "K"
+          },
+          {
+            "family": "Roelofs",
+            "given": "J"
+          }
+        ],
+        "organization": "",
+        "year": 2007,
+        "journal": "Cochrane Database Syst Rev",
+        "volume": "3",
+        "pages": "CD006728",
+        "doi": "10.1002/14651858.CD006728",
+        "pmid": "17636850",
+        "url": "https://doi.org/10.1002/14651858.CD006728"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored)).",
+        "verifiedAt": "2026-11-22",
+        "note": "Cochrane review, six trials, 519 people; too heterogeneous and sparse to judge family therapy for depression. Full text read 2026-11-22 (edited in Issue 1, 2010 with no change to conclusions): in the inpatient family-intervention trial (Glick 1985, the same Payne Whitney trial as glick-1990-inpatient-family-intervention), the 29 patients with unipolar depression did better without the intervention (limited evidence, level 3). Whether a newer Cochrane version exists was not checked."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "Cochrane systematic review (6 trials; no meta-analysis possible)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "The evidence for family therapy in depression is too heterogeneous and sparse to judge; in its inpatient trial, unipolar patients did better without the family intervention (limited evidence).",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Cochrane review, six trials, 519 people; too heterogeneous and sparse to judge family therapy for depression. Full text read 2026-11-22 (edited in Issue 1, 2010 with no change to conclusions): in the inpatient family-intervention trial (Glick 1985, the same Payne Whitney trial as glick-1990-inpatient-family-intervention), the 29 patients with unipolar depression did better without the intervention (limited evidence, level 3). Whether a newer Cochrane version exists was not checked.",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "pitschel-walz-2006-munich-pip",
+      "type": "primary-study",
+      "citation": {
+        "title": "Psychoeducation and compliance in the treatment of schizophrenia: results of the Munich Psychosis Information Project Study",
+        "authors": [
+          {
+            "family": "Pitschel-Walz",
+            "given": "G"
+          },
+          {
+            "family": "Bäuml",
+            "given": "J"
+          },
+          {
+            "family": "Bender",
+            "given": "W"
+          },
+          {
+            "family": "Engel",
+            "given": "RR"
+          },
+          {
+            "family": "Wagner",
+            "given": "M"
+          },
+          {
+            "family": "Kissling",
+            "given": "W"
+          }
+        ],
+        "organization": "",
+        "year": 2006,
+        "journal": "J Clin Psychiatry",
+        "volume": "67",
+        "pages": "443-452",
+        "doi": "10.4088/jcp.v67n0316",
+        "pmid": "16649832",
+        "url": "https://doi.org/10.4088/jcp.v67n0316"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored)).",
+        "verifiedAt": "2026-11-22",
+        "note": "Randomised trial, 236 inpatients with schizophrenia or schizoaffective disorder; eight patient group sessions (sessions 1-4 mostly during the inpatient stay) and eight separate relatives' sessions starting soon after randomization. Full text read 2026-11-22: rehospitalization among those followed up 21% vs 38% at 12 months and 41% vs 58% at 24 months; with all dropouts counted as rehospitalized (N=194) 37% vs 45% and 54% vs 66%, not significant. The 54% vs 88% figures sometimes attributed to this trial are the 7-year follow-up of 48 patients (Bäuml et al., J Clin Psychiatry 2007, PMID 17592908)."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "randomised controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "Family and patient psychoeducation started on the unit: fewer rehospitalizations at 2 years among patients followed up (41% vs 58%), not significant when dropouts were counted as rehospitalized (54% vs 66%).",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Randomised trial, 236 inpatients with schizophrenia or schizoaffective disorder; eight patient group sessions (sessions 1-4 mostly during the inpatient stay) and eight separate relatives' sessions starting soon after randomization. Full text read 2026-11-22: rehospitalization among those followed up 21% vs 38% at 12 months and 41% vs 58% at 24 months; with all dropouts counted as rehospitalized (N=194) 37% vs 45% and 54% vs 66%, not significant. The 54% vs 88% figures sometimes attributed to this trial are the 7-year follow-up of 48 patients (Bäuml et al., J Clin Psychiatry 2007, PMID 17592908).",
+            "reason": "Family-evidence Batch 2 (faculty decision D-2026-11-22-01, \"Go with your recommendations for J1–J15\"): source registered so the new page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "nice-cg178-psychosis-schizophrenia",
+      "type": "guideline",
+      "citation": {
+        "title": "Psychosis and schizophrenia in adults: prevention and management (CG178)",
+        "authors": [],
+        "organization": "National Institute for Health and Care Excellence",
+        "year": 2014,
+        "journal": "",
+        "volume": "",
+        "pages": "",
+        "doi": "",
+        "pmid": "",
+        "url": "https://web.archive.org/web/20261115144247/https://www.nice.org.uk/guidance/cg178/chapter/Recommendations"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "Live page https://www.nice.org.uk/guidance/cg178/chapter/Recommendations read 2026-11-22 (published 12 February 2014, last updated 4 September 2026) and compared with the Wayback capture of 15 November 2026 (SHA-256 7872505c17a460692ebfb9a00bf095b0144e37d9d766c2291b72861f7bf82de3); recommendations 1.3.7.2 and 1.4.4.2 identical in both.",
+        "verifiedAt": "2026-11-22",
+        "note": "NICE CG178 recommendations 1.3.7.2 (family intervention: between 3 months and 1 year, at least 10 planned sessions) and 1.4.4.2 (can start in the acute phase, including inpatient settings). Archived copy: https://web.archive.org/web/20261115144247/https://www.nice.org.uk/guidance/cg178/chapter/Recommendations."
+      },
+      "requiredAccess": "fulltext",
+      "governance": {
+        "evidenceLevel": "clinical guideline",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "schizophrenia",
+          "family",
+          "guideline"
+        ],
+        "clerkshipRelevance": "NICE: family intervention over between 3 months and 1 year with at least 10 planned sessions; it can be started during the acute phase, including in inpatient settings. A planning recommendation, not a tested dose threshold.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "NICE CG178 recommendations 1.3.7.2 (family intervention: between 3 months and 1 year, at least 10 planned sessions) and 1.4.4.2 (can start in the acute phase, including inpatient settings). Archived copy: https://web.archive.org/web/20261115144247/https://www.nice.org.uk/guidance/cg178/chapter/Recommendations.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "pilling-2026-oddessi",
+      "type": "primary-study",
+      "citation": {
+        "title": "Open Dialogue versus treatment as usual for adults presenting in crisis to mental health services in England (the ODDESSI Trial): a multisite cluster-randomised trial",
+        "authors": [
+          {
+            "family": "Pilling",
+            "given": "S"
+          },
+          {
+            "family": "Craig",
+            "given": "T"
+          },
+          {
+            "family": "Clarke",
+            "given": "K"
+          }
+        ],
+        "organization": "",
+        "year": 2026,
+        "journal": "Lancet Psychiatry",
+        "volume": "13",
+        "pages": "841-851",
+        "doi": "10.1016/S2215-0366(26)00229-4",
+        "pmid": "42648300",
+        "url": "https://doi.org/10.1016/S2215-0366(26)00229-4"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Cluster-randomised superiority trial, 494 adults, 30 clusters in five NHS trusts. A correction notice exists (PMID 42721996, DOI 10.1016/S2215-0366(26)00298-1); its text has no PubMed abstract and the publisher page refused automated retrieval on 2026-11-22, so its content has NOT been read. The figures quoted come from the PubMed abstract of the article."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "cluster-randomised controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "corrected",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "open-dialogue",
+          "family",
+          "crisis",
+          "psychosis"
+        ],
+        "clerkshipRelevance": "First randomized trial of Open Dialogue: no significant difference in time to first relapse (marginal HR 0.95, 95% CI 0.67-1.32); secondary outcomes favored Open Dialogue for inpatient admission, re-referral and self-rated recovery. Community crisis services, not an inpatient trial.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Cluster-randomised superiority trial, 494 adults, 30 clusters in five NHS trusts. A correction notice exists (PMID 42721996, DOI 10.1016/S2215-0366(26)00298-1); its text has no PubMed abstract and the publisher page refused automated retrieval on 2026-11-22, so its content has NOT been read. The figures quoted come from the PubMed abstract of the article.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
       "id": "march-2004-tads",
       "type": "primary-study",
       "citation": {
@@ -5988,6 +6672,61 @@
       }
     },
     {
+      "id": "butzlaff-hooley-1998-ee-meta",
+      "type": "systematic-review",
+      "citation": {
+        "title": "Expressed emotion and psychiatric relapse: a meta-analysis",
+        "authors": [
+          {
+            "family": "Butzlaff",
+            "given": "RL"
+          },
+          {
+            "family": "Hooley",
+            "given": "JM"
+          }
+        ],
+        "organization": "",
+        "year": 1998,
+        "journal": "Arch Gen Psychiatry",
+        "volume": "55",
+        "pages": "547-552",
+        "doi": "10.1001/archpsyc.55.6.547",
+        "pmid": "9633674",
+        "url": "https://doi.org/10.1001/archpsyc.55.6.547"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Meta-analysis of 27 schizophrenia studies of expressed emotion and outcome. The abstract reports no effect-size statistic; the library cites it only for the direction of the association."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "meta-analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "expressed-emotion",
+          "family",
+          "schizophrenia",
+          "relapse-prevention"
+        ],
+        "clerkshipRelevance": "Earlier meta-analysis (27 studies): expressed emotion is a significant and robust predictor of relapse in schizophrenia.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Meta-analysis of 27 schizophrenia studies of expressed emotion and outcome. The abstract reports no effect-size statistic; the library cites it only for the direction of the association.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
       "id": "camacho-gomez-2020",
       "type": "systematic-review",
       "citation": {
@@ -6086,11 +6825,11 @@
       },
       "identity": {
         "status": "verified",
-        "source": "PubMed efetch (PMID 33052390): title, all 7 authors, journal, volume 78, issue 2, pages 141-150 and DOI 10.1001/jamapsychiatry.2020.2993 match",
-        "verifiedAt": "2026-09-24",
-        "note": "Added for peer-review finding M07-011 (family_modalities.md): the page read OR 0.12 as a result against control and called a confidence interval crossing zero 'helped stabilize'. OR 0.12 compares family/group-format psychoeducation with the same strategies delivered individually; retention OR 0.46 is against standard psychoeducation; family/conjoint therapy SMD -0.46 (95% CI -1.01 to 0.08) was reported 'with less certainty'. 39 RCTs, 3863 participants. Annotation is AI-drafted and awaits faculty signature."
+        "source": "PubMed efetch (PMID 33052390): title, all 7 authors, journal, volume 78, issue 2, pages 141-150 and DOI 10.1001/jamapsychiatry.2020.2993 match; full text read 2026-11-22 (publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored))",
+        "verifiedAt": "2026-11-22",
+        "note": "39 RCTs, 3863 participants; conclusions drawn for outpatients. Full text read 2026-11-22: 0.56 is all manualized therapies against control treatments; family or conjoint therapy (family-focused therapy, multifamily or caregiver-only groups) had the lowest recurrence odds versus treatment as usual (OR 0.30, 95% CI 0.17-0.53; highest SUCRA). OR 0.12 is a component-model estimate with a 95% credible interval. Brief psychoeducation shared the retention advantage over standard-length psychoeducation (OR 0.44). The paper reports associations."
       },
-      "requiredAccess": "abstract",
+      "requiredAccess": "fulltext",
       "governance": {
         "evidenceLevel": "systematic review / component network meta-analysis",
         "facultyReviewStatus": "pending",
@@ -6105,12 +6844,17 @@
           "psychoeducation",
           "therapy"
         ],
-        "clerkshipRelevance": "Adjunctive psychotherapy for bipolar disorder: manualized treatments lowered recurrence against control (OR 0.56); family or group-format psychoeducation beat the same strategies delivered individually (OR 0.12, a component comparison); family/conjoint therapy improved retention against standard psychoeducation (OR 0.46), with a less certain effect on depressive symptoms.",
+        "clerkshipRelevance": "Adjunctive psychotherapy for bipolar disorder (outpatients): manualized treatments were associated with lower recurrence than control treatments (OR 0.56); family or conjoint therapy had the lowest recurrence odds versus treatment as usual (OR 0.30); family or group-format psychoeducation was estimated to outperform the same strategies delivered individually (OR 0.12, a component-model estimate); family or conjoint therapy and brief psychoeducation were associated with better retention than standard-length psychoeducation (OR 0.46 and 0.44), with a less certain effect on depressive symptoms.",
         "noteHistory": [
           {
             "date": "2026-09-24",
             "note": "Added for peer-review finding M07-011 (family_modalities.md): the page read OR 0.12 as a result against control and called a confidence interval crossing zero 'helped stabilize'. OR 0.12 compares family/group-format psychoeducation with the same strategies delivered individually; retention OR 0.46 is against standard psychoeducation; family/conjoint therapy SMD -0.46 (95% CI -1.01 to 0.08) was reported 'with less certainty'. 39 RCTs, 3863 participants. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-011)"
+          },
+          {
+            "date": "2026-11-22",
+            "note": "39 RCTs, 3863 participants; conclusions drawn for outpatients. Full text read 2026-11-22: 0.56 is all manualized therapies against control treatments; family or conjoint therapy (family-focused therapy, multifamily or caregiver-only groups) had the lowest recurrence odds versus treatment as usual (OR 0.30, 95% CI 0.17-0.53; highest SUCRA). OR 0.12 is a component-model estimate with a 95% credible interval. Brief psychoeducation shared the retention advantage over standard-length psychoeducation (OR 0.44). The paper reports associations.",
+            "reason": "Faculty decision D-2026-11-22-01 (Batch 2 J11): the page bullet was rewritten from the full text; clerkshipRelevance now says \"associated with\". Not faculty review."
           }
         ]
       }
@@ -6187,7 +6931,7 @@
         "status": "verified",
         "source": "PubMed efetch (PMID 31310186): title, all 13 authors, journal, volume 70, issue 10, pages 860-866 and DOI 10.1176/appi.ps.201900028 match; PubMed ErratumIn PMID 31474217 (Psychiatr Serv 2019;70(9):792)",
         "verifiedAt": "2026-09-24",
-        "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'family involvement nearly triples the odds of 7-day follow-up' (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature."
+        "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'OR 2.79' bullet, worded since 2026-11-22 as an association from chart review, not proof of cause (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature."
       },
       "requiredAccess": "abstract",
       "governance": {
@@ -6209,6 +6953,77 @@
             "date": "2026-09-24",
             "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'family involvement nearly triples the odds of 7-day follow-up' (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature.",
             "reason": "peer-review remediation 2026-09-24, WP-9 citations and evidence (finding M07-009)"
+          },
+          {
+            "date": "2026-11-22",
+            "note": "Added for peer-review finding M07-009 (exp_family.md): the page's ~50% 7-day follow-up figure matches this single NY Medicaid sample (96 of 179, 53%), which the page now names. Also the source behind family_modalities.md's 'OR 2.79' bullet, worded since 2026-11-22 as an association from chart review, not proof of cause (adjusted OR 2.79, 95% CI 1.28-6.08). PubMed links an erratum (PMID 31474217, 'Correction to Haselden et al.', Psychiatr Serv 2019;70(9):792); its content was not retrieved, and the figures used here are the ones the PubMed abstract carries. Annotation is AI-drafted and awaits faculty signature.",
+            "reason": "Family-evidence corrections 2026-11-22 (F05): the page no longer says 'nearly triples the odds'; note updated to the page's association wording."
+          }
+        ]
+      }
+    },
+    {
+      "id": "lemmens-2009-family-therapy-depression",
+      "type": "primary-study",
+      "citation": {
+        "title": "The effects on mood of adjunctive single-family and multi-family group therapy in the treatment of hospitalized patients with major depression. A 15-month follow-up study",
+        "authors": [
+          {
+            "family": "Lemmens",
+            "given": "GM"
+          },
+          {
+            "family": "Eisler",
+            "given": "I"
+          },
+          {
+            "family": "Buysse",
+            "given": "A"
+          },
+          {
+            "family": "Heene",
+            "given": "E"
+          },
+          {
+            "family": "Demyttenaere",
+            "given": "K"
+          }
+        ],
+        "organization": "",
+        "year": 2009,
+        "journal": "Psychother Psychosom",
+        "volume": "78",
+        "pages": "98-105",
+        "doi": "10.1159/000201935",
+        "pmid": "19218828",
+        "url": "https://doi.org/10.1159/000201935"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full. Full-text accepted manuscript (Ghent University repository) Table 2 read: treatment responders at 15 months 48.6%, 24.0% and 8.7%.",
+        "verifiedAt": "2026-11-22",
+        "note": "Randomised trial, 83 hospitalized patients with major depression; family therapy added to treatment as usual. Responder = at least 50% BDI improvement."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "randomised controlled trial",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "depression",
+          "family",
+          "inpatient"
+        ],
+        "clerkshipRelevance": "At 15 months, treatment responders: 49% with multi-family group therapy, 24% with single-family therapy, 9% with treatment as usual alone.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Randomised trial, 83 hospitalized patients with major depression; family therapy added to treatment as usual. Responder = at least 50% BDI improvement.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
           }
         ]
       }
@@ -8705,12 +9520,12 @@
         "status": "verified",
         "source": "scholar-sidekick canonical pass (PubMed/Crossref identity, Retraction Watch, Unpaywall)",
         "verifiedAt": "2026-08-21",
-        "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending)."
+        "note": "clerkshipRelevance rewritten to match the abstract: the previous note (\"the main barrier to family involvement is clinician avoidance\") ranked a barrier the review does not rank. Annotation row added. facultyReviewStatus demoted reviewed -> pending until faculty re-review."
       },
       "requiredAccess": "metadata",
       "governance": {
         "evidenceLevel": "scoping review",
-        "facultyReviewStatus": "reviewed",
+        "facultyReviewStatus": "pending",
         "lastReviewed": "2026-08-23",
         "reviewCadence": "annual",
         "supersededBy": [],
@@ -8720,12 +9535,133 @@
           "practice-inpatient",
           "therapy"
         ],
-        "clerkshipRelevance": "The implementation paradox quantified: the main barrier to family involvement is clinician avoidance.",
+        "clerkshipRelevance": "Maps barriers to family involvement in routine services across 46 articles: organizational culture, providers' negating of family expertise, uncertainty about confidentiality policies, families' negative experiences, and some service users declining for privacy reasons. It does not rank them.",
         "noteHistory": [
           {
             "date": "2026-08-21",
             "note": "Promoted from therapy_library.staging.json (WP-T2). Verification: epmc identity+retraction 2026-08-20; scholar-sidekick canonical pass 2026-08-21: checkRetraction clean, checkOpenAccess closed, formatCitation ama Annotation is AI-drafted from the abstract and awaits faculty signature (facultyReviewStatus: pending).",
             "reason": "therapy-curriculum WP-T2 promotion (Taplinger request #5; closes review finding F19 for the therapy domain)"
+          },
+          {
+            "date": "2026-11-22",
+            "note": "clerkshipRelevance rewritten to match the abstract: the previous note (\"the main barrier to family involvement is clinician avoidance\") ranked a barrier the review does not rank. Annotation row added. facultyReviewStatus demoted reviewed -> pending until faculty re-review.",
+            "reason": "Family-evidence corrections 2026-11-22 (F06)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "ince-2016-implementation",
+      "type": "systematic-review",
+      "citation": {
+        "title": "A systematic review of the implementation of recommended psychological interventions for schizophrenia: Rates, barriers, and improvement strategies",
+        "authors": [
+          {
+            "family": "Ince",
+            "given": "P"
+          },
+          {
+            "family": "Haddock",
+            "given": "G"
+          },
+          {
+            "family": "Tai",
+            "given": "S"
+          }
+        ],
+        "organization": "",
+        "year": 2016,
+        "journal": "Psychol Psychother",
+        "volume": "89",
+        "pages": "324-350",
+        "doi": "10.1111/papt.12084",
+        "pmid": "26537838",
+        "url": "https://doi.org/10.1111/papt.12084"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Systematic review of UK implementation of NICE-recommended psychological interventions for schizophrenia (26 articles)."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "systematic review",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "family",
+          "implementation",
+          "schizophrenia"
+        ],
+        "clerkshipRelevance": "UK implementation rates for family intervention ranged from 0% to 53%; organisational barriers were reported most commonly, followed by barriers met by staff members and service users.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Systematic review of UK implementation of NICE-recommended psychological interventions for schizophrenia (26 articles).",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
+          }
+        ]
+      }
+    },
+    {
+      "id": "dixon-1999-family-services",
+      "type": "primary-study",
+      "citation": {
+        "title": "Services to families of adults with schizophrenia: from treatment recommendations to dissemination",
+        "authors": [
+          {
+            "family": "Dixon",
+            "given": "L"
+          },
+          {
+            "family": "Lyles",
+            "given": "A"
+          },
+          {
+            "family": "Scott",
+            "given": "J"
+          }
+        ],
+        "organization": "",
+        "year": 1999,
+        "journal": "Psychiatr Serv",
+        "volume": "50",
+        "pages": "233-238",
+        "doi": "10.1176/ps.50.2.233",
+        "pmid": "10030482",
+        "url": "https://doi.org/10.1176/ps.50.2.233"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Schizophrenia PORT data: Medicare and one state Medicaid claims, a two-state field study of 530 patients, and a nine-agency dissemination study."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "observational survey and claims analysis",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "family",
+          "implementation",
+          "schizophrenia"
+        ],
+        "clerkshipRelevance": "Of 530 patients in contact with family, 30 percent said their families had received information, advice or support about the illness and 8 percent that they had attended an educational or support program.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Schizophrenia PORT data: Medicare and one state Medicaid claims, a two-state field study of 530 patients, and a nine-agency dissemination study.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
           }
         ]
       }
@@ -8939,6 +9875,64 @@
             "date": "2026-08-24",
             "note": "Supports first-week and first-month rates specifically. The authors report evidence of publication bias toward studies reporting higher post-discharge rates, and I²=88–90; do not present these as precise point estimates.",
             "reason": "Added by the post-discharge citation correction: reference 5 on therapy_on_the_unit.md cited a viewpoint (modini-large-2026) for a time-course statistic it does not report."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fontanella-2020-youth-followup-suicide",
+      "type": "primary-study",
+      "citation": {
+        "title": "Association of Timely Outpatient Mental Health Services for Youths After Psychiatric Hospitalization With Risk of Death by Suicide",
+        "authors": [
+          {
+            "family": "Fontanella",
+            "given": "CA"
+          },
+          {
+            "family": "Warner",
+            "given": "LA"
+          },
+          {
+            "family": "Steelesmith",
+            "given": "DL"
+          }
+        ],
+        "organization": "",
+        "year": 2020,
+        "journal": "JAMA Netw Open",
+        "volume": "3",
+        "pages": "e2012887",
+        "doi": "10.1001/jamanetworkopen.2020.12887",
+        "pmid": "32780122",
+        "url": "https://doi.org/10.1001/jamanetworkopen.2020.12887"
+      },
+      "identity": {
+        "status": "verified",
+        "source": "PubMed E-utilities efetch record (PMID, DOI, journal, volume, pages) read 2026-11-22; abstract read in full.",
+        "verifiedAt": "2026-11-22",
+        "note": "Retrospective Medicaid cohort, 33 states, youths aged 10 to 18 years; exposure was a follow-up visit received within 7 days of discharge."
+      },
+      "requiredAccess": "abstract",
+      "governance": {
+        "evidenceLevel": "retrospective cohort (observational)",
+        "facultyReviewStatus": "pending",
+        "lastReviewed": "2026-11-22",
+        "reviewCadence": "annual",
+        "supersededBy": [],
+        "correctionStatus": "none-known",
+        "localPolicyDependent": false,
+        "relatedTopicTags": [
+          "discharge",
+          "suicide",
+          "follow-up"
+        ],
+        "clerkshipRelevance": "A mental health visit received within 7 days of discharge was associated with lower suicide risk on days 8 to 180 after discharge in youths (adjusted RR 0.44, 95% CI 0.23-0.83). Youth cohort; attended, not merely scheduled, visit.",
+        "noteHistory": [
+          {
+            "date": "2026-11-22",
+            "note": "Retrospective Medicaid cohort, 33 states, youths aged 10 to 18 years; exposure was a follow-up visit received within 7 days of discharge.",
+            "reason": "Family-evidence corrections 2026-11-22 (Batch 1): source registered so the corrected page sentence carries its own verbatim span. Registration, not faculty review."
           }
         ]
       }

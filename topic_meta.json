@@ -4039,7 +4039,7 @@
     "points": [
       "Suicide risk in the first week post-discharge is roughly 200× the general-population rate (~2,950 per 100,000 person-years; Chung 2019) — a pre-scheduled 7-day follow-up appointment (not 'they will call to arrange one') is itself an evidence-based intervention.",
       "Documented lethal-means assessment was followed by fewer attempts and deaths at 180 days (0.83% vs 3.3%; Boggs 2020, quasi-experimental — an association, not a randomized effect) — 'who can confirm items are secured before discharge?' is a clinical act, not a formality.",
-      "Family involvement during admission nearly triples the odds of 7-day follow-up, and family psychoeducation lowers 12-month relapse from ~37% to ~10% — bringing family in is treatment, not logistics."
+      "Family involvement during admission was associated with higher odds of a 7-day follow-up visit (adjusted OR 2.79 in one New York Medicaid sample: an association, not proof of cause), and multi-session family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18) — the inpatient meeting gathers collateral, shapes the safety plan, and is the doorway to longer family work."
     ],
     "cant": "'The family is supportive' is an observation, not a discharge plan — verify concretely who can do what (medications, transportation, means safety, appointments) before any note says 'safe for discharge.'",
     "quiz": {
@@ -4140,18 +4140,18 @@
   },
   "family_modalities.md": {
     "read": 4,
-    "tldr": "Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18, NNT 7 for relapse prevention), but dose matters: ≤2 sessions is ineffective, and the main barrier to delivery is clinician avoidance, not patient refusal.",
+    "tldr": "Match the family intervention to the family in front of you — family psychoeducation is the default highest-evidence approach (OR 0.18 for 12-month relapse; the review's confidence ranged from moderate to very low across comparisons), but programs of two sessions or fewer did not significantly reduce relapse, and delivery lags for organizational, staff and patient-level reasons.",
     "points": [
-      "Family psychoeducation (OR 0.18 vs. treatment as usual) is the single strongest psychosocial intervention for schizophrenia relapse prevention, supported by 90 RCTs across more than 10,000 patients.",
+      "Family psychoeducation ranked first of 11 family-intervention models for schizophrenia relapse prevention in a network meta-analysis of 90 RCTs (more than 10,000 patients).",
       "CRAFT is the go-to modality when a family member is struggling with a patient's substance use — it changes the family's own behavior to reduce blame and invite treatment engagement, without confrontation.",
-      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples the odds of relapse within 12 months (about 2-fold for later relapse); family warmth is protective — lowering expressed emotion is a modifiable clinical target."
+      "Expressed emotion (high criticism, hostility, emotional over-involvement) roughly quintuples the odds of relapse within 12 months (about 2-fold for later relapse); family warmth is protective — family programs may shift relatives from high to low expressed emotion (low-certainty evidence), which makes it a reasonable treatment target."
     ],
-    "cant": "≤2 family sessions is ineffective for relapse prevention — NICE recommends ≥10 sessions over ≥3 months; a single discharge meeting starts the work but is not a course of care.",
+    "cant": "Two family sessions or fewer did not significantly reduce relapse in trials — NICE advises at least 10 planned sessions over 3 months to 1 year; a single discharge meeting starts the work but is not a course of care.",
     "quiz": {
       "q": "A patient with schizophrenia is preparing for discharge. Family members are willing to participate in family work. Which intervention has the strongest evidence for preventing 12-month relapse?",
       "o": [
         {
-          "t": "Family psychoeducation — OR 0.18 for 12-month relapse across 90 RCTs, with ≥10 sessions over ≥3 months required for the effect to hold",
+          "t": "Family psychoeducation — OR 0.18 for 12-month relapse versus treatment as usual across 90 RCTs (confidence moderate to very low across the review's comparisons); NICE advises at least 10 planned sessions over 3 months to 1 year",
           "c": true
         },
         {
@@ -4164,7 +4164,7 @@
           "t": "Solution-focused brief therapy — one high-yield session amplifying existing family strengths"
         }
       ],
-      "why": "Family psychoeducation has the strongest evidence for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, >10,000 patients). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below the therapeutic dose (≤2 sessions is ineffective); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base."
+      "why": "Family psychoeducation has the strongest evidence among family interventions for schizophrenia relapse prevention (OR 0.18 vs. treatment as usual; 90 RCTs, 10,340 participants; confidence moderate to very low across the review's comparisons). EFT is evidence-based for couples but is not the default for schizophrenia; a single meeting is below what was tested (family psychoeducation of two sessions or fewer did not significantly reduce relapse); solution-focused therapy is useful when only one meeting is possible but does not have the relapse-prevention evidence base."
     },
     "cta": [
       {
@@ -4394,7 +4394,7 @@
     "points": [
       "MIND-USA (n=566) and AID-ICU (n=1,000) both found no benefit for antipsychotics vs. placebo on delirium outcomes — the PADIS guidelines recommend against routine antipsychotic use for delirium.",
       "The VHA MHEOCC environmental safety checklist produced a 67% reduction in the inpatient suicide rate — ligature point removal is the single strongest structural inpatient suicide prevention intervention.",
-      "Pre-discharge 7-day follow-up (actually scheduled, not 'patient will call') is associated with substantially lower suicide risk, and family involvement during admission nearly triples the odds of achieving it."
+      "An outpatient visit attended within 7 days of discharge was associated with lower suicide risk over the next six months in a Medicaid youth cohort (adjusted RR 0.44), so book a dated appointment before discharge; family–staff involvement during admission was associated with higher odds of making that visit (adjusted OR 2.79)."
     ],
     "cant": "Antipsychotics for non-withdrawal delirium — the MIND-USA and AID-ICU trials showed no benefit; reserve them for severe hyperactive delirium refractory to non-pharmacological bundles.",
     "quiz": {

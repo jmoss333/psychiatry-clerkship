@@ -1322,7 +1322,7 @@
     },
     {
       "id": "qb_rel_002",
-      "status": "attested",
+      "status": "draft",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -1352,7 +1352,7 @@
           "t": "The meeting should be suspended — the mother's distress is dysregulating the patient and the therapeutic goals cannot be met",
           "trap": {
             "name": "Terminate for emotion",
-            "note": "Cutting off the emotional climate phase forfeits the part of the family meeting where outcomes change most — this phase should be protected, not terminated."
+            "note": "Cutting off the emotional-climate phase forfeits the part of the meeting where, in the playbook's experience, expressed emotion becomes workable — protect it rather than end it."
           }
         },
         {
@@ -1369,9 +1369,9 @@
           "c": true
         }
       ],
-      "why": "Criticism as fact accepts EE as objective reporting; Terminate for emotion cuts off the highest-yield phase of the meeting; Correct the narrative redirects to facts before the emotional climate has been heard. Expressed emotion — criticism, hostility, emotional over-involvement — is the measurable family dynamic that predicts relapse. De-shaming and validating the underlying fear or grief, without correcting in the moment, is what the playbook calls the phase that most changes outcomes.",
-      "pearl": "Expressed emotion — criticism, hostility, emotional over-involvement — often masks fear; validate it without correcting it in the moment, because this phase is where outcomes change.",
-      "evidence": "family_playbook.md 'Hear the family and read the emotional climate' — Listen for expressed emotion — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. This is the phase that most changes outcomes; protect the time for it."
+      "why": "Criticism as fact accepts EE as objective reporting; Terminate for emotion cuts off the phase the playbook says is most often squeezed out; Correct the narrative redirects to facts before the emotional climate has been heard. Expressed emotion — criticism, hostility, emotional over-involvement — is the measurable family dynamic that predicts relapse. The playbook's advice, which it labels as experience: listen without correcting in the moment, de-shame, and protect the time for this phase, where expressed emotion becomes workable.",
+      "pearl": "Expressed emotion — criticism, hostility, emotional over-involvement — often masks fear; validate it without correcting it in the moment, and protect the time for this phase.",
+      "evidence": "family_playbook.md 'Hear the family and read the emotional climate' — Listen for expressed emotion — criticism, hostility, and emotional over-involvement — without correcting it in the moment. De-shame: frame symptoms and behavior as illness and regulation, not character or fault. In our experience this is the phase most often squeezed out, and it is where expressed emotion becomes workable; protect the time for it."
     },
     {
       "id": "qb_cog_003",
@@ -7057,7 +7057,7 @@
     },
     {
       "id": "qb_rel_004",
-      "status": "attested",
+      "status": "draft",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7080,7 +7080,7 @@
           "t": "Family involvement is primarily a courtesy — it improves patient satisfaction but has no measurable impact on relapse rates.",
           "trap": {
             "name": "Family work = courtesy",
-            "note": "Family psychoeducation has among the strongest inpatient evidence in all of psychiatry — it is not a courtesy; it directly reduces relapse rates with an NNT of 7."
+            "note": "Family psychoeducation lowers 12-month relapse odds versus treatment as usual (OR 0.18; Rodolico 2022) — it is treatment, not a courtesy."
           }
         },
         {
@@ -7088,12 +7088,12 @@
           "t": "Families frequently refuse structured family meetings, so the effort should be reserved for families who specifically request it.",
           "trap": {
             "name": "Patient/family refusal as barrier",
-            "note": "The research shows the main barrier to family work is clinician avoidance, not family refusal — underdelivering family work is primarily a clinician behavior problem."
+            "note": "Some patients decline family involvement, but reviews report organizational barriers most often (Ince 2016), and family work already reaches only a minority of families; waiting for a request widens that gap."
           }
         },
         {
           "key": "C",
-          "t": "Family psychoeducation is the highest-evidence family intervention — it led 11 models for 12-month relapse prevention (Rodolico et al., Lancet Psychiatry 2022; 90 RCTs) with an NNT of 7 (Pharoah, Cochrane 2010; 53 RCTs); dose matters: ≤2 sessions is ineffective, with NICE recommending ≥10 sessions over ≥3 months.",
+          "t": "Multi-session family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18 versus treatment as usual).",
           "c": true
         },
         {
@@ -7101,13 +7101,13 @@
           "t": "Family involvement should wait until the patient is stable — in the acute phase, it increases stimulation and worsens psychosis.",
           "trap": {
             "name": "Stability first",
-            "note": "While the inpatient approach to family work is brief, psychoeducational, and low-stimulation (with acutely psychotic patients: brief, concrete, limited interpretation), family engagement should begin in the hospital, not wait for full stabilization — family involvement nearly triples 7-day follow-up odds."
+            "note": "With an acutely psychotic patient the inpatient approach stays brief, concrete and low-stimulation — but it starts in hospital. Any family–staff involvement during admission was associated with higher odds of a 7-day outpatient visit (Haselden 2019)."
           }
         }
       ],
-      "why": "Family work = courtesy, Patient/family refusal as barrier, and Stability first all undermine the evidence-based standard. Family psychoeducation has NNT 7 for 12-month relapse prevention — one of the strongest NNTs in inpatient psychiatry. The dose requirement (≥10 sessions over ≥3 months) means starting the work during the admission and securing the outpatient continuation.",
-      "pearl": "Family psychoeducation for schizophrenia: NNT 7 for 12-month relapse prevention; ≥10 sessions over ≥3 months; dose matters — start during admission.",
-      "evidence": "family_modalities.md — NNT 7 — treat seven families to prevent one relapse (Pharoah, Cochrane 2010; 53 RCTs). Dose matters: ≤2 sessions is ineffective; NICE recommends ≥10 sessions over ≥3 months."
+      "why": "Family work = courtesy, Patient/family refusal as barrier, and Stability first each undercut a well-supported default. Versus treatment as usual, family psychoeducation alone had a 12-month relapse odds ratio of 0.18 (Rodolico 2022; 90 RCTs); the review's confidence in its estimates ranged from moderate to very low across comparisons. Programs of two sessions or fewer did not significantly reduce relapse, and trials in which all patients were acutely ill were excluded — so the admission starts the work and the outpatient handoff continues it.",
+      "pearl": "Family psychoeducation lowers 12-month relapse odds in schizophrenia (OR 0.18; the review's confidence ranged from moderate to very low across comparisons); it is multi-session work — start it in hospital and secure the outpatient continuation.",
+      "evidence": "family_modalities.md — OR 0.18 (95% CI 0.12–0.27) — versus treatment as usual at 12 months, every one of 11 family-intervention models except crisis-oriented interventions and family psychoeducation of two sessions or fewer significantly reduced relapse, with odds ratios from 0.18 for family psychoeducation alone to 0.63 for community-based interventions involving family members; the review's confidence in its estimates ranged from moderate to very low across comparisons, and trials in which all patients were acutely ill were excluded (Rodolico et al., Lancet Psychiatry 2022; 90 RCTs)."
     },
     {
       "id": "qb_rel_005",
@@ -7164,7 +7164,7 @@
     },
     {
       "id": "qb_rel_006",
-      "status": "attested",
+      "status": "draft",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7187,7 +7187,7 @@
           "t": "Agree — expressed emotion is a fixed family trait that does not respond to clinical intervention.",
           "trap": {
             "name": "EE is fixed",
-            "note": "Expressed emotion is modifiable — behavioral family therapy and family psychoeducation specifically reduce EE; treating it as fixed is both incorrect and missed opportunity."
+            "note": "Family-based interventions may shift more family members from high to low expressed emotion (low-certainty evidence; Chien 2024) — treating EE as fixed forecloses that."
           }
         },
         {
@@ -7203,18 +7203,18 @@
           "t": "High EE is a family problem but not a clinical problem — it is outside the scope of inpatient psychiatric intervention.",
           "trap": {
             "name": "EE = out of scope",
-            "note": "Family climate is explicitly clinical data; the page calls it modifiable and quantifies its impact on relapse risk — addressing EE is within the scope of inpatient psychiatry through family meetings."
+            "note": "Family climate is clinical data: the page quantifies its link to relapse, and family-based interventions may shift families from high to low expressed emotion — it is within the scope of inpatient work."
           }
         },
         {
           "key": "D",
-          "t": "Expressed emotion (EE) substantially raises relapse odds — roughly doubling to quintupling across studies (Butzlaff & Hooley 1998) — while family warmth is protective, but EE is modifiable through behavioral family therapy and family psychoeducation, making the family climate a tractable clinical target.",
+          "t": "High EE predicts relapse and warmth protects; family work may move families toward low EE — worth addressing.",
           "c": true
         }
       ],
-      "why": "EE is fixed, EE = schizophrenia only, and EE = out of scope all represent clinical fatalism about a modifiable variable. The page states EE 'roughly doubles to quintuples relapse odds depending on the study (Butzlaff & Hooley 1998 meta-analysis), while family warmth is protective — and family climate is modifiable, which is why meetings help lower it.'",
-      "pearl": "Expressed emotion (EE) substantially raises relapse odds (roughly doubling to quintupling across studies; Butzlaff & Hooley 1998) and is MODIFIABLE — behavioral family therapy and psychoeducation specifically target and reduce it; EE is a tractable clinical problem.",
-      "evidence": "family_modalities.md — Expressed emotion: high-EE roughly doubles to quintuples relapse odds depending on the study (Butzlaff & Hooley 1998 meta-analysis), while family warmth is protective. Family climate is modifiable — meetings help lower it."
+      "why": "EE is fixed, EE = schizophrenia only, and EE = out of scope all treat the family climate as untouchable. In a 2021 meta-analysis, high EE roughly quintupled the odds of relapse within 12 months (OR ~4.87) while warmth was protective (OR ~0.35) (Ma 2021); an earlier meta-analysis of 27 studies found EE a significant and robust predictor of relapse (Butzlaff & Hooley 1998); and family-based interventions may shift family members from high to low EE (low-certainty evidence; Chien 2024).",
+      "pearl": "High expressed emotion predicts relapse (OR ~4.87 within 12 months; Ma 2021) and warmth protects; family-based interventions may shift families toward low EE (low-certainty evidence).",
+      "evidence": "family_modalities.md — Expressed emotion: high-EE roughly quintuples the odds of relapse within 12 months (OR ~4.87; ~2-fold for later relapse, OR 2.13), while family warmth is protective (OR ~0.35) (Ma et al. 2021, 33 cohorts); an earlier meta-analysis of 27 studies found expressed emotion a significant and robust predictor of relapse in schizophrenia (Butzlaff & Hooley, Arch Gen Psychiatry 1998). Family-based interventions, mostly weekly or biweekly over five weeks to two years, may shift more family members from high to low expressed emotion (RR 3.90, 95% CI 1.11–13.71; 2 RCTs, 72 participants; low-certainty evidence; Chien et al., Cochrane 2024)."
     },
     {
       "id": "qb_rel_007",
@@ -7378,7 +7378,7 @@
     },
     {
       "id": "qb_rel_010",
-      "status": "attested",
+      "status": "draft",
       "type": "relational",
       "subtype": "family-system",
       "category": "relational",
@@ -7393,41 +7393,41 @@
         "label": "Open the Family Therapy Modalities page",
         "href": "?page=family_modalities.md"
       },
-      "stem": "The treatment team reviews its data and finds that structured family meetings occurred in only 8% of admissions over the past year, despite family members being available and willing in most cases. The team discusses why. Which explanation is most consistent with the literature?",
+      "stem": "The treatment team reviews its data and finds that structured family meetings occurred in only 8% of admissions over the past year, despite family members being available and willing in most cases. The team discusses why. Which barrier to delivering family intervention is most commonly reported in systematic reviews?",
       "options": [
         {
           "key": "A",
-          "t": "Families of inpatient psychiatric patients predominantly refuse to participate in structured family meetings when offered.",
+          "t": "Families refusing to take part when structured family meetings are offered.",
           "trap": {
             "name": "Family refusal",
-            "note": "The research specifically identifies clinician avoidance — not family refusal — as the dominant barrier to delivering family work; this is a clinician behavior finding, not a family behavior finding."
+            "note": "Some patients do decline family involvement for privacy reasons, but reviews report organizational barriers most often (Ince 2016); refusal is one barrier among several, not the leading one."
           }
         },
         {
           "key": "B",
-          "t": "Structured family work requires >90 minutes per family — the time investment is prohibitive in an acute inpatient setting.",
+          "t": "Insurance denials for separately billed family sessions in most health systems.",
           "trap": {
-            "name": "Time as primary barrier",
-            "note": "While time is a real constraint, the research identifies clinician avoidance as the main barrier, not time alone — and some high-yield modalities (solution-focused, single-session work) can be effective in one meeting."
+            "name": "Billing as dominant barrier",
+            "note": "The reviews behind the page report organizational barriers most often, followed by staff and service-user barriers (Ince 2016); billing is not the barrier they rank first."
           }
         },
         {
           "key": "C",
-          "t": "The main barrier to family psychoeducation being delivered is clinician avoidance — structured family work is available to the minority of families who receive it largely because of clinician behavior, not family behavior.",
+          "t": "Organizational barriers, such as service culture and no practice guidelines.",
           "c": true
         },
         {
           "key": "D",
-          "t": "Insurance authorization is the dominant barrier — family meetings require separate billing codes that are denied in most health systems.",
+          "t": "Lack of evidence that family intervention improves outcomes in schizophrenia.",
           "trap": {
-            "name": "Billing as dominant barrier",
-            "note": "Billing complexity may be a factor, but the research (Dixon 1999; Eassom 2014) specifically identifies clinician avoidance as the dominant explanation for the historically low delivery of structured family work."
+            "name": "No evidence of benefit",
+            "note": "Family psychoeducation lowers 12-month relapse odds versus treatment as usual (OR 0.18; Rodolico 2022). The gap is in delivery, not in the evidence."
           }
         }
       ],
-      "why": "Family refusal, Time as primary barrier, and Billing as dominant barrier all attribute the gap to external factors. The literature finding is counterintuitive and important: 'Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014).' This is a clinician self-awareness finding.",
-      "pearl": "The main barrier to family psychoeducation in inpatient psychiatry is clinician avoidance, not patient or family refusal — the gap is a clinician behavior problem.",
-      "evidence": "family_modalities.md — Reaches a minority of families — structured family work is delivered in only ~0–53% of cases (historically <10%), and the main barrier is clinician avoidance, not patient refusal (Dixon 1999; Eassom 2014)."
+      "why": "Family refusal, Billing as dominant barrier, and No evidence of benefit each misplace the gap. UK implementation rates for family intervention range from 0% to 53%, and organizational barriers are reported most often, followed by staff and service-user barriers (Ince 2016). Reviews also describe uncertainty about confidentiality policies and some patients declining for privacy reasons (Tham & Solomon 2024) — real barriers, but not the ones reported most often.",
+      "pearl": "Family intervention reaches a minority of families; reviews report organizational barriers most often, then staff and service-user barriers.",
+      "evidence": "family_modalities.md — Reaches a minority of families — UK studies report implementation rates for family intervention from 0% to 53% (Ince 2016). Organizational barriers are reported most often, followed by staff and service-user barriers (Ince 2016); reviews also describe uncertainty about confidentiality policies and some patients declining family involvement for privacy reasons (Tham & Solomon 2024)."
     },
     {
       "id": "qb_rel_011",
@@ -7539,8 +7539,7 @@
     {
       "id": "qb_rel_013",
       "status": "draft",
-      "type": "relational",
-      "subtype": "family-system",
+      "type": "sba",
       "category": "relational",
       "competency": [
         "management"
@@ -7553,19 +7552,19 @@
         "label": "Open the Brief Psychotherapy page",
         "href": "?page=brief_psychotherapy.md"
       },
-      "stem": "A quality-improvement team wants to identify the single inpatient psychological intervention with the strongest readmission-prevention evidence. Which intervention has the hardest numbers?",
+      "stem": "A quality-improvement team on an adult inpatient unit wants to add one brief psychological intervention, with fewer readmissions as its stated goal. The team asks which option has evidence measured on readmission itself. Which intervention's evidence speaks most directly to readmission?",
       "options": [
         {
           "key": "A",
           "t": "Safety planning (Stanley-Brown) — about 45% fewer suicidal behaviors.",
           "trap": {
-            "name": "Safety planning hardest numbers",
-            "note": "Safety planning has supportive evidence (about 45% fewer suicidal behaviors in a cohort comparison), but the question asks about readmission prevention specifically — psychoeducation has the hardest readmission-specific numbers."
+            "name": "Wrong outcome: suicidal behavior",
+            "note": "Safety planning has supportive evidence (about 45% fewer suicidal behaviors in a cohort comparison), but that outcome is suicidal behavior, not readmission."
           }
         },
         {
           "key": "B",
-          "t": "Psychoeducation — the hardest inpatient numbers for readmission prevention: readmission NNT 5 (Xia, Cochrane 2011) and relapse NNT 9; and it costs nothing except time.",
+          "t": "Psychoeducation — readmission NNT 5 (Xia 2011), from small studies of limited quality.",
           "c": true
         },
         {
@@ -7573,21 +7572,21 @@
           "t": "Behavioral activation — the most evidence-based inpatient psychological intervention for any condition.",
           "trap": {
             "name": "BA = strongest overall",
-            "note": "BA has the strongest evidence for acute depression (SMD −0.78) and is the best-fit inpatient technique, but readmission NNT 5 for psychoeducation specifically addresses the readmission-prevention question."
+            "note": "BA has the strongest evidence for acute depression (SMD −0.78) and is the best-fit inpatient technique, but its evidence is about depression, not readmission."
           }
         },
         {
           "key": "D",
           "t": "Problem-solving therapy (PST) — NNT 12 for repeat self-harm re-presentation.",
           "trap": {
-            "name": "PST hardest numbers",
-            "note": "PST has an NNT of 12 for self-harm re-presentation — meaningful evidence, but psychoeducation's readmission NNT of 5 is the strongest number on the brief psychotherapy page."
+            "name": "Wrong outcome: self-harm re-presentation",
+            "note": "PST has an NNT of 12 for self-harm re-presentation — meaningful evidence, but for a different outcome than readmission."
           }
         }
       ],
-      "why": "Safety planning hardest numbers, BA = strongest overall, and PST hardest numbers each reference real evidence for different outcomes. For readmission prevention specifically, psychoeducation's NNT 5 is the standout: 'Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free.' This is the quality-improvement answer.",
-      "pearl": "Psychoeducation has the hardest inpatient readmission numbers: NNT 5 (Xia, Cochrane 2011) — the highest-evidence, lowest-cost psychological intervention for preventing readmission.",
-      "evidence": "brief_psychotherapy.md — Psychoeducation has the hardest inpatient numbers (readmission NNT 5) — and it's free."
+      "why": "Wrong outcome: suicidal behavior, BA = strongest overall, and Wrong outcome: self-harm re-presentation each cite real evidence for a different outcome. Psychoeducation is the option whose Cochrane review measured readmission: NNT 5 (Xia 2011). That figure rests on 206 participants in hospital-based studies of limited quality, and the reviewers expect the true effect to be smaller — use it, but do not quote the number as though it were precise.",
+      "pearl": "Psychoeducation has direct readmission evidence (NNT 5; Xia, Cochrane 2011), but from 206 participants in limited-quality studies — the true effect is probably smaller.",
+      "evidence": "brief_psychotherapy.md — Among the best-supported inpatient psychological interventions: relapse NNT 9, readmission NNT 5 — the latter on only 206 participants, in studies the reviewers called limited quality (Xia, Cochrane 2011)."
     },
     {
       "id": "qb_otherdx_001",
@@ -9513,7 +9512,7 @@
     },
     {
       "id": "qb_rel_014",
-      "status": "attested",
+      "status": "draft",
       "type": "sba",
       "category": "relational",
       "competency": [
@@ -9535,7 +9534,7 @@
           "t": "Keeping illness discussion out of the discharge plan",
           "trap": {
             "name": "Avoidance trap",
-            "note": "Silence does not lower expressed emotion or relapse; structured psychoeducation does."
+            "note": "Avoiding the illness conversation is not an intervention; structured family psychoeducation is the approach with relapse evidence."
           }
         },
         {
@@ -9560,9 +9559,9 @@
           }
         }
       ],
-      "why": "Family psychoeducation and multifamily group approaches reduce relapse in schizophrenia, largely by lowering expressed emotion and improving problem-solving and support.",
+      "why": "Avoidance trap, Isolation trap, and Wrong-target trap each leave the family out. Family psychoeducation, including multifamily groups, is the default highest-evidence family approach: psychoeducation alone had a 12-month relapse odds ratio of 0.18 versus treatment as usual (Rodolico 2022). How it works is not established — lowering expressed emotion and improving problem-solving are proposed mechanisms, not demonstrated ones.",
       "pearl": "Family psychoeducation reduces schizophrenia relapse — the evidence-based family intervention.",
-      "evidence": "family_modalities.md — Family psychoeducation and relapse prevention."
+      "evidence": "family_modalities.md — OR 0.18 (95% CI 0.12–0.27) — versus treatment as usual at 12 months, every one of 11 family-intervention models except crisis-oriented interventions and family psychoeducation of two sessions or fewer significantly reduced relapse, with odds ratios from 0.18 for family psychoeducation alone to 0.63 for community-based interventions involving family members; the review's confidence in its estimates ranged from moderate to very low across comparisons"
     },
     {
       "id": "qb_rel_015",

@@ -163,6 +163,12 @@ const REGISTRY = Object.freeze({
       + 'The only review-state value it touches is `retired`, to skip text that no longer ships; attested and draft '
       + 'items are checked alike, so a sign-off or a demotion changes nothing it asserts.',
   },
+  'tests/family-claims-regression.test.mjs': {
+    kind: 'invariant',
+    why: 'Reads the wording of shipped content (the bank and the shipped slugs\' topic_meta overlays included) and the '
+      + 'evidence registry\'s source ids and one note, and forbids specific family-evidence misstatements. It skips '
+      + 'only `retired` text; attested and draft items are checked alike, so a sign-off or a demotion changes nothing.',
+  },
   'tests/faculty-qbank-rules.test.mjs': {
     kind: 'invariant',
     why: 'The current-bank test asserts only a partition (draft + attested = active, the key tally covers '

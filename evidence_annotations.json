@@ -349,6 +349,316 @@
       ]
     },
     {
+      "sourceId": "chien-2024-family-cochrane",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "39364773",
+        "doi": "10.1002/14651858.CD013541.pub2",
+        "sourceSpan": "This is an update of a Cochrane review that was last updated in 2011, which has been split into this review, one on group- versus individual-based family interventions and one on family-based cognitive versus behavioural management interventions. We identified 26 RCTs in this review, with 1985 people with schizophrenia or schizophrenia-like disorders, and 2056 family members. Most family-based interventions were conducted on a weekly or biweekly basis, with duration ranging from five weeks to two years. Low-certainty evidence indicated that family-based interventions may reduce patients' relapse at one month or less postintervention (RR 0.66, 95% CI 0.49 to 0.89; 4 RCTs, 229 participants). Compared to standard care, family-based interventions probably reduce caregiver burden at one month or less postintervention (MD -5.84, 95% CI -6.77 to -4.92; 8 RCTs, 563 participants; moderate-certainty evidence) and may result in more family members shifting from high to low expressed emotion (RR 3.90, 95% CI 1.11 to 13.71; 2 RCTs, 72 participants; low-certainty evidence). Family interventions may result in little to no difference in patients' death (RR 0.48, 95% CI 0.18 to 1.32; 6 RCTs, 304 participants; low-certainty evidence) and hospital admission (≤ 1 month postintervention; RR 0.81, 95% CI 0.51 to 1.29; 2 RCTs, 153 participants; low-certainty evidence) in comparison with standard care."
+      },
+      "claims": [
+        {
+          "claimId": "family-intervention-2024-update",
+          "claimText": "In an update of the Cochrane family-intervention review (26 RCTs), low-certainty evidence indicated that family-based interventions may reduce patients' relapse at one month or less postintervention (RR 0.66, 95% CI 0.49 to 0.89; 4 RCTs, 229 participants), may result in more family members shifting from high to low expressed emotion (RR 3.90, 95% CI 1.11 to 13.71; 2 RCTs, 72 participants), and may result in little to no difference in hospital admission at one month or less postintervention (RR 0.81, 95% CI 0.51 to 1.29; 2 RCTs, 153 participants; low-certainty evidence).",
+          "claimTerms": [
+            "Low-certainty evidence",
+            "may reduce patients' relapse at one month or less postintervention",
+            "shifting from high to low expressed emotion",
+            "little to no difference"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities",
+            "therapy_on_the_unit",
+            "therapy_reading_room",
+            "qb_rel_006",
+            "qb_rel_014"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "rodolico-2022-family-nma",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml (abstract sentences) + publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored): Discussion paragraphs 1-2, Results (relapse at 12 months and risk of bias), Figure 3 caption; Figure 3 lists family psychoeducation first in net-rank order; PDF line-break hyphens and two-column interleaving repaired; the Results sentence is quoted from 'proportions' because its opening words are interleaved with the Figure 2 caption; the cache holds these passages after the PubMed abstract under the PMID",
+        "retrievedAt": "2026-11-22",
+        "pmid": "35093198",
+        "doi": "10.1016/S2215-0366(21)00437-5",
+        "sourceSpan": "We excluded studies in which all patients were acutely ill, had a concurrent medical or psychiatric disorder, or were prodromal or \"at risk of psychosis\". We compared 11 family intervention models tested on a total of 90 randomised controlled trials with 10 340 participants (3579 females and 5632 males with sex indicated; median age 31 years [range 14-65]) in the network meta-analysis. All interventions, with the exception of crisis-oriented interventions and family psychoeducation with two sessions or fewer, reduced the relapse rate significantly when compared with treatment as usual at the primary timepoint of 12 months. ORs compared with treatment as usual ranged from 0·18 (95% CI 0·12-0·27) for family psychoeducation alone to 0·63 (0·42-0·94) for community-based interventions involving family members. The confidence in the estimates ranged from moderate to very low for different comparisons. Family psychoeducation alone, without behavioural or skills training, was superior to the more complex models. In particular, the most efficacious intervention models were family psychoeducation alone (also more effective when compared with most of the other interventions models; relapse rate 10%), family psychoeducation combined with family behavioural or skills training, and mutual skills training support (relapse rate 17%), and systemic-oriented family interventions (relapse rate 16%). The intervention was ranked first in most of the sensitivity and subgroup analyses, with lower probability of relapse than treatment as usual, with the exception of the sensitivity analysis that included only studies in which the intervention comprised more than 16 sessions. In the included studies on family psychoeducation, a median of 12 sessions was delivered. proportions of participants who relapsed were 0·18 (95% CI 0·12–0·27; 10% [7–14] of participants) for family psychoeducation and 0·63 (0·42–0·94; 27% [20–36] of participants) for community-based care interventions. By contrast, 37% of participants receiving treatment as usual relapsed (appendix p 87). Family psychoeducation was associated with a lower probability of relapse than most other interventions (figure 4). Treatments are ranked by probability of being the best for the prevention of relapse (net rank) at the primary timepoint (12 months). Event rates were calculated from ORs (appendix p 8). Overall, 49 studies had moderate risk of bias, and 33 studies had high risk of bias. No studies had low risk of bias. However, it is important to note that the average overall risk of bias of family psychoeducation studies was high, potentially affecting our results."
+      },
+      "claims": [
+        {
+          "claimId": "family-psychoeducation-relapse-12-months",
+          "claimText": "Of 11 family intervention models in 90 randomised controlled trials (10 340 participants), all except crisis-oriented interventions and family psychoeducation with two sessions or fewer reduced relapse significantly versus treatment as usual at 12 months, with odds ratios ranging from 0·18 (95% CI 0·12-0·27) for family psychoeducation alone to 0·63 for community-based interventions involving family members; confidence in the estimates ranged from moderate to very low for different comparisons, and studies in which all patients were acutely ill were excluded.",
+          "claimTerms": [
+            "family psychoeducation with two sessions or fewer",
+            "excluded studies in which all patients were acutely ill",
+            "ranged from moderate to very low for different comparisons",
+            "for family psychoeducation alone"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities",
+            "evidence_inpatient",
+            "exp_family",
+            "family_playbook",
+            "qb_rel_004",
+            "qb_rel_014",
+            "AR-35#6"
+          ]
+        },
+        {
+          "claimId": "fpe-modelled-event-rate-12-months",
+          "claimText": "At 12 months 37% of participants receiving treatment as usual relapsed; with event rates calculated from the odds ratios, 10% (7-14) of participants relapsed with family psychoeducation (OR 0·18); no included study had low risk of bias (49 moderate, 33 high) and the family psychoeducation studies were on average at high risk of bias.",
+          "claimTerms": [
+            "Event rates were calculated from ORs",
+            "37% of participants receiving treatment as usual relapsed",
+            "No studies had low risk of bias"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities"
+          ]
+        },
+        {
+          "claimId": "fpe-ranked-first-family-models",
+          "claimText": "Of 11 family intervention models, family psychoeducation alone was among the most efficacious, more effective when compared with most of the other intervention models, and ranked first in most of the sensitivity and subgroup analyses.",
+          "claimTerms": [
+            "the most efficacious intervention models were family psychoeducation alone",
+            "more effective when compared with most of the other interventions models",
+            "ranked first in most of the sensitivity and subgroup analyses"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "family_modalities",
+            "evidence_inpatient",
+            "AR-35#6"
+          ]
+        },
+        {
+          "claimId": "fpe-median-sessions",
+          "claimText": "In the included studies on family psychoeducation, a median of 12 sessions was delivered.",
+          "claimTerms": [
+            "a median of 12 sessions was delivered"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "LM-41"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "okpokoro-2014-brief-family-cochrane",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "24595545",
+        "doi": "10.1002/14651858.CD009802.pub2",
+        "sourceSpan": "Four studies randomising 163 people could be included in the review. It is not clear if brief family intervention reduces the utilisation of health services by patients, as most results are equivocal at long term and only one study reported data for the primary outcomes of interest of hospital admission (n = 30, 1 RCT, RR 0.50, 95% CI 0.22 to 1.11, very low quality evidence). Data for relapse are also equivocal by medium term (n = 40, 1 RCT, RR 0.50, 95% CI 0.10 to 2.43, low quality evidence). All outcomes in the 'Summary of findings' table were rated low or very low quality evidence."
+      },
+      "claims": [
+        {
+          "claimId": "brief-family-intervention-equivocal",
+          "claimText": "Four studies randomising 163 people were included; it is not clear whether brief family intervention reduces hospital admission, data for relapse are also equivocal, and all outcomes in the Summary of findings table were rated low or very low quality evidence.",
+          "claimTerms": [
+            "Four studies randomising 163 people",
+            "Data for relapse are also equivocal",
+            "rated low or very low quality evidence"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "glick-1990-inpatient-family-intervention",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml (abstract sentences) + publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored) (scanned; OCR 'IF1' read as 'IFI' and garbled P-value signs restored): Methods 'Design', 'Attrition and missing data', Results for all patients, Summary (1)(a)-(b), Discussion on discharge effects; the cache holds these passages after the PubMed abstract under the PMID",
+        "retrievedAt": "2026-11-22",
+        "pmid": "2278982",
+        "doi": "10.1016/0920-9964(90)90036-7",
+        "sourceSpan": "This is the last of a series of four papers, here focussing on schizophrenia, which report followup data up to 18 months from a randomized clinical trial of a psychoeducational family intervention (IFI), which was added to medication and limited to the inpatient phase of treatment, after which post-hospital care was not controlled. Our data suggested that patients with poor prehospital functioning (i.e., the chronic patients) may benefit from inpatient family intervention, but this therapeutic effect appears to be limited to females and does not appear until 18 months postadmission. IFI is a brief (mean number of sessions= 8.6, mode= 6) family treatment with an emphasis on psychoeducation (Haas et al., 1988). The patient and family members met once or twice a week during the hospitalization with the patient's primary therapist and a social worker trained and experienced in doing IFI with hospital patients. Attrition and missing data 92 schizophrenic patients and their families completed the inpatient treatment phase of the study: 38 in the higher functioning group (13 IFI; 25 Comp); 54 in the lower functioning group (24 IFI; 30 Comp). The majority of treatment effects were specific to females and showed better outcome with IFI: better global outcome at 6 months, as measured on the GAS (P<0.10) and better global outcome at 18 months as measured on both the Overall Severity Scale of the PEF (P<0.01) and the GAS (P<0.10). (1) For patients: (a) at 18 months, poorer functioning schizophrenic females show a positive response to IFI on measures of both global functioning/symptomatology and role functioning. (b) Male patients are unaffected by the treatment, or do a little worse. (1) An effect at the time of treatment completion (in this case at discharge) may be strong enough to last until the later time point. This is not the case here, since there was very little effect seen on schizophrenic patients at the time of discharge (Haas et al., 1988)."
+      },
+      "claims": [
+        {
+          "claimId": "inpatient-only-family-intervention-schizophrenia",
+          "claimText": "A psychoeducational family intervention limited to the inpatient phase (mean 8.6 sessions; 92 patients with schizophrenia completed the inpatient phase) had very little effect at discharge; by 18 months treatment effects were mostly specific to females, most clearly poorer-functioning females, and male patients were unaffected or did a little worse.",
+          "claimTerms": [
+            "limited to the inpatient phase of treatment",
+            "very little effect seen on schizophrenic patients at the time of discharge",
+            "Male patients are unaffected by the treatment, or do a little worse"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "eassom-2014-family-involvement-implementation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "25280809",
+        "doi": "10.1136/bmjopen-2014-006108",
+        "sourceSpan": "A total of 43 studies were included. The majority featured qualitative data (n=42), focused solely on staff perspectives (n=32) and were carried out in the UK (n=23). Organisational cultures and paradigms can work to limit family involvement, and effective implementation appears to operate via a whole team coordinated effort at every level of the organisation, supported by strong leadership. Reservations about family involvement regarding power relations, fear of negative outcomes and the need for an exclusive patient-professional relationship may be explored and addressed through mutually trusting relationships."
+      },
+      "claims": [
+        {
+          "claimId": "family-involvement-staff-reservations",
+          "claimText": "A systematic review of 43 studies, most qualitative and most focused solely on staff perspectives, describes organisational cultures that can limit family involvement and reservations about family involvement regarding power relations, fear of negative outcomes and the need for an exclusive patient-professional relationship.",
+          "claimTerms": [
+            "focused solely on staff perspectives",
+            "Organisational cultures and paradigms can work to limit family involvement",
+            "Reservations about family involvement regarding power relations"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "therapy_on_the_unit"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "norheim-2025-ifip-cluster-rct",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "41345598",
+        "doi": "10.1186/s12888-025-07501-z",
+        "sourceSpan": "The IFIP trial is a cluster randomised controlled trial where 15 Community Mental Health Centre units were randomly allocated either to the ISP, which included FIs as clinical interventions, implementation strategies, and implementation interventions, or to treatment as usual (TAU). We included 231 patients (135 from the intervention units; 96 from the control units). There were no significant differences in the primary outcome, difficulties in interpersonal relationships at 12 months, between the intervention and control arms (Cohen's d = -0.19, p = 0.2). The secondary outcomes showed less perceived criticism from the relatives (Perceived Criticism sub-score; d = - 0.4, p = 0.01) and reduced difficulties in overall functioning (Health of the Nation Outcome Scale; d = - 0.29, p = 0.01) in the intervention arm compared to the control arm at 12 months."
+      },
+      "claims": [
+        {
+          "claimId": "implementing-family-involvement-patient-outcomes",
+          "claimText": "In a cluster randomised trial of family interventions implemented in 15 Community Mental Health Centre units (231 patients), there were no significant differences in patients' difficulties in interpersonal relationships at 12 months (Cohen's d = -0.19, p = 0.2), while the intervention arm showed less perceived criticism from the relatives (d = -0.4, p = 0.01).",
+          "claimTerms": [
+            "There were no significant differences in the primary outcome",
+            "less perceived criticism from the relatives"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "bighelli-2021-psychosocial-relapse-nma",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "34653393",
+        "doi": "10.1016/S2215-0366(21)00243-1",
+        "sourceSpan": "Of these, 72 studies with 10 364 participants (3939 females and 5716 males with sex indicated) were included in the network meta-analysis. The randomised controlled trials included compared 20 psychological interventions given mainly as add-on to antipsychotics. Family interventions (OR 0·35, 95% CI 0·24-0·52), relapse prevention programmes (OR 0·33, 0·14-0·79), cognitive behavioural therapy (OR 0·45, 0·27-0·75), family psychoeducation (OR 0·56, 0·39-0·82), integrated interventions (OR 0·62, 0·44-0·87), and patient psychoeducation (OR 0·63, 0·42-0·94) reduced relapse more than treatment as usual at 1 year. The confidence in the estimates ranged from moderate to very low."
+      },
+      "claims": [
+        {
+          "claimId": "psychosocial-relapse-prevention-comparison",
+          "claimText": "In a network meta-analysis of 72 studies (10 364 participants) comparing 20 psychological interventions, family interventions (OR 0·35), relapse prevention programmes (OR 0·33), cognitive behavioural therapy (OR 0·45) and family psychoeducation (OR 0·56) reduced relapse more than treatment as usual at 1 year; confidence in the estimates ranged from moderate to very low.",
+          "claimTerms": [
+            "reduced relapse more than treatment as usual at 1 year",
+            "ranged from moderate to very low"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "henken-2007-family-therapy-depression-cochrane",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml (abstract sentences) + publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored) (Issue 1, 2010 edition, edited with no change to conclusions): 'Included studies', 'Effects of interventions' and 'Levels of evidence for depression symptom levels'; the cache holds these passages after the PubMed abstract under the PMID",
+        "retrievedAt": "2026-11-22",
+        "pmid": "17636850",
+        "doi": "10.1002/14651858.CD006728",
+        "sourceSpan": "Three high-quality and three low-quality studies, involving 519 people with depression, were identified. The studies were very heterogeneous in terms of interventions, participants, and measuring instruments. The current evidence base is too heterogeneous and sparse to draw conclusions on the overall effectiveness of family therapy in the treatment of depression. In an RCT by Glick 1985, 169 adult inpatients with schizophrenic disorder, schizophreniform disorder, major affective disorder, and a subgroup meeting other DSM-III axis I diagnoses and their families were randomised. 50 participants in this trial were subgrouped in the group for affective disorders, of whom 29 met criteria for a unipolar depression. These participants received a psychoeducational inpatient family intervention (Glick 1985; Haas 1988) or a comparison treatment, in which the participants were offered treatment as usual, which was among other things individual psychotherapy. At both 6 and 18 months, bipolar patients who received an inpatient family intervention showed a better outcome (female patients only), in contrast with unipolar patients, where those who did not receive the intervention showed a better outcome (both sexes). There is limited evidence (level 3) that inpatient family intervention is less effective than treatment as usual for patients with unipolar depression (Glick 1985)."
+      },
+      "claims": [
+        {
+          "claimId": "family-therapy-depression-sparse-inpatient-unipolar",
+          "claimText": "Six studies (three high-quality, three low-quality; 519 people with depression) were too heterogeneous and sparse to draw conclusions on the overall effectiveness of family therapy for depression; in the inpatient family-intervention trial (Glick 1985), unipolar patients who did not receive the intervention showed a better outcome, rated limited evidence (level 3).",
+          "claimTerms": [
+            "too heterogeneous and sparse to draw conclusions",
+            "where those who did not receive the intervention showed a better outcome",
+            "There is limited evidence (level 3)"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "evidence_inpatient"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "pitschel-walz-2006-munich-pip",
+      "verifiedAgainst": {
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml (abstract sentences) + publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored): Method 'Interventions' (patients' and relatives' groups) and Results 'Rehospitalization'; PDF line-break hyphens and two-column interleaving repaired; the cache holds these passages after the PubMed abstract under the PMID",
+        "retrievedAt": "2026-11-22",
+        "pmid": "16649832",
+        "doi": "10.4088/jcp.v67n0316",
+        "sourceSpan": "The present study examined whether psychoeducational groups for patients with schizophrenic disorders and for their families can reduce rehospitalization rates and improve compliance. 236 inpatients who met DSM-III-R criteria for schizophrenia or schizoaffective disorder and who had regular contact with at least 1 relative or other key person were randomly assigned to 1 of 2 treatment conditions. The patients' and relatives' psychoeducational programs were separate, and each consisted of 8 sessions. The total program of the psychoeducational patients' groups consisted of 8 one-hour group sessions. Sessions 1 to 4 took place weekly, mostly during the patients' inpatient stay but after fading of the acute symptoms, and sessions 5 to 8 took place monthly, predominantly during the outpatient period of the study. Eight biweekly 90-minute sessions were planned for the relatives. The relatives' groups started meeting soon after randomization, because at this time the relatives need information and help the most and their motivation to participate is highest. The rehospitalization rate at the 12-month follow-up for the intervention group was 21% (N = 17) compared to 38% (N = 31) in the control group (total N = 163, p = .025). At the 24-month follow-up, 41% (N = 32) of the intervention group and 58% (N = 43) of the control group had to be rehospitalized (total N = 153, p = .036). In the intent-to-treat analyses with all dropouts assessed as rehospitalizations (worst-case scenario), the differences were not statistically significant (N=194; 1-year follow-up: 37% vs. 45%, p = .301; 2-year follow-up: 54% vs. 66%, p = .107)."
+      },
+      "claims": [
+        {
+          "claimId": "inpatient-initiated-psychoeducation-rehospitalization",
+          "claimText": "Of 236 randomly assigned inpatients with schizophrenia or schizoaffective disorder, the intervention group had separate patients' and relatives' psychoeducational programs of 8 sessions each, patient sessions 1 to 4 mostly during the inpatient stay; at the 24-month follow-up 41% of the intervention group and 58% of the control group had been rehospitalized (p = .036), but with all dropouts assessed as rehospitalizations the differences were not statistically significant (N=194; 54% vs. 66%, p = .107).",
+          "claimTerms": [
+            "each consisted of 8 sessions",
+            "mostly during the patients' inpatient stay",
+            "the differences were not statistically significant"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "pilling-2026-oddessi",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "42648300",
+        "doi": "10.1016/S2215-0366(26)00229-4",
+        "sourceSpan": "Participants were adults aged 18 years or older presenting in crisis to mental health services and registered with a practice within trial clusters. The primary outcome was time (days) to first relapse following initial recovery from the index crisis censored at the end of the 2-year follow-up period. One mental health trust (two clusters) withdrew, resulting in five mental health trusts (30 clusters) participating in the trial. Between June 25, 2019, and Dec 9, 2021, 494 participants (266 [54%] female gender, 221 [45%] male gender, 341 [69%] White British) with a mean age of 38·1 years (SD 13·4) provided consent for study inclusion (223 in the treatment as usual group and 271 in the Open Dialogue group). Of these, 174 (78%) in the treatment as usual group and 225 (83%) in the Open Dialogue group recovered and had data enabling relapse determination; there was no significant difference between groups on the primary outcome of time to relapse following initial recovery (marginal hazard ratio 0·95 [95% CI 0·67-1·32]). For secondary outcomes, Open Dialogue was associated with significantly lower probabilities of psychiatric inpatient admission and re-referral to crisis care or secondary mental health services, and with improvements in self-rated recovery, health-related quality of life, and satisfaction with services."
+      },
+      "claims": [
+        {
+          "claimId": "open-dialogue-oddessi-primary-and-secondary",
+          "claimText": "In a cluster-randomised trial of 494 adults presenting in crisis to mental health services in England, there was no significant difference between Open Dialogue and treatment as usual on time to relapse following initial recovery (marginal hazard ratio 0·95 [95% CI 0·67-1·32]); as secondary outcomes, Open Dialogue was associated with significantly lower probabilities of psychiatric inpatient admission and re-referral and with improvements in self-rated recovery.",
+          "claimTerms": [
+            "no significant difference between groups on the primary outcome",
+            "lower probabilities of psychiatric inpatient admission",
+            "improvements in self-rated recovery"
+          ],
+          "direction": "mixed",
+          "usedBy": [
+            "evidence_inpatient",
+            "family_modalities"
+          ]
+        }
+      ]
+    },
+    {
       "sourceId": "modini-large-2026",
       "verifiedAgainst": {
         "spanType": "abstract",
@@ -773,6 +1083,31 @@
           "direction": "positive",
           "usedBy": [
             "RR"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "butzlaff-hooley-1998-ee-meta",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "9633674",
+        "doi": "10.1001/archpsyc.55.6.547",
+        "sourceSpan": "An extensive literature search revealed 27 studies of the EE-outcome relationship in schizophrenia. The results confirmed that EE is a significant and robust predictor of relapse in schizophrenia."
+      },
+      "claims": [
+        {
+          "claimId": "expressed-emotion-relapse-meta-1998",
+          "claimText": "A meta-analysis of 27 studies confirmed that expressed emotion is a significant and robust predictor of relapse in schizophrenia.",
+          "claimTerms": [
+            "significant and robust predictor of relapse in schizophrenia"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "family_modalities",
+            "qb_rel_006"
           ]
         }
       ]
@@ -1500,12 +1835,12 @@
     {
       "sourceId": "miklowitz-2021-bipolar-psychotherapy-nma",
       "verifiedAgainst": {
-        "spanType": "abstract",
-        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
-        "retrievedAt": "2026-09-24",
+        "spanType": "fulltext",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml (abstract sentences) + publisher PDF of the version of record, saved by faculty on 2026-11-22 (not redistributed; only these short passages are stored): Methods 'Types of Interventions', Results 'Recurrence' and 'Treatment Acceptability', component NMA paragraph; PDF line-break hyphens and two-column interleaving repaired; the cache holds these passages after the PubMed abstract under the PMID",
+        "retrievedAt": "2026-11-22",
         "pmid": "33052390",
         "doi": "10.1001/jamapsychiatry.2020.2993",
-        "sourceSpan": "A total of 39 randomized clinical trials with 3863 participants (2247 of 3693 [60.8%] with data on sex were female; mean [SD] age, 36.5 [8.2] years) were identified. Across 20 two-group trials that provided usable information, manualized treatments were associated with lower recurrence rates than control treatments (OR, 0.56; 95% CI, 0.43-0.74). Psychoeducation with guided practice of illness management skills in a family or group format was associated with reducing recurrences vs the same strategies in an individual format (OR, 0.12; 95% CI, 0.02-0.94). Cognitive behavioral therapy (SMD, -0.32; 95% CI, -0.64 to -0.01) and, with less certainty, family or conjoint therapy (SMD, -0.46; 95% CI, -1.01 to 0.08) and interpersonal therapy (SMD, -0.46; 95% CI, -1.07 to 0.15) were associated with stabilizing depressive symptoms compared with treatment as usual. Higher study retention was associated with family or conjoint therapy (OR, 0.46; 95% CI, 0.26-0.82) and brief psychoeducation (OR, 0.44; 95% CI, 0.23-0.85) compared with standard psychoeducation."
+        "sourceSpan": "A total of 39 randomized clinical trials with 3863 participants (2247 of 3693 [60.8%] with data on sex were female; mean [SD] age, 36.5 [8.2] years) were identified. Across 20 two-group trials that provided usable information, manualized treatments were associated with lower recurrence rates than control treatments (OR, 0.56; 95% CI, 0.43-0.74). Psychoeducation with guided practice of illness management skills in a family or group format was associated with reducing recurrences vs the same strategies in an individual format (OR, 0.12; 95% CI, 0.02-0.94). Cognitive behavioral therapy (SMD, -0.32; 95% CI, -0.64 to -0.01) and, with less certainty, family or conjoint therapy (SMD, -0.46; 95% CI, -1.01 to 0.08) and interpersonal therapy (SMD, -0.46; 95% CI, -1.07 to 0.15) were associated with stabilizing depressive symptoms compared with treatment as usual. Higher study retention was associated with family or conjoint therapy (OR, 0.46; 95% CI, 0.26-0.82) and brief psychoeducation (OR, 0.44; 95% CI, 0.23-0.85) compared with standard psychoeducation. This study suggests that outpatients with bipolar disorder may benefit from skills-based psychosocial interventions combined with pharmacotherapy. Two raters (D.J.M. and J.S.) classified each active intervention group as belonging to 1 of the following nodes (see operational definitions in eTable 2 in the Supplement): traditional CBT with cognitive restructuring, behavioral activation, and problem-solving (including dialectical behavior therapy components such as mindfulness and distress tolerance); standard-length psychoeducation (≥6 group or individual sessions); IPSRT; family or conjoint therapy (including family-focused therapy, multifamily groups, or caregiver-only groups); or functional remediation. When examined by a standard NMA, family or conjoint therapy (OR, 0.30; 95% CI, 0.17-0.53), CBT (OR, 0.52; 95% CI, 0.34-0.79), standard psychoeducation (OR, 0.52; 95% CI, 0.32-0.84), and brief psychoeducation (OR, 0.34; 95% CI, 0.16-0.74) were associated with a more favorable outcome compared with TAU (Table 1). The highest surface under the cumulative ranking curve ranking was obtained for family or conjoint therapy (95%) (eTable 8 in the Supplement). Using the component NMA model, we estimated that psychoeducation with guided skill practice and self-monitoring delivered in a family or group format is more effective in reducing recurrences than the same 2 treatment components delivered in an individual format (OR, 0.12; 95% CrI, 0.02-0.94). In the NMA model comparing specific interventions (heterogeneity τ2 = 0.07), there was evidence that family or conjoint therapy (OR, 0.46; 95% CI, 0.26-0.82) and brief psychoeducation (OR, 0.44; 95% CI, 0.23-0.85) were associated with higher retention rates than standard-length (ie, ≥6 sessions) courses of psychoeducation (eTables 25 and 26 in the Supplement)."
       },
       "claims": [
         {
@@ -1517,6 +1852,32 @@
             "compared with standard psychoeducation"
           ],
           "direction": "mixed",
+          "usedBy": [
+            "family_modalities"
+          ]
+        },
+        {
+          "claimId": "family-conjoint-recurrence-vs-tau",
+          "claimText": "In a standard network meta-analysis, family or conjoint therapy (including family-focused therapy, multifamily groups, or caregiver-only groups) was associated with a more favorable recurrence outcome than treatment as usual (OR 0.30, 95% CI 0.17-0.53) and ranked highest on the surface under the cumulative ranking curve; the authors draw their conclusions for outpatients with bipolar disorder.",
+          "claimTerms": [
+            "family or conjoint therapy (including family-focused therapy, multifamily groups, or caregiver-only groups)",
+            "The highest surface under the cumulative ranking curve ranking was obtained for family or conjoint therapy",
+            "outpatients with bipolar disorder may benefit"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "family_modalities"
+          ]
+        },
+        {
+          "claimId": "family-group-format-component-and-retention",
+          "claimText": "A component network meta-analysis estimated that psychoeducation with guided skill practice and self-monitoring in a family or group format is more effective in reducing recurrences than the same components delivered individually (OR 0.12; 95% CrI 0.02-0.94); family or conjoint therapy and brief psychoeducation were associated with higher retention than standard-length psychoeducation (OR 0.46 and 0.44).",
+          "claimTerms": [
+            "in a family or group format is more effective in reducing recurrences",
+            "95% CrI",
+            "higher retention rates than standard-length"
+          ],
+          "direction": "positive",
           "usedBy": [
             "family_modalities"
           ]
@@ -1546,7 +1907,123 @@
           "usedBy": [
             "exp_family",
             "family_modalities",
-            "sp-interview"
+            "sp-interview",
+            "evidence_inpatient"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "lemmens-2009-family-therapy-depression",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "19218828",
+        "doi": "10.1159/000201935",
+        "sourceSpan": "Eighty-three patients were randomly assigned to: (1) the treatment programme as usual (n = 23), (2) treatment as usual combined with single-family therapy (n = 25) or (3) treatment as usual combined with multi-family group therapy (n = 35). Multi-family group and single-family therapy conditions showed significantly higher rates of treatment responders than the group receiving the usual treatment (49, 24 and 9%, respectively), and higher rates of patients no longer using antidepressant medication (26, 16 and 0%, respectively) at 15 months."
+      },
+      "claims": [
+        {
+          "claimId": "inpatient-depression-family-therapy-response",
+          "claimText": "Eighty-three hospitalized patients with major depression were randomly assigned; treatment as usual combined with multi-family group therapy or with single-family therapy showed higher rates of treatment responders than treatment as usual alone (49, 24 and 9%, respectively) at 15 months.",
+          "claimTerms": [
+            "showed significantly higher rates of treatment responders"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "evidence_inpatient"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "tham-solomon-2024",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "38938096",
+        "doi": "10.1176/appi.ps.20230452",
+        "sourceSpan": "Forty-six articles were reviewed, revealing contextual backgrounds and engagement practices that hindered family involvement. Inconsistencies in family involvement stemmed from organizational culture, societal attitudes, and providers' negating of family expertise. Uncertainty regarding confidentiality policies and the absence of practice guidelines posed challenges for providers. Some service users declined family involvement because of privacy concerns and differing expectations regarding the extent of involvement. A gap exists between implementing policies and practices for family involvement in mental health treatment."
+      },
+      "claims": [
+        {
+          "claimId": "family-involvement-barriers-unranked",
+          "claimText": "A scoping review of forty-six articles describes barriers to family involvement including organizational culture, providers' negating of family expertise, uncertainty regarding confidentiality policies, and some service users who declined family involvement because of privacy concerns; a gap exists between policies and practices for family involvement.",
+          "claimTerms": [
+            "organizational culture",
+            "providers' negating of family expertise",
+            "Uncertainty regarding confidentiality policies",
+            "Some service users declined family involvement because of privacy concerns"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "family_modalities",
+            "therapy_on_the_unit",
+            "qb_rel_010"
+          ]
+        },
+        {
+          "claimId": "declining-family-involvement-reasons",
+          "claimText": "Some service users declined family involvement because of privacy concerns and differing expectations regarding the extent of involvement.",
+          "claimTerms": [
+            "Some service users declined family involvement because of privacy concerns and differing expectations regarding the extent of involvement"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "family_playbook"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ince-2016-implementation",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "26537838",
+        "doi": "10.1111/papt.12084",
+        "sourceSpan": "A systematic review of the literature exploring if the UK recommendations for psychological interventions for schizophrenia were being met was carried out. Rates of implementation varied from 4% to 100% for CBT and 0% to 53% for FI, and studies varied in the methodology used and quality of the articles. Previously reported barriers to implementation were found, with organisational barriers being most commonly followed by barriers met by staff members and service users."
+      },
+      "claims": [
+        {
+          "claimId": "family-intervention-implementation-rates-and-barriers",
+          "claimText": "A systematic review of whether UK recommendations for psychological interventions for schizophrenia were being met found implementation rates of 0% to 53% for family intervention, with organisational barriers being most commonly reported, followed by barriers met by staff members and service users.",
+          "claimTerms": [
+            "0% to 53% for FI",
+            "organisational barriers being most commonly followed by barriers met by staff members and service users"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "family_modalities",
+            "qb_rel_010"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "dixon-1999-family-services",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "10030482",
+        "doi": "10.1176/ps.50.2.233",
+        "sourceSpan": "Of the 530 patients in the field study who reported having contact with their families, 159 (30 percent) reported that their families had received information, advice, or support about their illness, and 40 (8 percent) responded that their families had attended an educational or support program. A minority of families of persons with schizophrenia receive information about the illness from providers."
+      },
+      "claims": [
+        {
+          "claimId": "family-services-reach",
+          "claimText": "Of 530 patients with schizophrenia in contact with their families, 30 percent reported that their families had received information, advice, or support about their illness and 8 percent that their families had attended an educational or support program.",
+          "claimTerms": [
+            "received information, advice, or support",
+            "attended an educational or support program"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "family_modalities"
           ]
         }
       ]
@@ -2022,6 +2499,33 @@
           "usedBy": [
             "T3",
             "sp-interview"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "fontanella-2020-youth-followup-suicide",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "ncbi:eutils:efetch?db=pubmed&retmode=xml",
+        "retrievedAt": "2026-11-22",
+        "pmid": "32780122",
+        "doi": "10.1001/jamanetworkopen.2020.12887",
+        "sourceSpan": "This population-based, retrospective, longitudinal cohort study used Medicaid data from 33 states linked with National Death Index data. The study population included all youths aged 10 to 18 years who were admitted to a psychiatric hospital from January 1, 2009, to December 31, 2013. A total of 56.5% of the youths received a mental health follow-up visit within 7 days of discharge, and this was associated with a significantly lower odds of suicide (adjusted relative risk, 0.44; 95% CI, 0.23-0.83; P = .01) during the 8 to 180 days postdischarge period."
+      },
+      "claims": [
+        {
+          "claimId": "youth-seven-day-followup-suicide",
+          "claimText": "In a Medicaid cohort of youths aged 10 to 18 years admitted to a psychiatric hospital, receiving a mental health follow-up visit within 7 days of discharge was associated with lower suicide risk during the 8 to 180 days postdischarge period (adjusted relative risk, 0.44; 95% CI, 0.23-0.83).",
+          "claimTerms": [
+            "youths aged 10 to 18 years",
+            "follow-up visit within 7 days of discharge",
+            "during the 8 to 180 days postdischarge period"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "exp_family",
+            "evidence_inpatient"
           ]
         }
       ]
@@ -3402,6 +3906,32 @@
             "rounds_questions",
             "t_anxiety",
             "pharmacy:prazosin"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "nice-cg178-psychosis-schizophrenia",
+      "verifiedAgainst": {
+        "spanType": "guideline-statement",
+        "sourceEndpoint": "https://web.archive.org/web/20261115144247/https://www.nice.org.uk/guidance/cg178/chapter/Recommendations",
+        "retrievedAt": "2026-11-22",
+        "pmid": "",
+        "doi": "",
+        "sourceSpan": "Family intervention should: include the person with psychosis or schizophrenia if practical be carried out for between 3 months and 1 year include at least 10 planned sessions take account of the whole family's preference for either single-family intervention or multi-family group intervention take account of the relationship between the main carer and the person with psychosis or schizophrenia have a specific supportive, educational or treatment function and include negotiated problem solving or crisis management work. Offer family intervention to all families of people with psychosis or schizophrenia who live with or are in close contact with the service user (delivered as described in recommendation 1.3.7.2 ). This can be started either during the acute phase or later, including in inpatient settings."
+      },
+      "claims": [
+        {
+          "claimId": "nice-family-intervention-sessions",
+          "claimText": "NICE recommends that family intervention be carried out for between 3 months and 1 year and include at least 10 planned sessions.",
+          "claimTerms": [
+            "be carried out for between 3 months and 1 year",
+            "include at least 10 planned sessions"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "family_modalities",
+            "family_playbook"
           ]
         }
       ]

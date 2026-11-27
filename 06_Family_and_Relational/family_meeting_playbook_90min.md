@@ -6,11 +6,11 @@
 
 ## When to use it
 
-Convene a family meeting for a first episode, a relapse, a high-expressed-emotion home, a complex disposition, a safety plan that depends on the family, or any time the people who will support the patient after discharge need a shared understanding. Earlier is better — don't save the meeting for the day of discharge. You are **planting a seed, not harvesting one**: the relapse-prevention benefit of family work accrues over the following ~12 months, and a single meeting rarely shows its payoff on the unit — which is exactly why starting it inpatient and securing the outpatient handoff matters (the dose that works is ≥10 sessions; ≤2 is ineffective).
+Convene a family meeting for a first episode, a relapse, a high-expressed-emotion home, a complex disposition, a safety plan that depends on the family, or any time the people who will support the patient after discharge need a shared understanding. Earlier is better — don't save the meeting for the day of discharge. You are **planting a seed, not harvesting one**: the relapse-prevention benefit of family work accrues over the following ~12 months, and a single meeting rarely shows its payoff on the unit — which is exactly why starting it inpatient and securing the outpatient handoff matters (NICE advises at least 10 planned sessions; in trials, family psychoeducation of two sessions or fewer did not significantly reduce relapse).
 
 ## Before the meeting (≈15 min prep)
 
-- **Confirm consent and scope.** The patient agrees to the meeting and to what may be shared; document it. Respect the patient's limits on disclosure (PHI is the patient's to share).
+- **Confirm consent and scope.** The patient agrees to the meeting and to what may be shared; document it. Respect the patient's limits on disclosure (PHI is the patient's to share). Some patients decline family involvement for privacy reasons or because they expect a different kind of involvement (Tham & Solomon 2024). Ask what they would be comfortable with, and offer to revisit it before discharge.
 - **Set the goal in one sentence.** "Align on the diagnosis and the discharge plan," or "Lower the temperature at home and agree on warning signs." A meeting with one clear goal beats a meeting that tries to do everything.
 - **Know your audience.** Who is coming, who is missing, who holds influence, what each person is most worried about.
 - **Brief the team.** Agree on who leads, who takes notes, who watches the patient's distress, and the two or three messages everyone will keep consistent.
@@ -45,3 +45,5 @@ Letting information-sharing eat the whole meeting; correcting expressed emotion 
 **Pair with** the [Family Therapy Modalities](?page=family_modalities.md) overview and the expressed-emotion teaching, the [Family & Discharge](?page=exp_family.md) module, and Week 4 of the curriculum.
 
 *Joshua Moss, MD | Psychiatrist · Educational; fictional composites only, no PHI.*
+
+**Pending re-attestation:** session-count parenthesis changed 2026-11-22 (NICE CG178; Rodolico 2022); declining-patients sentence added to the consent step 2026-11-22 (Tham & Solomon 2024)
