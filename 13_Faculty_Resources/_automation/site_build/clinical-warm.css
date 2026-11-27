@@ -148,6 +148,8 @@
   --fd-font-4xl:34px;   /* learner page title (.fd-today__h1); phones step down to --fd-font-3xl */
   --fd-font-section:19px; /* section heading on a learner page (.fd-sectionhead) */
 
+  --fd-font-input-min:16px; /* mobile field floor; prevents iOS focus zoom */
+
   /* Glyph sizes. NOT the type scale: these are the em-box of a single character
    * centred inside a fixed-size circle or square — a check mark in a 20px dot, the
    * wordmark ψ in a 30px tile, a back arrow in a 38px button. They are metrics of
