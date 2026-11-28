@@ -3095,79 +3095,144 @@ test.describe('Interactive readings', () => {
     const card = section.locator('#quote-med-pass');
     await expect(card.locator('xpath=preceding-sibling::h3[1]')).toHaveText('Subjective');
     const id = name => card.locator(`#qp-${name}`);
-    const clip = key => card.locator(`[data-clip="${key}"]`);
+    const choice = (kind, value) => card.locator(`[data-${kind}="${value}"]`);
+    const clip = key => choice('clip', key);
     const opening = clip('opening');
-    const voice = card.locator('audio');
-    const note = id('note');
-    const original = await note.inputValue();
-    const decisionQuote = 'The patient said, “I haven’t decided about the pill.”';
+    const voice = id('voice');
+    const editor = id('editor');
+    const entry = id('revision');
+    const openingQuote = 'Let me call my daughter first.';
+    const decisionQuote = /I haven[’']t decided about the pill\./;
+    const nurseReport = 'At 20:10, the RN reported that the 20:00 dose had been offered and not yet given.';
+    await expect(card.locator('textarea, #qp-compare')).toHaveCount(0);
 
-    await card.locator('[data-flag="quote"]').click();
-    await expect(id('follow')).toBeHidden();
-    await opening.locator('.read').click();
-    await opening.locator('.play').click();
-    await expect(opening.locator('.play')).toHaveText('Pause reply');
-    // Play through the two sentences as a learner would, including the pause between them.
-    const spoken = opening.locator('blockquote .spoken');
-    await expect(spoken).toHaveText(['Last night I could hardly keep my eyes open.']);
-    await page.waitForFunction(element => {
-      const audio = element.querySelector('audio');
-      return audio.currentTime >= 3.9 && audio.currentTime < 4.72 &&
-        !element.querySelector('blockquote .spoken');
-    }, await card.elementHandle(), { timeout: 10_000 });
-    await expect(spoken).toHaveText(['Let me call my daughter first.']);
-    await opening.locator('.play').click();
-    await expect(spoken).toHaveCount(0);
+    async function checkNote(experience, decision) {
+      const supported = choice('note', 'source');
+      await expect(editor.locator('[data-note]')).toHaveCount(3);
+      const patientAccount = await supported.innerText();
+      if (experience) {
+        expect(patientAccount).toContain('was unsure why');
+      } else {
+        expect(patientAccount).toContain('described feeling sleepy last night');
+        expect(patientAccount).not.toContain('was unsure why');
+      }
+      const pending = 'Their decision about tonight’s dose is unclear.';
+      if (decision) {
+        expect(patientAccount).toMatch(decisionQuote);
+        expect(patientAccount).not.toContain(pending);
+      } else {
+        expect(patientAccount).toContain(openingQuote);
+        expect(patientAccount).toContain(pending);
+        expect(patientAccount).not.toMatch(decisionQuote);
+      }
+      await choice('note', 'cause').click();
+      await expect(id('note-feedback')).toBeVisible();
+      await expect(id('note-feedback')).toContainText(/cause/i);
+      await expect(id('review')).toBeHidden();
+      await choice('note', 'intent').click();
+      await expect(id('note-feedback')).toBeVisible();
+      await expect(id('note-feedback')).toContainText(decision ? /had not decided/ : /call their daughter first/);
+      await expect(id('review')).toBeHidden();
+      await supported.click();
+      await expect(id('review')).toBeVisible();
+      await expect(entry).toHaveText(nurseReport + ' ' + patientAccount);
+      await expect(id('callback-body')).toBeHidden();
 
-    await card.locator('[data-ask="experience"]').click();
-    const experience = clip('experience');
-    await voice.evaluate(audio => { audio.play = () => Promise.reject(new Error('Playback unavailable')); });
-    await experience.locator('.play').click();
-    await expect(experience.getByRole('status')).toContainText(/read the transcript/i);
-    await experience.locator('.read').click();
-    await expect(note).toBeHidden();
-    await id('nurse').locator('summary').click();
-    await expect(note).toBeVisible();
-    await expect(id('compare')).toBeDisabled();
-    await note.fill(decisionQuote);
-    await id('compare').click();
-    await expect(id('revision').locator('mark.checkquote')).toContainText('decided');
-    await id('example').locator('summary').click();
-    await expect(id('sample')).toContainText('was unsure why');
-    await expect(id('sample')).toContainText('decision about tonight’s dose is unclear');
-    await expect(id('sample')).not.toContainText('I haven’t decided');
+      await id('trace').locator('summary').click();
+      const trace = id('trace-words');
+      const source = clip(decision ? 'decision' : 'opening');
+      const transcript = await source.locator('blockquote').textContent();
+      const plain = text => text.replace(/[“”]/g, '').replaceAll('’', "'").replace(/\s+/g, ' ').trim();
+      expect(plain(await trace.innerText())).toBe(plain(transcript));
+      await expect(trace.locator('mark')).toHaveText(decision ? decisionQuote : openingQuote);
+      const audio = id('trace-audio');
+      await expect(audio).toBeVisible();
+      await expect(audio).toHaveJSProperty('controls', true);
+      expect(new URL(await audio.evaluate(a => a.currentSrc || a.src)).pathname).toBe('/audio/quote-med-pass/' + (decision ? 'decision' : 'opening') + '.mp3');
+      await audio.evaluate(a => a.play());
+      await expect.poll(() => audio.evaluate(a => a.currentTime)).toBeGreaterThan(0);
+      await id('trace').locator('summary').click();
+      await expect(audio).toHaveJSProperty('paused', true);
+    }
 
-    // The same revision changes only after the learner obtains the patient's decision reply.
-    await card.locator('[data-ask="decision"]').click();
-    await expect(id('review')).toBeVisible();
-    await voice.evaluate(audio => { delete audio.play; });
-    const decision = clip('decision');
-    await decision.locator('.play').click();
-    await expect(decision.locator('.play')).toHaveText('Pause reply');
-    await expect(id('review')).toBeVisible();
-    await expect(decision.locator('.play')).toHaveText('Replay reply', { timeout: 15_000 });
-    await expect(id('review')).toBeHidden();
-    await id('compare').click();
-    await expect(id('revision').locator('mark.verbatim')).toContainText('decided');
-    await id('example').locator('summary').click();
-    await expect(id('sample')).toContainText('I haven’t decided about the pill.');
-    await expect(id('sample')).toContainText('was unsure why');
+    async function checkAddendum() {
+      const initialEntry = await entry.innerText();
+      await id('call').click();
+      await expect(id('callback-body')).toBeVisible();
+      for (const [key, feedback] of [['backdate', /decided at 20:10/], ['witness', /nurse was the witness/]]) {
+        await choice('add', key).click();
+        await expect(id('add-feedback')).toContainText(feedback);
+        await expect(id('addendum')).toBeHidden();
+        await expect(entry).toHaveText(initialEntry);
+      }
+      await choice('add', 'report').click();
+      await expect(id('addendum')).toBeVisible();
+      await expect(id('addendum')).toHaveText(/20:40.*RN reports observing.*20:36/);
+      await expect(entry).toHaveText(initialEntry);
+    }
 
-    await id('call').click();
-    await card.locator('[data-add="witness"]').click();
-    await expect(id('add-feedback')).toContainText('nurse was the witness');
-    await expect(id('addendum')).toBeHidden();
-    await card.locator('[data-add="report"]').click();
-    await expect(id('addendum')).toHaveText(/20:40.*RN reports.*20:36/);
-    await expect(id('revision')).toHaveText(decisionQuote);
-    await id('reset').click();
-    await expect(id('evidence')).toBeHidden();
-    await expect(id('review')).toBeHidden();
-    await expect(note).toHaveValue(original);
-    await expect(card.locator('[aria-pressed="true"], .spoken')).toHaveCount(0);
-    await card.locator('[data-flag="quote"]').click();
-    await expect(id('follow')).toBeHidden();
-    await expect(opening.locator('blockquote')).toBeHidden();
+    for (const [first, second] of [['experience', 'decision'], ['decision', 'experience']]) {
+      await choice('flag', 'quote').click();
+      await expect(id('follow')).toBeHidden();
+      await expect(opening.locator('blockquote')).toBeHidden();
+      await expect(editor).toBeHidden();
+      await opening.locator('.read').click();
+      if (first === 'experience') {
+        // Check sentence-level highlighting through the actual recording, including the silent gap.
+        await opening.locator('.play').click();
+        const spoken = opening.locator('blockquote .spoken');
+        await expect(opening.locator('.play')).toHaveText('Pause reply');
+        await expect(spoken).toHaveText(['Last night I could hardly keep my eyes open.']);
+        await page.waitForFunction(audio => audio.currentTime >= 3.9 && audio.currentTime < 4.72 &&
+          !document.querySelector('#quote-med-pass blockquote .spoken'), await voice.elementHandle(), { timeout: 10_000 });
+        await expect(spoken).toHaveText([openingQuote]);
+        await opening.locator('.play').click();
+        await expect(spoken).toHaveCount(0);
+      } else {
+        await id('nurse').locator('summary').click();
+      }
+      await choice('ask', first).click();
+      await expect(editor).toBeHidden();
+      if (first === 'experience') {
+        await voice.evaluate(audio => { audio.play = () => Promise.reject(new Error('Playback unavailable')); });
+        await clip(first).locator('.play').click();
+        await expect(clip(first).getByRole('status')).toContainText(/read the transcript/i);
+        await expect(editor).toBeHidden();
+        await voice.evaluate(audio => { delete audio.play; });
+      }
+      await clip(first).locator('.read').click();
+      if (first === 'experience') {
+        await expect(editor).toBeHidden();
+        await id('nurse').locator('summary').click();
+      }
+      await checkNote(first === 'experience', first === 'decision');
+      await checkAddendum();
+
+      // Selecting the other question does not supply its answer. Only reading or finishing it does.
+      await choice('ask', second).click();
+      await expect(id('review')).toBeVisible();
+      await expect(id('addendum')).toBeVisible();
+      if (second === 'decision') {
+        const play = clip(second).locator('.play');
+        await play.click();
+        await expect(play).toHaveText('Pause reply');
+        await expect(id('review')).toBeVisible();
+        await expect(play).toHaveText('Replay reply', { timeout: 15_000 });
+      } else {
+        await clip(second).locator('.read').click();
+      }
+      await expect(id('review')).toBeHidden();
+      await expect(id('addendum')).toBeHidden();
+      await checkNote(true, true);
+      await id('edit-again').click();
+      await expect(id('review')).toBeHidden();
+      await choice('note', 'source').click();
+      await checkAddendum();
+      await id('reset').click();
+      for (const stage of ['evidence', 'editor', 'review', 'callback-body', 'addendum']) await expect(id(stage)).toBeHidden();
+      await expect(card.locator('[aria-pressed="true"], .spoken')).toHaveCount(0);
+      await expect(id('nurse')).toHaveJSProperty('open', false);
+    }
     await expectHealthy(page);
   });
 

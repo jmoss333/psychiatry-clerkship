@@ -1795,7 +1795,7 @@ function fdMountQuoteMedPass(body) {
   const el = id => card.querySelector('#qp-' + id);
   const copy = Object.fromEntries(Array.from(el('copy').content.children,
     line => [line.dataset.line, line.textContent]));
-  const note = el('note');
+  const traceAudio = el('trace-audio');
   const voice = el('voice');
   const clips = new Map();
   const heard = new Set();
@@ -1814,21 +1814,26 @@ function fdMountQuoteMedPass(body) {
   }
   function clearReview() {
     el('review').hidden = true;
-    el('example').open = false;
-    for (const id of ['revision', 'quote-check', 'claim-check', 'sources', 'sample', 'add-feedback', 'addendum']) {
+    el('trace').open = el('detail').open = false;
+    traceAudio.pause();
+    if (traceAudio.hasAttribute('src')) {
+      traceAudio.removeAttribute('src');
+      traceAudio.load();
+    }
+    for (const id of ['revision', 'trace-words', 'sources', 'note-feedback', 'add-feedback', 'addendum']) {
       el(id).replaceChildren();
     }
     el('call').hidden = false;
     el('call').setAttribute('aria-expanded', 'false');
     el('callback-body').hidden = el('addendum').hidden = true;
-    selectButton('[data-add]', null);
+    selectButton('[data-note], [data-add]', null);
   }
-  function updateAccess() {
+  function updateAccess(sourcesChanged = false) {
     const hasOpening = heard.has('opening');
     const ready = nurseReviewed && hasOpening && (heard.has('decision') || heard.has('experience'));
     el('follow').hidden = !hasOpening;
     el('editor').hidden = !ready;
-    el('compare').disabled = !ready || !note.value.trim() || note.value.trim() === note.defaultValue;
+    if (ready && sourcesChanged) renderChoices();
     el('unlock').hidden = ready;
     el('unlock').textContent = copy[!hasOpening ? 'unlock-opening' : nurseReviewed ? 'unlock-follow' : 'unlock-nurse'];
   }
@@ -1836,7 +1841,7 @@ function fdMountQuoteMedPass(body) {
     if (heard.has(key)) return;
     heard.add(key);
     clearReview();
-    updateAccess();
+    updateAccess(true);
   }
 
   function paintPhrase() {
@@ -1857,6 +1862,7 @@ function fdMountQuoteMedPass(body) {
     paintPhrase();
   }
   async function playReply(clip) {
+    traceAudio.pause();
     if (activeClip === clip && !voice.paused) {
       voice.pause();
       return;
@@ -1923,7 +1929,7 @@ function fdMountQuoteMedPass(body) {
     if (!el('nurse').open || nurseReviewed) return;
     nurseReviewed = true;
     clearReview();
-    updateAccess();
+    updateAccess(true);
   });
   for (const button of card.querySelectorAll('[data-ask]')) {
     button.addEventListener('click', () => {
@@ -1934,56 +1940,24 @@ function fdMountQuoteMedPass(body) {
     });
   }
 
-  // Only words in reviewed speech are eligible for a direct quotation. Other prose remains the learner’s.
-  const words = value => (value.toLowerCase().replace(/[’‘]/g, "'").match(/[\p{L}\p{N}]+(?:'[\p{L}\p{N}]+)*/gu) || []).join(' ');
-  const contains = (source, part) => part && (' ' + words(source) + ' ').includes(' ' + part + ' ');
-  function compareQuotes(text) {
-    const output = el('revision');
-    output.replaceChildren();
-    const spans = /[“"]([^“”"]*)[”"]|(?:^|(?<=[\s(]))[‘']([^‘’'\n]*(?:['’](?=[a-z])[^‘’'\n]*)*)[’'](?=$|[\s.,;:!?)])/giu;
-    const feedback = new Set();
-    let unquoted = '';
-    let cursor = 0;
-    function appendPlain(value) {
-      output.append(value);
-      unquoted += value + ' ';
-      if (/[“”"]|(?:^|\s)[‘'](?=\S)/u.test(value)) feedback.add('incomplete');
-    }
-    for (const found of text.matchAll(spans)) {
-      appendPlain(text.slice(cursor, found.index));
-      const part = words(found[1] ?? found[2]);
-      const patient = [...heard].some(key => contains(clips.get(key).quote.textContent, part));
-      const nurse = nurseReviewed && contains(el('rn-words').textContent, part);
-      const source = nurse ? (patient ? 'both' : 'nurse') : (patient ? 'patient' : 'unmatched');
-      const mark = document.createElement('mark');
-      mark.className = nurse ? 'srmark' : (patient ? 'verbatim' : 'checkquote');
-      mark.textContent = found[0];
-      output.append(mark);
-      feedback.add(source);
-      cursor = found.index + found[0].length;
-    }
-    appendPlain(text.slice(cursor));
-    if (!feedback.size) feedback.add('paraphrase');
-    el('quote-check').textContent = [...feedback].map(key => copy['feedback-' + key]).join(' ');
-    return unquoted;
-  }
-  function checkClaims(unquoted) {
-    const statements = unquoted.toLowerCase().replace(/[’‘]/g, "'").split(/[.!?;\n]/);
-    const cautions = [];
-    const qualified = /\b(no|not|never|unclear|whether|unconfirmed|cannot|can't|didn't|hasn't)\b/;
-    if (statements.some(s => /\b(refus(?:al|ed|ing)|declined)\b/.test(s) && !qualified.test(s) && !/\b(denies|denied)\b/.test(s))) {
-      cautions.push(copy['caution-refusal']);
-    }
-    if (statements.some(s => /\b(will take|would take|agrees? to take|agreed to take|promised to take|consented|accepted|took (?:tonight|the evening))\b/.test(s)
-        && !qualified.test(s) && !/\b(unsure|hadn't)\b/.test(s))) {
-      cautions.push(copy[heard.has('decision') ? 'caution-decided' : 'caution-pending']);
-    }
-    if (statements.some(s => /\b(sleep[a-z]*|drows[a-z]*|sedat[a-z]*|groggy|tired|fatigue[a-z]*)\b/.test(s)
-        && /\b(caused|due to|because of|drug.induced|medication.induced|made (?:them|her|him) (?:sleepy|drowsy))\b/.test(s)
-        && !/\b(possible|possibly|may|might|could|unclear|unsure|whether|associates?|attributes?|attributed|suspects?|reports?|reported|says|said|not|never)\b/.test(s))) {
-      cautions.push(copy['caution-cause']);
-    }
-    el('claim-check').textContent = cautions.join(' ');
+  function renderChoices() {
+    const experience = copy[heard.has('experience') ? 'sample-experience' : 'sample-opening'];
+    const decision = copy[heard.has('decision') ? 'sample-decided' : 'sample-pending'];
+    const choices = {
+      source: experience + ' ' + decision,
+      cause: copy['cause-error'] + ' ' + decision,
+      intent: experience + ' ' + copy['intent-error'],
+    };
+    const order = heard.has('decision') ? ['intent', 'source', 'cause'] : ['cause', 'intent', 'source'];
+    el('note-options').replaceChildren(...order.map(key => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'qp-secondary';
+      button.dataset.note = key;
+      button.textContent = choices[key];
+      button.setAttribute('aria-pressed', 'false');
+      return button;
+    }));
   }
   function showEvidence() {
     const sources = el('sources');
@@ -2004,19 +1978,38 @@ function fdMountQuoteMedPass(body) {
     if (heard.has('experience')) row('Last night', copy['last-night']);
     if (heard.has('decision')) row('Tonight', copy.tonight);
     row('Still open', copy[heard.has('decision') ? 'undecided' : 'unasked']);
-    el('sample').textContent = [copy['sample-start'], copy[heard.has('experience') ? 'sample-experience' : 'sample-opening'],
-      copy[heard.has('decision') ? 'sample-decided' : 'sample-pending']].join(' ');
   }
 
-  note.addEventListener('input', () => { clearReview(); updateAccess(); });
-  el('compare').addEventListener('click', () => {
-    if (el('compare').disabled) return;
-    checkClaims(compareQuotes(note.value.trim()));
+  el('note-options').addEventListener('click', event => {
+    const button = event.target.closest('[data-note]');
+    if (!button) return;
+    clearReview();
+    selectButton('[data-note]', button);
+    const key = button.dataset.note;
+    if (key !== 'source') {
+      const feedback = key === 'cause' ? 'caution-cause' : heard.has('decision') ? 'caution-decided' : 'caution-pending';
+      el('note-feedback').textContent = copy[feedback];
+      return;
+    }
+    el('revision').textContent = el('rn-prefix').textContent + ' ' + button.textContent;
+    const clip = clips.get(heard.has('decision') ? 'decision' : 'opening');
+    const quoted = clip.quote.querySelector('[data-note-quote]');
+    for (const phrase of clip.phrases) {
+      const text = document.createElement(phrase === quoted ? 'mark' : 'span');
+      text.textContent = phrase.textContent;
+      el('trace-words').append(text, ' ');
+    }
+    traceAudio.src = clip.figure.dataset.audio;
     showEvidence();
     el('review').hidden = false;
     focusStage('review-title');
   });
-  el('edit-again').addEventListener('click', () => { clearReview(); note.focus(); });
+  traceAudio.addEventListener('play', () => { if (!traceAudio.paused) voice.pause(); });
+  el('trace').addEventListener('toggle', () => { if (!el('trace').open) traceAudio.pause(); });
+  el('edit-again').addEventListener('click', () => {
+    clearReview();
+    el('note-options').querySelector('[data-note]').focus();
+  });
   el('call').addEventListener('click', () => {
     el('call').hidden = true;
     el('call').setAttribute('aria-expanded', 'true');
@@ -2036,7 +2029,7 @@ function fdMountQuoteMedPass(body) {
     stopAudio();
     nurseReviewed = false;
     heard.clear();
-    note.value = note.defaultValue;
+    el('note-options').replaceChildren();
     el('nurse').open = false;
     for (const clip of clips.values()) {
       clip.figure.hidden = clip.key !== 'opening';
