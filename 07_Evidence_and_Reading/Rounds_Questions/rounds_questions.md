@@ -299,7 +299,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **24. What are the therapeutic levels and key toxicities of lithium?**
 
-- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L (older adults usually 0.4–0.6). Toxic at ≥1.5 mEq/L. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
+- **Answer:** Acute mania: 0.8–1.2 mEq/L; maintenance: 0.6–0.8 mEq/L (older adults usually 0.4–0.6). Toxicity generally ≥1.5 mEq/L, but in chronic toxicity (especially older adults) a patient can be seriously toxic at a level that looks only mildly raised: treat the patient, not the number. Key toxicities: fine tremor, polyuria/polydipsia (nephrogenic DI), hypothyroidism, hyperparathyroidism, renal impairment.
 
 - **Evidence:** Hypothyroidism occurs in ~14% of lithium-treated patients (OR 5.78 vs. placebo).
 
@@ -427,7 +427,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Slee et al., Lancet 2019.
 
-- **Pearl:** SSRI response takes 4–6 weeks; treatment should continue ≥12 months — up to 50% relapse if discontinued before 1 year.
+- **Pearl:** Early SSRI improvement is usually visible by 2–4 weeks and full response often takes 6–8 weeks; treatment should continue ≥12 months — up to 50% relapse if discontinued before 1 year.
 
 **37. How do SSRIs compare to benzodiazepines for anxiety?**
 
@@ -473,7 +473,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 **41. How does OCD treatment differ from depression treatment with SSRIs?**
 
-- **Answer:** OCD requires **higher SSRI doses** and **longer trials** (8–12 weeks vs. 4–6 weeks for depression). Treatment should continue ≥1–2 years.
+- **Answer:** OCD requires **higher SSRI doses** and **longer trials** (8–12 weeks vs. about 6–8 weeks for depression). Treatment should continue ≥1–2 years.
 
 - **Evidence:** NNT = 5 for SSRIs vs. placebo in OCD; full remission with pharmacotherapy alone is low (~11%).
 
@@ -581,7 +581,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Nosyk et al., JAMA 2024.
 
-- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign). With fentanyl, precipitated withdrawal is uncommon; the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
+- **Pearl:** Buprenorphine is a **partial agonist** — it can precipitate withdrawal if given while full agonists are still present. Start buprenorphine once objective withdrawal is present — roughly COWS ≥ 8–12 depending on the guideline (ASAM's 2023 fentanyl guidance: ≥ 8 with at least one objective sign). With fentanyl, precipitated withdrawal still happens in a minority of standard starts, so plan the start with your team; if it happens, the first treatment is more buprenorphine. Low-dose and high-dose initiation are recognised alternatives your team may use.
 
 **52. How does naloxone work and when is it used?**
 
@@ -743,7 +743,7 @@ Rapid rounds prep — nearly a hundred questions a resident or attending might a
 
 - **Key paper:** Barnard et al., Psychiatr Serv 2025.
 
-- **Pearl:** Involuntary commitment is a **legal process** requiring judicial review — an emergency hold (typically 72 hours) is the initial step, not a final disposition.
+- **Pearl:** Involuntary commitment is a **legal process** requiring judicial review — an emergency hold (its length is set by state statute; in Maine there is no 72-hour hold: after an emergency admission, a staff practitioner must certify a second opinion within 24 hours, and the hospital must convert to informal admission or apply to the District Court within 3 days, or discharge — see the Maine Law Navigator) is the initial step, not a final disposition.
 
 **68. Can a patient with dementia or mental illness have capacity?**
 

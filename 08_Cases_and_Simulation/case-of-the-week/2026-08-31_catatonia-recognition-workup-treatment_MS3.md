@@ -79,7 +79,7 @@ Vital signs: T 37.0 °C, HR 88, BP 118/74, RR 14, SpO₂ 99% on room air. Mucous
 
 **Flow (20–30 min):** 5 min stem read-aloud + spontaneous impressions → 15–20 min through Q1–Q7 (Q1, Q3, Q5, Q6 are the core; Q2, Q4, Q7 can compress) → 5 min wrap-up with the three take-homes below.
 
-**Three take-homes to land:** (1) Catatonia is common, missed, and *examinable* — screen with the BFCRS when any patient is mute, withdrawn, or "not participating." (2) Lorazepam challenge is both a test and the start of treatment; lorazepam and/or ECT are first-line regardless of cause. (3) Fever + rigidity + autonomic instability = malignant catatonia = emergency; and never start high-potency antipsychotics in an actively catatonic patient.
+**Three take-homes to land:** (1) Catatonia is common, missed, and *examinable* — screen with the BFCRS when any patient is mute, withdrawn, or "not participating." (2) Lorazepam challenge is both a test and the start of treatment; lorazepam and/or ECT are first-line for most causes; a benzodiazepine is usually tried first, and ECT is the choice when catatonia is malignant, benzodiazepine-refractory or needs a rapid response. (3) Fever + rigidity + autonomic instability = malignant catatonia = emergency; and never start high-potency antipsychotics in an actively catatonic patient.
 
 **Common learner errors to anticipate:** calling this "just severe depression" or "conversion disorder/malingering" (respond: the exam findings — waxy flexibility, echolalia — are objective and reproducible); jumping to antipsychotics because "she's psychotic until proven otherwise" (use this to teach the NMS-risk teaching point in Q6); ordering a head CT reflexively while skipping the CK and medication history.
 

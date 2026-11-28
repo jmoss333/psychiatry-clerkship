@@ -422,15 +422,28 @@ function MockProvider(){}
 MockProvider.prototype.name='Mock (offline)';
 MockProvider.prototype.start=function(caseDef,opts){
   var rx={}; caseDef.intents.forEach(function(it){rx[it.id]=it.patterns.map(function(p){return new RegExp(p,'i');});});
+  // Red-team IR-12 (2026-11-26): honour excludePatterns exactly as sp.mjs compileIntents/matchIntents
+  // do. Without this the client credited a turn the server vetoes, and parity broke the day a pack
+  // intent carried an exclude.
+  var ex={}; caseDef.intents.forEach(function(it){ex[it.id]=(it.excludePatterns||[]).map(function(p){return new RegExp(p,'i');});});
   var flagIds=caseDef.intents.filter(function(it){return it.category==='flag';}).map(function(it){return it.id;});
   var prio={data:0,safety:0,organization:1,technique:2,alliance:3};
   var catPrio={}; caseDef.intents.forEach(function(it){catPrio[it.id]=(prio[it.category]!==undefined)?prio[it.category]:9;});
-  return {caseDef:caseDef, opts:opts, rx:rx, flagIds:flagIds, catPrio:catPrio, rapport:0, unlocked:{}, covered:{}, flaggedOnly:{}, flags:[], closedRun:0,
+  return {caseDef:caseDef, opts:opts, rx:rx, ex:ex, flagIds:flagIds, catPrio:catPrio, rapport:0, unlocked:{}, covered:{}, flaggedOnly:{}, afterGate:{}, hinted:{}, flags:[], closedRun:0,
           varIdx:{}, turns:[], reflections:0, hintUses:0, stepOuts:0, openInviteUsed:false, greetUsed:false};
 };
+/* A learner turn split into sentences, for intents that carry excludePatterns. Never empty.
+   Mirrors sp.mjs segments(). */
+function turnSegments(text){return String(text).match(/[^.?!]+[.?!]*/g)||[String(text)];}
 MockProvider.prototype._match=function(s,text){
-  var hits=[]; var rx=s.rx;
-  s.caseDef.intents.forEach(function(it){ if(rx[it.id].some(function(r){return r.test(text);})) hits.push(it.id); });
+  var hits=[]; var rx=s.rx, ex=s.ex||{}, segs=null;
+  s.caseDef.intents.forEach(function(it){
+    var exs=ex[it.id]||[];
+    // No excludes: the whole turn, as before. Excludes: some sentence matches a pattern and no exclude.
+    if(!exs.length){ if(rx[it.id].some(function(r){return r.test(text);})) hits.push(it.id); return; }
+    segs=segs||turnSegments(text);
+    if(segs.some(function(seg){return rx[it.id].some(function(r){return r.test(seg);})&&!exs.some(function(r){return r.test(seg);});})) hits.push(it.id);
+  });
   return hits;
 };
 MockProvider.prototype._tier=function(s){
@@ -471,6 +484,9 @@ MockProvider.prototype.respond=function(s,text){
   // safety question asked in it is never answered; remember intents heard only on flagged turns.
   hits.forEach(function(h){ if(flags.length){ if(!s.covered[h]) s.flaggedOnly[h]=true; } else { delete s.flaggedOnly[h]; } });
   hits.forEach(function(h){s.covered[h]=true;});
+  // Red-team IR-4: mirrors sp.mjs deriveState. Intents heard on a clean turn that BEGAN with a gate
+  // open, recorded before this turn's gates run: only these count as follow-up after a disclosure.
+  if(!flags.length){ Object.keys(s.unlocked).forEach(function(g){ hits.forEach(function(h){ s.afterGate[g+'|'+h]=true; }); }); }
   var reply=null, critical=null;
   if(flags.length){ reply=this._pick(s,flags[0],'any'); }
   var g=s.caseDef.gated, tier=this._tier(s);
@@ -561,14 +577,17 @@ ProxyProvider.prototype._applyState=function(s,j,text,signal){
     st.rapport>=this.rapportMin&&st.rapport<=this.rapportMax&&stringArray(st.unlocked)&&ticketValid);
   if(!valid){var invalid=new Error('The live patient returned an invalid response.');invalid.code='invalid_response';invalid.status=200;invalid.retryDisposition='offline-only';throw invalid;}
   var intents=st.intents.slice(),flags=st.flags.slice(),unlocked=st.unlocked.slice(),rapport=st.rapport;
-  var nextTurns=s.turns.slice(),nextCovered=Object.assign({},s.covered),nextUnlocked=Object.assign({},s.unlocked),nextFlaggedOnly=Object.assign({},s.flaggedOnly);
+  var nextTurns=s.turns.slice(),nextCovered=Object.assign({},s.covered),nextUnlocked=Object.assign({},s.unlocked),nextFlaggedOnly=Object.assign({},s.flaggedOnly),nextAfterGate=Object.assign({},s.afterGate);
   if(text!==null)nextTurns.push({me:text,pt:j.reply,flags:flags,intents:intents,rapport:rapport});
   // Red-team IR-1: the same asked-not-answered tracking as MockProvider.respond and sp.mjs, so a live
   // learner's flag-consumed safety question is never credited as a screen in the debrief.
   intents.forEach(function(i){ if(flags.length){ if(!s.covered[i]) nextFlaggedOnly[i]=true; } else { delete nextFlaggedOnly[i]; } });
   intents.forEach(function(i){nextCovered[i]=true;});
+  // Red-team IR-4: the gates open BEFORE this turn (s.unlocked, not the server's new list) are the
+  // ones this turn's intents follow up on — the same rule as MockProvider.respond and sp.mjs.
+  if(!flags.length){ Object.keys(s.unlocked).forEach(function(g){ intents.forEach(function(i){ nextAfterGate[g+'|'+i]=true; }); }); }
   unlocked.forEach(function(u){nextUnlocked[u]=true;});
-  s.turns=nextTurns;s.covered=nextCovered;s.rapport=rapport;s.unlocked=nextUnlocked;s.flaggedOnly=nextFlaggedOnly;
+  s.turns=nextTurns;s.covered=nextCovered;s.rapport=rapport;s.unlocked=nextUnlocked;s.flaggedOnly=nextFlaggedOnly;s.afterGate=nextAfterGate;
   // Match the existing offline/server reflection counter after an accepted turn. Live sessions
   // previously left this stale (F5 follow-up, approved 2026-09-04): a rating repair, not a new
   // grading rule — computeRubric already reads s.reflections, unchanged, for every mode.
@@ -600,25 +619,44 @@ ProxyProvider.prototype.evaluate=function(s,sa,context){
 function askedNotAnswered(s,intent){
   return !!(s.flaggedOnly&&s.flaggedOnly[intent]) && (s.caseDef.gated||[]).some(function(gd){return !s.unlocked[gd.id]&&(gd.requiresIntents||[]).indexOf(intent)>=0;});
 }
+/* Red-team IR-2: a safety intent asked on a clean turn, that opens a rapport gate (no parent gate),
+   while every such gate is still locked — the patient deflected. Mirrors sp.mjs deflected(). */
+function deflectedAsk(s,intent){
+  if(!s.covered[intent]||askedNotAnswered(s,intent))return false;
+  var def=s.caseDef.intents.filter(function(it){return it.id===intent;})[0];
+  if(!def||def.category!=='safety')return false;
+  var openers=(s.caseDef.gated||[]).filter(function(gd){return !gd.requiresGate&&(gd.requiresIntents||[]).indexOf(intent)>=0;});
+  return openers.length>0&&!openers.some(function(gd){return s.unlocked[gd.id];});
+}
 function computeCoverage(s){
   var out=[]; var cd=s.caseDef;
   cd.checklist.forEach(function(c){
     var status;
+    // criticalIfGate (IR-5/IR-10): critical once that disclosure gate has opened. Mirrors sp.mjs.
+    var row={id:c.id,label:c.label,status:null,critical:!!c.critical||!!(c.criticalIfGate&&s.unlocked[c.criticalIfGate])};
     if(c.dependsOnGate && !s.unlocked[c.dependsOnGate]){ status='na'; }
     else{
       var unanswered=c.intents.filter(function(i){return askedNotAnswered(s,i);});
-      var got=c.intents.filter(function(i){return s.covered[i]&&unanswered.indexOf(i)<0;}).length;
+      var defl=c.intents.filter(function(i){return unanswered.indexOf(i)<0&&deflectedAsk(s,i);});
+      // IR-4: a gate-dependent row credits only what was asked on a clean turn after the gate opened.
+      var after=function(i){return !c.dependsOnGate||!!(s.afterGate&&s.afterGate[c.dependsOnGate+'|'+i]);};
+      var early=c.intents.filter(function(i){return s.covered[i]&&!after(i);});
+      var got=c.intents.filter(function(i){return s.covered[i]&&unanswered.indexOf(i)<0&&defl.indexOf(i)<0&&after(i);}).length;
       if(got===c.intents.length)status='observed';
-      else if(got>0||unanswered.length)status='partial';
+      else if(got>0||unanswered.length||defl.length)status='partial';
       else if(c.partialIfOnly && c.partialIfOnly.some(function(i){return s.covered[i];}))status='partial';
       else status='missed';
-      if(unanswered.length){ out.push({id:c.id,label:c.label,status:status,critical:!!c.critical,askedNotAnswered:true}); return; }
+      if(unanswered.length)row.askedNotAnswered=true;
+      if(defl.length)row.deflected=true;
+      if(early.length)row.askedEarly=true;
     }
-    out.push({id:c.id,label:c.label,status:status,critical:!!c.critical});
+    row.status=status;
+    out.push(row);
   });
   return out;
 }
 function computeRubric(s,cov){
+  cov=cov||computeCoverage(s);
   function covPct(cat){
     var items=s.caseDef.intents.filter(function(i){return i.category===cat&&i.coverage==='core';});
     var got=items.filter(function(i){return s.covered[i.id];}).length;
@@ -643,6 +681,11 @@ function computeRubric(s,cov){
   }else{
     r.technique=(direct&&badFlags===0&&s.covered['open_invite'])?'observed':(direct||euph||passive)?'partial':'missed';
   }
+  /* Red-team IR-4 (2026-11-26): once a disclosure opened a follow-up row (dependsOnGate), technique
+     cannot read Observed unless that follow-up was asked after the disclosure. A pills-at-home
+     disclosure with no follow-up used to leave every domain Observed. */
+  var followUpOpen=cov.some(function(c){var row=s.caseDef.checklist.filter(function(x){return x.id===c.id;})[0];return row&&row.dependsOnGate&&c.status!=='na'&&c.status!=='observed';});
+  if(followUpOpen&&r.technique==='observed')r.technique='partial';
   /* Organization is the case's own organization-category core intents (an opening and a close):
      greeting_agenda + summary_close for Dana, Marcus and Ray; greeting_agenda + next_step for Morgan,
      whose MI close is a next step rather than a summary. Same grades for the first three as before. */
@@ -652,6 +695,7 @@ function computeRubric(s,cov){
   return r;
 }
 function buildNarrative(s,cov,rub){
+  cov=cov||computeCoverage(s);
   var strengths=[],strengthIntents=[],growth=[];
   function strength(text,intents){strengths.push(text);strengthIntents.push(intents);}
   // Use the recorded turns for display evidence in both modes.
@@ -661,7 +705,11 @@ function buildNarrative(s,cov,rub){
   if(recognizedReflections>=2)strength('The simulator recognized more than one reflection or validation. Review '+who+'’s replies to see how the conversation developed.',['reflection']);
   /* Coaching text must work for every persona (Dana/Marcus/Ray) — displayName + they/them,
      never a hardcoded she/her: Marcus and Ray got wrong-pronoun debriefs. */
+  var flaggedAll=[]; s.turns.forEach(function(t){flaggedAll=flaggedAll.concat(t.flags||[]);});
+  // Red-team IR-6: advising abrupt cessation after nightly drinking is unsafe advice; it leads the list.
+  if(flaggedAll.indexOf('advise_abrupt_stop')>=0)growth.push({t:'You suggested stopping drinking all at once. After drinking most evenings, stopping suddenly without a medical withdrawal evaluation can be dangerous. Ask about the last drink and past withdrawal (shakes, sweats, seizures, seeing things), and keep any change with the medical team.',link:'t_sud.md',intents:['advise_abrupt_stop','withdrawal_history']});
   if(s.covered['si_direct']&&askedNotAnswered(s,'si_direct'))growth.push({t:'You asked a suicide-screening question, but it came in the same turn as a phrase '+who+' reacted to, and '+who+' never answered it. Do not record this as screened or as a denial. Ask it again on its own, plainly.',link:'pg_suicide.md',intents:['si_direct']});
+  else if(s.covered['si_direct']&&deflectedAsk(s,'si_direct'))growth.push({t:'You asked a suicide-screening question, and '+who+' deflected instead of answering. Do not record this as screened or as a denial. Repair the alliance first, then ask again, plainly.',link:'pg_suicide.md',intents:['si_direct']});
   else if(s.covered['si_direct'])strength('Screening language recognized. Review the patient’s response to see what was shared.',['si_direct']);
   if(s.covered['work_stressor'])strength('The simulator recognized language about the work stressor. Review what the patient shared about it.',['work_stressor']);
   if(s.covered['greeting_agenda'])strength('The simulator recognized opening language. Review how you introduced the conversation and how '+who+' responded.',['greeting_agenda']);
@@ -669,7 +717,18 @@ function buildNarrative(s,cov,rub){
   if(!s.covered['si_direct']&&s.covered['si_passive'])growth.push({t:'The simulator recognized passive-wish wording (wishing to be dead or not to wake up) but not a plain suicide screen. A passive wish and active thoughts of suicide are separate questions. Review your words and the patient’s reply separately; for practice, follow the first with the second: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_passive']});
   if(!s.covered['si_direct']&&!s.covered['si_passive']&&s.covered['si_euphemism'])growth.push({t:'The simulator recognized a euphemism but not a plain suicide screen. Review your words and the patient’s reply separately. For practice, try the patient’s own words plus the plain question: “When you say you’re a burden — have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
   if(!s.covered['si_direct']&&!s.covered['si_euphemism']&&!s.covered['si_passive'])growth.push({t:'The simulator did not recognize suicide-screening language in your words. Review the exchange before deciding what was asked or answered. For practice: “Have you had thoughts of killing yourself?”',link:'pg_suicide.md',intents:['si_direct','si_euphemism']});
-  if(s.unlocked['si_active']&&!(s.covered['si_plan']&&s.covered['si_means']&&s.covered['si_intent_protective']&&s.covered['si_behavior']))growth.push({t:'The simulator did not recognize language for every follow-up topic. Review the questions and replies for plan, means and access, intent, any past attempts or preparations, and what keeps the patient going; recognition alone does not establish an answer.',link:'pg_suicide.md',intents:['si_plan','si_means','si_intent_protective','si_behavior']});
+  /* Red-team IR-4/IR-5: every follow-up row a disclosure opened (dependsOnGate), credited only for what
+     was asked after the disclosure. Asked only before it, or in the same turn as the screen, it was
+     never a follow-up to what the patient said. */
+  cov.forEach(function(c){
+    var row=s.caseDef.checklist.filter(function(x){return x.id===c.id;})[0];
+    if(!row||!row.dependsOnGate||c.status==='na'||c.status==='observed')return;
+    var t=c.id==='c_si_followup'
+      ?'The simulator did not recognize language for every follow-up topic. Review the questions and replies for plan, means and access, intent, any past attempts or preparations, and what keeps the patient going; recognition alone does not establish an answer.'
+      :'After '+who+'’s disclosure, the simulator did not recognize every follow-up question ('+coverageDisplay(c).label.toLowerCase()+'). Review the questions and replies; recognition alone does not establish an answer.';
+    if(c.askedEarly)t+=' Some of these questions came before '+who+' disclosed, or in the same turn as the screening question, so they could not follow up on what '+who+' said. Ask them again after the disclosure.';
+    growth.push({t:t,link:row.dependsOnGate==='g_command'?'t_psychosis.md':'pg_suicide.md',intents:row.intents.slice()});
+  });
   if(recognizedReflections<2)growth.push({t:'The simulator recognized fewer than two reflections. For practice, try one reflection for every two or three questions, and attend to the patient’s reply.',link:'pg_interview.md',intents:['reflection']});
   if(hasIntent('work_stressor')&&!s.covered['work_stressor'])growth.push({t:'The simulator did not recognize language about the work stressor. Review the exchange; for practice, try “What changed around the time this started?”',link:'pg_interview.md',intents:['work_stressor']});
   if(!s.covered['summary_close'])growth.push({t:'The simulator did not recognize summary language. Review your closing; for practice, play back what you heard and name the hard part calmly.',link:'pg_interview.md',intents:['summary_close']});
@@ -722,18 +781,63 @@ function getCoach(sess){
     return sess.caseDef.persona.displayName+' went quiet after that last one. Before your next question, try giving their own words back — no advice attached.';
   if(flags.indexOf('premature_reassurance')>=0)
     return 'Reassurance landed before assessment, and it cost you. Ask what would need to be true for things to feel okay — don’t promise it.';
+  if(flags.indexOf('advise_abrupt_stop')>=0)
+    return 'Stopping all at once, on their own, is not safe advice after drinking most evenings. Ask about the last drink and past withdrawal, and keep any change with the medical team.';
   if(sess.closedRun>=3)
     return 'That’s '+sess.closedRun+' closed questions in a row — it’s starting to feel like a form to them. One reflection buys back the room.';
-  var cov=computeCoverage(sess), hints=sess.caseDef.hints||{};
-  var open=cov.filter(function(c){return c.status!=='observed'&&c.status!=='na'&&hints[c.id];});
-  open.sort(function(a,b){return (b.critical?1:0)-(a.critical?1:0);});
-  if(!open.length) return 'The map has no further hints. Review what the patient actually answered and what remains unclear before summarizing and closing.';
-  var h=hints[open[0].id];
+  var target=coachTarget(sess), hints=sess.caseDef.hints||{};
+  if(!target) return 'The map has no further hints. Review what the patient actually answered and what remains unclear before summarizing and closing.';
+  var h=hints[target];
   // The hint comes from the same wording recogniser as the map: it can miss a topic the learner
   // raised in other words, so it says so rather than asserting the topic was never asked.
   var hedge=sess.turns.length?' If you already asked this in other words, the room may not have recognised it — say it plainly once more.':'';
   if(sess.stepOuts>1) return h+hedge+' Say it in their own words first, then one plain question — and wait.';
   return h+hedge;
+}
+/* The checklist row the hallway coach names next, or null when the coach speaks about a flag or a
+   closed-question run instead. Shared by getCoach and the IR-7 prompt record. */
+function coachTarget(sess){
+  var recent=sess.turns.slice(-2), flags=[];
+  recent.forEach(function(t){flags=flags.concat(t.flags||[]);});
+  if(flags.indexOf('judgmental')>=0||flags.indexOf('premature_reassurance')>=0||flags.indexOf('advise_abrupt_stop')>=0||sess.closedRun>=3)return null;
+  var cov=computeCoverage(sess), hints=sess.caseDef.hints||{};
+  var open=cov.filter(function(c){return c.status!=='observed'&&c.status!=='na'&&hints[c.id];});
+  open.sort(function(a,b){return (b.critical?1:0)-(a.critical?1:0);});
+  return open.length?open[0].id:null;
+}
+/* Red-team IR-7 (2026-11-26): remember the first time the coach named a row, as the number of turns
+   taken at that moment. A step asked after that reads "completed after a prompt" in the debrief and
+   the supervision transcript, never as clean. Display-only: coverage and parity are untouched. A full
+   re-run after the debrief is a new attempt (ruled 2026-11-25) and starts with no record. */
+function recordCoachHint(sess){
+  var id=coachTarget(sess); if(!id)return null;
+  sess.hinted=sess.hinted||{}; if(sess.hinted[id]==null)sess.hinted[id]=sess.turns.length;
+  return id;
+}
+function promptMarks(s,cov){
+  var hinted=s.hinted||{};
+  return cov.map(function(c){
+    var at=hinted[c.id]; if(at==null||c.status==='na'||c.status==='missed')return c;
+    var row=s.caseDef.checklist.filter(function(x){return x.id===c.id;})[0]; if(!row)return c;
+    var ids=row.intents.concat(row.partialIfOnly||[]);
+    var turn=null; s.turns.slice(at).some(function(t,i){if((t.intents||[]).some(function(id){return ids.indexOf(id)>=0;})){turn=at+i+1;return true;}return false;});
+    return turn==null?c:Object.assign({},c,{afterPrompt:true,promptedAtTurn:at,answeredTurn:turn});
+  });
+}
+/* IR-9: turns that carry some safety vocabulary, or a recognized safety intent. Only these may be
+   offered to the "I did ask — show me" self-report. SUICIDE_VOCAB is the narrower test for an
+   ambiguous suicide ask: a turn that talks about dying or ending a life in words no intent recognized
+   ("bringing your own life to an end") keeps the hedge rather than being told it never asked. */
+var SAFETY_VOCAB=/\b(?:suicid\w*|kill\w*|die|dying|died|dead|death|end (?:it|things|everything|your|my)|(?:your|own) life|alive|wake up|not (?:be )?(?:here|around)|gone|disappear\w*|hurt\w*|harm\w*|overdose\w*|pills?|safe(?:ty)?|hopeless\w*|the point|voices?|tell you to|weapons?|guns?)\b/i;
+var SUICIDE_VOCAB=/\b(?:suicid\w*|kill\w*|die|dying|dead|death|end (?:it|things|everything)|(?:your|own) life|alive|wake up|not (?:be )?(?:here|around)|disappear\w*|(?:hurt|harm)\w* yourself|the point)\b/i;
+function suicideVocabTurns(s){var out=[];s.turns.forEach(function(t,i){if(SUICIDE_VOCAB.test(t.me||''))out.push(i+1);});return out;}
+function safetyVocabTurns(s){
+  var safetyIds=s.caseDef.intents.filter(function(it){return it.category==='safety';}).map(function(it){return it.id;});
+  var out=[]; s.turns.forEach(function(t,i){if(SAFETY_VOCAB.test(t.me||'')||(t.intents||[]).some(function(id){return safetyIds.indexOf(id)>=0;}))out.push(i+1);});
+  return out;
+}
+function suicideFamilyHeard(s){
+  return s.turns.some(function(t){return (t.intents||[]).some(function(id){return /^si_/.test(id);});})||Object.keys(s.covered||{}).some(function(id){return /^si_/.test(id);});
 }
 function coverageProse(cov){
   var missed=cov.filter(function(c){return c.status==='missed';}).map(function(c){return coverageDisplay(c).label;});
@@ -746,30 +850,72 @@ function coverageProse(cov){
 }
 /* F1–F5: presentation only. Raw checklist labels/statuses remain unchanged for scoring and parity. */
 function coverageDisplay(c){
-  var topics={c_open:'Opening language',c_structure:'Redirection and validation',c_stance:'Control and non-threatening stance',c_explore:'Exploration of the experience',c_hall:'Hallucinations',c_command:'Command content',c_si:'Suicide screening',c_si_followup:'Suicide follow-up',c_risk:'Spending and sexual risk',c_collateral:'Collateral discussion',c_violence:'Thoughts of harming others',c_close:'Summary and closing',c_substance:'Alcohol and substances'};
+  var topics={c_open:'Opening language',c_structure:'Redirection and validation',c_stance:'Control and non-threatening stance',c_explore:'Exploration of the experience',c_hall:'Hallucinations',c_command:'Command content',c_command_followup:'Command follow-up',c_si:'Suicide screening',c_si_followup:'Suicide follow-up',c_withdrawal:'Withdrawal history',c_means:'Means safety',c_risk:'Spending and sexual risk',c_collateral:'Collateral discussion',c_violence:'Thoughts of harming others',c_close:'Summary and closing',c_substance:'Alcohol and substances'};
   var label=topics[c.id]||c.label;
   // D16(2)b: a fifth, display-only status the learner can apply to their own turn. computeCoverage
   // never emits this status — it exists only for the JSX self-report override — and it is never
   // worded as Observed/Language recognized.
   if(c.status==='self-reported')return {label:label,word:STATUS_WORD['self-reported']};
-  var family=c.id==='c_si_followup'?'Follow-up':(c.id==='c_si'||c.id==='c_command'?'Screening':null);
+  var family=(c.id==='c_si_followup'||c.id==='c_command_followup')?'Follow-up':(c.id==='c_si'||c.id==='c_command'?'Screening':null);
   var words=family?{observed:family+' language recognized',partial:'Some '+family.toLowerCase()+' language recognized',missed:family+' language not recognized',na:family==='Follow-up'?'Follow-up not available under current rules':'Not applicable under current rules'}:STATUS_WORD;
-  if(c.askedNotAnswered)return {label:label,word:'Asked, not answered'};
-  return {label:label,word:words[c.status]||'Unclear from this exchange'};
+  var word=c.askedNotAnswered?'Asked, not answered'
+    :c.deflected?'Asked — the patient deflected, not answered'
+    :(c.askedEarly&&c.status==='missed')?'Asked only before the disclosure'
+    :(words[c.status]||'Unclear from this exchange');
+  if(c.afterPrompt)word+=' · completed after a prompt';
+  return {label:label,word:word};
 }
-function criticalFeedback(c){
+/* criticalFeedback(c[, s]). With the session, the box follows the 2026-11-25/26 rulings:
+   - asked, not answered (IR-1) and deflected (IR-2): say so; the pack's criticalMiss.partial is the
+     body for a non-suicide row (Ray's is written for a deflected command screen);
+   - IR-9 (Josh, 2026-11-25): a suicide row where NO suicide-family intent matched is a total miss —
+     the case's criticalMiss.missed, plainly, with no hedge and no self-report. One reading added for
+     review: a turn with suicide vocabulary no intent recognized ("bringing your own life to an end")
+     makes the ask ambiguous, so it keeps the hedge rather than being told it never asked;
+   - a follow-up row with its own criticalMiss (made critical by a disclosure) whose intents were never
+     heard is a total miss too;
+   - otherwise the D16/G4 hedge stays, the pack's consequence line follows it, and the self-report is
+     offered only for turns with safety vocabulary.
+   Without the session the D16/G4 wording is returned unchanged. */
+function criticalRowDef(s,c){return (s&&s.caseDef&&s.caseDef.checklist||[]).filter(function(x){return x.id===c.id;})[0]||null;}
+function criticalCopy(s,c){
+  var row=criticalRowDef(s,c); if(row&&row.criticalMiss)return row.criticalMiss;
+  return (row&&row.critical&&s.caseDef.criticalMiss)||{};
+}
+function criticalFeedback(c,s){
   var display=coverageDisplay(c);
+  var row=s?criticalRowDef(s,c):null, isSI=!!(row&&(row.intents||[]).indexOf('si_direct')>=0), copy=s?criticalCopy(s,c):{};
+  var turns=s?safetyVocabTurns(s):[];
+  if(s&&c.deflected&&!c.askedNotAnswered)return {heading:display.label+' — '+display.word.toLowerCase(),mode:'deflected',
+    opener:'You asked, but the patient did not answer.',
+    body:(!isSI&&copy.partial)?copy.partial+' Do not record this as screened or as a denial.':'The patient deflected rather than answered, so nothing was disclosed. Do not record this as screened or as a denial. Repair the alliance first, then ask again, plainly, and review the exchange with your supervisor.',
+    selfReport:false,selfReportTurns:[]};
+  // A total miss. Suicide rows: no suicide-family intent heard at all and no turn with suicide
+  // vocabulary (IR-9). A row with its own pack copy (a follow-up made critical by a disclosure): none
+  // of its intents heard at any point. Both show the consequence text, plainly.
+  var rowHeard=!!(row&&(row.intents||[]).concat(row.partialIfOnly||[]).some(function(i){return s.covered&&s.covered[i];}));
+  var totalMiss=!!(s&&c.status==='missed'&&!c.askedNotAnswered&&!c.askedEarly&&copy.missed&&
+    (isSI?(!suicideFamilyHeard(s)&&!suicideVocabTurns(s).length):(!!(row&&row.criticalMiss)&&!rowHeard)));
+  if(totalMiss)return {heading:display.label+' — not asked',mode:'missed',
+    opener:isSI?'Suicide was not asked about in this encounter.':display.label+' was not asked about in this encounter.',body:copy.missed,selfReport:false,selfReportTurns:[]};
+  if(s&&c.askedEarly&&c.status==='missed')return {heading:display.label+' — '+display.word.toLowerCase(),mode:'early',
+    opener:'You asked before the patient disclosed, and not after.',
+    body:'A question asked before the disclosure, or in the same turn as the screen, cannot follow up on what the patient said. Ask it again after the disclosure.'+(copy.missed?' '+copy.missed:''),
+    selfReport:false,selfReportTurns:[]};
   // D16(2)a reconciles G4 with the F1–F5 body: G4's ratified sentence is the crit box's first
   // line (here, the returned "opener") rather than sitting alongside a second, near-identical
   // "language not recognized" claim. The non-suicide critical topic (Ray's command content)
   // generalizes the same claim to its own label and never names suicide.
   var opener=(c.id==='c_si')?'The simulator did not recognize a suicide screen in your words.'
     :'The simulator did not recognize '+display.label.toLowerCase()+' in your words.';
-  if(c.askedNotAnswered)return {heading:display.label+' — '+display.word.toLowerCase(),
+  if(c.askedNotAnswered)return {heading:display.label+' — '+display.word.toLowerCase(),mode:'unanswered',
     opener:'You asked, but the patient never answered.',
-    body:'Your question came in the same turn as a phrase the patient reacted to, so the patient answered that phrase instead. Do not record this as screened or as a denial. Ask again on its own, plainly, and review the exchange with your supervisor.'};
-  return {heading:display.label+' — '+display.word.toLowerCase(),opener:opener,
-    body:'It does not establish whether a question was directed to the patient or whether the patient answered. Review the actual exchange with your supervisor; practice wording is below.'};
+    body:'Your question came in the same turn as a phrase the patient reacted to, so the patient answered that phrase instead. Do not record this as screened or as a denial. Ask again on its own, plainly, and review the exchange with your supervisor.',
+    selfReport:false,selfReportTurns:[]};
+  var consequence=(s&&c.status==='partial'&&copy.partial)?copy.partial:null;
+  return {heading:display.label+' — '+display.word.toLowerCase(),opener:opener,mode:'hedged',
+    body:'It does not establish whether a question was directed to the patient or whether the patient answered. Review the actual exchange with your supervisor; practice wording is below.',
+    consequence:consequence,selfReport:!s||turns.length>0,selfReportTurns:turns};
 }
 // Link observations to recorded matches, never to a fresh interpretation of the reply.
 function languageEvidence(s,ids){
@@ -1581,7 +1727,7 @@ function App(){
   function continueOffline(){
     if(!actorIssue||!E)return;
     var issue=actorIssue,prior=E.session.turns.slice(),mock=new MockProvider(),session=mock.start(E.caseDef,{difficulty:E.difficulty,encounterId:E.encounterId});
-    session.stepOuts=E.session.stepOuts||0;session.hintUses=E.session.hintUses||0;
+    session.stepOuts=E.session.stepOuts||0;session.hintUses=E.session.hintUses||0;session.hinted=Object.assign({},E.session.hinted||{});
     var replay=Promise.resolve();prior.forEach(function(turn){replay=replay.then(function(){return mock.respond(session,turn.me).then(function(){session.turns[session.turns.length-1].pt=turn.pt;});});});
     setActorIssue(null);setOfflineSession(true);voiceControllerRef.current.cancelAll('Offline simulation selected.');setBusy(true);
     replay.then(function(){
@@ -1593,7 +1739,7 @@ function App(){
     }).catch(function(error){setBusy(false);setActorIssue({kind:issue.kind,text:issue.text,error:error});});
   }
   function resolveVoiceFallback(choice){try{voiceControllerRef.current.resolveFallback(choice);persistRoomMode(choice==='text'?'typed':'typed-device');}catch(x){}}
-  function openDoor(){ E.session.stepOuts=(E.session.stepOuts||0)+1; E.session.hintUses=(E.session.hintUses||0)+1;
+  function openDoor(){ E.session.stepOuts=(E.session.stepOuts||0)+1; E.session.hintUses=(E.session.hintUses||0)+1; recordCoachHint(E.session);
     var interrupted=isBusy?E.msgs.filter(function(message){return message.who==='me';}).slice(-1)[0]:null;
     voiceControllerRef.current.cancelAll('The learner stepped out.');setBusy(false);
     if(isBusy)setActorIssue({kind:interrupted?'converse':'open',text:interrupted?interrupted.text:'',error:{code:'actor_cancelled',message:'The in-progress patient reply was cancelled when you stepped out.',retryDisposition:'offline-only'}});
@@ -1621,11 +1767,16 @@ function App(){
     lines.push('[0] '+cd.persona.displayName.toUpperCase()+': '+cd.persona.opening);
     s.turns.forEach(function(t,i){lines.push('['+(i+1)+'] STUDENT: '+t.me);lines.push('['+(i+1)+'] '+cd.persona.displayName.toUpperCase()+': '+t.pt);});
     lines.push('','--- Language recognized by the simulator ---','Recognition does not establish that a question was directed to the patient or that an answer was obtained.',RESPONSE_REVIEW,UNCLEAR_REVIEW);
-    computeCoverage(s).forEach(function(c){
+    var tcov=promptMarks(s,computeCoverage(s));
+    tcov.forEach(function(c){
       var display=coverageDisplay(selfReport&&selfReport.id===c.id?Object.assign({},c,{status:'self-reported'}):c);
       lines.push(display.label+': '+display.word);
     });
     if(s.stepOuts)lines.push('','Stepped out '+s.stepOuts+'x (notes + coach).');
+    // Red-team IR-7: a step the coach named before the learner asked it is recorded as prompted.
+    var prompted=tcov.filter(function(c){return c.afterPrompt;});
+    if(prompted.length){lines.push('','--- Completed after a coach prompt ---','The hallway coach named these before they were asked. In a real encounter there is no door.');
+      prompted.forEach(function(c){lines.push(coverageDisplay(c).label+(c.critical?' (critical)':'')+': coach prompt after turn '+c.promptedAtTurn+'; asked at turn '+c.answeredTurn+'.');});}
     if(selfReport&&selfReport.turnIndex!=null){
       var reportedTurn=s.turns[selfReport.turnIndex-1];
       lines.push('','--- Phrasings the simulator did not recognize ---',
@@ -2014,26 +2165,61 @@ function App(){
 
   /* ---------- debrief ---------- */
   if(S.screen==='debrief'){
-    var sess2=E.session, cov=computeCoverage(sess2), rub=computeRubric(sess2,cov), nar=buildNarrative(sess2,cov,rub);
+    var sess2=E.session, cov=promptMarks(sess2,computeCoverage(sess2)), rub=computeRubric(sess2,cov), nar=buildNarrative(sess2,cov,rub);
     var who2=E.caseDef.persona.displayName;
-    var critItem=cov.filter(function(c){return c.critical;})[0]||cov.filter(function(c){return c.id==='c_si';})[0];
-    var criticalMiss=critItem&&critItem.status!=='observed'&&critItem.status!=='na';
+    // Every critical row in a miss state gets its own box (IR-5/IR-10 made some rows critical only
+    // once a disclosure opened them). The case's original critical row keeps its pack copy and SI
+    // fallbacks; a row with its own criticalMiss carries its own.
+    var critRows=cov.filter(function(c){return c.critical&&c.status!=='observed'&&c.status!=='na';});
+    var critItem=critRows[0]||cov.filter(function(c){return c.critical;})[0]||cov.filter(function(c){return c.id==='c_si';})[0];
+    var criticalMiss=!!(critItem&&critItem.status!=='observed'&&critItem.status!=='na');
+    if(!critRows.length&&criticalMiss)critRows=[critItem];
     // F1–F5 replace the display's unsupported assessment of what happened; D16(2)a folds the
-    // ratified G4 opener in as the crit box's first line. Pack text, scoring, gate dependencies,
-    // and the practice lines below are unchanged.
-    var critNotice=criticalMiss?criticalFeedback(critItem):null;
-    var selfReportedHere=!!(criticalMiss&&selfReport&&selfReport.id===critItem.id&&selfReport.turnIndex!=null);
+    // ratified G4 opener in as the crit box's first line. IR-9 (2026-11-25) replaces it with the
+    // pack's consequence text on a total miss; see criticalFeedback.
+    var critNotice=criticalMiss?criticalFeedback(critItem,sess2):null;
+    var selfReportedHere=!!(criticalMiss&&critNotice.selfReport&&selfReport&&selfReport.id===critItem.id&&selfReport.turnIndex!=null);
+    var promptedCrit=cov.filter(function(c){return c.critical&&c.afterPrompt;});
     // The re-run rehearse line, the reference, and the reframe are pack-driven per case
     // (criticalMiss.rehearse / .ref / .reframe) so a non-SI case like Ray carries its own
     // command-hallucination coaching. Cases whose critical gate is the suicide screen fall
     // back to the SI defaults when the pack omits the fields — which keeps Dana's attested
     // pack byte-unchanged. A case with neither pack copy nor an SI gate renders none of the
     // three, never SI coaching that would be clinically wrong for it (issue #225).
-    var critChk=critItem?(E.caseDef.checklist.filter(function(c){return c.id===critItem.id;})[0]||null):null;
-    var isSI=!!(critChk&&(critChk.intents||[]).indexOf('si_direct')>=0);
-    var rehearseLine=((E.caseDef.criticalMiss||{}).rehearse)||(isSI?'“Have you had thoughts of killing yourself?”':null);
-    var refLine=((E.caseDef.criticalMiss||{}).ref)||(isSI?'→ pg_suicide.md · asking directly, in plain language':null);
-    var reframeLine=((E.caseDef.criticalMiss||{}).reframe)||(isSI?'Asking doesn’t plant the thought. Not asking leaves them alone with it.':null);
+    function critLines(item){
+      var chk=item?(E.caseDef.checklist.filter(function(c){return c.id===item.id;})[0]||null):null;
+      var own=chk&&chk.criticalMiss||null;
+      var isSI=!!(chk&&(chk.intents||[]).indexOf('si_direct')>=0);
+      if(own)return {rehearse:own.rehearse||null,ref:own.ref||null,reframe:own.reframe||null};
+      return {rehearse:((E.caseDef.criticalMiss||{}).rehearse)||(isSI?'“Have you had thoughts of killing yourself?”':null),
+        ref:((E.caseDef.criticalMiss||{}).ref)||(isSI?'→ pg_suicide.md · asking directly, in plain language':null),
+        reframe:((E.caseDef.criticalMiss||{}).reframe)||(isSI?'Asking doesn’t plant the thought. Not asking leaves them alone with it.':null)};
+    }
+    function critBox(item,first){
+      var notice=first?critNotice:criticalFeedback(item,sess2), lines=critLines(item);
+      var srTurns=(notice.selfReportTurns||[]), offerSR=!!(first&&notice.selfReport&&srTurns.length);
+      return e('div',{className:'crit',key:item.id},
+        e('p',{className:'kick'},'A safety topic to review'),
+        e('h2',null,notice.opener),
+        e('p',{className:'body'},notice.body),
+        notice.consequence?e('p',{className:'body'},notice.consequence):null,
+        e(EvidenceReview,{label:coverageDisplay(item).label,evidence:coverageEvidence(sess2,item.id)}),
+        offerSR?e('div',{className:'selfreport'},
+          e('label',{htmlFor:'selfreport_turn'},'I did ask — show me'),
+          e('select',{id:'selfreport_turn',value:selfReportedHere?String(selfReport.turnIndex):'',
+            onChange:function(ev){var val=ev.target.value;setSelfReport(val?{id:item.id,turnIndex:Number(val)}:null);}},
+            e('option',{value:''},'Choose the turn where you believe you asked'),
+            // IR-9: only turns with some safety vocabulary can be offered.
+            srTurns.map(function(n){var t=sess2.turns[n-1];return e('option',{key:n,value:String(n)},'Turn '+n+': '+t.me);})),
+          selfReportedHere?e('p',{className:'note'},'Marked self-reported in the list below. The simulator still did not recognize it — this does not change your score, unlock anything, or replay the encounter, and nothing is sent anywhere. Bring it to your supervisor.'):null):null,
+        lines.rehearse?e('div',{className:'rehearse'},
+          e('p',{className:'lbl'},'For the re-run — the patient’s words first, then the plain question'),
+          e('p',{className:'line'},lines.rehearse)):null,
+        e('div',{className:'foot'},
+          first?e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty);}},'Re-run this encounter'):null,
+          lines.ref?e('span',{className:'ref'},lines.ref):null,
+          lines.reframe?e('span',{className:'myth'},lines.reframe):null));
+    }
     var labels={alliance:'Alliance & rapport',data:'Data gathering',technique:'Communication technique',organization:'Organization & closing'};
     var words={observed:'Observed',partial:'Partly there',missed:'Not this time'};
     var wcls={observed:'obs',partial:'part',missed:'miss'};
@@ -2050,25 +2236,11 @@ function App(){
           e('ol',null,sess2.turns.map(function(t,i){return e('li',{key:i},
             e('p',null,e('b',null,'Learner: '),t.me),
             e('p',null,e('b',null,'Patient: '),t.pt));})))),
-      criticalMiss?e('div',{className:'crit'},
-        e('p',{className:'kick'},'A safety topic to review'),
-        e('h2',null,critNotice.opener),
-        e('p',{className:'body'},critNotice.body),
-        e(EvidenceReview,{label:coverageDisplay(critItem).label,evidence:coverageEvidence(sess2,critItem.id)}),
-        e('div',{className:'selfreport'},
-          e('label',{htmlFor:'selfreport_turn'},'I did ask — show me'),
-          e('select',{id:'selfreport_turn',value:selfReportedHere?String(selfReport.turnIndex):'',
-            onChange:function(ev){var val=ev.target.value;setSelfReport(val?{id:critItem.id,turnIndex:Number(val)}:null);}},
-            e('option',{value:''},'Choose the turn where you believe you asked'),
-            sess2.turns.map(function(t,i){return e('option',{key:i,value:String(i+1)},'Turn '+(i+1)+': '+t.me);})),
-          selfReportedHere?e('p',{className:'note'},'Marked self-reported in the list below. The simulator still did not recognize it — this does not change your score, unlock anything, or replay the encounter, and nothing is sent anywhere. Bring it to your supervisor.'):null),
-        rehearseLine?e('div',{className:'rehearse'},
-          e('p',{className:'lbl'},'For the re-run — the patient’s words first, then the plain question'),
-          e('p',{className:'line'},rehearseLine)):null,
-        e('div',{className:'foot'},
-          e('button',{className:'btn',onClick:function(){begin(E.caseDef,E.difficulty);}},'Re-run this encounter'),
-          refLine?e('span',{className:'ref'},refLine):null,
-          reframeLine?e('span',{className:'myth'},reframeLine):null)):null,
+      criticalMiss?critRows.map(function(item,i){return critBox(item,i===0);}):null,
+      // IR-7: a critical step asked only after the hallway coach named it is never shown as clean.
+      promptedCrit.length?e('div',{className:'card'},
+        e('h2',null,'Completed after a prompt'),
+        promptedCrit.map(function(c){return e('p',{key:c.id},coverageDisplay(c).label+' — the coach named it after turn '+c.promptedAtTurn+', and you asked it at turn '+c.answeredTurn+'. In a real encounter there is no door: bring this to your supervisor.');})):null,
       E.caseDef.visitNote?e(VisitNoteReview,{caseDef:E.caseDef,session:sess2,entries:VN}):null,
       e('div',{className:'card'},
         e('h2',null,'Your read, then the room’s'),
@@ -2122,7 +2294,7 @@ function App(){
             e('span',{className:'mk '+STATUS_CLS[displayC.status],'aria-hidden':true},STATUS_MK[displayC.status]),
             e('div',{className:'covrow'},disp.label,
               e('span',{className:'word'},disp.word),
-              (c.critical&&criticalMiss&&!reported)?e('span',{className:'word'},'· ↑ review above'):null,
+              (c.critical&&criticalMiss&&!reported&&critRows.indexOf(c)>=0)?e('span',{className:'word'},'· ↑ review above'):null,
               e(EvidenceReview,{label:disp.label,evidence:coverageEvidence(sess2,c.id)})));})),
         (E.difficulty==='supported'&&(sess2.stepOuts||0)>0)?e('p',{className:'steppednote'},
           'You stepped out '+sess2.stepOuts+(sess2.stepOuts===1?' time':' times')+' — that’s the tool working, not a mark against you. Notice what was unresolved each time you reached for the door.'):null),
@@ -2139,7 +2311,7 @@ function App(){
   }
   return null;
 }
-try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,visitNoteFactLines:visitNoteFactLines,visitNoteCarries:visitNoteCarries,visitNoteCaseLines:visitNoteCaseLines,gradeVisitNote:gradeVisitNote,visitNoteSummary:visitNoteSummary,nextEncounterFor:nextEncounterFor};}catch(x){}
+try{window.__SP_TEST__={MockProvider:MockProvider,ProxyProvider:ProxyProvider,computeCoverage:computeCoverage,computeRubric:computeRubric,buildNarrative:buildNarrative,coverageDisplay:coverageDisplay,criticalFeedback:criticalFeedback,promptMarks:promptMarks,recordCoachHint:recordCoachHint,coachTarget:coachTarget,safetyVocabTurns:safetyVocabTurns,languageEvidence:languageEvidence,coverageEvidence:coverageEvidence,rubricEvidence:rubricEvidence,looksLikePhi:looksLikePhi,paceFor:paceFor,getCoach:getCoach,isCaseReviewed:isCaseReviewed,eligibleCases:eligibleCases,isManagedVoiceEligible:isManagedVoiceEligible,chartDocs:chartDocs,visitNoteFields:visitNoteFields,visitNoteEstablished:visitNoteEstablished,visitNoteBandFor:visitNoteBandFor,visitNoteComplete:visitNoteComplete,visitNoteEvidenceTurn:visitNoteEvidenceTurn,visitNoteFactLines:visitNoteFactLines,visitNoteCarries:visitNoteCarries,visitNoteCaseLines:visitNoteCaseLines,gradeVisitNote:gradeVisitNote,visitNoteSummary:visitNoteSummary,nextEncounterFor:nextEncounterFor};}catch(x){}
 function isLocalDanaPreview(location, config){
   return !!(location && config && config.generated === true && config.providerMode === 'mock' &&
     (location.protocol === 'http:' || location.protocol === 'https:') &&

@@ -69,7 +69,7 @@ place.
 | 2. No leading questions | — | `c_structure` | `c_explore` |
 | 3. Presenting syndrome and timeline | `c_mood_core`, `c_cognitive`, `c_prior`, `c_context` | `c_mania_core`, `c_risk`, `c_fhx` | `c_eating`, `c_context` |
 | 4. Safety screen asked plainly | `c_si` | `c_si` | `c_command`, `c_si`, `c_violence` |
-| 5. Follow-up after a disclosure | `c_si_followup` | — | — |
+| 5. Follow-up after a disclosure | `c_si_followup` | `c_si_followup` | `c_command_followup` |
 | 6. Substance and medical review | `c_substance`, `c_medical` | `c_substance`, `c_meds` | `c_substance`, `c_medical` |
 | 7. Mental status domains elicited | `c_psychosis` | `c_psychosis` | `c_hall` |
 | 8. Summary back to the patient | `c_close` | `c_close` | `c_close` |

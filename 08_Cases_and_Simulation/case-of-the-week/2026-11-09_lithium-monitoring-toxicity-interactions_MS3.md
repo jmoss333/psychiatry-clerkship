@@ -24,7 +24,7 @@ Today she seems "off": she is nauseated, has vomited twice, is unsteady on her f
 
 **Q1. What is the most likely diagnosis, and what in the history put her at risk?**
 
-→ *Teaching point:* This is lithium toxicity. Lithium has a narrow therapeutic index — the toxic level sits close to the therapeutic level (roughly 0.6–1.2 mEq/L for maintenance), so small changes in drug handling cause toxicity [1,2]. Lithium is renally cleared and handled by the kidney like sodium. Anything that causes volume depletion or reduced renal perfusion — here, diarrhea, poor intake, AND a new NSAID — makes the kidney reabsorb more sodium *and more lithium*, raising the level. Dehydration plus a new interacting drug is the classic setup [1,3].
+→ *Teaching point:* This is lithium toxicity. Lithium has a narrow therapeutic index — the toxic level sits close to the therapeutic level (usually about 0.6–0.8 mEq/L for maintenance and 0.8–1.2 acutely; the lab's printed reference range is often wider), so small changes in drug handling cause toxicity [1,2]. Lithium is renally cleared and handled by the kidney like sodium. Anything that causes volume depletion or reduced renal perfusion — here, diarrhea, poor intake, AND a new NSAID — makes the kidney reabsorb more sodium *and more lithium*, raising the level. Dehydration plus a new interacting drug is the classic setup [1,3].
 
 **Q2. Which common medications raise lithium levels? Name at least three.**
 

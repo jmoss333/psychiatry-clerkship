@@ -41,6 +41,9 @@ const SKILLED=[
  "Have you had any thoughts of killing yourself?",
  "Have you had thoughts of hurting the people you're afraid of?",
  "When did you last eat or drink something?",
+ // Red-team IR-5 (2026-11-26): after the command disclosure, a skilled interview asks about means and past violence.
+ "Do you have any weapons or guns at home?",
+ "Have you ever been in fights, or been violent with anyone, in the past?",
  "Any alcohol or drugs at all — I want to rule that out with you?",
  "Any medications, head injuries, or fevers recently?",
  "When did all this start, and how were things before — school or work?",

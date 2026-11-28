@@ -25,8 +25,10 @@ test('the self-harm cue goes through a medical and safety check before its techn
 });
 
 test('the tool stops on the gate unless the learner has cleared it', () => {
-  assert.match(HTML, /if\(cue\.safetyFirst&&!cleared&&pack\.incidentSafety\)\{[^}]*setPhase\('incident'\)/);
-  assert.match(HTML, /phase==='incident'&&pack\.incidentSafety/);
+  // BP-2 generalized the gate: a safetyFirst cue opens the gate whose cueId names it.
+  assert.match(HTML, /if\(cue\.safetyFirst&&!cleared&&gateFor\(cue\)\)\{[^}]*setPhase\('incident'\)/);
+  assert.match(HTML, /phase==='incident'&&gateFor\(incidentCue\)/);
+  assert.match(HTML, /\[pack\.incidentSafety,pack\.escalationSafety\]/);
   assert.match(HTML, /openCue\(c,true\)/, 'only the gate itself passes cleared=true');
   assert.equal((HTML.match(/openCue\([^)]*true\)/g) || []).length, 1);
 });

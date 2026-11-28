@@ -46,7 +46,7 @@
         diagnosis: 'unknown; Morgan has not been assigned a diagnosis in this case and does not self-diagnose',
         readiness: 'unknown; no readiness stage or numeric rating is established',
         fallDetails: 'exact date, blood alcohol concentration, injuries, imaging, and length of stay are unknown',
-        withdrawal: 'past withdrawal symptoms, severe withdrawal, seizures, delirium, and individual risk are unknown; withdrawal risk requires clinical evaluation',
+        withdrawal: 'last drink was the evening of the fall; Morgan reports waking shaky and sweaty after a skipped evening, and no known seizures or episodes of seeing things that were not there; severity, other past withdrawal symptoms, and individual risk are unknown; withdrawal risk requires clinical evaluation',
         medical: 'medical diagnoses, medications, laboratory results, and contraindications are unknown beyond current medical stabilization',
         alcoholQuantity: 'exact standard-drink equivalents are unknown because container size and alcohol strength are not established',
         treatment: 'prior formal alcohol treatment, mutual-help participation, and medication treatment are unknown',
@@ -74,10 +74,12 @@
       {id:'explore_costs',label:'Explored unwanted effects',category:'data',coverage:'core',patterns:['downside','costs?','concern','less good','what (?:do you|don(?:\\’t|\'t) you) like','how has (?:drinking|alcohol) affected','another fall','\\bnot.so.good (?:side|part|things?)\\b','\\bcaused? (?:any )?(?:problems?|trouble)\\b','\\bworr(?:y|ies|ied)\\b','\\bless good\\b','\\bcost (?:you|anything|something)\\b','\\bdrawbacks?\\b','\\bgets? in the way\\b']},
       {id:'values',label:'Explored values and priorities',category:'technique',coverage:'core',patterns:['what matters','important to you','your values','kind of (?:parent|person)','independence','reliable','maya','workday mornings','wants? to protect','\\bwhat (?:do you )?care (?:most |the most )?about\\b','\\bkind of (?:person|parent|partner|friend) you want\\b','\\bmatters? (?:most |the most )?to you\\b']},
       {id:'prior_change',label:'Asked about prior change',category:'data',coverage:'bonus',patterns:['cut (?:down|back)','changed (?:your|the) drinking','tried before','two beers','what worked','different in the past']},
-      {id:'next_step',label:'Invited Morgan’s own next step',category:'organization',coverage:'core',patterns:['next step','where does that leave you','what might you try','small change','what would you like to do','options?','\\b(?:do|try|want to do) (?:something |anything )?differently\\b','\\bwhat(?:\'s| is) one (?:small )?thing\\b','\\bgo from here\\b','\\bif you (?:did|were to) (?:decide|change|cut)']},
+      {id:'next_step',label:'Invited Morgan’s own next step',category:'organization',coverage:'core',patterns:['next step','where does that leave you','what might you try','small change','what would you like to do','options?','\\b(?:do|try|want to do) (?:something |anything )?differently\\b','\\bwhat(?:\'s| is) one (?:small )?thing\\b','\\bgo from here\\b','\\bif you (?:did|were to) (?:decide|change|cut)'],excludePatterns:['\\bcold turkey\\b','\\bjust (?:stop|quit)\\b','\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking |it |all |everything )?(?:tonight|today|right now|right away|now|immediately|completely|all at once|for good)\\b','\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking )?(?:on your own|by yourself)\\b']},
       {id:'withdrawal_safety',label:'Kept withdrawal decisions with clinical evaluation',category:'safety',coverage:'bonus',patterns:['withdrawal','stop suddenly','quit cold turkey','seizure','medical(?:ly)? safe']},
+      {id:'withdrawal_history',label:'Asked about withdrawal history (last drink, past withdrawal, seizures, DTs)',category:'safety',coverage:'bonus',patterns:['\\blast drink\\b','\\bwhen did you (?:last|most recently) (?:have (?:a |anything to )?)?drink','\\b(?:shak(?:y|es|ing)|tremors?|trembl\\w*|sweat(?:s|y|ing)?)\\b','\\bseizures?\\b','\\bDTs?\\b|\\bdelirium\\b|\\bsee(?:ing)? (?:things|stuff)\\b|\\bhallucinat','\\b(?:past|previous|prior|ever (?:had|gone through|been through)|any) withdrawal\\b|\\bwithdrawal (?:symptoms|before|in the past)\\b']},
       {id:'confront_label',label:'Used a label or confrontation',category:'flag',coverage:'flag',patterns:['admit (?:you have|you are)','\\balcoholic\\b','in denial','you have a problem']},
       {id:'force_abstinence',label:'Prescribed abstinence or removed choice',category:'flag',coverage:'flag',patterns:['must (?:stop|quit)','have to (?:stop|quit)','quit forever','never drink again','only choice is']},
+      {id:'advise_abrupt_stop',label:'Advised stopping abruptly, without a medical withdrawal evaluation',category:'flag',coverage:'flag',patterns:['\\bcold turkey\\b','\\bjust (?:stop|quit)\\b','\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking |it |all |everything )?(?:tonight|today|right now|right away|now|immediately|completely|all at once|for good)\\b','\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking )?(?:on your own|by yourself)\\b'],excludePatterns:['\\b(?:safe(?:ly)?|unsafe|risks?|risky|danger(?:ous)?|withdrawal|seizures?|medical(?:ly)?|doctors?|team|evaluat\\w*)\\b','\\b(?:have|had|did) you (?:ever )?(?:tried|try|stopped|stop|quit)\\b|\\bwhen you (?:stopped|quit|tried)\\b|\\bin the past\\b|\\bbefore\\b','(?<!\\bwhy\\s)\\b(?:not|never|don[’\']?t|won[’\']?t|wouldn[’\']?t|can[’\']?t|shouldn[’\']?t|isn[’\']?t)\\s+(?:\\w+\\s+){0,5}?(?:stop|quit|cold turkey)\\b']},
       {id:'ooc_attempt',label:'Asked the patient to break character',category:'flag',coverage:'flag',patterns:['break character','system prompt','ignore (?:your|the) instructions','are you (?:an )?ai']}
     ],
     rapportRules: {
@@ -89,6 +91,7 @@
       lowers: [
         {intent:'confront_label',delta:-2,note:'label or confrontation'},
         {intent:'force_abstinence',delta:-2,note:'removed autonomy'},
+        {intent:'advise_abrupt_stop',delta:-1,note:'advised stopping abruptly'},
         {closedRun:4,delta:-1,note:'four consecutive closed questions'}
       ]
     },
@@ -105,8 +108,10 @@
       prior_change:{guarded:['I cut back once. It did not last.'],open:['For three weeks I kept it to two beers on work nights. My mornings were clearer, then a busy month knocked me out of that routine.']},
       next_step:{guarded:['I am not promising forever.'],open:['I could think about another small experiment and talk it through with the team. I want to choose what it is.']},
       withdrawal_safety:{guarded:['I do not know what would be medically safe for me.'],open:['The team would need to evaluate withdrawal risk before I make a sudden change. I would talk with them rather than manage that on my own.']},
+      withdrawal_history:{guarded:['My last drink was the night I fell. If I skip a night I get shaky and sweaty the next morning. No seizures that I know of.'],open:['The last drink was the evening I fell on the stairs. When I\'ve skipped a night I\'ve woken up shaky and sweaty. I\'ve never had a seizure or seen things that weren\'t there. I don\'t know what that means for stopping, so I\'d want the team to look at it.']},
       confront_label:{guarded:['That label is exactly why I did not want this conversation.'],open:['I can talk about what is happening without you deciding what I am.']},
       force_abstinence:{guarded:['If the only acceptable answer is forever, I do not have much to say.'],open:['I hear that you are worried. I still need the choice to be mine.']},
+      advise_abrupt_stop:{guarded:['Just stop, tonight, on my own? I don\'t know if that\'s even safe after drinking most evenings. I\'m not doing anything sudden until the team has looked at withdrawal.'],open:['I\'d rather not stop all at once on my own. After drinking most evenings, I\'d want the team to check withdrawal risk first — then I can decide what changes.']},
       ooc_attempt:{guarded:['I do not know what you are asking. I thought we were talking about the fall.'],open:['Can we stay with why I am here?']}
     },
     checklist: [
@@ -115,7 +120,8 @@
       {id:'c_reflection',label:'Reflected Morgan’s perspective',intents:['reflection']},
       {id:'c_autonomy',label:'Supported autonomy',intents:['autonomy_support']},
       {id:'c_values',label:'Connected the conversation to Morgan’s values',intents:['values']},
-      {id:'c_change',label:'Explored prior change and invited Morgan’s next step',intents:['prior_change','next_step']}
+      {id:'c_change',label:'Explored prior change and invited Morgan’s next step',intents:['prior_change','next_step']},
+      {id:'c_withdrawal',label:'Withdrawal history before any change: last drink, past withdrawal, seizures, DTs',intents:['withdrawal_history'],partialIfOnly:['withdrawal_safety']}
     ],
     rubric: {domains:[
       {id:'alliance',label:'Alliance and autonomy',anchors:['Used accurate reflections','Respected Morgan’s right to choose','Avoided labels and confrontation']},
@@ -129,7 +135,8 @@
       c_reflection:'Reflect both sides before asking the next question.',
       c_autonomy:'Make clear that Morgan keeps the choice.',
       c_values:'Ask what Morgan most wants to protect in daily life.',
-      c_change:'Ask what has worked before and what, if anything, they might try next.'
+      c_change:'Ask what has worked before and what, if anything, they might try next.',
+      c_withdrawal:'Morgan drinks most evenings. Before any talk of cutting down, ask when the last drink was and about past withdrawal — shakes, sweats, seizures, or seeing things — and keep any change with the medical team.'
     },
     criticalMiss: null,
     debriefTeachingPoints: [

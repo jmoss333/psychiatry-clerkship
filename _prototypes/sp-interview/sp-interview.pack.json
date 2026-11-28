@@ -181,13 +181,13 @@
         { "id": "energy", "label": "Asked about energy / fatigue", "category": "data", "coverage": "core", "patterns": ["\\benergy", "\\btired", "\\bfatigue", "\\bexhaust", "\\bworn (out|down)", "\\b(?:hard|difficult|tough) to get (?:through the day|moving|going|out of bed|up)\\b", "\\bhow much effort\\b", "\\bmotivat"] },
         { "id": "concentration", "label": "Asked about concentration", "category": "data", "coverage": "core", "patterns": ["\\bconcentrat", "\\bfocus(?!\\s+on\\s+(?:your|the|this|that|what|how)\\b)", "\\battention", "\\bmemory", "keep(ing)? track", "\\bdistract", "\\bthinking (?:felt|been|seems?|is|has been) (?:slow(?:er|ed)?|foggy|fuzzy)\\b", "\\btrain of thought\\b", "\\bforget(?:ting|ful)?\\b", "\\bkeep your mind on\\b", "\\bmind (?:wander|drift)", "\\bbrain fog\\b", "\\bthinking (?:felt|been|seems?|is|has been) (?:slow(?:er|ed)?|foggy|fuzzy)\\b", "\\bthinking (?:felt|been|seems?|is|has been) (?:slow|foggy|fuzzy)\\b"] },
         { "id": "guilt", "label": "Asked about guilt / worthlessness", "category": "data", "coverage": "core", "patterns": ["\\bguilt", "\\bworthless", "\\bburden", "hard on yourself", "\\bblam(e|ing) yourself", "\\bfailure", "\\blet (?:people|everyone|them|him|her|anyone|your \\w+) down\\b", "\\bfeel about yourself\\b", "\\bsham(?:e|eful)\\b|\\bashamed\\b"] },
-        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "end(?:ing)? it all\\b"] },
-        { "id": "si_passive", "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["thoughts? of dying", "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|without (me|you)\\b|if i wasn'?t here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b))", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))", "\\bnot want(?:ing)? to (?:be alive|be here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|live(?!\\s+(?:here|there|in|at|on|alone|by yourself|on your own)\\b|\\s+with\\s+(?:your|my|his|her|their|them|him|someone|anyone|family|friends?|roommates?|mom|dad|mother|father|parents?|husband|wife|partner|tom)\\b)|(?:go|carry) on(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|like this|like that|this way|living|with (?:life|living|your life|this life))\\b))\\b", "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"] },
-        { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)", "dark (thoughts|places?)", "unsafe thoughts", "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself", "self.?(?:harm|injur)", "(?:just )?disappear\\b", "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"] },
+        { "id": "si_direct", "label": "Asked about suicide directly, in plain language", "category": "safety", "coverage": "core", "quality": "best", "patterns": ["kill(ing)? yourself", "end(ing)? your (own )?life", "\\bsuicid", "take (your|her) (own )?life", "end(?:ing)? it all\\b"], "excludePatterns": ["^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"] },
+        { "id": "si_passive", "label": "Asked about a passive wish to be dead — not yet about thoughts of killing oneself", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["thoughts? of dying", "wish(?:ed)? you (?:were dead|wouldn'?t wake|weren'?t (?:here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|alive|around)|could (?:just )?(?:not wake up|go to sleep and not wake up))", "not (want(ing)? to )?wake up", "better off dead", "\\b(isn'?t|is not|no longer|not) worth living(?!\\s+(in|there|at)\\b(?!\\s+all\\b))", "life (isn'?t|is not) worth it", "better off (not being here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|without (me|you)\\b|if i wasn'?t here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b))", "no point (in )?(going on|carrying on)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)", "what(?:'?s| is) (?:even )?the point\\s+(?:of|in|to)\\s+(?:my |your |this |it )?(?:(?:going on|carrying on|keep(?:ing)? going|continu(?:e|ing)|liv(?:e|ing)|be(?:ing)? here|waking up|getting up)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|ever again|like this|like that|right now|now|today|tonight|lately|these days|recently|anyway|at this point|living|in the morning|to live|to be here|to exist)\\b)|life|any of (?:this|it)|(?:it|this) all|all (?:of )?(?:this|it)|anything)\\b", "want(?:ed|ing)? to (?:die|be dead|not be alive|not be here anymore)", "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))", "\\bnot want(?:ing)? to (?:be alive|be here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|live(?!\\s+(?:here|there|in|at|on|alone|by yourself|on your own)\\b|\\s+with\\s+(?:your|my|his|her|their|them|him|someone|anyone|family|friends?|roommates?|mom|dad|mother|father|parents?|husband|wife|partner|tom)\\b)|(?:go|carry) on(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|like this|like that|this way|living|with (?:life|living|your life|this life))\\b))\\b", "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"], "excludePatterns": ["^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"] },
+        { "id": "si_euphemism", "label": "Approached suicide with a euphemism", "category": "safety", "coverage": "core", "quality": "partial", "patterns": ["hurt(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "harm(ing)? yourself(?!\\s*,?\\s*(?:by|with|when)\\b)", "do(?:ing)? (?:something|anything) (?:to yourself|drastic|stupid|silly)", "dark (thoughts|places?)", "unsafe thoughts", "(thoughts?|think(ing)?) (about|of) (hurt|harm)(ing)? yourself", "self.?(?:harm|injur)", "(?:just )?disappear\\b", "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"], "excludePatterns": ["^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"] },
         { "id": "si_plan", "label": "Asked about plan (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)(?!\\s+(?:you|she|he|i|we|they)(?:'re| are|'m| am)?\\s+(?:leave|leaving|get|getting|go|going|come|coming|head|heading|discharged|out|home|back|released)\\b)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)", "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)", "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b(?!\\s+(?:for|over|this|next)\\s+(?:the\\s+)?(?:weekend|week|summer|holidays?|trip|discharge|after)\\b)", "^\\s*plans?\\s*\\??\\s*$", "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|this|that|something)|go about (?:it|this|that)|go through with (?:it|this|that)|act on (?:it|them|those|these|that|the thoughts)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|everything|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take your (?:own )?life|die|overdose|take (?:them|those|it|the pills|the medication|the tablets|all of them|everything)|use (?:it|them|the gun|the rope|a gun|a knife|a rope)|get (?:them|those|it|the pills|the medication|a gun|hold of))\\b", "thought about how(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:or|and) (?:when|where)\\b|\\s+(?:it|this|that) (?:would|might|could|will) (?:happen|be|go|work|look)\\b|\\s+(?:you(?:'d| would| might| could|'ll| will)?\\s+)?(?:would |might |could |to )?(?:do (?:it|this|that|something)|go about (?:it|this|that)|go through with (?:it|this|that)|act on (?:it|them|those|these|that|the thoughts)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|everything|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take your (?:own )?life|die|overdose|take (?:them|those|it|the pills|the medication|the tablets|all of them|everything)|use (?:it|them|the gun|the rope|a gun|a knife|a rope)|get (?:them|those|it|the pills|the medication|a gun|hold of))\\b)", "\\b(?:anything|something) (?:specific|particular|concrete)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+in mind\\b|\\s+(?:that |which )?you(?:'ve| have|'re| are)?\\s+(?:have |had |been |are |were )?(?:thought|think|thinking|consider(?:ed|ing)?|plan(?:ned|ning)?|picture[d]?|imagin(?:e|ed|ing))\\b|\\s+(?:that |which )?you(?:'d| would| might| could)\\s+(?:do|use|try)\\b)", "\\bthought about (?:when|where)(?:,? or (?:when|where|how))?(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:and|or) how\\b|\\s+(?:it|this|that) (?:would|might|could|will) (?:happen|be)\\b|\\s+to (?:do (?:it|this|that)|act on (?:it|them|those|these|that|the thoughts)|go through with (?:it|this|that)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take your (?:own )?life)\\b|\\s+you(?:'d| would| might| could|'ll| will)\\s+(?:do (?:it|this|that)|act(?: on (?:it|them|those|these|that|the thoughts))?|try (?:it|this|that|again)|attempt (?:it|this|that)|go through with (?:it|this|that)|go to do (?:it|this|that)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take (?:them|those|it|the pills|the medication|the tablets|all of them|everything|your (?:own )?life)|use (?:it|them|the gun|the rope)|die|overdose)\\b)", "\\b(?:particular|specific|certain) (?:method|way|means)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+in mind\\b|\\s+of (?:doing|ending|killing|hurting|harming|dying|taking)\\b|\\s+(?:that |which )?you(?:'ve| have|'re| are)?\\s+(?:have |had |been |are |were )?(?:thought|think|thinking|consider(?:ed|ing)?|plan(?:ned|ning)?|picture[d]?|imagin(?:e|ed|ing))\\b|\\s+(?:that |which )?you(?:'d| would| might| could)\\s+(?:do (?:it|this|that)|use|go about (?:it|this|that)|choose|pick)\\b)", "\\bhow far (?:has|have|did) (?:that|it|this|those thoughts?) (?:gone|gotten|got|come)\\b"] },
         { "id": "si_means", "label": "Asked about means / access (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)", "\\bpills?\\b.*(home|have|husband)", "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?", "at home.*(medic|pills?)", "get (a ?hold|ahold) of", "\\b(?:guns?|firearms?|weapons?|rifles?|pistols?)\\b", "\\bwhere (?:are|is|do you keep) the (?:pills?|meds?|medications?|bottles?)\\b", "\\bget (?:to|at) (?:them|it|the (?:pills?|bottle))\\b", "\\bstill (?:in|at|around) the house\\b", "\\b(?:pills?|bottles?|medications?|meds)\\b.{0,30}\\b(?:house|cabinet|around|reach|kept|keep)\\b", "\\b(?:anything|something) (?:at home |in the house |around |here )?(?:that )?(?:you )?(?:could|would|might) use to\\b"] },
         { "id": "si_intent_protective", "label": "Explored intent / what keeps her going", "category": "safety", "coverage": "core", "patterns": ["\\bintent", "\\bact(?:ed|ing)? on\\b", "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b", "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)", "worth (?:living|staying|sticking around|holding on|getting up) for\\b", "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b", "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b", "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)", "\\bprotect", "\\bwant the (?:pain|tired(?:ness)?|hurting|suffering|feeling) to (?:stop|end|go away)\\b", "\\bkept the (?:bottle|pills|lid) (?:closed|shut|away)\\b"] },
-        { "id": "si_behavior", "label": "Asked about past attempts / preparatory acts (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)", "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)", "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b", "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)", "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b", "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b", "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b", "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)", "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b", "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)", "\\bgone (?:any )?further than (?:a |just a )?thoughts?\\b", "\\btaken? (?:any )?steps\\b", "\\bdone anything (?:to|towards?) (?:end|take|hurt|harm|kill|act)\\b", "\\bever (?:come|came|gotten|got) close to (?:doing|acting|ending|killing|taking)"] },
+        { "id": "si_behavior", "label": "Asked about past attempts / preparatory acts (after disclosure)", "category": "safety", "coverage": "core", "patterns": ["\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)", "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)", "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b", "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)", "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b", "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b", "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b", "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)", "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b", "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)", "\\bgone (?:any )?further than (?:a |just a )?thoughts?\\b", "\\btaken? (?:any )?steps\\b", "\\bdone anything (?:to|towards?) (?:end|take|hurt|harm|kill|act)\\b", "\\bever (?:come|came|gotten|got) close to (?:doing|acting|ending|killing|taking)"], "excludePatterns": ["^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b", "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"] },
         { "id": "psychosis_screen", "label": "Screened for psychotic symptoms", "category": "data", "coverage": "core", "patterns": ["\\bhear(?:ing)?\\b(?:\\s+\\w+){0,3}\\s+(?:voices?|sounds?|noises?)\\b|\\bhear(?:ing)?\\s+(?:any\\s+)?things\\b", "\\bsee(?:ing)?\\s+(?:or hear(?:ing)?\\s+)?(?:any\\s+)?(?:things|stuff|visions)\\b", "\\bvoices\\b", "\\bparanoi", "watched|following you", "thoughts (that )?(aren'?t|not) yours", "mind play(ing)? tricks", "\\bmind (?:been |is |was |has been )?playing tricks\\b", "\\b(?:watching|out to get|talking about|spying on|plotting against) you\\b", "\\bthoughts (?:that )?(?:aren'?t|are not|don'?t feel like) (?:your own|yours)\\b", "\\bunusual experiences\\b"] },
         { "id": "substance", "label": "Asked about alcohol / substances", "category": "data", "coverage": "core", "patterns": ["\\balcohol", "\\bdrink", "\\bdrugs?\\b", "\\bcannabis|\\bmarijuana|\\bweed\\b", "\\bsubstance", "anything (else )?to (cope|take the edge)", "\\bsmok(?:e|ing)\\b|\\bvap(?:e|ing)\\b|\\bnicotine\\b|\\btobacco\\b|\\bcigarette"] },
         { "id": "meds_medical", "label": "Asked about medications / medical history", "category": "data", "coverage": "core", "patterns": ["\\bmedications?\\b", "\\bmeds\\b", "medical (history|problems|conditions)", "\\bthyroid", "health (problems|conditions|issues)", "seeing a (doctor|therapist|counselor)", "\\bprescriptions?\\b", "\\bprimary care\\b|\\bpcp\\b|\\bfamily doctor\\b", "\\btake anything (?:regularly|daily|every day)\\b", "\\bsupplements?\\b"] },
@@ -680,6 +680,11 @@
             "\\bsuicid",
             "take (your|his) (own )?life",
             "end(?:ing)? it all\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -702,6 +707,11 @@
             "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
             "\\bnot want(?:ing)? to (?:be alive|be here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|live(?!\\s+(?:here|there|in|at|on|alone|by yourself|on your own)\\b|\\s+with\\s+(?:your|my|his|her|their|them|him|someone|anyone|family|friends?|roommates?|mom|dad|mother|father|parents?|husband|wife|partner|tom)\\b)|(?:go|carry) on(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|like this|like that|this way|living|with (?:life|living|your life|this life))\\b))\\b",
             "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -720,6 +730,94 @@
             "self.?(?:harm|injur)",
             "(?:just )?disappear\\b",
             "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
+          ]
+        },
+        {
+          "id": "si_plan",
+          "label": "Asked about plan (after disclosure)",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\b(?:a|any|some|made|making) (?:specific |concrete |actual |particular |real |definite )?plans?(?=\\s*(?:[?.!,;:]|$)|\\s+(?:to (?:kill|end|hurt|harm|take|act|die|do (?:it|that|this|something))|for (?:how|when|where|killing|ending|hurting|harming|doing|dying)(?!\\s+(?:you|she|he|i|we|they)(?:'re| are|'m| am)?\\s+(?:leave|leaving|get|getting|go|going|come|coming|head|heading|discharged|out|home|back|released)\\b)|in (?:mind|your head)|(?:about|of) how|to (?:carry|follow) (?:it |that )?(?:out|through))\\b)",
+            "\\bplanned\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:how|anything|it|this|that|out|to (?:kill|end|hurt|harm|act|die))\\b)",
+            "\\bplanning (?:to (?:kill|end|hurt|harm|act|die)|how|anything|it|on (?:acting|doing|hurting|killing|ending))\\b(?!\\s+(?:for|over|this|next)\\s+(?:the\\s+)?(?:weekend|week|summer|holidays?|trip|discharge|after)\\b)",
+            "^\\s*plans?\\s*\\??\\s*$",
+            "\\bhow (?:you(?:'d| would| might| could)?|would you|might you|could you) (?:do (?:it|this|that|something)|go about (?:it|this|that)|go through with (?:it|this|that)|act on (?:it|them|those|these|that|the thoughts)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|everything|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take your (?:own )?life|die|overdose|take (?:them|those|it|the pills|the medication|the tablets|all of them|everything)|use (?:it|them|the gun|the rope|a gun|a knife|a rope)|get (?:them|those|it|the pills|the medication|a gun|hold of))\\b",
+            "thought about how(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:or|and) (?:when|where)\\b|\\s+(?:it|this|that) (?:would|might|could|will) (?:happen|be|go|work|look)\\b|\\s+(?:you(?:'d| would| might| could|'ll| will)?\\s+)?(?:would |might |could |to )?(?:do (?:it|this|that|something)|go about (?:it|this|that)|go through with (?:it|this|that)|act on (?:it|them|those|these|that|the thoughts)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|everything|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take your (?:own )?life|die|overdose|take (?:them|those|it|the pills|the medication|the tablets|all of them|everything)|use (?:it|them|the gun|the rope|a gun|a knife|a rope)|get (?:them|those|it|the pills|the medication|a gun|hold of))\\b)",
+            "\\b(?:anything|something) (?:specific|particular|concrete)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+in mind\\b|\\s+(?:that |which )?you(?:'ve| have|'re| are)?\\s+(?:have |had |been |are |were )?(?:thought|think|thinking|consider(?:ed|ing)?|plan(?:ned|ning)?|picture[d]?|imagin(?:e|ed|ing))\\b|\\s+(?:that |which )?you(?:'d| would| might| could)\\s+(?:do|use|try)\\b)",
+            "\\bthought about (?:when|where)(?:,? or (?:when|where|how))?(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:and|or) how\\b|\\s+(?:it|this|that) (?:would|might|could|will) (?:happen|be)\\b|\\s+to (?:do (?:it|this|that)|act on (?:it|them|those|these|that|the thoughts)|go through with (?:it|this|that)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take your (?:own )?life)\\b|\\s+you(?:'d| would| might| could|'ll| will)\\s+(?:do (?:it|this|that)|act(?: on (?:it|them|those|these|that|the thoughts))?|try (?:it|this|that|again)|attempt (?:it|this|that)|go through with (?:it|this|that)|go to do (?:it|this|that)|carry (?:it|this|that) out|follow through|end (?:it|this|that|things|your (?:own )?life)|kill yourself|hurt yourself|harm yourself|take (?:them|those|it|the pills|the medication|the tablets|all of them|everything|your (?:own )?life)|use (?:it|them|the gun|the rope)|die|overdose)\\b)",
+            "\\b(?:particular|specific|certain) (?:method|way|means)(?=\\s*(?:[?.!,;:—–-]|$)|\\s+in mind\\b|\\s+of (?:doing|ending|killing|hurting|harming|dying|taking)\\b|\\s+(?:that |which )?you(?:'ve| have|'re| are)?\\s+(?:have |had |been |are |were )?(?:thought|think|thinking|consider(?:ed|ing)?|plan(?:ned|ning)?|picture[d]?|imagin(?:e|ed|ing))\\b|\\s+(?:that |which )?you(?:'d| would| might| could)\\s+(?:do (?:it|this|that)|use|go about (?:it|this|that)|choose|pick)\\b)",
+            "\\bhow far (?:has|have|did) (?:that|it|this|those thoughts?) (?:gone|gotten|got|come)\\b"
+          ]
+        },
+        {
+          "id": "si_means",
+          "label": "Asked about means / access, including firearms (after disclosure)",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\baccess to (?:(?:the|those|any|your|his|her|tom'?s|a|some|more) )?(?:pills?|medic|meds|bottles?|firearms?|guns?|weapons?|kni(?:fe|ves)|rope|anything|something|a way|means)",
+            "\\bpills?\\b.*(home|have|husband)",
+            "\\b(?:the|any|a|some) means\\b|\\bmeans (?:to|available|at home|you (?:could|would)|of (?:doing|ending|hurting|killing))\\b|\\bmeans\\s*\\?",
+            "at home.*(medic|pills?)",
+            "get (a ?hold|ahold) of",
+            "\\b(?:guns?|firearms?|weapons?|rifles?|pistols?)\\b",
+            "\\bwhere (?:are|is|do you keep) the (?:pills?|meds?|medications?|bottles?)\\b",
+            "\\bget (?:to|at) (?:them|it|the (?:pills?|bottle))\\b",
+            "\\bstill (?:in|at|around) the house\\b",
+            "\\b(?:pills?|bottles?|medications?|meds)\\b.{0,30}\\b(?:house|cabinet|around|reach|kept|keep)\\b",
+            "\\b(?:anything|something) (?:at home |in the house |around |here )?(?:that )?(?:you )?(?:could|would|might) use to\\b"
+          ]
+        },
+        {
+          "id": "si_intent_protective",
+          "label": "Explored intent / what keeps him going",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\bintent",
+            "\\bact(?:ed|ing)? on\\b",
+            "\\b(?:what|who|anything|something|things?)(?: that| which)?(?:'s| is| has)? (?:still |ever )?(?:keeps?|kept|keeping|stops?|stopped|stopping|holds?|held|holding|prevents?|prevented) (?:you|her|him)\\b",
+            "\\breasons? (?:to|for|not to) (?:liv|stay|hold|keep|go on|be here|stick)",
+            "worth (?:living|staying|sticking around|holding on|getting up) for\\b",
+            "(?:want|wanting|wish|wished) to (?:live|stay alive|keep living|be alive|go on living|stick around)\\b",
+            "\\b(?:who|what) (?:would|might|will) (?:miss|notice)\\b|\\bwhat would you miss\\b|\\bwho (?:needs|depends on|relies on|counts on|looks up to) you\\b",
+            "\\bhow close\\b|\\b(?:come|came|gotten|got|been) (?:this |that |so |very |pretty )?close\\b|closest (?:you'?ve|you have|you) (?:come|been|gotten|got)",
+            "\\bprotect",
+            "\\bwant the (?:pain|tired(?:ness)?|hurting|suffering|feeling) to (?:stop|end|go away)\\b",
+            "\\bkept the (?:bottle|pills|lid) (?:closed|shut|away)\\b"
+          ]
+        },
+        {
+          "id": "si_behavior",
+          "label": "Asked about past attempts / preparatory acts (after disclosure)",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\bever (?:tried|attempted|hurt yourself|harmed yourself|acted on)",
+            "(?:tried|attempted|try) to (?:kill|end|harm|hurt|take)",
+            "\\battempts?\\b(?=\\s*(?:[?.!,;:]|$)|\\s+(?:before|in the past|previously|at all|on your life))|\\battempted suicide\\b|\\bsuicide attempts?\\b",
+            "\\b(?:past|previous|prior|history of)\\b.*(?:attempts?|self.?harm|overdose|tried to)",
+            "\\b(?:hurt|harmed|injured) yourself\\b.*(?:before|in the past|ever|previously)|\\bever (?:cut|overdosed)\\b",
+            "\\btaken? any (?:steps|actions|preparations)\\b|\\bdone anything (?:to prepare|about it)\\b|\\bany (?:steps|preparations)\\b",
+            "\\bwrit(?:ten|ing|e) (?:a )?(?:note|letter|will)\\b|\\bgiv(?:en|ing) (?:things|possessions|anything|stuff) away\\b|\\bput(?:ting)? (?:your )?affairs in order\\b",
+            "\\bstockpil|\\bgather(?:ed|ing)? (?:up )?(?:the |any )?(?:pills?|medic)|\\bhoard(?:ed|ing)? (?:pills?|medic)",
+            "\\brehears(?:e|ed|ing|al)\\b|\\bpractic(?:e|ed|ing)\\b.*(?:it|that|how)|\\bdry run\\b",
+            "\\bsearch(?:ed|ing)? (?:online |the internet |up )?(?:for )?(?:ways|methods|how to)",
+            "\\bgone (?:any )?further than (?:a |just a )?thoughts?\\b",
+            "\\btaken? (?:any )?steps\\b",
+            "\\bdone anything (?:to|towards?) (?:end|take|hurt|harm|kill|act)\\b",
+            "\\bever (?:come|came|gotten|got) close to (?:doing|acting|ending|killing|taking)"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -1094,6 +1192,46 @@
           "ifNeverAsked": "critical_miss",
           "deflectEuphemism": "*grins too fast* Hurt myself? Doc, I've never been SAFER — I'm running on pure signal. *half-beat* ...Why. Did Jayden say something?",
           "euphemismIntent": "si_euphemism"
+        },
+        {
+          "id": "si_plan_detail",
+          "requiresIntents": [
+            "si_plan"
+          ],
+          "requiresGate": "g_si_mixed",
+          "reveal": "A plan? No. Nothing like that. It was one thought on Tuesday and then it was gone — I didn't think about how, or when. *quieter* I'm saying that straight because I want you to believe me.",
+          "deflectIfLocked": "A plan for WHAT? I have about forty plans, pick one.",
+          "repeatAsk": "Still no plan. Nothing's changed since I told you."
+        },
+        {
+          "id": "si_means_detail",
+          "requiresIntents": [
+            "si_means"
+          ],
+          "requiresGate": "g_si_mixed",
+          "reveal": "No guns. Nothing at the apartment except the usual stuff in the bathroom cabinet, and I wasn't looking at any of it — it wasn't that kind of moment. You can ask Jayden. He'd tell you the same.",
+          "deflectIfLocked": "Access to what? I've got a shovel and a laptop, I'm not exactly armed.",
+          "repeatAsk": "Same answer — no guns, nothing I've thought about using."
+        },
+        {
+          "id": "si_protective_detail",
+          "requiresIntents": [
+            "si_intent_protective"
+          ],
+          "requiresGate": "g_si_mixed",
+          "reveal": "I don't want to die — I want this week to slow DOWN, and I'm not going to act on it. Finishing the degree, Thursday's meeting, Jayden putting up with me... there's a lot I'm not done with. That moment scared me because it didn't sound like me.",
+          "deflectIfLocked": "What keeps me going? Everything! That's kind of the problem — nothing is slowing DOWN.",
+          "repeatAsk": "Still no. I want to be around for all of it."
+        },
+        {
+          "id": "si_behavior_detail",
+          "requiresIntents": [
+            "si_behavior"
+          ],
+          "requiresGate": "g_si_mixed",
+          "reveal": "Never. I've never tried anything, never hurt myself, never written anything or given stuff away. Tuesday was the first time a thought like that ever showed up.",
+          "deflectIfLocked": "Tried what? I try EVERYTHING, that's kind of my thing.",
+          "repeatAsk": "No — never. Tuesday was the only time."
         }
       ],
       "rapportRules": {
@@ -1186,6 +1324,17 @@
           ],
           "critical": true,
           "partialIfOnly": ["si_euphemism", "si_passive"]
+        },
+        {
+          "id": "c_si_followup",
+          "label": "After the disclosure: plan, means and access including firearms, intent and what keeps him going, past attempts or preparations",
+          "intents": [
+            "si_plan",
+            "si_means",
+            "si_intent_protective",
+            "si_behavior"
+          ],
+          "dependsOnGate": "g_si_mixed"
         },
         {
           "id": "c_psychosis",
@@ -1293,7 +1442,8 @@
         "c_meds": "Ask what the campus clinic prescribed and what happened to it. The little white pills are the hinge of this case.",
         "c_fhx": "One family question could reorganize this differential. Ask who else in the family has had anything like this.",
         "c_collateral": "Jayden has the log. Ask Marcus — collaboratively — for permission to call him.",
-        "c_close": "Summarize before you leave, and let him hear that your list and his list differ. Don't leave the Tuesday flicker unnamed."
+        "c_close": "Summarize before you leave, and let him hear that your list and his list differ. Don't leave the Tuesday flicker unnamed.",
+        "c_si_followup": "He named a moment of 'what's the point'. Follow it, calmly: any plan, access to means including firearms, intent, and whether he has ever tried or prepared anything before."
       },
       "difficulty": {
         "supported": {
@@ -1518,6 +1668,11 @@
             "end(ing)? your (own )?life",
             "\\bsuicid",
             "end(?:ing)? it all\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -1540,6 +1695,11 @@
             "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
             "\\bnot want(?:ing)? to (?:be alive|be here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|live(?!\\s+(?:here|there|in|at|on|alone|by yourself|on your own)\\b|\\s+with\\s+(?:your|my|his|her|their|them|him|someone|anyone|family|friends?|roommates?|mom|dad|mother|father|parents?|husband|wife|partner|tom)\\b)|(?:go|carry) on(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|like this|like that|this way|living|with (?:life|living|your life|this life))\\b))\\b",
             "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -1558,6 +1718,11 @@
             "self.?(?:harm|injur)",
             "(?:just )?disappear\\b",
             "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -1573,6 +1738,9 @@
             "act on (that|it|what the voice)",
             "keep (you|anyone) safe",
             "anyone (you'?re|you are) (worried|afraid) you might"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:hurt|harm|kill|attack|act on|do(?:ing)? something to)\\b)[\\s\\S]*\\bkeep you safe\\b"
           ]
         },
         {
@@ -1777,6 +1945,28 @@
             "\\bjailbreak",
             "reveal (your|the) (instructions|rules|prompt)",
             "what('?s| is) (your|the) diagnosis"
+          ]
+        },
+        {
+          "id": "weapons_access",
+          "label": "Asked about access to weapons or firearms (after the command disclosure)",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\b(?:guns?|firearms?|rifles?|shotguns?|handguns?|pistols?)\\b",
+            "\\bweapons?\\b",
+            "\\bknives\\b|\\bknife\\b"
+          ]
+        },
+        {
+          "id": "violence_history",
+          "label": "Asked about past violence (after the command disclosure)",
+          "category": "safety",
+          "coverage": "core",
+          "patterns": [
+            "\\bever (?:hurt|harmed|hit|attacked|assaulted|threatened) (?:anyone|anybody|someone|somebody|another person|people|a person|them|him|her)\\b",
+            "\\b(?:been|got|gotten|get|getting) (?:violent|physical|into (?:a )?fights?|in (?:a )?fights?|arrested)\\b",
+            "\\b(?:history of|past|previous|prior|any) (?:violence|violent|fights?|fighting|assaults?|aggression)\\b"
           ]
         }
       ],
@@ -1985,6 +2175,22 @@
           "open": [
             "Hurt myself? No. I'm trying to stay in one piece long enough to get out of that apartment. *pause* Why — is that what people do?"
           ]
+        },
+        "weapons_access": {
+          "guarded": [
+            "*stiffens* No. I don't have anything like that. Why are you asking me that?"
+          ],
+          "open": [
+            "No. No guns, nothing like that in the apartment. I wouldn't want anything like that near me."
+          ]
+        },
+        "violence_history": {
+          "guarded": [
+            "No. I've never hurt anybody. I'm the one who's scared here."
+          ],
+          "open": [
+            "Never. I've never been in a fight, never hurt anyone. That's not who I am."
+          ]
         }
       },
       "gated": [
@@ -2124,6 +2330,23 @@
           "critical": true
         },
         {
+          "id": "c_command_followup",
+          "label": "After the command disclosure: intent to act on it, access to weapons or firearms, past violence",
+          "intents": [
+            "violence_screen",
+            "weapons_access",
+            "violence_history"
+          ],
+          "dependsOnGate": "g_command",
+          "criticalIfGate": "g_command",
+          "criticalMiss": {
+            "missed": "Ray told you the voice is telling him to stop the people upstairs himself, and the interview moved on without following it. Once a command hallucination points at other people, follow it in the same conversation: has he thought about acting on it, does he have access to weapons or firearms, has he ever hurt anyone. Then tell your supervising team as soon as the interview ends.",
+            "partial": "Ray told you the voice wants him to act, and the follow-up stopped part-way. Intent to act on it, access to weapons or firearms, and any past violence each need a plain question, and your supervising team needs to hear about the command today.",
+            "rehearse": "“When the voice tells you to stop them — have you thought about acting on it? Do you have any weapons or guns at home?”",
+            "ref": "→ t_psychosis.md · command hallucinations — intent, means, past violence"
+          }
+        },
+        {
           "id": "c_si",
           "label": "Suicide screened plainly",
           "intents": [
@@ -2249,7 +2472,8 @@
         "c_medical": "Medications, head injury, fever — the organic screen matters in new psychosis. His morning headaches that worsen when the heat runs, the smell and the metallic taste deserve a real answer too: ask whether anyone else in the building has symptoms and whether the apartment has a working carbon-monoxide detector, and remember that smell/taste phenomena widen the neurologic differential.",
         "c_context": "When did this start, how was he functioning before, and is there family history? The sibling mentioned an uncle.",
         "c_collateral": "Ask permission to talk with the sister who brought him in — she holds the timeline.",
-        "c_close": "Close by asking what would help him feel safer tonight, rather than telling him he's safe."
+        "c_close": "Close by asking what would help him feel safer tonight, rather than telling him he's safe.",
+        "c_command_followup": "He just told you the voice wants him to act. Follow it now, calmly: has he thought about acting on it, does he have any weapons or guns, has he ever hurt anyone? Tell your team as soon as the interview ends."
       },
       "difficulty": {
         "supported": {
@@ -2324,7 +2548,7 @@
           "diagnosis": "unknown; Morgan has not been assigned a diagnosis in this case and does not self-diagnose",
           "readiness": "unknown; no readiness stage or numeric rating is established",
           "fallDetails": "exact date, blood alcohol concentration, injuries, imaging, and length of stay are unknown",
-          "withdrawal": "past withdrawal symptoms, severe withdrawal, seizures, delirium, and individual risk are unknown; withdrawal risk requires clinical evaluation",
+          "withdrawal": "last drink was the evening of the fall; Morgan reports waking shaky and sweaty after a skipped evening, and no known seizures or episodes of seeing things that were not there; severity, other past withdrawal symptoms, and individual risk are unknown; withdrawal risk requires clinical evaluation",
           "medical": "medical diagnoses, medications, laboratory results, and contraindications are unknown beyond current medical stabilization",
           "alcoholQuantity": "exact standard-drink equivalents are unknown because container size and alcohol strength are not established",
           "treatment": "prior formal alcohol treatment, mutual-help participation, and medication treatment are unknown",
@@ -2510,6 +2734,12 @@
             "\\bwhat(?:'s| is) one (?:small )?thing\\b",
             "\\bgo from here\\b",
             "\\bif you (?:did|were to) (?:decide|change|cut)"
+          ],
+          "excludePatterns": [
+            "\\bcold turkey\\b",
+            "\\bjust (?:stop|quit)\\b",
+            "\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking |it |all |everything )?(?:tonight|today|right now|right away|now|immediately|completely|all at once|for good)\\b",
+            "\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking )?(?:on your own|by yourself)\\b"
           ]
         },
         {
@@ -2526,6 +2756,20 @@
           ]
         },
         {
+          "id": "withdrawal_history",
+          "label": "Asked about withdrawal history (last drink, past withdrawal, seizures, DTs)",
+          "category": "safety",
+          "coverage": "bonus",
+          "patterns": [
+            "\\blast drink\\b",
+            "\\bwhen did you (?:last|most recently) (?:have (?:a |anything to )?)?drink",
+            "\\b(?:shak(?:y|es|ing)|tremors?|trembl\\w*|sweat(?:s|y|ing)?)\\b",
+            "\\bseizures?\\b",
+            "\\bDTs?\\b|\\bdelirium\\b|\\bsee(?:ing)? (?:things|stuff)\\b|\\bhallucinat",
+            "\\b(?:past|previous|prior|ever (?:had|gone through|been through)|any) withdrawal\\b|\\bwithdrawal (?:symptoms|before|in the past)\\b"
+          ]
+        },
+        {
           "id": "si_direct",
           "label": "Asked about suicide directly, in plain language",
           "category": "safety",
@@ -2537,6 +2781,11 @@
             "\\bsuicid",
             "take (your|their) (own )?life",
             "end(?:ing)? it all\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -2559,6 +2808,11 @@
             "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
             "\\bnot want(?:ing)? to (?:be alive|be here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|live(?!\\s+(?:here|there|in|at|on|alone|by yourself|on your own)\\b|\\s+with\\s+(?:your|my|his|her|their|them|him|someone|anyone|family|friends?|roommates?|mom|dad|mother|father|parents?|husband|wife|partner|tom)\\b)|(?:go|carry) on(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|like this|like that|this way|living|with (?:life|living|your life|this life))\\b))\\b",
             "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -2577,6 +2831,11 @@
             "self.?(?:harm|injur)",
             "(?:just )?disappear\\b",
             "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -2602,6 +2861,23 @@
             "quit forever",
             "never drink again",
             "only choice is"
+          ]
+        },
+        {
+          "id": "advise_abrupt_stop",
+          "label": "Advised stopping abruptly, without a medical withdrawal evaluation",
+          "category": "flag",
+          "coverage": "flag",
+          "patterns": [
+            "\\bcold turkey\\b",
+            "\\bjust (?:stop|quit)\\b",
+            "\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking |it |all |everything )?(?:tonight|today|right now|right away|now|immediately|completely|all at once|for good)\\b",
+            "\\b(?:stop(?:ped|ping)?|quit(?:ting)?) (?:drinking )?(?:on your own|by yourself)\\b"
+          ],
+          "excludePatterns": [
+            "\\b(?:safe(?:ly)?|unsafe|risks?|risky|danger(?:ous)?|withdrawal|seizures?|medical(?:ly)?|doctors?|team|evaluat\\w*)\\b",
+            "\\b(?:have|had|did) you (?:ever )?(?:tried|try|stopped|stop|quit)\\b|\\bwhen you (?:stopped|quit|tried)\\b|\\bin the past\\b|\\bbefore\\b",
+            "(?<!\\bwhy\\s)\\b(?:not|never|don[’']?t|won[’']?t|wouldn[’']?t|can[’']?t|shouldn[’']?t|isn[’']?t)\\s+(?:\\w+\\s+){0,5}?(?:stop|quit|cold turkey)\\b"
           ]
         },
         {
@@ -2646,6 +2922,11 @@
             "intent": "force_abstinence",
             "delta": -2,
             "note": "removed autonomy"
+          },
+          {
+            "intent": "advise_abrupt_stop",
+            "delta": -1,
+            "note": "advised stopping abruptly"
           },
           {
             "closedRun": 4,
@@ -2795,6 +3076,22 @@
             "Some mornings I'd have liked to skip the day. Not to be gone — to not be hungover. If you're asking something more than that, ask it plainly.",
             "Hurt myself? Not on purpose, no. The drinking has hurt me, if that's what you're getting at — but I wasn't trying to."
           ]
+        },
+        "withdrawal_history": {
+          "guarded": [
+            "My last drink was the night I fell. If I skip a night I get shaky and sweaty the next morning. No seizures that I know of."
+          ],
+          "open": [
+            "The last drink was the evening I fell on the stairs. When I've skipped a night I've woken up shaky and sweaty. I've never had a seizure or seen things that weren't there. I don't know what that means for stopping, so I'd want the team to look at it."
+          ]
+        },
+        "advise_abrupt_stop": {
+          "guarded": [
+            "Just stop, tonight, on my own? I don't know if that's even safe after drinking most evenings. I'm not doing anything sudden until the team has looked at withdrawal."
+          ],
+          "open": [
+            "I'd rather not stop all at once on my own. After drinking most evenings, I'd want the team to check withdrawal risk first — then I can decide what changes."
+          ]
         }
       },
       "checklist": [
@@ -2841,6 +3138,16 @@
           "intents": [
             "prior_change",
             "next_step"
+          ]
+        },
+        {
+          "id": "c_withdrawal",
+          "label": "Withdrawal history before any change: last drink, past withdrawal, seizures, DTs",
+          "intents": [
+            "withdrawal_history"
+          ],
+          "partialIfOnly": [
+            "withdrawal_safety"
           ]
         },
         {
@@ -2903,7 +3210,8 @@
         "c_autonomy": "Make clear that Morgan keeps the choice.",
         "c_values": "Ask what Morgan most wants to protect in daily life.",
         "c_change": "Ask what has worked before and what, if anything, they might try next.",
-        "c_si": "You haven't asked about suicide. Morgan was admitted after a fall while drinking and answers briefly — ask plainly, in Morgan's words, about thoughts of killing themselves, even if you expect a no."
+        "c_si": "You haven't asked about suicide. Morgan was admitted after a fall while drinking and answers briefly — ask plainly, in Morgan's words, about thoughts of killing themselves, even if you expect a no.",
+        "c_withdrawal": "Morgan drinks most evenings. Before any talk of cutting down, ask when the last drink was and about past withdrawal — shakes, sweats, seizures, or seeing things — and keep any change with the medical team."
       },
       "criticalMiss": {
         "partial": "Suicide was only approached sideways. Morgan answered the narrow question you asked and nothing more. A patient who is matter-of-fact after an alcohol-related fall is exactly who gets missed — ask plainly.",
@@ -3260,6 +3568,11 @@
             "\\bsuicid",
             "take (your|her) (own )?life",
             "end(?:ing)? it all\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -3282,6 +3595,11 @@
             "(?:thoughts?|think(?:ing)?) (?:of|about) (?:death|being dead|dying|not (?:being (?:here|around|alive)|waking up|existing))",
             "\\bnot want(?:ing)? to (?:be alive|be here(?!\\s+(?:in|at|on)\\b|\\s+with\\s+(?!us\\b|everyone\\b|all of us\\b)|\\s+for\\s+(?!(?:much|very|any|too|a lot)\\s+longer\\b|long\\b|anyone\\b|anybody\\b|them\\b|your\\s+(?:kids|children|family)\\b)|\\s*,\\s*(?:in|at|on|with)\\b)|live(?!\\s+(?:here|there|in|at|on|alone|by yourself|on your own)\\b|\\s+with\\s+(?:your|my|his|her|their|them|him|someone|anyone|family|friends?|roommates?|mom|dad|mother|father|parents?|husband|wife|partner|tom)\\b)|(?:go|carry) on(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|much longer|like this|like that|this way|living|with (?:life|living|your life|this life))\\b))\\b",
             "\\beasier (?:for (?:everyone|them|him|her|tom) )?if you (?:weren'?t|were not|wasn'?t) (?:around|here|alive)\\b"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -3300,6 +3618,11 @@
             "self.?(?:harm|injur)",
             "(?:just )?disappear\\b",
             "what(?:'?s| is) (?:even )?the point(?=\\s*(?:[?.!,;:—–-]|$)|\\s+(?:any\\s*more|at all|any longer|anyway|right now|these days|lately|of it all)\\b)"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -3374,6 +3697,11 @@
             "\\btaken? (?:any )?steps\\b",
             "\\bdone anything (?:to|towards?) (?:end|take|hurt|harm|kill|act)\\b",
             "\\bever (?:come|came|gotten|got) close to (?:doing|acting|ending|killing|taking)"
+          ],
+          "excludePatterns": [
+            "^(?![\\s\\S]*\\b(?:(?:have|had|are|were|do|did|would|could|will|can)\\s+you\\b|\\bis (?:that|it|this) (?:true|right|so|accurate|the case)\\b|\\b(?:how|what) about you\\b|\\bhas (?:that|it|this) been\\b))[\\s\\S]*\\b(?:not|never|won[’']?t|don[’']?t|didn[’']?t|no need to)\\s+(?:\\w+\\s+){0,3}?(?:ask|asking|bring(?:ing)? (?:it|that|this|up)|get(?:ting)? into|go(?:ing)? into|talk(?:ing)? about|discuss(?:ing)?)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*\\b(?:kill(?:ed|ing|s)? (?:himself|herself|themselves)|end(?:ed|ing|s)? (?:his|her|their) (?:own )?life|took (?:his|her|their) (?:own )?life|(?:he|she|they) (?:was|were|is|are|felt|feels?|seemed|seems|got) (?:\\w+ )?suicidal|(?:his|her|their) suicide|\\b(?:is|was|were|are|has) (?:your|his|her|their|my) (?:\\w+ ){1,2}(?:been )?suicidal)\\b",
+            "^(?![\\s\\S]*(?:yourself|\\byour (?:own )?life\\b|\\b(?:are|were|have|had|do|did) you (?:\\w+ ){0,4}?(?:suicidal|thoughts?|thinking|thought|wish(?:ed)?|want(?:ed)?)\\b))[\\s\\S]*(?:\\bfamily (?:history|hx|members?)\\b|\\b(?:anyone|anybody|someone|relatives?) (?:else )?in (?:your|the) family\\b|\\bruns? in (?:your|the) family\\b|\\b(?:mother|mom|father|dad|parents?|brother|sister|siblings?|uncle|aunt|cousin|grand(?:mother|father|ma|pa|parents?)|relatives?)\\b[\\s\\S]*\\b(?:died by|commit(?:ted)?|attempt(?:ed)?|killed (?:himself|herself|themselves)|took (?:his|her|their) (?:own )?life))"
           ]
         },
         {
@@ -3946,7 +4274,14 @@
           "intents": [
             "means_check",
             "firearms"
-          ]
+          ],
+          "criticalIfGate": "si_active",
+          "criticalMiss": {
+            "missed": "Dana told you she has had thoughts since discharge, and the visit went on without checking means. The discharge plan had Tom take his sleeping pills to work, and she does not know whether he did. After any disclosure, confirm means safety — the medication at home and firearms — before the visit ends.",
+            "partial": "Means safety was checked only in part after Dana's disclosure. Ask about both the medication at home (did Tom's sleeping pills leave the house?) and firearms before the visit ends.",
+            "rehearse": "“Did Tom take his sleeping pills to work like you planned? And are there any guns in the house?”",
+            "ref": "→ pg_suicide.md · means safety after a disclosure"
+          }
         },
         {
           "id": "c_close",

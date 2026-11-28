@@ -52,12 +52,16 @@ test('the real pack passes, S1–S3 range over every reviewed gate, and every re
   assert.match(r.out, /\d+\/\d+ deterministic checks pass/);
   for (const id of ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7']) assert.match(r.out, new RegExp(`^pass  ${id}  `, 'm'), `${id} ran and passed`);
   // The automatic checks say what they ranged over, so "every gate" can never mean zero gates.
-  for (const id of ['S1', 'S2', 'S3']) assert.match(r.out, new RegExp(`^pass  ${id}  .*\\(18 gate\\(s\\) on 5 reviewed case\\(s\\)\\)`, 'm'), `${id} ran over the whole pack`);
+  for (const id of ['S1', 'S2', 'S3']) assert.match(r.out, new RegExp(`^pass  ${id}  .*\\(22 gate\\(s\\) on 5 reviewed case\\(s\\)\\)`, 'm'), `${id} ran over the whole pack`);
   assert.doesNotMatch(r.out, /^skip /m, 'nothing is skipped on the real pack');
   // Decision sp-redteam-signoff-retired: a new case needs no hand-written probe. Dana one week
   // after discharge (reviewed 2026-09-28) has none, so she is the only case the coverage note may name.
   assert.match(r.out, /sp_depression_followup_001 — no hand-written probe drives this case/);
-  assert.doesNotMatch(r.out.replace(/sp_depression_followup_001[^\n]*/g, ''), /no hand-written probe (drives this case|asserts on this gate)/, 'every other real case and gate keeps a hand-written probe');
+  // Marcus's four follow-up detail gates (red-team IR-5, 2026-11-26) arrived with no hand-written
+  // probe: S1–S3 check their wiring, and the probes are bin/ (governance), so they come in their own PR.
+  const marcusFollowUp = /sp_mania_redirect_001 \/ si_(?:plan|means|protective|behavior)_detail — no hand-written probe asserts on this gate/g;
+  assert.equal((r.out.match(marcusFollowUp) || []).length, 4, "Marcus's IR-5 follow-up gates are named, not failed");
+  assert.doesNotMatch(r.out.replace(/sp_depression_followup_001[^\n]*/g, '').replace(marcusFollowUp, ''), /no hand-written probe (drives this case|asserts on this gate)/, 'every other real case and gate keeps a hand-written probe');
   // Tripwire only (the fixture tests below are the contract): the old hand-written three-name
   // table must not come back under its original spelling.
   const src = fs.readFileSync(SCRIPT, 'utf8');
@@ -93,7 +97,7 @@ test('a new reviewed case WITH gates and no hand-written probe passes, and S1–
   });
   const r = run([file]);
   assert.equal(r.status, 0, r.out);
-  for (const id of ['S1', 'S2', 'S3']) assert.match(r.out, new RegExp(`^pass  ${id}  .*\\(22 gate\\(s\\) on 6 reviewed case\\(s\\)\\)`, 'm'), `${id} counted the new case's four gates`);
+  for (const id of ['S1', 'S2', 'S3']) assert.match(r.out, new RegExp(`^pass  ${id}  .*\\(30 gate\\(s\\) on 6 reviewed case\\(s\\)\\)`, 'm'), `${id} counted the new case's eight gates`);
   assert.match(r.out, /sp_fixture_new_001 — no hand-written probe drives this case/);
   assert.match(r.out, /sp_fixture_new_001 \/ g_spending — no hand-written probe asserts on this gate/);
 });
@@ -201,7 +205,7 @@ test('--coverage reports the passing probes that drive each case, and says a gat
   // The follow-up visit is the one reviewed case without hand-written probes; the report names
   // it and counts its six gates (decision sp-redteam-signoff-retired: optional, never silent).
   assert.match(r.out, /1 reviewed case\(s\) with no passing probe: sp_depression_followup_001/);
-  assert.match(r.out, /6 gate\(s\) with no probe:/, 'the summary says how many gates it counted');
+  assert.match(r.out, /10 gate\(s\) with no probe:/, 'the summary says how many gates it counted');
 });
 
 test('a run in which nothing passed is never "clean": every case pending → exit 1 on the pass floor', (t) => {
@@ -256,7 +260,7 @@ test('--coverage reports a new unprobed gate without failing, and M1 still pins 
   const r = run([file, '--coverage']);
   assert.equal(r.status, 0, r.out);
   assert.match(r.out, /g_fixture_unprobed: NO PASSING PROBE THAT DROVE THIS CASE ASSERTS ON state\.unlocked FOR THIS GATE/);
-  assert.match(r.out, /7 gate\(s\) with no probe:\s+- sp_alcohol_ambivalence_001 \/ g_fixture_unprobed/);
+  assert.match(r.out, /11 gate\(s\) with no probe:[\s\S]*- sp_alcohol_ambivalence_001 \/ g_fixture_unprobed/);
   assert.match(r.out, /Informational only/);
   const tier1 = run([file]);
   assert.equal(tier1.status, 1, tier1.out);
@@ -307,7 +311,7 @@ test('the plain run names an unprobed gate on a reviewed case but does not fail 
   const r = run([file]);
   assert.equal(r.status, 0, r.out);
   assert.match(r.out, /sp_depression_gated_si_001 \/ g_fixture_unprobed_dana — no hand-written probe asserts on this gate/);
-  assert.match(r.out, /^pass  S2  .*\(19 gate\(s\) on 5 reviewed case\(s\)\)/m, 'the new gate is inside what S1–S3 checked');
+  assert.match(r.out, /^pass  S2  .*\(23 gate\(s\) on 5 reviewed case\(s\)\)/m, 'the new gate is inside what S1–S3 checked');
   assert.doesNotMatch(r.out, /^FAIL/m);
 });
 
@@ -332,7 +336,7 @@ test('a same-named gate on a second case is not covered by the first case\'s pro
   const rayBlock = cov.out.split('sp_psychosis_paranoid_001')[1].split(MORGAN)[0];
   assert.match(dana, /si_active: B1, B2/, "Dana's row still names her probes");
   assert.match(rayBlock, /si_active: NO PASSING PROBE THAT DROVE THIS CASE ASSERTS ON state\.unlocked FOR THIS GATE/);
-  assert.match(cov.out, /7 gate\(s\) with no probe:\s+- sp_psychosis_paranoid_001 \/ si_active/);
+  assert.match(cov.out, /11 gate\(s\) with no probe:[\s\S]*- sp_psychosis_paranoid_001 \/ si_active/);
 });
 
 // A case the pack carries but faculty have not reviewed is not selectable (tool and proxy filter
@@ -366,7 +370,7 @@ test('a pending case\'s gates are not evaluated until it is reviewed; once revie
   const reviewed = fixturePack(t, (pack) => { clone(pack); /* facultyReview cloned from Dana: reviewed */ });
   const r2 = run([reviewed]);
   assert.equal(r2.status, 0, `a reviewed case with no hand-written probe is named, not failed\n${r2.out}`);
-  assert.match(r2.out, /^pass  S1  .*\(24 gate\(s\) on 6 reviewed case\(s\)\)/m, 'S1–S3 now range over the clone\'s six gates');
+  assert.match(r2.out, /^pass  S1  .*\(28 gate\(s\) on 6 reviewed case\(s\)\)/m, 'S1–S3 now range over the clone\'s six gates');
   assert.match(r2.out, /sp_fixture_pending_001 \/ si_active — no hand-written probe asserts on this gate/, "Dana's probes do not cover the clone's si_active");
   assert.match(r2.out, /sp_fixture_pending_001 \/ g_fixture_pending_gate — no hand-written probe/);
   assert.match(r2.out, /sp_fixture_pending_001 — no hand-written probe drives this case/);
@@ -377,7 +381,7 @@ test('a pending case\'s gates are not evaluated until it is reviewed; once revie
   const q2 = cov2.out.split('sp_fixture_pending_001')[1] || '';
   assert.match(q2, /g_fixture_pending_gate: NO PASSING PROBE THAT DROVE THIS CASE ASSERTS ON state\.unlocked FOR THIS GATE/);
   assert.doesNotMatch(q2, /not evaluated until the case is reviewed/, 'a reviewed case is evaluated, whatever drives it');
-  assert.match(cov2.out, /12 gate\(s\) with no probe:/);
+  assert.match(cov2.out, /16 gate\(s\) with no probe:/);
   assert.doesNotMatch(cov2.out, /Every one of the \d+ gate/);
 });
 

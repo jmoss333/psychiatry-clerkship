@@ -15,13 +15,13 @@
       "id": "week1",
       "label": "Week 1",
       "title": "Admission: start with the person and the timeline",
-      "focus": ["alliance", "timeline", "MSE"],
+      "focus": ["alliance", "timeline", "MSE", "safety screen"],
       "patientState": "Jordan arrives guarded and tired after several nights of very little sleep. The chart is brief, the reason for admission is contested, and Jordan asks whether the team has already decided what is wrong.",
       "learnerTask": "Practice opening the interview, mapping the timeline, and describing the mental status exam before naming a diagnosis.",
       "checklist": [
         {
-          "prompt": "I can state what changed, when it changed, and who noticed it.",
-          "example": "Jordan reports several nights of very little sleep before admission. Jordan describes feeling exhausted, while the family noticed escalating mood and communication changes."
+          "prompt": "I can state what changed, when it changed, who noticed it, and what the admission safety and medical screen found.",
+          "example": "Jordan reports several nights of very little sleep before admission. Jordan describes feeling exhausted, while the family noticed escalating mood and communication changes. I also confirmed that Jordan was asked directly about suicidal thoughts, thoughts of harming others and access to firearms or stockpiled medication, and that vitals, glucose and a urine drug screen are back; if any of these is missing, I say so first."
         },
         {
           "prompt": "I can name one alliance move that gives Jordan more control.",
@@ -33,7 +33,8 @@
         }
       ],
       "reflectionPrompt": "What would help Jordan feel that the interview is collaborative rather than an interrogation?",
-      "handoff": "On rounds, present the timeline and MSE first, then state what remains uncertain.",
+      "handoff": "On rounds, open with any safety or medical finding that needs action today (or say the screen is not yet done), then present the timeline and MSE, then state what remains uncertain.",
+      "commonMisstep": "Spending the first day on rapport and the timeline and never asking about suicide, violence or means, or never checking vitals and labs, because the patient seemed tired rather than unsafe. Several nights without sleep, mood change and a contested admission are reasons to screen on day one, not to wait.",
       "links": [
         {"label": "Interview and MSE", "kind": "page", "target": "pg_interview.md"},
         {"label": "Mental Status Exam", "kind": "tool", "target": "mse.html"}

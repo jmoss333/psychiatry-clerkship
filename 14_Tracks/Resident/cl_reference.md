@@ -9,7 +9,7 @@ The MS3 [Consult module](?page=exp_consult.md) teaches *what to notice and when 
 | | Serotonin syndrome | Neuroleptic malignant syndrome |
 |---|---|---|
 | **Trigger** | Serotonergic agent started/increased | Dopamine antagonist (or abrupt dopaminergic withdrawal) |
-| **Onset** | Fast — usually <24 h | Slow — 1–3 days (up to ~2 weeks) |
+| **Onset** | Fast — usually <24 h | Slower — usually within 2 weeks of a start or increase (often days); evolves over 1–3 days |
 | **Neuromuscular** | **Clonus** (esp. lower-extremity), hyperreflexia, myoclonus, tremor | **"Lead-pipe" rigidity**, bradyreflexia |
 | **Autonomic / temp** | Hyperthermia, tachycardia, diaphoresis, mydriasis, hyperactive bowel | Hyperthermia, labile BP/HR, diaphoresis |
 | **Labs / dx** | Clinical — **Hunter criteria** (spontaneous clonus; or inducible clonus + agitation/diaphoresis; or ocular clonus + agitation; etc.) | Clinical — **CK often >1,000 U/L**, leukocytosis |

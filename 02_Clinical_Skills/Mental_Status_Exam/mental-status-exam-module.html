@@ -175,6 +175,17 @@ var MSE_CONFLICTS = {
   cognition: [['oriented x3','oriented x4']]
 };
 
+// MS-1 (red-team 2026-11-25): a copied MSE must never drop suicidal and homicidal
+// ideation silently. If no SI/HI descriptor is chosen, the prose says so and the
+// builder shows a warning; the learner asks directly and then picks one.
+var MSE_SAFETY_OPTIONS=['no SI/HI','passive SI','active SI','homicidal ideation'];
+var MSE_SAFETY_MISSING_PROSE='Suicidal and homicidal ideation are not documented in this draft; ask directly before charting.';
+function mseSafetyStated(selection){
+  var s=(selection&&Array.isArray(selection.thoughtContent))?selection.thoughtContent:[];
+  for(var i=0;i<s.length;i++){ if(MSE_SAFETY_OPTIONS.indexOf(s[i])>=0) return true; }
+  return false;
+}
+
 function mseDomainByKey(domainKey){
   for(var i=0;i<DOMAINS.length;i++){
     if(DOMAINS[i].key===domainKey) return DOMAINS[i];
@@ -292,6 +303,7 @@ function App(){
       var s=sel[d.key]||[]; if(!s.length) return;
       var fn=tmpl[d.key]; if(fn) out.push(fn(jn(s)));
     });
+    if(out.length && !mseSafetyStated(sel)) out.push(MSE_SAFETY_MISSING_PROSE);
     return out.length ? out.join(' ') : 'Select descriptors above to draft a written MSE.';
   }
   function copyOut(){
@@ -363,6 +375,7 @@ function App(){
           });
         })()
       ),
+      (selectedCount() && !mseSafetyStated(sel)) ? e('div',{className:'pearl danger',role:'note',style:{marginTop:'10px'}}, e('b',null,'Safety not documented: '),'no suicidal or homicidal ideation descriptor is selected under Thought content. The copied text will say so. Ask directly, then choose one.') : null,
       e('div',{className:'row'},
         e('button',{className:'btn btn-primary',onClick:copyOut}, copied?'Copied ✓':'Copy as prose'),
         e('button',{className:'btn btn-ghost',onClick:reset},'Reset')),

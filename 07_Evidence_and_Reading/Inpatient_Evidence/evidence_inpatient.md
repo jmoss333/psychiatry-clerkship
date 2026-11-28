@@ -95,7 +95,7 @@ The **TREC trials** established haloperidol + promethazine as superior to halope
 
 - Midazolam 5 mg IM is the fastest-acting agent but carries respiratory depression risk
 
-- Avoid haloperidol monotherapy — it is the least effective option with the highest EPS risk
+- In acute psychiatric agitation, avoid haloperidol monotherapy — it is the least effective option with the highest EPS risk. This does not apply to delirium: there, use a low-dose antipsychotic alone if one is needed, and avoid benzodiazepines outside alcohol or sedative withdrawal (see §6)
 
 ---
 
@@ -175,7 +175,7 @@ The evidence base consists primarily of case series and open studies — **no hi
 
 - Perform a lorazepam challenge test (2 mg IV; 1 mg in elderly)
 
-- If positive, continue scheduled lorazepam (minimum TID; typical maintenance 8–24 mg/day)
+- If positive, continue scheduled lorazepam (minimum TID), titrated to response. In the studies the BAP catatonia guideline reviewed, most used lorazepam 1–4 mg per day, with some using up to 16 mg per day; it counts a trial as adequate once catatonia is adequately treated, titration has stopped because of side effects, or the dose has reached at least 16 mg per day; in malignant catatonia it recommends starting at 8 mg/day and titrating to a maximum of 24 mg/day (British Association for Psychopharmacology catatonia guideline, Rogers et al., *J Psychopharmacol* 2023; doi:10.1177/02698811231158232)
 
 - If benzodiazepines insufficient or malignant features present, initiate ECT urgently
 

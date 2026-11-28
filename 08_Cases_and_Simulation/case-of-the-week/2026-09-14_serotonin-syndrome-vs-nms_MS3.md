@@ -61,7 +61,7 @@ The patient has never taken an antipsychotic. There is no history of alcohol or 
 | Feature | Serotonin syndrome | NMS |
 |---|---|---|
 | Trigger | Serotonergic agent added/increased (SSRI, SNRI, MAOI, linezolid, tramadol, triptans, ondansetron) [1,3] | Dopamine-blocking agent (antipsychotics, metoclopramide) or abrupt withdrawal of dopaminergic therapy [4] |
-| Onset | Hours (usually < 24 h) [1] | Days (typically 1–2 weeks after starting/increasing) [4] |
+| Onset | Hours (usually < 24 h) [1] | Usually within the first 2 weeks of starting or increasing, often within days; once begun it evolves over 1–3 days [4] |
 | Neuromuscular | Hyperreflexia, clonus, tremor, myoclonus — legs > arms [1,2] | Lead-pipe rigidity, bradyreflexia [4] |
 | Pupils | Dilated [1] | Normal |
 | Bowel sounds | Hyperactive, diarrhea [1] | Normal or decreased |

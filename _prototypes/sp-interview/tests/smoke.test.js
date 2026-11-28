@@ -47,6 +47,8 @@ await run('skilled full interview',[
  "Thank you for telling me. Have you thought about how — do you have a plan?",
  "Are the pills still at home — do you have access to them?",
  "What has kept you going — what stops you from acting on it?",
+ // Red-team IR-4 (2026-11-26): a full follow-up includes past attempts; without it technique reads partial.
+ "Have you ever tried to end your life before, or done anything to prepare?",
  "Do you ever hear voices or see things other people don't?",
  "How much are you drinking, and any drugs at all?",
  "Any medical problems or medications, like thyroid issues?",

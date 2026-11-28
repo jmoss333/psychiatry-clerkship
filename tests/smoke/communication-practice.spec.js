@@ -781,6 +781,9 @@ test('desktop navigator maps stored practice quality to one status per case', as
       psychosis_validation_001: { choiceId: 'a', quality: 'partial', at: '2026-08-02' },
       guardedness_privacy_001: { choiceId: 'a', quality: 'missed', at: '2026-08-02' },
       rupture_limit_setting_001: { choiceId: 'a', quality: 'harmful', at: '2026-08-02' },
+      // Red-team CP-2: the first line is kept; a later best adds recoveredAt and never
+      // overwrites it, so harmful-then-best reads "Recovered after a miss", not "Practiced well".
+      medication_ambivalence_001: { choiceId: 'a', quality: 'harmful', at: '2026-08-01', recoveredAt: '2026-08-02' },
     }));
   });
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -788,9 +791,10 @@ test('desktop navigator maps stored practice quality to one status per case', as
   const navigator = page.locator('[data-desktop-navigator]');
   for (const [id, status] of [
     ['suicide_direct_question_001', 'Practiced well'],
-    ['psychosis_validation_001', 'Practiced'],
+    ['psychosis_validation_001', 'Partly practiced'],
     ['guardedness_privacy_001', 'Review'],
     ['rupture_limit_setting_001', 'Retry'],
+    ['medication_ambivalence_001', 'Recovered after a miss'],
     ['bpd_rupture_repair_001', 'Not practiced'],
   ]) {
     await expect(navigator.locator(`[data-case-select="${id}"] .case-status`)).toHaveText(status);
@@ -1208,12 +1212,13 @@ test('second pass is interrupted honestly by the timer, a case change, a filter 
   await expectPhase(page, 'orient', 1);
   await expect(page.locator('[data-second-pass]')).toHaveCount(0);
 
-  // Only the ordinary first passes wrote history (b overwrote a, then c overwrote b), and the
-  // three second passes (c, then d twice) left no record of their own: one case record, one
-  // COMM# card, exactly as before the pilot existed.
+  // Only the ordinary first passes wrote history, and the three second passes (c, then d
+  // twice) left no record of their own: one case record, one COMM# card. Under the rewind
+  // rule (red-team CP-2, ruled 2026-11-25) the first line, a, is kept; the later best line, c,
+  // adds recoveredAt instead of overwriting it.
   const after = await storageSnapshot(page);
   expect(stored[0]).not.toBeNull();
-  expect(JSON.parse(after[0])).toEqual({ [PILOT]: { choiceId: 'c', quality: 'best', at: expect.any(String) } });
+  expect(JSON.parse(after[0])).toEqual({ [PILOT]: { choiceId: 'a', quality: 'missed', at: expect.any(String), recoveredAt: '2026-08-01' } });
   const cards = Object.keys(JSON.parse(after[1]).cards).filter((id) => id.startsWith('COMM#'));
   expect(cards).toEqual([`COMM#${PILOT}`]);
   expect(errors).toEqual([]);

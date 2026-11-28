@@ -319,7 +319,7 @@ function deriveState(caseDef, studentMsgs) {
   const compiled = compileIntents(caseDef);
   const rr = caseDef.rapportRules;
   const flagIds = caseDef.intents.filter(it => it.category === 'flag').map(it => it.id);
-  const s = { rapport: 0, covered: {}, flaggedOnly: {}, unlocked: {}, closedRun: 0, reflections: 0,
+  const s = { rapport: 0, covered: {}, flaggedOnly: {}, afterGate: {}, unlocked: {}, closedRun: 0, reflections: 0,
               greetUsed: false, openInviteUsed: false, flagHistory: [], lastIntents: [], lastFlags: [] };
   for (const text of studentMsgs) {
     const hits = matchIntents(compiled, text);
@@ -343,6 +343,12 @@ function deriveState(caseDef, studentMsgs) {
     // is locked. A later clean turn with the same intent clears the mark. Mirrored in the client.
     hits.forEach(h => { if (flags.length) { if (!s.covered[h]) s.flaggedOnly[h] = true; } else delete s.flaggedOnly[h]; });
     hits.forEach(h => { s.covered[h] = true; });
+    // Red-team IR-4 (2026-11-26): follow-up credit needs the disclosure FIRST. Record which intents
+    // were heard on a clean (unflagged) turn that BEGAN with a gate already open, read before this
+    // turn's own gates are evaluated, so a follow-up asked before the disclosure, or stacked into the
+    // turn that drew it, is never follow-up. computeCoverage reads it for dependsOnGate rows.
+    // Mirrored in the client (MockProvider.respond and ProxyProvider._applyState).
+    if (!flags.length) for (const g of Object.keys(s.unlocked)) for (const h of hits) s.afterGate[g + '|' + h] = true;
     // gates — fully pack-driven, and an EXACT mirror of the client MockProvider cascade:
     // a flagged turn is answered by the flag line and never touches a gate; gates are
     // evaluated in pack order and at most ONE gate consumes a turn; a gate whose branch
@@ -408,20 +414,40 @@ function askedNotAnswered(caseDef, s, intent) {
   return !!(s.flaggedOnly && s.flaggedOnly[intent])
     && (caseDef.gated || []).some(gd => !s.unlocked[gd.id] && (gd.requiresIntents || []).includes(intent));
 }
+// A safety intent asked on a clean turn, that opens a disclosure gate on rapport (a gate with no
+// parent gate), while every such gate is still locked: the patient deflected (IR-2, 2026-11-26).
+// Asked, never answered, so never an "observed" screen. IR-1's flagged-turn case is reported apart.
+function deflected(caseDef, s, intent) {
+  if (!s.covered[intent] || askedNotAnswered(caseDef, s, intent)) return false;
+  const def = caseDef.intents.find(it => it.id === intent);
+  if (!def || def.category !== 'safety') return false;
+  const openers = (caseDef.gated || []).filter(gd => !gd.requiresGate && (gd.requiresIntents || []).includes(intent));
+  return openers.length > 0 && !openers.some(gd => s.unlocked[gd.id]);
+}
 function computeCoverage(caseDef, s) {
   return caseDef.checklist.map(c => {
     let status;
+    // criticalIfGate (IR-5/IR-10): a row that becomes critical once a disclosure gate has opened.
+    const critical = !!c.critical || !!(c.criticalIfGate && s.unlocked[c.criticalIfGate]);
+    const marks = {};
     if (c.dependsOnGate && !s.unlocked[c.dependsOnGate]) status = 'na';
     else {
       const unanswered = c.intents.filter(i => askedNotAnswered(caseDef, s, i));
-      const got = c.intents.filter(i => s.covered[i] && !unanswered.includes(i)).length;
+      const defl = c.intents.filter(i => !unanswered.includes(i) && deflected(caseDef, s, i));
+      // IR-4: a row that depends on a gate credits an intent only when it was heard on a clean turn
+      // that began with that gate open (afterGate), never before the disclosure or in its turn.
+      const after = (i) => !c.dependsOnGate || !!(s.afterGate && s.afterGate[c.dependsOnGate + '|' + i]);
+      const early = c.intents.filter(i => s.covered[i] && !after(i));
+      const got = c.intents.filter(i => s.covered[i] && !unanswered.includes(i) && !defl.includes(i) && after(i)).length;
       if (got === c.intents.length) status = 'observed';
-      else if (got > 0 || unanswered.length) status = 'partial';
+      else if (got > 0 || unanswered.length || defl.length) status = 'partial';
       else if ((c.partialIfOnly || []).some(i => s.covered[i])) status = 'partial';
       else status = 'missed';
-      if (unanswered.length) return { id: c.id, label: c.label, status, critical: !!c.critical, askedNotAnswered: true };
+      if (unanswered.length) marks.askedNotAnswered = true;
+      if (defl.length) marks.deflected = true;
+      if (early.length) marks.askedEarly = true;
     }
-    return { id: c.id, label: c.label, status, critical: !!c.critical };
+    return { id: c.id, label: c.label, status, critical, ...marks };
   });
 }
 

@@ -136,7 +136,7 @@
 - Hyporeflexia points to NMS; hyperreflexia and clonus point to serotonin syndrome.
 - Never give an antipsychotic in NMS or malignant catatonia — antipsychotics are the problem, not the treatment.
 - ECT is the definitive treatment for malignant catatonia (and for NMS-catatonia overlap).[^bap-catatonia-2023]
-- Cyproheptadine is the antidote-of-choice for serotonin syndrome; dantrolene/bromocriptine for NMS; benzodiazepines help NMS, serotonin syndrome, and catatonia alike.
+- Cyproheptadine is only an adjunct in serotonin syndrome, with case-level evidence: stopping the serotonergic drug, cooling, benzodiazepine sedation and escalation come first; dantrolene/bromocriptine for NMS; benzodiazepines help NMS, serotonin syndrome, and catatonia alike.
 
 **Pair with** Catatonia (and the Bush-Francis scale), Agitation & Restraint, the Psychopharmacology Primer, and Delirium.
 
