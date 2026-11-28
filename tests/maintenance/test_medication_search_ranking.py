@@ -93,6 +93,36 @@ class SnapshotTests(unittest.TestCase):
                 with self.assertRaises(ranking.RankingUnavailable):
                     ranking.extract_snapshot(receipt, report)
 
+    def test_typed_pharmacy_rows_round_trip_both_sites_and_devices(self):
+        receipt, report = bundle()
+        card = {"ref": "lithium", "kind": "pharmacy"}
+        readings = [{"ref": ref, "kind": "item"} for ref in
+                    ("august-case.md", "november-case.md", "psychopharm_primer.md")]
+        for index in range(4):
+            alter(report, index, lambda p: p["observations"][1].update(
+                expected={"category": "name audit", "query": "lithium",
+                          "first": card, "topThreeReadings": "psychopharm_primer.md"},
+                rows=[card] + readings))
+        snapshot = ranking.extract_snapshot(receipt, report)
+        self.assertEqual(len(snapshot["cases"]), 8)
+        for case in snapshot["cases"][1::2]:
+            self.assertEqual(case["rows"], [card] + readings)
+
+    def test_unknown_duplicate_and_malformed_typed_rows_are_rejected(self):
+        for rows in (
+            [{"ref": "lithium", "kind": "unknown"}],
+            [{"ref": "lithium", "kind": "pharmacy", "extra": 1}],
+            [{"ref": "lithium", "kind": "pharmacy"}] * 2,
+            [{"ref": "../lithium", "kind": "pharmacy"}],
+            [{"ref": " ", "kind": "item"}],
+            [{"ref": "same.md", "kind": k} for k in ("item", "protocol")],
+        ):
+            with self.subTest(rows=rows):
+                receipt, report = bundle()
+                alter(report, 0, lambda p: p["observations"][1].update(rows=rows))
+                with self.assertRaises(ranking.RankingUnavailable):
+                    ranking.extract_snapshot(receipt, report)
+
     def test_only_final_retry_is_compared_and_failed_queries_remain_visible(self):
         receipt, report = bundle()
         test = report["suites"][0]["specs"][0]["tests"][0]
@@ -134,6 +164,18 @@ class ComparisonTests(unittest.TestCase):
                 self.assertIn(note, " ".join(change["notes"]))
                 self.assertEqual(change["movements"][0]["beforeRank"], 1)
                 self.assertIn("Safety-priority regressions", ranking.render_markdown(result))
+
+    def test_pharmacy_before_safety_does_not_hide_the_raw_demotion(self):
+        def change(payload):
+            obs = payload["observations"][0]
+            obs["rows"].insert(0, {"ref": "lithium", "kind": "pharmacy"})
+            obs["passed"] = False
+
+        result = self.compare(lambda r: alter(r, 0, change))
+        self.assertEqual(result["safetyRegressions"], 1)
+        self.assertEqual(result["safetyExpectationFailures"], 1)
+        protocol = next(m for m in result["changes"][0]["movements"] if m["ref"] == "t_sud.md")
+        self.assertEqual((protocol["beforeRank"], protocol["afterRank"]), (1, 2))
 
     def test_regular_rank_changes_do_not_become_safety_alarms(self):
         result = self.compare(lambda r: alter(r, 0, lambda p: p["observations"][1]["rows"].reverse()))
