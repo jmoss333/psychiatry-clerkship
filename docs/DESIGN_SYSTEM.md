@@ -84,11 +84,13 @@ it is a snap, not a redesign.
 | `--fd-font-3xl` | 30 | 29, 30, 31 | page title (`.fd-h1`); the learner page title on a phone |
 | `--fd-font-4xl` | 34 | 34 | learner page title (`.fd-today__h1`) — one-thread redesign, 2026-10-04 |
 | `--fd-font-section` | 19 | 19 | section heading on a learner page (`.fd-sectionhead`) — one-thread redesign, 2026-10-04 |
+| `--fd-font-input-min` | 16 | — | mobile form field floor; keeps larger inherited sizes |
 
 The two 2026-10-04 steps sit outside the original nine on purpose: `4xl` because the redesign's
 learner page title is a full step above `.fd-h1`, and `section` because 19px lands between `lg`
 (17) and `xl` (21) and neither neighbour reads right for an in-page heading. The scale is now 11
-steps; the step-name caveat below still holds (`--fd-font-md` is 14, `--fd-font-lg` is 17).
+steps plus a separate mobile field floor. The step-name caveat below still holds
+(`--fd-font-md` is 14, `--fd-font-lg` is 17).
 
 **11px is the floor.** Nothing learner-facing goes below it. Thirteen declarations were below it
 (`.fd-chip`, `.fd-kbd`, `.fd-attested`, `.fd-consistency__label`, the timeline and prev/next
