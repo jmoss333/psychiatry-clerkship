@@ -2065,6 +2065,7 @@ function fdMountNightSignout(body) {
   const slip = find('#ns-slip-label'), openingLabel = slip.textContent;
   const speaker = find('#ns-resident-label'), residentLabel = speaker.textContent;
   const question = find('#ns-question'), status = find('#ns-status');
+  const recording = find('#ns-recording');
   let sent = false;
   const firstGap = () => order.find(key => !selected.has(key));
   const fact = key => bank.querySelector('[data-fact="' + key + '"]');
@@ -2086,7 +2087,22 @@ function fdMountNightSignout(body) {
     const missing = firstGap();
     speaker.textContent = missing ? residentLabel : label('readback');
     question.dataset.missing = sent && missing ? missing : 'none';
-    question.textContent = sent ? bank.querySelector('[data-heard="' + (included.join('-') || 'none') + '"]').textContent : '';
+    const reply = sent && bank.querySelector('[data-heard="' + (included.join('-') || 'none') + '"]');
+    question.textContent = reply ? reply.textContent : '';
+    if (recording) {
+      const previous = recording.querySelector('audio');
+      if (previous) {
+        previous.pause();
+        previous.removeAttribute('src');
+        previous.load();
+        recording.replaceChildren();
+      }
+      if (reply && reply.dataset.recording) {
+        const player = bank.querySelector('[data-ns-player]').cloneNode(true);
+        player.querySelector('audio').src = reply.dataset.recording;
+        recording.append(player);
+      }
+    }
     find('#ns-repair').hidden = !missing;
     if (missing) find('#ns-clarify').textContent = fact(missing).dataset.clarify;
   }
@@ -2095,7 +2111,8 @@ function fdMountNightSignout(body) {
     sent = true;
     render();
     status.textContent = [newFact, question.textContent].filter(Boolean).join(' ');
-    find(firstGap() ? '#ns-clarify' : '#ns-edit').focus({preventScroll:true});
+    const next = find('#ns-recording audio') || find(firstGap() ? '#ns-clarify' : '#ns-edit');
+    next.focus({preventScroll:true});
     find('.ns-reader').scrollIntoView({block:'nearest'});
   }
 

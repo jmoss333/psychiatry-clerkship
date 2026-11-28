@@ -596,6 +596,12 @@ for scene in ("catie-patient-a.webp", "catie-patient-b.webp"):
                    os.path.join(OUT, "illustrations", scene), _missing_req)
 _copy_required(os.path.join(LIB, "14_Tracks", "MS3", "Student_Ready_Pack", "04_expansion_modules", "illustrations", "grief-bedside.webp"),
                os.path.join(OUT, "illustrations", "grief-bedside.webp"), _missing_req)
+signout_audio = os.path.join("audio", "sam-evening-signout")
+signout_reading = os.path.join(LIB, "14_Tracks", "MS3", "Student_Ready_Pack", "05_documentation_oral_presentation")
+os.makedirs(os.path.join(OUT, signout_audio), exist_ok=True)
+for recording in ("SAM-07.mp3", "SAM-08.mp3"):
+    _copy_required(os.path.join(signout_reading, signout_audio, recording),
+                   os.path.join(OUT, signout_audio, recording), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Medical_Workup", "illustrations", "lang-morning-interview.webp"),
                os.path.join(OUT, "illustrations", "lang-morning-interview.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurocognitive", "illustrations", "mara-kitchen.webp"),
@@ -612,6 +618,11 @@ _copy_required(os.path.join(LIB, "03_Core_Topics", "Neurodevelopmental", "illust
                os.path.join(OUT, "illustrations", "alex-lunch.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "06_Family_and_Relational", "illustrations", "ren-before-rounds.webp"),
                os.path.join(OUT, "illustrations", "ren-before-rounds.webp"), _missing_req)
+ren_audio = os.path.join("audio", "ren-before-rounds")
+os.makedirs(os.path.join(OUT, ren_audio), exist_ok=True)
+for cue in ("REN-01.mp3", "REN-05.mp3", "REN-09.mp3", "REN-16.mp3"):
+    _copy_required(os.path.join(LIB, "06_Family_and_Relational", ren_audio, cue),
+                   os.path.join(OUT, ren_audio, cue), _missing_req)
 _copy_required(os.path.join(LIB, "05_Psychopharmacology", "ECT_Neuromodulation", "illustrations", "robin-memory.webp"),
                os.path.join(OUT, "illustrations", "robin-memory.webp"), _missing_req)
 _copy_required(os.path.join(LIB, "02_Clinical_Skills", "Brief_Psychotherapy", "illustrations", "noor-dayroom.webp"),
