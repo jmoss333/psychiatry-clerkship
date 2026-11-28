@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "Joshua Moss, MD",
   "usageNotice": "Educational metadata only; faculty review remains required for clinical recommendations.",
-  "updated": "2026-11-23",
+  "updated": "2026-11-26",
   "policy": {
     "rule": "Every claim the library makes about a source must be licensed by a stored verbatim span from that source.",
     "maxAgeDays": 730,
@@ -2999,6 +2999,17 @@
           "usedBy": [
             "psychopharm_primer.md"
           ]
+        },
+        {
+          "claimId": "gad-page-no-abrupt-benzodiazepine-stop",
+          "claimText": "Do not stop a benzodiazepine abruptly in a patient likely to be physically dependent and at risk of withdrawal.",
+          "claimTerms": [
+            "should not discontinue BZDs abruptly"
+          ],
+          "direction": "negative",
+          "usedBy": [
+            "t_gad.md"
+          ]
         }
       ]
     },
@@ -3454,6 +3465,18 @@
           "usedBy": [
             "screeners.html"
           ]
+        },
+        {
+          "claimId": "gad7-cutpoint-10-and-change-emerging",
+          "claimText": "A GAD-7 score of 10 or more is the usual cutpoint, and its sensitivity to change is emerging but not yet definitive.",
+          "claimTerms": [
+            "> or = 10 on the parent scales",
+            "emerging albeit not yet definitive for the GAD-7"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
         }
       ]
     },
@@ -3598,6 +3621,291 @@
           "direction": "descriptive",
           "usedBy": [
             "ddx.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/15939837",
+        "retrievedAt": "2026-11-26",
+        "pmid": "15939837",
+        "doi": "10.1001/archpsyc.62.6.593",
+        "sourceSpan": "Lifetime prevalence estimates are as follows: anxiety disorders, 28.8%; mood disorders, 20.8%; impulse-control disorders, 24.8%; substance use disorders, 14.6%; any disorder, 46.4%. Median age of onset is much earlier for anxiety (11 years) and impulse-control (11 years) disorders than for substance use (20 years) and mood (30 years) disorders."
+      },
+      "claims": [
+        {
+          "claimId": "ncsr-anxiety-lifetime-prevalence-onset",
+          "claimText": "In the National Comorbidity Survey Replication, lifetime prevalence of any anxiety disorder was 28.8%, with a median age of onset of 11 years.",
+          "claimTerms": [
+            "anxiety disorders, 28.8%",
+            "anxiety (11 years)"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "uspstf-2023-anxiety-screening-adults",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/37338866",
+        "retrievedAt": "2026-11-26",
+        "pmid": "37338866",
+        "doi": "10.1001/jama.2023.9301",
+        "sourceSpan": "Asymptomatic adults 19 years or older, including pregnant and postpartum persons. Older adults are defined as those 65 years or older.\n\nThe USPSTF concludes with moderate certainty that screening for anxiety disorders in adults, including pregnant and postpartum persons, has a moderate net benefit. The USPSTF concludes that the evidence is insufficient on screening for anxiety disorders in older adults.\n\nThe USPSTF recommends screening for anxiety disorders in adults, including pregnant and postpartum persons. (B recommendation) The USPSTF concludes that the current evidence is insufficient to assess the balance of benefits and harms of screening for anxiety disorders in older adults. (I statement)."
+      },
+      "claims": [
+        {
+          "claimId": "uspstf-anxiety-screen-adults-b-older-i",
+          "claimText": "The USPSTF recommends screening adults for anxiety disorders, including pregnant and postpartum persons (B), and finds the evidence insufficient in adults 65 and older (I).",
+          "claimTerms": [
+            "recommends screening for anxiety disorders in adults, including pregnant and postpartum persons",
+            "insufficient"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "spitzer-2006-gad7",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/16717171",
+        "retrievedAt": "2026-11-26",
+        "pmid": "16717171",
+        "doi": "10.1001/archinte.166.10.1092",
+        "sourceSpan": "A cut point was identified that optimized sensitivity (89%) and specificity (82%). Increasing scores on the scale were strongly associated with multiple domains of functional impairment (all 6 Medical Outcomes Study Short-Form General Health Survey scales and disability days). Although GAD and depression symptoms frequently co-occurred, factor analysis confirmed them as distinct dimensions."
+      },
+      "claims": [
+        {
+          "claimId": "gad7-cutpoint-sensitivity-specificity",
+          "claimText": "In its primary care validation, the scale's chosen cutpoint gave 89% sensitivity and 82% specificity.",
+          "claimTerms": [
+            "sensitivity (89%)",
+            "specificity (82%)"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        },
+        {
+          "claimId": "gad-depression-cooccur-distinct",
+          "claimText": "GAD and depressive symptoms frequently co-occurred but were distinct dimensions.",
+          "claimTerms": [
+            "frequently co-occurred",
+            "distinct dimensions"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "slee-2019-gad-pharmacotherapy-nma",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/30712879",
+        "retrievedAt": "2026-11-26",
+        "pmid": "30712879",
+        "doi": "10.1016/S0140-6736(18)31793-8",
+        "sourceSpan": "This analysis is based on 89 trials, which included 25 441 patients randomly assigned to 22 different active drugs or placebo. Duloxetine (MD -3·13, 95% credible interval [CrI] -4·13 to -2·13), pregabalin (MD -2·79, 95% CrI -3·69 to -1·91), venlafaxine (MD -2·69, 95% CrI -3·50 to -1·89), and escitalopram (MD -2·45, 95% CrI -3·27 to -1·63) were more efficacious than placebo with relatively good acceptability. Mirtazapine, sertraline, fluoxetine, buspirone, and agomelatine were also found to be efficacious and well tolerated but these findings were limited by small sample sizes. Quetiapine (MD -3·60 95% CrI -4·83 to -2·39) had the largest effect on HAM-A but it was poorly tolerated (odds ratio 1·44, 95% CrI 1·16-1·80) when compared with placebo. Likewise, paroxetine and benzodiazepines were effective but also poorly tolerated when compared with placebo. Risk of reporting bias was considered low, and when possible all completed studies were included to avoid publication bias.\n\nTo our knowledge, this is the largest contemporary review of pharmacological agents for the treatment of generalised anxiety disorder by use of network analysis. There are several effective treatment choices for generalised anxiety disorder across classes of medication. The failure of initial pharmacological therapy might not be a reason to abandon a pharmacological treatment strategy."
+      },
+      "claims": [
+        {
+          "claimId": "gad-duloxetine-venlafaxine-escitalopram-acceptable",
+          "claimText": "Duloxetine, pregabalin, venlafaxine and escitalopram were more effective than placebo for GAD with relatively good acceptability.",
+          "claimTerms": [
+            "more efficacious than placebo with relatively good acceptability"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        },
+        {
+          "claimId": "gad-benzodiazepines-effective-poorly-tolerated",
+          "claimText": "Benzodiazepines and paroxetine were effective for GAD but poorly tolerated compared with placebo.",
+          "claimTerms": [
+            "paroxetine and benzodiazepines were effective but also poorly tolerated"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        },
+        {
+          "claimId": "gad-quetiapine-largest-effect-poorly-tolerated",
+          "claimText": "Quetiapine had the largest effect on the Hamilton Anxiety Scale but was poorly tolerated (odds ratio 1·44).",
+          "claimTerms": [
+            "largest effect on HAM-A",
+            "poorly tolerated (odds ratio 1·44"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        },
+        {
+          "claimId": "gad-small-sample-agents",
+          "claimText": "Mirtazapine, sertraline, fluoxetine, buspirone and agomelatine were efficacious but on small samples.",
+          "claimTerms": [
+            "limited by small sample sizes"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        },
+        {
+          "claimId": "gad-first-medicine-failure-not-abandon-pharmacotherapy",
+          "claimText": "Failure of a first medicine for GAD might not be a reason to abandon a pharmacological treatment strategy.",
+          "claimTerms": [
+            "failure of initial pharmacological therapy might not be a reason to abandon a pharmacological treatment strategy"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "carl-2020-gad-psychotherapy-medication",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/30760112",
+        "retrievedAt": "2026-11-26",
+        "pmid": "30760112",
+        "doi": "10.1080/16506073.2018.1560358",
+        "sourceSpan": "Seventy-nine randomized controlled trials (RCT) including 11,002 participants with a diagnosis of GAD were included in a meta-analysis that tested the efficacy of psychotherapies or medications for GAD. Psychotherapy showed a medium to large effect size (g = 0.76) and medication showed a small effect size (g = 0.38) on GAD outcomes. Psychotherapy also showed a medium effect on depression outcomes (g = 0.64) as did medications (g = 0.59). Younger age was associated with a larger effect size for psychotherapy (p < 0.05). There was evidence of publication bias in psychotherapy studies. This analysis found a medium to large effect for empirically supported psychotherapy interventions on GAD outcomes and a small effect for medications on GAD outcomes. Both groups showed a medium effect on depression outcomes. Because medication studies had more placebo control conditions than inactive conditions compared to psychotherapy studies, effect sizes between the domains should not be compared directly."
+      },
+      "claims": [
+        {
+          "claimId": "gad-psychotherapy-g076-medication-g038-not-comparable",
+          "claimText": "Psychotherapy had a medium-to-large effect on GAD (g = 0.76) and medication a small one (g = 0.38); the two should not be compared directly because medication trials more often used placebo controls.",
+          "claimTerms": [
+            "g = 0.76",
+            "g = 0.38",
+            "should not be compared directly"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "stone-2009-antidepressant-suicidality-age",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/19671933",
+        "retrievedAt": "2026-11-26",
+        "pmid": "19671933",
+        "doi": "10.1136/bmj.b2880",
+        "sourceSpan": "For participants with non-psychiatric indications, suicidal behaviour and ideation were extremely rare. For those with psychiatric indications, risk was associated with age. For suicidal behaviour or ideation and for suicidal behaviour only, the respective odds ratios were 1.62 (95% confidence interval 0.97 to 2.71) and 2.30 (1.04 to 5.09) for participants aged <25, 0.79 (0.64 to 0.98) and 0.87 (0.58 to 1.29) for those aged 25-64, and 0.37 (0.18 to 0.76) and 0.06 (0.01 to 0.58) for those aged >or=65."
+      },
+      "claims": [
+        {
+          "claimId": "antidepressant-suicidal-behaviour-under-25",
+          "claimText": "In FDA-held adult trials, the odds of suicidal behaviour on an antidepressant were raised under age 25 (odds ratio 2.30) and not at older ages.",
+          "claimTerms": [
+            "2.30 (1.04 to 5.09) for participants aged <25",
+            "risk was associated with age"
+          ],
+          "direction": "descriptive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "batelaan-2017-antidepressant-discontinuation-anxiety",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/28903922",
+        "retrievedAt": "2026-11-26",
+        "pmid": "28903922",
+        "doi": "10.1136/bmj.j3927",
+        "sourceSpan": "Discontinuation increased the odds of relapse compared with continuing antidepressants (summary odds ratio 3.11, 95% confidence interval 2.48 to 3.89). Subgroup analyses and meta-regression analyses showed no statistical significance. Time to relapse (n=3002) was shorter when antidepressants were discontinued (summary hazard ratio 3.63, 2.58 to 5.10; n=11 studies). Summary relapse prevalences were 36.4% (30.8% to 42.1%; n=28 studies) for the placebo group and 16.4% (12.6% to 20.1%; n=28 studies) for the antidepressant group, but prevalence varied considerably across studies, most likely owing to differences in the length of follow-up. Dropout was higher in the placebo group (summary odds ratio 1.31, 1.06 to 1.63; n=27 studies).Conclusions Up to one year of follow-up, discontinuation of antidepressant treatment results in higher relapse rates among responders compared with treatment continuation. The lack of evidence after a one year period should not be interpreted as explicit advice to discontinue antidepressants after one year."
+      },
+      "claims": [
+        {
+          "claimId": "anxiety-antidepressant-discontinuation-relapse",
+          "claimText": "Stopping an antidepressant in responders raised the odds of relapse within a year (odds ratio 3.11; 36.4% vs 16.4%), and the lack of data beyond a year is not advice to stop at a year.",
+          "claimTerms": [
+            "summary odds ratio 3.11",
+            "36.4%",
+            "16.4%",
+            "should not be interpreted as explicit advice to discontinue"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "mayo-wilson-2014-social-anxiety-nma",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/26361000",
+        "retrievedAt": "2026-11-26",
+        "pmid": "26361000",
+        "doi": "10.1016/S2215-0366(14)70329-3",
+        "sourceSpan": "Individual CBT compared with psychological placebo (SMD -0·56, 95% CrI -1·00 to -0·11), and SSRIs and SNRIs compared with pill placebo (-0·44, -0·67 to -0·22) were the only classes of interventions that had greater effects on outcomes than appropriate placebo. Individual CBT also had a greater effect than psychodynamic psychotherapy (SMD -0·56, 95% CrI -1·03 to -0·11) and interpersonal psychotherapy, mindfulness, and supportive therapy (-0·82, -1·41 to -0·24).\n\nIndividual CBT (which other studies have shown to have a lower risk of side-effects than pharmacotherapy) is associated with large effect sizes. Thus, it should be regarded as the best intervention for the initial treatment of social anxiety disorder. For individuals who decline psychological intervention, SSRIs show the most consistent evidence of benefit."
+      },
+      "claims": [
+        {
+          "claimId": "social-anxiety-individual-cbt-first-ssri-if-declined",
+          "claimText": "Individual CBT should be the initial treatment for social anxiety disorder, with SSRIs for people who decline psychological treatment; only individual CBT and SSRIs/SNRIs beat an appropriate placebo.",
+          "claimTerms": [
+            "best intervention for the initial treatment of social anxiety disorder",
+            "decline psychological intervention, SSRIs",
+            "only classes of interventions that had greater effects on outcomes than appropriate placebo"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_gad.md"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "wolitzky-taylor-2008-specific-phobia",
+      "verifiedAgainst": {
+        "spanType": "abstract",
+        "sourceEndpoint": "https://europepmc.org/article/MED/18410984",
+        "retrievedAt": "2026-11-26",
+        "pmid": "18410984",
+        "doi": "10.1016/j.cpr.2008.02.007",
+        "sourceSpan": "As expected, exposure-based treatment produced large effects sizes relative to no treatment. They also outperformed placebo conditions and alternative active psychotherapeutic approaches. Treatments involving in vivo contact with the phobic target also outperformed alternative modes of exposure (e.g., imaginal exposure, virtual reality, etc.) at post-treatment but not at follow-up."
+      },
+      "claims": [
+        {
+          "claimId": "specific-phobia-exposure-in-vivo",
+          "claimText": "Exposure-based therapy outperformed placebo and other psychotherapies for specific phobia; in vivo exposure beat imaginal or virtual exposure at post-treatment but not at follow-up.",
+          "claimTerms": [
+            "outperformed placebo conditions and alternative active psychotherapeutic approaches",
+            "at post-treatment but not at follow-up"
+          ],
+          "direction": "positive",
+          "usedBy": [
+            "t_gad.md"
           ]
         }
       ]

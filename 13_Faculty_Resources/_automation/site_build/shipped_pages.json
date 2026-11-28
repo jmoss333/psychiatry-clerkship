@@ -3,7 +3,7 @@
   "generated_from": {
     "cotw_registry.json": "319521314885745c9be6f55f0c611b091314b3a0331da36d95244362a36b0f0b",
     "site_extras.py": "2ffc966d904a2e67c13b6d6c9951808098b76d02f0e4ec02d3e2b74924dae8ad",
-    "site_manifest.json": "0fd37646903b464fe9042bf5248fba01fd3c15171ff7d895a5391440643a151d"
+    "site_manifest.json": "9394524c3c7964d7332c05a76fb97667fdbf54fa4a65583c17c25a2fad85cbb4"
   },
   "pages": [
     {
@@ -1359,6 +1359,17 @@
       "slug": "t_eating.md",
       "source": "03_Core_Topics/Eating_Disorders/eating_disorders_inpatient_teaching.md",
       "title": "Eating Disorders"
+    },
+    {
+      "kind": "page",
+      "producer": "site_manifest",
+      "sites": [
+        "ms3",
+        "res"
+      ],
+      "slug": "t_gad.md",
+      "source": "03_Core_Topics/Anxiety/generalized_anxiety_clinic_teaching.md",
+      "title": "Anxiety in Clinic: GAD & Phobias"
     },
     {
       "kind": "page",

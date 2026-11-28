@@ -723,6 +723,486 @@
    }
   },
   {
+   "id": "ed_t_gad_batelaan-2017-antidepressant-discontinuation-anxiety",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "batelaan-2017-antidepressant-discontinuation-anxiety",
+   "claim": "Don't stop too soon. Responders switched to placebo relapsed more often within a year than those who stayed on their antidepressant (36.4% vs 16.4%).",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Batelaan et al. · 2017 · BMJ",
+     "c": true,
+     "sourceId": "batelaan-2017-antidepressant-discontinuation-anxiety",
+     "key": "A"
+    },
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "B"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Risk of relapse after antidepressant discontinuation in anxiety disorders, obsessive-compulsive disorder, and post-traumatic stress disorder: systematic review and meta-analysis of relapse prevention trials",
+    "doi": "10.1136/bmj.j3927",
+    "pmid": "28903922",
+    "url": "https://doi.org/10.1136/bmj.j3927"
+   }
+  },
+  {
+   "id": "ed_t_gad_brunner-2025-benzodiazepine-taper",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "brunner-2025-benzodiazepine-taper",
+   "claim": "Never stop one abruptly in a patient likely to be physically dependent; plan a taper.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Brunner et al. · 2025 · J Gen Intern Med",
+     "c": true,
+     "sourceId": "brunner-2025-benzodiazepine-taper",
+     "key": "A"
+    },
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "B"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "PubMed identity verified via Europe PMC core record; source checked for the adult inpatient primer. AI-drafted teaching and annotations await faculty review.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Joint Clinical Practice Guideline on Benzodiazepine Tapering: Considerations When Risks Outweigh Benefits.",
+    "doi": "10.1007/s11606-025-09499-2",
+    "pmid": "40526204",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/40526204/"
+   }
+  },
+  {
+   "id": "ed_t_gad_carl-2020-gad-psychotherapy-medication",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "carl-2020-gad-psychotherapy-medication",
+   "claim": "Offer both. In a meta-analysis of 79 randomized trials, psychotherapy had a medium-to-large effect on GAD (g = 0.76) and medication a small one (g = 0.38); the authors warn these cannot be compared directly, because medication trials more often used placebo controls.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "Carl et al. · 2020 · Cogn Behav Ther",
+     "c": true,
+     "sourceId": "carl-2020-gad-psychotherapy-medication",
+     "key": "A"
+    },
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "B"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Psychological and pharmacological treatments for generalized anxiety disorder (GAD): a meta-analysis of randomized controlled trials",
+    "doi": "10.1080/16506073.2018.1560358",
+    "pmid": "30760112",
+    "url": "https://doi.org/10.1080/16506073.2018.1560358"
+   }
+  },
+  {
+   "id": "ed_t_gad_dsm-5-tr",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "dsm-5-tr",
+   "claim": "GAD is excessive worry about a number of events or activities, more days than not for at least 6 months, that the person finds hard to control, with at least 3 of 6 symptoms: restlessness, easy fatigue, poor concentration, irritability, muscle tension and disturbed sleep.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "c": true,
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Kroenke et al. · 2010 · Gen Hosp Psychiatry",
+     "sourceId": "kroenke-2010-phq-gad-review",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "authoritative monitoring endpoint; bibliographic article identity not applicable",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "DSM-5-TR (APPI)",
+    "doi": "",
+    "pmid": "",
+    "url": "https://www.appi.org/products/dsm"
+   }
+  },
+  {
+   "id": "ed_t_gad_kessler-2005-ncsr-lifetime-prevalence",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+   "claim": "Common, early and outpatient. In the US National Comorbidity Survey Replication, lifetime prevalence of any anxiety disorder was 28.8%, with a median age of onset of 11 years.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "c": true,
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Kroenke et al. · 2010 · Gen Hosp Psychiatry",
+     "sourceId": "kroenke-2010-phq-gad-review",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Lifetime prevalence and age-of-onset distributions of DSM-IV disorders in the National Comorbidity Survey Replication",
+    "doi": "10.1001/archpsyc.62.6.593",
+    "pmid": "15939837",
+    "url": "https://doi.org/10.1001/archpsyc.62.6.593"
+   }
+  },
+  {
+   "id": "ed_t_gad_kroenke-2010-phq-gad-review",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "kroenke-2010-phq-gad-review",
+   "claim": "A GAD-7 of 10 or more is the usual cutpoint.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Kroenke et al. · 2010 · Gen Hosp Psychiatry",
+     "c": true,
+     "sourceId": "kroenke-2010-phq-gad-review",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the Screeners page measurement-based-care card (screeners.html, 2026-10-31): why the card teaches no individual-change threshold for the GAD-7. Scope note: it supports the parent-scale cutpoint of 10 and that sensitivity to change is established for the PHQ-9 but emerging for the GAD-7; it gives no GAD-7 change threshold. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Scope note: it supports the parent-scale cutpoint of 10 and that sensitivity to change is established for the PHQ-9 but emerging for the GAD-7; it gives no GAD-7 change threshold.",
+   "citation": {
+    "title": "The Patient Health Questionnaire Somatic, Anxiety, and Depressive Symptom Scales: a systematic review.",
+    "doi": "10.1016/j.genhosppsych.2010.03.006",
+    "pmid": "20633738",
+    "url": "https://doi.org/10.1016/j.genhosppsych.2010.03.006"
+   }
+  },
+  {
+   "id": "ed_t_gad_mayo-wilson-2014-social-anxiety-nma",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "mayo-wilson-2014-social-anxiety-nma",
+   "claim": "Social anxiety: individual cognitive behavioral therapy (CBT) first, an SSRI if therapy is declined.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Mayo-Wilson et al. · 2014 · Lancet Psychiatry",
+     "c": true,
+     "sourceId": "mayo-wilson-2014-social-anxiety-nma",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Psychological and pharmacological interventions for social anxiety disorder in adults: a systematic review and network meta-analysis",
+    "doi": "10.1016/S2215-0366(14)70329-3",
+    "pmid": "26361000",
+    "url": "https://doi.org/10.1016/S2215-0366(14)70329-3"
+   }
+  },
+  {
+   "id": "ed_t_gad_slee-2019-gad-pharmacotherapy-nma",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "slee-2019-gad-pharmacotherapy-nma",
+   "claim": "For GAD, duloxetine, venlafaxine and escitalopram beat placebo with relatively good acceptability; benzodiazepines were effective but poorly tolerated.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Slee et al. · 2019 · Lancet",
+     "c": true,
+     "sourceId": "slee-2019-gad-pharmacotherapy-nma",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Pharmacological treatments for generalised anxiety disorder: a systematic review and network meta-analysis",
+    "doi": "10.1016/S0140-6736(18)31793-8",
+    "pmid": "30712879",
+    "url": "https://doi.org/10.1016/S0140-6736(18)31793-8"
+   }
+  },
+  {
+   "id": "ed_t_gad_spitzer-2006-gad7",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "spitzer-2006-gad7",
+   "claim": "Ask about depression in every anxious patient: in the primary care study that built the GAD-7, GAD and depressive symptoms frequently co-occurred, yet behaved as distinct dimensions.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Spitzer et al. · 2006 · Arch Intern Med",
+     "c": true,
+     "sourceId": "spitzer-2006-gad7",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "A brief measure for assessing generalized anxiety disorder: the GAD-7",
+    "doi": "10.1001/archinte.166.10.1092",
+    "pmid": "16717171",
+    "url": "https://doi.org/10.1001/archinte.166.10.1092"
+   }
+  },
+  {
+   "id": "ed_t_gad_stone-2009-antidepressant-suicidality-age",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "stone-2009-antidepressant-suicidality-age",
+   "claim": "Monitor patients under 25 closely early on: in FDA-held adult trials, the odds of suicidal behavior on an antidepressant were raised under age 25 (odds ratio 2.30) but not at older ages.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Stone et al. · 2009 · BMJ",
+     "c": true,
+     "sourceId": "stone-2009-antidepressant-suicidality-age",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Risk of suicidality in clinical trials of antidepressants in adults: analysis of proprietary data submitted to US Food and Drug Administration",
+    "doi": "10.1136/bmj.b2880",
+    "pmid": "19671933",
+    "url": "https://doi.org/10.1136/bmj.b2880"
+   }
+  },
+  {
+   "id": "ed_t_gad_uspstf-2023-anxiety-screening-adults",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "uspstf-2023-anxiety-screening-adults",
+   "claim": "Screen. The USPSTF recommends screening adults for anxiety disorders, including pregnant and postpartum persons (grade B); the evidence is insufficient in adults 65 and older (I statement).",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Kroenke et al. · 2010 · Gen Hosp Psychiatry",
+     "sourceId": "kroenke-2010-phq-gad-review",
+     "key": "C"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "c": true,
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Screening for Anxiety Disorders in Adults: US Preventive Services Task Force Recommendation Statement",
+    "doi": "10.1001/jama.2023.9301",
+    "pmid": "37338866",
+    "url": "https://doi.org/10.1001/jama.2023.9301"
+   }
+  },
+  {
+   "id": "ed_t_gad_wolitzky-taylor-2008-specific-phobia",
+   "status": "draft",
+   "review": null,
+   "page": "t_gad.md",
+   "sourceId": "wolitzky-taylor-2008-specific-phobia",
+   "claim": "Social anxiety: individual cognitive behavioral therapy (CBT) first, an SSRI if therapy is declined.",
+   "stem": "This claim on t_gad.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
+   "options": [
+    {
+     "t": "American Psychiatric Association Publishing · 2022",
+     "sourceId": "dsm-5-tr",
+     "key": "A"
+    },
+    {
+     "t": "Kessler et al. · 2005 · Arch Gen Psychiatry",
+     "sourceId": "kessler-2005-ncsr-lifetime-prevalence",
+     "key": "B"
+    },
+    {
+     "t": "Barry et al. · 2023 · JAMA",
+     "sourceId": "uspstf-2023-anxiety-screening-adults",
+     "key": "C"
+    },
+    {
+     "t": "Wolitzky-Taylor et al. · 2008 · Clin Psychol Rev",
+     "c": true,
+     "sourceId": "wolitzky-taylor-2008-specific-phobia",
+     "key": "D"
+    }
+   ],
+   "why": "Added for the new clinic anxiety page (t_gad.md, 2026-11-26). Identity checked against the PubMed record (PubMed MCP get_article_metadata) the same day. Annotation is AI-drafted from the abstract and awaits faculty signature.",
+   "pearl": "Check what a source concludes, not what it is remembered for.",
+   "citation": {
+    "title": "Psychological approaches in the treatment of specific phobias: a meta-analysis",
+    "doi": "10.1016/j.cpr.2008.02.007",
+    "pmid": "18410984",
+    "url": "https://doi.org/10.1016/j.cpr.2008.02.007"
+   }
+  },
+  {
    "id": "ed_t_mood_canmat-isbd-bipolar-2018",
    "status": "draft",
    "review": null,
@@ -1092,13 +1572,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Brown et al. · 1972 · The British Journal of Psychiatry",
-     "sourceId": "brown-1972-expressed-emotion",
+     "t": "Links et al. · 2025 · Am J Psychother",
+     "sourceId": "links-ross-2025",
      "key": "A"
     },
     {
-     "t": "Linehan et al. · 2006 · Arch Gen Psychiatry",
-     "sourceId": "linehan-2006-dbt-vs-experts",
+     "t": "Schünemann et al. · 2025 · Clin Psychol Eur",
+     "sourceId": "schunemann-2025",
      "key": "B"
     },
     {
@@ -1132,13 +1612,13 @@
    "stem": "This claim on t_perinatal.md is bound to one source in the evidence registry. Which one — and what does that source not support?",
    "options": [
     {
-     "t": "Brodsky et al. · 2025 · Am J Psychiatry",
-     "sourceId": "brodsky-2025",
+     "t": "Cipriani et al. · 2018 · Lancet",
+     "sourceId": "cipriani-2018-antidepressant-nma",
      "key": "A"
     },
     {
-     "t": "Strawn et al. · 2007 · The American Journal of Psychiatry",
-     "sourceId": "strawn-2007-neuroleptic-malignant-syndrome",
+     "t": "Doupnik et al. · 2020 · JAMA Psychiatry",
+     "sourceId": "doupnik-2020-acute-care-suicide-prevention",
      "key": "B"
     },
     {
