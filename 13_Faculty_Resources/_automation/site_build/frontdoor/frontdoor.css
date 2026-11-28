@@ -4357,7 +4357,7 @@ html:has(.fd-circuit__timer){scroll-padding-bottom:8rem}
 #quote-med-pass button:disabled{color:var(--fd-text-mid);cursor:default;background:var(--fd-surface-warm)}
 #qp-trace-audio{display:block;width:100%;max-width:30rem;min-width:0}
 #qp-note-options button[aria-pressed=true]{border-color:var(--fd-teal);box-shadow:inset 3px 0 var(--fd-teal)}
-@media(max-width:490px){#quote-med-pass .scene img{height:auto;min-height:0;align-self:center;object-fit:contain}}
+@media(max-width:430px){#quote-med-pass .scene img{height:auto;min-height:0;align-self:center;object-fit:contain}}
 #quote-med-pass .working,#quote-med-pass .final{border-inline-start:3px solid var(--fd-teal);padding:var(--fd-space-5);background:var(--fd-surface)}
 #qp-revision{white-space:pre-wrap;overflow-wrap:anywhere;font:1.13em/1.45 Georgia,serif}
 #quote-med-pass .source{display:grid;grid-template-columns:minmax(4.6em,23%) minmax(0,1fr);gap:var(--fd-space-4);padding-top:var(--fd-space-4);margin-top:var(--fd-space-4);border-top:1px solid var(--fd-line)}
